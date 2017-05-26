@@ -1170,7 +1170,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   //    marked as ready to draw.
   for (int i = 0; i < 3; ++i) {
     std::unique_ptr<TilingSetRasterQueueAll> queue(
-        new TilingSetRasterQueueAll(tiling_set.get(), false));
+        new TilingSetRasterQueueAll(tiling_set.get(), false, false));
 
     // There are 3 bins in TilePriority.
     bool have_tiles[3] = {};
@@ -1282,7 +1282,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   int eventually_bin_order_correct_count = 0;
   int eventually_bin_order_incorrect_count = 0;
   std::unique_ptr<TilingSetRasterQueueAll> queue(
-      new TilingSetRasterQueueAll(tiling_set.get(), false));
+      new TilingSetRasterQueueAll(tiling_set.get(), false, false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     if (!last_tile.tile())
       last_tile = queue->Top();
@@ -1439,7 +1439,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
         intersecting_rect,      // Soon rect.
         intersecting_rect);     // Eventually rect.
     std::unique_ptr<TilingSetRasterQueueAll> queue(
-        new TilingSetRasterQueueAll(tiling_set.get(), false));
+        new TilingSetRasterQueueAll(tiling_set.get(), false, false));
     EXPECT_FALSE(queue->IsEmpty());
   }
   {
@@ -1449,7 +1449,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
         intersecting_rect,      // Soon rect.
         intersecting_rect);     // Eventually rect.
     std::unique_ptr<TilingSetRasterQueueAll> queue(
-        new TilingSetRasterQueueAll(tiling_set.get(), false));
+        new TilingSetRasterQueueAll(tiling_set.get(), false, false));
     EXPECT_FALSE(queue->IsEmpty());
   }
   {
@@ -1459,7 +1459,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
         non_intersecting_rect,  // Soon rect.
         intersecting_rect);     // Eventually rect.
     std::unique_ptr<TilingSetRasterQueueAll> queue(
-        new TilingSetRasterQueueAll(tiling_set.get(), false));
+        new TilingSetRasterQueueAll(tiling_set.get(), false, false));
     EXPECT_FALSE(queue->IsEmpty());
   }
 }

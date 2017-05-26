@@ -440,12 +440,10 @@ class CC_EXPORT LayerImpl {
   void set_needs_show_scrollbars(bool yes) { needs_show_scrollbars_ = yes; }
   bool needs_show_scrollbars() { return needs_show_scrollbars_; }
 
-  void set_raster_even_if_not_in_rsll(bool yes) {
-    raster_even_if_not_in_rsll_ = yes;
+  void set_raster_even_if_not_drawn(bool yes) {
+    raster_even_if_not_drawn_ = yes;
   }
-  bool raster_even_if_not_in_rsll() const {
-    return raster_even_if_not_in_rsll_;
-  }
+  bool raster_even_if_not_drawn() const { return raster_even_if_not_drawn_; }
 
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
@@ -564,7 +562,11 @@ class CC_EXPORT LayerImpl {
   // layers) and consumed by LayerTreeImpl::PushPropertiesTo during activation.
   bool needs_show_scrollbars_ : 1;
 
-  bool raster_even_if_not_in_rsll_ : 1;
+  // This is set for layers that have a property because of which they are not
+  // drawn (singular transforms), but they can become visible soon (the property
+  // is being animated). For this reason, while these layers are not drawn, they
+  // are still rasterized.
+  bool raster_even_if_not_drawn_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

@@ -16,14 +16,21 @@ class RasterOrderComparator {
   explicit RasterOrderComparator(TreePriority tree_priority)
       : tree_priority_(tree_priority) {}
 
+  // Note that in this function, we have to return true if and only if
+  // a is strictly lower priority than b.
   bool operator()(
       const std::unique_ptr<TilingSetRasterQueueAll>& a_queue,
       const std::unique_ptr<TilingSetRasterQueueAll>& b_queue) const {
-    // Note that in this function, we have to return true if and only if
-    // a is strictly lower priority than b.
     const TilePriority& a_priority = a_queue->Top().priority();
     const TilePriority& b_priority = b_queue->Top().priority();
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
+
+    // If the priority bin is the same but one of the tiles is from a
+    // non-drawing layer, then the drawing layer has a higher priority.
+    if (b_priority.priority_bin == a_priority.priority_bin &&
+        b_queue->is_drawing_layer() != a_queue->is_drawing_layer()) {
+      return b_queue->is_drawing_layer();
+    }
 
     // If the bin is the same but the resolution is not, then the order will be
     // determined by whether we prioritize low res or not.
@@ -63,8 +70,9 @@ void CreateTilingSetRasterQueues(
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     bool prioritize_low_res = tree_priority == SMOOTHNESS_TAKES_PRIORITY;
     std::unique_ptr<TilingSetRasterQueueAll> tiling_set_queue =
-        base::MakeUnique<TilingSetRasterQueueAll>(tiling_set,
-                                                  prioritize_low_res);
+        base::MakeUnique<TilingSetRasterQueueAll>(
+            tiling_set, prioritize_low_res,
+            layer->contributes_to_drawn_render_surface());
     // Queues will only contain non empty tiling sets.
     if (!tiling_set_queue->IsEmpty())
       queues->push_back(std::move(tiling_set_queue));

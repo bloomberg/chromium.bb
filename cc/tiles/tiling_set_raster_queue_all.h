@@ -22,12 +22,14 @@ namespace cc {
 class CC_EXPORT TilingSetRasterQueueAll {
  public:
   TilingSetRasterQueueAll(PictureLayerTilingSet* tiling_set,
-                          bool prioritize_low_res);
+                          bool prioritize_low_res,
+                          bool is_drawing_layer);
   ~TilingSetRasterQueueAll();
 
   const PrioritizedTile& Top() const;
   void Pop();
   bool IsEmpty() const;
+  bool is_drawing_layer() const { return is_drawing_layer_; }
 
  private:
   // Helper base class for individual region iterators.
@@ -190,6 +192,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
   // ideal pending high res.
   base::StackVector<IterationStage, 6> stages_;
   TilingIterator iterators_[NUM_ITERATORS];
+  bool is_drawing_layer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TilingSetRasterQueueAll);
 };
