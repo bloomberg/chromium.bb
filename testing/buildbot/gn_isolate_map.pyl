@@ -1013,10 +1013,6 @@
     "label": "//ui/android:ui_junit_tests",
     "type": "junit_test",
   },
-  "ui_service_unittests": {
-    "label": "//services/ui/ws:ui_service_unittests",
-    "type": "windowed_test_launcher",
-  },
   "ui_touch_selection_unittests": {
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
     "type": "windowed_test_launcher",
