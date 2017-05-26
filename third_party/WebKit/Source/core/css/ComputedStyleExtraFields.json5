@@ -428,7 +428,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "TextEmphasisPosition",
-      default_value: "kTextEmphasisPositionOver",
+      default_value: "TextEmphasisPosition::kOver",
       field_size: 1,
       field_group: "rare-inherited",
     },

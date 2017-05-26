@@ -1580,10 +1580,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisPosition position)
     : CSSValue(kIdentifierClass) {
   switch (position) {
-    case kTextEmphasisPositionOver:
+    case TextEmphasisPosition::kOver:
       value_id_ = CSSValueOver;
       break;
-    case kTextEmphasisPositionUnder:
+    case TextEmphasisPosition::kUnder:
       value_id_ = CSSValueUnder;
       break;
   }
@@ -1593,15 +1593,15 @@ template <>
 inline TextEmphasisPosition CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueOver:
-      return kTextEmphasisPositionOver;
+      return TextEmphasisPosition::kOver;
     case CSSValueUnder:
-      return kTextEmphasisPositionUnder;
+      return TextEmphasisPosition::kUnder;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextEmphasisPositionOver;
+  return TextEmphasisPosition::kOver;
 }
 
 template <>
