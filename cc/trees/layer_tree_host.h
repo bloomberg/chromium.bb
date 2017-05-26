@@ -355,6 +355,10 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void SetHasCopyRequest(bool has_copy_request);
   bool has_copy_request() const { return has_copy_request_; }
 
+  void AddSurfaceLayerId(const SurfaceId& surface_id);
+  void RemoveSurfaceLayerId(const SurfaceId& surface_id);
+  const base::flat_set<SurfaceId>& SurfaceLayerIds() const;
+
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
   std::unordered_set<Layer*>& LayersThatShouldPushProperties();
@@ -370,10 +374,16 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   virtual void SetNeedsFullTreeSync();
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
+  bool needs_surface_ids_sync() const { return needs_surface_ids_sync_; }
+  void set_needs_surface_ids_sync(bool needs_surface_ids_sync) {
+    needs_surface_ids_sync_ = needs_surface_ids_sync;
+  }
+
   void SetPropertyTreesNeedRebuild();
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl);
+  void PushSurfaceIdsTo(LayerTreeImpl* tree_impl);
   void PushLayerTreeHostPropertiesTo(LayerTreeHostImpl* host_impl);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
@@ -610,9 +620,13 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   bool needs_full_tree_sync_ = true;
 
+  bool needs_surface_ids_sync_ = false;
+
   gfx::Vector2dF elastic_overscroll_;
 
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
+
+  base::flat_set<SurfaceId> surface_layer_ids_;
 
   // Set of layers that need to push properties.
   std::unordered_set<Layer*> layers_that_should_push_properties_;

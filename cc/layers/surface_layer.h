@@ -52,6 +52,8 @@ class CC_EXPORT SurfaceLayer : public Layer {
  private:
   ~SurfaceLayer() override;
   void RemoveReference(base::Closure reference_returner);
+  void AddReferencedSurfaceId(const SurfaceInfo& surface_info);
+  void RemoveReferencedSurfaceId(const SurfaceInfo& surface_info);
 
   SurfaceInfo primary_surface_info_;
   base::Closure primary_reference_returner_;

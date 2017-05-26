@@ -168,6 +168,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
+  void PushSurfaceIdsTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
 
@@ -330,6 +331,11 @@ class CC_EXPORT LayerTreeImpl {
   void set_needs_full_tree_sync(bool needs) { needs_full_tree_sync_ = needs; }
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
+  bool needs_surface_ids_sync() const { return needs_surface_ids_sync_; }
+  void set_needs_surface_ids_sync(bool needs_surface_ids_sync) {
+    needs_surface_ids_sync_ = needs_surface_ids_sync;
+  }
+
   void ForceRedrawNextActivation() { next_activation_forces_redraw_ = true; }
 
   void set_has_ever_been_drawn(bool has_drawn) {
@@ -358,6 +364,10 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* LayerByElementId(ElementId element_id) const;
   void AddToElementMap(LayerImpl* layer);
   void RemoveFromElementMap(LayerImpl* layer);
+
+  void SetSurfaceLayerIds(const base::flat_set<SurfaceId>& surface_layer_ids);
+  const base::flat_set<SurfaceId>& SurfaceLayerIds() const;
+  void ClearSurfaceLayerIds();
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
   void RemoveLayerShouldPushProperties(LayerImpl* layer);
@@ -444,10 +454,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void RegisterScrollLayer(LayerImpl* layer);
   void UnregisterScrollLayer(LayerImpl* layer);
-
-  void AddSurfaceLayer(LayerImpl* layer);
-  void RemoveSurfaceLayer(LayerImpl* layer);
-  const LayerImplList& SurfaceLayers() const { return surface_layers_; }
 
   LayerImpl* FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
@@ -588,7 +594,8 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_scrollbar_layer_ids_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
-  LayerImplList surface_layers_;
+
+  base::flat_set<SurfaceId> surface_layer_ids_;
 
   // List of render surfaces for the most recently prepared frame.
   RenderSurfaceList render_surface_list_;
@@ -602,6 +609,8 @@ class CC_EXPORT LayerTreeImpl {
   // In impl-side painting mode, this is true when the tree may contain
   // structural differences relative to the active tree.
   bool needs_full_tree_sync_;
+
+  bool needs_surface_ids_sync_;
 
   bool next_activation_forces_redraw_;
 

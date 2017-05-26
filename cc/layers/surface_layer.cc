@@ -63,12 +63,32 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
+void SurfaceLayer::AddReferencedSurfaceId(const SurfaceInfo& surface_info) {
+  DCHECK(layer_tree_host());
+  if (surface_info.is_valid())
+    layer_tree_host()->AddSurfaceLayerId(surface_info.id());
+}
+
+void SurfaceLayer::RemoveReferencedSurfaceId(const SurfaceInfo& surface_info) {
+  DCHECK(layer_tree_host());
+  if (surface_info.is_valid())
+    layer_tree_host()->RemoveSurfaceLayerId(surface_info.id());
+}
+
 void SurfaceLayer::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
   RemoveReference(std::move(primary_reference_returner_));
+  bool update_referenced_surface_id = false;
+  if (layer_tree_host())
+    update_referenced_surface_id =
+        !layer_tree_host()->GetSettings().enable_surface_synchronization;
+  if (update_referenced_surface_id)
+    RemoveReferencedSurfaceId(primary_surface_info_);
   primary_surface_info_ = surface_info;
   if (layer_tree_host()) {
     primary_reference_returner_ = ref_factory_->CreateReference(
         layer_tree_host(), primary_surface_info_.id());
+    if (update_referenced_surface_id)
+      AddReferencedSurfaceId(primary_surface_info_);
   }
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
@@ -76,10 +96,18 @@ void SurfaceLayer::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
 
 void SurfaceLayer::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
   RemoveReference(std::move(fallback_reference_returner_));
+  bool update_referenced_surface_id = false;
+  if (layer_tree_host())
+    update_referenced_surface_id =
+        layer_tree_host()->GetSettings().enable_surface_synchronization;
+  if (update_referenced_surface_id)
+    RemoveReferencedSurfaceId(fallback_surface_info_);
   fallback_surface_info_ = surface_info;
   if (layer_tree_host()) {
     fallback_reference_returner_ = ref_factory_->CreateReference(
         layer_tree_host(), fallback_surface_info_.id());
+    if (update_referenced_surface_id)
+      AddReferencedSurfaceId(fallback_surface_info_);
   }
   SetNeedsCommit();
 }
@@ -101,12 +129,29 @@ bool SurfaceLayer::HasDrawableContent() const {
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host() == host) {
-    Layer::SetLayerTreeHost(host);
     return;
   }
+
+  bool use_primary_info_for_referenced_surface_id = false;
+  if (layer_tree_host()) {
+    use_primary_info_for_referenced_surface_id =
+        !layer_tree_host()->GetSettings().enable_surface_synchronization;
+  } else if (host) {
+    use_primary_info_for_referenced_surface_id =
+        !host->GetSettings().enable_surface_synchronization;
+  }
+
+  if (layer_tree_host()) {
+    if (use_primary_info_for_referenced_surface_id)
+      RemoveReferencedSurfaceId(primary_surface_info_);
+    else
+      RemoveReferencedSurfaceId(fallback_surface_info_);
+  }
+
   RemoveReference(std::move(primary_reference_returner_));
   RemoveReference(std::move(fallback_reference_returner_));
   Layer::SetLayerTreeHost(host);
+
   if (layer_tree_host()) {
     if (primary_surface_info_.is_valid()) {
       primary_reference_returner_ = ref_factory_->CreateReference(
@@ -116,6 +161,10 @@ void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
       fallback_reference_returner_ = ref_factory_->CreateReference(
           layer_tree_host(), fallback_surface_info_.id());
     }
+    if (use_primary_info_for_referenced_surface_id)
+      AddReferencedSurfaceId(primary_surface_info_);
+    else
+      AddReferencedSurfaceId(fallback_surface_info_);
   }
 }
 
