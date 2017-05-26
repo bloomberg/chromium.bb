@@ -36,17 +36,23 @@ chrome.test.runTests([
   },
 
   function audibleUpdateAttemptShouldFail() {
-    var error_msg = "Invalid value for argument 2. Property 'audible': " +
-      "Unexpected property.";
+    var expectedJsBindingsError =
+        'Invalid value for argument 2. Property \'audible\': ' +
+        'Unexpected property.';
+    var expectedNativeBindingsError =
+        'Error in invocation of tabs.update(' +
+        'optional integer tabId, object updateProperties, ' +
+        'optional function callback): Error at parameter ' +
+        '\'updateProperties\': Unexpected property: \'audible\'.';
 
-    try
-    {
+    try {
       chrome.tabs.update(testTabId_, {audible: true}, function(tab) {
-        chrome.test.fail("Updated audible property via chrome.tabs.update");
+        chrome.test.fail('Updated audible property via chrome.tabs.update');
       });
-    } catch (e)
-    {
-      assertEq(error_msg, e.message);
+    } catch (e) {
+      assertTrue(e.message == expectedJsBindingsError ||
+                 e.message == expectedNativeBindingsError,
+                 e.message);
       chrome.test.succeed();
     }
   },
