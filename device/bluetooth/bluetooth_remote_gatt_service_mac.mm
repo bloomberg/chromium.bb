@@ -29,7 +29,7 @@ BluetoothRemoteGattServiceMac::BluetoothRemoteGattServiceMac(
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID([service_ UUID]);
   identifier_ = base::SysNSStringToUTF8(
       [NSString stringWithFormat:@"%s-%p", uuid_.canonical_value().c_str(),
-                                 (void*)service_]);
+                                 service_.get()]);
 }
 
 BluetoothRemoteGattServiceMac::~BluetoothRemoteGattServiceMac() {}

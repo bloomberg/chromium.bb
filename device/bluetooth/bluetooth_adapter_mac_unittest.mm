@@ -100,7 +100,7 @@ class BluetoothAdapterMacTest : public testing::Test {
     mock_central_manager_.reset([[MockCentralManager alloc] init]);
     [mock_central_manager_ setState:desired_state];
     CBCentralManager* centralManager =
-        (CBCentralManager*)mock_central_manager_.get();
+        static_cast<CBCentralManager*>(mock_central_manager_.get());
     adapter_mac_->SetCentralManagerForTesting(centralManager);
     return true;
   }

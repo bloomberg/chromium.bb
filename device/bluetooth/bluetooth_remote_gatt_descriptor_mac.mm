@@ -51,7 +51,7 @@ BluetoothRemoteGattDescriptorMac::BluetoothRemoteGattDescriptorMac(
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID([cb_descriptor_ UUID]);
   identifier_ = base::SysNSStringToUTF8(
       [NSString stringWithFormat:@"%s-%p", uuid_.canonical_value().c_str(),
-                                 (void*)cb_descriptor_]);
+                                 cb_descriptor_.get()]);
 }
 
 std::string BluetoothRemoteGattDescriptorMac::GetIdentifier() const {
