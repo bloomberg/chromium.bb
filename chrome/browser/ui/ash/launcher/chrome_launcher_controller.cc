@@ -367,10 +367,6 @@ void ChromeLauncherController::SetV1AppStatus(const std::string& app_id,
   }
 }
 
-void ChromeLauncherController::Launch(const ash::ShelfID& id, int event_flags) {
-  LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, event_flags);
-}
-
 void ChromeLauncherController::Close(const ash::ShelfID& id) {
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
   if (!delegate)
@@ -393,8 +389,9 @@ bool ChromeLauncherController::IsPlatformApp(const ash::ShelfID& id) {
 
 void ChromeLauncherController::LaunchApp(const ash::ShelfID& id,
                                          ash::ShelfLaunchSource source,
-                                         int event_flags) {
-  launcher_controller_helper_->LaunchApp(id, source, event_flags);
+                                         int event_flags,
+                                         int64_t display_id) {
+  launcher_controller_helper_->LaunchApp(id, source, event_flags, display_id);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,
@@ -414,7 +411,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
   if (!item_delegate->GetRunningApplications().empty())
     SelectItemWithSource(item_delegate.get(), source);
   else
-    LaunchApp(shelf_id, source, event_flags);
+    LaunchApp(shelf_id, source, event_flags, display::kInvalidDisplayId);
 }
 
 void ChromeLauncherController::SetLauncherItemImage(

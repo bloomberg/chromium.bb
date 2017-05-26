@@ -43,7 +43,8 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
 
   void LaunchApp(const ash::ShelfID& id,
                  ash::ShelfLaunchSource source,
-                 int event_flags);
+                 int event_flags,
+                 int64_t display_id);
 
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;
 

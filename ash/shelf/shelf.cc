@@ -274,13 +274,18 @@ void Shelf::LaunchShelfItem(int item_index) {
 
 // static
 void Shelf::ActivateShelfItem(int item_index) {
+  ActivateShelfItemOnDisplay(item_index, display::kInvalidDisplayId);
+}
+
+// static
+void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
   ShelfModel* shelf_model = Shell::Get()->shelf_model();
   const ShelfItem& item = shelf_model->items()[item_index];
   ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::Event> event = base::MakeUnique<ui::KeyEvent>(
       ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_NONE);
-  item_delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
-                              LAUNCH_FROM_UNKNOWN, base::Bind(&NoopCallback));
+  item_delegate->ItemSelected(std::move(event), display_id, LAUNCH_FROM_UNKNOWN,
+                              base::Bind(&NoopCallback));
 }
 
 bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {

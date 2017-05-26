@@ -99,11 +99,12 @@ class AppListControllerDelegate {
                            AppListSource source,
                            int event_flags) = 0;
 
-  // Launch the app.
+  // Launch the app on the display identified by |display_id|.
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          AppListSource source,
-                         int event_flags) = 0;
+                         int event_flags,
+                         int64_t display_id) = 0;
 
   static std::string AppListSourceToString(AppListSource source);
 

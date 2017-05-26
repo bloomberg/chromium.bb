@@ -36,7 +36,8 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   void LaunchApp(Profile* profile,
                  const extensions::Extension* extension,
                  AppListSource source,
-                 int event_flags) override;
+                 int event_flags,
+                 int64_t display_id) override;
 
   const GURL& last_opened_url() const { return last_opened_url_; }
 

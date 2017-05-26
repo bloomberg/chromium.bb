@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "chrome/browser/ui/browser.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -29,7 +30,11 @@ namespace chrome {
 // browser->profile()->GetOriginalProfile(). This has the effect of matching
 // against both non-incognito and incognito profiles. If
 // |match_original_profiles| is false, only an exact match may be returned.
-Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles);
+// If |display_id| is not equal to display::kInvalidDisplayId, only the browsers
+// in the corresponding display may be returned.
+Browser* FindTabbedBrowser(Profile* profile,
+                           bool match_original_profiles,
+                           int64_t display_id = display::kInvalidDisplayId);
 
 // Finds an existing browser window of any kind.
 Browser* FindAnyBrowser(Profile* profile,
