@@ -898,8 +898,8 @@ void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_ExecuteNoValueEditCommand(
-      focused_frame->GetRoutingID(), name));
+  focused_frame->GetFrameInputHandler()->ExecuteEditCommand(name,
+                                                            base::nullopt);
 }
 
 void BrowserPluginGuest::OnImeSetComposition(
@@ -934,7 +934,7 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       web_contents()->GetFocusedFrame());
   if (rfh)
-    rfh->ExtendSelectionAndDelete(before, after);
+    rfh->GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
 }
 
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,

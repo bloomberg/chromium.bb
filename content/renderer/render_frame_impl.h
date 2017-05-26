@@ -734,6 +734,12 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ScheduleFileChooser(const FileChooserParams& params,
                            blink::WebFileChooserCompletion* completion);
 
+  bool handling_select_range() const { return handling_select_range_; }
+
+  void set_is_pasting(bool value) { is_pasting_ = value; }
+
+  void set_handling_select_range(bool value) { handling_select_range_ = value; }
+
   // Plugin-related functions --------------------------------------------------
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -762,6 +768,16 @@ class CONTENT_EXPORT RenderFrameImpl
   void PepperStopsPlayback(PepperPluginInstanceImpl* instance);
   void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
+
+#if defined(OS_MACOSX)
+  void OnCopyToFindPboard();
+#endif
+
+  // Dispatches the current state of selection on the webpage to the browser if
+  // it has changed.
+  // TODO(varunjain): delete this method once we figure out how to keep
+  // selection handles in sync with the webpage.
+  void SyncSelectionIfRequired();
 
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
@@ -959,10 +975,6 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 #endif
 
-#if defined(OS_MACOSX)
-  void OnCopyToFindPboard();
-#endif
-
   // Callback scheduled from OnSerializeAsMHTML for when writing serialized
   // MHTML to file has been completed in the file thread.
   void OnWriteMHTMLToDiskComplete(
@@ -1014,12 +1026,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // finally get right encoding of page.
   void UpdateEncoding(blink::WebFrame* frame,
                       const std::string& encoding_name);
-
-  // Dispatches the current state of selection on the webpage to the browser if
-  // it has changed.
-  // TODO(varunjain): delete this method once we figure out how to keep
-  // selection handles in sync with the webpage.
-  void SyncSelectionIfRequired();
 
   bool RunJavaScriptDialog(JavaScriptDialogType type,
                            const base::string16& message,

@@ -438,8 +438,7 @@ void InterstitialPageImpl::Cut() {
   if (!focused_node)
     return;
 
-  focused_node->current_frame_host()->Send(
-      new InputMsg_Cut(focused_node->current_frame_host()->GetRoutingID()));
+  focused_node->current_frame_host()->GetFrameInputHandler()->Cut();
   RecordAction(base::UserMetricsAction("Cut"));
 }
 
@@ -448,8 +447,7 @@ void InterstitialPageImpl::Copy() {
   if (!focused_node)
     return;
 
-  focused_node->current_frame_host()->Send(
-      new InputMsg_Copy(focused_node->current_frame_host()->GetRoutingID()));
+  focused_node->current_frame_host()->GetFrameInputHandler()->Copy();
   RecordAction(base::UserMetricsAction("Copy"));
 }
 
@@ -458,8 +456,7 @@ void InterstitialPageImpl::Paste() {
   if (!focused_node)
     return;
 
-  focused_node->current_frame_host()->Send(
-      new InputMsg_Paste(focused_node->current_frame_host()->GetRoutingID()));
+  focused_node->current_frame_host()->GetFrameInputHandler()->Paste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
@@ -468,8 +465,7 @@ void InterstitialPageImpl::SelectAll() {
   if (!focused_node)
     return;
 
-  focused_node->current_frame_host()->Send(new InputMsg_SelectAll(
-      focused_node->current_frame_host()->GetRoutingID()));
+  focused_node->current_frame_host()->GetFrameInputHandler()->SelectAll();
   RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
