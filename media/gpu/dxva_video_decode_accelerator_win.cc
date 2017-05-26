@@ -1620,6 +1620,10 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     }
   }
 
+  attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE,
+                        kNumPictureBuffers);
+  attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, kNumPictureBuffers);
+
   auto* gl_context = get_gl_context_cb_.Run();
   RETURN_ON_FAILURE(gl_context, "Couldn't get GL context", false);
 
