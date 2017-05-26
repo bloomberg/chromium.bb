@@ -324,6 +324,12 @@ void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
 }
 
 void AutoEnrollmentController::Timeout() {
+  // When tightening the FRE flows, as a cautionary measure (to prevent
+  // interference with consumer devices) timeout was chosen to only enforce FRE
+  // for EXPLICTLY_REQUIRED.
+  // TODO(igorcov): Investigate the remaining causes of hitting timeout and
+  // potentially either remove the timeout altogether or enforce FRE in the
+  // REQUIRED case as well.
   // TODO(mnissler): Add UMA to track results of auto-enrollment checks.
   if (client_start_weak_factory_.HasWeakPtrs() &&
       fre_requirement_ != EXPLICITLY_REQUIRED) {
