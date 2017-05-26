@@ -802,7 +802,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test that a JavaScript oninput event is fired after auto-filling a form.
 // Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
+// Flaky on Windows. http://crbug.com/726659
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_OnInputAfterAutofill DISABLED_OnInputAfterAutofill
 #else
 #define MAYBE_OnInputAfterAutofill OnInputAfterAutofill
@@ -880,8 +881,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
 }
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-// Flaky on CrOS only.  http://crbug.com/578095
-#if defined(OS_CHROMEOS)
+// Flaky on CrOS.  http://crbug.com/578095
+// Flaky on Windows. http://crbug.com/726659
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
 #else
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
@@ -1044,9 +1046,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
 }
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
-// Flaky on CrOS only.  http://crbug.com/578095
-#if defined(OS_CHROMEOS)
-#define MAYBE_AutofillFormsDistinguishedById DISABLED_AutofillFormsDistinguishedById
+// Flaky on CrOS.  http://crbug.com/578095
+// Flaky on Windows. http://crbug.com/726659
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#define MAYBE_AutofillFormsDistinguishedById \
+  DISABLED_AutofillFormsDistinguishedById
 #else
 #define MAYBE_AutofillFormsDistinguishedById AutofillFormsDistinguishedById
 #endif
@@ -1077,7 +1081,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // (duplicated for "confirmation"); or variants that are hot-swapped via
 // JavaScript, with only one actually visible at any given time.
 // Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
+// Flaky on Windows. http://crbug.com/726659
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_AutofillFormWithRepeatedField \
   DISABLED_AutofillFormWithRepeatedField
 #else
@@ -1181,7 +1186,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // Flakily fails on ChromeOS (crbug.com/646576).
-#if defined(OS_CHROMEOS)
+// Flaky on Windows (crbug.com/726659).
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_DynamicFormFill DISABLED_DynamicFormFill
 #else
 #define MAYBE_DynamicFormFill DynamicFormFill
@@ -1540,7 +1546,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 // Test that Autofill does not fill in read-only fields.
 // Flaky on the official cros-trunk. crbug.com/516052
 // Also flaky on ChromiumOS generally. crbug.com/585885
-#if defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS)
+// Also flaky on Windows. crbug.com/726659
+#if defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
 #else
 #define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
@@ -1736,8 +1743,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       PastedPasswordIsSaved) {
+// Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_PastedPasswordIsSaved DISABLED_PastedPasswordIsSaved
+#else
+#define MAYBE_PastedPasswordIsSaved PastedPasswordIsSaved
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_PastedPasswordIsSaved) {
   // Serve test page from a HTTPS server so that Form Not Secure warnings do not
   // interfere with the test.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
