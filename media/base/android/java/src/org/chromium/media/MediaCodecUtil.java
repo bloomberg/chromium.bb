@@ -625,10 +625,10 @@ class MediaCodecUtil {
      * encryption scheme, specifically AES CBC encryption with possibility of pattern
      * encryption.
      * While 'cbcs' scheme was originally implemented in N, there was a bug (in the
-     * DRM code) which means that it didn't really work properly until post-N).
+     * DRM code) which means that it didn't really work properly until N-MR1).
      */
     static boolean platformSupportsCbcsEncryption() {
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.N;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1;
     }
 
     /**
