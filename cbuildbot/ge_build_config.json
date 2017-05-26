@@ -930,7 +930,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": true,
           "board_group": "poppy",
           "arch": "X86_INTERNAL"
