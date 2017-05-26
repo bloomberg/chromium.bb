@@ -256,35 +256,38 @@ void CupsPrintersHandler::OnAddedPrinter(
     chromeos::PrinterSetupResult result_code) {
   std::string printer_name = printer->display_name();
   switch (result_code) {
-    case chromeos::PrinterSetupResult::SUCCESS: {
+    case chromeos::PrinterSetupResult::kSuccess: {
       auto* manager = PrintersManagerFactory::GetForBrowserContext(profile_);
       manager->PrinterInstalled(*printer);
       manager->RegisterPrinter(std::move(printer));
       break;
     }
-    case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
+    case chromeos::PrinterSetupResult::kPpdNotFound:
       LOG(WARNING) << "Could not locate requested PPD";
       break;
-    case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
+    case chromeos::PrinterSetupResult::kPpdTooLarge:
       LOG(WARNING) << "PPD is too large";
       break;
-    case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
+    case chromeos::PrinterSetupResult::kPpdUnretrievable:
       LOG(WARNING) << "Could not retrieve PPD from server";
       break;
-    case chromeos::PrinterSetupResult::INVALID_PPD:
+    case chromeos::PrinterSetupResult::kInvalidPpd:
       LOG(WARNING) << "Provided PPD is invalid.";
       break;
-    case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
+    case chromeos::PrinterSetupResult::kPrinterUnreachable:
       LOG(WARNING) << "Could not contact printer for configuration";
       break;
-    case chromeos::PrinterSetupResult::DBUS_ERROR:
-    case chromeos::PrinterSetupResult::FATAL_ERROR:
+    case chromeos::PrinterSetupResult::kDbusError:
+    case chromeos::PrinterSetupResult::kFatalError:
       LOG(ERROR) << "Unrecoverable error.  Reboot required.";
+      break;
+    case chromeos::PrinterSetupResult::kMaxValue:
+      NOTREACHED() << "This is not an expected value";
       break;
   }
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("on-add-cups-printer"),
-      base::Value(result_code == chromeos::PrinterSetupResult::SUCCESS),
+      base::Value(result_code == chromeos::PrinterSetupResult::kSuccess),
       base::Value(printer_name));
 }
 

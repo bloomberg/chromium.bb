@@ -250,7 +250,7 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
   void SetUpPrinterDone(std::unique_ptr<SetUpPrinterData> data,
                         PrinterSetupResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (result == PrinterSetupResult::SUCCESS) {
+    if (result == PrinterSetupResult::kSuccess) {
       if (data->is_new) {
         // We aren't done with data->printer yet, so we have to copy it instead
         // of moving it.

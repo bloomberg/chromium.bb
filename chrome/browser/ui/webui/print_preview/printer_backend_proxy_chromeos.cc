@@ -131,7 +131,7 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
 
     if (prefs_->IsConfigurationCurrent(*printer)) {
       // Skip setup if the printer is already installed.
-      HandlePrinterSetup(std::move(printer), cb, chromeos::SUCCESS);
+      HandlePrinterSetup(std::move(printer), cb, chromeos::kSuccess);
       return;
     }
 
@@ -149,7 +149,7 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     switch (result) {
-      case chromeos::PrinterSetupResult::SUCCESS:
+      case chromeos::PrinterSetupResult::kSuccess:
         VLOG(1) << "Printer setup successful for " << printer->id()
                 << " fetching properties";
         prefs_->PrinterInstalled(*printer);
@@ -157,22 +157,25 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
         // fetch settings on the blocking pool and invoke callback.
         FetchCapabilities(std::move(printer), cb);
         return;
-      case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
+      case chromeos::PrinterSetupResult::kPpdNotFound:
         LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
         // Prompt user to update configuration.
         // TODO(skau): Fill me in
         break;
-      case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
+      case chromeos::PrinterSetupResult::kPpdUnretrievable:
         LOG(WARNING) << "Could not download PPD.  Check Internet connection.";
         // Could not download PPD.  Connect to Internet.
         // TODO(skau): Fill me in
         break;
-      case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
-      case chromeos::PrinterSetupResult::DBUS_ERROR:
-      case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
-      case chromeos::PrinterSetupResult::INVALID_PPD:
-      case chromeos::PrinterSetupResult::FATAL_ERROR:
+      case chromeos::PrinterSetupResult::kPrinterUnreachable:
+      case chromeos::PrinterSetupResult::kDbusError:
+      case chromeos::PrinterSetupResult::kPpdTooLarge:
+      case chromeos::PrinterSetupResult::kInvalidPpd:
+      case chromeos::PrinterSetupResult::kFatalError:
         LOG(ERROR) << "Unexpected error in printer setup." << result;
+        break;
+      case chromeos::PrinterSetupResult::kMaxValue:
+        NOTREACHED() << "This value is not expected";
         break;
     }
 
