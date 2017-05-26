@@ -56,6 +56,7 @@ class OmniboxViewIOS : public OmniboxView {
                                 size_t caret_pos,
                                 bool update_popup,
                                 bool notify_text_changed) override;
+  void SetCaretPos(size_t caret_pos) override;
   void RevertAll() override;
   void UpdatePopup() override;
   void OnTemporaryTextMaybeChanged(const base::string16& display_text,

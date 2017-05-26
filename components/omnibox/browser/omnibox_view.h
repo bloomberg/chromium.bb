@@ -104,6 +104,10 @@ class OmniboxView {
                                         bool update_popup,
                                         bool notify_text_changed) = 0;
 
+  // Sets the caret position. Removes any selection. Clamps the requested caret
+  // position to the length of the current text.
+  virtual void SetCaretPos(size_t caret_pos) = 0;
+
   // Transitions the user into keyword mode with their default search provider,
   // preserving and selecting the user's text if they already typed in a query.
   virtual void EnterKeywordModeForDefaultSearchProvider() = 0;

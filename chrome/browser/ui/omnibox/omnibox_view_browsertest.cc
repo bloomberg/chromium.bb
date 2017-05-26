@@ -861,13 +861,35 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   EXPECT_EQ(0U, end);
   EXPECT_TRUE(omnibox_view->GetText().empty());
 
-  // Check if RevertAll() can set text and cursor correctly.
+  // Add a small amount of text to move the cursor past offset 0.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_B, 0));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_C, 0));
+
+  // Check if RevertAll() resets the text and preserves the cursor position.
   omnibox_view->RevertAll();
   EXPECT_FALSE(omnibox_view->IsSelectAll());
   EXPECT_EQ(old_text, omnibox_view->GetText());
   omnibox_view->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(0U, start);
-  EXPECT_EQ(0U, end);
+  EXPECT_EQ(3U, start);
+  EXPECT_EQ(3U, end);
+
+  // Check that reverting clamps the cursor to the bounds of the new text.
+  // Move the cursor to the end.
+#if defined(OS_MACOSX)
+  // End doesn't work on Mac trybot.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_E, ui::EF_CONTROL_DOWN));
+#else
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
+#endif
+  // Add a small amount of text to push the cursor past where the text end
+  // will be once we revert.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
+  omnibox_view->RevertAll();
+  // Cursor should be no further than original text.
+  omnibox_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(11U, start);
+  EXPECT_EQ(11U, end);
 }
 
 // Make sure the cursor position doesn't get set past the last character of

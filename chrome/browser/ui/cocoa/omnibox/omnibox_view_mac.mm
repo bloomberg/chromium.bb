@@ -353,6 +353,11 @@ void OmniboxViewMac::SetWindowTextAndCaretPos(const base::string16& text,
     TextChanged();
 }
 
+void OmniboxViewMac::SetCaretPos(size_t caret_pos) {
+  size_t pos = std::min(caret_pos, GetTextLength());
+  SetSelectedRange(NSMakeRange(pos, 0));
+}
+
 void OmniboxViewMac::EnterKeywordModeForDefaultSearchProvider() {
   // We need to do this first, else |SetSelectedRange()| won't work.
   FocusLocation(true);
