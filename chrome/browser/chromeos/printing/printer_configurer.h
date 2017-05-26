@@ -15,16 +15,18 @@ class Profile;
 namespace chromeos {
 
 enum PrinterSetupResult {
-  FATAL_ERROR,
-  SUCCESS,              // Printer set up successfully
-  PRINTER_UNREACHABLE,  // Could not reach printer
-  DBUS_ERROR,           // Could not contact debugd
+  kFatalError = 0,          // Setup failed in an unrecognized way
+  kSuccess = 1,             // Printer set up successfully
+  kPrinterUnreachable = 2,  // Could not reach printer
+  kDbusError = 3,           // Could not contact debugd
+  // Space left for additional errors
 
   // PPD errors
-  PPD_TOO_LARGE,     // PPD exceeds size limit
-  INVALID_PPD,       // PPD rejected by cupstestppd
-  PPD_NOT_FOUND,     // Could not find PPD
-  PPD_UNRETRIEVABLE  // Could not download PPD
+  kPpdTooLarge = 10,       // PPD exceeds size limit
+  kInvalidPpd = 11,        // PPD rejected by cupstestppd
+  kPpdNotFound = 12,       // Could not find PPD
+  kPpdUnretrievable = 13,  // Could not download PPD
+  kMaxValue                // Maximum value for histograms
 };
 
 using PrinterSetupCallback = base::Callback<void(PrinterSetupResult)>;

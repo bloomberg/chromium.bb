@@ -72,25 +72,25 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     PrinterSetupResult result;
     switch (result_code) {
       case debugd::CupsResult::CUPS_SUCCESS:
-        result = PrinterSetupResult::SUCCESS;
+        result = PrinterSetupResult::kSuccess;
         break;
       case debugd::CupsResult::CUPS_INVALID_PPD:
-        result = PrinterSetupResult::INVALID_PPD;
+        result = PrinterSetupResult::kInvalidPpd;
         break;
       case debugd::CupsResult::CUPS_AUTOCONF_FAILURE:
         // There are other reasons autoconf fails but this is the most likely.
-        result = PrinterSetupResult::PRINTER_UNREACHABLE;
+        result = PrinterSetupResult::kPrinterUnreachable;
         break;
       case debugd::CupsResult::CUPS_LPADMIN_FAILURE:
         // Printers should always be configurable by lpadmin.
         NOTREACHED() << "lpadmin could not add the printer";
-        result = PrinterSetupResult::FATAL_ERROR;
+        result = PrinterSetupResult::kFatalError;
         break;
       case debugd::CupsResult::CUPS_FATAL:
       default:
         // We have no idea.  It must be fatal.
         LOG(ERROR) << "Unrecognized printer setup error: " << result_code;
-        result = PrinterSetupResult::FATAL_ERROR;
+        result = PrinterSetupResult::kFatalError;
         break;
     }
 
@@ -101,7 +101,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     // The callback is expected to run on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     LOG(WARNING) << "Could not contact debugd";
-    cb.Run(PrinterSetupResult::DBUS_ERROR);
+    cb.Run(PrinterSetupResult::kDbusError);
   }
 
   void AddPrinter(const Printer& printer,
@@ -131,14 +131,14 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
         AddPrinter(printer, ppd_contents, cb);
         break;
       case printing::PpdProvider::CallbackResultCode::NOT_FOUND:
-        cb.Run(PPD_NOT_FOUND);
+        cb.Run(PrinterSetupResult::kPpdNotFound);
         break;
       case printing::PpdProvider::CallbackResultCode::SERVER_ERROR:
-        cb.Run(PPD_UNRETRIEVABLE);
+        cb.Run(PrinterSetupResult::kPpdUnretrievable);
         break;
       case printing::PpdProvider::CallbackResultCode::INTERNAL_ERROR:
-        // TODO(skau): Add PPD_TOO_LARGE when it's reported by the PpdProvider.
-        cb.Run(FATAL_ERROR);
+        // TODO(skau): Add kPpdTooLarge when it's reported by the PpdProvider.
+        cb.Run(PrinterSetupResult::kFatalError);
         break;
     }
   }
