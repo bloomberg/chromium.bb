@@ -1276,44 +1276,6 @@ inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ETextSecurity e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case ETextSecurity::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case ETextSecurity::kDisc:
-      value_id_ = CSSValueDisc;
-      break;
-    case ETextSecurity::kCircle:
-      value_id_ = CSSValueCircle;
-      break;
-    case ETextSecurity::kSquare:
-      value_id_ = CSSValueSquare;
-      break;
-  }
-}
-
-template <>
-inline ETextSecurity CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueNone:
-      return ETextSecurity::kNone;
-    case CSSValueDisc:
-      return ETextSecurity::kDisc;
-    case CSSValueCircle:
-      return ETextSecurity::kCircle;
-    case CSSValueSquare:
-      return ETextSecurity::kSquare;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return ETextSecurity::kNone;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EUserDrag e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
