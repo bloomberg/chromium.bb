@@ -93,6 +93,12 @@ java_cpp_enum("aw_renderer_priority_manager_renderer_priority") {
   ]
 }
 
+java_cpp_enum("aw_error_ui") {
+  sources = [
+    "browser/aw_safe_browsing_blocking_page.h",
+  ]
+}
+
 jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = system_webview_android_manifest
@@ -849,6 +855,7 @@ android_library("android_webview_java") {
   srcjar_deps = [
     ":aw_permission_request_resource",
     ":aw_renderer_priority_manager_renderer_priority",
+    ":aw_error_ui",
   ]
 }
 

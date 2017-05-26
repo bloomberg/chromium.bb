@@ -24,6 +24,11 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
                                const UnsafeResource& unsafe_resource);
 
  protected:
+  // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and
+  // parameters they require.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.android_webview
+  enum class ErrorUiType { LOUD, QUIET_SMALL, QUIET_GIANT };
+
   // Don't instantiate this class directly, use ShowBlockingPage instead.
   AwSafeBrowsingBlockingPage(
       AwSafeBrowsingUIManager* ui_manager,
@@ -33,7 +38,8 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
       std::unique_ptr<
           security_interstitials::SecurityInterstitialControllerClient>
           controller_client,
-      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+      ErrorUiType errorUiType);
 };
 
 }  // namespace android_webview

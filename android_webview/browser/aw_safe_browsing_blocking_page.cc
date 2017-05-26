@@ -8,6 +8,7 @@
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -15,6 +16,7 @@
 using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::BaseSafeBrowsingErrorUI;
+using security_interstitials::SafeBrowsingQuietErrorUI;
 using security_interstitials::SecurityInterstitialControllerClient;
 
 namespace android_webview {
@@ -25,13 +27,23 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources,
     std::unique_ptr<SecurityInterstitialControllerClient> controller_client,
-    const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+    const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+    ErrorUiType errorUiType)
     : BaseBlockingPage(ui_manager,
                        web_contents,
                        main_frame_url,
                        unsafe_resources,
                        std::move(controller_client),
-                       display_options) {}
+                       display_options) {
+  if (errorUiType == ErrorUiType::QUIET_SMALL ||
+      errorUiType == ErrorUiType::QUIET_GIANT) {
+    set_sb_error_ui(base::MakeUnique<SafeBrowsingQuietErrorUI>(
+        unsafe_resources[0].url, main_frame_url,
+        GetInterstitialReason(unsafe_resources), display_options,
+        ui_manager->app_locale(), base::Time::NowFromSystemTime(), controller(),
+        errorUiType == ErrorUiType::QUIET_GIANT));
+  }
+}
 
 // static
 void AwSafeBrowsingBlockingPage::ShowBlockingPage(
@@ -62,11 +74,15 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
             false,  // kSafeBrowsingProceedAnywayDisabled
             true,   // is_resource_cancellable
             "cpn_safe_browsing_wv");  // help_center_article_link
+
+    ErrorUiType errorType =
+        static_cast<ErrorUiType>(ui_manager->GetErrorUiType(unsafe_resource));
+
     AwSafeBrowsingBlockingPage* blocking_page = new AwSafeBrowsingBlockingPage(
         ui_manager, web_contents, entry ? entry->GetURL() : GURL(),
         unsafe_resources,
         CreateControllerClient(web_contents, unsafe_resources, ui_manager),
-        display_options);
+        display_options, errorType);
     blocking_page->Show();
   }
 }

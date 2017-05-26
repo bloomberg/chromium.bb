@@ -357,7 +357,8 @@ class AwContents : public FindHelper::Listener,
   void RenderProcessReady(content::RenderProcessHost* host) override;
 
   // AwSafeBrowsingUIManager::UIManagerClient implementation
-  bool CanShowBigInterstitial() override;
+  bool CanShowInterstitial() override;
+  int GetErrorUiType() override;
 
   void CallProceedOnInterstitialForTesting(
       JNIEnv* env,

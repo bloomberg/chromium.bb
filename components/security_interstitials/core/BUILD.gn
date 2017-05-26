@@ -29,6 +29,7 @@ static_library("core") {
     "//components/history/core/browser",
     "//components/metrics",
     "//components/prefs",
+    "//components/resources",
     "//components/ssl_errors",
     "//components/strings",
     "//components/url_formatter",

@@ -105,13 +105,17 @@ base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
       request_url_);
 }
 
+int SecurityInterstitialPage::GetHTMLTemplateId() {
+  return IDR_SECURITY_INTERSTITIAL_HTML;
+}
+
 std::string SecurityInterstitialPage::GetHTMLContents() {
   base::DictionaryValue load_time_data;
   PopulateInterstitialStrings(&load_time_data);
   webui::SetLoadTimeDataDefaults(
       controller()->GetApplicationLocale(), &load_time_data);
   std::string html = ResourceBundle::GetSharedInstance()
-                         .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_HTML)
+                         .GetRawDataResource(GetHTMLTemplateId())
                          .as_string();
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);

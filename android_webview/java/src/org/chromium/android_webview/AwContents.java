@@ -2954,8 +2954,20 @@ public class AwContents implements SmartClipProvider {
      * @return true if the WebView is visible
      */
     @VisibleForTesting
+    @CalledByNative
     protected boolean canShowInterstitial() {
         return mIsAttachedToWindow && mIsViewVisible;
+    }
+
+    @CalledByNative
+    private int getErrorUiType() {
+        if (extendsOutOfWindow()) {
+            return ErrorUiType.QUIET_GIANT;
+        } else if (canShowBigInterstitial()) {
+            return ErrorUiType.LOUD;
+        } else {
+            return ErrorUiType.QUIET_SMALL;
+        }
     }
 
     /**
@@ -2966,11 +2978,7 @@ public class AwContents implements SmartClipProvider {
      * @return true if the WebView should display the large interstitial
      */
     @VisibleForTesting
-    @CalledByNative
     protected boolean canShowBigInterstitial() {
-        if (!canShowInterstitial()) return false;
-        if (extendsOutOfWindow()) return false;
-
         double percentOfScreenHeight =
                 (double) mContainerView.getHeight() / mContainerView.getRootView().getHeight();
 

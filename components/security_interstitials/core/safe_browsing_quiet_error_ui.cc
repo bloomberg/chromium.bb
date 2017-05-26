@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
@@ -91,5 +92,9 @@ void SafeBrowsingQuietErrorUI::HandleCommand(
     SecurityInterstitialCommands command) {
   NOTREACHED();
 }
+
+int SafeBrowsingQuietErrorUI::GetHTMLTemplateId() const {
+  return IDR_SECURITY_INTERSTITIAL_QUIET_HTML;
+};
 
 }  // security_interstitials
