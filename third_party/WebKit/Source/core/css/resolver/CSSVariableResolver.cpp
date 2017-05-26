@@ -27,16 +27,18 @@
 
 namespace blink {
 
-bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
-                                          bool disallow_animation_tainted,
-                                          Vector<CSSParserToken>& result,
-                                          bool& result_is_animation_tainted) {
+bool CSSVariableResolver::ResolveFallback(
+    CSSParserTokenRange range,
+    bool disallow_animation_tainted,
+    Vector<CSSParserToken>& result,
+    Vector<String>& result_backing_strings,
+    bool& result_is_animation_tainted) {
   if (range.AtEnd())
     return false;
   DCHECK_EQ(range.Peek().GetType(), kCommaToken);
   range.Consume();
   return ResolveTokenRange(range, disallow_animation_tainted, result,
-                           result_is_animation_tainted);
+                           result_backing_strings, result_is_animation_tainted);
 }
 
 CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
@@ -96,22 +98,19 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   bool disallow_animation_tainted = false;
   bool is_animation_tainted = variable_data.IsAnimationTainted();
   Vector<CSSParserToken> tokens;
+  Vector<String> backing_strings;
+  backing_strings.AppendVector(variable_data.BackingStrings());
   variables_seen_.insert(name);
   bool success =
       ResolveTokenRange(variable_data.Tokens(), disallow_animation_tainted,
-                        tokens, is_animation_tainted);
+                        tokens, backing_strings, is_animation_tainted);
   variables_seen_.erase(name);
-
-  // The old variable data holds onto the backing string the new resolved
-  // CSSVariableData relies on. Ensure it will live beyond us overwriting the
-  // RefPtr in StyleInheritedVariables.
-  DCHECK_GT(variable_data.RefCount(), 1);
 
   if (!success || !cycle_start_points_.IsEmpty()) {
     cycle_start_points_.erase(name);
     return nullptr;
   }
-  return CSSVariableData::CreateResolved(tokens, variable_data,
+  return CSSVariableData::CreateResolved(tokens, std::move(backing_strings),
                                          is_animation_tainted);
 }
 
@@ -119,6 +118,7 @@ bool CSSVariableResolver::ResolveVariableReference(
     CSSParserTokenRange range,
     bool disallow_animation_tainted,
     Vector<CSSParserToken>& result,
+    Vector<String>& result_backing_strings,
     bool& result_is_animation_tainted) {
   range.ConsumeWhitespace();
   DCHECK_EQ(range.Peek().GetType(), kIdentToken);
@@ -132,21 +132,26 @@ bool CSSVariableResolver::ResolveVariableReference(
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
     return ResolveFallback(range, disallow_animation_tainted, result,
-                           result_is_animation_tainted);
+                           result_backing_strings, result_is_animation_tainted);
   }
 
   result.AppendVector(variable_data->Tokens());
+  // TODO(alancutter): Avoid adding backing strings multiple times in a row.
+  result_backing_strings.AppendVector(variable_data->BackingStrings());
   result_is_animation_tainted |= variable_data->IsAnimationTainted();
 
   Vector<CSSParserToken> trash;
+  Vector<String> trash_backing_strings;
   bool trash_is_animation_tainted;
   ResolveFallback(range, disallow_animation_tainted, trash,
-                  trash_is_animation_tainted);
+                  trash_backing_strings, trash_is_animation_tainted);
   return true;
 }
 
-void CSSVariableResolver::ResolveApplyAtRule(CSSParserTokenRange& range,
-                                             Vector<CSSParserToken>& result) {
+void CSSVariableResolver::ResolveApplyAtRule(
+    CSSParserTokenRange& range,
+    Vector<CSSParserToken>& result,
+    Vector<String>& result_backing_strings) {
   DCHECK(range.Peek().GetType() == kAtKeywordToken &&
          EqualIgnoringASCIICase(range.Peek().Value(), "apply"));
   range.ConsumeIncludingWhitespace();
@@ -170,22 +175,25 @@ void CSSVariableResolver::ResolveApplyAtRule(CSSParserTokenRange& range,
     return;
 
   result.AppendRange(rule_contents.begin(), rule_contents.end());
+  result_backing_strings.AppendVector(variable_data->BackingStrings());
 }
 
-bool CSSVariableResolver::ResolveTokenRange(CSSParserTokenRange range,
-                                            bool disallow_animation_tainted,
-                                            Vector<CSSParserToken>& result,
-                                            bool& result_is_animation_tainted) {
+bool CSSVariableResolver::ResolveTokenRange(
+    CSSParserTokenRange range,
+    bool disallow_animation_tainted,
+    Vector<CSSParserToken>& result,
+    Vector<String>& result_backing_strings,
+    bool& result_is_animation_tainted) {
   bool success = true;
   while (!range.AtEnd()) {
     if (range.Peek().FunctionId() == CSSValueVar) {
-      success &= ResolveVariableReference(range.ConsumeBlock(),
-                                          disallow_animation_tainted, result,
-                                          result_is_animation_tainted);
+      success &= ResolveVariableReference(
+          range.ConsumeBlock(), disallow_animation_tainted, result,
+          result_backing_strings, result_is_animation_tainted);
     } else if (range.Peek().GetType() == kAtKeywordToken &&
                EqualIgnoringASCIICase(range.Peek().Value(), "apply") &&
                RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
-      ResolveApplyAtRule(range, result);
+      ResolveApplyAtRule(range, result, result_backing_strings);
     } else {
       result.push_back(range.Consume());
     }
@@ -223,10 +231,11 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     bool disallow_animation_tainted) {
   CSSVariableResolver resolver(state);
   Vector<CSSParserToken> tokens;
+  Vector<String> backing_strings;
   bool is_animation_tainted = false;
   if (!resolver.ResolveTokenRange(value.VariableDataValue()->Tokens(),
                                   disallow_animation_tainted, tokens,
-                                  is_animation_tainted))
+                                  backing_strings, is_animation_tainted))
     return CSSUnsetValue::Create();
   const CSSValue* result =
       CSSPropertyParser::ParseSingleValue(id, tokens, value.ParserContext());
@@ -254,11 +263,12 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSVariableResolver resolver(state);
 
     Vector<CSSParserToken> tokens;
+    Vector<String> backing_strings;
     bool is_animation_tainted = false;
     if (resolver.ResolveTokenRange(
             shorthand_value->VariableDataValue()->Tokens(),
-            disallow_animation_tainted, tokens, is_animation_tainted)) {
-
+            disallow_animation_tainted, tokens, backing_strings,
+            is_animation_tainted)) {
       HeapVector<CSSProperty, 256> parsed_properties;
 
       if (CSSPropertyParser::ParseValue(

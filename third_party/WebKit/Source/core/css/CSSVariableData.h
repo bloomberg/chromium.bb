@@ -31,16 +31,16 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   static PassRefPtr<CSSVariableData> CreateResolved(
       const Vector<CSSParserToken>& resolved_tokens,
-      const CSSVariableData& unresolved_data,
+      Vector<String> backing_strings,
       bool is_animation_tainted) {
-    return AdoptRef(new CSSVariableData(resolved_tokens,
-                                        unresolved_data.backing_string_,
-                                        is_animation_tainted));
+    return AdoptRef(new CSSVariableData(
+        resolved_tokens, std::move(backing_strings), is_animation_tainted));
   }
 
   CSSParserTokenRange TokenRange() const { return tokens_; }
 
   const Vector<CSSParserToken>& Tokens() const { return tokens_; }
+  const Vector<String>& BackingStrings() const { return backing_strings_; }
 
   bool operator==(const CSSVariableData& other) const;
 
@@ -57,25 +57,21 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
                   bool is_animation_tainted,
                   bool needs_variable_resolution);
 
-  // We can safely copy the tokens (which have raw pointers to substrings)
-  // because StylePropertySets contain references to
-  // CSSCustomPropertyDeclarations, which point to the unresolved
-  // CSSVariableData values that own the backing strings this will potentially
-  // reference.
   CSSVariableData(const Vector<CSSParserToken>& resolved_tokens,
-                  String backing_string,
+                  Vector<String> backing_strings,
                   bool is_animation_tainted)
-      : backing_string_(backing_string),
+      : backing_strings_(std::move(backing_strings)),
         tokens_(resolved_tokens),
         is_animation_tainted_(is_animation_tainted),
         needs_variable_resolution_(false),
         cached_property_set_(false) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
-  template <typename CharacterType>
-  void UpdateTokens(const CSSParserTokenRange&);
 
-  String backing_string_;
+  // tokens_ may have raw pointers to string data, we store the String objects
+  // owning that data in backing_strings_ to keep it alive alongside the
+  // tokens_.
+  Vector<String> backing_strings_;
   Vector<CSSParserToken> tokens_;
   const bool is_animation_tainted_;
   const bool needs_variable_resolution_;
