@@ -3128,9 +3128,11 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidMailbox) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, _))
         .Times(2)
         .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
-      .Times(1)
-      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1)).Times(1).RetiresOnSaturation();
+
+  ActiveTexture& texture_cmd = *GetImmediateAs<ActiveTexture>();
+  texture_cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(texture_cmd));
 
   CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
       *GetImmediateAs<CreateAndConsumeTextureINTERNALImmediate>();
@@ -3175,9 +3177,11 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidTarget) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP, _))
         .Times(2)
         .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
-        .Times(1)
-        .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1)).Times(1).RetiresOnSaturation();
+
+  ActiveTexture& texture_cmd = *GetImmediateAs<ActiveTexture>();
+  texture_cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(texture_cmd));
 
   // Attempt to consume the mailbox with a different target.
   GLuint new_texture_id = kNewClientId;
@@ -3561,7 +3565,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   // Bind image to texture.
   EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
       .Times(1)
-      .WillOnce(Return(false))
+      .WillRepeatedly(Return(false))
       .RetiresOnSaturation();
   EXPECT_CALL(*image.get(), GetSize())
       .Times(1)
@@ -3573,6 +3577,13 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
       .RetiresOnSaturation();
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
   DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId);
+  Mock::VerifyAndClearExpectations(gl_.get());
+
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1)).Times(1).RetiresOnSaturation();
+  ActiveTexture texture_cmd;
+  texture_cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(texture_cmd));
+  Mock::VerifyAndClearExpectations(gl_.get());
 
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
@@ -3582,27 +3593,45 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0)).Times(2).RetiresOnSaturation();
-  EXPECT_CALL(*image.get(), CopyTexImage(GL_TEXTURE_2D))
-      .Times(1)
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
+  {
+    InSequence seq;
+    EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
+        .Times(1)
+        .WillRepeatedly(Return(false))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*image.get(), CopyTexImage(GL_TEXTURE_2D))
+        .Times(1)
+        .WillOnce(Return(true))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  Mock::VerifyAndClearExpectations(gl_.get());
   // Re-bind image to texture.
   ReleaseTexImage2DCHROMIUM release_tex_image_2d_cmd;
   release_tex_image_2d_cmd.Init(GL_TEXTURE_2D, kImageId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(release_tex_image_2d_cmd));
   EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
-      .Times(1)
-      .WillOnce(Return(false))
+      .Times(2)
+      .WillRepeatedly(Return(false))
       .RetiresOnSaturation();
   EXPECT_CALL(*image.get(), GetSize())
       .Times(1)
@@ -3621,7 +3650,6 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
       .Times(2)
       .RetiresOnSaturation();

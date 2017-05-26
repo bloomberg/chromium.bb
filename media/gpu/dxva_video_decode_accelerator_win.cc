@@ -496,10 +496,11 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
       enable_low_latency_(gpu_preferences.enable_low_latency_dxva),
-      share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video &&
-                           !workarounds.disable_dxgi_zero_copy_video),
-      copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
-                          !workarounds.disable_nv12_dxgi_video),
+      support_share_nv12_textures_(
+          gpu_preferences.enable_zero_copy_dxgi_video &&
+          !workarounds.disable_dxgi_zero_copy_video),
+      support_copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
+                                  !workarounds.disable_nv12_dxgi_video),
       use_dx11_(false),
       use_keyed_mutex_(false),
       using_angle_device_(false),
@@ -543,8 +544,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   if (!config.supported_output_formats.empty() &&
       !base::ContainsValue(config.supported_output_formats,
                            PIXEL_FORMAT_NV12)) {
-    share_nv12_textures_ = false;
-    copy_nv12_textures_ = false;
+    support_share_nv12_textures_ = false;
+    support_copy_nv12_textures_ = false;
   }
 
   bool profile_supported = false;
@@ -806,15 +807,19 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
 
   angle_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
-  if (!angle_device_)
-    copy_nv12_textures_ = false;
-  if (share_nv12_textures_) {
+  if (!angle_device_) {
+    support_copy_nv12_textures_ = false;
+  }
+  if (ShouldUseANGLEDevice()) {
     RETURN_ON_FAILURE(angle_device_.Get(), "Failed to get d3d11 device", false);
 
     using_angle_device_ = true;
-  }
+    DCHECK(!use_fp16_);
+    angle_device_->GetImmediateContext(d3d11_device_context_.GetAddressOf());
 
-  if (use_fp16_ || !share_nv12_textures_) {
+    hr = angle_device_.CopyTo(video_device_.GetAddressOf());
+    RETURN_ON_HR_FAILURE(hr, "Failed to get video device", false);
+  } else {
     // This array defines the set of DirectX hardware feature levels we support.
     // The ordering MUST be preserved. All applications are assumed to support
     // 9.1 unless otherwise stated by the application.
@@ -853,10 +858,10 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
     hr = d3d11_device_.CopyTo(video_device_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to get video device", false);
-
-    hr = d3d11_device_context_.CopyTo(video_context_.GetAddressOf());
-    RETURN_ON_HR_FAILURE(hr, "Failed to get video context", false);
   }
+
+  hr = d3d11_device_context_.CopyTo(video_context_.GetAddressOf());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get video context", false);
 
   D3D11_FEATURE_DATA_D3D11_OPTIONS options;
   hr = D3D11Device()->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &options,
@@ -866,7 +871,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // Need extended resource sharing so we can share the NV12 texture between
   // ANGLE and the decoder context.
   if (!options.ExtendedResourceSharing)
-    copy_nv12_textures_ = false;
+    support_copy_nv12_textures_ = false;
 
   UINT nv12_format_support = 0;
   hr =
@@ -874,7 +879,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   RETURN_ON_HR_FAILURE(hr, "Failed to check NV12 format support", false);
 
   if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
-    copy_nv12_textures_ = false;
+    support_copy_nv12_textures_ = false;
 
   UINT fp16_format_support = 0;
   hr = D3D11Device()->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
@@ -979,7 +984,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
         // texture ids. This call just causes the texture manager to hold a
         // reference to the GLImage as long as either texture exists.
         bind_image_cb_.Run(client_id, GetTextureTarget(),
-                           picture_buffer->gl_image(), true);
+                           picture_buffer->gl_image(), false);
       }
     }
 
@@ -1040,6 +1045,16 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
     RETURN_AND_NOTIFY_ON_FAILURE(it->second->ReusePictureBuffer(),
                                  "Failed to reuse picture buffer",
                                  PLATFORM_FAILURE, );
+    if (bind_image_cb_ && (GetPictureBufferMechanism() ==
+                           PictureBufferMechanism::DELAYED_COPY_TO_NV12)) {
+      // Unbind the image to ensure it will be copied again the next time it's
+      // needed.
+      for (uint32_t client_id :
+           it->second->picture_buffer().client_texture_ids()) {
+        bind_image_cb_.Run(client_id, GetTextureTarget(),
+                           it->second->gl_image(), false);
+      }
+    }
 
     ProcessPendingSamples();
     if (pending_flush_) {
@@ -1590,8 +1605,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
 
   if (use_fp16_) {
     // TODO(hubbe): Share/copy P010/P016 textures.
-    share_nv12_textures_ = false;
-    copy_nv12_textures_ = false;
+    support_share_nv12_textures_ = false;
+    support_copy_nv12_textures_ = false;
   }
 
   return SetDecoderMediaTypes();
@@ -1647,15 +1662,15 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
       !gl::g_driver_egl.ext.b_EGL_KHR_stream ||
       !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
       !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
-    share_nv12_textures_ = false;
-    copy_nv12_textures_ = false;
+    support_share_nv12_textures_ = false;
+    support_copy_nv12_textures_ = false;
   }
 
   // The MS VP9 MFT doesn't pass through the bind flags we specify, so
   // textures aren't created with D3D11_BIND_SHADER_RESOURCE and can't be used
   // from ANGLE.
   if (using_ms_vp9_mft_)
-    share_nv12_textures_ = false;
+    support_share_nv12_textures_ = false;
 
   return true;
 }
@@ -1714,7 +1729,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     const GUID& subtype) {
   bool result = SetTransformOutputType(decoder_.Get(), subtype, 0, 0);
 
-  if (share_nv12_textures_) {
+  if (GetPictureBufferMechanism() == PictureBufferMechanism::BIND) {
     base::win::ScopedComPtr<IMFAttributes> out_attributes;
     HRESULT hr =
         decoder_->GetOutputStreamAttributes(0, out_attributes.GetAddressOf());
@@ -1942,7 +1957,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       index->second->set_bound();
       index->second->set_color_space(pending_sample->color_space);
 
-      if (share_nv12_textures_) {
+      if (index->second->CanBindSamples()) {
         main_thread_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&DXVAVideoDecodeAccelerator::BindPictureBufferToSample,
@@ -2113,7 +2128,8 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
     // per picture buffer, 1 for the Y channel and 1 for the UV channels.
     // They're shared to ANGLE using EGL_NV_stream_consumer_gltexture_yuv, so
     // they need to be GL_TEXTURE_EXTERNAL_OES.
-    bool provide_nv12_textures = share_nv12_textures_ || copy_nv12_textures_;
+    bool provide_nv12_textures =
+        GetPictureBufferMechanism() != PictureBufferMechanism::COPY_TO_RGB;
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
         provide_nv12_textures ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
@@ -2593,7 +2609,7 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
 
   DCHECK(!output_picture_buffers_.empty());
 
-  bool result = picture_buffer->BindSampleToTexture(sample);
+  bool result = picture_buffer->BindSampleToTexture(this, sample);
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
@@ -2851,7 +2867,9 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
         d3d11_processor_.Get(), 0, false);
   }
 
-  if (copy_nv12_textures_) {
+  if (GetPictureBufferMechanism() == PictureBufferMechanism::COPY_TO_NV12 ||
+      GetPictureBufferMechanism() ==
+          PictureBufferMechanism::DELAYED_COPY_TO_NV12) {
     // If we're copying NV12 textures, make sure we set the same
     // color space on input and output.
     D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space = {0};
@@ -3026,12 +3044,46 @@ void DXVAVideoDecodeAccelerator::ConfigChanged(const Config& config) {
 }
 
 uint32_t DXVAVideoDecodeAccelerator::GetTextureTarget() const {
-  bool provide_nv12_textures = share_nv12_textures_ || copy_nv12_textures_;
-  return provide_nv12_textures ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+  switch (GetPictureBufferMechanism()) {
+    case PictureBufferMechanism::BIND:
+    case PictureBufferMechanism::DELAYED_COPY_TO_NV12:
+    case PictureBufferMechanism::COPY_TO_NV12:
+      return GL_TEXTURE_EXTERNAL_OES;
+    case PictureBufferMechanism::COPY_TO_RGB:
+      return GL_TEXTURE_2D;
+  }
+  NOTREACHED();
+  return 0;
 }
 
+DXVAVideoDecodeAccelerator::PictureBufferMechanism
+DXVAVideoDecodeAccelerator::GetPictureBufferMechanism() const {
+  if (use_fp16_)
+    return PictureBufferMechanism::COPY_TO_RGB;
+  if (support_share_nv12_textures_)
+    return PictureBufferMechanism::BIND;
+  if (base::FeatureList::IsEnabled(kDelayCopyNV12Textures) &&
+      support_copy_nv12_textures_)
+    return PictureBufferMechanism::DELAYED_COPY_TO_NV12;
+  if (support_copy_nv12_textures_)
+    return PictureBufferMechanism::COPY_TO_NV12;
+  return PictureBufferMechanism::COPY_TO_RGB;
+}
+
+bool DXVAVideoDecodeAccelerator::ShouldUseANGLEDevice() const {
+  switch (GetPictureBufferMechanism()) {
+    case PictureBufferMechanism::BIND:
+    case PictureBufferMechanism::DELAYED_COPY_TO_NV12:
+      return true;
+    case PictureBufferMechanism::COPY_TO_NV12:
+    case PictureBufferMechanism::COPY_TO_RGB:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
 ID3D11Device* DXVAVideoDecodeAccelerator::D3D11Device() const {
-  return share_nv12_textures_ ? angle_device_.Get() : d3d11_device_.Get();
+  return ShouldUseANGLEDevice() ? angle_device_.Get() : d3d11_device_.Get();
 }
 
 }  // namespace media

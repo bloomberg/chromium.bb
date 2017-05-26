@@ -1916,9 +1916,16 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // state of |texture| is updated to reflect the new state.
   void DoCopyTexImage(Texture* texture, GLenum textarget, gl::GLImage* image);
 
-  // This will call DoCopyTexImage if texture has an image but that image is
-  // not bound or copied to the texture.
-  void DoCopyTexImageIfNeeded(Texture* texture, GLenum textarget);
+  // If the texture has an image but that image is not bound or copied to the
+  // texture, this will first attempt to bind it, and if that fails
+  // DoCopyTexImage on it. texture_unit is the texture unit it should be bound
+  // to, or 0 if it doesn't matter - setting it to 0 will cause the previous
+  // binding to be restored after the operation. This returns true if a copy
+  // or bind happened and the caller needs to restore the previous texture
+  // binding.
+  bool DoBindOrCopyTexImageIfNeeded(Texture* texture,
+                                    GLenum textarget,
+                                    GLuint texture_unit);
 
   // Returns false if textures were replaced.
   bool PrepareTexturesForRender();
@@ -2522,9 +2529,12 @@ ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
   ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
 }
 
-static void RestoreCurrentTextureBindings(ContextState* state, GLenum target) {
+static void RestoreCurrentTextureBindings(ContextState* state,
+                                          GLenum target,
+                                          GLuint texture_unit) {
   DCHECK(!state->texture_units.empty());
-  TextureUnit& info = state->texture_units[0];
+  DCHECK_LT(texture_unit, state->texture_units.size());
+  TextureUnit& info = state->texture_units[texture_unit];
   GLuint last_id;
   TextureRef* texture_ref = info.GetInfoForTarget(target);
   if (texture_ref) {
@@ -2534,7 +2544,6 @@ static void RestoreCurrentTextureBindings(ContextState* state, GLenum target) {
   }
 
   glBindTexture(target, last_id);
-  glActiveTexture(GL_TEXTURE0 + state->active_texture_unit);
 }
 
 ScopedTextureBinder::ScopedTextureBinder(ContextState* state,
@@ -2554,7 +2563,8 @@ ScopedTextureBinder::ScopedTextureBinder(ContextState* state,
 ScopedTextureBinder::~ScopedTextureBinder() {
   ScopedGLErrorSuppressor suppressor(
       "ScopedTextureBinder::dtor", state_->GetErrorState());
-  RestoreCurrentTextureBindings(state_, target_);
+  RestoreCurrentTextureBindings(state_, target_, 0);
+  state_->RestoreActiveTexture();
 }
 
 ScopedRenderBufferBinder::ScopedRenderBufferBinder(ContextState* state,
@@ -7782,7 +7792,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
   }
 
   if (texture_ref)
-    DoCopyTexImageIfNeeded(texture_ref->texture(), textarget);
+    DoBindOrCopyTexImageIfNeeded(texture_ref->texture(), textarget, 0);
 
   std::vector<GLenum> attachments;
   if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
@@ -9660,20 +9670,33 @@ void GLES2DecoderImpl::DoCopyTexImage(Texture* texture,
   DCHECK(rv) << "CopyTexImage() failed";
 }
 
-void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,
-                                              GLenum textarget) {
+bool GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
+                                                    GLenum textarget,
+                                                    GLuint texture_unit) {
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
     Texture::ImageState image_state;
     gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
     if (image && image_state == Texture::UNBOUND) {
       ScopedGLErrorSuppressor suppressor(
-          "GLES2DecoderImpl::DoCopyTexImageIfNeeded", GetErrorState());
+          "GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded", GetErrorState());
+      if (texture_unit)
+        glActiveTexture(texture_unit);
       glBindTexture(textarget, texture->service_id());
-      DoCopyTexImage(texture, textarget, image);
-      RestoreCurrentTextureBindings(&state_, textarget);
+      if (image->BindTexImage(textarget)) {
+        image_state = Texture::BOUND;
+      } else {
+        DoCopyTexImage(texture, textarget, image);
+      }
+      if (!texture_unit) {
+        RestoreCurrentTextureBindings(&state_, textarget,
+                                      state_.active_texture_unit);
+        return false;
+      }
+      return true;
     }
   }
+  return false;
 }
 
 void GLES2DecoderImpl::DoCopyBufferSubData(GLenum readtarget,
@@ -9728,16 +9751,9 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
 
         if (textarget != GL_TEXTURE_CUBE_MAP) {
           Texture* texture = texture_ref->texture();
-          Texture::ImageState image_state;
-          gl::GLImage* image =
-              texture->GetLevelImage(textarget, 0, &image_state);
-          if (image && image_state == Texture::UNBOUND &&
-              !texture->IsAttachedToFramebuffer()) {
-            ScopedGLErrorSuppressor suppressor(
-                "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
+          if (DoBindOrCopyTexImageIfNeeded(texture, textarget,
+                                           GL_TEXTURE0 + texture_unit_index)) {
             textures_set = true;
-            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-            DoCopyTexImage(texture, textarget, image);
             continue;
           }
         }
@@ -16921,7 +16937,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
                  dest_type, nullptr);
     GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
     if (error != GL_NO_ERROR) {
-      RestoreCurrentTextureBindings(&state_, dest_binding_target);
+      RestoreCurrentTextureBindings(&state_, dest_binding_target,
+                                    state_.active_texture_unit);
       return;
     }
 
@@ -16946,7 +16963,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       return;
   }
 
-  DoCopyTexImageIfNeeded(source_texture, source_target);
+  DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
 
   // GL_TEXTURE_EXTERNAL_OES texture requires that we apply a transform matrix
   // before presenting.
@@ -17158,7 +17175,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     }
   }
 
-  DoCopyTexImageIfNeeded(source_texture, source_target);
+  DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
 
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.
@@ -17335,7 +17352,8 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
                              NULL);
       GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
       if (error != GL_NO_ERROR) {
-        RestoreCurrentTextureBindings(&state_, dest_texture->target());
+        RestoreCurrentTextureBindings(&state_, dest_texture->target(),
+                                      state_.active_texture_unit);
         return;
       }
 
@@ -17356,7 +17374,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       "gpu",
       "GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM, fallback");
 
-  DoCopyTexImageIfNeeded(source_texture, source_texture->target());
+  DoBindOrCopyTexImageIfNeeded(source_texture, source_texture->target(), 0);
 
   // As a fallback, copy into a non-compressed GL_RGBA texture.
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
@@ -17364,7 +17382,8 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
                0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
   if (error != GL_NO_ERROR) {
-    RestoreCurrentTextureBindings(&state_, dest_texture->target());
+    RestoreCurrentTextureBindings(&state_, dest_texture->target(),
+                                  state_.active_texture_unit);
     return;
   }
 
@@ -17682,7 +17701,7 @@ void GLES2DecoderImpl::EnsureTextureForClientId(
     texture_ref = CreateTexture(client_id, service_id);
     texture_manager()->SetTarget(texture_ref, target);
     glBindTexture(target, service_id);
-    RestoreCurrentTextureBindings(&state_, target);
+    RestoreCurrentTextureBindings(&state_, target, state_.active_texture_unit);
   }
 }
 

@@ -144,12 +144,29 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
  private:
   friend class DXVAPictureBuffer;
+  friend class EGLStreamDelayedCopyPictureBuffer;
   friend class EGLStreamCopyPictureBuffer;
   friend class EGLStreamPictureBuffer;
   friend class PbufferPictureBuffer;
   typedef void* EGLConfig;
   typedef void* EGLSurface;
   typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
+
+  enum class PictureBufferMechanism {
+    // Copy to either a BGRA8 or FP16 texture using the video processor.
+    COPY_TO_RGB,
+
+    // Copy to another NV12 texture that can be used in ANGLE.
+    COPY_TO_NV12,
+
+    // Bind the resulting GLImage to the NV12 texture. If the texture's used
+    // in a an overlay than use it directly, otherwise copy it to another NV12
+    // texture when necessary.
+    DELAYED_COPY_TO_NV12,
+
+    // Bind the NV12 decoder texture directly to the texture used in ANGLE.
+    BIND
+  };
 
   // Returns the minimum resolution for the |profile| passed in.
   static std::pair<int, int> GetMinResolution(const VideoCodecProfile profile);
@@ -375,6 +392,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   uint32_t GetTextureTarget() const;
 
+  PictureBufferMechanism GetPictureBufferMechanism() const;
+  bool ShouldUseANGLEDevice() const;
   ID3D11Device* D3D11Device() const;
 
   // To expose client callbacks from VideoDecodeAccelerator.
@@ -517,10 +536,12 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Use CODECAPI_AVLowLatencyMode.
   bool enable_low_latency_;
 
-  bool share_nv12_textures_;
+  // Supports sharing the decoded NV12 textures with ANGLE
+  bool support_share_nv12_textures_;
 
-  // Copy NV12 texture to another NV12 texture.
-  bool copy_nv12_textures_;
+  // Supports copying the NV12 texture to another NV12 texture to use in
+  // ANGLE.
+  bool support_copy_nv12_textures_;
 
   // Copy video to FP16 scRGB textures.
   bool use_fp16_ = false;

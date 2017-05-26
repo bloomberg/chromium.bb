@@ -282,6 +282,11 @@ const base::Feature kMediaDrmPersistentLicense{
 const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Does NV12->NV12 video copy on the main thread right before the texture's
+// used by GL.
+const base::Feature kDelayCopyNV12Textures{"DelayCopyNV12Textures",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables H264 HW encode acceleration using Media Foundation for Windows.
 const base::Feature kMediaFoundationH264Encoding{
     "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
