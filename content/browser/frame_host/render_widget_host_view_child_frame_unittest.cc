@@ -244,49 +244,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
   EXPECT_TRUE(view_->has_frame());
 }
 
-// Tests that BeginFrameAcks are forwarded correctly from the
-// SwapCompositorFrame and DidNotProduceFrame IPCs through the
-// CompositorFrameSinkSupport.
-TEST_F(RenderWidgetHostViewChildFrameTest, ForwardsBeginFrameAcks) {
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-  float scale_factor = 1.f;
-
-  view_->SetSize(view_size);
-  view_->Show();
-
-  // Replace BeginFrameSource so that we can observe acknowledgments.
-  cc::FakeExternalBeginFrameSource source(0.f, false);
-  uint32_t source_id = source.source_id();
-  view_->support_->SetBeginFrameSource(&source);
-  view_->SetNeedsBeginFrames(true);
-
-  {
-    cc::BeginFrameArgs args =
-        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 5u);
-    source.TestOnBeginFrame(args);
-
-    // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 5, 4, true);
-    cc::CompositorFrame frame =
-        CreateDelegatedFrame(scale_factor, view_size, view_rect);
-    frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
-    EXPECT_EQ(ack, source.LastAckForObserver(view_->support_.get()));
-  }
-
-  {
-    cc::BeginFrameArgs args =
-        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 6u);
-    source.TestOnBeginFrame(args);
-
-    // Explicit ack through OnDidNotProduceFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 6, 4, false);
-    view_->OnDidNotProduceFrame(ack);
-    EXPECT_EQ(ack, source.LastAckForObserver(view_->support_.get()));
-  }
-
-  view_->SetNeedsBeginFrames(false);
-}
+// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
+// RenderWidgetHostViewChildFrame and CompositorFrameSinkSupport when we add
+// plumbing of BeginFrameAcks through SurfaceObservers.
 
 }  // namespace content

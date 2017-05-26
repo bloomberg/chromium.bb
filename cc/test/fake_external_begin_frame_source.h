@@ -39,8 +39,7 @@ class FakeExternalBeginFrameSource
   // BeginFrameSource implementation.
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
-  void DidFinishFrame(BeginFrameObserver* obs,
-                      const BeginFrameAck& ack) override;
+  void DidFinishFrame(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
 
   BeginFrameArgs CreateBeginFrameArgs(
@@ -53,10 +52,6 @@ class FakeExternalBeginFrameSource
 
   size_t num_observers() const { return observers_.size(); }
 
-  const BeginFrameAck& LastAckForObserver(BeginFrameObserver* obs) {
-    return last_acks_[obs];
-  }
-
  private:
   void PostTestOnBeginFrame();
 
@@ -68,7 +63,6 @@ class FakeExternalBeginFrameSource
   uint64_t next_begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
   std::set<BeginFrameObserver*> observers_;
   base::CancelableCallback<void(const BeginFrameArgs&)> begin_frame_task_;
-  std::unordered_map<BeginFrameObserver*, BeginFrameAck> last_acks_;
   base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;
 };
 

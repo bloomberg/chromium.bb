@@ -56,9 +56,8 @@ void CompositorExternalBeginFrameSource::RemoveObserver(
 }
 
 void CompositorExternalBeginFrameSource::DidFinishFrame(
-    cc::BeginFrameObserver* obs,
-    const cc::BeginFrameAck& ack) {
-  external_begin_frame_source_.DidFinishFrame(obs, ack);
+    cc::BeginFrameObserver* obs) {
+  external_begin_frame_source_.DidFinishFrame(obs);
 }
 
 bool CompositorExternalBeginFrameSource::IsThrottled() const {

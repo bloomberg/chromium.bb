@@ -979,36 +979,9 @@ TEST_F(SurfaceSynchronizationTest,
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
 
-TEST_F(SurfaceSynchronizationTest, PassesOnBeginFrameAcks) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-
-  // Request BeginFrames.
-  display_support().SetNeedsBeginFrame(true);
-
-  // Issue a BeginFrame.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  begin_frame_source()->TestOnBeginFrame(args);
-
-  // Check that the support forwards a DidNotProduceFrame ack to the
-  // BeginFrameSource.
-  BeginFrameAck ack(0, 1, 1, false);
-  display_support().DidNotProduceFrame(ack);
-  EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
-
-  // Issue another BeginFrame.
-  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
-  begin_frame_source()->TestOnBeginFrame(args);
-
-  // Check that the support forwards the BeginFrameAck attached
-  // to a CompositorFrame to the BeginFrameSource.
-  BeginFrameAck ack2(0, 2, 2, true);
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.begin_frame_ack = ack2;
-  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
-                                          std::move(frame));
-  EXPECT_EQ(ack2, begin_frame_source()->LastAckForObserver(&display_support()));
-}
+// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
+// CompositorFrameSinkSupport when we add plumbing of BeginFrameAcks through
+// SurfaceObservers.
 
 // Checks that resources and ack are sent together if possible.
 TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {

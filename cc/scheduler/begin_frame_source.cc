@@ -113,8 +113,7 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     time_source_->SetActive(false);
 }
 
-void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
-                                                const BeginFrameAck& ack) {
+void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
   if (observers_.find(obs) != observers_.end()) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
@@ -310,9 +309,6 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     client_->OnNeedsBeginFrames(false);
   }
 }
-
-void ExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
-                                              const BeginFrameAck& ack) {}
 
 bool ExternalBeginFrameSource::IsThrottled() const {
   return true;

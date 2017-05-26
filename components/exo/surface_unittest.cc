@@ -339,15 +339,15 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   source.TestOnBeginFrame(args);  // Runs the frame callback.
   EXPECT_EQ(args.frame_time, frame_time);
 
-  surface->Commit();  // Acknowledges the BeginFrame.
+  surface->Commit();  // Acknowledges the BeginFrame via CompositorFrame.
   RunAllPendingInMessageLoop();
 
+  const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
   cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number,
                                  args.sequence_number, true);
-  EXPECT_EQ(expected_ack, source.LastAckForObserver(surface.get()));
-
-  const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
   EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
+
+  // TODO(eseckler): Add test for DidNotProduceFrame plumbing.
 }
 
 }  // namespace
