@@ -72,3 +72,8 @@ html[screen=lock] #signin-banner.message-set {
   transition: opacity 1s;
   visibility: visible;
 }
+
+.small-pod-container {
+  overflow: scroll;
+  position: absolute;
+}

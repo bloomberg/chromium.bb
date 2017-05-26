@@ -25,148 +25,156 @@
 </iron-iconset-svg>
 
 <div id="user-pod-template" class="pod disabled" hidden>
-  <div class="user-image-pane">
-    <div class="user-image-container">
-      <img class="user-image" alt>
+  <div class="large-pod">
+    <div class="user-image-pane">
+      <div class="user-image-container">
+        <img class="user-image" alt>
+      </div>
+      <div class="indicator-container">
+        <div class="indicator legacy-supervised-indicator"></div>
+        <div class="indicator child-indicator"></div>
+        <div class="indicator locked-indicator"></div>
+      </div>
     </div>
-    <div class="indicator-container">
-      <div class="indicator legacy-supervised-indicator"></div>
-      <div class="indicator child-indicator"></div>
-      <div class="indicator locked-indicator"></div>
-    </div>
-  </div>
 <if expr="chromeos">
-  <div class="pin-container pin-disabled pin-tag">
-    <pin-keyboard enable-password hide-input></pin-keyboard>
-  </div>
-</if>
-  <div class="main-pane">
-    <div class="name-container">
-      <div class="learn-more-container">
-        <div class="learn-more"></div>
-      </div>
-      <div class="name"></div>
-      <div class="action-box-area">
-        <paper-icon-button class="action-box-button" disabled
-                           icon="user-pod:dropdown" tabindex="-1">
-        </paper-icon-button>
-        <iron-icon icon="cr:more-vert" class="action-box-icon"></iron-icon>
-      </div>
-      <div class="action-box-menu">
-        <div class="action-box-menu-title">
-          <span class="action-box-menu-title-name"></span>
-          <span class="action-box-menu-title-email"></span>
-        </div>
-        <div class="action-box-menu-remove"
-            i18n-content="removeUserWarningButtonTitle">
-        </div>
-        <div class="action-box-remove-user-warning" hidden>
-          <div class="action-box-remove-user-warning-text"></div>
-          <table class="action-box-remove-user-warning-table-nonsync
-                        non-sync has-stats">
-            <tbody>
-              <tr>
-                <td i18n-content="removeUserWarningTextHistory"></td>
-                <td class="action-box-remove-user-warning-history
-                           action-box-remove-user-warning-table-numbers"
-                    i18n-content="removeUserWarningTextCalculating"></td>
-              </tr>
-              <tr>
-                <td i18n-content="removeUserWarningTextPasswords"></td>
-                <td class="action-box-remove-user-warning-passwords
-                           action-box-remove-user-warning-table-numbers"
-                    i18n-content="removeUserWarningTextCalculating"></td>
-              </tr>
-              <tr>
-                <td i18n-content="removeUserWarningTextBookmarks"></td>
-                <td class="action-box-remove-user-warning-bookmarks
-                           action-box-remove-user-warning-table-numbers"
-                    i18n-content="removeUserWarningTextCalculating"></td>
-              </tr>
-              <tr>
-                <td i18n-content="removeUserWarningTextSettings"></td>
-                <td class="action-box-remove-user-warning-settings
-                           action-box-remove-user-warning-table-numbers"
-                    i18n-content="removeUserWarningTextCalculating"></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="action-box-remove-legacy-supervised-user-warning-text"
-              i18n-content="removeLegacySupervisedUserWarningText"></div>
-          <div class="action-box-remove-non-owner-user-warning-text"
-              i18n-content="removeNonOwnerUserWarningText"></div>
-          <!-- paper-button is imported inside user_manager.html -->
-          <paper-button class="remove-warning-button"
-              i18n-content="removeUserWarningButtonTitle"></paper-button>
-        </div>
-      </div>
+    <div class="pin-container pin-disabled pin-tag">
+      <pin-keyboard enable-password hide-input></pin-keyboard>
     </div>
-    <div class="auth-container">
-      <!-- Password Authentication -->
-      <div class="custom-icon-container" hidden></div>
+</if>
+    <div class="main-pane">
+      <div class="name-container">
+        <div class="learn-more-container">
+          <div class="learn-more"></div>
+        </div>
+        <div class="name"></div>
+        <div class="action-box-area">
+          <paper-icon-button class="action-box-button" disabled
+                             icon="user-pod:dropdown">
+          </paper-icon-button>
+          <iron-icon icon="cr:more-vert" class="action-box-icon"></iron-icon>
+        </div>
+        <div class="action-box-menu">
+          <div class="action-box-menu-title">
+            <span class="action-box-menu-title-name"></span>
+            <span class="action-box-menu-title-email"></span>
+          </div>
+          <div class="action-box-menu-remove"
+              i18n-content="removeUserWarningButtonTitle">
+          </div>
+          <div class="action-box-remove-user-warning" hidden>
+            <div class="action-box-remove-user-warning-text"></div>
+            <table class="action-box-remove-user-warning-table-nonsync
+                          non-sync has-stats">
+              <tbody>
+                <tr>
+                  <td i18n-content="removeUserWarningTextHistory"></td>
+                  <td class="action-box-remove-user-warning-history
+                             action-box-remove-user-warning-table-numbers"
+                      i18n-content="removeUserWarningTextCalculating"></td>
+                </tr>
+                <tr>
+                  <td i18n-content="removeUserWarningTextPasswords"></td>
+                  <td class="action-box-remove-user-warning-passwords
+                             action-box-remove-user-warning-table-numbers"
+                      i18n-content="removeUserWarningTextCalculating"></td>
+                </tr>
+                <tr>
+                  <td i18n-content="removeUserWarningTextBookmarks"></td>
+                  <td class="action-box-remove-user-warning-bookmarks
+                             action-box-remove-user-warning-table-numbers"
+                      i18n-content="removeUserWarningTextCalculating"></td>
+                </tr>
+                <tr>
+                  <td i18n-content="removeUserWarningTextSettings"></td>
+                  <td class="action-box-remove-user-warning-settings
+                             action-box-remove-user-warning-table-numbers"
+                      i18n-content="removeUserWarningTextCalculating"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="action-box-remove-legacy-supervised-user-warning-text"
+                i18n-content="removeLegacySupervisedUserWarningText"></div>
+            <div class="action-box-remove-non-owner-user-warning-text"
+                i18n-content="removeNonOwnerUserWarningText"></div>
+            <!-- paper-button is imported inside user_manager.html -->
+            <paper-button class="remove-warning-button"
+                i18n-content="removeUserWarningButtonTitle"></paper-button>
+          </div>
+        </div>
+      </div>
+      <div class="auth-container">
+        <!-- Password Authentication -->
+        <div class="custom-icon-container" hidden></div>
 <if expr="chromeos">
-      <div class="fingerprint-icon-container" hidden
-           i18n-values="aria-label:fingerprintIconMessage">
-        <div class="custom-icon fingerprint-icon-image"></div>
-      </div>
-</if>
-      <div class="password-entry-container">
-        <div class="password-container">
-          <input type="password" class="password"
-                 i18n-values="placeholder:passwordHint">
+        <div class="fingerprint-icon-container" hidden
+             i18n-values="aria-label:fingerprintIconMessage">
+          <div class="custom-icon fingerprint-icon-image"></div>
         </div>
+</if>
+        <div class="password-entry-container">
+          <div class="password-container">
+            <input type="password" class="password"
+                   i18n-values="placeholder:passwordHint">
+          </div>
 <if expr="chromeos">
-        <div class="capslock-hint-container">
-          <img class="capslock-hint"
-               src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
-        </div>
-        <paper-icon-button class="submit-button" disabled
-                           aria-label="$i18n{submitButtonAccessibleName}"
-                           icon="user-pod:arrow-forward" tabindex="-1">
-        </paper-icon-button>
+          <div class="capslock-hint-container">
+            <img class="capslock-hint"
+                 src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
+          </div>
+          <paper-icon-button class="submit-button" disabled
+                             aria-label="$i18n{submitButtonAccessibleName}"
+                             icon="user-pod:arrow-forward" tabindex="-1">
+          </paper-icon-button>
 </if>
+        </div>
+        <!-- User Click Authentication -->
+        <div class="password-label"></div>
+        <div class="signin-transition-container">
+          <span class="signing-in-label" i18n-content="signingIn"></span>
+          <span class="animated-ellipsis-component0">.</span>
+          <span class="animated-ellipsis-component1">.</span>
+          <span class="animated-ellipsis-component2">.</span>
+        </div>
+        <div class="reauth-hint-container">
+          <span class="reauth-warning"></span>
+          <span class="reauth-name-hint"></span>
+        </div>
+        <div class="launch-app-button-container" hidden>
+          <button class="launch-app-button" i18n-content="launchAppButton">
+          </button>
+        </div>
+        <div id="input-line">
+          <svg>
+            <line x1="0" y1="0" x2="204" y2="0">
+          </svg>
+        </div>
       </div>
-      <!-- User Click Authentication -->
-      <div class="password-label"></div>
-      <div class="signin-transition-container">
-        <span class="signing-in-label" i18n-content="signingIn"></span>
-        <span class="animated-ellipsis-component0">.</span>
-        <span class="animated-ellipsis-component1">.</span>
-        <span class="animated-ellipsis-component2">.</span>
+    </div>
+    <div class="user-image-gradient-area">
+    </div>
+    <div class="user-type-icon-area" hidden>
+      <div class="custom-appearance user-type-icon-image"></div>
+    </div>
+    <div class="user-type-bubble">
+      <div class="user-type-bubble-header">
+        <span class="mp-policy-title"
+            i18n-content="multiProfilesRestrictedPolicyTitle"></span>
       </div>
-      <div class="reauth-hint-container">
-        <span class="reauth-warning"></span>
-        <span class="reauth-name-hint"></span>
-      </div>
-      <div class="launch-app-button-container" hidden>
-        <button class="launch-app-button" i18n-content="launchAppButton">
-        </button>
-      </div>
-      <div id="input-line">
-        <svg>
-          <line x1="0" y1="0" x2="204" y2="0">
-        </svg>
+      <div class="user-type-bubble-body">
+        <span class="mp-policy-not-allowed-msg"
+            i18n-content="multiProfilesNotAllowedPolicyMsg" hidden></span>
+        <span class="mp-policy-primary-only-msg"
+            i18n-content="multiProfilesPrimaryOnlyPolicyMsg" hidden></span>
+        <span class="mp-owner-primary-only-msg"
+            i18n-content="multiProfilesOwnerPrimaryOnlyMsg" hidden></span>
       </div>
     </div>
   </div>
-  <div class="user-image-gradient-area">
-  </div>
-  <div class="user-type-icon-area" hidden>
-    <div class="custom-appearance user-type-icon-image"></div>
-  </div>
-  <div class="user-type-bubble">
-    <div class="user-type-bubble-header">
-      <span class="mp-policy-title"
-          i18n-content="multiProfilesRestrictedPolicyTitle"></span>
+  <div class="small-pod" hidden>
+    <div class="small-user-image-container">
+      <img class="small-pod-image" alt>
     </div>
-    <div class="user-type-bubble-body">
-      <span class="mp-policy-not-allowed-msg"
-          i18n-content="multiProfilesNotAllowedPolicyMsg" hidden></span>
-      <span class="mp-policy-primary-only-msg"
-          i18n-content="multiProfilesPrimaryOnlyPolicyMsg" hidden></span>
-      <span class="mp-owner-primary-only-msg"
-          i18n-content="multiProfilesOwnerPrimaryOnlyMsg" hidden></span>
-    </div>
+    <div class="small-pod-name"></div>
   </div>
 </div>
 
