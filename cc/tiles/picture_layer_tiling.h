@@ -126,6 +126,9 @@ class CC_EXPORT PictureLayerTiling {
   void set_can_require_tiles_for_activation(bool can_require_tiles) {
     can_require_tiles_for_activation_ = can_require_tiles;
   }
+  bool can_require_tiles_for_activation() const {
+    return can_require_tiles_for_activation_;
+  }
 
   const scoped_refptr<RasterSource>& raster_source() const {
     return raster_source_;

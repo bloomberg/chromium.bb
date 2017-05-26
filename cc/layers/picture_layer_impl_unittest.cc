@@ -1659,7 +1659,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_offscreen = 0;
 
   std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   for (; !queue->IsEmpty(); queue->Pop()) {
     const PrioritizedTile& prioritized_tile = queue->Top();
     DCHECK(prioritized_tile.tile());
@@ -2753,7 +2753,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   int high_res_tile_count = 0u;
   int high_res_now_tiles = 0u;
   std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     TilePriority priority = prioritized_tile.priority();
@@ -2824,7 +2824,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   unique_tiles.clear();
   high_res_tile_count = 0u;
   queue.reset(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     TilePriority priority = prioritized_tile.priority();
@@ -2861,7 +2861,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   }
 
   queue.reset(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), true));
+      pending_layer()->picture_layer_tiling_set(), true, false));
   EXPECT_TRUE(queue->IsEmpty());
 }
 
@@ -3715,7 +3715,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   // No occlusion.
   int unoccluded_tile_count = 0;
   std::unique_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -3749,7 +3749,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   unoccluded_tile_count = 0;
   queue.reset(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -3774,7 +3774,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   unoccluded_tile_count = 0;
   queue.reset(new TilingSetRasterQueueAll(
-      pending_layer()->picture_layer_tiling_set(), false));
+      pending_layer()->picture_layer_tiling_set(), false, false));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     Tile* tile = prioritized_tile.tile();

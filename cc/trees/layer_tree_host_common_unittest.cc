@@ -8347,7 +8347,7 @@ TEST_F(LayerTreeHostCommonTest,
   // Since animated has singular transform, it is not be part of render
   // surface layer list but should be rastered.
   EXPECT_FALSE(animated->contributes_to_drawn_render_surface());
-  EXPECT_TRUE(animated->raster_even_if_not_in_rsll());
+  EXPECT_TRUE(animated->raster_even_if_not_drawn());
 
   // The animated layer has a singular transform and maps to a non-empty rect in
   // clipped target space, so is treated as fully visible.
@@ -8387,7 +8387,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   // Since animated has singular transform, it is not be part of render
   // surface layer list but should be rastered.
-  EXPECT_TRUE(animated->raster_even_if_not_in_rsll());
+  EXPECT_TRUE(animated->raster_even_if_not_drawn());
   EXPECT_EQ(gfx::Rect(120, 120), active_animated->visible_layer_rect());
 }
 

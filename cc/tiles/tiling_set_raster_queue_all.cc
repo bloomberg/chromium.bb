@@ -22,8 +22,11 @@ TilingSetRasterQueueAll::IterationStage::IterationStage(
 
 TilingSetRasterQueueAll::TilingSetRasterQueueAll(
     PictureLayerTilingSet* tiling_set,
-    bool prioritize_low_res)
-    : tiling_set_(tiling_set), current_stage_(0) {
+    bool prioritize_low_res,
+    bool is_drawing_layer)
+    : tiling_set_(tiling_set),
+      current_stage_(0),
+      is_drawing_layer_(is_drawing_layer) {
   DCHECK(tiling_set_);
 
   // Early out if the tiling set has no tilings.

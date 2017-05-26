@@ -12414,5 +12414,136 @@ TEST_F(LayerTreeHostImplTest, RasterColorSpace) {
   EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());
 }
 
+TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
+  gfx::Size layer_bounds(500, 500);
+
+  host_impl_->SetViewportSize(layer_bounds);
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->pending_tree(), 1);
+  scoped_root->SetBounds(layer_bounds);
+  LayerImpl* root = scoped_root.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(scoped_root));
+
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(layer_bounds));
+  std::unique_ptr<FakePictureLayerImpl> scoped_animated_transform_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   2, raster_source);
+  scoped_animated_transform_layer->SetBounds(layer_bounds);
+  scoped_animated_transform_layer->SetDrawsContent(true);
+  gfx::Transform singular;
+  singular.Scale3d(6.f, 6.f, 0.f);
+  scoped_animated_transform_layer->test_properties()->transform = singular;
+  FakePictureLayerImpl* animated_transform_layer =
+      scoped_animated_transform_layer.get();
+  root->test_properties()->AddChild(std::move(scoped_animated_transform_layer));
+
+  // A layer with a non-invertible transform is not drawn or rasterized. Since
+  // this layer is not rasterized, we shouldn't be creating any tilings for it.
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
+  EXPECT_FALSE(animated_transform_layer->HasValidTilePriorities());
+  EXPECT_EQ(animated_transform_layer->tilings()->num_tilings(), 0u);
+  host_impl_->pending_tree()->UpdateDrawProperties(false);
+  EXPECT_FALSE(animated_transform_layer->raster_even_if_not_drawn());
+  EXPECT_FALSE(animated_transform_layer->contributes_to_drawn_render_surface());
+  EXPECT_EQ(animated_transform_layer->tilings()->num_tilings(), 0u);
+
+  // Now add a transform animation to this layer. While we don't drawn layers
+  // with non-invertible transforms, we still raster them if there is a
+  // transform animation.
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  TransformOperations start_transform_operations;
+  start_transform_operations.AppendMatrix(singular);
+  TransformOperations end_transform_operations;
+  AddAnimatedTransformToElementWithPlayer(
+      animated_transform_layer->element_id(), timeline(), 10.0,
+      start_transform_operations, end_transform_operations);
+
+  // The layer is still not drawn, but it will be rasterized. Since the layer is
+  // rasterized, we should be creating tilings for it in UpdateDrawProperties.
+  // However, none of these tiles should be required for activation.
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl_->pending_tree()->UpdateDrawProperties(false);
+  EXPECT_TRUE(animated_transform_layer->raster_even_if_not_drawn());
+  EXPECT_FALSE(animated_transform_layer->contributes_to_drawn_render_surface());
+  EXPECT_EQ(animated_transform_layer->tilings()->num_tilings(), 1u);
+  EXPECT_FALSE(animated_transform_layer->tilings()
+                   ->tiling_at(0)
+                   ->can_require_tiles_for_activation());
+}
+
+TEST_F(LayerTreeHostImplTest, RasterTilePrioritizationForNonDrawingLayers) {
+  gfx::Size layer_bounds(500, 500);
+
+  host_impl_->SetViewportSize(layer_bounds);
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->pending_tree(), 1);
+  scoped_root->SetBounds(layer_bounds);
+  LayerImpl* root = scoped_root.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(scoped_root));
+
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(layer_bounds));
+
+  std::unique_ptr<FakePictureLayerImpl> scoped_hidden_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   2, raster_source);
+  scoped_hidden_layer->SetBounds(layer_bounds);
+  scoped_hidden_layer->SetDrawsContent(true);
+  scoped_hidden_layer->set_contributes_to_drawn_render_surface(true);
+  FakePictureLayerImpl* hidden_layer = scoped_hidden_layer.get();
+  root->test_properties()->AddChild(std::move(scoped_hidden_layer));
+
+  std::unique_ptr<FakePictureLayerImpl> scoped_drawing_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   3, raster_source);
+  scoped_drawing_layer->SetBounds(layer_bounds);
+  scoped_drawing_layer->SetDrawsContent(true);
+  scoped_drawing_layer->set_contributes_to_drawn_render_surface(true);
+  FakePictureLayerImpl* drawing_layer = scoped_drawing_layer.get();
+  root->test_properties()->AddChild(std::move(scoped_drawing_layer));
+
+  gfx::Rect layer_rect(0, 0, 500, 500);
+  gfx::Rect empty_rect(0, 0, 0, 0);
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  hidden_layer->tilings()->AddTiling(gfx::AxisTransform2d(), raster_source);
+  PictureLayerTiling* hidden_tiling = hidden_layer->tilings()->tiling_at(0);
+  hidden_tiling->set_resolution(TileResolution::LOW_RESOLUTION);
+  hidden_tiling->CreateAllTilesForTesting();
+  hidden_tiling->SetTilePriorityRectsForTesting(
+      layer_rect,   // Visible rect.
+      layer_rect,   // Skewport rect.
+      layer_rect,   // Soon rect.
+      layer_rect);  // Eventually rect.
+
+  drawing_layer->tilings()->AddTiling(gfx::AxisTransform2d(), raster_source);
+  PictureLayerTiling* drawing_tiling = drawing_layer->tilings()->tiling_at(0);
+  drawing_tiling->set_resolution(TileResolution::HIGH_RESOLUTION);
+  drawing_tiling->CreateAllTilesForTesting();
+  drawing_tiling->SetTilePriorityRectsForTesting(
+      layer_rect,   // Visible rect.
+      layer_rect,   // Skewport rect.
+      layer_rect,   // Soon rect.
+      layer_rect);  // Eventually rect.
+
+  // Both layers are drawn. Since the hidden layer has a low resolution tiling,
+  // in smoothness priority mode its tile is higher priority.
+  std::unique_ptr<RasterTilePriorityQueue> queue =
+      host_impl_->BuildRasterQueue(TreePriority::SMOOTHNESS_TAKES_PRIORITY,
+                                   RasterTilePriorityQueue::Type::ALL);
+  EXPECT_EQ(queue->Top().tile()->layer_id(), 2);
+
+  // Hide the hidden layer and set it to so it still rasters. Now the drawing
+  // layer should be prioritized over the hidden layer.
+  hidden_layer->set_contributes_to_drawn_render_surface(false);
+  hidden_layer->set_raster_even_if_not_drawn(true);
+  queue = host_impl_->BuildRasterQueue(TreePriority::SMOOTHNESS_TAKES_PRIORITY,
+                                       RasterTilePriorityQueue::Type::ALL);
+  EXPECT_EQ(queue->Top().tile()->layer_id(), 3);
+}
+
 }  // namespace
 }  // namespace cc

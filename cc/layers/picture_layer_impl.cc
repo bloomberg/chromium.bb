@@ -515,9 +515,13 @@ bool PictureLayerImpl::UpdateTiles() {
   // The reason for this is that we should be able to activate sooner and get a
   // more up to date recording, so we don't run out of recording on the active
   // tree.
-  bool can_require_tiles_for_activation =
-      !only_used_low_res_last_append_quads_ || RequiresHighResToDraw() ||
-      !layer_tree_impl()->SmoothnessTakesPriority();
+  // A layer must be a drawing layer for it to require tiles for activation.
+  bool can_require_tiles_for_activation = false;
+  if (contributes_to_drawn_render_surface()) {
+    can_require_tiles_for_activation =
+        !only_used_low_res_last_append_quads_ || RequiresHighResToDraw() ||
+        !layer_tree_impl()->SmoothnessTakesPriority();
+  }
 
   static const Occlusion kEmptyOcclusion;
   const Occlusion& occlusion_in_content_space =
@@ -1458,8 +1462,8 @@ bool PictureLayerImpl::IsOnActiveOrPendingTree() const {
 }
 
 bool PictureLayerImpl::HasValidTilePriorities() const {
-  return IsOnActiveOrPendingTree() && (contributes_to_drawn_render_surface() ||
-                                       raster_even_if_not_in_rsll());
+  return IsOnActiveOrPendingTree() &&
+         (contributes_to_drawn_render_surface() || raster_even_if_not_drawn());
 }
 
 void PictureLayerImpl::InvalidateRegionForImages(

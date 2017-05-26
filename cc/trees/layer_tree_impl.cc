@@ -1155,7 +1155,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
-      if (!layer->contributes_to_drawn_render_surface())
+      if (!layer->HasValidTilePriorities())
         continue;
       ++layers_updated_count;
       tile_priorities_updated |= layer->UpdateTiles();

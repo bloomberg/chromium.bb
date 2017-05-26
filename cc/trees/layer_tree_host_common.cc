@@ -377,8 +377,8 @@ static void ComputeInitialRenderSurfaceList(
     bool skip_layer = !is_root && (skip_draw_properties_computation ||
                                    skip_for_invertibility);
 
-    layer->set_raster_even_if_not_in_rsll(skip_for_invertibility &&
-                                          !skip_draw_properties_computation);
+    layer->set_raster_even_if_not_drawn(skip_for_invertibility &&
+                                        !skip_draw_properties_computation);
     if (skip_layer)
       continue;
 
