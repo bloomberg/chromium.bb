@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script>
 'use strict';
 promise_test(() => {
   let expected = new DOMException('Origin is not allowed to access the ' +
@@ -14,12 +9,14 @@ promise_test(() => {
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
-    .then(gattServer => Promise.all([
+    .then(gatt => Promise.all([
       assert_promise_rejects_with_message(
-        gattServer.getPrimaryService(glucose.alias), expected),
+        gatt.CALLS([
+          getPrimaryService(glucose.alias)|
+          getPrimaryServices(glucose.alias)[UUID]
+        ]), expected),
       assert_promise_rejects_with_message(
-        gattServer.getPrimaryService(glucose.name), expected),
+        gatt.FUNCTION_NAME(glucose.name), expected),
       assert_promise_rejects_with_message(
-        gattServer.getPrimaryService(glucose.uuid), expected)]));
+        gatt.FUNCTION_NAME(glucose.uuid), expected)]));
 }, 'Request for absent service without permission. Reject with SecurityError.');
-</script>
