@@ -40,6 +40,11 @@ const base::Feature kBrowserSideNavigation{"browser-side-navigation",
 const base::Feature kCanvas2DImageChromium{"Canvas2DImageChromium",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enabled decoding images asynchronously from raster in the renderer
+// compositor.
+const base::Feature kCheckerImaging{"CheckerImaging",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the compositing of fixed position content that is opaque and can
 // preserve LCD text.
 const base::Feature kCompositeOpaqueFixedPosition{

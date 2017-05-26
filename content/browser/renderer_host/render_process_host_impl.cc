@@ -1952,6 +1952,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsMainFrameBeforeActivationEnabled())
     command_line->AppendSwitch(cc::switches::kEnableMainFrameBeforeActivation);
 
+  if (IsCheckerImagingEnabled())
+    command_line->AppendSwitch(cc::switches::kEnableCheckerImaging);
+
   cc::BufferToTextureTargetMap image_targets;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
@@ -2186,7 +2189,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kDisallowNonExactResourceReuse,
-    cc::switches::kEnableCheckerImaging,
     cc::switches::kEnableGpuBenchmarking,
     cc::switches::kEnableLayerLists,
     cc::switches::kEnableSurfaceSynchronization,
