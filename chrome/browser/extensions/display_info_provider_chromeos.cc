@@ -11,7 +11,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
@@ -420,10 +420,10 @@ bool ValidateParamsForTouchCalibration(
   return true;
 }
 
-bool IsMaximizeModeWindowManagerEnabled() {
+bool IsTabletModeWindowManagerEnabled() {
   return ash::Shell::Get()
-      ->maximize_mode_controller()
-      ->IsMaximizeModeWindowManagerEnabled();
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
 }
 
 }  // namespace
@@ -517,7 +517,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
 
   // Process 'rotation' parameter.
   if (info.rotation) {
-    if (IsMaximizeModeWindowManagerEnabled() &&
+    if (IsTabletModeWindowManagerEnabled() &&
         display_id == display::Display::InternalDisplayId()) {
       ash::Shell::Get()->screen_orientation_controller()->SetLockToRotation(
           DegreesToRotation(*info.rotation));

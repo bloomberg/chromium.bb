@@ -26,8 +26,8 @@ class ASH_EXPORT VirtualKeyboardController
 
   // ShellObserver:
   // TODO(rsadam@): Remove when autovirtual keyboard flag is on by default.
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // ui::InputDeviceObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;

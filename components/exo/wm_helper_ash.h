@@ -40,7 +40,7 @@ class WMHelperAsh : public WMHelper,
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
-  bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsTabletModeWindowManagerEnabled() const override;
 
   // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
@@ -57,9 +57,9 @@ class WMHelperAsh : public WMHelper,
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
 
   // Overridden from ash::ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnding() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnding() override;
+  void OnTabletModeEnded() override;
 
   // Overridden from ash::WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
