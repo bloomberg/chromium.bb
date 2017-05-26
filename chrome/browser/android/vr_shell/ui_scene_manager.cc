@@ -430,7 +430,7 @@ void UiSceneManager::SetURL(const GURL& gurl) {
   url_bar_->SetURL(gurl);
 }
 
-void UiSceneManager::SetSecurityLevel(int level) {
+void UiSceneManager::SetSecurityLevel(security_state::SecurityLevel level) {
   url_bar_->SetSecurityLevel(level);
 }
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
+#include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
 namespace vr_shell {
@@ -33,7 +34,7 @@ class UrlBar : public TexturedElement {
   void SetEnabled(bool enabled) override;
 
   void SetURL(const GURL& gurl);
-  void SetSecurityLevel(int level);
+  void SetSecurityLevel(security_state::SecurityLevel level);
   void SetBackButtonCallback(const base::Callback<void()>& callback);
 
  private:

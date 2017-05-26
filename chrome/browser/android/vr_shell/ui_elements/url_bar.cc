@@ -82,7 +82,7 @@ void UrlBar::SetURL(const GURL& gurl) {
   texture_->SetURL(gurl);
 }
 
-void UrlBar::SetSecurityLevel(int level) {
+void UrlBar::SetSecurityLevel(security_state::SecurityLevel level) {
   texture_->SetSecurityLevel(level);
 }
 

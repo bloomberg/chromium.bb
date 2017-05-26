@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
@@ -66,7 +67,7 @@ class VrGLThread : public base::Thread,
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetLoadProgress(float progress) override;
   void SetLoading(bool loading) override;
-  void SetSecurityLevel(int level) override;
+  void SetSecurityLevel(security_state::SecurityLevel level) override;
   void SetURL(const GURL& gurl) override;
   void SetWebVrMode(bool enabled) override;
   void SetWebVrSecureOrigin(bool secure) override;
