@@ -613,7 +613,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(
 
   if (value.IsStringValue()) {
     state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
-    state.Style()->SetTextEmphasisMark(kTextEmphasisMarkCustom);
+    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kCustom);
     state.Style()->SetTextEmphasisCustomMark(
         AtomicString(ToCSSStringValue(value).Value()));
     return;
@@ -627,7 +627,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(
       identifier_value.GetValueID() == CSSValueOpen) {
     state.Style()->SetTextEmphasisFill(
         identifier_value.ConvertTo<TextEmphasisFill>());
-    state.Style()->SetTextEmphasisMark(kTextEmphasisMarkAuto);
+    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kAuto);
   } else {
     state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
     state.Style()->SetTextEmphasisMark(

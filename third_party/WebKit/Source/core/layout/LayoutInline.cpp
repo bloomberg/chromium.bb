@@ -230,7 +230,7 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
       (parent_layout_inline &&
        parent_style.VerticalAlign() != EVerticalAlign::kBaseline) ||
       Style()->VerticalAlign() != EVerticalAlign::kBaseline ||
-      Style()->GetTextEmphasisMark() != kTextEmphasisMarkNone ||
+      Style()->GetTextEmphasisMark() != TextEmphasisMark::kNone ||
       (check_fonts &&
        (!StyleRef().HasIdenticalAscentDescentAndLineGap(parent_style) ||
         parent_style.LineHeight() != StyleRef().LineHeight()));

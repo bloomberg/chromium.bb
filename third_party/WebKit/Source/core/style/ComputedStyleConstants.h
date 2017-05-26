@@ -283,15 +283,15 @@ enum class Hyphens { kNone, kManual, kAuto };
 
 enum class TextEmphasisFill { kFilled, kOpen };
 
-enum TextEmphasisMark {
-  kTextEmphasisMarkNone,
-  kTextEmphasisMarkAuto,
-  kTextEmphasisMarkDot,
-  kTextEmphasisMarkCircle,
-  kTextEmphasisMarkDoubleCircle,
-  kTextEmphasisMarkTriangle,
-  kTextEmphasisMarkSesame,
-  kTextEmphasisMarkCustom
+enum class TextEmphasisMark {
+  kNone,
+  kAuto,
+  kDot,
+  kCircle,
+  kDoubleCircle,
+  kTriangle,
+  kSesame,
+  kCustom
 };
 
 enum class TextEmphasisPosition { kOver, kUnder };

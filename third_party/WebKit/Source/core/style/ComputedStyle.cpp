@@ -1535,11 +1535,11 @@ const AtomicString& ComputedStyle::HyphenString() const {
 
 const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
   switch (GetTextEmphasisMark()) {
-    case kTextEmphasisMarkNone:
+    case TextEmphasisMark::kNone:
       return g_null_atom;
-    case kTextEmphasisMarkCustom:
+    case TextEmphasisMark::kCustom:
       return TextEmphasisCustomMark();
-    case kTextEmphasisMarkDot: {
+    case TextEmphasisMark::kDot: {
       DEFINE_STATIC_LOCAL(AtomicString, filled_dot_string,
                           (&kBulletCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_dot_string,
@@ -1548,7 +1548,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                  ? filled_dot_string
                  : open_dot_string;
     }
-    case kTextEmphasisMarkCircle: {
+    case TextEmphasisMark::kCircle: {
       DEFINE_STATIC_LOCAL(AtomicString, filled_circle_string,
                           (&kBlackCircleCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_circle_string,
@@ -1557,7 +1557,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                  ? filled_circle_string
                  : open_circle_string;
     }
-    case kTextEmphasisMarkDoubleCircle: {
+    case TextEmphasisMark::kDoubleCircle: {
       DEFINE_STATIC_LOCAL(AtomicString, filled_double_circle_string,
                           (&kFisheyeCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_double_circle_string,
@@ -1566,7 +1566,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                  ? filled_double_circle_string
                  : open_double_circle_string;
     }
-    case kTextEmphasisMarkTriangle: {
+    case TextEmphasisMark::kTriangle: {
       DEFINE_STATIC_LOCAL(AtomicString, filled_triangle_string,
                           (&kBlackUpPointingTriangleCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_triangle_string,
@@ -1575,7 +1575,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                  ? filled_triangle_string
                  : open_triangle_string;
     }
-    case kTextEmphasisMarkSesame: {
+    case TextEmphasisMark::kSesame: {
       DEFINE_STATIC_LOCAL(AtomicString, filled_sesame_string,
                           (&kSesameDotCharacter, 1));
       DEFINE_STATIC_LOCAL(AtomicString, open_sesame_string,
@@ -1584,7 +1584,7 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
                  ? filled_sesame_string
                  : open_sesame_string;
     }
-    case kTextEmphasisMarkAuto:
+    case TextEmphasisMark::kAuto:
       NOTREACHED();
       return g_null_atom;
   }
@@ -2281,13 +2281,13 @@ bool ComputedStyle::ColumnRuleEquivalent(
 TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
   TextEmphasisMark mark =
       static_cast<TextEmphasisMark>(rare_inherited_data_->text_emphasis_mark_);
-  if (mark != kTextEmphasisMarkAuto)
+  if (mark != TextEmphasisMark::kAuto)
     return mark;
 
   if (IsHorizontalWritingMode())
-    return kTextEmphasisMarkDot;
+    return TextEmphasisMark::kDot;
 
-  return kTextEmphasisMarkSesame;
+  return TextEmphasisMark::kSesame;
 }
 
 Color ComputedStyle::InitialTapHighlightColor() {

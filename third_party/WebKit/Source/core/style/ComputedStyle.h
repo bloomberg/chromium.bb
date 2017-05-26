@@ -1752,7 +1752,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return TextEmphasisFill::kFilled;
   }
   static TextEmphasisMark InitialTextEmphasisMark() {
-    return kTextEmphasisMarkNone;
+    return TextEmphasisMark::kNone;
   }
   static const AtomicString& InitialTextEmphasisCustomMark() {
     return g_null_atom;
@@ -1771,7 +1771,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
             static_cast<unsigned>(fill));
   }
   void SetTextEmphasisMark(TextEmphasisMark mark) {
-    SET_VAR(rare_inherited_data_, text_emphasis_mark_, mark);
+    SET_VAR(rare_inherited_data_, text_emphasis_mark_,
+            static_cast<unsigned>(mark));
   }
   void SetTextEmphasisCustomMark(const AtomicString& mark) {
     SET_VAR(rare_inherited_data_, text_emphasis_custom_mark_, mark);
