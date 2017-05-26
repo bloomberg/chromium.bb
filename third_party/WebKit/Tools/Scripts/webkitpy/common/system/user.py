@@ -36,7 +36,6 @@ from webkitpy.common.system.executive import Executive
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.platform_info import PlatformInfo
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -100,9 +99,10 @@ class User(object):
             message = 'Continue?'
         choice = {'y': 'Y/n', 'n': 'y/N'}[default]
         response = raw_input('%s [%s]: ' % (message, choice))
+        response = response.strip().lower()
         if not response:
             response = default
-        return response.lower() == 'y'
+        return response and response[0] == 'y'
 
     def can_open_url(self):
         try:
