@@ -1,0 +1,263 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "modules/indexeddb/IDBRequestQueueItem.h"
+
+#include "core/dom/DOMException.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBRequest.h"
+#include "modules/indexeddb/IDBRequestLoader.h"
+#include "modules/indexeddb/IDBValue.h"
+#include "platform/wtf/PtrUtil.h"
+#include "public/platform/modules/indexeddb/WebIDBCursor.h"
+
+namespace blink {
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    DOMException* error,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      error_(error),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kError),
+      ready_(true) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    int64_t value,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      int64_value_(value),
+      response_type_(kNumber),
+      ready_(true) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kVoid),
+      ready_(true) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    IDBKey* key,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      key_(key),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kKey),
+      ready_(true) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    PassRefPtr<IDBValue> value,
+    bool attach_loader,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kValue),
+      ready_(!attach_loader) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+  values_.push_back(std::move(value));
+  if (attach_loader)
+    loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    const Vector<RefPtr<IDBValue>>& values,
+    bool attach_loader,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      values_(values),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kValueArray),
+      ready_(!attach_loader) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+  if (attach_loader)
+    loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    IDBKey* key,
+    IDBKey* primary_key,
+    PassRefPtr<IDBValue> value,
+    bool attach_loader,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      key_(key),
+      primary_key_(primary_key),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kKeyPrimaryKeyValue),
+      ready_(!attach_loader) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+  values_.push_back(std::move(value));
+  if (attach_loader)
+    loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
+}
+
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    std::unique_ptr<WebIDBCursor> cursor,
+    IDBKey* key,
+    IDBKey* primary_key,
+    PassRefPtr<IDBValue> value,
+    bool attach_loader,
+    std::unique_ptr<WTF::Closure> on_result_load_complete)
+    : request_(request),
+      key_(key),
+      primary_key_(primary_key),
+      cursor_(std::move(cursor)),
+      on_result_load_complete_(std::move(on_result_load_complete)),
+      response_type_(kCursorKeyPrimaryKeyValue),
+      ready_(!attach_loader) {
+  DCHECK(on_result_load_complete_);
+  DCHECK_EQ(request->queue_item_, nullptr);
+  request_->queue_item_ = this;
+  values_.push_back(std::move(value));
+  if (attach_loader)
+    loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
+}
+
+IDBRequestQueueItem::~IDBRequestQueueItem() {
+#if DCHECK_IS_ON()
+  DCHECK(ready_);
+  DCHECK(callback_fired_);
+#endif  // DCHECK_IS_ON()
+}
+
+void IDBRequestQueueItem::OnResultLoadComplete() {
+  DCHECK(!ready_);
+  ready_ = true;
+
+  DCHECK(on_result_load_complete_);
+  (*on_result_load_complete_)();
+}
+
+void IDBRequestQueueItem::OnResultLoadComplete(DOMException* error) {
+  DCHECK(!ready_);
+  DCHECK(response_type_ != kError);
+
+  response_type_ = kError;
+  error_ = error;
+
+  // This is not necessary, but releases non-trivial amounts of memory early.
+  values_.clear();
+
+  OnResultLoadComplete();
+}
+
+void IDBRequestQueueItem::StartLoading() {
+  if (request_->request_aborted_) {
+    // The backing store can get the result back to the request after it's been
+    // aborted due to a transaction abort. In this case, we can't rely on
+    // IDBRequest::Abort() to call CancelLoading().
+    CancelLoading();
+    return;
+  }
+
+  if (loader_) {
+    DCHECK(!ready_);
+    loader_->Start();
+  }
+}
+
+void IDBRequestQueueItem::CancelLoading() {
+  if (ready_)
+    return;
+
+  if (loader_) {
+    loader_->Cancel();
+    loader_ = nullptr;
+  }
+
+  // Mark this item as ready so the transaction's result queue can be drained.
+  response_type_ = kCanceled;
+  values_.clear();
+  OnResultLoadComplete();
+}
+
+void IDBRequestQueueItem::EnqueueResponse() {
+  DCHECK(ready_);
+#if DCHECK_IS_ON()
+  DCHECK(!callback_fired_);
+  callback_fired_ = true;
+#endif  // DCHECK_IS_ON()
+  DCHECK_EQ(request_->queue_item_, this);
+  request_->queue_item_ = nullptr;
+
+  switch (response_type_) {
+    case kCanceled:
+      DCHECK_EQ(values_.size(), 0U);
+      break;
+
+    case kCursorKeyPrimaryKeyValue:
+      DCHECK_EQ(values_.size(), 1U);
+      request_->EnqueueResponse(std::move(cursor_), key_, primary_key_,
+                                std::move(values_.front()));
+      break;
+
+    case kError:
+      DCHECK(error_);
+      request_->EnqueueResponse(error_);
+      break;
+
+    case kKeyPrimaryKeyValue:
+      DCHECK_EQ(values_.size(), 1U);
+      request_->EnqueueResponse(key_, primary_key_, std::move(values_.front()));
+      break;
+
+    case kKey:
+      DCHECK_EQ(values_.size(), 0U);
+      request_->EnqueueResponse(key_);
+      break;
+
+    case kNumber:
+      DCHECK_EQ(values_.size(), 0U);
+      request_->EnqueueResponse(int64_value_);
+      break;
+
+    case kValue:
+      DCHECK_EQ(values_.size(), 1U);
+      request_->EnqueueResponse(std::move(values_.front()));
+      break;
+
+    case kValueArray:
+      request_->EnqueueResponse(values_);
+      break;
+
+    case kVoid:
+      DCHECK_EQ(values_.size(), 0U);
+      request_->EnqueueResponse();
+      break;
+  }
+}
+
+}  // namespace blink

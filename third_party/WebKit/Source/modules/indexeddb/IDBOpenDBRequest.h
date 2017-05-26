@@ -46,8 +46,6 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   ~IDBOpenDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
-  using IDBRequest::EnqueueResponse;
-
   void EnqueueBlocked(int64_t existing_version) override;
   void EnqueueUpgradeNeeded(int64_t old_version,
                             std::unique_ptr<WebIDBDatabase>,
@@ -56,7 +54,6 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
                             String data_loss_message) override;
   void EnqueueResponse(std::unique_ptr<WebIDBDatabase>,
                        const IDBDatabaseMetadata&) override;
-  void EnqueueResponse(int64_t old_version) override;
 
   // SuspendableObject
   void ContextDestroyed(ExecutionContext*) final;
@@ -68,6 +65,8 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded);
 
  protected:
+  void EnqueueResponse(int64_t old_version) override;
+
   bool ShouldEnqueueEvent() const override;
 
   // EventTarget

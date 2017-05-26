@@ -274,6 +274,7 @@ source_set("unit_tests") {
     "indexeddb/IDBKeyPathTest.cpp",
     "indexeddb/IDBRequestTest.cpp",
     "indexeddb/IDBTransactionTest.cpp",
+    "indexeddb/IDBValueWrappingTest.cpp",
     "indexeddb/MockWebIDBDatabase.cpp",
     "indexeddb/MockWebIDBDatabase.h",
     "media_controls/MediaControlsImplTest.cpp",

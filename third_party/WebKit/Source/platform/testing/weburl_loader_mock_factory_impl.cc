@@ -72,9 +72,37 @@ void WebURLLoaderMockFactoryImpl::UnregisterURL(const blink::WebURL& url) {
     url_to_error_info_.erase(error_iter);
 }
 
+void WebURLLoaderMockFactoryImpl::RegisterURLProtocol(
+    const WebString& protocol,
+    const WebURLResponse& response,
+    const WebString& file_path) {
+  DCHECK(protocol.ContainsOnlyASCII());
+
+  ResponseInfo response_info;
+  response_info.response = response;
+  if (!file_path.IsNull() && !file_path.IsEmpty()) {
+    response_info.file_path = blink::WebStringToFilePath(file_path);
+    DCHECK(base::PathExists(response_info.file_path))
+        << response_info.file_path.MaybeAsASCII() << " does not exist.";
+  }
+
+  DCHECK(protocol_to_response_info_.find(protocol) ==
+         protocol_to_response_info_.end());
+  protocol_to_response_info_.Set(protocol, response_info);
+}
+
+void WebURLLoaderMockFactoryImpl::UnregisterURLProtocol(
+    const WebString& protocol) {
+  ProtocolToResponseMap::iterator iter =
+      protocol_to_response_info_.find(protocol);
+  DCHECK(iter != protocol_to_response_info_.end());
+  protocol_to_response_info_.erase(iter);
+}
+
 void WebURLLoaderMockFactoryImpl::UnregisterAllURLsAndClearMemoryCache() {
   url_to_response_info_.clear();
   url_to_error_info_.clear();
+  protocol_to_response_info_.clear();
   GetMemoryCache()->EvictResources();
 }
 
@@ -110,7 +138,9 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
 }
 
 bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {
-  return url_to_response_info_.find(url) != url_to_response_info_.end();
+  WebURLError error;
+  ResponseInfo response_info;
+  return LookupURL(url, &error, &response_info);
 }
 
 void WebURLLoaderMockFactoryImpl::CancelLoad(WebURLLoaderMock* loader) {
@@ -145,25 +175,43 @@ void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURLRequest& request,
                                               WebURLResponse* response,
                                               WebURLError* error,
                                               WebData* data) {
-  URLToErrorMap::const_iterator error_iter =
-      url_to_error_info_.find(request.Url());
-  if (error_iter != url_to_error_info_.end())
-    *error = error_iter->value;
-
-  URLToResponseMap::const_iterator iter =
-      url_to_response_info_.find(request.Url());
-  if (iter == url_to_response_info_.end()) {
+  ResponseInfo response_info;
+  if (!LookupURL(request.Url(), error, &response_info)) {
     // Non mocked URLs should not have been passed to the default URLLoader.
     NOTREACHED();
     return;
   }
 
-  if (!error->reason && !ReadFile(iter->value.file_path, data)) {
+  if (!error->reason && !ReadFile(response_info.file_path, data)) {
     NOTREACHED();
     return;
   }
 
-  *response = iter->value.response;
+  *response = response_info.response;
+}
+
+bool WebURLLoaderMockFactoryImpl::LookupURL(const WebURL& url,
+                                            WebURLError* error,
+                                            ResponseInfo* response_info) {
+  URLToErrorMap::const_iterator error_iter = url_to_error_info_.find(url);
+  if (error_iter != url_to_error_info_.end())
+    *error = error_iter->value;
+
+  URLToResponseMap::const_iterator iter = url_to_response_info_.find(url);
+  if (iter != url_to_response_info_.end()) {
+    *response_info = iter->value;
+    return true;
+  }
+
+  for (const auto& key_value_pair : protocol_to_response_info_) {
+    String protocol = key_value_pair.key;
+    if (url.ProtocolIs(protocol.Ascii().data())) {
+      *response_info = key_value_pair.value;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // static

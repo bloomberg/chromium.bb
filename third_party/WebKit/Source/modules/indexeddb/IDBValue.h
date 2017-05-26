@@ -10,6 +10,7 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebVector.h"
 
@@ -27,6 +28,12 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
   static PassRefPtr<IDBValue> Create(const IDBValue*,
                                      IDBKey*,
                                      const IDBKeyPath&);
+  // Used by IDBValueUnwrapper and its tests.
+  static PassRefPtr<IDBValue> Create(
+      PassRefPtr<SharedBuffer> unwrapped_data,
+      std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
+      std::unique_ptr<Vector<WebBlobInfo>>);
+
   ~IDBValue();
 
   bool IsNull() const;
@@ -37,6 +44,8 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
   const IDBKeyPath& KeyPath() const { return key_path_; }
 
  private:
+  friend class IDBValueUnwrapper;
+
   IDBValue();
   IDBValue(const WebIDBValue&, v8::Isolate*);
   IDBValue(PassRefPtr<SharedBuffer>,
@@ -44,6 +53,9 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
            IDBKey*,
            const IDBKeyPath&);
   IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
+  IDBValue(PassRefPtr<SharedBuffer> unwrapped_data,
+           std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
+           std::unique_ptr<Vector<WebBlobInfo>>);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.
