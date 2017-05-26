@@ -50,6 +50,7 @@
           "dom_distiller::mojom::DistillerJavaScriptService",
           "extensions::KeepAlive",
           "extensions::mime_handler::MimeHandlerService",
+          "extensions::mojom::InlineInstall",
           "media_router::mojom::MediaRouter",
           "page_load_metrics::mojom::PageLoadMetrics",
           "password_manager::mojom::CredentialManager",

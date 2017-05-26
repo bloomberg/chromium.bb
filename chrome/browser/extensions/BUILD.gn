@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//rlz/features/features.gni")
 
 assert(enable_extensions)
@@ -821,6 +822,7 @@ static_library("extensions") {
     "//chrome/browser/media/router",
     "//chrome/browser/media/router/discovery",
     "//chrome/common",
+    "//chrome/common/extensions:mojo_bindings",
     "//chrome/common/extensions/api:api_registration",
     "//chrome/common/extensions/api:extensions_features",
     "//chrome/common/safe_browsing:proto",
