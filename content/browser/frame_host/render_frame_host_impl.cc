@@ -1238,6 +1238,12 @@ void RenderFrameHostImpl::OnFrameFocused() {
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
   GURL validated_url(params.url);
   GetProcess()->FilterURL(false, &validated_url);
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRequestBody(
+          GetSiteInstance(), params.resource_request_body)) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_ILLEGAL_UPLOAD_PARAMS);
+    return;
+  }
 
   if (params.is_history_navigation_in_new_child) {
     // Try to find a FrameNavigationEntry that matches this frame instead, based

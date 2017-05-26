@@ -15,6 +15,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -513,6 +514,97 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, PostWithFileData) {
               ::testing::HasSubstr(file_path.BaseName().AsUTF8Unsafe()));
   EXPECT_THAT(actual_page_body,
               ::testing::HasSubstr("form-data; name=\"file\""));
+}
+
+// Test that verifies that if navigation originator doesn't have access to a
+// file, then no access is granted after a cross-process transfer of POST data.
+// This is a regression test for https://crbug.com/726067.
+//
+// This test is somewhat similar to
+// http/tests/navigation/form-targets-cross-site-frame-post.html layout test
+// except that it 1) tests with files, 2) simulates a malicious scenario and 3)
+// verifies file access (all of these 3 things are not possible with layout
+// tests).
+//
+// This test is very similar to CrossSiteTransferTest.PostWithFileData above,
+// except that it simulates a malicious form / POST originator.
+IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, MaliciousPostWithFileData) {
+  // The initial test window is a named form target.
+  GURL initial_target_url(
+      embedded_test_server()->GetURL("initial-target.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), initial_target_url));
+  WebContents* target_contents = shell()->web_contents();
+  EXPECT_TRUE(ExecuteScript(target_contents, "window.name = 'form-target';"));
+
+  // Create a new window containing a form targeting |target_contents|.
+  GURL form_url(embedded_test_server()->GetURL(
+      "main.com", "/form_that_posts_cross_site.html"));
+  Shell* other_window = OpenPopup(target_contents, form_url, "form-window");
+  WebContents* form_contents = other_window->web_contents();
+  EXPECT_TRUE(ExecuteScript(
+      form_contents,
+      "document.getElementById('file-form').target = 'form-target';"));
+
+  // Verify the current locations and process placement of |target_contents|
+  // and |form_contents|.
+  EXPECT_EQ(initial_target_url, target_contents->GetLastCommittedURL());
+  EXPECT_EQ(form_url, form_contents->GetLastCommittedURL());
+  EXPECT_NE(target_contents->GetMainFrame()->GetProcess()->GetID(),
+            form_contents->GetMainFrame()->GetProcess()->GetID());
+
+  // Prepare a file to upload.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedTempDir temp_dir;
+  base::FilePath file_path;
+  std::string file_content("test-file-content");
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file_path));
+  ASSERT_LT(
+      0, base::WriteFile(file_path, file_content.data(), file_content.size()));
+
+  // Fill out the form to refer to the test file.
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file_path));
+  form_contents->Focus();
+  form_contents->SetDelegate(delegate.get());
+  EXPECT_TRUE(
+      ExecuteScript(form_contents, "document.getElementById('file').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+  ChildProcessSecurityPolicyImpl* security_policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(security_policy->CanReadFile(
+      form_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
+
+  // Simulate a malicious situation, where the renderer doesn't really have
+  // access to the file.
+  security_policy->RevokeAllPermissionsForFile(
+      form_contents->GetMainFrame()->GetProcess()->GetID(), file_path);
+  EXPECT_FALSE(security_policy->CanReadFile(
+      form_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
+  EXPECT_FALSE(security_policy->CanReadFile(
+      target_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
+
+  // Submit the form and wait until the malicious renderer gets killed.
+  RenderProcessHostWatcher process_exit_observer(
+      form_contents->GetMainFrame()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(ExecuteScript(
+      form_contents,
+      "setTimeout(\n"
+      "  function() { document.getElementById('file-form').submit(); },\n"
+      "  0);"));
+  process_exit_observer.Wait();
+  EXPECT_FALSE(process_exit_observer.did_exit_normally());
+
+  // The target frame should still be at the original location - the malicious
+  // navigation should have been stopped.
+  EXPECT_EQ(initial_target_url, target_contents->GetLastCommittedURL());
+
+  // Both processes still shouldn't have access.
+  EXPECT_FALSE(security_policy->CanReadFile(
+      form_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
+  EXPECT_FALSE(security_policy->CanReadFile(
+      target_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
 }
 
 INSTANTIATE_TEST_CASE_P(CrossSiteTransferTest,
