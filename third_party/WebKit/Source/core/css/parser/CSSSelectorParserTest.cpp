@@ -341,4 +341,27 @@ TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
   }
 }
 
+TEST(CSSSelectorParserTest, InternalPseudo) {
+  const char* test_cases[] = {"::-internal-whatever",
+                              "::-internal-media-controls-text-track-list",
+                              ":-internal-list-box",
+                              ":-internal-shadow-host-has-appearance",
+                              ":-internal-spatial-navigation-focus",
+                              ":-internal-video-persistent",
+                              ":-internal-video-persistent-ancestor"};
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+
+    CSSSelectorList author_list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_FALSE(author_list.IsValid());
+
+    CSSSelectorList ua_list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kUASheetMode), nullptr);
+    EXPECT_TRUE(ua_list.IsValid());
+  }
+}
+
 }  // namespace blink
