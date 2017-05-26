@@ -75,8 +75,8 @@ class ImageBitmapTest : public ::testing::Test {
         RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
     color_correct_rendering =
         RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-    color_correct_rendering_default_mode =
-        RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled();
+    color_canvas_extensions =
+        RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
   }
   virtual void TearDown() {
     // Garbage collection is required prior to switching out the
@@ -91,18 +91,19 @@ class ImageBitmapTest : public ::testing::Test {
         experimental_canvas_features);
     RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
         color_correct_rendering);
-    RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(
-        color_correct_rendering_default_mode);
+    RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+        color_canvas_extensions);
   }
 
   sk_sp<SkImage> image_, image2_;
   Persistent<MemoryCache> global_memory_cache_;
   bool experimental_canvas_features;
   bool color_correct_rendering;
-  bool color_correct_rendering_default_mode;
+  bool color_canvas_extensions;
 };
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
   const ImageBitmapOptions default_options;
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::Create());
@@ -147,6 +148,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
   HTMLImageElement* image = HTMLImageElement::Create(*Document::Create());
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
@@ -217,7 +219,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
                ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
   RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
-  RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(!flag);
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
 
   return options;
 }

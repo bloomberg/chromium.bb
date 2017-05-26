@@ -96,11 +96,6 @@ void OffscreenCanvasRenderingContext2D::Reset() {
   BaseRenderingContext2D::Reset();
 }
 
-ColorBehavior OffscreenCanvasRenderingContext2D::DrawImageColorBehavior()
-    const {
-  return CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas();
-}
-
 ImageBuffer* OffscreenCanvasRenderingContext2D::GetImageBuffer() const {
   return const_cast<CanvasRenderingContextHost*>(host())
       ->GetOrCreateImageBuffer();

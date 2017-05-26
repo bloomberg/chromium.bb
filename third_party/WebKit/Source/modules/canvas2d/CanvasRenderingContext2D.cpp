@@ -291,10 +291,6 @@ CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
   return color_params().pixel_format();
 }
 
-ColorBehavior CanvasRenderingContext2D::DrawImageColorBehavior() const {
-  return CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas();
-}
-
 void CanvasRenderingContext2D::Reset() {
   // This is a multiple inherritance bootstrap
   BaseRenderingContext2D::Reset();

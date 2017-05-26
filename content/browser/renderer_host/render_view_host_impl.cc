@@ -528,10 +528,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.color_correct_rendering_enabled =
       command_line.HasSwitch(switches::kEnableColorCorrectRendering);
 
-  prefs.color_correct_rendering_default_mode_enabled =
-      command_line.HasSwitch(
-          switches::kEnableColorCorrectRenderingDefaultMode);
-
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 

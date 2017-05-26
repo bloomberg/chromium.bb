@@ -44,8 +44,7 @@ struct ParsedOptions {
   IntRect crop_rect;
   SkFilterQuality resize_quality = kLow_SkFilterQuality;
   CanvasColorParams color_params;
-  bool color_correct_rendering_enabled = false;
-  bool use_global_target_color_space = false;
+  bool color_canvas_extensions_enabled = false;
 };
 
 ParsedOptions DefaultOptions() {
@@ -79,14 +78,10 @@ ParsedOptions ParseOptions(const ImageBitmapOptions& options,
   }
 
   if (options.colorSpaceConversion() != kImageBitmapOptionNone) {
-    parsed_options.color_correct_rendering_enabled =
-        RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
-        RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-    if (!parsed_options.color_correct_rendering_enabled) {
+    parsed_options.color_canvas_extensions_enabled =
+        RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
+    if (!parsed_options.color_canvas_extensions_enabled) {
       DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
-      if (RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled()) {
-        parsed_options.use_global_target_color_space = true;
-      }
     } else {
       if (options.colorSpaceConversion() == kImageBitmapOptionDefault ||
           options.colorSpaceConversion() ==
@@ -307,18 +302,13 @@ static sk_sp<SkImage> UnPremulSkImageToPremul(
 
 static void ApplyColorSpaceConversion(sk_sp<SkImage>& image,
                                       ParsedOptions& options) {
-  if (!options.color_correct_rendering_enabled &&
-      !options.use_global_target_color_space)
+  if (!options.color_canvas_extensions_enabled)
     return;
 
   sk_sp<SkColorSpace> dst_color_space = nullptr;
   SkColorType dst_color_type = kN32_SkColorType;
-  if (options.use_global_target_color_space) {
-    dst_color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
-  } else {
-    dst_color_space = options.color_params.GetSkColorSpace();
-    dst_color_type = options.color_params.GetSkColorType();
-  }
+  dst_color_space = options.color_params.GetSkColorSpace();
+  dst_color_type = options.color_params.GetSkColorType();
   if (SkColorSpace::Equals(image->colorSpace(), dst_color_space.get()))
     return;
 
@@ -554,10 +544,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   if (!sk_image->isTextureBacked() && !sk_image->peekPixels(&pixmap)) {
     sk_sp<SkColorSpace> dst_color_space = nullptr;
     SkColorType dst_color_type = kN32_SkColorType;
-    if (parsed_options.use_global_target_color_space) {
-      dst_color_space =
-          ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
-    } else if (parsed_options.color_correct_rendering_enabled) {
+    if (parsed_options.color_canvas_extensions_enabled) {
       dst_color_space = parsed_options.color_params.GetSkColorSpace();
       dst_color_type = parsed_options.color_params.GetSkColorType();
     }
@@ -875,8 +862,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   }
 
   CanvasColorParams canvas_color_params;
-  if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+  if (RuntimeEnabledFeatures::colorCanvasExtensionsEnabled()) {
     ImageDataColorSettings color_settings;
     data->getColorSettings(color_settings);
     CanvasColorSpace canvas_color_space =

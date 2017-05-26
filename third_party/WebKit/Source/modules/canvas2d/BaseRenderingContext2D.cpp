@@ -41,8 +41,7 @@ BaseRenderingContext2D::BaseRenderingContext2D()
     : clip_antialiasing_(kNotAntiAliased), color_management_enabled_(false) {
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
   color_management_enabled_ =
-      RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() {}

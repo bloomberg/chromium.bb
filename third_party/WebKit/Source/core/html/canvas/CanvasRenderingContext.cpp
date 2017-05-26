@@ -39,8 +39,7 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
       creation_attributes_(attrs) {
-  if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+  if (RuntimeEnabledFeatures::colorCanvasExtensionsEnabled()) {
     // Set the default color space to SRGB and continue
     CanvasColorSpace color_space = kSRGBCanvasColorSpace;
     if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
@@ -96,13 +95,6 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
   };
   CHECK(false);
   return "";
-}
-
-ColorBehavior CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas()
-    const {
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-    return ColorBehavior::TransformTo(color_params_.GetGfxColorSpace());
-  return ColorBehavior::TransformToGlobalTarget();
 }
 
 void CanvasRenderingContext::Dispose() {
