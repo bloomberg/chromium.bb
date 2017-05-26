@@ -502,8 +502,10 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
                                     min_picture_count_);
   std::unique_ptr<VideoDecoderShim> new_decoder(
       new VideoDecoderShim(this, shim_texture_pool_size));
-  if (!new_decoder->Initialize(profile_, this))
+  if (!new_decoder->Initialize(media::VideoDecodeAccelerator::Config(profile_),
+                               this)) {
     return false;
+  }
 
   software_fallback_used_ = true;
   decoder_.reset(new_decoder.release());
