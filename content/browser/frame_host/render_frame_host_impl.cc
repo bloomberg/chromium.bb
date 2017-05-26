@@ -2630,6 +2630,17 @@ void RenderFrameHostImpl::CreateNewWindow(
     return;
   }
 
+  // For Android WebView, we support a pop-up like behavior for window.open()
+  // even if the embedding app doesn't support multiple windows. In this case,
+  // window.open() will return "window" and navigate it to whatever URL was
+  // passed.
+  if (!render_view_host_->GetWebkitPreferences().supports_multiple_windows) {
+    RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
+                                    render_view_host_->GetRoutingID(),
+                                    MSG_ROUTING_NONE, MSG_ROUTING_NONE, 0);
+    return;
+  }
+
   // This will clone the sessionStorage for namespace_id_to_clone.
 
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(

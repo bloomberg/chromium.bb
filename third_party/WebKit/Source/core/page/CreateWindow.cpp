@@ -83,6 +83,9 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!page)
     return nullptr;
 
+  if (page == old_page)
+    return &opener_frame.Tree().Top();
+
   DCHECK(page->MainFrame());
   LocalFrame& frame = *ToLocalFrame(page->MainFrame());
 
@@ -155,15 +158,6 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
               "' in a new window because the request was made in a sandboxed "
               "frame whose 'allow-popups' permission is not set."));
       return nullptr;
-    }
-
-    // Take the user gesture status into account to simulate the behavior of
-    // Android WebView's popup blocker if the embedder doesn't support multiple
-    // windows.
-    if (opener_frame.GetSettings() &&
-        !opener_frame.GetSettings()->GetSupportsMultipleWindows() &&
-        UserGestureIndicator::ProcessingUserGesture()) {
-      window = &opener_frame.Tree().Top();
     }
   }
 
