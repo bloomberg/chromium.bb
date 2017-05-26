@@ -319,6 +319,9 @@ void UiSceneManager::SetWebVrMode(bool web_vr) {
   web_vr_mode_ = web_vr;
   ConfigureScene();
   ConfigureSecurityWarnings();
+  audio_capture_indicator_->set_visible(!web_vr && audio_capturing_);
+  video_capture_indicator_->set_visible(!web_vr && video_capturing_);
+  screen_capture_indicator_->set_visible(!web_vr && screen_capturing_);
 }
 
 void UiSceneManager::ConfigureScene() {
@@ -367,15 +370,18 @@ void UiSceneManager::UpdateBackgroundColor() {
 }
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
-  audio_capture_indicator_->set_visible(enabled);
+  audio_capturing_ = enabled;
+  audio_capture_indicator_->set_visible(enabled && !web_vr_mode_);
 }
 
 void UiSceneManager::SetVideoCapturingIndicator(bool enabled) {
-  video_capture_indicator_->set_visible(enabled);
+  video_capturing_ = enabled;
+  video_capture_indicator_->set_visible(enabled && !web_vr_mode_);
 }
 
 void UiSceneManager::SetScreenCapturingIndicator(bool enabled) {
-  // TODO(asimjour) add the indicator and change the visibility here.
+  screen_capturing_ = enabled;
+  screen_capture_indicator_->set_visible(enabled && !web_vr_mode_);
 }
 
 void UiSceneManager::SetWebVrSecureOrigin(bool secure) {

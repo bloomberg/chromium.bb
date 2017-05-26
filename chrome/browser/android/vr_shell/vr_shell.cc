@@ -645,9 +645,21 @@ void VrShell::PollMediaAccessFlag() {
       num_tabs_capturing_screen++;
   }
 
-  ui_->SetAudioCapturingIndicator(num_tabs_capturing_audio > 0);
-  ui_->SetVideoCapturingIndicator(num_tabs_capturing_video > 0);
-  ui_->SetScreenCapturingIndicator(num_tabs_capturing_screen > 0);
+  bool is_capturing_audio = num_tabs_capturing_audio > 0;
+  bool is_capturing_video = num_tabs_capturing_video > 0;
+  bool is_capturing_screen = num_tabs_capturing_screen > 0;
+  if (is_capturing_audio != is_capturing_audio_) {
+    ui_->SetAudioCapturingIndicator(is_capturing_audio);
+    is_capturing_audio_ = is_capturing_audio;
+  }
+  if (is_capturing_video != is_capturing_video_) {
+    ui_->SetVideoCapturingIndicator(is_capturing_video);
+    is_capturing_video_ = is_capturing_video;
+  }
+  if (is_capturing_screen != is_capturing_screen_) {
+    ui_->SetScreenCapturingIndicator(is_capturing_screen);
+    is_capturing_screen_ = is_capturing_screen;
+  }
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
