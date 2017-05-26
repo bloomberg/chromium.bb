@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -165,6 +166,8 @@ using bookmarks::BookmarkNode;
     [bigTitle_ setStringValue:title];
   }
 
+  [self adjustForRTLIfNecessary];
+
   [self fillInFolderList];
 
   // Ping me when things change out from under us.  Unlike a normal
@@ -313,6 +316,19 @@ using bookmarks::BookmarkNode;
   LocationBarViewMac* locationBar =
       [[[self parentWindow] windowController] locationBarBridge];
   return locationBar ? locationBar->star_decoration() : nullptr;
+}
+
+- (void)adjustForRTLIfNecessary {
+  // Info bubble view to:
+  // - Fix the leading margin on the title.
+  // - Flip containers.
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary([bigTitle_ superview]);
+  // Margin on the labels.
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary(fieldLabelsContainer_);
+  // Margin on the fields.
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary([nameTextField_ superview]);
+  // Relative order of the done and options buttons.
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary(trailingButtonContainer_);
 }
 
 @end  // BookmarkBubbleController

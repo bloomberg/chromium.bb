@@ -10,9 +10,11 @@
             <connections>
                 <outlet property="bigTitle_" destination="2" id="28"/>
                 <outlet property="bubble_" destination="1" id="65"/>
+                <outlet property="fieldLabelsContainer_" destination="36" id="z7D-at-qbV"/>
                 <outlet property="folderPopUpButton_" destination="57" id="64"/>
                 <outlet property="nameTextField_" destination="12" id="29"/>
                 <outlet property="syncPromoPlaceholder_" destination="74" id="78"/>
+                <outlet property="trailingButtonContainer_" destination="34" id="uKW-kF-l7p"/>
                 <outlet property="window" destination="50" id="52"/>
             </connections>
         </customObject>
@@ -44,7 +46,7 @@
                             <box autoresizesSubviews="NO" borderType="none" titlePosition="noTitle" id="39">
                                 <rect key="frame" x="79" y="46" width="294" height="59"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <view key="contentView">
+                                <view key="contentView" id="uN9-QU-FlY">
                                     <rect key="frame" x="0.0" y="0.0" width="294" height="59"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
