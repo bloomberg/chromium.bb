@@ -304,17 +304,8 @@ template <typename Function>
 void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    // TODO(https://crbug.com/719439) This code would be simpler if
-    // Frame::View() returned a common base class for LocalFrameView and
-    // RemoteFrameView.
-    FrameOrPlugin* child_view = nullptr;
-    if (child->IsLocalFrame())
-      child_view = ToLocalFrame(child)->View();
-    else if (child->IsRemoteFrame())
-      child_view = ToRemoteFrame(child)->View();
-
-    if (child_view)
-      function(*child_view);
+    if (child->View())
+      function(*child->View());
   }
 
   for (const auto& plugin : plugins_) {
@@ -323,7 +314,7 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
 }
 
 template <typename Function>
-void LocalFrameView::ForAllChildFrameViews(const Function& function) {
+void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (!child->IsLocalFrame())
@@ -337,7 +328,8 @@ void LocalFrameView::ForAllChildFrameViews(const Function& function) {
 // Note it needs a null check of the frame's layoutView to access it in case of
 // detached frames.
 template <typename Function>
-void LocalFrameView::ForAllNonThrottledFrameViews(const Function& function) {
+void LocalFrameView::ForAllNonThrottledLocalFrameViews(
+    const Function& function) {
   if (ShouldThrottleRendering())
     return;
 
@@ -348,7 +340,7 @@ void LocalFrameView::ForAllNonThrottledFrameViews(const Function& function) {
     if (!child->IsLocalFrame())
       continue;
     if (LocalFrameView* child_view = ToLocalFrame(child)->View())
-      child_view->ForAllNonThrottledFrameViews(function);
+      child_view->ForAllNonThrottledLocalFrameViews(function);
   }
 }
 
@@ -544,7 +536,7 @@ void LocalFrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
   bool uses_window_inactive_selector =
       frame_->GetDocument()->GetStyleEngine().UsesWindowInactiveSelector();
 
-  ForAllChildFrameViews([](LocalFrameView& frame_view) {
+  ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.InvalidateAllCustomScrollbarsOnActiveChanged();
   });
 
@@ -1739,7 +1731,7 @@ bool LocalFrameView::ShouldSetCursor() const {
 }
 
 void LocalFrameView::ScrollContentsIfNeededRecursive() {
-  ForAllNonThrottledFrameViews(
+  ForAllNonThrottledLocalFrameViews(
       [](LocalFrameView& frame_view) { frame_view.ScrollContentsIfNeeded(); });
 }
 
@@ -2414,7 +2406,7 @@ void LocalFrameView::SetBaseBackgroundColor(const Color& background_color) {
 
 void LocalFrameView::UpdateBaseBackgroundColorRecursively(
     const Color& base_background_color) {
-  ForAllNonThrottledFrameViews(
+  ForAllNonThrottledLocalFrameViews(
       [base_background_color](LocalFrameView& frame_view) {
         frame_view.SetBaseBackgroundColor(base_background_color);
       });
@@ -3109,17 +3101,17 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     return;
   }
 
-  ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
   if (target_state == DocumentLifecycle::kPaintClean) {
-    ForAllNonThrottledFrameViews(
+    ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& frame_view) { frame_view.NotifyResizeObservers(); });
   }
 
   if (LayoutViewItem view = GetLayoutViewItem()) {
-    ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.CheckDoesNotNeedLayout();
       frame_view.allows_layout_invalidation_after_layout_clean_ = false;
     });
@@ -3131,7 +3123,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         view.Compositor()->UpdateIfNeededRecursive(target_state);
       } else {
-        ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+        ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
           frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
           frame_view.GetLayoutView()->CommitPendingSelection();
         });
@@ -3190,7 +3182,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
              Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
     }
 
-    ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.CheckDoesNotNeedLayout();
       frame_view.allows_layout_invalidation_after_layout_clean_ = true;
     });
@@ -3220,7 +3212,7 @@ void LocalFrameView::PrePaint() {
   if (!paint_controller_)
     paint_controller_ = PaintController::Create();
 
-  ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
     if (frame_view.CanThrottleRendering()) {
       // This frame can be throttled but not throttled, meaning we are not in an
@@ -3238,7 +3230,7 @@ void LocalFrameView::PrePaint() {
     PrePaintTreeWalk().Walk(*this);
   }
 
-  ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
   });
 }
@@ -3252,7 +3244,7 @@ void LocalFrameView::PaintTree() {
 
   LayoutViewItem view = GetLayoutViewItem();
   DCHECK(!view.IsNull());
-  ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
 
@@ -3292,7 +3284,7 @@ void LocalFrameView::PaintTree() {
     }
   }
 
-  ForAllNonThrottledFrameViews([](LocalFrameView& frame_view) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
     LayoutViewItem layout_view_item = frame_view.GetLayoutViewItem();
     if (!layout_view_item.IsNull())
@@ -4992,7 +4984,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
       (was_throttled != is_throttled ||
        force_throttling_invalidation_behavior ==
            kForceThrottlingInvalidation)) {
-    ForAllChildFrameViews([is_throttled](LocalFrameView& frame_view) {
+    ForAllChildLocalFrameViews([is_throttled](LocalFrameView& frame_view) {
       frame_view.UpdateRenderThrottlingStatus(frame_view.hidden_for_throttling_,
                                               is_throttled);
     });

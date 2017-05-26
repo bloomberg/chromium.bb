@@ -29,7 +29,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
-#include "core/frame/FrameOrPlugin.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
@@ -103,7 +103,7 @@ typedef unsigned long long DOMTimeStamp;
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
       public PlatformFrameView,
-      public FrameOrPlugin,
+      public FrameView,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
@@ -1027,10 +1027,10 @@ class CORE_EXPORT LocalFrameView final
   void ForAllChildViewsAndPlugins(const Function&);
 
   template <typename Function>
-  void ForAllChildFrameViews(const Function&);
+  void ForAllChildLocalFrameViews(const Function&);
 
   template <typename Function>
-  void ForAllNonThrottledFrameViews(const Function&);
+  void ForAllNonThrottledLocalFrameViews(const Function&);
 
   void UpdateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState target_state);

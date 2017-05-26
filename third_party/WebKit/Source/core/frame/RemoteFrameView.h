@@ -5,6 +5,7 @@
 #ifndef RemoteFrameView_h
 #define RemoteFrameView_h
 
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrameView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
@@ -16,7 +17,7 @@ class GraphicsContext;
 class RemoteFrame;
 
 class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
-                              public FrameOrPlugin {
+                              public FrameView {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
 
  public:

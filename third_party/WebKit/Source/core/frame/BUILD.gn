@@ -46,6 +46,7 @@ blink_core_sources("frame") {
     "FrameSerializer.cpp",
     "FrameSerializer.h",
     "FrameTypes.h",
+    "FrameView.h",
     "FrameViewAutoSizeInfo.cpp",
     "FrameViewAutoSizeInfo.h",
     "History.cpp",
