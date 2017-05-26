@@ -1218,7 +1218,9 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_FILTER_INTRA
 static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
+                                         const MACROBLOCKD *xd,
                                          const MB_MODE_INFO *const mbmi,
+                                         int mi_row, int mi_col,
                                          aom_writer *w) {
   if (mbmi->mode == DC_PRED
 #if CONFIG_PALETTE
@@ -1233,6 +1235,13 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
       write_uniform(w, FILTER_INTRA_MODES, mode);
     }
   }
+
+#if CONFIG_CB4X4
+  if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
+                           xd->plane[1].subsampling_x,
+                           xd->plane[1].subsampling_y))
+    return;
+#endif
 
   if (mbmi->uv_mode == DC_PRED
 #if CONFIG_PALETTE
@@ -1816,7 +1825,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
     if (bsize >= BLOCK_8X8 || unify_bsize)
-      write_filter_intra_mode_info(cm, mbmi, w);
+      write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
@@ -2171,7 +2180,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
   if (bsize >= BLOCK_8X8 || unify_bsize)
-    write_filter_intra_mode_info(cm, mbmi, w);
+    write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL

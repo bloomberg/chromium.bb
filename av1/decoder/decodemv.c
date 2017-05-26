@@ -752,7 +752,8 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
 #if CONFIG_FILTER_INTRA
 static void read_filter_intra_mode_info(AV1_COMMON *const cm,
-                                        MACROBLOCKD *const xd, aom_reader *r) {
+                                        MACROBLOCKD *const xd, int mi_row,
+                                        int mi_col, aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   FRAME_COUNTS *counts = xd->counts;
@@ -775,6 +776,14 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
             ->filter_intra[0][filter_intra_mode_info->use_filter_intra_mode[0]];
     }
   }
+
+#if CONFIG_CB4X4
+  if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
+                           xd->plane[1].subsampling_x,
+                           xd->plane[1].subsampling_y))
+    return;
+#endif
+
   if (mbmi->uv_mode == DC_PRED
 #if CONFIG_PALETTE
       && mbmi->palette_mode_info.palette_size[1] == 0
@@ -1117,7 +1126,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
   if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
-    read_filter_intra_mode_info(cm, xd, r);
+    read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
@@ -1445,7 +1454,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
   if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
-    read_filter_intra_mode_info(cm, xd, r);
+    read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
 #endif  // CONFIG_FILTER_INTRA
 }
 
