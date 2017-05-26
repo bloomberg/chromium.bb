@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_
-#define REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_
+#ifndef REMOTING_CLIENT_TOUCH_INPUT_INPUT_STRATEGY_H_
+#define REMOTING_CLIENT_TOUCH_INPUT_INPUT_STRATEGY_H_
 
 #include "remoting/client/ui/view_matrix.h"
 
@@ -13,9 +13,9 @@ class DesktopViewport;
 
 // This is an interface used by GestureInterpreter to customize the way gestures
 // are handled.
-class InputStrategy {
+class TouchInputStrategy {
  public:
-  enum InputFeedbackType {
+  enum TouchFeedbackType {
     TAP_FEEDBACK,
     DRAG_FEEDBACK,
   };
@@ -26,7 +26,7 @@ class InputStrategy {
     DRAG,
   };
 
-  virtual ~InputStrategy() {}
+  virtual ~TouchInputStrategy() {}
 
   // Called when the GestureInterpreter receives a zoom gesture. The
   // implementation is responsible for modifying the viewport and observing the
@@ -68,7 +68,7 @@ class InputStrategy {
   // coordinate for the given input type. The feedback will then be shown on the
   // cursor positions returned by GetCursorPosition(). Return 0 if no feedback
   // should be shown.
-  virtual float GetFeedbackRadius(InputFeedbackType type) const = 0;
+  virtual float GetFeedbackRadius(TouchFeedbackType type) const = 0;
 
   // Returns true if the input strategy maintains a visible cursor on the
   // desktop.
@@ -76,4 +76,4 @@ class InputStrategy {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_INPUT_INPUT_STRATEGY_H_
+#endif  // REMOTING_CLIENT_TOUCH_INPUT_INPUT_STRATEGY_H_

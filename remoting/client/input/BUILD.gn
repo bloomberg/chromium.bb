@@ -5,9 +5,8 @@
 source_set("input") {
   sources = [
     "client_input_injector.h",
-    "direct_input_strategy.cc",
-    "direct_input_strategy.h",
-    "input_strategy.h",
+    "direct_touch_input_strategy.cc",
+    "direct_touch_input_strategy.h",
     "key_event_mapper.cc",
     "key_event_mapper.h",
     "keyboard_input_strategy.h",
@@ -21,6 +20,7 @@ source_set("input") {
     "text_keyboard_input_strategy.h",
     "touch_input_scaler.cc",
     "touch_input_scaler.h",
+    "touch_input_strategy.h",
     "trackpad_input_strategy.cc",
     "trackpad_input_strategy.h",
   ]

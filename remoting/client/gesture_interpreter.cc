@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/display/renderer_proxy.h"
-#include "remoting/client/input/direct_input_strategy.h"
+#include "remoting/client/input/direct_touch_input_strategy.h"
 #include "remoting/client/input/trackpad_input_strategy.h"
 
 namespace {
@@ -41,7 +41,7 @@ GestureInterpreter::~GestureInterpreter() {}
 void GestureInterpreter::SetInputMode(InputMode mode) {
   switch (mode) {
     case DIRECT_INPUT_MODE:
-      input_strategy_.reset(new DirectInputStrategy());
+      input_strategy_.reset(new DirectTouchInputStrategy());
       break;
     case TRACKPAD_INPUT_MODE:
       input_strategy_.reset(new TrackpadInputStrategy(viewport_));
@@ -64,7 +64,7 @@ void GestureInterpreter::Zoom(float pivot_x,
                               float scale,
                               GestureState state) {
   AbortAnimations();
-  SetGestureInProgress(InputStrategy::ZOOM, state != GESTURE_ENDED);
+  SetGestureInProgress(TouchInputStrategy::ZOOM, state != GESTURE_ENDED);
   input_strategy_->HandleZoom({pivot_x, pivot_y}, scale, &viewport_);
 }
 
@@ -101,11 +101,11 @@ void GestureInterpreter::Drag(float x, float y, GestureState state) {
 
   if (state == GESTURE_BEGAN) {
     StartInputFeedback(cursor_position.x, cursor_position.y,
-                       InputStrategy::DRAG_FEEDBACK);
+                       TouchInputStrategy::DRAG_FEEDBACK);
   }
 
   bool is_dragging_mode = state != GESTURE_ENDED;
-  SetGestureInProgress(InputStrategy::DRAG, is_dragging_mode);
+  SetGestureInProgress(TouchInputStrategy::DRAG, is_dragging_mode);
   input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
                               protocol::MouseEvent_MouseButton_BUTTON_LEFT,
                               is_dragging_mode);
@@ -162,7 +162,7 @@ void GestureInterpreter::PanWithoutAbortAnimations(float translation_x,
                                  gesture_in_progress_, &viewport_)) {
     // Cursor position changed.
     ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
-    if (gesture_in_progress_ != InputStrategy::DRAG) {
+    if (gesture_in_progress_ != TouchInputStrategy::DRAG) {
       // Drag() will inject the position so don't need to do that in that case.
       InjectCursorPosition(cursor_position.x, cursor_position.y);
     }
@@ -195,7 +195,7 @@ void GestureInterpreter::InjectMouseClick(
   }
   ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
   StartInputFeedback(cursor_position.x, cursor_position.y,
-                     InputStrategy::TAP_FEEDBACK);
+                     TouchInputStrategy::TAP_FEEDBACK);
 
   input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y, button,
                               true);
@@ -203,10 +203,11 @@ void GestureInterpreter::InjectMouseClick(
                               false);
 }
 
-void GestureInterpreter::SetGestureInProgress(InputStrategy::Gesture gesture,
-                                              bool is_in_progress) {
+void GestureInterpreter::SetGestureInProgress(
+    TouchInputStrategy::Gesture gesture,
+    bool is_in_progress) {
   if (!is_in_progress && gesture_in_progress_ == gesture) {
-    gesture_in_progress_ = InputStrategy::NONE;
+    gesture_in_progress_ = TouchInputStrategy::NONE;
     return;
   }
   gesture_in_progress_ = gesture;
@@ -215,7 +216,7 @@ void GestureInterpreter::SetGestureInProgress(InputStrategy::Gesture gesture,
 void GestureInterpreter::StartInputFeedback(
     float cursor_x,
     float cursor_y,
-    InputStrategy::InputFeedbackType feedback_type) {
+    TouchInputStrategy::TouchFeedbackType feedback_type) {
   // This radius is on the view's coordinates. Need to be converted to desktop
   // coordinate.
   float feedback_radius = input_strategy_->GetFeedbackRadius(feedback_type);
