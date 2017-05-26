@@ -42,7 +42,27 @@ var injectIframe =
     'iframe.src = "' + iframeUrl + '";\n' +
     'document.body.appendChild(iframe);\n';
 
+var runCount = 0;
+
 chrome.browserAction.onClicked.addListener(function(tab) {
+  runCount++;
+  if (runCount == 1) {
+    // First pass is done without granting activeTab permission, the extension
+    // shouldn't have access to tab.url here.
+    assertFalse(!!tab.url);
+    chrome.test.succeed();
+    return;
+  } else if (runCount == 3) {
+    // Third pass is done in a public session, and activeTab permission is
+    // granted to the extension. URL should be scrubbed down to the origin here
+    // (tested at the C++ side).
+    chrome.test.sendMessage(tab.url);
+    chrome.test.succeed();
+    return;
+  }
+  // Second pass is done with granting activeTab permission, the extension
+  // should have full access to the page (and also to tab.url).
+
   iframeDone = chrome.test.callbackAdded();
   cachedUrl = tab.url;
   chrome.tabs.executeScript({ code: injectIframe }, callbackPass());
