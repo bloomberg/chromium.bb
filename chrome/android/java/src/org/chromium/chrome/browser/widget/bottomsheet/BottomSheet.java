@@ -639,10 +639,13 @@ public class BottomSheet
 
                 // If the keyboard height changed, recompute the padding for the content area. This
                 // shrinks the content size while retaining the default background color where the
-                // keyboard is appearing.
+                // keyboard is appearing. If the sheet is not showing, resize the sheet to its
+                // default state.
                 if (keyboardHeightChanged && isSheetOpen()) {
                     mBottomSheetContentContainer.setPadding(
                             0, 0, 0, (int) mBottomNavHeight + keyboardHeight);
+                } else if (!isSheetOpen()) {
+                    mBottomSheetContentContainer.setPadding(0, 0, 0, (int) mBottomNavHeight);
                 }
 
                 // If we are in the middle of a touch event stream (i.e. scrolling while keyboard is
