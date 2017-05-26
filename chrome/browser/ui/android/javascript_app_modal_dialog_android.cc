@@ -152,7 +152,7 @@ const ScopedJavaGlobalRef<jobject>&
 ScopedJavaLocalRef<jobject> GetCurrentModalDialog(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  app_modal::AppModalDialog* dialog =
+  app_modal::JavaScriptAppModalDialog* dialog =
       app_modal::AppModalDialogQueue::GetInstance()->active_dialog();
   if (!dialog || !dialog->native_dialog())
     return ScopedJavaLocalRef<jobject>();

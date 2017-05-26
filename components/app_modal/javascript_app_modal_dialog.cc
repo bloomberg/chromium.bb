@@ -7,12 +7,16 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "ui/gfx/text_elider.h"
 
 namespace app_modal {
 namespace {
+
+AppModalDialogObserver* app_modal_dialog_observer = nullptr;
 
 // Control maximum sizes of various texts passed to us from javascript.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -66,7 +70,11 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool is_before_unload_dialog,
     bool is_reload,
     const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-    : AppModalDialog(web_contents, title),
+    : title_(title),
+      completed_(false),
+      valid_(true),
+      native_dialog_(nullptr),
+      web_contents_(web_contents),
       extra_data_map_(extra_data_map),
       javascript_dialog_type_(javascript_dialog_type),
       display_suppress_checkbox_(display_suppress_checkbox),
@@ -80,25 +88,46 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
 }
 
 JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
+  CompleteDialog();
 }
 
-NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
-  return JavaScriptDialogManager::GetInstance()
-      ->native_dialog_factory()
-      ->CreateNativeJavaScriptDialog(this);
+void JavaScriptAppModalDialog::ShowModalDialog() {
+  native_dialog_ = JavaScriptDialogManager::GetInstance()
+                       ->native_dialog_factory()
+                       ->CreateNativeJavaScriptDialog(this);
+  native_dialog_->ShowAppModalDialog();
+  if (app_modal_dialog_observer)
+    app_modal_dialog_observer->Notify(this);
 }
 
-bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {
-  return true;
+void JavaScriptAppModalDialog::ActivateModalDialog() {
+  DCHECK(native_dialog_);
+  native_dialog_->ActivateAppModalDialog();
+}
+
+void JavaScriptAppModalDialog::CloseModalDialog() {
+  DCHECK(native_dialog_);
+  native_dialog_->CloseAppModalDialog();
+}
+
+void JavaScriptAppModalDialog::CompleteDialog() {
+  if (!completed_) {
+    completed_ = true;
+    AppModalDialogQueue::GetInstance()->ShowNextDialog();
+  }
+}
+
+bool JavaScriptAppModalDialog::IsValid() {
+  return valid_;
 }
 
 void JavaScriptAppModalDialog::Invalidate() {
-  if (!IsValid())
+  if (!valid_)
     return;
 
-  AppModalDialog::Invalidate();
+  valid_ = false;
   CallDialogClosedCallback(false, base::string16());
-  if (native_dialog())
+  if (native_dialog_)
     CloseModalDialog();
 }
 
@@ -138,7 +167,7 @@ void JavaScriptAppModalDialog::SetOverridePromptText(
 void JavaScriptAppModalDialog::NotifyDelegate(bool success,
                                               const base::string16& user_input,
                                               bool suppress_js_messages) {
-  if (!IsValid())
+  if (!valid_)
     return;
 
   CallDialogClosedCallback(success, user_input);
@@ -146,7 +175,7 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   // The close callback above may delete web_contents_, thus removing the extra
   // data from the map owned by ::JavaScriptDialogManager. Make sure
   // to only use the data if still present. http://crbug.com/236476
-  ExtraDataMap::iterator extra_data = extra_data_map_->find(web_contents());
+  ExtraDataMap::iterator extra_data = extra_data_map_->find(web_contents_);
   if (extra_data != extra_data_map_->end()) {
     extra_data->second.has_already_shown_a_dialog_ = true;
     extra_data->second.suppress_javascript_messages_ = suppress_js_messages;
@@ -154,14 +183,14 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
 
   // On Views, we can end up coming through this code path twice :(.
   // See crbug.com/63732.
-  AppModalDialog::Invalidate();
+  valid_ = false;
 }
 
 void JavaScriptAppModalDialog::CallDialogClosedCallback(bool success,
     const base::string16& user_input) {
   // TODO(joenotcharles): Both the callers of this function also check IsValid
-  // and call AppModalDialog::Invalidate, but in different orders. If the
-  // difference is not significant, more common code could be moved here.
+  // and call Invalidate, but in different orders. If the difference is not
+  // significant, more common code could be moved here.
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "JSDialogs.FineTiming.TimeBetweenDialogCreatedAndSameDialogClosed",
       base::TimeTicks::Now() - creation_time_);
@@ -169,6 +198,16 @@ void JavaScriptAppModalDialog::CallDialogClosedCallback(bool success,
     callback_.Run(success, user_input);
     callback_.Reset();
   }
+}
+
+AppModalDialogObserver::AppModalDialogObserver() {
+  DCHECK(!app_modal_dialog_observer);
+  app_modal_dialog_observer = this;
+}
+
+AppModalDialogObserver::~AppModalDialogObserver() {
+  DCHECK(app_modal_dialog_observer);
+  app_modal_dialog_observer = nullptr;
 }
 
 }  // namespace app_modal

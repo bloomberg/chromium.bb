@@ -10,10 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 namespace app_modal {
+
+class NativeAppModalDialog;
 
 // Extra data for JavaScript dialogs to add Chrome-only features.
 class ChromeJavaScriptDialogExtraData {
@@ -32,7 +33,7 @@ class ChromeJavaScriptDialogExtraData {
 
 // A controller + model class for JavaScript alert, confirm, prompt, and
 // onbeforeunload dialog boxes.
-class JavaScriptAppModalDialog : public AppModalDialog {
+class JavaScriptAppModalDialog {
  public:
   typedef std::map<void*, ChromeJavaScriptDialogExtraData> ExtraDataMap;
 
@@ -47,12 +48,26 @@ class JavaScriptAppModalDialog : public AppModalDialog {
       bool is_before_unload_dialog,
       bool is_reload,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback);
-  ~JavaScriptAppModalDialog() override;
+  ~JavaScriptAppModalDialog();
 
-  // Overridden from AppModalDialog:
-  NativeAppModalDialog* CreateNativeDialog() override;
-  bool IsJavaScriptModalDialog() override;
-  void Invalidate() override;
+  // Called by the AppModalDialogQueue to show this dialog.
+  void ShowModalDialog();
+
+  // Called by the AppModalDialogQueue to activate the dialog.
+  void ActivateModalDialog();
+
+  // Closes the dialog if it is showing.
+  void CloseModalDialog();
+
+  // Returns true if the dialog is still valid. As dialogs are created they are
+  // added to the AppModalDialogQueue. When the current modal dialog finishes
+  // and it's time to show the next dialog in the queue IsValid is invoked.
+  // If IsValid returns false the dialog is deleted and not shown.
+  bool IsValid();
+
+  // Invalidates the dialog, therefore causing it to not be shown when its turn
+  // to be shown comes around.
+  void Invalidate();
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);
@@ -66,7 +81,10 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   // its delegate instead of whatever the UI reports.
   void SetOverridePromptText(const base::string16& prompt_text);
 
-  // Accessors
+  // Accessors.
+  base::string16 title() const { return title_; }
+  NativeAppModalDialog* native_dialog() const { return native_dialog_; }
+  content::WebContents* web_contents() const { return web_contents_; }
   content::JavaScriptDialogType javascript_dialog_type() const {
     return javascript_dialog_type_;
   }
@@ -83,6 +101,26 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   void CallDialogClosedCallback(bool success,
                                 const base::string16& prompt_text);
+
+  // Completes dialog handling, shows next modal dialog from the queue.
+  // TODO(beng): Get rid of this method.
+  void CompleteDialog();
+
+  // The title of the dialog.
+  base::string16 title_;
+
+  // // True if CompleteDialog was called.
+  bool completed_;
+
+  // False if the dialog should no longer be shown, e.g. because the underlying
+  // tab navigated away while the dialog was queued.
+  bool valid_;
+
+  // // The toolkit-specific implementation of the app modal dialog box.
+  NativeAppModalDialog* native_dialog_;
+
+  // The WebContents that opened this dialog.
+  content::WebContents* web_contents_;
 
   // A map of extra Chrome-only data associated with the delegate_. Can be
   // inspected via |extra_data_map_[web_contents_]|.
@@ -106,6 +144,19 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);
+};
+
+// An interface to observe that a modal dialog is shown.
+class AppModalDialogObserver {
+ public:
+  AppModalDialogObserver();
+  virtual ~AppModalDialogObserver();
+
+  // Called when the modal dialog is shown.
+  virtual void Notify(JavaScriptAppModalDialog* dialog) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
 };
 
 }  // namespace app_modal

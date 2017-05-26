@@ -87,7 +87,6 @@
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 
-using app_modal::AppModalDialog;
 using app_modal::JavaScriptAppModalDialog;
 using app_modal::NativeAppModalDialog;
 using content::BrowserThread;
@@ -452,11 +451,8 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
   }
 
   NativeAppModalDialog* GetDialog() {
-    AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
-    EXPECT_TRUE(dialog->IsJavaScriptModalDialog());
-    JavaScriptAppModalDialog* js_dialog =
-        static_cast<JavaScriptAppModalDialog*>(dialog);
-    NativeAppModalDialog* native_dialog = js_dialog->native_dialog();
+    JavaScriptAppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+    NativeAppModalDialog* native_dialog = dialog->native_dialog();
     EXPECT_TRUE(native_dialog);
     return native_dialog;
   }

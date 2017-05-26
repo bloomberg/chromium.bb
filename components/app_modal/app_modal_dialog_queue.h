@@ -15,14 +15,14 @@ template <typename T> struct DefaultSingletonTraits;
 
 namespace app_modal {
 
-class AppModalDialog;
+class JavaScriptAppModalDialog;
 
-// Keeps a queue of AppModalDialogs, making sure only one app modal
+// Keeps a queue of JavaScriptAppModalDialogs, making sure only one app modal
 // dialog is shown at a time.
 // This class is a singleton.
 class AppModalDialogQueue {
  public:
-  typedef std::deque<AppModalDialog*>::iterator iterator;
+  typedef std::deque<JavaScriptAppModalDialog*>::iterator iterator;
 
   // Returns the singleton instance.
   static AppModalDialogQueue* GetInstance();
@@ -32,9 +32,9 @@ class AppModalDialogQueue {
   // most recently active browser window (or whichever is currently active)
   // will be app modal, meaning it will be activated if the user tries to
   // activate any other browser windows.
-  // Note: The AppModalDialog |dialog| must be window modal before it
+  // Note: The JavaScriptAppModalDialog |dialog| must be window modal before it
   // can be added as app modal.
-  void AddDialog(AppModalDialog* dialog);
+  void AddDialog(JavaScriptAppModalDialog* dialog);
 
   // Removes the current dialog in the queue (the one that is being shown).
   // Shows the next dialog in the queue, if any is present. This does not
@@ -53,7 +53,7 @@ class AppModalDialogQueue {
   // Returns true if there is currently an active app modal dialog box.
   bool HasActiveDialog() const;
 
-  AppModalDialog* active_dialog() { return active_dialog_; }
+  JavaScriptAppModalDialog* active_dialog() { return active_dialog_; }
 
   // Iterators to walk the queue. The queue does not include the currently
   // active app modal dialog box.
@@ -67,21 +67,21 @@ class AppModalDialogQueue {
   ~AppModalDialogQueue();
 
   // Shows |dialog| and notifies the BrowserList that a modal dialog is showing.
-  void ShowModalDialog(AppModalDialog* dialog);
+  void ShowModalDialog(JavaScriptAppModalDialog* dialog);
 
   // Returns the next dialog to show. This removes entries from
   // app_modal_dialog_queue_ until one is valid or the queue is empty. This
-  // returns NULL if there are no more dialogs, or all the dialogs in the queue
-  // are not valid.
-  AppModalDialog* GetNextDialog();
+  // returns nullptr if there are no more dialogs, or all the dialogs in the
+  // queue are not valid.
+  JavaScriptAppModalDialog* GetNextDialog();
 
   // Contains all app modal dialogs which are waiting to be shown. The currently
   // active modal dialog is not included.
-  std::deque<AppModalDialog*> app_modal_dialog_queue_;
+  std::deque<JavaScriptAppModalDialog*> app_modal_dialog_queue_;
 
-  // The currently active app-modal dialog box's delegate. NULL if there is no
-  // active app-modal dialog box.
-  AppModalDialog* active_dialog_;
+  // The currently active app-modal dialog box. nullptr if there is no active
+  // app-modal dialog box.
+  JavaScriptAppModalDialog* active_dialog_;
 
   // Stores if |ShowModalDialog()| is currently being called on an app-modal
   // dialog.

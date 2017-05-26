@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/app_modal_dialog.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -239,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   ASSERT_TRUE(extension);
 
   // The test extension opens a dialog on installation.
-  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+  app_modal::JavaScriptAppModalDialog* dialog =
+      ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
 
   // With the dialog open the background page is still alive.

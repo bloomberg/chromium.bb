@@ -64,12 +64,10 @@
 namespace {
 
 app_modal::NativeAppModalDialog* GetNextDialog() {
-  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(dialog->IsJavaScriptModalDialog());
-  app_modal::JavaScriptAppModalDialog* js_dialog =
-      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
-  CHECK(js_dialog->native_dialog());
-  return js_dialog->native_dialog();
+  app_modal::JavaScriptAppModalDialog* dialog =
+      ui_test_utils::WaitForAppModalDialog();
+  CHECK(dialog->native_dialog());
+  return dialog->native_dialog();
 }
 
 // Note: call |PrepareForDialog| on the relevant WebContents or Browser before

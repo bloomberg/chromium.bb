@@ -708,19 +708,16 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   tab->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16("var o = document.createElement('object'); o.data = "
                         "'/alert_dialog.pdf'; document.body.appendChild(o);"));
-  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+  app_modal::JavaScriptAppModalDialog* dialog =
+      ui_test_utils::WaitForAppModalDialog();
 #if !defined(OS_MACOSX)
   if (chrome::FindLastActive() != browser())
     alert_waiter.WaitForActivation();
 #endif
 
   // Verify that after the dialog was closed, the popup is in front again.
-  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
-  app_modal::JavaScriptAppModalDialog* js_dialog =
-      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
-
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
-  js_dialog->native_dialog()->AcceptAppModalDialog();
+  dialog->native_dialog()->AcceptAppModalDialog();
   waiter.WaitForActivation();
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }

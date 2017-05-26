@@ -71,7 +71,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
@@ -127,7 +126,6 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
-using app_modal::AppModalDialog;
 using app_modal::AppModalDialogQueue;
 using app_modal::JavaScriptAppModalDialog;
 using base::ASCIIToUTF16;
@@ -617,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   // Start a navigation to trigger the beforeunload dialog.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("window.location.href = 'about:blank'"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   EXPECT_TRUE(dialog_queue->HasActiveDialog());
@@ -708,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   // Navigate to another page, but click cancel in the dialog.  Make sure that
   // the throbber stops spinning.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
 
   alert->CloseModalDialog();
   EXPECT_FALSE(contents->IsLoading());
@@ -835,9 +833,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   browser()->OpenURL(OpenURLParams(redirect_url, Referrer(),
                                    WindowOpenDisposition::CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(
-      static_cast<JavaScriptAppModalDialog*>(alert)->is_before_unload_dialog());
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->is_before_unload_dialog());
   alert->native_dialog()->AcceptAppModalDialog();
   nav_observer.Wait();
 
@@ -866,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
       content::NotificationService::AllSources());
 
   // Cancel the dialog.
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
   EXPECT_FALSE(contents->IsLoading());
 
@@ -906,12 +903,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
       ->GetMainFrame()
       ->ExecuteJavaScriptWithUserGestureForTests(
           ASCIIToUTF16("w.close(); alert('bar');"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->AcceptAppModalDialog();
 
   alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_FALSE(static_cast<JavaScriptAppModalDialog*>(alert)->
-                   is_before_unload_dialog());
+  EXPECT_FALSE(alert->is_before_unload_dialog());
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
@@ -925,8 +921,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 
   // Reload the page, and check that we get a "before reload" dialog.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->is_reload());
 
   // Proceed with the reload.
   alert->native_dialog()->AcceptAppModalDialog();
@@ -941,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
                                    ui::PAGE_TRANSITION_TYPED, false));
 
   alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_FALSE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
+  EXPECT_FALSE(alert->is_reload());
 
   // Accept the navigation so we end up on a page without a beforeunload hook.
   alert->native_dialog()->AcceptAppModalDialog();
@@ -1013,10 +1009,9 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 
   // The beforeunload handler will run at exit, ensure it does, and then accept
   // it to allow shutdown to proceed.
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert);
-  EXPECT_TRUE(
-      static_cast<JavaScriptAppModalDialog*>(alert)->is_before_unload_dialog());
+  EXPECT_TRUE(alert->is_before_unload_dialog());
   alert->native_dialog()->AcceptAppModalDialog();
 
   // But wait there's more! If this test times out, it likely means that the
