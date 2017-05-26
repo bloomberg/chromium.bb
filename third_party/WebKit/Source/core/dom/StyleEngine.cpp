@@ -139,10 +139,24 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
   return collection.StyleSheetsForStyleSheetList();
 }
 
-void StyleEngine::InjectAuthorSheet(StyleSheetContents* author_sheet) {
-  injected_author_style_sheets_.push_back(TraceWrapperMember<CSSStyleSheet>(
-      this, CSSStyleSheet::Create(author_sheet, *document_)));
+WebStyleSheetId StyleEngine::InjectAuthorSheet(
+    StyleSheetContents* author_sheet) {
+  injected_author_style_sheets_.push_back(std::make_pair(
+      ++injected_author_sheets_id_count_,
+      TraceWrapperMember<CSSStyleSheet>(
+          this, CSSStyleSheet::Create(author_sheet, *document_))));
+
   MarkDocumentDirty();
+  return injected_author_sheets_id_count_;
+}
+
+void StyleEngine::RemoveInjectedAuthorSheet(WebStyleSheetId author_sheet_id) {
+  for (size_t i = 0; i < injected_author_style_sheets_.size(); ++i) {
+    if (injected_author_style_sheets_[i].first == author_sheet_id) {
+      injected_author_style_sheets_.erase(i);
+      MarkDocumentDirty();
+    }
+  }
 }
 
 CSSStyleSheet& StyleEngine::EnsureInspectorStyleSheet() {
@@ -1208,8 +1222,8 @@ DEFINE_TRACE(StyleEngine) {
 }
 
 DEFINE_TRACE_WRAPPERS(StyleEngine) {
-  for (auto sheet : injected_author_style_sheets_) {
-    visitor->TraceWrappers(sheet);
+  for (const auto& sheet : injected_author_style_sheets_) {
+    visitor->TraceWrappers(sheet.second);
   }
   visitor->TraceWrappers(document_style_sheet_collection_);
 }

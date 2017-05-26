@@ -57,6 +57,8 @@ class WebString;
 class WebURL;
 struct WebDistillabilityFeatures;
 
+using WebStyleSheetId = unsigned;
+
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
  public:
@@ -120,8 +122,13 @@ class WebDocument : public WebNode {
   // Gets the accessibility object that has focus.
   BLINK_EXPORT WebAXObject FocusedAccessibilityObject() const;
 
-  // Inserts the given CSS source code as a stylesheet in the document.
-  BLINK_EXPORT void InsertStyleSheet(const WebString& source_code);
+  // Inserts the given CSS source code as a stylesheet in the document, and
+  // return its id.
+  BLINK_EXPORT WebStyleSheetId InsertStyleSheet(const WebString& source_code);
+
+  // Removes the CSS which was previously inserted by a call to
+  // InsertStyleSheet().
+  BLINK_EXPORT void RemoveInsertedStyleSheet(WebStyleSheetId);
 
   // Arranges to call WebFrameClient::didMatchCSS(frame(), ...) when one of
   // the selectors matches or stops matching an element in this document.

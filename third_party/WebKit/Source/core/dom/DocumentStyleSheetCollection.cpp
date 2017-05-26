@@ -94,7 +94,8 @@ void DocumentStyleSheetCollection::CollectStyleSheets(
   for (auto& sheet :
        GetDocument().GetStyleEngine().InjectedAuthorStyleSheets()) {
     collector.AppendActiveStyleSheet(std::make_pair(
-        sheet, GetDocument().GetStyleEngine().RuleSetForSheet(*sheet)));
+        sheet.second,
+        GetDocument().GetStyleEngine().RuleSetForSheet(*sheet.second)));
   }
   CollectStyleSheetsFromCandidates(master_engine, collector);
   if (CSSStyleSheet* inspector_sheet =
