@@ -572,6 +572,10 @@ class NET_EXPORT TransportSecurityState
   // unless a RequireCTDelegate overrides). Set to nullptr to reset.
   static void SetShouldRequireCTForTesting(bool* required);
 
+  // For unit tests only. Clears the caches that deduplicate sent HPKP and
+  // Expect-CT reports.
+  void ClearReportCachesForTesting();
+
  private:
   friend class TransportSecurityStateTest;
   friend class TransportSecurityStateStaticFuzzer;
@@ -583,6 +587,11 @@ class NET_EXPORT TransportSecurityState
   typedef std::map<std::string, STSState> STSStateMap;
   typedef std::map<std::string, PKPState> PKPStateMap;
   typedef std::map<std::string, ExpectCTState> ExpectCTStateMap;
+  typedef ExpiringCache<std::string,
+                        bool,
+                        base::TimeTicks,
+                        std::less<base::TimeTicks>>
+      ReportCache;
 
   // IsBuildTimely returns true if the current build is new enough ensure that
   // built in security information (i.e. HSTS preloading and pinning
@@ -662,6 +671,14 @@ class NET_EXPORT TransportSecurityState
       const std::string& host,
       ExpectStapleState* expect_staple_result) const;
 
+  void MaybeNotifyExpectCTFailed(
+      const HostPortPair& host_port_pair,
+      const GURL& report_uri,
+      const X509Certificate* validated_certificate_chain,
+      const X509Certificate* served_certificate_chain,
+      const SignedCertificateTimestampAndStatusList&
+          signed_certificate_timestamps);
+
   // The sets of hosts that have enabled TransportSecurity. |domain| will always
   // be empty for a STSState, PKPState, or ExpectCTState in these maps; the
   // domain comes from the map keys instead. In addition, |upgrade_mode| in the
@@ -693,8 +710,8 @@ class NET_EXPORT TransportSecurityState
 
   // Keeps track of reports that have been sent recently for
   // rate-limiting.
-  ExpiringCache<std::string, bool, base::TimeTicks, std::less<base::TimeTicks>>
-      sent_reports_cache_;
+  ReportCache sent_hpkp_reports_cache_;
+  ReportCache sent_expect_ct_reports_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityState);
 };
