@@ -172,7 +172,7 @@ ACTION_P3(VerifyReloadStartedContext, web_state, url, context) {
 // Verifies correctness of |NavigationContext| (|arg0|) for reload navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P3(VerifyReloadFinishedContext, web_state, url, context) {
+ACTION_P4(VerifyReloadFinishedContext, web_state, url, context, is_web_page) {
   ASSERT_EQ(*context, arg0);
   ASSERT_TRUE(*context);
   EXPECT_EQ(web_state, (*context)->GetWebState());
@@ -182,7 +182,14 @@ ACTION_P3(VerifyReloadFinishedContext, web_state, url, context) {
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
-  EXPECT_FALSE((*context)->GetResponseHeaders());
+  if (is_web_page) {
+    ASSERT_TRUE((*context)->GetResponseHeaders());
+    std::string mime_type;
+    (*context)->GetResponseHeaders()->GetMimeType(&mime_type);
+    EXPECT_EQ(kExpectedMimeType, mime_type);
+  } else {
+    EXPECT_FALSE((*context)->GetResponseHeaders());
+  }
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
@@ -228,6 +235,36 @@ TEST_F(StartAndFinishNavigationTest, NewPageNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
   LoadUrl(url);
+}
+
+// Tests web page reload navigation.
+TEST_F(StartAndFinishNavigationTest, WebPageReloadNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  responses[url] = "Chromium Test";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(*observer_, DidStartNavigation(_));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_));
+  LoadUrl(url);
+
+  // Reload web page.
+  EXPECT_CALL(*observer_, DidStartNavigation(_))
+      .WillOnce(VerifyReloadStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*observer_, DidFinishNavigation(_))
+      .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context,
+                                            true /* is_web_page */));
+  // TODO(crbug.com/700958): ios/web ignores |check_for_repost| flag and current
+  // delegate does not run callback for ShowRepostFormWarningDialog. Clearing
+  // the delegate will allow form resubmission. Remove this workaround (clearing
+  // the delegate, once |check_for_repost| is supported).
+  web_state()->SetDelegate(nullptr);
+  ExecuteBlockAndWaitForLoad(url, ^{
+    navigation_manager()->Reload(ReloadType::NORMAL,
+                                 false /*check_for_repost*/);
+  });
 }
 
 // Tests user-initiated hash change.
@@ -362,7 +399,8 @@ TEST_F(StartAndFinishNavigationTest, NativeContentReload) {
   EXPECT_CALL(*observer_, DidStartNavigation(_))
       .WillOnce(VerifyReloadStartedContext(web_state(), url, &context));
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context,
+                                            false /* is_web_page */));
   navigation_manager()->Reload(ReloadType::NORMAL, false /*check_for_repost*/);
 }
 

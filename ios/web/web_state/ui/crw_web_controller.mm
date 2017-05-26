@@ -2053,10 +2053,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
           [transientItem->GetHttpRequestHeaders() copy]);
       [self loadWithParams:reloadParams];
     } else {
-      // As with back and forward navigation, load the URL manually instead of
-      // using the web view's reload. This ensures state processing and delegate
-      // calls are consistent.
-      // TODO(eugenebut): revisit this for WKWebView.
+      self.currentNavItem->SetTransitionType(
+          ui::PageTransition::PAGE_TRANSITION_RELOAD);
       [self loadCurrentURL];
     }
   }
