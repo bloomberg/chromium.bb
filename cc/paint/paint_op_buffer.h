@@ -834,7 +834,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
                   "T is not a PaintOpWithData");
     static_assert(!std::is_convertible<T, PaintOpWithArrayBase>::value,
                   "Type needs to use push_with_array");
-    DCHECK_GE(bytes, 0u);
     T* op = push_internal<T>(bytes, bytes, std::forward<Args>(args)...);
     memcpy(op->GetData(), data, bytes);
 
@@ -859,8 +858,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
                        Args&&... args) {
     static_assert(std::is_convertible<T, PaintOpWithArray<M>>::value,
                   "T is not a PaintOpWithArray");
-    DCHECK_GE(bytes, 0u);
-    DCHECK_GE(count, 0u);
     size_t array_size = sizeof(M) * count;
     size_t total_size = bytes + array_size;
     T* op =
