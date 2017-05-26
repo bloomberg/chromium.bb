@@ -174,8 +174,7 @@ def _get_include_paths(properties):
     """
     include_paths = set()
     for property_ in properties:
-        if property_['field_type_path'] is not None:
-            include_paths.add(property_['field_type_path'] + '.h')
+        include_paths.update(property_['include_paths'])
     return list(sorted(include_paths))
 
 
@@ -230,8 +229,8 @@ def _create_enums(properties):
     """
     enums = {}
     for property_ in properties:
-        # Only generate enums for keyword properties that use the default field_type_path.
-        if property_['field_template'] == 'keyword' and property_['field_type_path'] is None:
+        # Only generate enums for keyword properties that do not require includes.
+        if property_['field_template'] == 'keyword' and len(property_['include_paths']) == 0:
             enum_name = property_['type_name']
             enum_values = [enum_value_name(k) for k in property_['keywords']]
 
@@ -422,11 +421,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             make_style_builder.apply_property_naming_defaults(property_)
 
         all_properties = css_properties + extra_fields
-
-        # Override the type name when field_type_path is specified
-        for property_ in all_properties:
-            if property_['field_type_path']:
-                property_['type_name'] = property_['field_type_path'].split('/')[-1]
 
         self._generated_enums = _create_enums(all_properties)
 
