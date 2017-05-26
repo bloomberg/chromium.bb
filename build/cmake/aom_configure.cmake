@@ -92,7 +92,13 @@ endif ()
 if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
   # TODO(tomfinegan): Support nasm at least as well as the existing build
   # system.
-  find_program(AS_EXECUTABLE yasm $ENV{YASM_PATH})
+  if (ENABLE_NASM)
+    find_program(AS_EXECUTABLE nasm $ENV{NASM_PATH})
+    set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -Ox)
+  else ()
+    find_program(AS_EXECUTABLE yasm $ENV{YASM_PATH})
+  endif ()
+
   if (NOT AS_EXECUTABLE)
     message(FATAL_ERROR "Unable to find yasm. To build without optimizations, "
             "add -DAOM_TARGET_CPU=generic to your cmake command line.")

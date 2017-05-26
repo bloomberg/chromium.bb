@@ -122,7 +122,7 @@ function (add_asm_library lib_name asm_sources dependent_target)
     add_custom_command(OUTPUT "${asm_object}"
                        COMMAND ${AS_EXECUTABLE}
                        ARGS ${AOM_AS_FLAGS}
-                            -I${AOM_ROOT} -I${AOM_CONFIG_DIR}
+                            -I${AOM_ROOT}/ -I${AOM_CONFIG_DIR}/
                             -o "${asm_object}" "${asm_source}"
                        DEPENDS "${asm_source}"
                        COMMENT "Building ASM object ${asm_object}"
