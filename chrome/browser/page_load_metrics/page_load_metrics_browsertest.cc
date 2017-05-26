@@ -342,6 +342,31 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPage) {
   EXPECT_FALSE(NoPageLoadMetricsRecorded());
 }
 
+IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // The IPCTypeVerifier watches for IPCs in the main web contents. This test
+  // navigates in a new web contents, so we need to indicate that we expect no
+  // timing updates in the main web contents.
+  ExpectNoTimingUpdates();
+
+  chrome::NavigateParams params(browser(),
+                                embedded_test_server()->GetURL("/title1.html"),
+                                ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+  auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(params.target_contents);
+  waiter->AddMainFrameExpectation(TimingField::LOAD_EVENT);
+  waiter->Wait();
+
+  // Due to crbug.com/725347, with browser side navigation enabled, navigations
+  // in new tabs were recorded as starting in the background. Here we verify
+  // that navigations initiated in a new tab are recorded as happening in the
+  // foreground.
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
+}
+
 IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

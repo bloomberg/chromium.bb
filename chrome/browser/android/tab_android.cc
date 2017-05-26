@@ -119,7 +119,7 @@ TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, const JavaRef<jobject>& obj) {
 void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
-  TabHelpers::AttachTabHelpers(web_contents);
+  TabHelpers::AttachTabHelpers(web_contents, base::nullopt);
 }
 
 TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)

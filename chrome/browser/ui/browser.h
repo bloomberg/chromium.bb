@@ -635,12 +635,15 @@ class Browser : public TabStripModelObserver,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
-  void WebContentsCreated(content::WebContents* source_contents,
-                          int opener_render_process_id,
-                          int opener_render_frame_id,
-                          const std::string& frame_name,
-                          const GURL& target_url,
-                          content::WebContents* new_contents) override;
+  void WebContentsCreated(
+      content::WebContents* source_contents,
+      int opener_render_process_id,
+      int opener_render_frame_id,
+      const std::string& frame_name,
+      const GURL& target_url,
+      content::WebContents* new_contents,
+      const base::Optional<content::WebContents::CreateParams>& create_params)
+      override;
   void RendererUnresponsive(
       content::WebContents* source,
       const content::WebContentsUnresponsiveState& unresponsive_state) override;

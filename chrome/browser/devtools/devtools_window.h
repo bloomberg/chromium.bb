@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -288,12 +289,15 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
-  void WebContentsCreated(content::WebContents* source_contents,
-                          int opener_render_process_id,
-                          int opener_render_frame_id,
-                          const std::string& frame_name,
-                          const GURL& target_url,
-                          content::WebContents* new_contents) override;
+  void WebContentsCreated(
+      content::WebContents* source_contents,
+      int opener_render_process_id,
+      int opener_render_frame_id,
+      const std::string& frame_name,
+      const GURL& target_url,
+      content::WebContents* new_contents,
+      const base::Optional<content::WebContents::CreateParams>& create_params)
+      override;
   void CloseContents(content::WebContents* source) override;
   void ContentsZoomChange(bool zoom_in) override;
   void BeforeUnloadFired(content::WebContents* tab,

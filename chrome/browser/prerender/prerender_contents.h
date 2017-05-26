@@ -23,6 +23,7 @@
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -38,7 +39,6 @@ class ProcessMetrics;
 namespace content {
 class RenderViewHost;
 class SessionStorageNamespace;
-class WebContents;
 }
 
 namespace history {
@@ -281,6 +281,7 @@ class PrerenderContents : public content::NotificationObserver,
   }
 
   content::WebContents* CreateWebContents(
+      const content::WebContents::CreateParams& create_params,
       content::SessionStorageNamespace* session_storage_namespace);
 
   PrerenderMode prerender_mode_;

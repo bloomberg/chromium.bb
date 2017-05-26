@@ -76,9 +76,11 @@ class MetricsWebContentsObserver
   // Note that the returned metrics is owned by the web contents.
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
+      const base::Optional<content::WebContents::CreateParams>& create_params,
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   MetricsWebContentsObserver(
       content::WebContents* web_contents,
+      const base::Optional<content::WebContents::CreateParams>& create_params,
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
