@@ -30,7 +30,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   ~OverviewButtonTray() override;
 
   // Updates the tray's visibility based on the LoginStatus and the current
-  // state of TabletMode
+  // state of MaximizeMode
   virtual void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // ActionableView:
@@ -40,8 +40,8 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // ShellObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
@@ -53,7 +53,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
  private:
   friend class OverviewButtonTrayTest;
 
-  // Sets the icon to visible if tablet mode is enabled and
+  // Sets the icon to visible if maximize mode is enabled and
   // WindowSelectorController::CanSelect.
   void UpdateIconVisibility();
 

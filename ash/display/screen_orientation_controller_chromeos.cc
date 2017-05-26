@@ -9,8 +9,8 @@
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -216,8 +216,8 @@ void ScreenOrientationController::UnlockAll() {
 
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
   return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+      ->maximize_mode_controller()
+      ->IsMaximizeModeWindowManagerEnabled();
 }
 
 void ScreenOrientationController::ToggleUserRotationLock() {
@@ -303,8 +303,8 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
   }
 }
 
-void ScreenOrientationController::OnTabletModeStarted() {
-  // Do not exit early, as the internal display can be determined after Tablet
+void ScreenOrientationController::OnMaximizeModeStarted() {
+  // Do not exit early, as the internal display can be determined after Maximize
   // Mode has started. (chrome-os-partner:38796)
   // Always start observing.
   if (display::Display::HasInternalDisplay()) {
@@ -325,7 +325,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
     observer.OnUserRotationLockChanged();
 }
 
-void ScreenOrientationController::OnTabletModeEnding() {
+void ScreenOrientationController::OnMaximizeModeEnding() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   ShellPort::Get()->RemoveDisplayObserver(this);
   if (!display::Display::HasInternalDisplay())

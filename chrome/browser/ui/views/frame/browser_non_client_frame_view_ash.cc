@@ -325,15 +325,15 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
   caption_button_container_->SetVisible(true);
 }
 
-void BrowserNonClientFrameViewAsh::OnTabletModeStarted() {
+void BrowserNonClientFrameViewAsh::OnMaximizeModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();
   InvalidateLayout();
   frame()->client_view()->InvalidateLayout();
   frame()->GetRootView()->Layout();
 }
 
-void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
-  OnTabletModeStarted();
+void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
+  OnMaximizeModeStarted();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

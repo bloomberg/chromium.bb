@@ -42,7 +42,7 @@
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_commands.h"  // nogncheck
 #include "ash/shell.h"                   // nogncheck
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // nogncheck
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"  // nogncheck
 #include "ash/wm/window_state.h"  // nogncheck
 #include "ui/wm/core/coordinate_conversion.h"  // nogncheck
 #endif
@@ -302,8 +302,8 @@ void TabDragController::Init(
 
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance() && ash::Shell::Get()
-                                       ->tablet_mode_controller()
-                                       ->IsTabletModeWindowManagerEnabled()) {
+                                       ->maximize_mode_controller()
+                                       ->IsMaximizeModeWindowManagerEnabled()) {
     detach_behavior_ = NOT_DETACHABLE;
   }
 #endif

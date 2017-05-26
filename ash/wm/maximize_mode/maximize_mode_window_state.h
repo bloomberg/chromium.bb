@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_STATE_H_
-#define ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_STATE_H_
+#ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_
+#define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_
 
 #include <memory>
 
@@ -11,13 +11,13 @@
 #include "base/macros.h"
 
 namespace ash {
-class TabletModeWindowManager;
+class MaximizeModeWindowManager;
 
-// The TabletModeWindowState implementation which reduces all possible window
+// The MaximizeModeWindowState implementation which reduces all possible window
 // states to minimized and maximized. If a window cannot be maximized it will be
 // set to normal. If a window cannot fill the entire workspace it will be
 // centered within the workspace.
-class TabletModeWindowState : public wm::WindowState::State {
+class MaximizeModeWindowState : public wm::WindowState::State {
  public:
   // Called when the window position might need to be updated.
   static void UpdateWindowPosition(wm::WindowState* window_state);
@@ -26,13 +26,14 @@ class TabletModeWindowState : public wm::WindowState::State {
   // state handler. Upon destruction it will restore the previous state handler
   // and call |creator::WindowStateDestroyed()| to inform that the window mode
   // was reverted to the old window manager.
-  TabletModeWindowState(aura::Window* window, TabletModeWindowManager* creator);
-  ~TabletModeWindowState() override;
+  MaximizeModeWindowState(aura::Window* window,
+                          MaximizeModeWindowManager* creator);
+  ~MaximizeModeWindowState() override;
 
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
 
-  // Leaves the tablet mode by reverting to previous state object.
-  void LeaveTabletMode(wm::WindowState* window_state);
+  // Leaves the maximize mode by reverting to previous state object.
+  void LeaveMaximizeMode(wm::WindowState* window_state);
 
   // Sets whether to ignore bounds updates. If set to false, immediately does a
   // bounds update as the current window bounds may no longer be correct.
@@ -72,7 +73,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   aura::Window* window_;
 
   // The creator which needs to be informed when this state goes away.
-  TabletModeWindowManager* creator_;
+  MaximizeModeWindowManager* creator_;
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
@@ -84,9 +85,9 @@ class TabletModeWindowState : public wm::WindowState::State {
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowState);
+  DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowState);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_STATE_H_
+#endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_

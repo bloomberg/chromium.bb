@@ -2068,7 +2068,7 @@ const struct zcr_notification_surface_v1_interface
 
 // Implements remote shell interface and monitors workspace state needed
 // for the remote shell interface.
-class WaylandRemoteShell : public WMHelper::TabletModeObserver,
+class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
                            public WMHelper::ActivationObserver,
                            public display::DisplayObserver {
  public:
@@ -2077,11 +2077,11 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
         remote_shell_resource_(remote_shell_resource),
         weak_ptr_factory_(this) {
     auto* helper = WMHelper::GetInstance();
-    helper->AddTabletModeObserver(this);
+    helper->AddMaximizeModeObserver(this);
     helper->AddActivationObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
 
-    layout_mode_ = helper->IsTabletModeWindowManagerEnabled()
+    layout_mode_ = helper->IsMaximizeModeWindowManagerEnabled()
                        ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
@@ -2090,7 +2090,7 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
   }
   ~WaylandRemoteShell() override {
     auto* helper = WMHelper::GetInstance();
-    helper->RemoveTabletModeObserver(this);
+    helper->RemoveMaximizeModeObserver(this);
     helper->RemoveActivationObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
   }
@@ -2137,16 +2137,16 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
     }
   }
 
-  // Overridden from WMHelper::TabletModeObserver:
-  void OnTabletModeStarted() override {
+  // Overridden from WMHelper::MaximizeModeObserver:
+  void OnMaximizeModeStarted() override {
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
     ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
-  void OnTabletModeEnding() override {
+  void OnMaximizeModeEnding() override {
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
     ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
-  void OnTabletModeEnded() override {}
+  void OnMaximizeModeEnded() override {}
 
   // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(aura::Window* gained_active,

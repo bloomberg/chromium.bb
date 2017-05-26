@@ -10,7 +10,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -44,22 +44,26 @@ TEST_F(TrayBrightnessTest, CreateDefaultView) {
   EXPECT_FALSE(tray->visible());
 }
 
-// Tests the construction of the default view while TabletMode is active.
+// Tests the construction of the default view while MaximizeMode is active.
 // The BrightnessView should be visible.
-TEST_F(TrayBrightnessTest, CreateDefaultViewDuringTabletMode) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+TEST_F(TrayBrightnessTest, CreateDefaultViewDuringMaximizeMode) {
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   std::unique_ptr<views::View> tray(CreateDefaultView());
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
 }
 
-// Tests that the enabling of TabletMode affects a previously created
+// Tests that the enabling of MaximizeMode affects a previously created
 // BrightnessView, changing the visibility.
-TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringTabletMode) {
+TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDefaultView());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   EXPECT_FALSE(tray->visible());
 }
 
@@ -70,22 +74,26 @@ TEST_F(TrayBrightnessTest, CreateDetailedView) {
   EXPECT_TRUE(tray->visible());
 }
 
-// Tests that when the detailed view is created during TabletMode that its
+// Tests that when the detailed view is created during MaximizeMode that its
 // BrightnessView is visible.
-TEST_F(TrayBrightnessTest, CreateDetailedViewDuringTabletMode) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+TEST_F(TrayBrightnessTest, CreateDetailedViewDuringMaximizeMode) {
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   std::unique_ptr<views::View> tray(CreateDetailedView());
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
 }
 
-// Tests that the enabling of TabletMode has no affect on the visibility of a
+// Tests that the enabling of MaximizeMode has no affect on the visibility of a
 // previously created BrightnessView that belongs to a detailed view.
-TEST_F(TrayBrightnessTest, DetailedViewVisibilityChangesDuringTabletMode) {
+TEST_F(TrayBrightnessTest, DetailedViewVisibilityChangesDuringMaximizeMode) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
   EXPECT_TRUE(tray->visible());
 }
 

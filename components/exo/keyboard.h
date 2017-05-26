@@ -27,7 +27,7 @@ class Surface;
 class Keyboard : public ui::EventHandler,
                  public WMHelper::FocusObserver,
                  public WMHelper::InputDeviceEventObserver,
-                 public WMHelper::TabletModeObserver,
+                 public WMHelper::MaximizeModeObserver,
                  public SurfaceObserver {
  public:
   explicit Keyboard(KeyboardDelegate* delegate);
@@ -50,10 +50,10 @@ class Keyboard : public ui::EventHandler,
   // Overridden from ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;
 
-  // Overridden from WMHelper::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
-  void OnTabletModeEnded() override;
+  // Overridden from WMHelper::MaximizeModeObserver:
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnding() override;
+  void OnMaximizeModeEnded() override;
 
  private:
   // Returns the effective focus for |window|.

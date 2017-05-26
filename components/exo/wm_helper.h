@@ -53,14 +53,14 @@ class WMHelper {
     virtual ~CursorObserver() {}
   };
 
-  class TabletModeObserver {
+  class MaximizeModeObserver {
    public:
-    virtual void OnTabletModeStarted() = 0;
-    virtual void OnTabletModeEnding() = 0;
-    virtual void OnTabletModeEnded() = 0;
+    virtual void OnMaximizeModeStarted() = 0;
+    virtual void OnMaximizeModeEnding() = 0;
+    virtual void OnMaximizeModeEnded() = 0;
 
    protected:
-    virtual ~TabletModeObserver() {}
+    virtual ~MaximizeModeObserver() {}
   };
 
   class InputDeviceEventObserver {
@@ -90,8 +90,8 @@ class WMHelper {
   void RemoveFocusObserver(FocusObserver* observer);
   void AddCursorObserver(CursorObserver* observer);
   void RemoveCursorObserver(CursorObserver* observer);
-  void AddTabletModeObserver(TabletModeObserver* observer);
-  void RemoveTabletModeObserver(TabletModeObserver* observer);
+  void AddMaximizeModeObserver(MaximizeModeObserver* observer);
+  void RemoveMaximizeModeObserver(MaximizeModeObserver* observer);
   void AddInputDeviceEventObserver(InputDeviceEventObserver* observer);
   void RemoveInputDeviceEventObserver(InputDeviceEventObserver* observer);
   void AddDisplayConfigurationObserver(DisplayConfigurationObserver* observer);
@@ -109,7 +109,7 @@ class WMHelper {
   virtual void RemovePreTargetHandler(ui::EventHandler* handler) = 0;
   virtual void AddPostTargetHandler(ui::EventHandler* handler) = 0;
   virtual void RemovePostTargetHandler(ui::EventHandler* handler) = 0;
-  virtual bool IsTabletModeWindowManagerEnabled() const = 0;
+  virtual bool IsMaximizeModeWindowManagerEnabled() const = 0;
 
  protected:
   WMHelper();
@@ -120,9 +120,9 @@ class WMHelper {
                            aura::Window* lost_focus);
   void NotifyCursorVisibilityChanged(bool is_visible);
   void NotifyCursorSetChanged(ui::CursorSetType cursor_set);
-  void NotifyTabletModeStarted();
-  void NotifyTabletModeEnding();
-  void NotifyTabletModeEnded();
+  void NotifyMaximizeModeStarted();
+  void NotifyMaximizeModeEnding();
+  void NotifyMaximizeModeEnded();
   void NotifyKeyboardDeviceConfigurationChanged();
   void NotifyDisplayConfigurationChanged();
 
@@ -130,7 +130,7 @@ class WMHelper {
   base::ObserverList<ActivationObserver> activation_observers_;
   base::ObserverList<FocusObserver> focus_observers_;
   base::ObserverList<CursorObserver> cursor_observers_;
-  base::ObserverList<TabletModeObserver> tablet_mode_observers_;
+  base::ObserverList<MaximizeModeObserver> maximize_mode_observers_;
   base::ObserverList<InputDeviceEventObserver> input_device_event_observers_;
   base::ObserverList<DisplayConfigurationObserver> display_config_observers_;
 

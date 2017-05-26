@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 #include <utility>
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,12 +28,12 @@ namespace ash {
 
 namespace {
 
-// The hinge angle at which to enter tablet mode.
-const float kEnterTabletModeAngle = 200.0f;
+// The hinge angle at which to enter maximize mode.
+const float kEnterMaximizeModeAngle = 200.0f;
 
-// The angle at which to exit tablet mode, this is specifically less than the
-// angle to enter tablet mode to prevent rapid toggling when near the angle.
-const float kExitTabletModeAngle = 160.0f;
+// The angle at which to exit maximize mode, this is specifically less than the
+// angle to enter maximize mode to prevent rapid toggling when near the angle.
+const float kExitMaximizeModeAngle = 160.0f;
 
 // Defines a range for which accelerometer readings are considered accurate.
 // When the lid is near open (or near closed) the accelerometer readings may be
@@ -43,7 +43,7 @@ const float kMinStableAngle = 20.0f;
 const float kMaxStableAngle = 340.0f;
 
 // The time duration to consider the lid to be recently opened.
-// This is used to prevent entering tablet mode if an erroneous accelerometer
+// This is used to prevent entering maximize mode if an erroneous accelerometer
 // reading makes the lid appear to be fully open when the user is opening the
 // lid from a closed position.
 const int kLidRecentlyOpenedDurationSeconds = 2;
@@ -85,25 +85,25 @@ bool IsEnabled() {
       switches::kAshEnableTouchView);
 }
 
-// Checks the command line to see which force tablet mode is turned on, if
+// Checks the command line to see which force maximize mode is turned on, if
 // any.
-TabletModeController::ForceTabletMode GetTabletMode() {
+MaximizeModeController::ForceTabletMode GetMaximizeMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshForceTabletMode)) {
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kAshForceTabletMode);
     if (switch_value == switches::kAshForceTabletModeClamshell)
-      return TabletModeController::ForceTabletMode::CLAMSHELL;
+      return MaximizeModeController::ForceTabletMode::CLAMSHELL;
 
     if (switch_value == switches::kAshForceTabletModeTouchView)
-      return TabletModeController::ForceTabletMode::TOUCHVIEW;
+      return MaximizeModeController::ForceTabletMode::TOUCHVIEW;
   }
-  return TabletModeController::ForceTabletMode::NONE;
+  return MaximizeModeController::ForceTabletMode::NONE;
 }
 
 }  // namespace
 
-TabletModeController::TabletModeController()
+MaximizeModeController::MaximizeModeController()
     : have_seen_accelerometer_data_(false),
       can_detect_lid_angle_(false),
       touchview_usage_interval_start_time_(base::Time::Now()),
@@ -116,9 +116,9 @@ TabletModeController::TabletModeController()
   ShellPort::Get()->RecordUserMetricsAction(
       UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
-  // TODO(jonross): Do not create TabletModeController if the flag is
+  // TODO(jonross): Do not create MaximizeModeController if the flag is
   // unavailable. This will require refactoring
-  // IsTabletModeWindowManagerEnabled to check for the existance of the
+  // IsMaximizeModeWindowManagerEnabled to check for the existance of the
   // controller.
   if (IsEnabled()) {
     ShellPort::Get()->AddDisplayObserver(this);
@@ -128,10 +128,10 @@ TabletModeController::TabletModeController()
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client->AddObserver(this);
   power_manager_client->GetSwitchStates(base::Bind(
-      &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
+      &MaximizeModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
 }
 
-TabletModeController::~TabletModeController() {
+MaximizeModeController::~MaximizeModeController() {
   Shell::Get()->RemoveShellObserver(this);
 
   if (IsEnabled()) {
@@ -142,37 +142,38 @@ TabletModeController::~TabletModeController() {
       this);
 }
 
-bool TabletModeController::CanEnterTabletMode() {
+bool MaximizeModeController::CanEnterMaximizeMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
-  // trigger tablet mode at some point in the future.
-  // All TouchView-enabled devices can enter tablet mode.
+  // trigger maximize mode at some point in the future.
+  // All TouchView-enabled devices can enter maximized mode.
   return have_seen_accelerometer_data_ || IsEnabled();
 }
 
-// TODO(jcliang): Hide or remove EnableTabletModeWindowManager
+// TODO(jcliang): Hide or remove EnableMaximizeModeWindowManager
 // (http://crbug.com/620241).
-void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
-  bool is_enabled = !!tablet_mode_window_manager_.get();
+void MaximizeModeController::EnableMaximizeModeWindowManager(
+    bool should_enable) {
+  bool is_enabled = !!maximize_mode_window_manager_.get();
   if (should_enable == is_enabled)
     return;
 
   if (should_enable) {
-    tablet_mode_window_manager_.reset(new TabletModeWindowManager());
-    // TODO(jonross): Move the tablet mode notifications from ShellObserver
-    // to TabletModeController::Observer
+    maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
+    // TODO(jonross): Move the maximize mode notifications from ShellObserver
+    // to MaximizeModeController::Observer
     ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
-    Shell::Get()->NotifyTabletModeStarted();
+    Shell::Get()->NotifyMaximizeModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(true);
     });
 
   } else {
-    tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
-    Shell::Get()->NotifyTabletModeEnding();
-    tablet_mode_window_manager_.reset();
+    maximize_mode_window_manager_->SetIgnoreWmEventsForExit();
+    Shell::Get()->NotifyMaximizeModeEnding();
+    maximize_mode_window_manager_.reset();
     ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
-    Shell::Get()->NotifyTabletModeEnded();
+    Shell::Get()->NotifyMaximizeModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(false);
@@ -180,22 +181,23 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
   }
 }
 
-bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
-  return tablet_mode_window_manager_.get() != NULL;
+bool MaximizeModeController::IsMaximizeModeWindowManagerEnabled() const {
+  return maximize_mode_window_manager_.get() != NULL;
 }
 
-void TabletModeController::AddWindow(aura::Window* window) {
-  if (IsTabletModeWindowManagerEnabled())
-    tablet_mode_window_manager_->AddWindow(window);
+void MaximizeModeController::AddWindow(aura::Window* window) {
+  if (IsMaximizeModeWindowManagerEnabled())
+    maximize_mode_window_manager_->AddWindow(window);
 }
 
-void TabletModeController::BindRequest(mojom::TouchViewManagerRequest request) {
+void MaximizeModeController::BindRequest(
+    mojom::TouchViewManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void TabletModeController::OnAccelerometerUpdated(
+void MaximizeModeController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowEnterExitMaximizeMode())
     return;
 
   have_seen_accelerometer_data_ = true;
@@ -214,8 +216,8 @@ void TabletModeController::OnAccelerometerUpdated(
     return;
   }
 
-  // Whether or not we enter tablet mode affects whether we handle screen
-  // rotation, so determine whether to enter tablet mode first.
+  // Whether or not we enter maximize mode affects whether we handle screen
+  // rotation, so determine whether to enter maximize mode first.
   if (ui::IsAccelerometerReadingStable(*update,
                                        chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
       ui::IsAccelerometerReadingStable(
@@ -229,23 +231,23 @@ void TabletModeController::OnAccelerometerUpdated(
   }
 }
 
-void TabletModeController::LidEventReceived(
+void MaximizeModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowEnterExitMaximizeMode())
     return;
 
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   if (open)
     last_lid_open_time_ = time;
   lid_is_closed_ = !open;
-  LeaveTabletMode();
+  LeaveMaximizeMode();
 }
 
-void TabletModeController::TabletModeEventReceived(
+void MaximizeModeController::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& time) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowEnterExitMaximizeMode())
     return;
 
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
@@ -257,28 +259,29 @@ void TabletModeController::TabletModeEventReceived(
     return;
   }
   // The tablet mode switch activates at 300 degrees, so it is always reliable
-  // when |on|. However we wish to exit tablet mode at a smaller angle, so
+  // when |on|. However we wish to exit maximize mode at a smaller angle, so
   // when |on| is false we ignore if it is possible to calculate the lid angle.
-  if (on && !IsTabletModeWindowManagerEnabled()) {
-    EnterTabletMode();
-  } else if (!on && IsTabletModeWindowManagerEnabled() &&
+  if (on && !IsMaximizeModeWindowManagerEnabled()) {
+    EnterMaximizeMode();
+  } else if (!on && IsMaximizeModeWindowManagerEnabled() &&
              !can_detect_lid_angle_) {
-    LeaveTabletMode();
+    LeaveMaximizeMode();
   }
 }
 
-void TabletModeController::SuspendImminent() {
+void MaximizeModeController::SuspendImminent() {
   // The system is about to suspend, so record TouchView usage interval metrics
   // based on whether TouchView mode is currently active.
   RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
 }
 
-void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
+void MaximizeModeController::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
   // We do not want TouchView usage metrics to include time spent in suspend.
   touchview_usage_interval_start_time_ = base::Time::Now();
 }
 
-void TabletModeController::HandleHingeRotation(
+void MaximizeModeController::HandleHingeRotation(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
   gfx::Vector3dF base_reading(ui::ConvertAccelerometerReadingToVector3dF(
@@ -335,71 +338,72 @@ void TabletModeController::HandleHingeRotation(
   if (is_angle_stable)
     last_lid_open_time_ = base::TimeTicks();
 
-  // Toggle tablet mode on or off when corresponding thresholds are passed.
-  if (IsTabletModeWindowManagerEnabled() && is_angle_stable &&
-      lid_angle <= kExitTabletModeAngle) {
-    LeaveTabletMode();
-  } else if (!IsTabletModeWindowManagerEnabled() && !lid_is_closed_ &&
-             lid_angle >= kEnterTabletModeAngle &&
+  // Toggle maximize mode on or off when corresponding thresholds are passed.
+  if (IsMaximizeModeWindowManagerEnabled() && is_angle_stable &&
+      lid_angle <= kExitMaximizeModeAngle) {
+    LeaveMaximizeMode();
+  } else if (!IsMaximizeModeWindowManagerEnabled() && !lid_is_closed_ &&
+             lid_angle >= kEnterMaximizeModeAngle &&
              (is_angle_stable || !WasLidOpenedRecently())) {
-    EnterTabletMode();
+    EnterMaximizeMode();
   }
 }
 
-void TabletModeController::EnterTabletMode() {
+void MaximizeModeController::EnterMaximizeMode() {
   // Always reset first to avoid creation before destruction of a previous
   // object.
   event_blocker_ =
       ShellPort::Get()->CreateScopedDisableInternalMouseAndKeyboard();
 
-  if (IsTabletModeWindowManagerEnabled())
+  if (IsMaximizeModeWindowManagerEnabled())
     return;
-  EnableTabletModeWindowManager(true);
+  EnableMaximizeModeWindowManager(true);
 }
 
-void TabletModeController::LeaveTabletMode() {
+void MaximizeModeController::LeaveMaximizeMode() {
   event_blocker_.reset();
 
-  if (!IsTabletModeWindowManagerEnabled())
+  if (!IsMaximizeModeWindowManagerEnabled())
     return;
-  EnableTabletModeWindowManager(false);
+  EnableMaximizeModeWindowManager(false);
 }
 
-// Called after tablet mode has started, windows might still animate though.
-void TabletModeController::OnTabletModeStarted() {
+// Called after maximize mode has started, windows might still animate though.
+void MaximizeModeController::OnMaximizeModeStarted() {
   RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_INACTIVE);
 }
 
-// Called after tablet mode has ended, windows might still be returning to
+// Called after maximize mode has ended, windows might still be returning to
 // their original position.
-void TabletModeController::OnTabletModeEnded() {
+void MaximizeModeController::OnMaximizeModeEnded() {
   RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
 }
 
-void TabletModeController::OnShellInitialized() {
-  force_tablet_mode_ = GetTabletMode();
+void MaximizeModeController::OnShellInitialized() {
+  force_tablet_mode_ = GetMaximizeMode();
   if (force_tablet_mode_ == ForceTabletMode::TOUCHVIEW)
-    EnterTabletMode();
+    EnterMaximizeMode();
 }
 
-void TabletModeController::OnDisplayConfigurationChanged() {
+void MaximizeModeController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay() ||
       !ShellPort::Get()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
-    LeaveTabletMode();
-  } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
+    LeaveMaximizeMode();
+  } else if (tablet_mode_switch_is_on_ &&
+             !IsMaximizeModeWindowManagerEnabled()) {
     // The internal display has returned, as we are exiting docked mode.
-    // The device is still in tablet mode, so trigger tablet mode, as this
+    // The device is still in tablet mode, so trigger maximize mode, as this
     // switch leads to the ignoring of accelerometer events. When the switch is
     // not set the next stable accelerometer readings will trigger maximize
     // mode.
-    EnterTabletMode();
+    EnterMaximizeMode();
   }
 }
 
-void TabletModeController::RecordTouchViewUsageInterval(
+void MaximizeModeController::RecordTouchViewUsageInterval(
     TouchViewIntervalType type) {
-  if (!CanEnterTabletMode())
+  if (!CanEnterMaximizeMode())
     return;
 
   base::Time current_time = base::Time::Now();
@@ -418,28 +422,28 @@ void TabletModeController::RecordTouchViewUsageInterval(
   touchview_usage_interval_start_time_ = current_time;
 }
 
-TabletModeController::TouchViewIntervalType
-TabletModeController::CurrentTouchViewIntervalType() {
-  if (IsTabletModeWindowManagerEnabled())
+MaximizeModeController::TouchViewIntervalType
+MaximizeModeController::CurrentTouchViewIntervalType() {
+  if (IsMaximizeModeWindowManagerEnabled())
     return TOUCH_VIEW_INTERVAL_ACTIVE;
   return TOUCH_VIEW_INTERVAL_INACTIVE;
 }
 
-void TabletModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
-  observer->OnTouchViewToggled(IsTabletModeWindowManagerEnabled());
+void MaximizeModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
+  observer->OnTouchViewToggled(IsMaximizeModeWindowManagerEnabled());
   observers_.AddPtr(std::move(observer));
 }
 
-bool TabletModeController::AllowEnterExitTabletMode() const {
+bool MaximizeModeController::AllowEnterExitMaximizeMode() const {
   return force_tablet_mode_ == ForceTabletMode::NONE;
 }
 
-void TabletModeController::OnChromeTerminating() {
+void MaximizeModeController::OnChromeTerminating() {
   // The system is about to shut down, so record TouchView usage interval
   // metrics based on whether TouchView mode is currently active.
   RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
 
-  if (CanEnterTabletMode()) {
+  if (CanEnterMaximizeMode()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
                                 total_touchview_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
@@ -456,14 +460,14 @@ void TabletModeController::OnChromeTerminating() {
   }
 }
 
-void TabletModeController::OnGetSwitchStates(
+void MaximizeModeController::OnGetSwitchStates(
     chromeos::PowerManagerClient::LidState lid_state,
     chromeos::PowerManagerClient::TabletMode tablet_mode) {
   LidEventReceived(lid_state, base::TimeTicks::Now());
   TabletModeEventReceived(tablet_mode, base::TimeTicks::Now());
 }
 
-bool TabletModeController::WasLidOpenedRecently() const {
+bool MaximizeModeController::WasLidOpenedRecently() const {
   if (last_lid_open_time_.is_null())
     return false;
 
@@ -473,7 +477,7 @@ bool TabletModeController::WasLidOpenedRecently() const {
   return elapsed_time.InSeconds() <= kLidRecentlyOpenedDurationSeconds;
 }
 
-void TabletModeController::SetTickClockForTest(
+void MaximizeModeController::SetTickClockForTest(
     std::unique_ptr<base::TickClock> tick_clock) {
   DCHECK(tick_clock_);
   tick_clock_ = std::move(tick_clock);

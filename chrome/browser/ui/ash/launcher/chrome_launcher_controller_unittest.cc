@@ -27,7 +27,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -960,9 +960,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void EnableTabletMode(bool enable) {
-    ash::TabletModeController* controller =
-        ash::Shell::Get()->tablet_mode_controller();
-    controller->EnableTabletModeWindowManager(enable);
+    ash::MaximizeModeController* controller =
+        ash::Shell::Get()->maximize_mode_controller();
+    controller->EnableMaximizeModeWindowManager(enable);
   }
 
   void ValidateArcState(bool arc_enabled,
