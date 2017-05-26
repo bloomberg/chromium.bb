@@ -1791,9 +1791,23 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirects) {
       0u,
       NumIconMappingsForPageURL(url1, favicon_base::TOUCH_PRECOMPOSED_ICON));
 
+  // Add a web manifest_icon.
+  backend_->SetFavicons(url1, favicon_base::WEB_MANIFEST_ICON, icon_url2,
+                        bitmaps);
+  EXPECT_EQ(1u,
+            NumIconMappingsForPageURL(url1, favicon_base::WEB_MANIFEST_ICON));
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
+  // The TOUCH_ICON_ICON was replaced.
+  EXPECT_EQ(0u, NumIconMappingsForPageURL(url1, favicon_base::TOUCH_ICON));
+
+  // The TOUCH_PRECOMPOSED_ICON was replaced.
+  EXPECT_EQ(0u, NumIconMappingsForPageURL(
+                    url1, favicon_base::TOUCH_PRECOMPOSED_ICON));
+
   // Add a different favicon.
   backend_->SetFavicons(url1, favicon_base::FAVICON, icon_url2, bitmaps);
-  EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::TOUCH_ICON));
+  EXPECT_EQ(1u,
+            NumIconMappingsForPageURL(url1, favicon_base::WEB_MANIFEST_ICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
 }

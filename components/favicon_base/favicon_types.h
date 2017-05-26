@@ -23,13 +23,13 @@ typedef int64_t FaviconID;
 // Defines the icon types. They are also stored in icon_type field of favicons
 // table.
 // The values of the IconTypes are used to select the priority in which favicon
-// data is returned in HistoryBackend and ThumbnailDatabase. Data for the
-// largest IconType takes priority if data for multiple IconTypes is available.
+// data is returned in HistoryBackend and ThumbnailDatabase.
 enum IconType {
   INVALID_ICON = 0x0,
   FAVICON = 1 << 0,
   TOUCH_ICON = 1 << 1,
-  TOUCH_PRECOMPOSED_ICON = 1 << 2
+  TOUCH_PRECOMPOSED_ICON = 1 << 2,
+  WEB_MANIFEST_ICON = 1 << 3,
 };
 
 // Defines a gfx::Image of size desired_size_in_dip composed of image

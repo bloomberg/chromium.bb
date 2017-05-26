@@ -264,7 +264,7 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
   //                    rewrite is further along.
   std::vector<int> icon_types{
-      favicon_base::FAVICON,
+      favicon_base::WEB_MANIFEST_ICON, favicon_base::FAVICON,
       favicon_base::TOUCH_PRECOMPOSED_ICON | favicon_base::TOUCH_ICON};
 
   favicon::FaviconService* favicon_service =

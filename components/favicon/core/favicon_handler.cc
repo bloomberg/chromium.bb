@@ -202,7 +202,8 @@ int FaviconHandler::GetIconTypesFromHandlerType(
     case FaviconDriverObserver::NON_TOUCH_LARGEST:
       return favicon_base::FAVICON;
     case FaviconDriverObserver::TOUCH_LARGEST:
-      return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON;
+      return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON |
+             favicon_base::WEB_MANIFEST_ICON;
   }
   return 0;
 }
@@ -353,7 +354,7 @@ void FaviconHandler::OnUpdateCandidates(
   // See if there is a cached favicon for the manifest. This will update the DB
   // mappings only if the manifest URL is cached.
   GetFaviconAndUpdateMappingsUnlessIncognito(
-      /*icon_url=*/manifest_url_, favicon_base::FAVICON,
+      /*icon_url=*/manifest_url_, favicon_base::WEB_MANIFEST_ICON,
       base::Bind(&FaviconHandler::OnFaviconDataForManifestFromFaviconService,
                  base::Unretained(this)));
 }
@@ -371,8 +372,9 @@ void FaviconHandler::OnFaviconDataForManifestFromFaviconService(
       !has_valid_result || HasExpiredOrIncompleteResult(preferred_icon_size(),
                                                         favicon_bitmap_results);
 
-  if (has_valid_result && (notification_icon_url_ != manifest_url_ ||
-                           notification_icon_type_ != favicon_base::FAVICON)) {
+  if (has_valid_result &&
+      (notification_icon_url_ != manifest_url_ ||
+       notification_icon_type_ != favicon_base::WEB_MANIFEST_ICON)) {
     // There is a valid favicon. Notify any observers. It is useful to notify
     // the observers even if the favicon is expired or incomplete (incorrect
     // size) because temporarily showing the user an expired favicon or
@@ -523,7 +525,9 @@ void FaviconHandler::OnDidDownloadFavicon(
       // manifest URL, if available, is used instead of the icon URL.
       SetFavicon(manifest_url_.is_empty() ? best_favicon_.candidate.icon_url
                                           : manifest_url_,
-                 best_favicon_.image, best_favicon_.candidate.icon_type);
+                 best_favicon_.image,
+                 manifest_url_.is_empty() ? best_favicon_.candidate.icon_type
+                                          : favicon_base::WEB_MANIFEST_ICON);
     }
     // Clear download related state.
     current_candidate_index_ = candidates_.size();

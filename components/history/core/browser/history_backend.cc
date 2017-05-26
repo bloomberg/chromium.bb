@@ -2117,9 +2117,12 @@ bool HistoryBackend::SetFaviconMappingsForPage(
   DCHECK_LE(icon_ids.size(), kMaxFaviconsPerPage);
   bool mappings_changed = false;
 
-  // Two icon types are considered 'equivalent' if one of the icon types is
-  // TOUCH_ICON and the other is TOUCH_PRECOMPOSED_ICON.
-  //
+  // Two icon types are considered 'equivalent' if both types are one of
+  // TOUCH_ICON, TOUCH_PRECOMPOSED_ICON or WEB_MANIFEST_ICON.
+  const int equivalent_types = favicon_base::TOUCH_ICON |
+                               favicon_base::TOUCH_PRECOMPOSED_ICON |
+                               favicon_base::WEB_MANIFEST_ICON;
+
   // Sets the icon mappings from |page_url| for |icon_type| to the favicons
   // with |icon_ids|. Mappings for |page_url| to favicons of type |icon_type|
   // whose FaviconID is not in |icon_ids| are removed. All icon mappings for
@@ -2143,11 +2146,8 @@ bool HistoryBackend::SetFaviconMappingsForPage(
       continue;
     }
 
-    if ((icon_type == favicon_base::TOUCH_ICON &&
-         m->icon_type == favicon_base::TOUCH_PRECOMPOSED_ICON) ||
-        (icon_type == favicon_base::TOUCH_PRECOMPOSED_ICON &&
-         m->icon_type == favicon_base::TOUCH_ICON) ||
-        (icon_type == m->icon_type)) {
+    if (icon_type == m->icon_type || ((icon_type & equivalent_types) != 0 &&
+                                      (m->icon_type & equivalent_types) != 0)) {
       thumbnail_db_->DeleteIconMapping(m->mapping_id);
 
       // Removing the icon mapping may have orphaned the associated favicon so
