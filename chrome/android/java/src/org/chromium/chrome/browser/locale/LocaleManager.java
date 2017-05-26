@@ -279,6 +279,16 @@ public class LocaleManager {
      */
     @SearchEnginePromoType
     public int getSearchEnginePromoShowType() {
+        return getSearchEnginePromoShowType(false);
+    }
+
+    /**
+     * Check the type of search engine promo that would be shown when necessary.
+     * @param readOnly Perform the checks without any preference side effects.
+     * @return Whether and which search engine promo should be shown.
+     */
+    @SearchEnginePromoType
+    public int getSearchEnginePromoShowType(boolean readOnly) {
         if (!isSpecialLocaleEnabled()) return SEARCH_ENGINE_PROMO_DONT_SHOW;
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
