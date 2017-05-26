@@ -6,8 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "components/security_state/core/security_state.h"
+#include "chrome/browser/android/vr_shell/textures/render_text_wrapper.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -28,15 +30,16 @@ static constexpr SkColor kBackgroundDown = 0xFFFAFAFA;
 static constexpr SkColor kForeground = 0xFF333333;
 static constexpr SkColor kSeparatorColor = 0x33000000;
 
-static constexpr SkColor kInfoOutlineIconColor = 0xFF5A5A5A;
-static constexpr SkColor kLockIconColor = 0xFF0B8043;
-static constexpr SkColor kWarningIconColor = 0xFFC73821;
+static constexpr SkColor kUrlTextColor = 0xFF000000;
+static constexpr SkColor kUrlDeemphasizedTextColor = 0xFF5A5A5A;
+static const SkColor kSecureColor = gfx::kGoogleGreen700;
+static const SkColor kWarningColor = gfx::kGoogleRed700;
 
 static constexpr float kWidth = 0.672;
 static constexpr float kHeight = 0.088;
 static constexpr float kFontHeight = 0.027;
 static constexpr float kBackButtonWidth = kHeight;
-static constexpr float kBackIconHeight = 0.05;
+static constexpr float kBackIconHeight = 0.0375;
 static constexpr float kBackIconOffset = 0.005;
 static constexpr float kSecurityFieldWidth = 0.06;
 static constexpr float kSecurityIconHeight = 0.03;
@@ -45,7 +48,7 @@ static constexpr float kSeparatorWidth = 0.002;
 
 using security_state::SecurityLevel;
 
-const struct gfx::VectorIcon& getSecurityIcon(int level) {
+const struct gfx::VectorIcon& getSecurityIcon(SecurityLevel level) {
   switch (level) {
     case SecurityLevel::NONE:
     case SecurityLevel::HTTP_SHOW_WARNING:
@@ -54,26 +57,42 @@ const struct gfx::VectorIcon& getSecurityIcon(int level) {
     case SecurityLevel::SECURE:
     case SecurityLevel::EV_SECURE:
       return ui::kLockIcon;
-    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:
     case SecurityLevel::DANGEROUS:
+      return ui::kWarningIcon;
+    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
     default:
+      NOTREACHED();
       return ui::kWarningIcon;
   }
 }
 
-SkColor getSecurityIconColor(int level) {
+// See LocationBarView::GetSecureTextColor().
+SkColor getSchemeColor(SecurityLevel level) {
   switch (level) {
     case SecurityLevel::NONE:
     case SecurityLevel::HTTP_SHOW_WARNING:
     case SecurityLevel::SECURITY_WARNING:
-      return kInfoOutlineIconColor;
+      return kUrlDeemphasizedTextColor;
     case SecurityLevel::SECURE:
     case SecurityLevel::EV_SECURE:
-      return kLockIconColor;
-    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:
+      return kSecureColor;
     case SecurityLevel::DANGEROUS:
+      return kWarningColor;
+    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
     default:
-      return kWarningIconColor;
+      NOTREACHED();
+      return kWarningColor;
+  }
+}
+
+void setEmphasis(vr_shell::RenderTextWrapper* render_text,
+                 bool emphasis,
+                 const gfx::Range& range) {
+  SkColor color = emphasis ? kUrlTextColor : kUrlDeemphasizedTextColor;
+  if (range.IsValid()) {
+    render_text->ApplyColor(color, range);
+  } else {
+    render_text->SetColor(color);
   }
 }
 
@@ -93,8 +112,8 @@ void UrlBarTexture::SetURL(const GURL& gurl) {
   gurl_ = gurl;
 }
 
-void UrlBarTexture::SetSecurityLevel(int level) {
-  if (&getSecurityIcon(security_level_) != &getSecurityIcon(level))
+void UrlBarTexture::SetSecurityLevel(SecurityLevel level) {
+  if (security_level_ != level)
     set_dirty();
   security_level_ = level;
 }
@@ -192,7 +211,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     const gfx::VectorIcon& icon = getSecurityIcon(security_level_);
     icon_default_height = GetDefaultSizeOfVectorIcon(icon);
     icon_scale = kSecurityIconHeight / icon_default_height;
-    SkColor icon_color = getSecurityIconColor(security_level_);
+    SkColor icon_color = getSchemeColor(security_level_);
     canvas->scale(icon_scale, icon_scale);
     PaintVectorIcon(&gfx_canvas, icon, icon_color);
     canvas->restore();
@@ -201,22 +220,106 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->restore();
 
   if (!gurl_.is_empty()) {
-    if (last_drawn_gurl_ != gurl_) {
-      // Draw text based on pixel sizes rather than meters, for correct font
-      // sizing.
-      int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+    if (last_drawn_gurl_ != gurl_ ||
+        last_drawn_security_level_ != security_level_) {
       float url_x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth;
       float url_width = kWidth - url_x - kUrlRightMargin;
       gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
                             ToPixels(kHeight));
-      gurl_render_texts_ = PrepareDrawStringRect(
-          base::UTF8ToUTF16(gurl_.spec()),
-          GetDefaultFontList(pixel_font_height), SK_ColorBLACK, &text_bounds,
-          kTextAlignmentLeft, kWrappingBehaviorNoWrap);
+      RenderUrl(texture_size, text_bounds);
       last_drawn_gurl_ = gurl_;
+      last_drawn_security_level_ = security_level_;
     }
-    for (auto& render_text : gurl_render_texts_)
-      render_text->Draw(&gfx_canvas);
+    url_render_text_->Draw(&gfx_canvas);
+  }
+}
+
+void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
+                              const gfx::Rect& bounds) {
+  url::Parsed parsed;
+  const base::string16 text = url_formatter::FormatUrl(
+      gurl_, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
+      &parsed, nullptr, nullptr);
+
+  int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+  auto font_list = GetFontList(pixel_font_height, text);
+
+  std::unique_ptr<gfx::RenderText> render_text(
+      gfx::RenderText::CreateInstance());
+  render_text->SetText(text);
+  render_text->SetFontList(font_list);
+  render_text->SetColor(SK_ColorBLACK);
+  render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  render_text->SetDisplayRect(bounds);
+  render_text->SetElideBehavior(gfx::TRUNCATE);
+
+  vr_shell::RenderTextWrapper vr_render_text(render_text.get());
+  ApplyUrlStyling(text, parsed, security_level_, &vr_render_text);
+
+  url_render_text_ = std::move(render_text);
+}
+
+// This method replicates behavior in OmniboxView::UpdateTextStyle(), and
+// attempts to maintain similar code structure.
+void UrlBarTexture::ApplyUrlStyling(
+    const base::string16& formatted_url,
+    const url::Parsed& parsed,
+    const security_state::SecurityLevel security_level,
+    vr_shell::RenderTextWrapper* render_text) {
+  const url::Component& scheme = parsed.scheme;
+  const url::Component& host = parsed.host;
+
+  enum DeemphasizeComponents {
+    EVERYTHING,
+    ALL_BUT_SCHEME,
+    ALL_BUT_HOST,
+    NOTHING,
+  } deemphasize = NOTHING;
+
+  const base::string16 url_scheme =
+      formatted_url.substr(scheme.begin, scheme.len);
+
+  // Data URLs are rarely human-readable and can be used for spoofing, so draw
+  // attention to the scheme to emphasize "this is just a bunch of data".  For
+  // normal URLs, the host is the best proxy for "identity".
+  // TODO(cjgrant): Handle extensions, if required, for desktop.
+  if (url_scheme == base::UTF8ToUTF16(url::kDataScheme))
+    deemphasize = ALL_BUT_SCHEME;
+  else if (host.is_nonempty())
+    deemphasize = ALL_BUT_HOST;
+
+  gfx::Range scheme_range = scheme.is_nonempty()
+                                ? gfx::Range(scheme.begin, scheme.end())
+                                : gfx::Range::InvalidRange();
+  switch (deemphasize) {
+    case EVERYTHING:
+      setEmphasis(render_text, false, gfx::Range::InvalidRange());
+      break;
+    case NOTHING:
+      setEmphasis(render_text, true, gfx::Range::InvalidRange());
+      break;
+    case ALL_BUT_SCHEME:
+      DCHECK(scheme_range.IsValid());
+      setEmphasis(render_text, false, gfx::Range::InvalidRange());
+      setEmphasis(render_text, true, scheme_range);
+      break;
+    case ALL_BUT_HOST:
+      setEmphasis(render_text, false, gfx::Range::InvalidRange());
+      setEmphasis(render_text, true, gfx::Range(host.begin, host.end()));
+      break;
+  }
+
+  // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
+  // SafeBrowsing) get a special scheme color treatment. If the security level
+  // is NONE or HTTP_SHOW_WARNING, we do not override the text style previously
+  // applied to the scheme text range by setEmphasis().
+  if (scheme_range.IsValid() && security_level != security_state::NONE &&
+      security_level != security_state::HTTP_SHOW_WARNING) {
+    render_text->ApplyColor(getSchemeColor(security_level), scheme_range);
+    if (security_level == SecurityLevel::DANGEROUS) {
+      render_text->ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
+                              scheme_range);
+    }
   }
 }
 

@@ -12,8 +12,6 @@
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "device/vr/vr_types.h"
 
-class GURL;
-
 namespace vr_shell {
 
 class LoadingIndicator;
@@ -38,7 +36,7 @@ class UiSceneManager {
   void SetURL(const GURL& gurl);
   void SetWebVrSecureOrigin(bool secure);
   void SetWebVrMode(bool web_vr);
-  void SetSecurityLevel(int level);
+  void SetSecurityLevel(security_state::SecurityLevel level);
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
   void SetIsExiting();

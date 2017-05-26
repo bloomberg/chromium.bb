@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 
+#include "components/security_state/core/security_state.h"
+
 class GURL;
 
 namespace vr_shell {
@@ -26,7 +28,7 @@ class UiInterface {
   virtual void SetWebVrMode(bool enabled) = 0;
   virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
-  virtual void SetSecurityLevel(int level) = 0;
+  virtual void SetSecurityLevel(security_state::SecurityLevel level) = 0;
   virtual void SetWebVrSecureOrigin(bool secure) = 0;
   virtual void SetLoading(bool loading) = 0;
   virtual void SetLoadProgress(float progress) = 0;

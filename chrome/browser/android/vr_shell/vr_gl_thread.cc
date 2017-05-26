@@ -155,7 +155,7 @@ void VrGLThread::SetLoading(bool loading) {
                                                 weak_scene_manager_, loading));
 }
 
-void VrGLThread::SetSecurityLevel(int level) {
+void VrGLThread::SetSecurityLevel(security_state::SecurityLevel level) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&UiSceneManager::SetSecurityLevel,
