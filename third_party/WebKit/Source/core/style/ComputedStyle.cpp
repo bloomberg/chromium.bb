@@ -185,7 +185,7 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
   if (old_style->Display() != new_style->Display() ||
       old_style->HasPseudoStyle(kPseudoIdFirstLetter) !=
           new_style->HasPseudoStyle(kPseudoIdFirstLetter) ||
-      !old_style->ContentDataEquivalent(new_style) ||
+      !old_style->ContentDataEquivalent(*new_style) ||
       old_style->HasTextCombine() != new_style->HasTextCombine())
     return kReattach;
 
