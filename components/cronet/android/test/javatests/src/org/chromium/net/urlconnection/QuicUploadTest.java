@@ -9,8 +9,8 @@ import android.support.test.filters.SmallTest;
 import org.json.JSONObject;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetTestBase;
-import org.chromium.net.CronetTestFramework;
 import org.chromium.net.CronetTestUtil;
 import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.QuicTestServer;
@@ -25,7 +25,7 @@ import java.util.Arrays;
  */
 @SuppressWarnings("deprecation")
 public class QuicUploadTest extends CronetTestBase {
-    private CronetTestFramework mTestFramework;
+    private CronetEngine mCronetEngine;
 
     @Override
     protected void setUp() throws Exception {
@@ -49,7 +49,7 @@ public class QuicUploadTest extends CronetTestBase {
         CronetTestUtil.setMockCertVerifierForTesting(
                 builder, QuicTestServer.createMockCertVerifier());
 
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        mCronetEngine = builder.build();
     }
 
     @SmallTest
@@ -59,8 +59,7 @@ public class QuicUploadTest extends CronetTestBase {
     public void testOneMassiveWrite() throws Exception {
         String path = "/simple.txt";
         URL url = new URL(QuicTestServer.getServerURL() + path);
-        HttpURLConnection connection =
-                (HttpURLConnection) mTestFramework.mCronetEngine.openConnection(url);
+        HttpURLConnection connection = (HttpURLConnection) mCronetEngine.openConnection(url);
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
         // Size is chosen so the last time mBuffer will be written 14831 bytes,

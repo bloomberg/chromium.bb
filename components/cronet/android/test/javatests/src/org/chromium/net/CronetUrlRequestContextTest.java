@@ -21,7 +21,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
-import org.chromium.net.impl.CronetEngineBase;
 import org.chromium.net.impl.CronetEngineBuilderImpl;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -73,16 +72,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         super.tearDown();
     }
 
-    static class RequestThread extends Thread {
+    class RequestThread extends Thread {
         public TestUrlRequestCallback mCallback;
 
-        final CronetTestFramework mTestFramework;
         final String mUrl;
         final ConditionVariable mRunBlocker;
 
-        public RequestThread(
-                CronetTestFramework testFramework, String url, ConditionVariable runBlocker) {
-            mTestFramework = testFramework;
+        public RequestThread(String url, ConditionVariable runBlocker) {
             mUrl = url;
             mRunBlocker = runBlocker;
         }
@@ -90,7 +86,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         @Override
         public void run() {
             mRunBlocker.block();
-            CronetEngine cronetEngine = mTestFramework.initCronetEngine();
+            CronetEngine cronetEngine = new CronetEngine.Builder(getContext()).build();
             mCallback = new TestUrlRequestCallback();
             UrlRequest.Builder urlRequestBuilder =
                     cronetEngine.newUrlRequestBuilder(mUrl, mCallback, mCallback.getExecutor());
@@ -143,13 +139,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             cronetEngineBuilder = createJavaEngineBuilder();
         }
         cronetEngineBuilder.setUserAgent(userAgentValue);
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(mUrl, cronetEngineBuilder);
+        final CronetEngine cronetEngine = cronetEngineBuilder.build();
         NativeTestServer.shutdownNativeTestServer(); // startNativeTestServer returns false if it's
         // already running
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = testFramework.mCronetEngine.newUrlRequestBuilder(
+        UrlRequest.Builder urlRequestBuilder = cronetEngine.newUrlRequestBuilder(
                 NativeTestServer.getEchoHeaderURL(userAgentName), callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
@@ -213,7 +208,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testShutdownDuringInit() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to block until shutdown is called to test
@@ -236,7 +230,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Create new request context, but its initialization on the main thread
         // will be stuck behind blockingTask.
         final CronetUrlRequestContext cronetEngine =
-                (CronetUrlRequestContext) testFramework.initCronetEngine();
+                (CronetUrlRequestContext) new CronetEngine.Builder(getContext()).build();
         // Unblock the main thread, so context gets initialized and shutdown on
         // it.
         block.open();
@@ -255,7 +249,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testInitAndShutdownOnMainThread() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to init and shutdown on the main thread.
@@ -264,7 +257,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             public void run() {
                 // Create new request context, loading the library.
                 final CronetUrlRequestContext cronetEngine =
-                        (CronetUrlRequestContext) testFramework.initCronetEngine();
+                        (CronetUrlRequestContext) new CronetEngine.Builder(getContext()).build();
                 // Shutdown right after init.
                 cronetEngine.shutdown();
                 // Verify that context is shutdown.
@@ -548,17 +541,28 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         FileUtils.recursivelyDeleteFile(netLogDir2);
         assertFalse(netLogDir2.exists());
     }
+
+    private CronetEngine createCronetEngineWithCache(int cacheType) {
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK) {
+            builder.setStoragePath(getTestStorage(getContext()));
+        }
+        builder.enableHttpCache(cacheType, 100 * 1024);
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        return builder.build();
+    }
+
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Tests that if CronetEngine is shut down on the network thread, an appropriate exception
     // is thrown.
     public void testShutDownEngineOnNetworkThread() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        final CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         // Make a request to a cacheable resource.
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
 
         final AtomicReference<Throwable> thrown = new AtomicReference<>();
         // Shut down the server.
@@ -570,7 +574,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 request.cancel();
                 // Shut down CronetEngine immediately after request is destroyed.
                 try {
-                    testFramework.mCronetEngine.shutdown();
+                    cronetEngine.shutdown();
                 } catch (Exception e) {
                     thrown.set(e);
                 }
@@ -597,7 +601,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         CancelUrlRequestCallback callback = new CancelUrlRequestCallback();
         callback.setAllowDirectExecutor(true);
         UrlRequest.Builder urlRequestBuilder =
-                testFramework.mCronetEngine.newUrlRequestBuilder(url, callback, directExecutor);
+                cronetEngine.newUrlRequestBuilder(url, callback, directExecutor);
         urlRequestBuilder.allowDirectExecutor();
         urlRequestBuilder.build().start();
         callback.blockForDone();
@@ -610,11 +614,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // Tests that if CronetEngine is shut down when reading from disk cache,
     // there isn't a crash. See crbug.com/486120.
     public void testShutDownEngineWhenReadingFromDiskCache() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        final CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         // Make a request to a cacheable resource.
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
 
         // Shut down the server.
         NativeTestServer.shutdownNativeTestServer();
@@ -624,7 +628,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 super.onResponseStarted(request, info);
                 request.cancel();
                 // Shut down CronetEngine immediately after request is destroyed.
-                testFramework.mCronetEngine.shutdown();
+                cronetEngine.shutdown();
             }
 
             @Override
@@ -640,8 +644,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             }
         }
         CancelUrlRequestCallback callback = new CancelUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder urlRequestBuilder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -899,23 +903,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertEquals(expectedStatusCode, callback.mResponseInfo.getHttpStatusCode());
     }
 
-    private CronetTestFramework startCronetTestFrameworkWithCacheEnabled(int cacheType)
-            throws Exception {
-        String cacheTypeString = "";
-        if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK) {
-            cacheTypeString = CronetTestFramework.CACHE_DISK;
-        } else if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP) {
-            cacheTypeString = CronetTestFramework.CACHE_DISK_NO_HTTP;
-        } else if (cacheType == HTTP_CACHE_IN_MEMORY) {
-            cacheTypeString = CronetTestFramework.CACHE_IN_MEMORY;
-        }
-        String[] commandLineArgs = {CronetTestFramework.CACHE_KEY, cacheTypeString};
-        CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
-        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
-        return testFramework;
-    }
-
     private void checkRequestCaching(CronetEngine engine, String url, boolean expectCached) {
         checkRequestCaching(engine, url, expectCached, false);
     }
@@ -938,73 +925,74 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testEnableHttpCacheDisabled() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISABLED);
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheInMemory() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(HTTP_CACHE_IN_MEMORY);
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, true);
         NativeTestServer.shutdownNativeTestServer();
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, true);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisk() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, true);
         NativeTestServer.shutdownNativeTestServer();
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, true);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISABLED);
+        // TODO(pauljensen): This should be testing HTTP_CACHE_DISK_NO_HTTP.
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testDisableCache() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
 
         // When cache is disabled, making a request does not write to the cache.
-        checkRequestCaching(testFramework.mCronetEngine, url, false, true /** disable cache */);
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false, true /** disable cache */);
+        checkRequestCaching(cronetEngine, url, false);
 
         // When cache is enabled, the second request is cached.
-        checkRequestCaching(testFramework.mCronetEngine, url, false, true /** disable cache */);
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, false, true /** disable cache */);
+        checkRequestCaching(cronetEngine, url, true);
 
         // Shut down the server, next request should have a cached response.
         NativeTestServer.shutdownNativeTestServer();
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, true);
 
         // Cache is disabled after server is shut down, request should fail.
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder urlRequestBuilder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         urlRequestBuilder.disableCache();
         urlRequestBuilder.build().start();
         callback.blockForDone();
@@ -1016,28 +1004,25 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDiskNewEngine() throws Exception {
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        checkRequestCaching(testFramework.mCronetEngine, url, false);
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, true);
         NativeTestServer.shutdownNativeTestServer();
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        checkRequestCaching(cronetEngine, url, true);
 
         // Shutdown original context and create another that uses the same cache.
-        testFramework.mCronetEngine.shutdown();
-        testFramework.mCronetEngine =
-                (CronetEngineBase) testFramework.getCronetEngineBuilder().build();
-        checkRequestCaching(testFramework.mCronetEngine, url, true);
+        cronetEngine.shutdown();
+        cronetEngine = enableDiskCache(new CronetEngine.Builder(getContext())).build();
+        checkRequestCaching(cronetEngine, url, true);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testInitEngineAndStartRequest() {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
         // Immediately make a request after initializing the engine.
-        CronetEngine cronetEngine = testFramework.initCronetEngine();
+        CronetEngine cronetEngine = new CronetEngine.Builder(getContext()).build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
@@ -1049,10 +1034,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEmptyGetCertVerifierData() {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
         // Immediately make a request after initializing the engine.
-        ExperimentalCronetEngine cronetEngine = testFramework.initCronetEngine();
+        ExperimentalCronetEngine cronetEngine =
+                new ExperimentalCronetEngine.Builder(getContext()).build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
@@ -1074,10 +1058,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitEngineStartTwoRequests() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
         // Make two requests after initializing the context.
-        CronetEngine cronetEngine = testFramework.initCronetEngine();
+        CronetEngine cronetEngine = new CronetEngine.Builder(getContext()).build();
         int[] statusCodes = {0, 0};
         String[] urls = {mUrl, mUrl404};
         for (int i = 0; i < 2; i++) {
@@ -1095,12 +1077,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoEnginesSimultaneously() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
         // Threads will block on runBlocker to ensure simultaneous execution.
         ConditionVariable runBlocker = new ConditionVariable(false);
-        RequestThread thread1 = new RequestThread(testFramework, mUrl, runBlocker);
-        RequestThread thread2 = new RequestThread(testFramework, mUrl404, runBlocker);
+        RequestThread thread1 = new RequestThread(mUrl, runBlocker);
+        RequestThread thread2 = new RequestThread(mUrl404, runBlocker);
 
         thread1.start();
         thread2.start();
@@ -1114,11 +1094,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoEnginesInSequence() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
         ConditionVariable runBlocker = new ConditionVariable(true);
-        RequestThread thread1 = new RequestThread(testFramework, mUrl, runBlocker);
-        RequestThread thread2 = new RequestThread(testFramework, mUrl404, runBlocker);
+        RequestThread thread1 = new RequestThread(mUrl, runBlocker);
+        RequestThread thread2 = new RequestThread(mUrl404, runBlocker);
 
         thread1.start();
         thread1.join();
@@ -1185,12 +1163,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
         builder.setUserAgent("efgh");
         builder.setExperimentalOptions("ijkl");
-        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        builder.setStoragePath(getTestStorage(getContext()));
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         nativeVerifyUrlRequestContextConfig(
                 CronetUrlRequestContext.createNativeUrlRequestContextConfig(
                         (CronetEngineBuilderImpl) builder.mBuilderDelegate),
-                CronetTestFramework.getTestStorage(getContext()));
+                getTestStorage(getContext()));
     }
 
     // Verifies that CronetEngine.Builder config from testCronetEngineBuilderConfig() is properly
@@ -1267,12 +1245,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 new JSONObject().put("HostResolverRules", hostResolverRules);
         cronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
 
-        final CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, cronetEngineBuilder);
+        final CronetEngine cronetEngine = cronetEngineBuilder.build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         URL requestUrl =
                 new URL("http", resolverTestHostname, testUrl.getPort(), testUrl.getFile());
-        UrlRequest.Builder urlRequestBuilder = testFramework.mCronetEngine.newUrlRequestBuilder(
+        UrlRequest.Builder urlRequestBuilder = cronetEngine.newUrlRequestBuilder(
                 requestUrl.toString(), callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();

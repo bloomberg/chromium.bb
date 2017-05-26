@@ -15,45 +15,29 @@ import org.chromium.net.impl.CronetUrlRequestContext;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Tests Sdch support.
  */
 public class SdchTest extends CronetTestBase {
-    private CronetTestFramework mTestFramework;
-
     private enum Sdch {
         ENABLED,
         DISABLED,
     }
 
-    @SuppressWarnings("deprecation")
-    private void setUp(Sdch setting) throws JSONException {
-        List<String> commandLineArgs = new ArrayList<String>();
-        commandLineArgs.add(CronetTestFramework.CACHE_KEY);
-        commandLineArgs.add(CronetTestFramework.CACHE_DISK);
-        if (setting == Sdch.ENABLED) {
-            commandLineArgs.add(CronetTestFramework.SDCH_KEY);
-            commandLineArgs.add(CronetTestFramework.SDCH_ENABLE);
-        }
-
-        commandLineArgs.add(CronetTestFramework.LIBRARY_INIT_KEY);
-        commandLineArgs.add(CronetTestFramework.LibraryInitType.CRONET);
-
-        String[] args = new String[commandLineArgs.size()];
+    private CronetEngine.Builder createCronetEngineBuilder(Sdch setting) throws JSONException {
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(getContext());
+        builder.enableSdch(setting == Sdch.ENABLED);
+        enableDiskCache(builder);
         JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
         JSONObject experimentalOptions =
                 new JSONObject().put("HostResolverRules", hostResolverParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
-        mTestFramework =
-                new CronetTestFramework(null, commandLineArgs.toArray(args), getContext(), builder);
         // Start NativeTestServer.
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        return builder;
     }
 
     @Override
@@ -66,15 +50,15 @@ public class SdchTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSdchEnabled() throws Exception {
-        setUp(Sdch.ENABLED);
+        CronetEngine.Builder cronetEngineBuilder = createCronetEngineBuilder(Sdch.ENABLED);
+        CronetEngine cronetEngine = cronetEngineBuilder.build();
         String targetUrl = NativeTestServer.getSdchURL() + "/sdch/test";
-        long contextAdapter =
-                getContextAdapter((CronetUrlRequestContext) mTestFramework.mCronetEngine);
+        long contextAdapter = getContextAdapter((CronetUrlRequestContext) cronetEngine);
         SdchObserver observer = new SdchObserver(targetUrl, contextAdapter);
 
         // Make a request to /sdch which advertises the dictionary.
-        TestUrlRequestCallback callback1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
-                NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
+        TestUrlRequestCallback callback1 = startAndWaitForComplete(
+                cronetEngine, NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
         assertEquals(200, callback1.mResponseInfo.getHttpStatusCode());
         assertEquals("This is an index page.\n", callback1.mResponseAsString);
         assertEquals(Arrays.asList("/sdch/dict/LeQxM80O"),
@@ -83,12 +67,11 @@ public class SdchTest extends CronetTestBase {
         observer.waitForDictionaryAdded();
 
         // Make a request to fetch encoded response at /sdch/test.
-        TestUrlRequestCallback callback2 =
-                startAndWaitForComplete(mTestFramework.mCronetEngine, targetUrl);
+        TestUrlRequestCallback callback2 = startAndWaitForComplete(cronetEngine, targetUrl);
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
         assertEquals("The quick brown fox jumps over the lazy dog.\n", callback2.mResponseAsString);
 
-        mTestFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
 
         // Shutting down the context will make JsonPrefStore to flush pending
         // writes to disk.
@@ -96,15 +79,14 @@ public class SdchTest extends CronetTestBase {
         assertTrue(fileContainsString("local_prefs.json", dictUrl));
 
         // Test persistence.
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
-                null, mTestFramework.getCronetEngineBuilder());
-        CronetUrlRequestContext newContext = (CronetUrlRequestContext) mTestFramework.mCronetEngine;
+        cronetEngine = cronetEngineBuilder.build();
+        CronetUrlRequestContext newContext = (CronetUrlRequestContext) cronetEngine;
         long newContextAdapter = getContextAdapter(newContext);
         SdchObserver newObserver = new SdchObserver(targetUrl, newContextAdapter);
         newObserver.waitForDictionaryAdded();
 
         // Make a request to fetch encoded response at /sdch/test.
-        TestUrlRequestCallback callback3 = startAndWaitForComplete(newContext, targetUrl);
+        TestUrlRequestCallback callback3 = startAndWaitForComplete(cronetEngine, targetUrl);
         assertEquals(200, callback3.mResponseInfo.getHttpStatusCode());
         assertEquals("The quick brown fox jumps over the lazy dog.\n", callback3.mResponseAsString);
     }
@@ -113,11 +95,11 @@ public class SdchTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSdchDisabled() throws Exception {
-        setUp(Sdch.DISABLED);
+        CronetEngine cronetEngine = createCronetEngineBuilder(Sdch.DISABLED).build();
         // Make a request to /sdch.
         // Since Sdch is not enabled, no dictionary should be advertised.
-        TestUrlRequestCallback callback = startAndWaitForComplete(mTestFramework.mCronetEngine,
-                NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
+        TestUrlRequestCallback callback = startAndWaitForComplete(
+                cronetEngine, NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("This is an index page.\n", callback.mResponseAsString);
         assertEquals(null, callback.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
@@ -127,19 +109,19 @@ public class SdchTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testDictionaryNotFound() throws Exception {
-        setUp(Sdch.ENABLED);
+        CronetEngine cronetEngine = createCronetEngineBuilder(Sdch.ENABLED).build();
         // Make a request to /sdch/index which advertises a bad dictionary that
         // does not exist.
-        TestUrlRequestCallback callback1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
-                NativeTestServer.getSdchURL() + "/sdch/index?q=NotFound");
+        TestUrlRequestCallback callback1 = startAndWaitForComplete(
+                cronetEngine, NativeTestServer.getSdchURL() + "/sdch/index?q=NotFound");
         assertEquals(200, callback1.mResponseInfo.getHttpStatusCode());
         assertEquals("This is an index page.\n", callback1.mResponseAsString);
         assertEquals(Arrays.asList("/sdch/dict/NotFound"),
                 callback1.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
 
         // Make a request to fetch /sdch/test, and make sure Sdch encoding is not used.
-        TestUrlRequestCallback callback2 = startAndWaitForComplete(
-                mTestFramework.mCronetEngine, NativeTestServer.getSdchURL() + "/sdch/test");
+        TestUrlRequestCallback callback2 =
+                startAndWaitForComplete(cronetEngine, NativeTestServer.getSdchURL() + "/sdch/test");
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
         assertEquals("Sdch is not used.\n", callback2.mResponseAsString);
     }
@@ -160,8 +142,8 @@ public class SdchTest extends CronetTestBase {
 
     // Returns whether a file contains a particular string.
     private boolean fileContainsString(String filename, String content) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(
-                CronetTestFramework.getTestStorage(getContext()) + "/prefs/" + filename));
+        BufferedReader reader = new BufferedReader(
+                new FileReader(getTestStorage(getContext()) + "/prefs/" + filename));
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.contains(content)) {

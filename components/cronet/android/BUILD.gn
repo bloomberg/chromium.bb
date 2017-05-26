@@ -543,7 +543,6 @@ android_library("cronet_test_apk_java") {
 
   java_files = [
     "test/src/org/chromium/net/CronetTestApplication.java",
-    "test/src/org/chromium/net/CronetTestFramework.java",
     "test/src/org/chromium/net/CronetTestUtil.java",
     "test/src/org/chromium/net/Http2TestHandler.java",
     "test/src/org/chromium/net/Http2TestServer.java",

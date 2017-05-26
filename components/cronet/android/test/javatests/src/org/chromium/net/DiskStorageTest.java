@@ -21,7 +21,6 @@ import java.util.Arrays;
  * Test CronetEngine disk storage.
  */
 public class DiskStorageTest extends CronetTestBase {
-    private CronetTestFramework mTestFramework;
     private String mReadOnlyStoragePath;
 
     @Override
@@ -55,16 +54,16 @@ public class DiskStorageTest extends CronetTestBase {
         builder.setStoragePath(mReadOnlyStoragePath);
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
 
-        mTestFramework = new CronetTestFramework(null, null, getContext(), builder);
+        CronetEngine cronetEngine = builder.build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        UrlRequest.Builder requestBuilder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder requestBuilder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         UrlRequest urlRequest = requestBuilder.build();
         urlRequest.start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        mTestFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
         FileInputStream newVersionFile = null;
         // Make sure that version file is in readOnlyStoragePath.
         File versionFile = new File(mReadOnlyStoragePath + "/version");
@@ -90,7 +89,7 @@ public class DiskStorageTest extends CronetTestBase {
     @OnlyRunNativeCronet
     // Crashing on Android Cronet Builder, see crbug.com/601409.
     public void testPurgeOldVersion() throws Exception {
-        String testStorage = CronetTestFramework.getTestStorage(getContext());
+        String testStorage = getTestStorage(getContext());
         File versionFile = new File(testStorage + "/version");
         FileOutputStream versionOut = null;
         try {
@@ -115,19 +114,19 @@ public class DiskStorageTest extends CronetTestBase {
 
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        builder.setStoragePath(getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
 
-        mTestFramework = new CronetTestFramework(null, null, getContext(), builder);
+        CronetEngine cronetEngine = builder.build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        UrlRequest.Builder requestBuilder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder requestBuilder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         UrlRequest urlRequest = requestBuilder.build();
         urlRequest.start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        mTestFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
         FileInputStream newVersionFile = null;
         try {
             newVersionFile = new FileInputStream(versionFile);
@@ -156,22 +155,22 @@ public class DiskStorageTest extends CronetTestBase {
         // Initialize a CronetEngine and shut it down.
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        builder.setStoragePath(getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
 
-        mTestFramework = new CronetTestFramework(null, null, getContext(), builder);
+        CronetEngine cronetEngine = builder.build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
-        UrlRequest.Builder requestBuilder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder requestBuilder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         UrlRequest urlRequest = requestBuilder.build();
         urlRequest.start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        mTestFramework.mCronetEngine.shutdown();
+        cronetEngine.shutdown();
 
         // Create a dummy file in storage directory.
-        String testStorage = CronetTestFramework.getTestStorage(getContext());
+        String testStorage = getTestStorage(getContext());
         File dummyFile = new File(testStorage + "/dummy.json");
         FileOutputStream dummyFileOut = null;
         String dummyContent = "dummy content";

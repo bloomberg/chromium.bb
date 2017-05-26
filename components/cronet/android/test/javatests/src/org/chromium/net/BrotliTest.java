@@ -12,7 +12,7 @@ import org.chromium.base.test.util.Feature;
  * Simple test for Brotli support.
  */
 public class BrotliTest extends CronetTestBase {
-    private CronetTestFramework mTestFramework;
+    private CronetEngine mCronetEngine;
 
     @Override
     protected void setUp() throws Exception {
@@ -26,7 +26,7 @@ public class BrotliTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         assertTrue(Http2TestServer.shutdownHttp2TestServer());
-        mTestFramework.mCronetEngine.shutdown();
+        mCronetEngine.shutdown();
         super.tearDown();
     }
 
@@ -39,7 +39,7 @@ public class BrotliTest extends CronetTestBase {
         builder.enableBrotli(true);
         CronetTestUtil.setMockCertVerifierForTesting(
                 builder, QuicTestServer.createMockCertVerifier());
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        mCronetEngine = builder.build();
         String url = Http2TestServer.getEchoAllHeadersUrl();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -54,7 +54,7 @@ public class BrotliTest extends CronetTestBase {
                 new ExperimentalCronetEngine.Builder(getContext());
         CronetTestUtil.setMockCertVerifierForTesting(
                 builder, QuicTestServer.createMockCertVerifier());
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        mCronetEngine = builder.build();
         String url = Http2TestServer.getEchoAllHeadersUrl();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -70,7 +70,7 @@ public class BrotliTest extends CronetTestBase {
         builder.enableBrotli(true);
         CronetTestUtil.setMockCertVerifierForTesting(
                 builder, QuicTestServer.createMockCertVerifier());
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        mCronetEngine = builder.build();
         String url = Http2TestServer.getServeSimpleBrotliResponse();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -81,8 +81,8 @@ public class BrotliTest extends CronetTestBase {
 
     private TestUrlRequestCallback startAndWaitForComplete(String url) {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                mCronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         builder.build().start();
         callback.blockForDone();
         return callback;

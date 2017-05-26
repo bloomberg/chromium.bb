@@ -22,7 +22,6 @@ import java.io.IOException;
  */
 public class ExperimentalOptionsTest extends CronetTestBase {
     private static final String TAG = ExperimentalOptionsTest.class.getSimpleName();
-    private CronetTestFramework mTestFramework;
     private ExperimentalCronetEngine.Builder mBuilder;
 
     @Override
@@ -38,9 +37,6 @@ public class ExperimentalOptionsTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         assertTrue(Http2TestServer.shutdownHttp2TestServer());
-        if (mTestFramework != null && mTestFramework.mCronetEngine != null) {
-            mTestFramework.mCronetEngine.shutdown();
-        }
         super.tearDown();
     }
 
@@ -56,21 +52,22 @@ public class ExperimentalOptionsTest extends CronetTestBase {
                 new JSONObject().put("HostResolverRules", hostResolverParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
 
-        mTestFramework = new CronetTestFramework(null, null, getContext(), mBuilder);
-        mTestFramework.mCronetEngine.startNetLogToFile(logfile.getPath(), false);
+        CronetEngine cronetEngine = mBuilder.build();
+        cronetEngine.startNetLogToFile(logfile.getPath(), false);
         String url = Http2TestServer.getEchoMethodUrl();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", callback.mResponseAsString);
-        mTestFramework.mCronetEngine.stopNetLog();
+        cronetEngine.stopNetLog();
         assertFileContainsString(logfile, "HostResolverRules");
         assertTrue(logfile.delete());
         assertFalse(logfile.exists());
+        cronetEngine.shutdown();
     }
 
     @MediumTest
@@ -83,11 +80,11 @@ public class ExperimentalOptionsTest extends CronetTestBase {
 
         JSONObject experimentalOptions = new JSONObject().put("ssl_key_log_file", file.getPath());
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
-        mTestFramework = new CronetTestFramework(null, null, getContext(), mBuilder);
+        CronetEngine cronetEngine = mBuilder.build();
 
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
+        UrlRequest.Builder builder =
+                cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
@@ -97,6 +94,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         assertFileContainsString(file, "CLIENT_RANDOM");
         assertTrue(file.delete());
         assertFalse(file.exists());
+        cronetEngine.shutdown();
     }
 
     // Helper method to assert that file contains content. It retries 5 times
