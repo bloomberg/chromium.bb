@@ -33,16 +33,22 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/NullExecutionContext.h"
+#include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "modules/indexeddb/IDBValueWrapping.h"
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -50,29 +56,178 @@
 namespace blink {
 namespace {
 
-TEST(IDBRequestTest, EventsAfterStopping) {
-  V8TestingScope scope;
-  IDBTransaction* transaction = nullptr;
-  IDBRequest* request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction);
-  EXPECT_EQ(request->readyState(), "pending");
-  scope.GetExecutionContext()->NotifyContextDestroyed();
+class IDBRequestTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    url_loader_mock_factory_ = Platform::Current()->GetURLLoaderMockFactory();
+    WebURLResponse response;
+    response.SetURL(KURL(KURL(), "blob:"));
+    url_loader_mock_factory_->RegisterURLProtocol(WebString("blob"), response,
+                                                  "");
+  }
 
-  // Ensure none of the following raise assertions in stopped state:
-  request->EnqueueResponse(
-      DOMException::Create(kAbortError, "Description goes here."));
-  request->EnqueueResponse(Vector<String>());
-  request->EnqueueResponse(nullptr, IDBKey::CreateInvalid(),
-                           IDBKey::CreateInvalid(), IDBValue::Create());
-  request->EnqueueResponse(IDBKey::CreateInvalid());
-  request->EnqueueResponse(IDBValue::Create());
-  request->EnqueueResponse(static_cast<int64_t>(0));
-  request->EnqueueResponse();
-  request->EnqueueResponse(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
-                           IDBValue::Create());
+  void TearDown() override {
+    url_loader_mock_factory_->UnregisterAllURLsAndClearMemoryCache();
+  }
+
+  void BuildTransaction(V8TestingScope& scope,
+                        std::unique_ptr<MockWebIDBDatabase> backend) {
+    db_ =
+        IDBDatabase::Create(scope.GetExecutionContext(), std::move(backend),
+                            IDBDatabaseCallbacks::Create(), scope.GetIsolate());
+
+    HashSet<String> transaction_scope = {"store"};
+    transaction_ = IDBTransaction::CreateNonVersionChange(
+        scope.GetScriptState(), kTransactionId, transaction_scope,
+        kWebIDBTransactionModeReadOnly, db_.Get());
+  }
+
+  WebURLLoaderMockFactory* url_loader_mock_factory_;
+  Persistent<IDBDatabase> db_;
+  Persistent<IDBTransaction> transaction_;
+
+  static constexpr int64_t kTransactionId = 1234;
+};
+
+// The created value is an array of true. If create_wrapped_value is true, the
+// IDBValue's byte array will be wrapped in a Blob, otherwise it will not be.
+RefPtr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
+                                bool create_wrapped_value) {
+  size_t element_count = create_wrapped_value ? 16 : 2;
+  v8::Local<v8::Array> v8_array = v8::Array::New(isolate, element_count);
+  for (size_t i = 0; i < element_count; ++i)
+    v8_array->Set(i, v8::True(isolate));
+
+  NonThrowableExceptionState non_throwable_exception_state;
+  IDBValueWrapper wrapper(isolate, v8_array,
+                          SerializedScriptValue::SerializeOptions::kSerialize,
+                          non_throwable_exception_state);
+  wrapper.WrapIfBiggerThan(create_wrapped_value ? 0 : 1024 * element_count);
+
+  std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data_handles =
+      WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>();
+  wrapper.ExtractBlobDataHandles(blob_data_handles.get());
+  Vector<WebBlobInfo>& blob_infos = wrapper.WrappedBlobInfo();
+  RefPtr<SharedBuffer> wrapped_marker_buffer = wrapper.ExtractWireBytes();
+
+  RefPtr<IDBValue> idb_value =
+      IDBValue::Create(wrapped_marker_buffer, std::move(blob_data_handles),
+                       WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos));
+
+  DCHECK_EQ(create_wrapped_value,
+            IDBValueUnwrapper::IsWrapped(idb_value.Get()));
+  return idb_value;
 }
 
-TEST(IDBRequestTest, AbortErrorAfterAbort) {
+void EnsureIDBCallbacksDontThrow(IDBRequest* request,
+                                 ExceptionState& exception_state) {
+  ASSERT_TRUE(request->transaction());
+
+  request->HandleResponse(
+      DOMException::Create(kAbortError, "Description goes here."));
+  request->HandleResponse(nullptr, IDBKey::CreateInvalid(),
+                          IDBKey::CreateInvalid(), IDBValue::Create());
+  request->HandleResponse(IDBKey::CreateInvalid());
+  request->HandleResponse(IDBValue::Create());
+  request->HandleResponse(static_cast<int64_t>(0));
+  request->HandleResponse();
+  request->HandleResponse(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
+                          IDBValue::Create());
+  request->EnqueueResponse(Vector<String>());
+
+  EXPECT_TRUE(!exception_state.HadException());
+}
+
+TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
+  V8TestingScope scope;
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(backend));
+
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(transaction_);
+
+  IDBRequest* request = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  EXPECT_EQ(request->readyState(), "pending");
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(request->transaction());
+  scope.GetExecutionContext()->NotifyContextDestroyed();
+
+  EnsureIDBCallbacksDontThrow(request, scope.GetExceptionState());
+}
+
+TEST_F(IDBRequestTest, EventsAfterDoneStop) {
+  V8TestingScope scope;
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(backend));
+
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(transaction_);
+
+  IDBRequest* request = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(request->transaction());
+  request->HandleResponse(CreateIDBValue(scope.GetIsolate(), false));
+  scope.GetExecutionContext()->NotifyContextDestroyed();
+
+  EnsureIDBCallbacksDontThrow(request, scope.GetExceptionState());
+}
+
+TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
+  V8TestingScope scope;
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(backend));
+
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(transaction_);
+
+  IDBRequest* request = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  EXPECT_EQ(request->readyState(), "pending");
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(request->transaction());
+  request->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));
+  scope.GetExecutionContext()->NotifyContextDestroyed();
+
+  EnsureIDBCallbacksDontThrow(request, scope.GetExceptionState());
+  url_loader_mock_factory_->ServeAsynchronousRequests();
+  EnsureIDBCallbacksDontThrow(request, scope.GetExceptionState());
+}
+
+TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
+  V8TestingScope scope;
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(backend));
+
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(transaction_);
+
+  IDBRequest* request1 = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  IDBRequest* request2 = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  EXPECT_EQ(request1->readyState(), "pending");
+  EXPECT_EQ(request2->readyState(), "pending");
+  ASSERT_TRUE(!scope.GetExceptionState().HadException());
+  ASSERT_TRUE(request1->transaction());
+  ASSERT_TRUE(request2->transaction());
+  request1->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));
+  request2->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));
+  scope.GetExecutionContext()->NotifyContextDestroyed();
+
+  EnsureIDBCallbacksDontThrow(request1, scope.GetExceptionState());
+  EnsureIDBCallbacksDontThrow(request2, scope.GetExceptionState());
+  url_loader_mock_factory_->ServeAsynchronousRequests();
+  EnsureIDBCallbacksDontThrow(request1, scope.GetExceptionState());
+  EnsureIDBCallbacksDontThrow(request2, scope.GetExceptionState());
+}
+
+TEST_F(IDBRequestTest, AbortErrorAfterAbort) {
   V8TestingScope scope;
   IDBTransaction* transaction = nullptr;
   IDBRequest* request = IDBRequest::Create(
@@ -85,7 +240,7 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
 
   // Now simulate the back end having fired an abort error at the request to
   // clear up any intermediaries.  Ensure an assertion is not raised.
-  request->EnqueueResponse(
+  request->HandleResponse(
       DOMException::Create(kAbortError, "Description goes here."));
 
   // Stop the request lest it be GCed and its destructor
@@ -93,7 +248,7 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
   scope.GetExecutionContext()->NotifyContextDestroyed();
 }
 
-TEST(IDBRequestTest, ConnectionsAfterStopping) {
+TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
   V8TestingScope scope;
   const int64_t kTransactionId = 1234;
   const int64_t kVersion = 1;

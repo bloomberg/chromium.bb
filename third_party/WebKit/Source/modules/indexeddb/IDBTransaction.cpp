@@ -36,6 +36,7 @@
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBRequestQueueItem.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -380,8 +381,35 @@ void IDBTransaction::RegisterRequest(IDBRequest* request) {
 
 void IDBTransaction::UnregisterRequest(IDBRequest* request) {
   DCHECK(request);
+#if DCHECK_IS_ON()
+  // Make sure that no pending IDBRequest gets left behind in the result queue.
+  DCHECK(!request->QueueItem() || request->QueueItem()->IsReady());
+#endif  // DCHECK_IS_ON()
+
   // If we aborted the request, it will already have been removed.
   request_list_.erase(request);
+}
+
+void IDBTransaction::EnqueueResult(
+    std::unique_ptr<IDBRequestQueueItem> result) {
+  DCHECK(result);
+  DCHECK(HasQueuedResults() || !result->IsReady());
+
+  result_queue_.push_back(std::move(result));
+  // StartLoading() may complete post-processing synchronously, so the result
+  // needs to be in the queue before StartLoading() is called.
+  result_queue_.back()->StartLoading();
+}
+
+void IDBTransaction::OnResultReady() {
+  while (!result_queue_.empty()) {
+    IDBRequestQueueItem* result = result_queue_.front().get();
+    if (!result->IsReady())
+      break;
+
+    result->EnqueueResponse();
+    result_queue_.pop_front();
+  }
 }
 
 void IDBTransaction::OnAbort(DOMException* error) {

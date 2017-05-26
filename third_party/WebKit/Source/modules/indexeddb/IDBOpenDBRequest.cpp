@@ -180,7 +180,7 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event* event) {
       ResultAsAny()->IdbDatabase()->IsClosePending()) {
     DequeueEvent(event);
     SetResult(nullptr);
-    EnqueueResponse(
+    HandleResponse(
         DOMException::Create(kAbortError, "The connection was closed."));
     return DispatchEventResult::kCanceledBeforeDispatch;
   }

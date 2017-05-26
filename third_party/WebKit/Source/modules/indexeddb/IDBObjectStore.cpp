@@ -40,9 +40,11 @@
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBValueWrapping.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebVector.h"
@@ -376,19 +378,13 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
 
   v8::Isolate* isolate = script_state->GetIsolate();
   DCHECK(isolate->InContext());
-  Vector<WebBlobInfo> blob_info;
-  SerializedScriptValue::SerializeOptions options;
-  options.blob_info = &blob_info;
-
   // TODO(crbug.com/719053): This wasm behavior differs from other browsers.
-  options.wasm_policy =
+  SerializedScriptValue::SerializeOptions::WasmSerializationPolicy wasm_policy =
       ExecutionContext::From(script_state)->IsSecureContext()
           ? SerializedScriptValue::SerializeOptions::kSerialize
           : SerializedScriptValue::SerializeOptions::kBlockedInNonSecureContext;
-  options.for_storage = SerializedScriptValue::kForStorage;
-  RefPtr<SerializedScriptValue> serialized_value =
-      SerializedScriptValue::Serialize(isolate, value.V8Value(), options,
-                                       exception_state);
+  IDBValueWrapper value_wrapper(isolate, value.V8Value(), wasm_policy,
+                                exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -412,9 +408,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   // value.
   if (put_mode == kWebIDBPutModeCursorUpdate && uses_in_line_keys) {
     DCHECK(key);
-    if (clone.IsEmpty())
-      clone = DeserializeScriptValue(script_state, serialized_value.Get(),
-                                     &blob_info);
+    DCHECK(clone.IsEmpty());
+    value_wrapper.Clone(script_state, &clone);
     IDBKey* key_path_key = ScriptValue::To<IDBKey*>(
         script_state->GetIsolate(), clone, exception_state, key_path);
     if (exception_state.HadException())
@@ -437,10 +432,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
     return nullptr;
   }
   if (uses_in_line_keys) {
-    if (clone.IsEmpty()) {
-      clone = DeserializeScriptValue(script_state, serialized_value.Get(),
-                                     &blob_info);
-    }
+    if (clone.IsEmpty())
+      value_wrapper.Clone(script_state, &clone);
     IDBKey* key_path_key = ScriptValue::To<IDBKey*>(
         script_state->GetIsolate(), clone, exception_state, key_path);
     if (exception_state.HadException())
@@ -494,10 +487,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   Vector<int64_t> index_ids;
   HeapVector<IndexKeys> index_keys;
   for (const auto& it : Metadata().indexes) {
-    if (clone.IsEmpty()) {
-      clone = DeserializeScriptValue(script_state, serialized_value.Get(),
-                                     &blob_info);
-    }
+    if (clone.IsEmpty())
+      value_wrapper.Clone(script_state, &clone);
     IndexKeys keys;
     GenerateIndexKeysForValue(script_state->GetIsolate(), *it.value, clone,
                               &keys);
@@ -507,16 +498,16 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
 
   IDBRequest* request =
       IDBRequest::Create(script_state, source, transaction_.Get());
-  Vector<char> wire_bytes;
-  serialized_value->ToWireBytes(wire_bytes);
-  RefPtr<SharedBuffer> value_buffer = SharedBuffer::AdoptVector(wire_bytes);
 
-  request->StorePutOperationBlobs(serialized_value->BlobDataHandles());
+  value_wrapper.ExtractBlobDataHandles(request->transit_blob_handles());
+  value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
-  BackendDB()->Put(transaction_->Id(), Id(), WebData(value_buffer), blob_info,
-                   key, static_cast<WebIDBPutMode>(put_mode),
-                   request->CreateWebCallbacks().release(), index_ids,
-                   index_keys);
+  BackendDB()->Put(
+      transaction_->Id(), Id(), WebData(value_wrapper.ExtractWireBytes()),
+      value_wrapper.WrappedBlobInfo(), key,
+      static_cast<WebIDBPutMode>(put_mode),
+      request->CreateWebCallbacks().release(), index_ids, index_keys);
+
   return request;
 }
 
