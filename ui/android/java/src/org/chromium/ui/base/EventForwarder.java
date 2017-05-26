@@ -5,8 +5,12 @@
 package org.chromium.ui.base;
 
 import android.annotation.TargetApi;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.os.Build;
+import android.view.DragEvent;
 import android.view.MotionEvent;
+import android.view.View;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
@@ -17,6 +21,8 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("ui")
 public class EventForwarder {
+    private final boolean mIsDragDropEnabled;
+
     private long mNativeEventForwarder;
 
     // Offsets for the events that passes through.
@@ -26,12 +32,13 @@ public class EventForwarder {
     private int mLastMouseButtonState;
 
     @CalledByNative
-    private static EventForwarder create(long nativeEventForwarder) {
-        return new EventForwarder(nativeEventForwarder);
+    private static EventForwarder create(long nativeEventForwarder, boolean isDragDropEnabled) {
+        return new EventForwarder(nativeEventForwarder, isDragDropEnabled);
     }
 
-    private EventForwarder(long nativeEventForwarder) {
+    private EventForwarder(long nativeEventForwarder, boolean isDragDropEnabled) {
         mNativeEventForwarder = nativeEventForwarder;
+        mIsDragDropEnabled = isDragDropEnabled;
     }
 
     @CalledByNative
@@ -223,6 +230,54 @@ public class EventForwarder {
         return true;
     }
 
+    /**
+     * @see View#onDragEvent(DragEvent)
+     * @param event {@link DragEvent} instance.
+     * @param containerView A view on which the drag event is taking place.
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    public boolean onDragEvent(DragEvent event, View containerView) {
+        if (mNativeEventForwarder == 0 || Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            return false;
+        }
+
+        ClipDescription clipDescription = event.getClipDescription();
+
+        // text/* will match text/uri-list, text/html, text/plain.
+        String[] mimeTypes =
+                clipDescription == null ? new String[0] : clipDescription.filterMimeTypes("text/*");
+
+        if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
+            // TODO(hush): support dragging more than just text.
+            return mimeTypes != null && mimeTypes.length > 0 && mIsDragDropEnabled;
+        }
+
+        StringBuilder content = new StringBuilder("");
+        if (event.getAction() == DragEvent.ACTION_DROP) {
+            // TODO(hush): obtain dragdrop permissions, when dragging files into Chrome/WebView is
+            // supported. Not necessary to do so for now, because only text dragging is supported.
+            ClipData clipData = event.getClipData();
+            final int itemCount = clipData.getItemCount();
+            for (int i = 0; i < itemCount; i++) {
+                ClipData.Item item = clipData.getItemAt(i);
+                content.append(item.coerceToStyledText(containerView.getContext()));
+            }
+        }
+
+        int[] locationOnScreen = new int[2];
+        containerView.getLocationOnScreen(locationOnScreen);
+
+        // All coordinates are in device pixel. Conversion to DIP happens in the native.
+        int x = (int) (event.getX() + mCurrentTouchOffsetX);
+        int y = (int) (event.getY() + mCurrentTouchOffsetY);
+        int screenX = x + locationOnScreen[0];
+        int screenY = y + locationOnScreen[1];
+
+        nativeOnDragEvent(mNativeEventForwarder, event.getAction(), x, y, screenX, screenY,
+                mimeTypes, content.toString());
+        return true;
+    }
+
     // All touch events (including flings, scrolls etc) accept coordinates in physical pixels.
     private native boolean nativeOnTouchEvent(long nativeEventForwarder, MotionEvent event,
             long timeMs, int action, int pointerCount, int historySize, int actionIndex, float x0,
@@ -236,4 +291,6 @@ public class EventForwarder {
             int changedButton, int buttonState, int metaState, int toolType);
     private native void nativeOnMouseWheelEvent(long nativeEventForwarder, long timeMs, float x,
             float y, float ticksX, float ticksY, float pixelsPerTick);
+    private native void nativeOnDragEvent(long nativeEventForwarder, int action, int x, int y,
+            int screenX, int screenY, String[] mimeTypes, String content);
 }

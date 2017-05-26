@@ -96,6 +96,13 @@ class WebContentsViewAndroid : public WebContentsView,
   void GotFocus() override;
   void TakeFocus(bool reverse) override;
 
+  // ui::ViewClient implementation.
+  bool OnTouchEvent(const ui::MotionEventAndroid& event,
+                    bool for_touch_handle) override;
+  bool OnDragEvent(const ui::DragEventAndroid& event) override;
+  void OnPhysicalBackingSizeChanged() override;
+
+ private:
   void OnDragEntered(const std::vector<DropData::Metadata>& metadata,
                      const gfx::Point& location,
                      const gfx::Point& screen_location);
@@ -107,12 +114,6 @@ class WebContentsViewAndroid : public WebContentsView,
                      const gfx::Point& screen_location);
   void OnDragEnded();
 
-  // ui::ViewClient implementation.
-  bool OnTouchEvent(const ui::MotionEventAndroid& event,
-                    bool for_touch_handle) override;
-  void OnPhysicalBackingSizeChanged() override;
-
- private:
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;
 

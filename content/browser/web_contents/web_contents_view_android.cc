@@ -17,13 +17,17 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
+#include "jni/DragEvent_jni.h"
 #include "ui/android/overscroll_refresh_handler.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/display/screen.h"
+#include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
@@ -336,6 +340,52 @@ void WebContentsViewAndroid::StartDragging(
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
   // Intentional no-op because Android does not have cursor.
+}
+
+bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
+  switch (event.action()) {
+    case JNI_DragEvent::ACTION_DRAG_ENTERED: {
+      std::vector<DropData::Metadata> metadata;
+      for (const base::string16& mime_type : event.mime_types()) {
+        metadata.push_back(DropData::Metadata::CreateForMimeType(
+            DropData::Kind::STRING, mime_type));
+      }
+      OnDragEntered(metadata, event.GetLocation(), event.GetScreenLocation());
+      break;
+    }
+    case JNI_DragEvent::ACTION_DRAG_LOCATION:
+      OnDragUpdated(event.GetLocation(), event.GetScreenLocation());
+      break;
+    case JNI_DragEvent::ACTION_DROP: {
+      DropData drop_data;
+      drop_data.did_originate_from_renderer = false;
+      JNIEnv* env = AttachCurrentThread();
+      base::string16 drop_content =
+          ConvertJavaStringToUTF16(env, event.GetJavaContent());
+      for (const base::string16& mime_type : event.mime_types()) {
+        if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeURIList)) {
+          drop_data.url = GURL(drop_content);
+        } else if (base::EqualsASCII(mime_type, ui::Clipboard::kMimeTypeText)) {
+          drop_data.text = base::NullableString16(drop_content, false);
+        } else {
+          drop_data.html = base::NullableString16(drop_content, false);
+        }
+      }
+
+      OnPerformDrop(&drop_data, event.GetLocation(), event.GetScreenLocation());
+      break;
+    }
+    case JNI_DragEvent::ACTION_DRAG_EXITED:
+      OnDragExited();
+      break;
+    case JNI_DragEvent::ACTION_DRAG_ENDED:
+      OnDragEnded();
+      break;
+    case JNI_DragEvent::ACTION_DRAG_STARTED:
+      // Nothing meaningful to do.
+      break;
+  }
+  return true;
 }
 
 // TODO(paulmeyer): The drag-and-drop calls on GetRenderViewHost()->GetWidget()

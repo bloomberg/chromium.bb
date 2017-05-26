@@ -7,8 +7,6 @@ package org.chromium.content.browser;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -19,7 +17,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Pair;
 import android.view.ActionMode;
-import android.view.DragEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -2158,55 +2155,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
-     * @see View#onDragEvent(DragEvent)
-     */
-    @TargetApi(Build.VERSION_CODES.N)
-    public boolean onDragEvent(DragEvent event) {
-        if (mNativeContentViewCore == 0 || Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            return false;
-        }
-
-        ClipDescription clipDescription = event.getClipDescription();
-
-        // text/* will match text/uri-list, text/html, text/plain.
-        String[] mimeTypes =
-                clipDescription == null ? new String[0] : clipDescription.filterMimeTypes("text/*");
-
-        if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
-            // TODO(hush): support dragging more than just text.
-            return mimeTypes != null && mimeTypes.length > 0
-                    && nativeIsTouchDragDropEnabled(mNativeContentViewCore);
-        }
-
-        StringBuilder content = new StringBuilder("");
-        if (event.getAction() == DragEvent.ACTION_DROP) {
-            // TODO(hush): obtain dragdrop permissions, when dragging files into Chrome/WebView is
-            // supported. Not necessary to do so for now, because only text dragging is supported.
-            ClipData clipData = event.getClipData();
-            final int itemCount = clipData.getItemCount();
-            for (int i = 0; i < itemCount; i++) {
-                ClipData.Item item = clipData.getItemAt(i);
-                content.append(item.coerceToStyledText(mContainerView.getContext()));
-            }
-        }
-
-        int[] locationOnScreen = new int[2];
-        mContainerView.getLocationOnScreen(locationOnScreen);
-
-        float xPix = event.getX() + mCurrentTouchOffsetX;
-        float yPix = event.getY() + mCurrentTouchOffsetY;
-
-        int xCss = (int) mRenderCoordinates.fromPixToDip(xPix);
-        int yCss = (int) mRenderCoordinates.fromPixToDip(yPix);
-        int screenXCss = (int) mRenderCoordinates.fromPixToDip(xPix + locationOnScreen[0]);
-        int screenYCss = (int) mRenderCoordinates.fromPixToDip(yPix + locationOnScreen[1]);
-
-        nativeOnDragEvent(mNativeContentViewCore, event.getAction(), xCss, yCss, screenXCss,
-                screenYCss, mimeTypes, content.toString());
-        return true;
-    }
-
-    /**
      * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
      * @return true if the embedder handled the event.
@@ -2416,7 +2364,4 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             String textTrackTextShadow, String textTrackTextSize);
 
     private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
-    private native boolean nativeIsTouchDragDropEnabled(long nativeContentViewCoreImpl);
-    private native void nativeOnDragEvent(long nativeContentViewCoreImpl, int action, int x, int y,
-            int screenX, int screenY, String[] mimeTypes, String content);
 }
