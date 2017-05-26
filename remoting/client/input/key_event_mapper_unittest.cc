@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/key_event_mapper.h"
+#include "remoting/client/input/key_event_mapper.h"
 
 #include <stdint.h>
 

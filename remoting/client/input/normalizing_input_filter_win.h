@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_WIN_H_
-#define REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_WIN_H_
+#ifndef REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_WIN_H_
+#define REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_WIN_H_
 
 #include "base/macros.h"
 #include "remoting/proto/event.pb.h"
@@ -57,4 +57,4 @@ class NormalizingInputFilterWin : public protocol::InputFilter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_WIN_H_
+#endif  // REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_WIN_H_

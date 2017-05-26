@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/normalizing_input_filter_cros.h"
+#include "remoting/client/input/normalizing_input_filter_cros.h"
 
 #include "base/logging.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -92,8 +92,7 @@ NormalizingInputFilterCros::NormalizingInputFilterCros(
       left_alt_is_pressed_(false),
       right_alt_is_pressed_(false),
       previous_mouse_x_(-1),
-      previous_mouse_y_(-1) {
-}
+      previous_mouse_y_(-1) {}
 
 NormalizingInputFilterCros::~NormalizingInputFilterCros() {}
 
@@ -117,8 +116,7 @@ void NormalizingInputFilterCros::InjectMouseEvent(
     // TODO(jamiewalch): Until crbug.com/489468 is fixed, a spurious mouse move
     // event is generated in response to certain key combinations, so check that
     // this is actually an "interesting" event.
-    if (event.has_button() ||
-        event.x() != previous_mouse_x_ ||
+    if (event.has_button() || event.x() != previous_mouse_x_ ||
         event.y() != previous_mouse_y_) {
       SwitchRewritingKeyToModifying();
     }
@@ -127,8 +125,7 @@ void NormalizingInputFilterCros::InjectMouseEvent(
   previous_mouse_y_ = event.y();
 
   protocol::MouseEvent newEvent = event;
-  if (left_alt_is_pressed_ &&
-      event.has_button() &&
+  if (left_alt_is_pressed_ && event.has_button() &&
       event.button() == protocol::MouseEvent::BUTTON_RIGHT) {
     newEvent.set_button(protocol::MouseEvent::BUTTON_LEFT);
   }

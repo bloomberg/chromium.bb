@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/normalizing_input_filter_mac.h"
+#include "remoting/client/input/normalizing_input_filter_mac.h"
 
 #include <map>
 #include <vector>
@@ -15,29 +15,26 @@ namespace remoting {
 
 NormalizingInputFilterMac::NormalizingInputFilterMac(
     protocol::InputStub* input_stub)
-    : protocol::InputFilter(input_stub) {
-}
+    : protocol::InputFilter(input_stub) {}
 
 NormalizingInputFilterMac::~NormalizingInputFilterMac() {}
 
-void NormalizingInputFilterMac::InjectKeyEvent(const protocol::KeyEvent& event)
-{
+void NormalizingInputFilterMac::InjectKeyEvent(
+    const protocol::KeyEvent& event) {
   DCHECK(event.has_usb_keycode());
 
   ui::DomCode dom_code = static_cast<ui::DomCode>(event.usb_keycode());
 
-  bool is_special_key =
-      dom_code == ui::DomCode::CONTROL_LEFT ||
-      dom_code == ui::DomCode::SHIFT_LEFT ||
-      dom_code == ui::DomCode::ALT_LEFT ||
-      dom_code == ui::DomCode::CONTROL_RIGHT ||
-      dom_code == ui::DomCode::SHIFT_RIGHT ||
-      dom_code == ui::DomCode::ALT_RIGHT ||
-      dom_code == ui::DomCode::TAB;
+  bool is_special_key = dom_code == ui::DomCode::CONTROL_LEFT ||
+                        dom_code == ui::DomCode::SHIFT_LEFT ||
+                        dom_code == ui::DomCode::ALT_LEFT ||
+                        dom_code == ui::DomCode::CONTROL_RIGHT ||
+                        dom_code == ui::DomCode::SHIFT_RIGHT ||
+                        dom_code == ui::DomCode::ALT_RIGHT ||
+                        dom_code == ui::DomCode::TAB;
 
   bool is_cmd_key =
-      dom_code == ui::DomCode::META_LEFT ||
-      dom_code == ui::DomCode::META_RIGHT;
+      dom_code == ui::DomCode::META_LEFT || dom_code == ui::DomCode::META_RIGHT;
 
   if (dom_code == ui::DomCode::CAPS_LOCK) {
     // Mac OS X generates keydown/keyup on lock-state transitions, rather than

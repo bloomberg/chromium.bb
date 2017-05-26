@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/normalizing_input_filter_mac.h"
+#include "remoting/client/input/normalizing_input_filter_mac.h"
 
 #include <stdint.h>
 
@@ -45,9 +45,9 @@ TEST(NormalizingInputFilterMacTest, CapsLock) {
 
     // Verifies the generated CapsLock up/down events.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::CAPS_LOCK, true)));
+                          ui::DomCode::CAPS_LOCK, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::CAPS_LOCK, false)));
+                          ui::DomCode::CAPS_LOCK, false)));
   }
 
   // Injecting a CapsLock down event with NumLock on.
@@ -63,10 +63,10 @@ TEST(NormalizingInputFilterMacTest, NoInjection) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
   }
 
   // C Down and C Up.
@@ -85,37 +85,37 @@ TEST(NormalizingInputFilterMacTest, CmdKey) {
 
     // Left command key.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
 
     // Right command key.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, true)));
+                          ui::DomCode::META_RIGHT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, false)));
+                          ui::DomCode::META_RIGHT, false)));
 
     // More than one keys after CMD.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, true)));
+                          ui::DomCode::META_RIGHT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_V, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_V, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_V, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_V, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, false)));
+                          ui::DomCode::META_RIGHT, false)));
   }
 
   // Left command key.
@@ -146,23 +146,23 @@ TEST(NormalizingInputFilterMacTest, SpecialKeys) {
 
     // Command + Shift.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::SHIFT_LEFT, true)));
+                          ui::DomCode::SHIFT_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::SHIFT_LEFT, false)));
+                          ui::DomCode::SHIFT_LEFT, false)));
 
     // Command + Option.
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_LEFT, true)));
+                          ui::DomCode::ALT_LEFT, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::ALT_LEFT, false)));
+                          ui::DomCode::ALT_LEFT, false)));
   }
 
   // Command + Shift.
@@ -188,15 +188,15 @@ TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
     InSequence s;
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, true)));
+                          ui::DomCode::META_LEFT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
+                          ui::DomCode::META_RIGHT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_LEFT, false)));
+                          ui::DomCode::META_LEFT, false)));
   }
 
   // Test multiple CMD keys at the same time.
@@ -216,16 +216,16 @@ TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
   {
     InSequence s;
 
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, true)));
+                          ui::DomCode::META_RIGHT, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::META_RIGHT, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock(
-        ui::DomCode::US_C, false)));
+                          ui::DomCode::META_RIGHT, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(ui::DomCode::US_C, false)));
   }
 
   // Press C before command key.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_KEY_EVENT_MAPPER_H_
-#define REMOTING_CLIENT_KEY_EVENT_MAPPER_H_
+#ifndef REMOTING_CLIENT_INPUT_KEY_EVENT_MAPPER_H_
+#define REMOTING_CLIENT_INPUT_KEY_EVENT_MAPPER_H_
 
 #include <stdint.h>
 
@@ -51,6 +51,6 @@ class KeyEventMapper : public protocol::InputFilter {
   DISALLOW_COPY_AND_ASSIGN(KeyEventMapper);
 };
 
-} // namespace remoting
+}  // namespace remoting
 
-#endif // REMOTING_CLIENT_KEY_EVENT_MAPPER_H_
+#endif  // REMOTING_CLIENT_INPUT_KEY_EVENT_MAPPER_H_

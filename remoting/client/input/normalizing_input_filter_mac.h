@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_MAC_H_
-#define REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_MAC_H_
+#ifndef REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_MAC_H_
+#define REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_MAC_H_
 
 #include <map>
 
@@ -68,4 +68,4 @@ class NormalizingInputFilterMac : public protocol::InputFilter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_MAC_H_
+#endif  // REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_MAC_H_
