@@ -37,6 +37,11 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
 
   // TextMatchMarkerListImpl-specific
   Vector<IntRect> RenderedRects(const Node&) const;
+  // Returns true if markers within a range defined by |startOffset| and
+  // |endOffset| are found.
+  bool SetTextMatchMarkersActive(unsigned start_offset,
+                                 unsigned end_offset,
+                                 bool);
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;
