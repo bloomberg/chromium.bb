@@ -8,6 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+if (NOT AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_)
+set(AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_ 1)
+
 include(FindGit)
 include(FindPerl)
 include(FindThreads)
@@ -367,3 +370,5 @@ if (NOT MSVC)
   endif ()
   file(APPEND "${pkgconfig_file}" "Cflags: -I${prefix}/include\n")
 endif ()
+
+endif ()  # AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_

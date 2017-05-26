@@ -8,6 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+if (NOT AOM_AV1_AV1_CMAKE_)
+set(AOM_AV1_AV1_CMAKE_ 1)
+
 set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/av1_iface_common.h"
     "${AOM_ROOT}/av1/common/alloccommon.c"
@@ -558,3 +561,5 @@ endfunction ()
 
 function (setup_av1_test_targets)
 endfunction ()
+
+endif ()  # AOM_AV1_AV1_CMAKE_

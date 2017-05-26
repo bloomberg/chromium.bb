@@ -8,6 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+if (NOT AOM_TEST_TEST_CMAKE_)
+set(AOM_TEST_TEST_CMAKE_ 1)
+
 include(ProcessorCount)
 
 include("${AOM_ROOT}/test/test_data_util.cmake")
@@ -389,3 +392,5 @@ function (setup_aom_test_targets)
                           EXCLUDE_FROM_DEFAULT_BUILD TRUE)
   endif ()
 endfunction ()
+
+endif ()  # AOM_TEST_TEST_CMAKE_
