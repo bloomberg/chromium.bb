@@ -1264,15 +1264,15 @@ template <>
 inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueObjects:
-      return kTextDecorationSkipObjects;
+      return TextDecorationSkip::kObjects;
     case CSSValueInk:
-      return kTextDecorationSkipInk;
+      return TextDecorationSkip::kInk;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextDecorationSkipObjects;
+  return TextDecorationSkip::kObjects;
 }
 
 template <>
