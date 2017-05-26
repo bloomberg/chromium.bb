@@ -35,6 +35,7 @@
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
@@ -150,6 +151,23 @@ ResourceLoadPriority TypeToPriority(Resource::Type type) {
 
   NOTREACHED();
   return kResourceLoadPriorityUnresolved;
+}
+
+bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
+                                        Resource* resource) {
+  if (!IsMainThread())
+    return false;
+  if (params.Options().data_buffering_policy == kDoNotBufferData)
+    return false;
+
+  // TODO(yhirano): Stop adding RawResources to MemoryCache completely.
+  if (resource->GetType() == Resource::kMainResource)
+    return false;
+  if (IsRawResource(*resource) &&
+      (params.IsSpeculativePreload() || params.IsLinkPreload())) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -440,8 +458,10 @@ Resource* ResourceFetcher::ResourceForStaticData(
   resource->SetCacheIdentifier(cache_identifier);
   resource->Finish();
 
-  if (!substitute_data.IsValid())
+  if (ShouldResourceBeAddedToMemoryCache(params, resource) &&
+      !substitute_data.IsValid()) {
     GetMemoryCache()->Add(resource);
+  }
 
   return resource;
 }
@@ -795,12 +815,8 @@ Resource* ResourceFetcher::CreateResourceForLoading(
   }
   resource->SetCacheIdentifier(cache_identifier);
 
-  // - Don't add main resource to cache to prevent reuse.
-  // - Don't add the resource if its body will not be stored.
-  if (IsMainThread() && factory.GetType() != Resource::kMainResource &&
-      params.Options().data_buffering_policy != kDoNotBufferData) {
+  if (ShouldResourceBeAddedToMemoryCache(params, resource))
     GetMemoryCache()->Add(resource);
-  }
   return resource;
 }
 
