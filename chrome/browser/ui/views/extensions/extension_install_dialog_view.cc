@@ -81,6 +81,9 @@ constexpr int kNoPermissionsLeftColumnWidth = 200;
 // this case, so make it wider than normal.
 constexpr int kExternalInstallLeftColumnWidth = 350;
 
+// Time delay before the install button is enabled after initial display.
+int g_install_delay_in_ms = 500;
+
 // Get the appropriate indentation for an item if its parent is using bullet
 // points. If the parent is using bullets for its items, then a padding of one
 // unit will make the child item (which has no bullet) look like a sibling of
@@ -91,9 +94,6 @@ int GetLeftPaddingForBulletedItems(bool parent_bulleted) {
              views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
          (parent_bulleted ? 2 : 1);
 }
-
-// Time delay before the install button is enabled after initial display.
-int g_install_delay_in_ms = 500;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
