@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
+#include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -65,7 +66,9 @@ namespace safe_browsing {
 class CertificateReportingServiceBrowserTest : public InProcessBrowserTest {
  public:
   CertificateReportingServiceBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    CertReportHelper::SetFakeOfficialBuildForTesting();
+  }
 
   void SetUpOnMainThread() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
