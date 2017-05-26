@@ -422,7 +422,7 @@ enum ContentDistributionType {
 // platforms (such as Windows).
 static const float kMaximumAllowedFontSize = 10000.0f;
 
-enum TextIndentLine { kTextIndentFirstLine, kTextIndentEachLine };
+enum TextIndentLine { kFirstLine, kEachLine };
 enum TextIndentType { kTextIndentNormal, kTextIndentHanging };
 
 enum CSSBoxType {
