@@ -29,6 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
@@ -391,7 +392,10 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     static boolean shouldShowFullString() {
         Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
                 getDelegate().getContext(), null, false);
-        return freIntent == null;
+        @SearchEnginePromoType
+        int type = LocaleManager.getInstance().getSearchEnginePromoShowType(true);
+        return freIntent == null && type != LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING
+                && type != LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW;
     }
 
     /** Sets an {@link SearchWidgetProviderDelegate} to interact with. */
