@@ -34,7 +34,7 @@ TEST(SpellcheckMessageFilterPlatformMacTest, CombineResults) {
   // local & remote result - must be flagged SPELLING, uses remote suggestion.
   SpellCheckResult result(SpellCheckResult::SPELLING, 20, 5, local_suggestion);
   local_results.push_back(result);
-  result.replacement = remote_suggestion;
+  result.replacements[0] = remote_suggestion;
   remote_results.push_back(result);
 
   SpellCheckMessageFilterPlatform::CombineResults(&remote_results,
@@ -45,7 +45,7 @@ TEST(SpellcheckMessageFilterPlatformMacTest, CombineResults) {
   EXPECT_EQ(0, remote_results[0].location);
   EXPECT_EQ(SpellCheckResult::SPELLING, remote_results[1].decoration);
   EXPECT_EQ(20, remote_results[1].location);
-  EXPECT_EQ(remote_suggestion, remote_results[1].replacement);
+  EXPECT_EQ(remote_suggestion, remote_results[1].replacements[0]);
 }
 
 TEST(SpellCheckMessageFilterPlatformMacTest, TestOverrideThread) {
