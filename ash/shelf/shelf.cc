@@ -105,10 +105,10 @@ bool Shelf::CanChangeShelfAlignment() {
   return false;
 }
 
-void Shelf::CreateShelfWidget(WmWindow* root) {
+void Shelf::CreateShelfWidget(aura::Window* root) {
   DCHECK(!shelf_widget_);
-  WmWindow* shelf_container =
-      root->GetChildByShellWindowId(kShellWindowId_ShelfContainer);
+  aura::Window* shelf_container =
+      root->GetChildById(kShellWindowId_ShelfContainer);
   shelf_widget_.reset(new ShelfWidget(shelf_container, this));
 
   DCHECK(!shelf_layout_manager_);
@@ -118,8 +118,8 @@ void Shelf::CreateShelfWidget(WmWindow* root) {
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().
   DCHECK(!shelf_widget_->status_area_widget());
-  WmWindow* status_container =
-      root->GetChildByShellWindowId(kShellWindowId_StatusContainer);
+  aura::Window* status_container =
+      root->GetChildById(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
 }
 
@@ -138,8 +138,8 @@ void Shelf::NotifyShelfInitialized() {
   Shell::Get()->shelf_controller()->NotifyShelfInitialized(this);
 }
 
-WmWindow* Shelf::GetWindow() {
-  return WmWindow::Get(shelf_widget_->GetNativeWindow());
+aura::Window* Shelf::GetWindow() {
+  return shelf_widget_->GetNativeWindow();
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
@@ -236,11 +236,11 @@ gfx::Rect Shelf::GetUserWorkAreaBounds() const {
                                : gfx::Rect();
 }
 
-void Shelf::UpdateIconPositionForPanel(WmWindow* panel) {
+void Shelf::UpdateIconPositionForPanel(aura::Window* panel) {
   shelf_widget_->UpdateIconPositionForPanel(panel);
 }
 
-gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
+gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
   if (!shelf_widget_)
     return gfx::Rect();
   return shelf_widget_->GetScreenBoundsOfItemIconForWindow(window);

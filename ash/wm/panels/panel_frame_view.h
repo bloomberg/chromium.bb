@@ -41,7 +41,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
  private:
   void InitHeaderPainter();
 
-  WmWindow* GetWidgetWindow();
+  aura::Window* GetWidgetWindow();
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;

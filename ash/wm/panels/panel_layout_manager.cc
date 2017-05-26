@@ -21,7 +21,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -200,7 +199,7 @@ class PanelCalloutWidget : public views::Widget {
       callout_bounds.set_height(kArrowWidth);
     }
     Window* parent = window->parent();
-    // It's important this go through WmWindow and not Widget. Going through
+    // It's important this go through Window and not Widget. Going through
     // Widget means it may move do a different screen, we don't want that.
     window->SetBounds(callout_bounds);
     // Setting the bounds should not trigger changing the parent.
@@ -453,8 +452,8 @@ void PanelLayoutManager::OnOverviewModeEnded() {
   Relayout();
 }
 
-void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
-  if (root_window_controller_->GetWindow() == root_window)
+void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
+  if (root_window_controller_->GetRootWindow() == root_window)
     Relayout();
 }
 
@@ -652,8 +651,7 @@ void PanelLayoutManager::Relayout() {
       continue;
     }
 
-    gfx::Rect icon_bounds =
-        shelf_->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(panel));
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
 
     // If both the icon width and height are 0 then there is no icon in the
     // shelf. If the shelf is hidden, one of the height or width will be
@@ -832,8 +830,7 @@ void PanelLayoutManager::UpdateCallouts() {
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds = panel->GetTargetBounds();
     ::wm::ConvertRectToScreen(panel->parent(), &bounds);
-    gfx::Rect icon_bounds =
-        shelf_->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(panel));
+    gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_ || !show_callout_widgets_) {
       callout_widget->Hide();

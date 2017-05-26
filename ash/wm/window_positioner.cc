@@ -11,11 +11,12 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -435,10 +436,12 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   pop_position_offset_increment_y = grid;
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
-  WmWindow* window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* window = wm::GetActiveWindow();
   const gfx::Rect work_area =
       window && window->IsVisible()
-          ? window->GetDisplayNearestWindow().work_area()
+          ? display::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window)
+                .work_area()
           : display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   // Only try to reposition the popup when it is not spanning the entire
   // screen.

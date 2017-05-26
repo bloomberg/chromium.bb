@@ -28,7 +28,6 @@ class Shelf;
 class ShelfLayoutManager;
 class ShelfView;
 class StatusAreaWidget;
-class WmWindow;
 
 // The ShelfWidget manages the shelf view (which contains the shelf icons) and
 // the status area widget. There is one ShelfWidget per display. It is created
@@ -38,10 +37,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfBackgroundAnimatorObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(WmWindow* shelf_container, Shelf* shelf);
+  ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
 
-  void CreateStatusAreaWidget(WmWindow* status_container);
+  void CreateStatusAreaWidget(aura::Window* status_container);
 
   void OnShelfAlignmentChanged();
 
@@ -76,10 +75,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void Shutdown();
 
   // See Shelf::UpdateIconPositionForPanel().
-  void UpdateIconPositionForPanel(WmWindow* panel);
+  void UpdateIconPositionForPanel(aura::Window* panel);
 
   // See Shelf::GetScreenBoundsOfItemIconForWindow().
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
   // Returns the button that opens the app launcher.
   AppListButton* GetAppListButton() const;

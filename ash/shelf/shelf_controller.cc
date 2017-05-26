@@ -43,7 +43,9 @@ void ShelfController::BindRequest(mojom::ShelfControllerRequest request) {
 
 void ShelfController::NotifyShelfInitialized(Shelf* shelf) {
   // Notify observers, Chrome will set alignment and auto-hide from prefs.
-  int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
+  int64_t display_id = display.id();
   observers_.ForAllPtrs([display_id](mojom::ShelfObserver* observer) {
     observer->OnShelfInitialized(display_id);
   });
@@ -51,7 +53,9 @@ void ShelfController::NotifyShelfInitialized(Shelf* shelf) {
 
 void ShelfController::NotifyShelfAlignmentChanged(Shelf* shelf) {
   ShelfAlignment alignment = shelf->alignment();
-  int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
+  int64_t display_id = display.id();
   observers_.ForAllPtrs(
       [alignment, display_id](mojom::ShelfObserver* observer) {
         observer->OnAlignmentChanged(alignment, display_id);
@@ -60,7 +64,9 @@ void ShelfController::NotifyShelfAlignmentChanged(Shelf* shelf) {
 
 void ShelfController::NotifyShelfAutoHideBehaviorChanged(Shelf* shelf) {
   ShelfAutoHideBehavior behavior = shelf->auto_hide_behavior();
-  int64_t display_id = shelf->GetWindow()->GetDisplayNearestWindow().id();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
+  int64_t display_id = display.id();
   observers_.ForAllPtrs([behavior, display_id](mojom::ShelfObserver* observer) {
     observer->OnAutoHideBehaviorChanged(behavior, display_id);
   });

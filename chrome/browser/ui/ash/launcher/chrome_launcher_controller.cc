@@ -14,7 +14,6 @@
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -82,7 +81,7 @@ namespace {
 
 int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
   display::Display display =
-      shelf->GetWindow()->GetRootWindow()->GetDisplayNearestWindow();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
   DCHECK(display.is_valid());
   return display.id();
 }

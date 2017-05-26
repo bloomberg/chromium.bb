@@ -364,7 +364,7 @@ void RootWindowController::InitializeShelf() {
 
   // TODO(jamescook): Eliminate this. Refactor AttachedPanelWidgetTargeter's
   // access to Shelf.
-  Shell::Get()->NotifyShelfCreatedForRootWindow(WmWindow::Get(GetRootWindow()));
+  Shell::Get()->NotifyShelfCreatedForRootWindow(GetRootWindow());
 
   shelf_->shelf_widget()->PostCreateShelf();
 }
@@ -773,9 +773,9 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 void RootWindowController::InitLayoutManagers() {
   // Create the shelf and status area widgets.
   DCHECK(!shelf_->shelf_widget());
-  GetShelf()->CreateShelfWidget(GetWindow());
-
   aura::Window* root = GetRootWindow();
+  GetShelf()->CreateShelfWidget(root);
+
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(root_window_layout_manager_);
 

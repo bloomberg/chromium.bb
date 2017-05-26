@@ -39,8 +39,8 @@ class ShelfInitializer : public ShellObserver {
   ~ShelfInitializer() override { Shell::Get()->RemoveShellObserver(this); }
 
   // ShellObserver:
-  void OnShelfCreatedForRootWindow(WmWindow* root_window) override {
-    Shelf* shelf = root_window->GetRootWindowController()->GetShelf();
+  void OnShelfCreatedForRootWindow(aura::Window* root_window) override {
+    Shelf* shelf = RootWindowController::ForWindow(root_window)->GetShelf();
     // Do not override the custom initialization performed by some unit tests.
     if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED &&
         shelf->auto_hide_behavior() == SHELF_AUTO_HIDE_ALWAYS_HIDDEN) {

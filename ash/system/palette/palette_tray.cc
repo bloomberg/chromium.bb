@@ -22,7 +22,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_item_style.h"
-#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -359,7 +358,7 @@ void PaletteTray::OnActiveToolChanged() {
 }
 
 aura::Window* PaletteTray::GetWindow() {
-  return shelf()->GetWindow()->aura_window();
+  return shelf()->GetWindow();
 }
 
 void PaletteTray::AnchorUpdated() {

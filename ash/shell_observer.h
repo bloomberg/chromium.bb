@@ -14,8 +14,6 @@ class Window;
 
 namespace ash {
 
-class WmWindow;
-
 class ASH_EXPORT ShellObserver {
  public:
   // Called when a casting session is started or stopped.
@@ -25,13 +23,13 @@ class ASH_EXPORT ShellObserver {
   virtual void OnRootWindowAdded(aura::Window* root_window) {}
 
   // Invoked after the shelf has been created for |root_window|.
-  virtual void OnShelfCreatedForRootWindow(WmWindow* root_window) {}
+  virtual void OnShelfCreatedForRootWindow(aura::Window* root_window) {}
 
   // Invoked when the shelf alignment in |root_window| is changed.
-  virtual void OnShelfAlignmentChanged(WmWindow* root_window) {}
+  virtual void OnShelfAlignmentChanged(aura::Window* root_window) {}
 
   // Invoked when the shelf auto-hide behavior in |root_window| is changed.
-  virtual void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {}
+  virtual void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {}
 
   // Invoked when the projection touch HUD is toggled.
   virtual void OnTouchHudProjectionToggled(bool enabled) {}

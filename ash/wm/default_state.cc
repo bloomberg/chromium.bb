@@ -17,7 +17,6 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

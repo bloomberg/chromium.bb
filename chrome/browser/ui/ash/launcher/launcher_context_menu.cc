@@ -12,7 +12,6 @@
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
-#include "ash/wm_window.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/fullscreen.h"
@@ -172,8 +171,10 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
   // on the type of fullscreen. Do not show the auto-hide menu item while in
   // fullscreen per display because it is confusing when the preference appears
   // not to apply.
-  int64_t display_id = shelf_->GetWindow()->GetDisplayNearestWindow().id();
-  if (!IsFullScreenMode(display_id) &&
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          shelf_->GetWindow()->GetRootWindow());
+  if (!IsFullScreenMode(display.id()) &&
       CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);

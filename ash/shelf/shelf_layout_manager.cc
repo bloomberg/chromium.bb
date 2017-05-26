@@ -407,7 +407,8 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
   }
 }
 
-void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
+void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
+    aura::Window* root_window) {
   UpdateVisibilityState();
 }
 
