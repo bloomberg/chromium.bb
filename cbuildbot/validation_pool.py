@@ -464,9 +464,6 @@ class ValidationPool(object):
           # the deadline in case we hit this timeout.
           timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
 
-        # TODO(akeshet): Revert this hack once crbug.com/726211 is fixed.
-        timeout = max(timeout, 60 * 60)
-
     end_time = time.time() + timeout
     status = constants.TREE_OPEN
 
