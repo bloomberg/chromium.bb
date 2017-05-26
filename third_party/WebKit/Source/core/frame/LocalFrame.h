@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/Frame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FrameTree.h"
 #include "core/paint/PaintPhase.h"
@@ -68,7 +69,6 @@ class IntSize;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;
-class LocalFrameView;
 class LocalWindowProxy;
 class LocalFrameClient;
 class NavigationScheduler;
@@ -134,7 +134,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   LocalWindowProxy* WindowProxy(DOMWrapperWorld&);
   LocalDOMWindow* DomWindow() const;
   void SetDOMWindow(LocalDOMWindow*);
-  LocalFrameView* View() const;
+  LocalFrameView* View() const override;
   Document* GetDocument() const;
   void SetPagePopupOwner(Element&);
   Element* PagePopupOwner() const { return page_popup_owner_.Get(); }

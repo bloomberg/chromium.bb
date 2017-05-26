@@ -32,6 +32,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/FrameLifecycle.h"
 #include "core/frame/FrameTypes.h"
+#include "core/frame/FrameView.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
@@ -90,6 +91,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   FrameClient* Client() const;
 
   Page* GetPage() const;  // Null when the frame is detached.
+  virtual FrameView* View() const = 0;
 
   bool IsMainFrame() const;
   bool IsLocalRoot() const;
