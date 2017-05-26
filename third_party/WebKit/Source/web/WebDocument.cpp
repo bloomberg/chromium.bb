@@ -181,13 +181,17 @@ WebElement WebDocument::FocusedElement() const {
   return WebElement(ConstUnwrap<Document>()->FocusedElement());
 }
 
-void WebDocument::InsertStyleSheet(const WebString& source_code) {
+WebStyleSheetId WebDocument::InsertStyleSheet(const WebString& source_code) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
   StyleSheetContents* parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(*document));
   parsed_sheet->ParseString(source_code);
-  document->GetStyleEngine().InjectAuthorSheet(parsed_sheet);
+  return document->GetStyleEngine().InjectAuthorSheet(parsed_sheet);
+}
+
+void WebDocument::RemoveInsertedStyleSheet(WebStyleSheetId stylesheet_id) {
+  Unwrap<Document>()->GetStyleEngine().RemoveInjectedAuthorSheet(stylesheet_id);
 }
 
 void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {

@@ -60,7 +60,7 @@ WebDocument WebDocumentTest::TopWebDocument() const {
   return web_view_helper_.WebView()->MainFrame()->GetDocument();
 }
 
-TEST_F(WebDocumentTest, InsertStyleSheet) {
+TEST_F(WebDocumentTest, InsertAndRemoveStyleSheet) {
   LoadURL("about:blank");
 
   WebDocument web_doc = TopWebDocument();
@@ -68,7 +68,8 @@ TEST_F(WebDocumentTest, InsertStyleSheet) {
 
   unsigned start_count = core_doc->GetStyleEngine().StyleForElementCount();
 
-  web_doc.InsertStyleSheet("body { color: green }");
+  WebStyleSheetId stylesheet_id =
+      web_doc.InsertStyleSheet("body { color: green }");
 
   // Check insertStyleSheet did not cause a synchronous style recalc.
   unsigned element_count =
@@ -93,6 +94,27 @@ TEST_F(WebDocumentTest, InsertStyleSheet) {
   // Inserted stylesheet applied.
   ASSERT_EQ(Color(0, 128, 0),
             style_after_insertion.VisitedDependentColor(CSSPropertyColor));
+
+  start_count = core_doc->GetStyleEngine().StyleForElementCount();
+
+  // Check RemoveInsertedStyleSheet did not cause a synchronous style recalc.
+  web_doc.RemoveInsertedStyleSheet(stylesheet_id);
+  element_count =
+      core_doc->GetStyleEngine().StyleForElementCount() - start_count;
+  ASSERT_EQ(0U, element_count);
+
+  const ComputedStyle& style_before_removing = body_element->ComputedStyleRef();
+
+  // Removed stylesheet not yet applied.
+  ASSERT_EQ(Color(0, 128, 0),
+            style_before_removing.VisitedDependentColor(CSSPropertyColor));
+
+  // Apply removed stylesheet.
+  core_doc->UpdateStyleAndLayoutTree();
+
+  const ComputedStyle& style_after_removing = body_element->ComputedStyleRef();
+  ASSERT_EQ(Color(0, 0, 0),
+            style_after_removing.VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(WebDocumentTest, ManifestURL) {
