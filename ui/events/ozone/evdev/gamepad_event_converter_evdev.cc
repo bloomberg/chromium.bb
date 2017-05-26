@@ -56,7 +56,7 @@ GamepadEventConverterEvdev::Axis::Axis(const input_absinfo& abs_info,
   MapValue(abs_info.value, &tmp);
 }
 
-bool GamepadEventConverterEvdev::Axis::MapValue(uint16_t value,
+bool GamepadEventConverterEvdev::Axis::MapValue(int value,
                                                 double* mapped_value) {
   *mapped_value = value * scale_ + offset_;
   // As the definition of linux input_absinfo.flat, value within the range of
@@ -185,7 +185,7 @@ void GamepadEventConverterEvdev::ProcessEvent(const input_event& evdev_ev) {
 
 void GamepadEventConverterEvdev::ProcessEvdevKey(
     uint16_t code,
-    uint16_t value,
+    int value,
     const base::TimeTicks& timestamp) {
   GamepadEventType mapped_type;
   uint16_t mapped_code;
@@ -203,7 +203,7 @@ void GamepadEventConverterEvdev::ProcessEvdevKey(
 
 void GamepadEventConverterEvdev::ProcessEvdevAbs(
     uint16_t code,
-    uint16_t value,
+    int value,
     const base::TimeTicks& timestamp) {
   GamepadEventType mapped_type;
   uint16_t mapped_code;

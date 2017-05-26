@@ -46,12 +46,12 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
  private:
   // This function processes EV_KEY event from gamepad device.
   void ProcessEvdevKey(uint16_t code,
-                       uint16_t value,
+                       int value,
                        const base::TimeTicks& timestamp);
 
   // This function processes EV_ABS event from gamepad device.
   void ProcessEvdevAbs(uint16_t code,
-                       uint16_t value,
+                       int value,
                        const base::TimeTicks& timestamp);
 
   // This function releases all the keys and resets all the axises.
@@ -82,7 +82,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
          GamepadEventType mapped_type,
          uint16_t mapped_code);
 
-    bool MapValue(uint16_t value, double* mapped_value);
+    bool MapValue(int value, double* mapped_value);
 
     GamepadEventType mapped_type();
 
