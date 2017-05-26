@@ -692,7 +692,6 @@ executable("headless_shell") {
 
   deps = [
     ":headless_shell_lib",
-    "//build/config:exe_and_shlib_deps",
   ]
 
   if (is_win) {
@@ -716,6 +715,5 @@ executable("headless_example") {
 
   deps = [
     ":headless_shell_lib",
-    "//build/config:exe_and_shlib_deps",
   ]
 }

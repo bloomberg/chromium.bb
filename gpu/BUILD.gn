@@ -45,7 +45,6 @@ shared_library("command_buffer_gles2") {
   deps = [
     ":gpu",
     "//base",
-    "//build/config:exe_and_shlib_deps",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
