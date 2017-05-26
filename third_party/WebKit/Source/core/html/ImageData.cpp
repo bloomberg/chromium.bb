@@ -281,8 +281,7 @@ ImageData* ImageData::CreateImageData(
     unsigned height,
     const ImageDataColorSettings& color_settings,
     ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
-      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+  if (!RuntimeEnabledFeatures::colorCanvasExtensionsEnabled())
     return nullptr;
 
   if (!ImageData::ValidateConstructorArguments(
@@ -306,8 +305,7 @@ ImageData* ImageData::CreateImageData(ImageDataArray& data,
                                       unsigned height,
                                       ImageDataColorSettings& color_settings,
                                       ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
-      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+  if (!RuntimeEnabledFeatures::colorCanvasExtensionsEnabled())
     return nullptr;
 
   DOMArrayBufferView* buffer_view = nullptr;
@@ -596,8 +594,7 @@ DOMArrayBufferBase* ImageData::BufferBase() const {
 // For ImageData, the color space is only specified by color settings.
 // It cannot have a SkColorSpace. This doesn't mean anything. Fix this.
 sk_sp<SkColorSpace> ImageData::GetSkColorSpace() {
-  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
-      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+  if (!RuntimeEnabledFeatures::colorCanvasExtensionsEnabled())
     return nullptr;
 
   return SkColorSpace::MakeSRGB();

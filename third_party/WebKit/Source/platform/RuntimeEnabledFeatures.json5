@@ -155,11 +155,10 @@
       status: "stable",
     },
     {
-      name: "ColorCorrectRendering",
-      status: "experimental",
+      name: "ColorCanvasExtensions",
     },
     {
-      name: "ColorCorrectRenderingDefaultMode",
+      name: "ColorCorrectRendering",
       status: "experimental",
     },
     {

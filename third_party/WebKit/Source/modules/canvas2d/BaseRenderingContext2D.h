@@ -248,8 +248,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual bool isContextLost() const = 0;
 
-  virtual ColorBehavior DrawImageColorBehavior() const = 0;
-
   virtual void WillDrawImage(CanvasImageSource*) const {}
 
   virtual CanvasColorSpace ColorSpace() const {

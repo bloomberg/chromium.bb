@@ -48,10 +48,6 @@ bool PaintRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
-ColorBehavior PaintRenderingContext2D::DrawImageColorBehavior() const {
-  return ColorBehavior::TransformToGlobalTarget();
-}
-
 PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
   return image_buffer_->Canvas();
 }

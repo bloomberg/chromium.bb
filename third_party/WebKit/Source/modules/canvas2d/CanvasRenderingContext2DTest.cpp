@@ -43,15 +43,6 @@ using ::testing::Mock;
 
 namespace blink {
 
-namespace {
-
-gfx::ColorSpace AdobeRGBColorSpace() {
-  return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
-                         gfx::ColorSpace::TransferID::GAMMA22);
-}
-
-}  // namespace
-
 enum BitmapOpacity { kOpaqueBitmap, kTransparentBitmap };
 
 class FakeImageSource : public CanvasImageSource {
@@ -1070,90 +1061,6 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
   EXPECT_EQ(0u, GetGlobalAcceleratedImageBufferCount());
 }
 
-TEST_F(CanvasRenderingContext2DTest,
-       LegacyColorSpaceUsesGlobalTargetColorBehavior) {
-  // Set the global target color space to something distinctly recognizable (not
-  // srgb)
-  gfx::ColorSpace saved_global_target_color_space =
-      ColorBehavior::GlobalTargetColorSpace();
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(AdobeRGBColorSpace());
-  bool saved_color_correct_rendering_enabled =
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(false);
-  CreateContext(kNonOpaque, "legacy-srgb");
-  ColorBehavior behavior = Context2d()->DrawImageColorBehavior();
-  EXPECT_TRUE(behavior.IsTransformToTargetColorSpace());
-  EXPECT_TRUE(ColorBehavior::GlobalTargetColorSpace() ==
-              behavior.TargetColorSpace());
-
-  // Restore global state to avoid interfering with other tests
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(
-      saved_global_target_color_space);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
-      saved_color_correct_rendering_enabled);
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       LegacyColorSpaceUsesSRGBWhenColorCorrectRenderingEnabled) {
-  // Set the global target color space to something distinctly recognizable (not
-  // srgb)
-  gfx::ColorSpace saved_global_target_color_space =
-      ColorBehavior::GlobalTargetColorSpace();
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(AdobeRGBColorSpace());
-  bool saved_color_correct_rendering_enabled =
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(true);
-  CreateContext(kNonOpaque, "legacy-srgb");
-  ColorBehavior behavior = Context2d()->DrawImageColorBehavior();
-  EXPECT_TRUE(behavior.IsTransformToTargetColorSpace());
-  EXPECT_TRUE(gfx::ColorSpace::CreateSRGB() == behavior.TargetColorSpace());
-
-  // Restore global state to avoid interfering with other tests
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(
-      saved_global_target_color_space);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
-      saved_color_correct_rendering_enabled);
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       SRGBColorSpaceUsesTransformToSRGBColorBehavior) {
-  // Set the global target color space to something distinctly recognizable (not
-  // srgb)
-  gfx::ColorSpace saved_global_target_color_space =
-      ColorBehavior::GlobalTargetColorSpace();
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(AdobeRGBColorSpace());
-
-  CreateContext(kNonOpaque, "srgb");
-  ColorBehavior behavior = Context2d()->DrawImageColorBehavior();
-  EXPECT_TRUE(behavior.IsTransformToTargetColorSpace());
-  EXPECT_TRUE(gfx::ColorSpace::CreateSRGB() == behavior.TargetColorSpace());
-
-  // Restore global state to avoid interfering with other tests
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(
-      saved_global_target_color_space);
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       LinearRGBColorSpaceUsesTransformToLinearSRGBColorBehavior) {
-  // Set the global target color space to something distinctly recognizable (not
-  // srgb)
-  gfx::ColorSpace saved_global_target_color_space =
-      ColorBehavior::GlobalTargetColorSpace();
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(AdobeRGBColorSpace());
-
-  CreateContext(kNonOpaque, "srgb", kLinearPixelMathEnabled);
-  ColorBehavior behavior = Context2d()->DrawImageColorBehavior();
-  EXPECT_TRUE(behavior.IsTransformToTargetColorSpace());
-  EXPECT_TRUE(gfx::ColorSpace::CreateSCRGBLinear() ==
-              behavior.TargetColorSpace());
-
-  // Restore global state to avoid interfering with other tests
-  ColorBehavior::SetGlobalTargetColorSpaceForTesting(
-      saved_global_target_color_space);
-}
-
 enum class ColorSpaceConversion : uint8_t {
   NONE = 0,
   DEFAULT_NOT_COLOR_CORRECTED = 1,
@@ -1178,8 +1085,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
                ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
   RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
-  RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(!flag);
-
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
   return options;
 }
 
@@ -1188,8 +1094,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
       RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
   bool color_correct_rendering_runtime_flag =
       RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-  bool color_correct_rendering_default_mode_runtime_flag =
-      RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled();
+  bool color_canvas_extensions_flag =
+      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
 
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
@@ -1280,8 +1186,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
       experimental_canvas_features_runtime_flag);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
       color_correct_rendering_runtime_flag);
-  RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(
-      color_correct_rendering_default_mode_runtime_flag);
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+      color_canvas_extensions_flag);
 }
 
 bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
@@ -1382,8 +1288,11 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
   bool color_correct_rendering_runtime_flag =
       RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+  bool color_canvas_extensions_flag =
+      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
   RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(true);
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
 
   bool test_passed = true;
   unsigned num_image_data_color_spaces = 3;
@@ -1546,6 +1455,8 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       experimental_canvas_features_runtime_flag);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
       color_correct_rendering_runtime_flag);
+  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+      color_canvas_extensions_flag);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {

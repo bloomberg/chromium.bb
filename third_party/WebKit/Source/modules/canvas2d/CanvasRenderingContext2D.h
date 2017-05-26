@@ -198,8 +198,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool IsPaintable() const final { return HasImageBuffer(); }
 
-  ColorBehavior DrawImageColorBehavior() const final;
-
   void WillDrawImage(CanvasImageSource*) const final;
 
  protected:
