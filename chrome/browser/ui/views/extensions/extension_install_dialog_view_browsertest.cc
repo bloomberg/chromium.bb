@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
                                             PermissionIDSet()));
   }
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt = CreatePrompt();
-  prompt->SetPermissions(permissions,
+  prompt->AddPermissions(permissions,
                          ExtensionInstallPrompt::REGULAR_PERMISSIONS);
   ASSERT_TRUE(IsScrollbarVisible(std::move(prompt)))
       << "Scrollbar is not visible";
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, ScrollbarRegression) {
   permissions.push_back(PermissionMessage(permission_string,
                                           PermissionIDSet()));
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt = CreatePrompt();
-  prompt->SetPermissions(permissions,
+  prompt->AddPermissions(permissions,
                          ExtensionInstallPrompt::REGULAR_PERMISSIONS);
   ASSERT_FALSE(IsScrollbarVisible(std::move(prompt))) << "Scrollbar is visible";
 }

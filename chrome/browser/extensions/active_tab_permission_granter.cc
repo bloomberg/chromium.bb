@@ -66,6 +66,8 @@ void SendMessageToProcesses(
     tab_process->Send(create_message.Run(false));
 }
 
+ActiveTabPermissionGranter::Delegate* g_delegate = nullptr;
+
 }  // namespace
 
 ActiveTabPermissionGranter::ActiveTabPermissionGranter(
@@ -80,6 +82,17 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
 
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
+// static
+ActiveTabPermissionGranter::Delegate*
+ActiveTabPermissionGranter::SetPlatformDelegate(Delegate* delegate) {
+  // Disallow setting it twice (but allow resetting - don't forget to free in
+  // that case).
+  CHECK(!g_delegate || !delegate);
+  Delegate* previous_delegate = g_delegate;
+  g_delegate = delegate;
+  return previous_delegate;
+}
+
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   if (granted_extensions_.Contains(extension->id()))
     return;
@@ -89,11 +102,15 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
 
   const PermissionsData* permissions_data = extension->permissions_data();
 
+  bool should_grant_active_tab =
+      !g_delegate ||
+      g_delegate->ShouldGrantActiveTab(extension, web_contents());
   // If the extension requested all-hosts but has had it withheld, we grant it
   // active tab-style permissions, even if it doesn't have the activeTab
   // permission in the manifest.
-  if (permissions_data->HasAPIPermission(APIPermission::kActiveTab) ||
-      permissions_data->HasWithheldImpliedAllHosts()) {
+  if (should_grant_active_tab &&
+      (permissions_data->HasWithheldImpliedAllHosts() ||
+       permissions_data->HasAPIPermission(APIPermission::kActiveTab))) {
     new_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         web_contents()->GetVisibleURL().GetOrigin());
     new_apis.insert(APIPermission::kTab);

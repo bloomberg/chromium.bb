@@ -83,7 +83,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   PermissionMessages permissions;
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
                                           PermissionIDSet()));
-  prompt->SetPermissions(permissions, type);
+  prompt->AddPermissions(permissions, type);
   base::string16 permissionString = prompt->GetPermission(0, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -141,7 +141,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   PermissionMessages permissions;
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
                                           PermissionIDSet()));
-  prompt->SetPermissions(permissions, type);
+  prompt->AddPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
       [[ExtensionInstallViewController alloc]
@@ -171,13 +171,13 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   PermissionMessages permissions;
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
                                           PermissionIDSet()));
-  one_warning_prompt->SetPermissions(permissions, type);
+  one_warning_prompt->AddPermissions(permissions, type);
 
   std::unique_ptr<ExtensionInstallPrompt::Prompt> two_warnings_prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 2"),
                                           PermissionIDSet()));
-  two_warnings_prompt->SetPermissions(permissions, type);
+  two_warnings_prompt->AddPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller1(
       [[ExtensionInstallViewController alloc]
@@ -322,7 +322,7 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   PermissionMessages permissions;
   permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
                                           PermissionIDSet()));
-  prompt->SetPermissions(permissions, type);
+  prompt->AddPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
       [[ExtensionInstallViewController alloc]
@@ -355,7 +355,7 @@ TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
       base::UTF8ToUTF16("warning 1"),
       PermissionIDSet(),
       std::vector<base::string16>(1, base::UTF8ToUTF16("Detail 1"))));
-  prompt->SetPermissions(permissions, type);
+  prompt->AddPermissions(permissions, type);
   prompt->SetIsShowingDetails(
       ExtensionInstallPrompt::PERMISSIONS_DETAILS, 0, true);
   base::string16 permissionString = prompt->GetPermissionsDetails(0, type);

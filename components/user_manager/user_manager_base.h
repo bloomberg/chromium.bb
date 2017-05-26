@@ -132,6 +132,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // and ephemeral users are enabled.
   virtual bool AreEphemeralUsersEnabled() const = 0;
 
+  void AddUserRecordForTesting(User* user) {
+    return AddUserRecord(user);
+  }
+
  protected:
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
