@@ -1383,7 +1383,7 @@ XVisualManager::XVisualManager()
       transparent_visual_id_(0),
       using_software_rendering_(false),
       have_gpu_argb_visual_(false) {
-  int visuals_len;
+  int visuals_len = 0;
   XVisualInfo visual_template;
   visual_template.screen = DefaultScreen(display_);
   gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
