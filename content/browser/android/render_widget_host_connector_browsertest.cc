@@ -119,18 +119,4 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
   EXPECT_EQ(nullptr, connector->GetRWHVAForTesting());
 }
 
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
-                       CleanUpConnectorReferenceAtWebContentsDestroyed) {
-  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), http_url));
-  RenderWidgetHostViewAndroid* rwhva = render_widget_host_view_android();
-  RenderWidgetHostConnector* connector = render_widget_host_connector();
-  EXPECT_EQ(connector, connector_in_rwhva(rwhva));
-
-  // Generate WebContentsObserver::WebContentsDestroyed by closing the contents.
-  web_contents()->Close();
-  EXPECT_EQ(nullptr, connector_in_rwhva(rwhva));
-}
-
 }  // namespace content
