@@ -3500,18 +3500,12 @@ void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
 }
 
 void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
-  if (!GetPage())
+  if (!MainFrameImpl())
     return;
 
-  GetPage()->GetContextMenuController().ClearContextMenu();
-  {
-    ContextMenuAllowedScope scope;
-    if (LocalFrame* focused_frame = ToLocalFrame(
-            GetPage()->GetFocusController().FocusedOrMainFrame())) {
-      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
-                                                                 source_type);
-    }
-  }
+  // If MainFrameImpl() is non-null, then FrameWidget() will also be non-null.
+  DCHECK(MainFrameImpl()->FrameWidget());
+  MainFrameImpl()->FrameWidget()->ShowContextMenu(source_type);
 }
 
 void WebViewImpl::DidCloseContextMenu() {

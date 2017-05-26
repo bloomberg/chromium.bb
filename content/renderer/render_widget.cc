@@ -615,6 +615,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
                         OnSyntheticGestureCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
@@ -1588,6 +1589,18 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
     window_screen_rect_ = rect;
     view_screen_rect_ = rect;
   }
+}
+
+void RenderWidget::OnShowContextMenu(ui::MenuSourceType source_type,
+                                     const gfx::Point& location) {
+  input_handler_->set_context_menu_source_type(source_type);
+  has_host_context_menu_location_ = true;
+  host_context_menu_location_ = location;
+  if (GetWebWidget()) {
+    GetWebWidget()->ShowContextMenu(
+        static_cast<blink::WebMenuSourceType>(source_type));
+  }
+  has_host_context_menu_location_ = false;
 }
 
 void RenderWidget::OnImeSetComposition(

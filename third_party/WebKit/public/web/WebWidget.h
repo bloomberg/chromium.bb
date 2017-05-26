@@ -40,9 +40,10 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebTextInputInfo.h"
-#include "WebCompositionUnderline.h"
-#include "WebRange.h"
-#include "WebTextDirection.h"
+#include "public/web/WebCompositionUnderline.h"
+#include "public/web/WebMenuSourceType.h"
+#include "public/web/WebRange.h"
+#include "public/web/WebTextDirection.h"
 
 namespace blink {
 
@@ -223,6 +224,9 @@ class WebWidget {
   virtual bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
     return false;
   }
+
+  // Called by client to request showing the context menu.
+  virtual void ShowContextMenu(WebMenuSourceType) {}
 
  protected:
   ~WebWidget() {}

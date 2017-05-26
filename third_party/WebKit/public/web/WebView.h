@@ -31,7 +31,6 @@
 #ifndef WebView_h
 #define WebView_h
 
-#include "WebMenuSourceType.h"
 #include "WebWidget.h"
 #include "public/platform/WebColor.h"
 #include "public/platform/WebDisplayMode.h"
@@ -388,9 +387,6 @@ class WebView : protected WebWidget {
   // Context menu --------------------------------------------------------
 
   virtual void PerformCustomContextMenuAction(unsigned action) = 0;
-
-  // Shows a context menu for the currently focused element.
-  virtual void ShowContextMenu(WebMenuSourceType) = 0;
 
   // Notify that context menu has been closed.
   virtual void DidCloseContextMenu() = 0;
