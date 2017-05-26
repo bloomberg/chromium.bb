@@ -39,7 +39,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const override;
   Settings* GetSettings() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
-  SecurityContext* GetParentSecurityContext() const override;
   bool ShouldBlockRequestByInspector(const ResourceRequest&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
@@ -52,9 +51,17 @@ class WorkerFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
+  ReferrerPolicy GetReferrerPolicy() const override;
+  String GetOutgoingReferrer() const override;
+  const KURL& Url() const override;
+  const SecurityOrigin* GetParentSecurityOrigin() const override;
+  Optional<WebAddressSpace> GetAddressSpace() const override;
+  const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
+  void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:
   // TODO(horo): Implement more methods.
+  SecurityOrigin* GetSecurityOrigin() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader() override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;

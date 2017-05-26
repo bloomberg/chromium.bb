@@ -11,12 +11,16 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/wtf/Optional.h"
+#include "public/platform/WebAddressSpace.h"
 
 namespace blink {
 
+class ConsoleMessage;
 class ContentSettingsClient;
-class ExecutionContext;
-class SecurityContext;
+class KURL;
+class SecurityOrigin;
 class Settings;
 class SubresourceFilter;
 
@@ -24,9 +28,6 @@ class SubresourceFilter;
 // Frame. This class provides basic default implementation for some methods.
 class CORE_EXPORT BaseFetchContext : public FetchContext {
  public:
-  explicit BaseFetchContext(ExecutionContext*);
-  ~BaseFetchContext() override { execution_context_ = nullptr; }
-
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   ResourceRequestBlockedReason CanRequest(
@@ -48,7 +49,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&) const override;
-  SecurityOrigin* GetSecurityOrigin() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -58,7 +58,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual ContentSettingsClient* GetContentSettingsClient() const = 0;
   virtual Settings* GetSettings() const = 0;
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
-  virtual SecurityContext* GetParentSecurityContext() const = 0;
 
   // Note: subclasses are expected to override following methods.
   // Used in the default implementation for CanRequest, CanFollowRedirect
@@ -75,6 +74,14 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       SecurityViolationReportingPolicy) const = 0;
+  virtual ReferrerPolicy GetReferrerPolicy() const = 0;
+  virtual String GetOutgoingReferrer() const = 0;
+  virtual const KURL& Url() const = 0;
+  virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
+  virtual Optional<WebAddressSpace> GetAddressSpace() const = 0;
+  virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
+  virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
+  using FetchContext::AddConsoleMessage;
 
   // Utility method that can be used to implement other methods.
   void PrintAccessDeniedMessage(const KURL&) const;
@@ -97,11 +104,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
-
-  // FIXME: Oilpan: Ideally this should just be a traced Member but that will
-  // currently leak because ComputedStyle and its data are not on the heap.
-  // See crbug.com/383860 for details.
-  WeakMember<ExecutionContext> execution_context_;
 };
 
 }  // namespace blink
