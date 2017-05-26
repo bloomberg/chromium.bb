@@ -1292,14 +1292,16 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                    &this_sse) >>
                 shift;
 #endif  // CONFIG_HIGHBITDEPTH
-#elif CONFIG_HIGHBITDEPTH
-    const int bd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd : 8;
-    *out_dist =
-        av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse, bd) >>
-        shift;
-#else
-    *out_dist =
-        av1_block_error(coeff, dqcoeff, buffer_length, &this_sse) >> shift;
+#else   // !CONFIG_PVQ
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length,
+                                         &this_sse, xd->bd) >>
+                  shift;
+    else
+#endif
+      *out_dist =
+          av1_block_error(coeff, dqcoeff, buffer_length, &this_sse) >> shift;
 #endif  // CONFIG_PVQ
     *out_sse = this_sse >> shift;
   } else {

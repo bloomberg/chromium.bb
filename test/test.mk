@@ -167,6 +167,7 @@ ifneq ($(CONFIG_NEW_QUANT), yes)
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += quantize_func_test.cc
 endif
 endif
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += block_error_test.cc
 
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_inv_txfm_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_dct_test.cc
