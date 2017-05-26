@@ -1564,7 +1564,7 @@ inline IndentTextOrNot RequiresIndent(bool is_first_line,
                         style.GetTextIndentLine()) == TextIndentLine::kEachLine)
     indent_text = kIndentText;
 
-  if (style.GetTextIndentType() == kTextIndentHanging)
+  if (style.GetTextIndentType() == TextIndentType::kHanging)
     indent_text = indent_text == kIndentText ? kDoNotIndentText : kIndentText;
 
   return indent_text;

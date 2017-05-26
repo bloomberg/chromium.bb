@@ -458,7 +458,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "TextIndentType",
-      default_value: "kTextIndentNormal",
+      default_value: "TextIndentType::kNormal",
       field_size: 1,
       field_group: "rare-inherited",
     },

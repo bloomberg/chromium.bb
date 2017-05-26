@@ -166,7 +166,7 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
       line = TextIndentLine::kEachLine;
     else if (item->IsIdentifierValue() &&
              ToCSSIdentifierValue(*item).GetValueID() == CSSValueHanging)
-      type = kTextIndentHanging;
+      type = TextIndentType::kHanging;
     else
       length = LengthInterpolationFunctions::MaybeConvertCSSValue(*item);
   }

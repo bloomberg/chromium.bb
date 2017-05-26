@@ -1711,7 +1711,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static TextIndentLine InitialTextIndentLine() {
     return TextIndentLine::kFirstLine;
   }
-  static TextIndentType InitialTextIndentType() { return kTextIndentNormal; }
+  static TextIndentType InitialTextIndentType() {
+    return TextIndentType::kNormal;
+  }
   const Length& TextIndent() const {
     return rare_inherited_data_->text_indent_;
   }
@@ -1728,7 +1730,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_inherited_data_, text_indent_line_, static_cast<unsigned>(v));
   }
   void SetTextIndentType(TextIndentType v) {
-    SET_VAR(rare_inherited_data_, text_indent_type_, v);
+    SET_VAR(rare_inherited_data_, text_indent_type_, static_cast<unsigned>(v));
   }
 
   // text-justify
