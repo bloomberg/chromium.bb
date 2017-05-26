@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 
@@ -58,7 +57,7 @@ public class WebApkActivity extends WebappActivity {
         return new WebappDelegateFactory(this) {
             @Override
             public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
-                return new WebappInterceptNavigationDelegate(WebApkActivity.this, tab) {
+                return new InterceptNavigationDelegateImpl(tab) {
                     @Override
                     public ExternalNavigationParams.Builder buildExternalNavigationParams(
                             NavigationParams navigationParams,
@@ -68,11 +67,6 @@ public class WebApkActivity extends WebappActivity {
                                         navigationParams, tabRedirectHandler, shouldCloseTab);
                         builder.setWebApkPackageName(getWebApkPackageName());
                         return builder;
-                    }
-
-                    @Override
-                    protected boolean isUrlOutsideWebappScope(WebappInfo info, String url) {
-                        return !UrlUtilities.isUrlWithinScope(url, info.scopeUri().toString());
                     }
                 };
             }
