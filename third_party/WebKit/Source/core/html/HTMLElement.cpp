@@ -465,6 +465,9 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
     PseudoStateChanged(CSSSelector::kPseudoLang);
   } else if (params.name == inertAttr) {
     UseCounter::Count(GetDocument(), UseCounter::kInertAttribute);
+  } else if (params.name == nonceAttr) {
+    if (params.new_value != g_empty_atom)
+      setNonce(params.new_value);
   } else {
     const AtomicString& event_name = EventNameForAttributeName(params.name);
     if (!event_name.IsNull()) {
@@ -919,13 +922,11 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   // updated.
   Element::InsertedInto(insertion_point);
 
-  if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
-    setNonce(getAttribute(nonceAttr));
-    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
-        InActiveDocument() &&
-        GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
-      setAttribute(nonceAttr, g_empty_atom);
-    }
+  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+      FastHasAttribute(nonceAttr) &&
+      GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
+      InActiveDocument()) {
+    setAttribute(nonceAttr, g_empty_atom);
   }
 
   return kInsertionDone;
