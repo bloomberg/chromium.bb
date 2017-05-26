@@ -18,7 +18,11 @@ class TouchPoint {
  public:
   TouchPoint() : touch_point_(PP_MakeTouchPoint()) {}
 
-  TouchPoint(const PP_TouchPoint& point) : touch_point_(point) {}
+  TouchPoint(const PP_TouchPoint& point)
+      : touch_point_(point), tilt_(PP_MakeFloatPoint(0, 0)) {}
+
+  TouchPoint(const PP_TouchPoint& point, const PP_FloatPoint& tilt)
+      : touch_point_(point), tilt_(tilt) {}
 
   /// @return The identifier for this TouchPoint. This corresponds to the order
   /// in which the points were pressed. For example, the first point to be
@@ -47,8 +51,14 @@ class TouchPoint {
   /// the value is not guaranteed to stay within that range.
   float pressure() const { return touch_point_.pressure; }
 
+  /// @return The tilt of this touchpoint. This is a float point. Values of x
+  /// and y are between 0 and 90, with 0 indicating 0 degrees and 90 indicating
+  //  90 degrees.
+  PP_FloatPoint tilt() const { return tilt_; }
+
  private:
   PP_TouchPoint touch_point_;
+  PP_FloatPoint tilt_;
 };
 
 }  // namespace pp

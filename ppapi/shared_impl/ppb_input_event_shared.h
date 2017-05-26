@@ -18,6 +18,11 @@
 
 namespace ppapi {
 
+struct TouchPointWithTilt {
+  PP_TouchPoint touch;
+  PP_FloatPoint tilt;
+};
+
 // IF YOU ADD STUFF TO THIS CLASS
 // ==============================
 // Be sure to add it to the STRUCT_TRAITS at the top of ppapi_messages.h
@@ -55,9 +60,9 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   uint32_t composition_selection_start;
   uint32_t composition_selection_end;
 
-  std::vector<PP_TouchPoint> touches;
-  std::vector<PP_TouchPoint> changed_touches;
-  std::vector<PP_TouchPoint> target_touches;
+  std::vector<TouchPointWithTilt> touches;
+  std::vector<TouchPointWithTilt> changed_touches;
+  std::vector<TouchPointWithTilt> target_touches;
 };
 
 // This simple class implements the PPB_InputEvent_API in terms of the
@@ -97,6 +102,9 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   uint32_t GetTouchCount(PP_TouchListType list) override;
   PP_TouchPoint GetTouchByIndex(PP_TouchListType list, uint32_t index) override;
   PP_TouchPoint GetTouchById(PP_TouchListType list, uint32_t id) override;
+  PP_FloatPoint GetTouchTiltByIndex(PP_TouchListType list,
+                                    uint32_t index) override;
+  PP_FloatPoint GetTouchTiltById(PP_TouchListType list, uint32_t id) override;
 
   // Implementations for event creation.
   static PP_Resource CreateIMEInputEvent(ResourceObjectType type,
@@ -141,6 +149,11 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
                                            uint32_t modifiers);
 
  private:
+  // Helper function to get the touch list by the type.
+  std::vector<TouchPointWithTilt>* GetTouchListByType(PP_TouchListType type);
+  // Helper function to get touchpoint by the list type and touchpoint id.
+  TouchPointWithTilt* GetTouchByTypeAndId(PP_TouchListType type, uint32_t id);
+
   InputEventData data_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_InputEvent_Shared);

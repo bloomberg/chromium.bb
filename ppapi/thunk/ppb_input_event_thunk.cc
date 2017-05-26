@@ -497,13 +497,34 @@ struct PP_TouchPoint GetTouchById(PP_Resource touch_event,
   return enter.object()->GetTouchById(list, id);
 }
 
-const PPB_TouchInputEvent_1_0 g_ppb_touch_input_event_thunk = {
-  &CreateTouchInputEvent,
-  &AddTouchPoint,
-  &IsTouchInputEvent,
-  &GetTouchCount,
-  &GetTouchByIndex,
-  &GetTouchById
+struct PP_FloatPoint GetTouchTiltByIndex(PP_Resource touch_event,
+                                         PP_TouchListType list,
+                                         uint32_t index) {
+  VLOG(4) << "PPB_TouchInputEvent::GetTouchTiltByIndex()";
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return PP_MakeFloatPoint(0, 0);
+  return enter.object()->GetTouchTiltByIndex(list, index);
+}
+
+struct PP_FloatPoint GetTouchTiltById(PP_Resource touch_event,
+                                      PP_TouchListType list,
+                                      uint32_t id) {
+  VLOG(4) << "PPB_TouchInputEvent::GetTouchTiltById()";
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return PP_MakeFloatPoint(0, 0);
+  return enter.object()->GetTouchTiltById(list, id);
+}
+
+const PPB_TouchInputEvent_1_0 g_ppb_touch_input_event_1_0_thunk = {
+    &CreateTouchInputEvent, &AddTouchPoint,   &IsTouchInputEvent,
+    &GetTouchCount,         &GetTouchByIndex, &GetTouchById};
+
+const PPB_TouchInputEvent_1_4 g_ppb_touch_input_event_1_4_thunk = {
+    &CreateTouchInputEvent, &AddTouchPoint,    &IsTouchInputEvent,
+    &GetTouchCount,         &GetTouchByIndex,  &GetTouchById,
+    &GetTouchTiltByIndex,   &GetTouchTiltById,
 };
 
 }  // namespace
@@ -545,7 +566,11 @@ const PPB_IMEInputEvent_1_0* GetPPB_IMEInputEvent_1_0_Thunk() {
 }
 
 const PPB_TouchInputEvent_1_0* GetPPB_TouchInputEvent_1_0_Thunk() {
-  return &g_ppb_touch_input_event_thunk;
+  return &g_ppb_touch_input_event_1_0_thunk;
+}
+
+const PPB_TouchInputEvent_1_4* GetPPB_TouchInputEvent_1_4_Thunk() {
+  return &g_ppb_touch_input_event_1_4_thunk;
 }
 
 }  // namespace thunk

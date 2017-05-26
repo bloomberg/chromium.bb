@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed Apr 26 13:40:13 2017. */
+/* From ppb_input_event.idl modified Wed May 24 10:14:53 2017. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -34,7 +34,8 @@
     PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_2
 
 #define PPB_TOUCH_INPUT_EVENT_INTERFACE_1_0 "PPB_TouchInputEvent;1.0"
-#define PPB_TOUCH_INPUT_EVENT_INTERFACE PPB_TOUCH_INPUT_EVENT_INTERFACE_1_0
+#define PPB_TOUCH_INPUT_EVENT_INTERFACE_1_4 "PPB_TouchInputEvent;1.4"
+#define PPB_TOUCH_INPUT_EVENT_INTERFACE PPB_TOUCH_INPUT_EVENT_INTERFACE_1_4
 
 #define PPB_IME_INPUT_EVENT_INTERFACE_1_0 "PPB_IMEInputEvent;1.0"
 #define PPB_IME_INPUT_EVENT_INTERFACE PPB_IME_INPUT_EVENT_INTERFACE_1_0
@@ -828,7 +829,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TouchListType, 4);
  * The <code>PPB_TouchInputEvent</code> interface contains pointers to several
  * functions related to touch events.
  */
-struct PPB_TouchInputEvent_1_0 {
+struct PPB_TouchInputEvent_1_4 {
   /**
    * Creates a touch input event with the given parameters. Normally you
    * will get a touch event passed through the HandleInputEvent and will not
@@ -918,9 +919,59 @@ struct PPB_TouchInputEvent_1_0 {
   struct PP_TouchPoint (*GetTouchById)(PP_Resource resource,
                                        PP_TouchListType list,
                                        uint32_t touch_id);
+  /**
+   * Returns the touch-tilt with the specified index in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] index The index.
+   *
+   * @return A <code>PP_FloatPoint</code> representing the tilt of the
+   * touch-point.
+   */
+  struct PP_FloatPoint (*GetTouchTiltByIndex)(PP_Resource resource,
+                                              PP_TouchListType list,
+                                              uint32_t index);
+  /**
+   * Returns the touch-tilt with the specified touch-id in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] touch_id The id of the touch-point.
+   *
+   * @return A <code>PP_FloatPoint</code> representing the tilt of the
+   * touch-point.
+   */
+  struct PP_FloatPoint (*GetTouchTiltById)(PP_Resource resource,
+                                           PP_TouchListType list,
+                                           uint32_t touch_id);
 };
 
-typedef struct PPB_TouchInputEvent_1_0 PPB_TouchInputEvent;
+typedef struct PPB_TouchInputEvent_1_4 PPB_TouchInputEvent;
+
+struct PPB_TouchInputEvent_1_0 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_InputEvent_Type type,
+                        PP_TimeTicks time_stamp,
+                        uint32_t modifiers);
+  void (*AddTouchPoint)(PP_Resource touch_event,
+                        PP_TouchListType list,
+                        const struct PP_TouchPoint* point);
+  PP_Bool (*IsTouchInputEvent)(PP_Resource resource);
+  uint32_t (*GetTouchCount)(PP_Resource resource, PP_TouchListType list);
+  struct PP_TouchPoint (*GetTouchByIndex)(PP_Resource resource,
+                                          PP_TouchListType list,
+                                          uint32_t index);
+  struct PP_TouchPoint (*GetTouchById)(PP_Resource resource,
+                                       PP_TouchListType list,
+                                       uint32_t touch_id);
+};
 
 struct PPB_IMEInputEvent_1_0 {
   /**

@@ -11,7 +11,8 @@ label Chrome {
   M13 = 1.0,
   M14 = 1.1,
   M34 = 1.2,
-  M55 = 1.3
+  M55 = 1.3,
+  M60 = 1.4
 };
 
 /**
@@ -962,6 +963,42 @@ interface PPB_TouchInputEvent {
   PP_TouchPoint GetTouchById([in] PP_Resource resource,
                              [in] PP_TouchListType list,
                              [in] uint32_t touch_id);
+
+  /**
+   * Returns the touch-tilt with the specified index in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] index The index.
+   *
+   * @return A <code>PP_FloatPoint</code> representing the tilt of the
+   * touch-point.
+   */
+  [version=1.4]
+  PP_FloatPoint GetTouchTiltByIndex([in] PP_Resource resource,
+                                    [in] PP_TouchListType list,
+                                    [in] uint32_t index);
+
+  /**
+   * Returns the touch-tilt with the specified touch-id in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] touch_id The id of the touch-point.
+   *
+   * @return A <code>PP_FloatPoint</code> representing the tilt of the
+   * touch-point.
+   */
+  [version=1.4]
+  PP_FloatPoint GetTouchTiltById([in] PP_Resource resource,
+                                 [in] PP_TouchListType list,
+                                 [in] uint32_t touch_id);
 };
 
 [macro="PPB_IME_INPUT_EVENT_INTERFACE"]
