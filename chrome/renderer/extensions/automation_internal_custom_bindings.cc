@@ -128,6 +128,10 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
     if (node->data().transform)
       node->data().transform->TransformRect(&bounds);
 
+    // Walk up to this node's container. This may cross a tree
+    // boundary, in which case GetParent() modifies |cache|, so we
+    // save the old cache temporarily.
+    TreeCache* previous_cache = cache;
     ui::AXNode* container =
         cache->tree.GetFromId(node->data().offset_container_id);
     if (!container) {
@@ -141,6 +145,16 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
     if (!container || container == node)
       break;
 
+    // All trees other than the desktop tree are scaled by the device
+    // scale factor. When crossing out of another tree into the desktop
+    // tree, unscale the bounds by the device scale factor.
+    if (previous_cache->tree_id != api::automation::kDesktopTreeID &&
+        cache->tree_id == api::automation::kDesktopTreeID) {
+      float scale_factor = cache->owner->GetDeviceScaleFactor();
+      if (scale_factor > 0)
+        bounds.Scale(1.0 / scale_factor);
+    }
+
     gfx::RectF container_bounds = container->data().location;
     bounds.Offset(container_bounds.x(), container_bounds.y());
 
@@ -152,17 +166,6 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
     }
 
     node = container;
-  }
-
-  // All trees other than the desktop tree are scaled by the device
-  // scale factor. Unscale them so they're all in consistent units.
-  if (cache->tree_id != api::automation::kDesktopTreeID) {
-    float scale_factor = cache->owner->context()
-                             ->GetRenderFrame()
-                             ->GetRenderView()
-                             ->GetDeviceScaleFactor();
-    if (scale_factor > 0)
-      bounds.Scale(1.0 / scale_factor);
   }
 
   return gfx::ToEnclosingRect(bounds);
@@ -1091,6 +1094,10 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
   }
 
   return nullptr;
+}
+
+float AutomationInternalCustomBindings::GetDeviceScaleFactor() const {
+  return context()->GetRenderFrame()->GetRenderView()->GetDeviceScaleFactor();
 }
 
 void AutomationInternalCustomBindings::RouteTreeIDFunction(

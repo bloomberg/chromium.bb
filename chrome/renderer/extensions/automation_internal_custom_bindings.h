@@ -59,6 +59,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
     return ObjectBackedNativeHandler::context();
   }
 
+  float GetDeviceScaleFactor() const;
+
  private:
   // ObjectBackedNativeHandler overrides:
   void Invalidate() override;

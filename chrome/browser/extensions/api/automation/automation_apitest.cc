@@ -31,6 +31,7 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/tree_generator.h"
+#include "ui/display/display_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
@@ -297,5 +298,23 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTest) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "hit_test.html"))
       << message_;
 }
+
+#if defined(OS_CHROMEOS)
+
+class AutomationApiTestWithDeviceScaleFactor : public AutomationApiTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutomationApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2.0");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTestWithDeviceScaleFactor, LocationScaled) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunPlatformAppTest("automation/tests/location_scaled"))
+      << message_;
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions
