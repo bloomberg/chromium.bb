@@ -121,15 +121,16 @@ void PPB_InputEvent_Shared::GetIMESelection(uint32_t* start, uint32_t* end) {
 
 void PPB_InputEvent_Shared::AddTouchPoint(PP_TouchListType list,
                                           const PP_TouchPoint& point) {
+  TouchPointWithTilt point_with_tilt{point, {0, 0}};
   switch (list) {
     case PP_TOUCHLIST_TYPE_TOUCHES:
-      data_.touches.push_back(point);
+      data_.touches.push_back(point_with_tilt);
       break;
     case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
-      data_.changed_touches.push_back(point);
+      data_.changed_touches.push_back(point_with_tilt);
       break;
     case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
-      data_.target_touches.push_back(point);
+      data_.target_touches.push_back(point_with_tilt);
       break;
     default:
       break;
@@ -149,49 +150,70 @@ uint32_t PPB_InputEvent_Shared::GetTouchCount(PP_TouchListType list) {
   return 0;
 }
 
-PP_TouchPoint PPB_InputEvent_Shared::GetTouchByIndex(PP_TouchListType list,
-                                                     uint32_t index) {
-  std::vector<PP_TouchPoint>* points;
+std::vector<TouchPointWithTilt>* PPB_InputEvent_Shared::GetTouchListByType(
+    PP_TouchListType list) {
   switch (list) {
     case PP_TOUCHLIST_TYPE_TOUCHES:
-      points = &data_.touches;
-      break;
+      return &data_.touches;
     case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
-      points = &data_.changed_touches;
-      break;
+      return &data_.changed_touches;
     case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
-      points = &data_.target_touches;
-      break;
-    default:
-      return PP_MakeTouchPoint();
+      return &data_.target_touches;
   }
-  if (index >= points->size()) {
+  return nullptr;
+}
+
+TouchPointWithTilt* PPB_InputEvent_Shared::GetTouchByTypeAndId(
+    PP_TouchListType list,
+    uint32_t id) {
+  std::vector<TouchPointWithTilt>* points = GetTouchListByType(list);
+  if (!points)
+    return nullptr;
+
+  for (size_t i = 0; i < points->size(); i++) {
+    if (points->at(i).touch.id == id)
+      return &points->at(i);
+  }
+
+  return nullptr;
+}
+
+PP_TouchPoint PPB_InputEvent_Shared::GetTouchByIndex(PP_TouchListType list,
+                                                     uint32_t index) {
+  std::vector<TouchPointWithTilt>* points = GetTouchListByType(list);
+
+  if (!points || index >= points->size()) {
     return PP_MakeTouchPoint();
   }
-  return points->at(index);
+  return points->at(index).touch;
 }
 
 PP_TouchPoint PPB_InputEvent_Shared::GetTouchById(PP_TouchListType list,
                                                   uint32_t id) {
-  const std::vector<PP_TouchPoint>* points;
-  switch (list) {
-    case PP_TOUCHLIST_TYPE_TOUCHES:
-      points = &data_.touches;
-      break;
-    case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
-      points = &data_.changed_touches;
-      break;
-    case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
-      points = &data_.target_touches;
-      break;
-    default:
-      return PP_MakeTouchPoint();
-  }
-  for (size_t i = 0; i < points->size(); i++) {
-    if (points->at(i).id == id)
-      return points->at(i);
-  }
-  return PP_MakeTouchPoint();
+  TouchPointWithTilt* point = GetTouchByTypeAndId(list, id);
+  if (!point)
+    return PP_MakeTouchPoint();
+
+  return point->touch;
+}
+
+PP_FloatPoint PPB_InputEvent_Shared::GetTouchTiltByIndex(PP_TouchListType list,
+                                                         uint32_t index) {
+  std::vector<TouchPointWithTilt>* points = GetTouchListByType(list);
+
+  if (!points || index >= points->size())
+    return PP_MakeFloatPoint(0, 0);
+
+  return points->at(index).tilt;
+}
+
+PP_FloatPoint PPB_InputEvent_Shared::GetTouchTiltById(PP_TouchListType list,
+                                                      uint32_t id) {
+  TouchPointWithTilt* point = GetTouchByTypeAndId(list, id);
+  if (!point)
+    return PP_MakeFloatPoint(0, 0);
+
+  return point->tilt;
 }
 
 // static

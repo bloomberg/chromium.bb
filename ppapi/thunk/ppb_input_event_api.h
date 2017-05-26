@@ -49,6 +49,11 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
                                         uint32_t index) = 0;
   virtual PP_TouchPoint GetTouchById(PP_TouchListType list,
                                      uint32_t id) = 0;
+  virtual PP_FloatPoint GetTouchTiltByIndex(PP_TouchListType list,
+                                            uint32_t index) = 0;
+
+  virtual PP_FloatPoint GetTouchTiltById(PP_TouchListType list,
+                                         uint32_t id) = 0;
 };
 
 }  // namespace thunk
