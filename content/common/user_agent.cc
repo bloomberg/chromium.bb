@@ -78,11 +78,7 @@ std::string BuildOSCpuInfo() {
 #endif
 
 #if defined(OS_ANDROID)
-  std::string android_version_str;
-  base::StringAppendF(
-      &android_version_str, "%d.%d", os_major_version, os_minor_version);
-  if (os_bugfix_version != 0)
-    base::StringAppendF(&android_version_str, ".%d", os_bugfix_version);
+  std::string android_version_str = base::SysInfo::OperatingSystemVersion();
 
   std::string android_info_str;
 
