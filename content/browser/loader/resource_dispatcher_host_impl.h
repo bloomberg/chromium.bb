@@ -597,6 +597,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       mojom::URLLoaderAssociatedRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client);
 
+  // Creates either MojoAsyncResourceHandler or AsyncResourceHandler.
+  std::unique_ptr<ResourceHandler> CreateBaseResourceHandler(
+      net::URLRequest* request,
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client,
+      ResourceType resource_type);
+
   // Wraps |handler| in the standard resource handlers for normal resource
   // loading and navigation requests. This adds MimeTypeResourceHandler and
   // ResourceThrottles.
