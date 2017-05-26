@@ -723,9 +723,12 @@ public class BottomSheet
 
     @Override
     public Tab getActiveTab() {
-        return mTabModelSelector == null || mNtpController.isShowingNewTabUi()
-                ? null
-                : mTabModelSelector.getCurrentTab();
+        if (mTabModelSelector == null) return null;
+        if (mNtpController.isShowingNewTabUi() && isVisible()
+                && getTargetSheetState() != SHEET_STATE_PEEK) {
+            return null;
+        }
+        return mTabModelSelector.getCurrentTab();
     }
 
     @Override
