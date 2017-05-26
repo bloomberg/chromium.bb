@@ -199,10 +199,12 @@ class PerfDataGeneratorTest(unittest.TestCase):
             'dimension_sets': [{
                 'id': 'build1-b1',
             }]
-        }
+        },
+        'name': 'test',
     }]
     self.assertEqual(
-        perf_data_generator.RemoveBlacklistedTests(tests, []), tests)
+        perf_data_generator.remove_blacklisted_device_tests(tests, []), (
+            tests, {}))
 
   def testRemoveBlacklistedTestsShouldRemove(self):
     tests = [{
@@ -210,9 +212,39 @@ class PerfDataGeneratorTest(unittest.TestCase):
             'dimension_sets': [{
                 'id': 'build1-b1',
             }]
-        }
+        },
+        'name': 'test',
     }]
     self.assertEqual(
-        perf_data_generator.RemoveBlacklistedTests(tests, ['build1-b1']), [])
+        perf_data_generator.remove_blacklisted_device_tests(
+            tests, ['build1-b1']), ([], {'build1-b1': ['test']}))
 
-
+  def testRemoveBlacklistedTestsShouldRemoveMultiple(self):
+    tests = [{
+        'swarming': {
+            'dimension_sets': [{
+                'id': 'build1-b1',
+            }]
+        },
+        'name': 'test',
+    }, {
+        'swarming': {
+            'dimension_sets': [{
+                'id': 'build2-b1',
+            }]
+        },
+        'name': 'other_test',
+    }, {
+        'swarming': {
+            'dimension_sets': [{
+                'id': 'build2-b1',
+            }]
+        },
+        'name': 'test',
+    }]
+    self.assertEqual(
+        perf_data_generator.remove_blacklisted_device_tests(
+            tests, ['build1-b1', 'build2-b1']), ([], {
+                'build1-b1': ['test'],
+                'build2-b1': ['other_test', 'test'],
+            }))
