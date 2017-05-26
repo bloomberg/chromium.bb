@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -51,10 +52,47 @@ public class JourneyLogger {
     private static final int MAX_EXPECTED_SAMPLE = 49;
     private static final int NUMBER_BUCKETS = 50;
 
+    // PaymentRequestAbortReason defined in tools/metrics/histograms/histograms.xml.
+    @VisibleForTesting
+    public static final int ABORT_REASON_ABORTED_BY_USER = 0;
+    @VisibleForTesting
+    public static final int ABORT_REASON_ABORTED_BY_MERCHANT = 1;
+    @VisibleForTesting
+    public static final int ABORT_REASON_INVALID_DATA_FROM_RENDERER = 2;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MOJO_CONNECTION_ERROR = 3;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MOJO_RENDERER_CLOSING = 4;
+    @VisibleForTesting
+    public static final int ABORT_REASON_INSTRUMENT_DETAILS_ERROR = 5;
+    @VisibleForTesting
+    public static final int ABORT_REASON_NO_MATCHING_PAYMENT_METHOD = 6; // Deprecated.
+    @VisibleForTesting
+    public static final int ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD = 7; // Deprecated.
+    @VisibleForTesting
+    public static final int ABORT_REASON_OTHER = 8;
+    @VisibleForTesting
+    public static final int ABORT_REASON_MAX = 9;
+
+    // PaymentRequestNoShowReason defined in tools/metrics/histograms/histograms.xml
+    @VisibleForTesting
+    public static final int NO_SHOW_NO_MATCHING_PAYMENT_METHOD = 0;
+    @VisibleForTesting
+    public static final int NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD = 1;
+    @VisibleForTesting
+    public static final int NO_SHOW_CONCURRENT_REQUESTS = 2;
+    @VisibleForTesting
+    public static final int NO_SHOW_REASON_OTHER = 3;
+    @VisibleForTesting
+    public static final int NO_SHOW_REASON_MAX = 4;
+
     /**
      * Pointer to the native implementation.
      */
     private long mJourneyLoggerAndroid;
+
+    private boolean mWasShowCalled;
+    private boolean mHasRecorded;
 
     public JourneyLogger(boolean isIncognito, String url) {
         // Note that this pointer could leak the native object. The called must call destroy() to
@@ -124,6 +162,7 @@ public class JourneyLogger {
      * Records the fact that the Payment Request was shown to the user.
      */
     public void setShowCalled() {
+        mWasShowCalled = true;
         nativeSetShowCalled(mJourneyLoggerAndroid);
     }
 
@@ -135,15 +174,52 @@ public class JourneyLogger {
         nativeSetEventOccurred(mJourneyLoggerAndroid, event);
     }
 
-    /*
-     * Records the histograms for all the sections that were requested by the merchant and for the
-     * usage of the CanMakePayment method and its effect on the transaction. This method should be
-     * called when the payment request has either been completed or aborted.
-     *
-     * @param submissionType An int indicating the way the payment request was concluded.
+    /**
+     * Records that the Payment Request was completed sucessfully. Also starts the logging of
+     * all the journey logger metrics.
      */
-    public void recordJourneyStatsHistograms(int completionStatus) {
-        nativeRecordJourneyStatsHistograms(mJourneyLoggerAndroid, completionStatus);
+    public void setCompleted() {
+        assert !mHasRecorded;
+        assert mWasShowCalled;
+
+        if (!mHasRecorded && mWasShowCalled) {
+            mHasRecorded = true;
+            nativeSetCompleted(mJourneyLoggerAndroid);
+        }
+    }
+
+    /**
+     * Records that the Payment Request was aborted and for what reason. Also starts the logging of
+     * all the journey logger metrics.
+     *
+     * @param reason An int indicating why the payment request was aborted.
+     */
+    public void setAborted(int reason) {
+        assert reason < ABORT_REASON_MAX;
+        assert mWasShowCalled;
+
+        // The abort reasons on Android cascade into each other, so only the first one should be
+        // recorded.
+        if (!mHasRecorded && mWasShowCalled) {
+            mHasRecorded = true;
+            nativeSetAborted(mJourneyLoggerAndroid, reason);
+        }
+    }
+
+    /**
+     * Records that the Payment Request was not shown to the user and for what reason.
+     *
+     * @param reason An int indicating why the payment request was not shown.
+     */
+    public void setNotShown(int reason) {
+        assert reason < NO_SHOW_REASON_MAX;
+        assert !mWasShowCalled;
+        assert !mHasRecorded;
+
+        if (!mHasRecorded) {
+            mHasRecorded = true;
+            nativeSetNotShown(mJourneyLoggerAndroid, reason);
+        }
     }
 
     private native long nativeInitJourneyLoggerAndroid(boolean isIncognito, String url);
@@ -158,6 +234,7 @@ public class JourneyLogger {
             long nativeJourneyLoggerAndroid, boolean value);
     private native void nativeSetShowCalled(long nativeJourneyLoggerAndroid);
     private native void nativeSetEventOccurred(long nativeJourneyLoggerAndroid, int event);
-    private native void nativeRecordJourneyStatsHistograms(
-            long nativeJourneyLoggerAndroid, int completionStatus);
+    private native void nativeSetCompleted(long nativeJourneyLoggerAndroid);
+    private native void nativeSetAborted(long nativeJourneyLoggerAndroid, int reason);
+    private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);
 }

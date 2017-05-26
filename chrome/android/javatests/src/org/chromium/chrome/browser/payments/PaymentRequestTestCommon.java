@@ -719,7 +719,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     }
 
     protected void assertOnlySpecificAbortMetricLogged(int abortReason) {
-        for (int i = 0; i < PaymentRequestMetrics.ABORT_REASON_MAX; ++i) {
+        for (int i = 0; i < JourneyLogger.ABORT_REASON_MAX; ++i) {
             Assert.assertEquals(
                     String.format(Locale.getDefault(), "Found %d instead of %d", i, abortReason),
                     (i == abortReason ? 1 : 0),

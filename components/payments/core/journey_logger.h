@@ -69,6 +69,29 @@ class JourneyLogger {
     EVENT_ENUM_MAX = 16,
   };
 
+  enum AbortReason {
+    ABORT_REASON_ABORTED_BY_USER = 0,
+    ABORT_REASON_ABORTED_BY_MERCHANT = 1,
+    ABORT_REASON_INVALID_DATA_FROM_RENDERER = 2,
+    ABORT_REASON_MOJO_CONNECTION_ERROR = 3,
+    ABORT_REASON_MOJO_RENDERER_CLOSING = 4,
+    ABORT_REASON_INSTRUMENT_DETAILS_ERROR = 5,
+    ABORT_REASON_NO_MATCHING_PAYMENT_METHOD = 6,   // Deprecated.
+    ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD = 7,  // Deprecated.
+    ABORT_REASON_OTHER = 8,
+    ABORT_REASON_MAX,
+  };
+
+#ifdef OS_ANDROID
+  enum NotShownReason {
+    NOT_SHOWN_NO_MATCHING_PAYMENT_METHOD = 0,
+    NOT_SHOWN_NO_SUPPORTED_PAYMENT_METHOD = 1,
+    NOT_SHOWN_CONCURRENT_REQUESTS = 2,
+    NOT_SHOWN_REASON_OTHER = 3,
+    NOT_SHOWN_REASON_MAX = 4,
+  };
+#endif
+
   // Used to mesure the impact of the CanMakePayment return value on whether the
   // Payment Request is shown to the user.
   static const int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
@@ -103,11 +126,19 @@ class JourneyLogger {
   // Records that an event occurred.
   void SetEventOccurred(Event event);
 
-  // Records the histograms for all the sections that were requested by the
-  // merchant and for the usage of the CanMakePayment method and its effect on
-  // the transaction. This method should be called when the Payment Request has
-  // either been completed or aborted.
-  void RecordJourneyStatsHistograms(CompletionStatus completion_status);
+  // Records that the Payment Request was completed successfully, and starts the
+  // logging of all the journey metrics.
+  void SetCompleted();
+
+  // Records that the Payment Request was aborted along with the reason. Also
+  // starts the logging of all the journey metrics.
+  void SetAborted(AbortReason reason);
+
+#ifdef OS_ANDROID
+  // Records that the Payment Request was not shown to the user, along with the
+  // reason.
+  void SetNotShown(NotShownReason reason);
+#endif
 
  private:
   static const int NUMBER_OF_SECTIONS = 3;
@@ -135,6 +166,12 @@ class JourneyLogger {
     int number_suggestions_shown_;
     bool is_requested_;
   };
+
+  // Records the histograms for all the sections that were requested by the
+  // merchant and for the usage of the CanMakePayment method and its effect on
+  // the transaction. This method should be called when the Payment Request has
+  // either been completed or aborted.
+  void RecordJourneyStatsHistograms(CompletionStatus completion_status);
 
   // Records the histograms for all the steps of a complete checkout flow that
   // were reached.

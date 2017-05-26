@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -407,15 +406,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
             PaymentDetails details, PaymentOptions options) {
         if (mClient != null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
             return;
         }
 
         if (client == null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid mojo client");
             return;
         }
@@ -424,8 +421,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mMethodData = new HashMap<>();
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Not in a secure context");
             return;
         }
@@ -460,8 +456,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mMethodData = getValidatedMethodData(methodData, mCardEditor);
         if (mMethodData == null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             return;
         }
@@ -469,8 +464,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
         if (mRawTotal == null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Missing total");
             return;
         }
@@ -603,8 +597,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Renderer should never invoke show() twice");
             return;
         }
@@ -613,7 +606,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // The renderer can create multiple instances of PaymentRequest and call show() on each
             // one. Only the first one will be shown. This also prevents multiple tabs and windows
             // from showing PaymentRequest UI at the same time.
-            recordNoShowReasonHistogram(PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS);
+            mJourneyLogger.setNotShown(JourneyLogger.NO_SHOW_CONCURRENT_REQUESTS);
             disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
@@ -624,7 +617,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
-            recordNoShowReasonHistogram(PaymentRequestMetrics.NO_SHOW_REASON_OTHER);
+            mJourneyLogger.setNotShown(JourneyLogger.NO_SHOW_REASON_OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
@@ -752,8 +745,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
 
         if (mUI == null) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
             return;
@@ -786,8 +778,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
         if (!PaymentValidator.validatePaymentDetails(details)) {
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid payment details");
             return false;
         }
@@ -1307,7 +1298,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     @Override
     public void onDismiss() {
-        recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage("Dialog dismissed");
     }
 
@@ -1334,7 +1325,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else {
             closeClient();
             closeUI(true);
-            recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_MERCHANT);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_MERCHANT);
         }
     }
 
@@ -1344,7 +1335,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @Override
     public void complete(int result) {
         if (mClient == null) return;
-        recordSuccessFunnelHistograms("Completed");
+        mJourneyLogger.setCompleted();
         if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
             PaymentPreferencesUtil.setPaymentCompleteOnce();
         }
@@ -1366,7 +1357,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onCardAndAddressSettingsClicked() {
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (context == null) {
-            recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_OTHER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             return;
         }
@@ -1374,7 +1365,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 context, AutofillAndPaymentsPreferences.class.getName());
         context.startActivity(intent);
-        recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage("Card and address settings clicked");
     }
 
@@ -1465,7 +1456,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
         closeClient();
         closeUI(true);
-        recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_MOJO_RENDERER_CLOSING);
+        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_MOJO_RENDERER_CLOSING);
     }
 
     /**
@@ -1476,7 +1467,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
         closeClient();
         closeUI(true);
-        recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_MOJO_CONNECTION_ERROR);
+        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_MOJO_CONNECTION_ERROR);
     }
 
     /**
@@ -1604,9 +1595,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
-            recordNoShowReasonHistogram(mArePaymentMethodsSupported
-                            ? PaymentRequestMetrics.NO_SHOW_NO_MATCHING_PAYMENT_METHOD
-                            : PaymentRequestMetrics.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD);
+            mJourneyLogger.setNotShown(mArePaymentMethodsSupported
+                            ? JourneyLogger.NO_SHOW_NO_MATCHING_PAYMENT_METHOD
+                            : JourneyLogger.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD);
             disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
                     mIsIncognito ? PaymentErrorReason.USER_CANCEL
                                  : PaymentErrorReason.NOT_SUPPORTED);
@@ -1705,7 +1696,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         // Can happen if the tab is closed during the normalization process.
         if (chromeActivity == null) {
-            recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_OTHER);
+            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
@@ -1802,51 +1793,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @VisibleForTesting
     public static void setIsLocalCanMakePaymentQueryQuotaEnforcedForTest() {
         sIsLocalCanMakePaymentQueryQuotaEnforcedForTest = true;
-    }
-
-    /**
-     * Records specific histograms related to the different steps of a successful checkout.
-     */
-    private void recordSuccessFunnelHistograms(String funnelPart) {
-        RecordHistogram.recordBooleanHistogram("PaymentRequest.CheckoutFunnel." + funnelPart, true);
-
-        if (funnelPart.equals("Completed")) {
-            mJourneyLogger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
-        }
-    }
-
-    /**
-     * Adds an entry to the aborted Payment Request histogram in the bucket corresponding to the
-     * reason for aborting. Only records the initial reason for aborting, as some closing code calls
-     * other closing code that can log too.
-     */
-    private void recordAbortReasonHistogram(int abortReason) {
-        assert abortReason < PaymentRequestMetrics.ABORT_REASON_MAX;
-        if (mHasRecordedAbortReason || !mShouldRecordAbortReason) return;
-
-        mHasRecordedAbortReason = true;
-        RecordHistogram.recordEnumeratedHistogram(
-                "PaymentRequest.CheckoutFunnel.Aborted", abortReason,
-                PaymentRequestMetrics.ABORT_REASON_MAX);
-
-        if (abortReason == PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER) {
-            mJourneyLogger.recordJourneyStatsHistograms(
-                    JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
-        } else {
-            mJourneyLogger.recordJourneyStatsHistograms(
-                    JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
-        }
-    }
-
-    /**
-     * Adds an entry to the NoShow Payment Request histogram in the bucket corresponding to the
-     * reason for not showing the Payment Request.
-     */
-    private void recordNoShowReasonHistogram(int reason) {
-        assert reason < PaymentRequestMetrics.NO_SHOW_REASON_MAX;
-
-        RecordHistogram.recordEnumeratedHistogram("PaymentRequest.CheckoutFunnel.NoShow", reason,
-                PaymentRequestMetrics.NO_SHOW_REASON_MAX);
     }
 
     /**
