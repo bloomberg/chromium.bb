@@ -372,7 +372,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static void addValidItemsToFront(List<ContextMenuItem> validItems,
             List<? extends ContextMenuItem> allItems, Set<ContextMenuItem> supportedOptions,
             Set<ContextMenuItem> disabledOptions) {
-        for (int i = 0; i < allItems.size(); i++) {
+        for (int i = allItems.size() - 1; i >= 0; i--) {
             ContextMenuItem item = allItems.get(i);
             if (supportedOptions.contains(item) && !disabledOptions.contains(item)) {
                 assert !validItems.contains(item);
