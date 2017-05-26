@@ -193,6 +193,7 @@ enum BadMessageReason {
   RWH_SURFACE_INVARIANTS_VIOLATION = 169,
   RFH_ILLEGAL_UPLOAD_PARAMS = 170,
   RFH_BASE_URL_FOR_DATA_URL_SPECIFIED = 171,
+  RFPH_ILLEGAL_UPLOAD_PARAMS = 172,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

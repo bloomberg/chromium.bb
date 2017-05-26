@@ -17,15 +17,20 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/resource_request_body_impl.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -742,6 +747,68 @@ bool ChildProcessSecurityPolicyImpl::CanReadAllFiles(
                      [this, child_id](const base::FilePath& file) {
                        return CanReadFile(child_id, file);
                      });
+}
+
+bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
+    int child_id,
+    const storage::FileSystemContext* file_system_context,
+    const scoped_refptr<ResourceRequestBodyImpl>& body) {
+  if (!body)
+    return true;
+
+  for (const ResourceRequestBodyImpl::Element& element : *body->elements()) {
+    switch (element.type()) {
+      case ResourceRequestBodyImpl::Element::TYPE_FILE:
+        if (!CanReadFile(child_id, element.path()))
+          return false;
+        break;
+
+      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
+        if (!CanReadFileSystemFile(child_id, file_system_context->CrackURL(
+                                                 element.filesystem_url())))
+          return false;
+        break;
+
+      case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
+        // TYPE_DISK_CACHE_ENTRY can't be sent via IPC according to
+        // content/common/resource_messages.cc
+        NOTREACHED();
+        return false;
+
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
+      case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
+        // Data is self-contained within |body| - no need to check access.
+        break;
+
+      case ResourceRequestBodyImpl::Element::TYPE_BLOB:
+        // No need to validate - the unguessability of the uuid of the blob is a
+        // sufficient defense against access from an unrelated renderer.
+        break;
+
+      case ResourceRequestBodyImpl::Element::TYPE_UNKNOWN:
+      default:
+        // Fail safe - deny access.
+        NOTREACHED();
+        return false;
+    }
+  }
+  return true;
+}
+
+bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
+    SiteInstance* site_instance,
+    const scoped_refptr<ResourceRequestBodyImpl>& body) {
+  DCHECK(site_instance);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  int child_id = site_instance->GetProcess()->GetID();
+
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      site_instance->GetBrowserContext(), site_instance);
+  const storage::FileSystemContext* file_system_context =
+      storage_partition->GetFileSystemContext();
+
+  return CanReadRequestBody(child_id, file_system_context, body);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(

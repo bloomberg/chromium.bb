@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -27,10 +28,14 @@ class FilePath;
 }
 
 namespace storage {
+class FileSystemContext;
 class FileSystemURL;
 }
 
 namespace content {
+
+class SiteInstance;
+class ResourceRequestBodyImpl;
 
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     : NON_EXPORTED_BASE(public ChildProcessSecurityPolicy) {
@@ -88,6 +93,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Returns if |child_id| can read all of the |files|.
   bool CanReadAllFiles(int child_id, const std::vector<base::FilePath>& files);
+
+  // Validate that the renderer process for |site_instance| is allowed to access
+  // data in the POST body specified by |body|.  Has to be called on the UI
+  // thread.
+  // TODO(lukasza): Remove code duplication - the method below should be reused
+  // by RenderFrameHostImpl::OnBeginNavigation and
+  // ResourceDispatcherHostImpl::ShouldServiceRequest.
+  bool CanReadRequestBody(SiteInstance* site_instance,
+                          const scoped_refptr<ResourceRequestBodyImpl>& body);
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -232,6 +246,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int child_id,
       const std::string& filesystem_id,
       int permission);
+
+  // Validate that |child_id| in |file_system_context| is allowed to access
+  // data in the POST body specified by |body|.  Can be called on any thread.
+  bool CanReadRequestBody(int child_id,
+                          const storage::FileSystemContext* file_system_context,
+                          const scoped_refptr<ResourceRequestBodyImpl>& body);
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
