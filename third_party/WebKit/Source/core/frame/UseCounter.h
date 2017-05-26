@@ -1616,6 +1616,7 @@ class CORE_EXPORT UseCounter {
     kHTMLOListElementStartGetterReversedWithoutStartAttribute = 2011,
     kCredentialManagerPreventSilentAccess = 2012,
     kNetInfoEffectiveType = 2013,
+    kV8SpeechRecognition_Start_Method = 2014,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
