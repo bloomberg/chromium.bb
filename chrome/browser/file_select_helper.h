@@ -191,6 +191,10 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // Cleans up when the initiator of the file chooser is no longer valid.
   void CleanUp();
 
+  // Calls RunFileChooserEnd() if the webcontents was destroyed. Returns true
+  // if the file chooser operation shouldn't proceed.
+  bool AbortIfWebContentsDestroyed();
+
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:
   //   http://whatwg.org/html/number-state.html#attr-input-accept

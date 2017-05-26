@@ -204,6 +204,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^chrome[\\\/]browser[\\\/]lifetime[\\\/]application_lifetime\.cc$",
         r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]"
             "customization_document_browsertest\.cc$",
+        r"^chrome[\\\/]test[\\\/]ppapi[\\\/]ppapi_filechooser_browsertest\.cc$",
         r"^components[\\\/]crash[\\\/]app[\\\/]breakpad_mac\.mm$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]layout_test[\\\/]" +
             r"test_info_extractor\.cc$",
