@@ -13,10 +13,6 @@ namespace favicon_base {
 
 namespace {
 
-// Luma threshold for background color determine whether to use dark or light
-// text color.
-const uint8_t kDarkTextLumaThreshold = 190;
-
 // The maximum lightness of the background color to ensure light text is
 // readable.
 const double kMaxBackgroundColorLightness = 0.67;
@@ -24,20 +20,14 @@ const double kMinBackgroundColorLightness = 0.15;
 
 // Default values for FallbackIconStyle.
 const SkColor kDefaultBackgroundColor = SkColorSetRGB(0x78, 0x78, 0x78);
-const SkColor kDefaultTextColorDark = SK_ColorBLACK;
-const SkColor kDefaultTextColorLight = SK_ColorWHITE;
-const double kDefaultFontSizeRatio = 0.44;
-const double kDefaultRoundness = 0;  // Square. Round corners are applied
-                                     // externally (Javascript or Java).
+const SkColor kDefaultTextColor = SK_ColorWHITE;
 
 }  // namespace
 
 FallbackIconStyle::FallbackIconStyle()
     : background_color(kDefaultBackgroundColor),
       is_default_background_color(true),
-      text_color(kDefaultTextColorLight),
-      font_size_ratio(kDefaultFontSizeRatio),
-      roundness(kDefaultRoundness) {}
+      text_color(kDefaultTextColor) {}
 
 FallbackIconStyle::~FallbackIconStyle() {
 }
@@ -45,21 +35,7 @@ FallbackIconStyle::~FallbackIconStyle() {
 bool FallbackIconStyle::operator==(const FallbackIconStyle& other) const {
   return background_color == other.background_color &&
          is_default_background_color == other.is_default_background_color &&
-         text_color == other.text_color &&
-         font_size_ratio == other.font_size_ratio &&
-         roundness == other.roundness;
-}
-
-void MatchFallbackIconTextColorAgainstBackgroundColor(
-    FallbackIconStyle* style) {
-  const uint8_t luma = color_utils::GetLuma(style->background_color);
-  style->text_color = (luma >= kDarkTextLumaThreshold) ?
-      kDefaultTextColorDark : kDefaultTextColorLight;
-}
-
-bool ValidateFallbackIconStyle(const FallbackIconStyle& style) {
-  return style.font_size_ratio >= 0.0 && style.font_size_ratio <= 1.0 &&
-      style.roundness >= 0.0 && style.roundness <= 1.0;
+         text_color == other.text_color;
 }
 
 void SetDominantColorAsBackground(

@@ -346,8 +346,6 @@ split_static_library("ui") {
     "webui/domain_reliability_internals_ui.h",
     "webui/engagement/site_engagement_ui.cc",
     "webui/engagement/site_engagement_ui.h",
-    "webui/fallback_icon_source.cc",
-    "webui/fallback_icon_source.h",
     "webui/favicon_source.cc",
     "webui/favicon_source.h",
     "webui/fileicon_source.cc",

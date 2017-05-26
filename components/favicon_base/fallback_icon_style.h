@@ -17,8 +17,6 @@ struct FallbackIconStyle {
   FallbackIconStyle();
   ~FallbackIconStyle();
 
-  // If any member changes, also update FallbackIconStyleBuilder.
-
   // Icon background fill color.
   SkColor background_color;
   bool is_default_background_color;
@@ -26,20 +24,8 @@ struct FallbackIconStyle {
   // Icon text color.
   SkColor text_color;
 
-  // Ratio in [0.0, 1.0] of the text font size (pixels) to the icon size.
-  double font_size_ratio;
-
-  // The roundness of the icon's corners. 0 => square icon, 1 => circle icon.
-  double roundness;
-
   bool operator==(const FallbackIconStyle& other) const;
 };
-
-// Reassigns |style|'s |text_color| to matches well against |background_color|.
-void MatchFallbackIconTextColorAgainstBackgroundColor(FallbackIconStyle* style);
-
-// Returns whether |style| values are within bounds.
-bool ValidateFallbackIconStyle(const FallbackIconStyle& style);
 
 // Set |style|'s background color to the dominant color of |bitmap_data|,
 // clamping luminance down to a reasonable maximum value so that light text is

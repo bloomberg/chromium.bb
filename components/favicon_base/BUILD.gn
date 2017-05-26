@@ -6,8 +6,6 @@ static_library("favicon_base") {
   sources = [
     "fallback_icon_style.cc",
     "fallback_icon_style.h",
-    "fallback_icon_url_parser.cc",
-    "fallback_icon_url_parser.h",
     "favicon_callback.h",
     "favicon_types.cc",
     "favicon_types.h",
@@ -40,7 +38,6 @@ static_library("favicon_base") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "fallback_icon_url_parser_unittest.cc",
     "favicon_url_parser_unittest.cc",
     "large_icon_url_parser_unittest.cc",
     "select_favicon_frames_unittest.cc",
