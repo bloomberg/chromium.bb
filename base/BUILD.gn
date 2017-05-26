@@ -1124,7 +1124,6 @@ component("base") {
   configs += [
     ":base_flags",
     ":base_implementation",
-    "//base/allocator:allocator_shim_define",  # for allocator_check.cc.
     "//build/config:precompiled_headers",
   ]
 
@@ -2293,9 +2292,6 @@ test("base_unittests") {
   public_deps = [
     ":base_unittests_bundle_data",
   ]
-
-  # Some unittests depend on the ALLOCATOR_SHIM macro.
-  configs += [ "//base/allocator:allocator_shim_define" ]
 
   data = [
     "test/data/",
