@@ -487,10 +487,15 @@ noback sign \X2571 345 ╱ right-leaning single solid diagonal line segment # us
 noback sign \X2572 126 ╲ left-leaning single solid diagonal line segment # using noback to avoid conflict with "gh" contraction
 
 # Shape Symbols
-sign \X25a0 456-1246-3456-145 ■ filled (solid) square
-sign \X25a7 46-1246-3456-145 ▧ shaded square
-noback sign \X25cf 5-35 ● black circle
-noback sign \x29b5 46-245 ⦵ 'normal' (superscript circle crossed by horizontal line)
+sign \x25a0 456-1246-3456-145 ■ filled (solid) square
+sign \x25a1 1246-3456-145 □ square
+sign \x25a7 46-1246-3456-145 ▧ shaded square (upper left to lower right)
+sign \x25b2 456-1246-3456-14 ▲ filled (solid) (equilateral) triangle
+sign \x25b3 1246-3456-14 △ regular (equilateral) triangle
+sign \x25cb 1246-123456 ○ circle
+sign \x25cd 46-1246-123456 ◍ shaded circle
+sign \x29b5 46-245 ⦵ 'normal' (superscript circle crossed by horizontal line)
+noback sign \x25cf 5-35 ● black circle # not representing filled circle shape as it is mostly used in password fields to represent hidden characters
 
 #   Unicode prefers \x2019 for apostrophe instead of \x27
 endword \x2019d 3-145
