@@ -20,7 +20,7 @@ function localize_times() {
   // the user has set in their browser.
   require(["dojo/date/locale"], function(locale) {
     function format(date, datePattern, timePattern) {
-      // The dojo guys like to add a sep between the date and the time
+      // The dojo folks like to add a sep between the date and the time
       // fields for us (based on locale).  Since we want a standards
       // format, that sep is pure noise, so kill it with {...}.
       // https://bugs.dojotoolkit.org/ticket/17544

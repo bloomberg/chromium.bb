@@ -187,7 +187,7 @@ class InputInsns(object):
   def CopyConfigParser(config):
     """Return a copy of a ConfigParser object.
 
-    The python guys broke the ability to use something like deepcopy:
+    The python folks broke the ability to use something like deepcopy:
     https://bugs.python.org/issue16058
     """
     # Write the current config to a string io object.
