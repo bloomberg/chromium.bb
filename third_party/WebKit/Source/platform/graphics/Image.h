@@ -229,9 +229,11 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // TODO(Oilpan): consider having Image on the Oilpan heap and
   // turn this into a Member<>.
   //
-  // The observer (an ImageResourceContent) is an untraced member, with the
-  // ImageResourceContent being responsible for clearing itself out.
-  UntracedMember<ImageObserver> image_observer_;
+  // The observer (an ImageResourceContent) is responsible for clearing
+  // itself out when it switches to another Image.
+  // When the ImageResourceContent is garbage collected while Image is still
+  // alive, |image_observer_| is cleared by WeakPersistent mechanism.
+  WeakPersistent<ImageObserver> image_observer_;
   PaintImage::Id stable_image_id_;
 };
 
