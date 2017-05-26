@@ -8,11 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/accelerators/accelerator.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
 
 namespace arc {
 
@@ -49,8 +54,19 @@ class ArcVoiceInteractionFrameworkService
   void ShowMetalayer(const base::Closure& closed);
   void HideMetalayer();
 
-  // Start the voice interaction session through mojom call.
-  void StartVoiceInteractionSession();
+  // Starts a voice interaction session after user-initiated interaction.
+  // Records a timestamp and sets number of allowed requests to 2 since by
+  // design, there will be one request for screenshot and the other for
+  // voice interaction context.
+  // |region| refers to the selected region on the screen to be passed to
+  // VoiceInteractionFrameworkInstance::StartVoiceInteractionSessionForRegion().
+  // If |region| is empty,
+  // VoiceInteractionFrameworkInstance::StartVoiceInteraction() is called.
+  void StartSessionFromUserInteraction(const gfx::Rect& region);
+
+  // Checks whether the caller is called within the time limit since last user
+  // initiated interaction. Logs UMA metric when it's not.
+  bool ValidateTimeSinceUserInteraction();
 
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
@@ -58,9 +74,21 @@ class ArcVoiceInteractionFrameworkService
  private:
   void SetMetalayerVisibility(bool visible);
 
+  bool InitiateUserInteraction();
+
   mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;
   base::Closure metalayer_closed_callback_;
   bool metalayer_enabled_ = false;
+
+  // The time when a user initated an interaction.
+  base::TimeTicks user_interaction_start_time_;
+
+  // The number of allowed requests from container. Maximum is 2 (1 for
+  // screenshot and 1 for view hierarchy). This amount decreases after each
+  // context request or resets when allowed time frame is elapsed.  When this
+  // quota is 0, but we still get requests from the container side, we assume
+  // something malicious is going on.
+  int32_t context_request_remaining_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVoiceInteractionFrameworkService);
 };

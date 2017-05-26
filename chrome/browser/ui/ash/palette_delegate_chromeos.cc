@@ -21,7 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -40,15 +39,13 @@ class VoiceInteractionScreenshotDelegate : public ash::ScreenshotDelegate {
 
   void HandleTakePartialScreenshot(aura::Window* window,
                                    const gfx::Rect& rect) override {
-    arc::mojom::VoiceInteractionFrameworkInstance* framework =
-        ARC_GET_INSTANCE_FOR_METHOD(arc::ArcServiceManager::Get()
-                                        ->arc_bridge_service()
-                                        ->voice_interaction_framework(),
-                                    StartVoiceInteractionSessionForRegion);
+    auto* framework =
+        arc::ArcServiceManager::Get()
+            ->GetService<arc::ArcVoiceInteractionFrameworkService>();
     if (!framework)
       return;
     double device_scale_factor = window->layer()->device_scale_factor();
-    framework->StartVoiceInteractionSessionForRegion(
+    framework->StartSessionFromUserInteraction(
         gfx::ScaleToEnclosingRect(rect, device_scale_factor));
   }
 

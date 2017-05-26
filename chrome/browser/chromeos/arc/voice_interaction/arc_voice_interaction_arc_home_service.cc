@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/instance_holder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -92,6 +94,14 @@ void ArcVoiceInteractionArcHomeService::OnInstanceReady() {
 void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
     const GetVoiceInteractionStructureCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* framework_service =
+      ArcServiceManager::Get()
+          ->GetService<ArcVoiceInteractionFrameworkService>();
+  if (!framework_service->ValidateTimeSinceUserInteraction()) {
+    callback.Run(mojom::VoiceInteractionStructure::New());
+    return;
+  }
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (!browser || !browser->window()->IsActive()) {
     // TODO(muyuanli): retrieve context for apps.
