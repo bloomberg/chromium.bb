@@ -32,13 +32,52 @@
 
 namespace blink {
 
+SelectionPaintRange::SelectionPaintRange(LayoutObject* start_layout_object,
+                                         int start_offset,
+                                         LayoutObject* end_layout_object,
+                                         int end_offset)
+    : start_layout_object_(start_layout_object),
+      start_offset_(start_offset),
+      end_layout_object_(end_layout_object),
+      end_offset_(end_offset) {
+  DCHECK(start_layout_object_);
+  DCHECK(end_layout_object_);
+  if (start_layout_object_ != end_layout_object_)
+    return;
+  DCHECK_LT(start_offset_, end_offset_);
+}
+
+bool SelectionPaintRange::operator==(const SelectionPaintRange& other) const {
+  return start_layout_object_ == other.start_layout_object_ &&
+         start_offset_ == other.start_offset_ &&
+         end_layout_object_ == other.end_layout_object_ &&
+         end_offset_ == other.end_offset_;
+}
+
+LayoutObject* SelectionPaintRange::StartLayoutObject() const {
+  DCHECK(!IsNull());
+  return start_layout_object_;
+}
+
+int SelectionPaintRange::StartOffset() const {
+  DCHECK(!IsNull());
+  return start_offset_;
+}
+
+LayoutObject* SelectionPaintRange::EndLayoutObject() const {
+  DCHECK(!IsNull());
+  return end_layout_object_;
+}
+
+int SelectionPaintRange::EndOffset() const {
+  DCHECK(!IsNull());
+  return end_offset_;
+}
+
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
     : frame_selection_(&frame_selection),
       has_pending_selection_(false),
-      selection_start_(nullptr),
-      selection_end_(nullptr),
-      selection_start_pos_(-1),
-      selection_end_pos_(-1) {}
+      paint_range_(SelectionPaintRange()) {}
 
 SelectionInFlatTree LayoutSelection::CalcVisibleSelection(
     const VisibleSelectionInFlatTree& original_selection) const {
@@ -124,19 +163,20 @@ struct SelectedMap {
 };
 
 static SelectedMap CollectSelectedMap(
-    LayoutObject* selection_start,
-    LayoutObject* selection_end,
-    int selection_end_pos,
+    const SelectionPaintRange& range,
     LayoutSelection::SelectionPaintInvalidationMode
         block_paint_invalidation_mode) {
+  if (range.IsNull())
+    return SelectedMap();
+
   SelectedMap selected_map;
 
   LayoutObject* const stop =
-      LayoutObjectAfterPosition(selection_end, selection_end_pos);
-  for (LayoutObject* runner = selection_start; runner && (runner != stop);
-       runner = runner->NextInPreOrder()) {
-    if (!runner->CanBeSelectionLeaf() && runner != selection_start &&
-        runner != selection_end)
+      LayoutObjectAfterPosition(range.EndLayoutObject(), range.EndOffset());
+  for (LayoutObject* runner = range.StartLayoutObject();
+       runner && (runner != stop); runner = runner->NextInPreOrder()) {
+    if (!runner->CanBeSelectionLeaf() && runner != range.StartLayoutObject() &&
+        runner != range.EndLayoutObject())
       continue;
     if (runner->GetSelectionState() == SelectionNone)
       continue;
@@ -160,52 +200,47 @@ static SelectedMap CollectSelectedMap(
 }
 
 // Update the selection status of all LayoutObjects between |start| and |end|.
-static void SetSelectionState(LayoutObject* start,
-                              LayoutObject* end,
-                              int end_pos) {
-  if (start && start == end) {
-    start->SetSelectionStateIfNeeded(SelectionBoth);
+static void SetSelectionState(const SelectionPaintRange& range) {
+  if (range.IsNull())
+    return;
+
+  if (range.StartLayoutObject() == range.EndLayoutObject()) {
+    range.StartLayoutObject()->SetSelectionStateIfNeeded(SelectionBoth);
   } else {
-    if (start)
-      start->SetSelectionStateIfNeeded(SelectionStart);
-    if (end)
-      end->SetSelectionStateIfNeeded(SelectionEnd);
+    range.StartLayoutObject()->SetSelectionStateIfNeeded(SelectionStart);
+    range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionEnd);
   }
 
-  LayoutObject* const stop = LayoutObjectAfterPosition(end, end_pos);
-  for (LayoutObject* runner = start; runner && runner != stop;
-       runner = runner->NextInPreOrder()) {
-    if (runner != start && runner != end && runner->CanBeSelectionLeaf())
+  LayoutObject* const stop =
+      LayoutObjectAfterPosition(range.EndLayoutObject(), range.EndOffset());
+  for (LayoutObject* runner = range.StartLayoutObject();
+       runner && runner != stop; runner = runner->NextInPreOrder()) {
+    if (runner != range.StartLayoutObject() &&
+        runner != range.EndLayoutObject() && runner->CanBeSelectionLeaf())
       runner->SetSelectionStateIfNeeded(SelectionInside);
   }
 }
 
 void LayoutSelection::SetSelection(
-    LayoutObject* start,
-    int start_pos,
-    LayoutObject* end,
-    int end_pos,
+    const SelectionPaintRange& new_range,
     SelectionPaintInvalidationMode block_paint_invalidation_mode) {
-  DCHECK(start);
-  DCHECK(end);
+  DCHECK(!new_range.IsNull());
 
   // Just return if the selection hasn't changed.
-  if (selection_start_ == start && selection_start_pos_ == start_pos &&
-      selection_end_ == end && selection_end_pos_ == end_pos)
+  if (paint_range_ == new_range)
     return;
 
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
   DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
 
   SelectedMap old_selected_map =
-      CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
-                         block_paint_invalidation_mode);
+      CollectSelectedMap(paint_range_, block_paint_invalidation_mode);
 
   // Now clear the selection.
   for (auto layout_object : old_selected_map.object_map.Keys())
     layout_object->SetSelectionStateIfNeeded(SelectionNone);
 
-  SetSelectionState(start, end, end_pos);
+  SetSelectionState(new_range);
 
   // Now that the selection state has been updated for the new objects, walk
   // them again and put them in the new objects list.
@@ -213,7 +248,7 @@ void LayoutSelection::SetSelection(
   // SelectionState, it's just more convenient to have it use the same data
   // structure as |old_selected_map|.
   SelectedMap new_selected_map =
-      CollectSelectedMap(start, end, end_pos, kPaintInvalidationNewXOROld);
+      CollectSelectedMap(new_range, kPaintInvalidationNewXOROld);
 
   // Have any of the old selected objects changed compared to the new selection?
   for (const auto& pair : old_selected_map.object_map) {
@@ -221,8 +256,10 @@ void LayoutSelection::SetSelection(
     SelectionState new_selection_state = obj->GetSelectionState();
     SelectionState old_selection_state = pair.value;
     if (new_selection_state != old_selection_state ||
-        (start == obj && start_pos != selection_start_pos_) ||
-        (end == obj && end_pos != selection_end_pos_)) {
+        (new_range.StartLayoutObject() == obj &&
+         new_range.StartOffset() != paint_range_.StartOffset()) ||
+        (new_range.EndLayoutObject() == obj &&
+         new_range.EndOffset() != paint_range_.EndOffset())) {
       obj->SetShouldInvalidateSelection();
       new_selected_map.object_map.erase(obj);
     }
@@ -249,16 +286,14 @@ void LayoutSelection::SetSelection(
   for (auto layout_object : new_selected_map.block_map.Keys())
     layout_object->SetShouldInvalidateSelection();
 
-  // set selection start and end
-  selection_start_ = start;
-  selection_start_pos_ = start_pos;
-  selection_end_ = end;
-  selection_end_pos_ = end_pos;
+  paint_range_ = new_range;
 }
 
 std::pair<int, int> LayoutSelection::SelectionStartEnd() {
   Commit();
-  return std::make_pair(selection_start_pos_, selection_end_pos_);
+  if (paint_range_.IsNull())
+    return std::make_pair(-1, -1);
+  return std::make_pair(paint_range_.StartOffset(), paint_range_.EndOffset());
 }
 
 void LayoutSelection::ClearSelection() {
@@ -267,17 +302,12 @@ void LayoutSelection::ClearSelection() {
   // invalidations.
   DisableCompositingQueryAsserts disabler;
 
-  // Just return if the selection hasn't changed.
-  if (!selection_start_) {
-    DCHECK_EQ(selection_end_, nullptr);
-    DCHECK_EQ(selection_start_pos_, -1);
-    DCHECK_EQ(selection_end_pos_, -1);
+  // Just return if the selection is already empty.
+  if (paint_range_.IsNull())
     return;
-  }
 
   const SelectedMap& old_selected_map =
-      CollectSelectedMap(selection_start_, selection_end_, selection_end_pos_,
-                         kPaintInvalidationNewMinusOld);
+      CollectSelectedMap(paint_range_, kPaintInvalidationNewMinusOld);
   // Clear SelectionState and invalidation.
   for (auto layout_object : old_selected_map.object_map.Keys()) {
     const SelectionState old_state = layout_object->GetSelectionState();
@@ -287,11 +317,8 @@ void LayoutSelection::ClearSelection() {
     layout_object->SetShouldInvalidateSelection();
   }
 
-  // Reset selection start and end.
-  selection_start_ = nullptr;
-  selection_start_pos_ = -1;
-  selection_end_ = nullptr;
-  selection_end_pos_ = -1;
+  // Reset selection.
+  paint_range_ = SelectionPaintRange();
 }
 
 void LayoutSelection::Commit() {
@@ -342,16 +369,14 @@ void LayoutSelection::Commit() {
   if (!start_layout_object || !end_layout_object)
     return;
   DCHECK(start_layout_object->View() == end_layout_object->View());
-  SetSelection(start_layout_object, start_pos.ComputeEditingOffset(),
-               end_layout_object, end_pos.ComputeEditingOffset());
+  SetSelection(
+      SelectionPaintRange(start_layout_object, start_pos.ComputeEditingOffset(),
+                          end_layout_object, end_pos.ComputeEditingOffset()));
 }
 
 void LayoutSelection::OnDocumentShutdown() {
   has_pending_selection_ = false;
-  selection_start_ = nullptr;
-  selection_end_ = nullptr;
-  selection_start_pos_ = -1;
-  selection_end_pos_ = -1;
+  paint_range_ = SelectionPaintRange();
 }
 
 static LayoutRect SelectionRectForLayoutObject(const LayoutObject* object) {
@@ -372,12 +397,15 @@ IntRect LayoutSelection::SelectionBounds() {
   VisitedContainingBlockSet visited_containing_blocks;
 
   Commit();
-  LayoutObject* os = selection_start_;
-  LayoutObject* stop =
-      LayoutObjectAfterPosition(selection_end_, selection_end_pos_);
+  if (paint_range_.IsNull())
+    return IntRect();
+
+  LayoutObject* os = paint_range_.StartLayoutObject();
+  LayoutObject* stop = LayoutObjectAfterPosition(paint_range_.EndLayoutObject(),
+                                                 paint_range_.EndOffset());
   while (os && os != stop) {
-    if ((os->CanBeSelectionLeaf() || os == selection_start_ ||
-         os == selection_end_) &&
+    if ((os->CanBeSelectionLeaf() || os == paint_range_.StartLayoutObject() ||
+         os == paint_range_.EndLayoutObject()) &&
         os->GetSelectionState() != SelectionNone) {
       // Blocks are responsible for painting line gaps and margin gaps. They
       // must be examined as well.
@@ -400,12 +428,15 @@ IntRect LayoutSelection::SelectionBounds() {
 }
 
 void LayoutSelection::InvalidatePaintForSelection() {
-  LayoutObject* end =
-      LayoutObjectAfterPosition(selection_end_, selection_end_pos_);
-  for (LayoutObject* o = selection_start_; o && o != end;
+  if (paint_range_.IsNull())
+    return;
+
+  LayoutObject* end = LayoutObjectAfterPosition(paint_range_.EndLayoutObject(),
+                                                paint_range_.EndOffset());
+  for (LayoutObject* o = paint_range_.StartLayoutObject(); o && o != end;
        o = o->NextInPreOrder()) {
-    if (!o->CanBeSelectionLeaf() && o != selection_start_ &&
-        o != selection_end_)
+    if (!o->CanBeSelectionLeaf() && o != paint_range_.StartLayoutObject() &&
+        o != paint_range_.EndLayoutObject())
       continue;
     if (o->GetSelectionState() == SelectionNone)
       continue;
