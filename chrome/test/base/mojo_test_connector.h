@@ -67,10 +67,12 @@ class MojoTestConnector {
   // Initializes the background thread the ServiceManager runs on.
   service_manager::mojom::ServiceRequest InitBackgroundServiceManager();
 
+  std::unique_ptr<service_manager::BackgroundServiceManager>
+  CreateBackgroundServiceManager(service_manager::mojom::ServicePtr service);
+
   std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,
-      base::TestLauncher::LaunchOptions* test_launch_options,
-      base::OnceClosure on_process_launched);
+      base::TestLauncher::LaunchOptions* test_launch_options);
 
   void StartService(const std::string& service_name);
 

@@ -1,18 +1,6 @@
 # Failing test
 -BrowserTest.FullscreenBookmarkBar
 
-# Flaky tests -crbug.com/707195
--BrowserTest.AboutVersion
--BrowserTest.CanDuplicateTab
--BrowserTest.ClearPendingOnFailUnlessNT
--BrowserTest.DefaultMediaDevices
--BrowserTest.GetSizeForNewRenderView
--BrowserTest.JavascriptAlertActivatesTab
--BrowserTest.Title
-
-# Flaky tests -crbug.com/716727
--ExtensionsLoadTestWithLoginScreenApps.CommandLineExtensionsDontLoad
-
 # Trying to whitelist
 BrowserDialogTest.Invoke
 CastSessionBrowserTest.CreateAndDestroy
@@ -31,7 +19,6 @@ DeviceStatusCollectorNetworkInterfacesTest.NetworkInterfaces
 DeviceStatusCollectorNetworkInterfacesTest.ReportIfPublicSession
 DeviceStatusCollectorTest.ActivityCrossingMidnight
 DeviceStatusCollectorTest.ActivityTimesEnabledByDefault
-DeviceStatusCollectorTest.ActivityTimesKeptUntilSubmittedSuccessfully
 DeviceStatusCollectorTest.ActivityTimesOff
 DeviceStatusCollectorTest.AllActive
 DeviceStatusCollectorTest.AllIdle
@@ -56,7 +43,9 @@ DeviceStatusCollectorTest.TestVolumeInfo
 DeviceStatusCollectorTest.Times
 DeviceStatusCollectorTest.VersionInfo
 DownloadInterruptReasonEnumsSynced.DownloadInterruptReasonEnumsSynced
+ExperimentalAppWindowApiTest.SetIcon
 ExtensionDetermineDownloadFilenameInternal.ExtensionDetermineDownloadFilenameInternal
+ExtensionsLoadTestWithLoginScreenApps.CommandLineExtensionsDontLoad
 FormAutocompleteTest.AjaxSucceeded_FilledFormIsInvisible
 FormAutocompleteTest.AjaxSucceeded_FilledFormStillVisible
 FormAutocompleteTest.AjaxSucceeded_FormlessElements
