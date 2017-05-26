@@ -545,12 +545,14 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   NSArray* service_uuids =
       [advertisement_data objectForKey:CBAdvertisementDataServiceUUIDsKey];
   for (CBUUID* uuid in service_uuids) {
-    advertised_uuids.push_back(BluetoothUUID([[uuid UUIDString] UTF8String]));
+    advertised_uuids.push_back(
+        BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid));
   }
   NSArray* overflow_service_uuids = [advertisement_data
       objectForKey:CBAdvertisementDataOverflowServiceUUIDsKey];
   for (CBUUID* uuid in overflow_service_uuids) {
-    advertised_uuids.push_back(BluetoothUUID([[uuid UUIDString] UTF8String]));
+    advertised_uuids.push_back(
+        BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid));
   }
 
   // Get Service Data.
@@ -561,7 +563,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     NSData* data = [service_data objectForKey:uuid];
     const uint8_t* bytes = static_cast<const uint8_t*>([data bytes]);
     size_t length = [data length];
-    service_data_map.emplace(BluetoothUUID([[uuid UUIDString] UTF8String]),
+    service_data_map.emplace(BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid),
                              std::vector<uint8_t>(bytes, bytes + length));
   }
 
