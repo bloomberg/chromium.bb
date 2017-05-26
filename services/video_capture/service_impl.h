@@ -13,6 +13,10 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 namespace video_capture {
 
 class ServiceImpl : public service_manager::Service {
@@ -35,6 +39,10 @@ class ServiceImpl : public service_manager::Service {
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
 
+#if defined(OS_WIN)
+  // COM must be initialized in order to access the video capture devices.
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif
   float shutdown_delay_in_seconds_;
   service_manager::BinderRegistry registry_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
