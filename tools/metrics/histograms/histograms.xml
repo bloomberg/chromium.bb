@@ -26751,6 +26751,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Login.PromptToLoginTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>yusukes@chromium.org</owner>
+  <summary>
+    Time from first display of the login prompt until the existing user
+    completes signing in.
+  </summary>
+</histogram>
+
 <histogram name="Login.ReauthReason" enum="LoginReauthReasons">
   <owner>achuith@chromium.org</owner>
   <summary>
