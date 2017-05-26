@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -62,15 +63,21 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   // It is not thread safe, see crbug.com/324913.
   virtual ConnectionType RecomputeCurrentConnectionType() const;
 
+  // Calls RecomputeCurrentConnectionTypeImpl on the DNS thread and runs
+  // |reply_callback| with the type on the calling thread.
+  virtual void RecomputeCurrentConnectionTypeOnDnsThread(
+      base::Callback<void(ConnectionType)> reply_callback) const;
+
   void SetCurrentConnectionType(ConnectionType connection_type);
 
   // Notifies IP address change observers of a change immediately, and notifies
   // network state change observers on a delay.  Must only be called on the
   // thread |this| was created on.
-  void NotifyObservers();
+  void NotifyObservers(ConnectionType connection_type);
 
   // Forwards connection type notifications to parent class.
   void NotifyParentOfConnectionTypeChange();
+  void NotifyParentOfConnectionTypeChangeImpl(ConnectionType connection_type);
 
   // Tries to start listening for a single subsequent address change.  Returns
   // false on failure.  The caller is responsible for updating |is_watching_|.
