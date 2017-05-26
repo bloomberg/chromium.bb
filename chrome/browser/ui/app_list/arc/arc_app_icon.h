@@ -91,7 +91,7 @@ class ArcAppIcon {
       const base::FilePath& path,
       const base::FilePath& default_app_path);
   void OnIconRead(std::unique_ptr<ArcAppIcon::ReadResult> read_result);
-  void Update(const gfx::ImageSkia* image);
+  void Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap);
   void DiscardDecodeRequest(DecodeRequest* request);
 
   content::BrowserContext* context_;
