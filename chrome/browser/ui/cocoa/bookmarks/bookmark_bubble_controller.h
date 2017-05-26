@@ -52,6 +52,8 @@ class ManagedBookmarkService;
   IBOutlet NSTextField* nameTextField_;
   IBOutlet NSPopUpButton* folderPopUpButton_;
   IBOutlet NSView* syncPromoPlaceholder_;
+  IBOutlet NSView* fieldLabelsContainer_;
+  IBOutlet NSView* trailingButtonContainer_;
 }
 
 @property(readonly, nonatomic) const bookmarks::BookmarkNode* node;
