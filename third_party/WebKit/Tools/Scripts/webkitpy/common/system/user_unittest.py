@@ -34,30 +34,32 @@ from webkitpy.common.system.user import User
 
 class UserTest(unittest.TestCase):
 
-    example_user_response = 'example user response'
+    def setUp(self):
+        self.repeats_remaining = None
 
     def test_prompt_repeat(self):
-        self.repeatsRemaining = 2
+        self.repeats_remaining = 2
 
-        def mock_raw_input(message):
-            self.repeatsRemaining -= 1
-            if not self.repeatsRemaining:
-                return UserTest.example_user_response
+        def mock_raw_input(_):
+            self.repeats_remaining -= 1
+            if not self.repeats_remaining:
+                return 'example user response'
             return None
-        self.assertEqual(User.prompt('input', repeat=self.repeatsRemaining,
-                                     raw_input=mock_raw_input), UserTest.example_user_response)
+
+        self.assertEqual(User.prompt('input', repeat=self.repeats_remaining,
+                                     raw_input=mock_raw_input), 'example user response')
 
     def test_prompt_when_exceeded_repeats(self):
-        self.repeatsRemaining = 2
+        self.repeats_remaining = 2
 
-        def mock_raw_input(message):
-            self.repeatsRemaining -= 1
+        def mock_raw_input(_):
+            self.repeats_remaining -= 1
             return None
-        self.assertIsNone(User.prompt('input', repeat=self.repeatsRemaining, raw_input=mock_raw_input))
+        self.assertIsNone(User.prompt('input', repeat=self.repeats_remaining, raw_input=mock_raw_input))
 
     def test_prompt_with_list(self):
         def run_prompt_test(inputs, expected_result, can_choose_multiple=False):
-            def mock_raw_input(message):
+            def mock_raw_input(_):
                 return inputs.pop(0)
             output_capture = OutputCapture()
             actual_result = output_capture.assert_outputs(
@@ -79,24 +81,52 @@ class UserTest(unittest.TestCase):
         run_prompt_test(['  '], ['foo', 'bar'], can_choose_multiple=True)
         run_prompt_test(['badinput', 'all'], ['foo', 'bar'], can_choose_multiple=True)
 
-    def test_confirm(self):
-        test_cases = (
-            (('Continue? [Y/n]: ', True), (User.DEFAULT_YES, 'y')),
-            (('Continue? [Y/n]: ', False), (User.DEFAULT_YES, 'n')),
-            (('Continue? [Y/n]: ', True), (User.DEFAULT_YES, '')),
-            (('Continue? [Y/n]: ', False), (User.DEFAULT_YES, 'q')),
-            (('Continue? [y/N]: ', True), (User.DEFAULT_NO, 'y')),
-            (('Continue? [y/N]: ', False), (User.DEFAULT_NO, 'n')),
-            (('Continue? [y/N]: ', False), (User.DEFAULT_NO, '')),
-            (('Continue? [y/N]: ', False), (User.DEFAULT_NO, 'q')),
-        )
-        for test_case in test_cases:
-            expected, inputs = test_case
+    def check_confirm(self, expected_message, expected_out, default, user_input):
 
-            def mock_raw_input(message):
-                self.assertEqual(expected[0], message)
-                return inputs[1]
+        def mock_raw_input(message):
+            self.assertEqual(expected_message, message)
+            return user_input
 
-            result = User().confirm(default=inputs[0],
-                                    raw_input=mock_raw_input)
-            self.assertEqual(expected[1], result)
+        out = User().confirm(default=default, raw_input=mock_raw_input)
+        self.assertEqual(expected_out, out)
+
+    def test_confirm_input_yes(self):
+        self.check_confirm(
+            expected_message='Continue? [Y/n]: ', expected_out=True,
+            default=User.DEFAULT_YES, user_input='y')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=True,
+            default=User.DEFAULT_NO, user_input=' y ')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=True,
+            default=User.DEFAULT_NO, user_input='yes')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=True,
+            default=User.DEFAULT_NO, user_input='y')
+
+    def test_confirm_expect_input_no(self):
+        self.check_confirm(
+            expected_message='Continue? [Y/n]: ', expected_out=False,
+            default=User.DEFAULT_YES, user_input='n')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=False,
+            default=User.DEFAULT_NO, user_input='n')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=False,
+            default=User.DEFAULT_NO, user_input=' no ')
+
+    def test_confirm_use_default(self):
+        self.check_confirm(
+            expected_message='Continue? [Y/n]: ', expected_out=True,
+            default=User.DEFAULT_YES, user_input='')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=False,
+            default=User.DEFAULT_NO, user_input='')
+
+    def test_confirm_not_y_means_no(self):
+        self.check_confirm(
+            expected_message='Continue? [Y/n]: ', expected_out=False,
+            default=User.DEFAULT_YES, user_input='q')
+        self.check_confirm(
+            expected_message='Continue? [y/N]: ', expected_out=False,
+            default=User.DEFAULT_NO, user_input='q')
