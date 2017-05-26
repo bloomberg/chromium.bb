@@ -14,7 +14,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -96,8 +95,8 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
     if (!target_window)
       target_window = Shell::GetRootWindowForNewWindows();
     DCHECK(target_window);
-    if (router_->ProcessAccelerator(WmWindow::Get(target_window),
-                                    *(event.AsKeyEvent()), accelerator)) {
+    if (router_->ProcessAccelerator(target_window, *(event.AsKeyEvent()),
+                                    accelerator)) {
       return ui::mojom::EventResult::HANDLED;
     }
     if (accelerator_controller->IsActionForAcceleratorEnabled(accelerator)) {

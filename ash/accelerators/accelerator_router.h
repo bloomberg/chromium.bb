@@ -9,14 +9,16 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ui {
 class Accelerator;
 class KeyEvent;
 }
 
 namespace ash {
-
-class WmWindow;
 
 // AcceleratorRouter does a minimal amount of processing before routing the
 // accelerator to the AcceleratorController. AcceleratorRouter may also decide
@@ -28,17 +30,17 @@ class ASH_EXPORT AcceleratorRouter {
 
   // Returns true if event should be consumed. |target| is the target of the
   // event.
-  bool ProcessAccelerator(WmWindow* target,
+  bool ProcessAccelerator(aura::Window* target,
                           const ui::KeyEvent& event,
                           const ui::Accelerator& accelerator);
 
  private:
   // Returns true if the window should be allowed a chance to handle
   // system keys.
-  bool CanConsumeSystemKeys(WmWindow* target, const ui::KeyEvent& event);
+  bool CanConsumeSystemKeys(aura::Window* target, const ui::KeyEvent& event);
 
   // Returns true if the |accelerator| should be processed now.
-  bool ShouldProcessAcceleratorNow(WmWindow* target,
+  bool ShouldProcessAcceleratorNow(aura::Window* target,
                                    const ui::KeyEvent& event,
                                    const ui::Accelerator& accelerator);
 
