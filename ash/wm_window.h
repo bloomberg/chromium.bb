@@ -31,7 +31,6 @@ class Transform;
 }
 
 namespace ui {
-class EventHandler;
 class Layer;
 }
 
@@ -249,10 +248,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   void Hide();
   void Show();
 
-  // Requests the window to close and destroy itself. This is intended to
-  // forward to an associated widget.
-  void CloseWidget();
-
   void SetFocused();
   bool IsFocused() const;
 
@@ -289,16 +284,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
 
   void AddTransientWindowObserver(WmTransientWindowObserver* observer);
   void RemoveTransientWindowObserver(WmTransientWindowObserver* observer);
-
-  // Adds or removes a handler to receive events targeted at this window, before
-  // this window handles the events itself; the handler does not recieve events
-  // from embedded windows. This only supports windows with internal widgets;
-  // see ash::GetInternalWidgetForWindow(). Ownership of the handler is not
-  // transferred.
-  //
-  // Also note that the target of these events is always an aura::Window.
-  void AddLimitedPreTargetHandler(ui::EventHandler* handler);
-  void RemoveLimitedPreTargetHandler(ui::EventHandler* handler);
 
  private:
   explicit WmWindow(aura::Window* window);

@@ -27,7 +27,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_window.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
@@ -136,10 +135,9 @@ class WindowSelectorTest : public test::AshTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(params);
     widget->Show();
-    WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-    window->aura_window()->SetProperty(aura::client::kTopViewInset,
-                                       kHeaderHeight);
-    ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
+    aura::Window* window = widget->GetNativeWindow();
+    window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
+    ParentWindowInPrimaryRootWindow(window);
     return widget;
   }
 
@@ -834,9 +832,8 @@ TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
   params.parent = window1->parent();
   widget->Init(params);
   widget->Show();
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-  window->aura_window()->SetProperty(aura::client::kTopViewInset,
-                                     kHeaderHeight);
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
 
   ASSERT_EQ(root_windows[1], window1->GetRootWindow());
 

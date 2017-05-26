@@ -35,7 +35,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/audio/chromeos_sounds.h"
@@ -425,10 +424,10 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
       nullptr, aura::client::WINDOW_TYPE_NORMAL));
   window->Init(ui::LAYER_TEXTURED);
   wm::GetWindowState(window.get())->Maximize();
-  WmWindow* default_container =
-      Shell::GetPrimaryRootWindowController()->GetWmContainer(
+  aura::Window* default_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
           kShellWindowId_DefaultContainer);
-  default_container->aura_window()->AddChild(window.get());
+  default_container->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
@@ -577,8 +576,7 @@ TEST_F(WorkspaceLayoutManagerTest,
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   gfx::Insets insets(0, 0, 50, 0);
-  ShellPort::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
-                                             insets);
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
@@ -594,12 +592,11 @@ TEST_F(WorkspaceLayoutManagerTest,
   // The following two SetDisplayWorkAreaInsets calls simulate the case of
   // crbug.com/673803 that work area first becomes fullscreen and then returns
   // to the original state.
-  ShellPort::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(),
                                              gfx::Insets(0, 0, 0, 0));
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   EXPECT_TRUE(animator->is_animating());
-  ShellPort::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
-                                             insets);
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   animator->StopAnimating();
   EXPECT_FALSE(animator->is_animating());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
@@ -623,7 +620,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   window2->Show();
 
   gfx::Rect expected_bounds = window2->bounds();
-  ShellPort::Get()->SetDisplayWorkAreaInsets(WmWindow::Get(window.get()),
+  ShellPort::Get()->SetDisplayWorkAreaInsets(window.get(),
                                              gfx::Insets(50, 0, 0, 0));
   EXPECT_EQ(expected_bounds.ToString(), window2->bounds().ToString());
 }
@@ -1405,14 +1402,13 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     restore_work_area_insets_ =
         display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
     ShellPort::Get()->SetDisplayWorkAreaInsets(
-        WmWindow::Get(Shell::GetPrimaryRootWindow()),
+        Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
   }
 
   void HideKeyboard() {
-    ShellPort::Get()->SetDisplayWorkAreaInsets(
-        WmWindow::Get(Shell::GetPrimaryRootWindow()),
-        restore_work_area_insets_);
+    ShellPort::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
+                                               restore_work_area_insets_);
     layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
   }
 

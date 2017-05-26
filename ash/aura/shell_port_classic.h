@@ -43,7 +43,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
   display::Display GetFirstDisplay() const override;
   bool IsInUnifiedMode() const override;
   bool IsInUnifiedModeIgnoreMirroring() const override;
-  void SetDisplayWorkAreaInsets(WmWindow* window,
+  void SetDisplayWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets) override;
   std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
       override;
@@ -65,7 +65,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
   std::unique_ptr<wm::TabletModeEventHandler> CreateTabletModeEventHandler()
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
-      WmWindow* workspace_window) override;
+      aura::Window* workspace_window) override;
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() override;
   std::unique_ptr<ImmersiveFullscreenController>

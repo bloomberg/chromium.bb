@@ -13,7 +13,6 @@
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -434,9 +433,9 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
 }
 
 void ScopedTransformOverviewWindow::CloseWidget() {
-  WmWindow* parent_window = WmWindow::Get(GetTransientRoot(window_));
+  aura::Window* parent_window = GetTransientRoot(window_);
   if (parent_window)
-    parent_window->CloseWidget();
+    wm::CloseWidgetForWindow(parent_window);
 }
 
 // static

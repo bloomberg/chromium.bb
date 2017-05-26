@@ -447,22 +447,6 @@ void WmWindow::Show() {
   window_->Show();
 }
 
-void WmWindow::CloseWidget() {
-  if (Shell::GetAshConfig() == Config::MASH &&
-      aura_window()->GetProperty(kWidgetCreationTypeKey) ==
-          WidgetCreationType::FOR_CLIENT) {
-    // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
-    // with the window. Mash only creates widgets for top level windows if mash
-    // renders the non-client frame.
-    DCHECK(Shell::window_manager_client());
-    Shell::window_manager_client()->RequestClose(aura_window());
-    return;
-  }
-  views::Widget* widget = GetInternalWidgetForWindow(window_);
-  DCHECK(widget);
-  widget->Close();
-}
-
 void WmWindow::SetFocused() {
   aura::client::GetFocusClient(window_)->FocusWindow(window_);
 }
@@ -563,18 +547,6 @@ void WmWindow::RemoveTransientWindowObserver(
     added_transient_observer_ = false;
     ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
   }
-}
-
-void WmWindow::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
-  // In mus AddPreTargetHandler() only works for windows created by this client.
-  DCHECK(Shell::GetAshConfig() != Config::MASH ||
-         Shell::window_tree_client()->WasCreatedByThisClient(
-             aura::WindowMus::Get(window_)));
-  window_->AddPreTargetHandler(handler);
-}
-
-void WmWindow::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
-  window_->RemovePreTargetHandler(handler);
 }
 
 WmWindow::WmWindow(aura::Window* window) : window_(window) {

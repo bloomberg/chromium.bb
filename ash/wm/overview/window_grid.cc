@@ -22,7 +22,6 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
