@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
@@ -93,6 +95,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             "org.chromium.chrome.browser.vr_shell.VrEntryResult";
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
+
+    private static final String FEEDBACK_REPORT_TYPE = "USER_INITIATED_FEEDBACK_REPORT_VR";
 
     private static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -939,7 +943,16 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
     }
 
-    private static void promptForFeedback(Tab tab) {
+    private static void startFeedback(Tab tab) {
+        // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
+        // connect to it beforehand when we know that we'll be prompting for feedback?
+        HelpAndFeedback.getInstance(tab.getActivity())
+                .showFeedback(tab.getActivity(), tab.getProfile(), tab.getUrl(),
+                        ContextUtils.getApplicationContext().getPackageName() + "."
+                                + FEEDBACK_REPORT_TYPE);
+    }
+
+    private static void promptForFeedback(final Tab tab) {
         final ChromeActivity activity = tab.getActivity();
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
@@ -948,9 +961,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             @Override
             public boolean onInfoBarButtonClicked(boolean isPrimary) {
                 if (isPrimary) {
-                    // TODO(ymalik): This just calls Chrome's help and feedback page for now. It
-                    // should instead start a VR-specific Feedback activity.
-                    activity.startHelpAndFeedback(activity.getActivityTab(), "vrExitFeedback");
+                    startFeedback(tab);
                 } else {
                     VrFeedbackStatus.setFeedbackOptOut(true);
                 }
