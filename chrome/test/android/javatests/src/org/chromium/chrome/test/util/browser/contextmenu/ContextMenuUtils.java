@@ -87,6 +87,7 @@ public class ContextMenuUtils {
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemId                The context menu item ID to select.
+     * @param activity              The activity to assert for gaining focus after click or null.
      * @throws InterruptedException
      * @throws TimeoutException
      */
@@ -103,6 +104,7 @@ public class ContextMenuUtils {
      * @param jsCode                The javascript to get the DOM node to long press
      *                              to open the context menu for.
      * @param itemId                The context menu item ID to select.
+     * @param activity              The activity to assert for gaining focus after click or null.
      * @throws InterruptedException
      * @throws TimeoutException
      */
@@ -157,11 +159,14 @@ public class ContextMenuUtils {
             }
         });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity did not regain focus.") {
-            @Override
-            public boolean isSatisfied() {
-                return activity.hasWindowFocus();
-            }
-        });
+        if (activity != null) {
+            CriteriaHelper.pollInstrumentationThread(
+                    new Criteria("Activity did not regain focus.") {
+                        @Override
+                        public boolean isSatisfied() {
+                            return activity.hasWindowFocus();
+                        }
+                    });
+        }
     }
 }
