@@ -824,7 +824,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
                 curr->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
                 emphasis_mark_position)) {
           bool emphasis_mark_is_over =
-              emphasis_mark_position == kTextEmphasisPositionOver;
+              emphasis_mark_position == TextEmphasisPosition::kOver;
           if (emphasis_mark_is_over != curr->GetLineLayoutItem()
                                            .Style(IsFirstLineStyle())
                                            ->IsFlippedLinesWritingMode())
@@ -1051,7 +1051,7 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
       text_box->GetEmphasisMarkPosition(style, emphasis_mark_position)) {
     float emphasis_mark_height =
         style.GetFont().EmphasisMarkHeight(style.TextEmphasisMarkString());
-    if ((emphasis_mark_position == kTextEmphasisPositionOver) ==
+    if ((emphasis_mark_position == TextEmphasisPosition::kOver) ==
         (!style.IsFlippedLinesWritingMode()))
       top_glyph_overflow = std::min(top_glyph_overflow, -emphasis_mark_height);
     else
@@ -1549,7 +1549,7 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
       if (style.GetTextEmphasisMark() != kTextEmphasisMarkNone &&
           ToInlineTextBox(curr)->GetEmphasisMarkPosition(
               style, emphasis_mark_position) &&
-          emphasis_mark_position == kTextEmphasisPositionOver) {
+          emphasis_mark_position == TextEmphasisPosition::kOver) {
         if (!style.IsFlippedLinesWritingMode()) {
           int top_of_emphasis_mark =
               (curr->LogicalTop() - style.GetFont().EmphasisMarkHeight(
@@ -1617,7 +1617,7 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
       const ComputedStyle& style =
           curr->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
       if (style.GetTextEmphasisMark() != kTextEmphasisMarkNone &&
-          style.GetTextEmphasisPosition() == kTextEmphasisPositionUnder) {
+          style.GetTextEmphasisPosition() == TextEmphasisPosition::kUnder) {
         if (!style.IsFlippedLinesWritingMode()) {
           LayoutUnit bottom_of_emphasis_mark =
               curr->LogicalBottom() + style.GetFont().EmphasisMarkHeight(

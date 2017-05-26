@@ -495,7 +495,7 @@ bool InlineTextBox::GetEmphasisMarkPosition(
 
   emphasis_position = style.GetTextEmphasisPosition();
   // Ruby text is always over, so it cannot suppress emphasis marks under.
-  if (emphasis_position == kTextEmphasisPositionUnder)
+  if (emphasis_position == TextEmphasisPosition::kUnder)
     return true;
 
   LineLayoutBox containing_block = GetLineLayoutItem().ContainingBlock();

@@ -1782,14 +1782,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // -webkit-text-emphasis-position
   static TextEmphasisPosition InitialTextEmphasisPosition() {
-    return kTextEmphasisPositionOver;
+    return TextEmphasisPosition::kOver;
   }
   TextEmphasisPosition GetTextEmphasisPosition() const {
     return static_cast<TextEmphasisPosition>(
         rare_inherited_data_->text_emphasis_position_);
   }
   void SetTextEmphasisPosition(TextEmphasisPosition position) {
-    SET_VAR(rare_inherited_data_, text_emphasis_position_, position);
+    SET_VAR(rare_inherited_data_, text_emphasis_position_,
+            static_cast<unsigned>(position));
   }
 
   // -webkit-highlight
