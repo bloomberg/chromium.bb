@@ -130,13 +130,15 @@ template("chrome_extra_paks") {
       sources += invoker.additional_paks
     }
 
-    if (!is_android) {
+    if (is_android) {
+      sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
+      deps += [ "//chrome/browser/resources:webapks_ui_resources" ]
+    } else {
       # New paks should be added here by default.
       sources += [
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/options_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
-        "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
         "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
         "$root_gen_dir/headless/headless_lib_resources.pak",
       ]
@@ -144,7 +146,6 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:component_extension_resources",
         "//chrome/browser/resources:options_resources",
         "//chrome/browser/resources:settings_resources",
-        "//chrome/browser/resources:sync_file_system_internals_resources",
         "//content/browser/devtools:devtools_resources",
         "//headless:resources",
       ]
@@ -161,14 +162,14 @@ template("chrome_extra_paks") {
     }
     if (enable_extensions) {
       sources += [
+        "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
         "$root_gen_dir/extensions/extensions_renderer_resources.pak",
         "$root_gen_dir/extensions/extensions_resources.pak",
       ]
-      deps += [ "//extensions:extensions_resources" ]
-    }
-    if (is_android) {
-      sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
-      deps += [ "//chrome/browser/resources:webapks_ui_resources" ]
+      deps += [
+        "//chrome/browser/resources:sync_file_system_internals_resources",
+        "//extensions:extensions_resources",
+      ]
     }
   }
 }
@@ -233,8 +234,7 @@ template("chrome_paks") {
     }
   }
 
-  if (!defined(invoker.exclude_locale_paks) ||
-      !invoker.exclude_locale_paks) {
+  if (!defined(invoker.exclude_locale_paks) || !invoker.exclude_locale_paks) {
     chrome_repack_locales("${target_name}_locales") {
       forward_variables_from(invoker,
                              [
@@ -243,10 +243,10 @@ template("chrome_paks") {
                                "repack_whitelist",
                                "visibility",
                              ])
-  
+
       input_locales = locales
       output_dir = "${invoker.output_dir}/locales"
-  
+
       if (is_mac) {
         output_locales = locales_as_mac_outputs
       } else {
@@ -261,8 +261,7 @@ template("chrome_paks") {
       ":${target_name}_100_percent",
       ":${target_name}_extra",
     ]
-    if (!defined(invoker.exclude_locale_paks) ||
-        !invoker.exclude_locale_paks) {
+    if (!defined(invoker.exclude_locale_paks) || !invoker.exclude_locale_paks) {
       public_deps += [ ":${target_name}_locales" ]
     }
     if (enable_hidpi) {
