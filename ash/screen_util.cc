@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -41,6 +42,14 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   ::wm::ConvertRectFromScreen(window->parent(), &result);
   return result;
+}
+
+// static
+gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParentForLockScreen(
+    aura::Window* window) {
+  gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
+  ::wm::ConvertRectFromScreen(window->parent(), &bounds);
+  return bounds;
 }
 
 // static

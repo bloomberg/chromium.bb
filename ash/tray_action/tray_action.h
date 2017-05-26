@@ -37,7 +37,10 @@ class ASH_EXPORT TrayAction : public NON_EXPORTED_BASE(mojom::TrayAction) {
   // Gets last known handler state for the lock screen note action.
   // It will return kNotAvailable if an action handler has not been set using
   // |SetClient|.
-  mojom::TrayActionState GetLockScreenNoteState();
+  mojom::TrayActionState GetLockScreenNoteState() const;
+
+  // Helper method for determining if lock screen not action is in active state.
+  bool IsLockScreenNoteActive() const;
 
   // If the client is set, sends it a request to handle the lock screen note
   // action.

@@ -155,19 +155,29 @@ TEST_F(TrayActionTest, NormalStateProgression) {
 
   tray_action->UpdateLockScreenNoteState(TrayActionState::kAvailable);
   EXPECT_EQ(TrayActionState::kAvailable, tray_action->GetLockScreenNoteState());
+  EXPECT_FALSE(tray_action->IsLockScreenNoteActive());
   ASSERT_EQ(1u, observer.observed_states().size());
   EXPECT_EQ(TrayActionState::kAvailable, observer.observed_states()[0]);
   observer.ClearObservedStates();
 
   tray_action->UpdateLockScreenNoteState(TrayActionState::kLaunching);
   EXPECT_EQ(TrayActionState::kLaunching, tray_action->GetLockScreenNoteState());
+  EXPECT_FALSE(tray_action->IsLockScreenNoteActive());
   ASSERT_EQ(1u, observer.observed_states().size());
   EXPECT_EQ(TrayActionState::kLaunching, observer.observed_states()[0]);
   observer.ClearObservedStates();
 
+  tray_action->UpdateLockScreenNoteState(TrayActionState::kActive);
+  EXPECT_EQ(TrayActionState::kActive, tray_action->GetLockScreenNoteState());
+  EXPECT_TRUE(tray_action->IsLockScreenNoteActive());
+  ASSERT_EQ(1u, observer.observed_states().size());
+  EXPECT_EQ(TrayActionState::kActive, observer.observed_states()[0]);
+
+  observer.ClearObservedStates();
   tray_action->UpdateLockScreenNoteState(TrayActionState::kBackground);
   EXPECT_EQ(TrayActionState::kBackground,
             tray_action->GetLockScreenNoteState());
+  EXPECT_FALSE(tray_action->IsLockScreenNoteActive());
   ASSERT_EQ(1u, observer.observed_states().size());
   EXPECT_EQ(TrayActionState::kBackground, observer.observed_states()[0]);
   observer.ClearObservedStates();
@@ -175,6 +185,7 @@ TEST_F(TrayActionTest, NormalStateProgression) {
   tray_action->UpdateLockScreenNoteState(TrayActionState::kNotAvailable);
   EXPECT_EQ(TrayActionState::kNotAvailable,
             tray_action->GetLockScreenNoteState());
+  EXPECT_FALSE(tray_action->IsLockScreenNoteActive());
   ASSERT_EQ(1u, observer.observed_states().size());
   EXPECT_EQ(TrayActionState::kNotAvailable, observer.observed_states()[0]);
 }

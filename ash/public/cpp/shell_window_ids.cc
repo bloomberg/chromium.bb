@@ -13,9 +13,11 @@ namespace ash {
 // containers appearing later in the list.
 const int32_t kActivatableShellWindowIds[] = {
     kShellWindowId_OverlayContainer, kShellWindowId_LockSystemModalContainer,
-    kShellWindowId_SettingBubbleContainer, kShellWindowId_LockScreenContainer,
-    kShellWindowId_SystemModalContainer, kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_AppListContainer, kShellWindowId_DefaultContainer,
+    kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_LockActionHandlerContainer,
+    kShellWindowId_LockScreenContainer, kShellWindowId_SystemModalContainer,
+    kShellWindowId_AlwaysOnTopContainer, kShellWindowId_AppListContainer,
+    kShellWindowId_DefaultContainer,
 
     // Panel, launcher and status are intentionally checked after other
     // containers even though these layers are higher. The user expects their

@@ -29,10 +29,14 @@ void TrayAction::BindRequest(mojom::TrayActionRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-mojom::TrayActionState TrayAction::GetLockScreenNoteState() {
+mojom::TrayActionState TrayAction::GetLockScreenNoteState() const {
   if (!tray_action_client_)
     return mojom::TrayActionState::kNotAvailable;
   return lock_screen_note_state_;
+}
+
+bool TrayAction::IsLockScreenNoteActive() const {
+  return GetLockScreenNoteState() == mojom::TrayActionState::kActive;
 }
 
 void TrayAction::SetClient(mojom::TrayActionClientPtr tray_action_client,
