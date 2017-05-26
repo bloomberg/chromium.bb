@@ -189,8 +189,11 @@ SavePackage::~SavePackage() {
   // We should no longer be observing the DownloadItem at this point.
   CHECK(!download_);
 
-  DCHECK_EQ(all_save_items_count_, waiting_item_queue_.size() +
-                                       completed_count() + in_process_count());
+  DCHECK_EQ(all_save_items_count_,
+            waiting_item_queue_.size() + completed_count() + in_process_count())
+      << "waiting: " << waiting_item_queue_.size()
+      << " completed: " << completed_count()
+      << " in_progress: " << in_process_count();
 
   // Free all SaveItems.
   waiting_item_queue_.clear();
@@ -1089,6 +1092,7 @@ void SavePackage::GetSavableResourceLinks() {
   EnqueueFrame(FrameTreeNode::kFrameTreeNodeInvalidId,  // No container.
                main_frame_tree_node->frame_tree_node_id(),
                main_frame_tree_node->current_url());
+  all_save_items_count_ = 1;
 }
 
 void SavePackage::OnSavableResourceLinksResponse(
@@ -1481,7 +1485,12 @@ void SavePackage::RemoveObservers() {
 }
 
 void SavePackage::OnDownloadDestroyed(DownloadItem* download) {
-  RemoveObservers();
+  if (!canceled()) {
+    Cancel(false);
+    // Cancel() also calls RemoveObservers().
+  } else {
+    RemoveObservers();
+  }
 }
 
 void SavePackage::FinalizeDownloadEntry() {
