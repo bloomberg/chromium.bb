@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -377,12 +376,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     footer.text =
         l10n_util::GetNSString(IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS);
   } else if ([[_dataSource authenticatedAccountName] length]) {
-    const std::string unformattedString = l10n_util::GetStringUTF8(
-        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN);
-    const std::string accountName =
-        base::SysNSStringToUTF8([_dataSource authenticatedAccountName]);
-    const std::string formattedString =
-        base::StringPrintf(unformattedString.c_str(), accountName.c_str());
+    const base::string16 accountName =
+        base::SysNSStringToUTF16([_dataSource authenticatedAccountName]);
+    const std::string formattedString = l10n_util::GetStringFUTF8(
+        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN, accountName);
     footer.text = base::SysUTF8ToNSString(formattedString);
   } else {
     footer.text = l10n_util::GetNSString(
