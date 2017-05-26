@@ -64,6 +64,7 @@ source_set("tests") {
     "memory_instrumentation/process_map_unittest.cc",
     "public/cpp/memory_instrumentation/client_process_impl_unittest.cc",
     "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
+    "tracing/recorder_unittest.cc",
   ]
 
   if (!is_android) {
@@ -76,6 +77,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/interfaces",
