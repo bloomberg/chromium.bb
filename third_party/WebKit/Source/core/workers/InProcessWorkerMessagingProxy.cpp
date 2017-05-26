@@ -203,7 +203,7 @@ void InProcessWorkerMessagingProxy::WorkerThreadCreated() {
     std::unique_ptr<WTF::CrossThreadClosure> task = CrossThreadBind(
         &InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()),
-        queued_task.message.Release(),
+        std::move(queued_task.message),
         WTF::Passed(std::move(queued_task.channels)),
         CrossThreadUnretained(GetWorkerThread()));
     TaskRunnerHelper::Get(TaskType::kPostedMessage, GetWorkerThread())
