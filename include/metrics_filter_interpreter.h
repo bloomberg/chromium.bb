@@ -115,8 +115,8 @@ class MetricsFilterInterpreter : public FilterInterpreter {
 
   // Number of mouse movement sessions that we skip at startup. We do this
   // because it takes time for the user to "get used to" the mouse speed when
-  // he/she first starts using the mouse. We only want to capture the user
-  // metrics after the user have been familiar with his/her mouse.
+  // they first start using the mouse. We only want to capture the user metrics
+  // after the user has been familiar with their mouse.
   IntProperty mouse_control_warmup_sessions_;
 };
 
