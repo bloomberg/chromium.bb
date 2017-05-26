@@ -66,10 +66,7 @@ void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     client_->OnRemoveObserver(obs);
 }
 
-void FakeExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
-                                                  const BeginFrameAck& ack) {
-  last_acks_[obs] = ack;
-}
+void FakeExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {}
 
 bool FakeExternalBeginFrameSource::IsThrottled() const {
   return true;

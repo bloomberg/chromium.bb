@@ -28,8 +28,7 @@ class PrimaryBeginFrameSource : public BeginFrameSource,
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // BeginFrameSource implementation.
-  void DidFinishFrame(BeginFrameObserver* obs,
-                      const BeginFrameAck& ack) override;
+  void DidFinishFrame(BeginFrameObserver* obs) override;
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;

@@ -364,11 +364,9 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 }
 
 void DisplayScheduler::DidFinishFrame(bool did_draw) {
-  // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-  BeginFrameAck ack(current_begin_frame_args_.source_id,
-                    current_begin_frame_args_.sequence_number,
-                    current_begin_frame_args_.sequence_number, did_draw);
-  begin_frame_source_->DidFinishFrame(this, ack);
+  DCHECK(begin_frame_source_);
+  // TODO(eseckler): Let client know that frame was completed.
+  begin_frame_source_->DidFinishFrame(this);
 }
 
 void DisplayScheduler::DidSwapBuffers() {

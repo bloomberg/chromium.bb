@@ -86,15 +86,15 @@ void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
-  // TODO(eseckler): While a pending CompositorFrame exists (see TODO below), we
-  // should not acknowledge immediately. Instead, we should update the ack that
-  // will be sent to DisplayScheduler when the pending frame is activated.
   DCHECK_GE(ack.sequence_number, BeginFrameArgs::kStartingFrameNumber);
 
   // |has_damage| is not transmitted, but false by default.
   DCHECK(!ack.has_damage);
+
+  // TODO(eseckler): Forward |ack| via SurfaceObservers.
+
   if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
+    begin_frame_source_->DidFinishFrame(this);
 }
 
 bool CompositorFrameSinkSupport::SubmitCompositorFrame(
@@ -102,16 +102,14 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     CompositorFrame frame) {
   TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
-  DCHECK_GE(frame.metadata.begin_frame_ack.sequence_number,
-            BeginFrameArgs::kStartingFrameNumber);
   DCHECK(!frame.render_pass_list.empty());
 
   ++ack_pending_count_;
 
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
-
   BeginFrameAck ack = frame.metadata.begin_frame_ack;
+  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
 
   if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
@@ -169,13 +167,10 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
   }
   current_surface_ = std::move(surface);
 
-  // TODO(eseckler): The CompositorFrame submitted below might not be activated
-  // right away b/c of surface synchronization. We should only send the
-  // BeginFrameAck to DisplayScheduler when it is activated. This also means
-  // that we need to stay an active BFO while a CompositorFrame is pending.
-  // See https://crbug.com/703079.
+  // TODO(eseckler): Forward |ack| via SurfaceObservers.
+
   if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
+    begin_frame_source_->DidFinishFrame(this);
 
   return true;
 }

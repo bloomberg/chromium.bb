@@ -52,9 +52,8 @@ const BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs() const {
 
 void PrimaryBeginFrameSource::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-void PrimaryBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
-                                             const BeginFrameAck& ack) {
-  begin_frame_source_.DidFinishFrame(obs, ack);
+void PrimaryBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
+  begin_frame_source_.DidFinishFrame(obs);
 }
 
 void PrimaryBeginFrameSource::AddObserver(BeginFrameObserver* obs) {

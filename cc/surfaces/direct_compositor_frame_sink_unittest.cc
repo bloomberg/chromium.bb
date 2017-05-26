@@ -31,28 +31,6 @@ namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
-class ObserverTrackingBeginFrameSource : public BackToBackBeginFrameSource {
- public:
-  using BackToBackBeginFrameSource::BackToBackBeginFrameSource;
-
-  void DidFinishFrame(BeginFrameObserver* obs,
-                      const BeginFrameAck& ack) override {
-    BackToBackBeginFrameSource::DidFinishFrame(obs, ack);
-    if (obs == tracked_observer_)
-      last_ack_ = ack;
-  }
-
-  void set_tracked_observer(BeginFrameObserver* obs) {
-    tracked_observer_ = obs;
-  }
-
-  const BeginFrameAck& last_ack() const { return last_ack_; }
-
- private:
-  BeginFrameObserver* tracked_observer_ = nullptr;
-  BeginFrameAck last_ack_;
-};
-
 class TestDirectCompositorFrameSink : public DirectCompositorFrameSink {
  public:
   using DirectCompositorFrameSink::DirectCompositorFrameSink;
@@ -74,7 +52,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
 
-    begin_frame_source_.reset(new ObserverTrackingBeginFrameSource(
+    begin_frame_source_.reset(new BackToBackBeginFrameSource(
         base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
 
     int max_frames_pending = 2;
@@ -92,8 +70,6 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         &bitmap_manager_));
 
     compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
-    begin_frame_source_->set_tracked_observer(
-        compositor_frame_sink_->support());
     display_->Resize(display_size_);
     display_->SetVisible(true);
 
@@ -137,7 +113,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
 
   scoped_refptr<TestContextProvider> context_provider_;
   FakeOutputSurface* display_output_surface_ = nullptr;
-  std::unique_ptr<ObserverTrackingBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   FakeCompositorFrameSinkClient compositor_frame_sink_client_;
   std::unique_ptr<TestDirectCompositorFrameSink> compositor_frame_sink_;
@@ -172,43 +148,9 @@ TEST_F(DirectCompositorFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-class TestBeginFrameObserver : public BeginFrameObserverBase {
- public:
-  const BeginFrameAck& ack() const { return ack_; }
-
- private:
-  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
-    ack_ = BeginFrameAck(args.source_id, args.sequence_number,
-                         args.sequence_number, false);
-    return true;
-  }
-
-  void OnBeginFrameSourcePausedChanged(bool paused) override{};
-
-  BeginFrameAck ack_;
-};
-
-TEST_F(DirectCompositorFrameSinkTest, AcknowledgesBeginFramesWithDamage) {
-  // Verify that the frame sink acknowledged the BeginFrame attached to
-  // CompositorFrame submitted during SetUp().
-  EXPECT_EQ(BeginFrameAck(0, 1, 1, true), begin_frame_source_->last_ack());
-}
-
-TEST_F(DirectCompositorFrameSinkTest, AcknowledgesBeginFramesWithoutDamage) {
-  // Request a BeginFrame from the CompositorFrameSinkClient.
-  TestBeginFrameObserver observer;
-  compositor_frame_sink_client_.begin_frame_source()->AddObserver(&observer);
-  task_runner_->RunUntilIdle();
-  EXPECT_LE(BeginFrameArgs::kStartingFrameNumber,
-            observer.ack().sequence_number);
-  compositor_frame_sink_client_.begin_frame_source()->DidFinishFrame(
-      &observer, observer.ack());
-  compositor_frame_sink_->DidNotProduceFrame(observer.ack());
-  compositor_frame_sink_client_.begin_frame_source()->RemoveObserver(&observer);
-
-  // Verify that the frame sink acknowledged the last BeginFrame.
-  EXPECT_EQ(observer.ack(), begin_frame_source_->last_ack());
-}
+// TODO(eseckler): Add back tests for BeginFrameAck forwarding through
+// DirectCompositorFrameSink and CompositorFrameSinkSupport when we add plumbing
+// of BeginFrameAcks through SurfaceObservers.
 
 }  // namespace
 }  // namespace cc

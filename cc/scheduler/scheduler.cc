@@ -443,27 +443,26 @@ void Scheduler::FinishImplFrame() {
 
 void Scheduler::SendBeginFrameAck(const BeginFrameArgs& args,
                                   BeginFrameResult result) {
-  if (!begin_frame_source_)
-    return;
-
-  uint64_t latest_confirmed_sequence_number =
-      BeginFrameArgs::kInvalidFrameNumber;
-  if (args.source_id == state_machine_.begin_frame_source_id()) {
-    latest_confirmed_sequence_number =
-        state_machine_
-            .last_begin_frame_sequence_number_compositor_frame_was_fresh();
-  }
-
   bool did_submit = false;
-  if (result == kBeginFrameFinished) {
+  if (result == kBeginFrameFinished)
     did_submit = state_machine_.did_submit_in_last_frame();
+
+  if (!did_submit) {
+    uint64_t latest_confirmed_sequence_number =
+        BeginFrameArgs::kInvalidFrameNumber;
+    if (args.source_id == state_machine_.begin_frame_source_id()) {
+      latest_confirmed_sequence_number =
+          state_machine_
+              .last_begin_frame_sequence_number_compositor_frame_was_fresh();
+    }
+
+    client_->DidNotProduceFrame(
+        BeginFrameAck(args.source_id, args.sequence_number,
+                      latest_confirmed_sequence_number, did_submit));
   }
 
-  BeginFrameAck ack(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, did_submit);
-  begin_frame_source_->DidFinishFrame(this, ack);
-  if (!did_submit)
-    client_->DidNotProduceFrame(ack);
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this);
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline

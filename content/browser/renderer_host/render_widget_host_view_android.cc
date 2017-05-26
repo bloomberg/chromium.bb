@@ -1262,7 +1262,7 @@ void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
   latest_confirmed_begin_frame_sequence_number_ =
       ack.latest_confirmed_sequence_number;
   if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
+    begin_frame_source_->DidFinishFrame(this);
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
