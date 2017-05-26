@@ -2597,10 +2597,9 @@
     {
       name: "-webkit-text-security",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "ETextSecurity",
-      default_value: "ETextSecurity::kNone",
-      field_size: 2,
+      field_template: "keyword",
+      keywords: ["none", "disc", "circle", "square"],
+      default_value: "none",
       field_group: "rare-inherited",
     },
     {
