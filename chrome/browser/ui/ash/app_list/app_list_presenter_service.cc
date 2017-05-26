@@ -13,6 +13,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
+#include "ui/gfx/geometry/rect.h"
 
 AppListPresenterService::AppListPresenterService() : binding_(this) {
   content::ServiceManagerConnection* connection =
@@ -44,11 +45,10 @@ void AppListPresenterService::ToggleAppList(int64_t display_id) {
 }
 
 void AppListPresenterService::StartVoiceInteractionSession() {
-  arc::ArcVoiceInteractionFrameworkService* service =
-      arc::ArcServiceManager::Get()
-          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
-  if (service)
-    service->StartVoiceInteractionSession();
+  auto* service = arc::ArcServiceManager::Get()
+                      ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  DCHECK(service);
+  service->StartSessionFromUserInteraction(gfx::Rect());
 }
 
 app_list::AppListPresenterImpl* AppListPresenterService::GetPresenter() {

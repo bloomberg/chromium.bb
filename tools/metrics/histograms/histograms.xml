@@ -80282,6 +80282,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VoiceInteraction.IllegalContextRequest" enum="BooleanHit">
+  <owner>muyuanli@chromium.org</owner>
+  <summary>
+    Counts the number of requests to retrieve voice interaction context when no
+    user interaction is initiated.
+  </summary>
+</histogram>
+
+<histogram name="VoiceInteraction.UserInteractionToRequestArrival" units="ms">
+  <owner>muyuanli@chromium.org</owner>
+  <summary>
+    Records the time between user interaction and the actual request arrival.
+  </summary>
+</histogram>
+
 <histogram name="VRDisplayPresentResult" enum="PresentationResult">
   <owner>billorr@chromium.org</owner>
   <summary>
