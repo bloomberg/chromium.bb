@@ -534,7 +534,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
 
   const ComputedStyle* style = EnsureComputedStyle();
   SkFilterQuality filter_quality =
-      (style && style->ImageRendering() == kImageRenderingPixelated)
+      (style && style->ImageRendering() == EImageRendering::kPixelated)
           ? kNone_SkFilterQuality
           : kLow_SkFilterQuality;
 

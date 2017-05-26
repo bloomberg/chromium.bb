@@ -2404,19 +2404,19 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EImageRendering e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kImageRenderingAuto:
+    case EImageRendering::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kImageRenderingOptimizeSpeed:
+    case EImageRendering::kOptimizeSpeed:
       value_id_ = CSSValueOptimizeSpeed;
       break;
-    case kImageRenderingOptimizeQuality:
+    case EImageRendering::kOptimizeQuality:
       value_id_ = CSSValueOptimizeQuality;
       break;
-    case kImageRenderingPixelated:
+    case EImageRendering::kPixelated:
       value_id_ = CSSValuePixelated;
       break;
-    case kImageRenderingOptimizeContrast:
+    case EImageRendering::kOptimizeContrast:
       value_id_ = CSSValueWebkitOptimizeContrast;
       break;
   }
@@ -2426,21 +2426,21 @@ template <>
 inline EImageRendering CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kImageRenderingAuto;
+      return EImageRendering::kAuto;
     case CSSValueOptimizeSpeed:
-      return kImageRenderingOptimizeSpeed;
+      return EImageRendering::kOptimizeSpeed;
     case CSSValueOptimizeQuality:
-      return kImageRenderingOptimizeQuality;
+      return EImageRendering::kOptimizeQuality;
     case CSSValuePixelated:
-      return kImageRenderingPixelated;
+      return EImageRendering::kPixelated;
     case CSSValueWebkitOptimizeContrast:
-      return kImageRenderingOptimizeContrast;
+      return EImageRendering::kOptimizeContrast;
     default:
       break;
   }
 
   NOTREACHED();
-  return kImageRenderingAuto;
+  return EImageRendering::kAuto;
 }
 
 template <>
