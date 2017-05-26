@@ -37,6 +37,8 @@
 #include <link.h>
 #include <stdint.h>
 
+#include "common/memory.h"
+
 namespace google_breakpad {
 
 // Traits classes so consumers can write templatized code to deal
@@ -99,14 +101,17 @@ FindElfSectionByName(const char* name,
                      const char* names_end,
                      int nsection);
 
-// Attempt to find the first segment of type |segment_type| in the ELF
-// binary data at |elf_mapped_base|. On success, returns true and sets
-// |*segment_start| to point to the start of the segment data, and
-// and |*segment_size| to the size of the segment's data.
-bool FindElfSegment(const void *elf_mapped_base,
-                    uint32_t segment_type,
-                    const void **segment_start,
-                    size_t *segment_size);
+struct ElfSegment {
+  const void* start;
+  size_t size;
+};
+
+// Attempt to find all segments of type |segment_type| in the ELF
+// binary data at |elf_mapped_base|. On success, returns true and fills
+// |*segments| with a list of segments of the given type.
+bool FindElfSegments(const void* elf_mapped_base,
+                     uint32_t segment_type,
+                     wasteful_vector<ElfSegment>* segments);
 
 // Convert an offset from an Elf header into a pointer to the mapped
 // address in the current process. Takes an extra template parameter
