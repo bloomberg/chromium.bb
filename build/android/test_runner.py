@@ -376,12 +376,6 @@ def AddInstrumentationTestOptions(parser):
       dest='run_disabled', action='store_true',
       help='Also run disabled tests if applicable.')
   parser.add_argument(
-      '--regenerate-goldens',
-      action='store_true', dest='regenerate_goldens',
-      help='Causes the render tests to not fail when a check'
-           'fails or the golden image is missing but to render'
-           'the view and carry on.')
-  parser.add_argument(
       '--render-results-directory',
       dest='render_results_dir',
       help='Directory to pull render test result images off of the device to.')
