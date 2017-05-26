@@ -7,9 +7,11 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -43,6 +45,58 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
 }
 
 namespace extensions {
+
+namespace {
+
+class RuntimeAPIUpdateTest : public ExtensionApiTest {
+ public:
+  RuntimeAPIUpdateTest() {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+  }
+
+  struct ExtensionCRXData {
+    std::string unpacked_relative_path;
+    base::FilePath crx_path;
+    explicit ExtensionCRXData(const std::string& unpacked_relative_path)
+        : unpacked_relative_path(unpacked_relative_path) {}
+  };
+
+  void SetUpCRX(const std::string& root_dir,
+                const std::string& pem_filename,
+                std::vector<ExtensionCRXData>* crx_data_list) {
+    const base::FilePath test_dir = test_data_dir_.AppendASCII(root_dir);
+    const base::FilePath pem_path = test_dir.AppendASCII(pem_filename);
+    for (ExtensionCRXData& crx_data : *crx_data_list) {
+      crx_data.crx_path = PackExtensionWithOptions(
+          test_dir.AppendASCII(crx_data.unpacked_relative_path),
+          scoped_temp_dir_.GetPath().AppendASCII(
+              crx_data.unpacked_relative_path + ".crx"),
+          pem_path, base::FilePath());
+    }
+  }
+
+  bool CrashEnabledExtension(const std::string& extension_id) {
+    ExtensionHost* background_host =
+        ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(extension_id);
+    if (!background_host)
+      return false;
+    content::CrashTab(background_host->host_contents());
+    return true;
+  }
+
+ private:
+  base::ScopedTempDir scoped_temp_dir_;
+  ScopedIgnoreContentVerifierForTest ignore_content_verification_;
+
+  DISALLOW_COPY_AND_ASSIGN(RuntimeAPIUpdateTest);
+};
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeOpenOptionsPage) {
   ASSERT_TRUE(RunExtensionTest("runtime/open_options_page"));
@@ -125,6 +179,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
   }
   ASSERT_TRUE(
       registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
+}
+
+// Tests that updating a terminated extension sends runtime.onInstalled event
+// with correct previousVersion.
+// Regression test for https://crbug.com/724563.
+IN_PROC_BROWSER_TEST_F(RuntimeAPIUpdateTest,
+                       TerminatedExtensionUpdateHasCorrectPreviousVersion) {
+  std::vector<ExtensionCRXData> data;
+  data.emplace_back("v1");
+  data.emplace_back("v2");
+  SetUpCRX("runtime/update_terminated_extension", "pem.pem", &data);
+
+  ExtensionId extension_id;
+  {
+    // Install version 1 of the extension.
+    ResultCatcher catcher;
+    const int expected_change = 1;
+    const Extension* extension_v1 =
+        InstallExtension(data[0].crx_path, expected_change);
+    extension_id = extension_v1->id();
+    ASSERT_TRUE(extension_v1);
+    EXPECT_TRUE(catcher.GetNextResult());
+  }
+  ASSERT_TRUE(CrashEnabledExtension(extension_id));
+  {
+    // Update to version 2, expect runtime.onInstalled with
+    // previousVersion = '1'.
+    ResultCatcher catcher;
+    const int expected_change = 1;
+    const Extension* extension_v2 =
+        UpdateExtension(extension_id, data[1].crx_path, expected_change);
+    ASSERT_TRUE(extension_v2);
+    EXPECT_TRUE(catcher.GetNextResult());
+  }
 }
 
 }  // namespace extensions

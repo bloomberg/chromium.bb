@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,11 +73,11 @@ class TestObserver : public ExtensionRegistryObserver {
 
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
-                              extensions::UninstallReason reason) override {
+                              UninstallReason reason) override {
     uninstalled_.push_back(extension);
   }
 
-  void OnShutdown(extensions::ExtensionRegistry* registry) override { Reset(); }
+  void OnShutdown(ExtensionRegistry* registry) override { Reset(); }
 
   ExtensionList loaded_;
   ExtensionList unloaded_;
@@ -270,6 +271,42 @@ TEST_F(ExtensionRegistryTest, Observer) {
   EXPECT_TRUE(HasSingleExtension(observer.uninstalled(), extension.get()));
 
   registry.RemoveObserver(&observer);
+}
+
+// Regression test for https://crbug.com/724563.
+TEST_F(ExtensionRegistryTest, TerminatedExtensionStoredVersion) {
+  const std::string kVersionString = "1.2.3.4";
+  ExtensionRegistry registry(nullptr);
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Test")
+                           .Set("version", kVersionString)
+                           .Build())
+          .Build();
+  const ExtensionId extension_id = extension->id();
+
+  EXPECT_TRUE(registry.AddEnabled(extension));
+  EXPECT_FALSE(
+      registry.GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
+  {
+    base::Version version = registry.GetStoredVersion(extension_id);
+    ASSERT_TRUE(version.IsValid());
+    EXPECT_EQ(kVersionString,
+              registry.GetStoredVersion(extension_id).GetString());
+  }
+
+  // Simulate terminating |extension|.
+  EXPECT_TRUE(registry.RemoveEnabled(extension_id));
+  EXPECT_TRUE(registry.AddTerminated(extension));
+  EXPECT_TRUE(
+      registry.GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
+  {
+    base::Version version = registry.GetStoredVersion(extension_id);
+    ASSERT_TRUE(version.IsValid());
+    EXPECT_EQ(kVersionString,
+              registry.GetStoredVersion(extension_id).GetString());
+  }
 }
 
 }  // namespace
