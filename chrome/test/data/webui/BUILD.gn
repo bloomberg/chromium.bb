@@ -151,6 +151,7 @@ js2gtest("browser_tests_js_webui") {
     sources += [
       "print_preview/print_preview.js",
       "print_preview/print_preview_destination_search_test.js",
+      "print_preview/print_preview_ui_browsertest.js",
     ]
   }
   deps = [
