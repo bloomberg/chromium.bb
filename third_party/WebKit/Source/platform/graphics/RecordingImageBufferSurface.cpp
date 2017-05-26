@@ -220,6 +220,8 @@ DisableDeferralReasonToFallbackReason(DisableDeferralReason reason) {
     case kDisableDeferralDrawImageWithTextureBackedSourceImage:
       return RecordingImageBufferSurface::
           kFallbackReasonDrawImageWithTextureBackedSourceImage;
+    // The LowEndDevice reason should only be used on Canvas2DLayerBridge.
+    case kDisableDeferralReasonLowEndDevice:
     case kDisableDeferralReasonCount:
       NOTREACHED();
       break;
