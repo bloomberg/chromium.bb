@@ -2752,8 +2752,7 @@ void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_MoveRangeSelectionExtent(
-      focused_frame->GetRoutingID(), extent));
+  focused_frame->GetFrameInputHandler()->MoveRangeSelectionExtent(extent);
 }
 
 void WebContentsImpl::SelectRange(const gfx::Point& base,
@@ -2762,8 +2761,7 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
   if (!focused_frame)
     return;
 
-  focused_frame->Send(
-      new InputMsg_SelectRange(focused_frame->GetRoutingID(), base, extent));
+  focused_frame->GetFrameInputHandler()->SelectRange(base, extent);
 }
 
 void WebContentsImpl::AdjustSelectionByCharacterOffset(int start_adjust,
@@ -2772,8 +2770,8 @@ void WebContentsImpl::AdjustSelectionByCharacterOffset(int start_adjust,
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_AdjustSelectionByCharacterOffset(
-      focused_frame->GetRoutingID(), start_adjust, end_adjust));
+  focused_frame->GetFrameInputHandler()->AdjustSelectionByCharacterOffset(
+      start_adjust, end_adjust);
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
@@ -2933,7 +2931,7 @@ void WebContentsImpl::Undo() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Undo(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Undo();
   RecordAction(base::UserMetricsAction("Undo"));
 }
 
@@ -2941,7 +2939,7 @@ void WebContentsImpl::Redo() {
   RenderFrameHost* focused_frame = GetFocusedFrame();
   if (!focused_frame)
     return;
-  focused_frame->Send(new InputMsg_Redo(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Redo();
   RecordAction(base::UserMetricsAction("Redo"));
 }
 
@@ -2950,7 +2948,7 @@ void WebContentsImpl::Cut() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Cut(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Cut();
   RecordAction(base::UserMetricsAction("Cut"));
 }
 
@@ -2959,7 +2957,7 @@ void WebContentsImpl::Copy() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Copy(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Copy();
   RecordAction(base::UserMetricsAction("Copy"));
 }
 
@@ -2970,8 +2968,7 @@ void WebContentsImpl::CopyToFindPboard() {
     return;
 
   // Windows/Linux don't have the concept of a find pasteboard.
-  focused_frame->Send(
-      new InputMsg_CopyToFindPboard(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->CopyToFindPboard();
   RecordAction(base::UserMetricsAction("CopyToFindPboard"));
 #endif
 }
@@ -2981,7 +2978,7 @@ void WebContentsImpl::Paste() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Paste(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Paste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
@@ -2990,8 +2987,7 @@ void WebContentsImpl::PasteAndMatchStyle() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_PasteAndMatchStyle(
-      focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->PasteAndMatchStyle();
   RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 
@@ -3000,7 +2996,7 @@ void WebContentsImpl::Delete() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Delete(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->Delete();
   RecordAction(base::UserMetricsAction("DeleteSelection"));
 }
 
@@ -3009,7 +3005,7 @@ void WebContentsImpl::SelectAll() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_SelectAll(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->SelectAll();
   RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
@@ -3018,8 +3014,7 @@ void WebContentsImpl::CollapseSelection() {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(
-      new InputMsg_CollapseSelection(focused_frame->GetRoutingID()));
+  focused_frame->GetFrameInputHandler()->CollapseSelection();
 }
 
 void WebContentsImpl::Replace(const base::string16& word) {
@@ -3027,8 +3022,7 @@ void WebContentsImpl::Replace(const base::string16& word) {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_Replace(
-      focused_frame->GetRoutingID(), word));
+  focused_frame->GetFrameInputHandler()->Replace(word);
 }
 
 void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
@@ -3036,8 +3030,7 @@ void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new InputMsg_ReplaceMisspelling(
-      focused_frame->GetRoutingID(), word));
+  focused_frame->GetFrameInputHandler()->ReplaceMisspelling(word);
 }
 
 void WebContentsImpl::NotifyContextMenuClosed(

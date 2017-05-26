@@ -7851,8 +7851,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // "Select all" in the subframe.  The bug only happens if there's a selection
   // change, which triggers the path through didChangeSelection.
-  root->child_at(0)->current_frame_host()->Send(new InputMsg_SelectAll(
-      root->child_at(0)->current_frame_host()->GetRoutingID()));
+  root->child_at(0)->current_frame_host()->GetFrameInputHandler()->SelectAll();
 
   // Prevent b.com process from terminating right away once the subframe
   // navigates away from b.com below.  This is necessary so that the renderer

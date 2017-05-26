@@ -157,6 +157,8 @@ target(link_target_type, "renderer") {
     "ime_event_guard.h",
     "in_process_renderer_thread.cc",
     "in_process_renderer_thread.h",
+    "input/frame_input_handler_impl.cc",
+    "input/frame_input_handler_impl.h",
     "input/input_event_filter.cc",
     "input/input_event_filter.h",
     "input/input_handler_manager.cc",

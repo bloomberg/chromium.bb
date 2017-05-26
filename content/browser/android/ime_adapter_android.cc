@@ -293,8 +293,7 @@ void ImeAdapterAndroid::SetEditableSelectionOffsets(
   if (!rfh)
     return;
 
-  rfh->Send(new InputMsg_SetEditableSelectionOffsets(rfh->GetRoutingID(), start,
-                                                     end));
+  rfh->GetFrameInputHandler()->SetEditableSelectionOffsets(start, end);
 }
 
 void ImeAdapterAndroid::SetCharacterBounds(
@@ -328,12 +327,12 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,
   if (!rfh)
     return;
 
-  std::vector<blink::WebCompositionUnderline> underlines;
-  underlines.push_back(blink::WebCompositionUnderline(
-      0, end - start, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+  std::vector<ui::CompositionUnderline> underlines;
+  underlines.push_back(ui::CompositionUnderline(0, end - start, SK_ColorBLACK,
+                                                false, SK_ColorTRANSPARENT));
 
-  rfh->Send(new InputMsg_SetCompositionFromExistingText(
-      rfh->GetRoutingID(), start, end, underlines));
+  rfh->GetFrameInputHandler()->SetCompositionFromExistingText(start, end,
+                                                              underlines);
 }
 
 void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
@@ -343,7 +342,7 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
   if (rfh)
-    rfh->DeleteSurroundingText(before, after);
+    rfh->GetFrameInputHandler()->DeleteSurroundingText(before, after);
 }
 
 void ImeAdapterAndroid::DeleteSurroundingTextInCodePoints(
@@ -353,8 +352,10 @@ void ImeAdapterAndroid::DeleteSurroundingTextInCodePoints(
     int after) {
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
-  if (rfh)
-    rfh->DeleteSurroundingTextInCodePoints(before, after);
+  if (rfh) {
+    rfh->GetFrameInputHandler()->DeleteSurroundingTextInCodePoints(before,
+                                                                   after);
+  }
 }
 
 bool ImeAdapterAndroid::RequestTextInputStateUpdate(

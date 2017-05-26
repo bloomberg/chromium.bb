@@ -839,6 +839,10 @@ void RenderWidget::SendInputEventAck(blink::WebInputEvent::Type type,
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
+scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
+  return input_event_queue_;
+}
+
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
   if (GetWebWidget())
     GetWebWidget()->SetCursorVisibilityState(is_visible);

@@ -30,6 +30,7 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/input/legacy_ipc_frame_input_handler.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -69,6 +70,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/input/input_handler.mojom.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
@@ -1033,6 +1035,12 @@ bool RenderFrameHostImpl::SchemeShouldBypassCSP(
   const auto& bypassing_schemes = url::GetCSPBypassingSchemes();
   return std::find(bypassing_schemes.begin(), bypassing_schemes.end(),
                    scheme) != bypassing_schemes.end();
+}
+
+mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
+  if (legacy_frame_input_handler_)
+    return legacy_frame_input_handler_.get();
+  return frame_input_handler_.get();
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
@@ -3065,21 +3073,6 @@ void RenderFrameHostImpl::AdvanceFocus(blink::WebFocusType type,
       new FrameMsg_AdvanceFocus(GetRoutingID(), type, source_proxy_routing_id));
 }
 
-void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
-                                                   size_t after) {
-  Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));
-}
-
-void RenderFrameHostImpl::DeleteSurroundingText(size_t before, size_t after) {
-  Send(new InputMsg_DeleteSurroundingText(routing_id_, before, after));
-}
-
-void RenderFrameHostImpl::DeleteSurroundingTextInCodePoints(int before,
-                                                            int after) {
-  Send(new InputMsg_DeleteSurroundingTextInCodePoints(routing_id_, before,
-                                                      after));
-}
-
 void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
@@ -3235,6 +3228,14 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoInputMessages)) {
+    GetRemoteInterfaces()->GetInterface(&frame_input_handler_);
+  } else {
+    legacy_frame_input_handler_.reset(
+        new LegacyIPCFrameInputHandler(this, routing_id_));
+  }
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {

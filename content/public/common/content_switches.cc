@@ -632,6 +632,9 @@ const char kMHTMLGeneratorOption[]          = "mhtml-generator-option";
 const char kMHTMLSkipNostoreMain[]          = "skip-nostore-main";
 const char kMHTMLSkipNostoreAll[]           = "skip-nostore-all";
 
+// Use Mojo-based Input Event routing.
+const char kMojoInputMessages[] = "mojo-input-messages";
+
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 

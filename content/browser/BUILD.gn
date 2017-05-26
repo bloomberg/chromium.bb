@@ -692,6 +692,8 @@ source_set("browser") {
     "frame_host/frame_tree_node.h",
     "frame_host/frame_tree_node_blame_context.cc",
     "frame_host/frame_tree_node_blame_context.h",
+    "frame_host/input/legacy_ipc_frame_input_handler.cc",
+    "frame_host/input/legacy_ipc_frame_input_handler.h",
     "frame_host/interstitial_page_impl.cc",
     "frame_host/interstitial_page_impl.h",
     "frame_host/interstitial_page_navigator_impl.cc",

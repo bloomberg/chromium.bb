@@ -85,6 +85,7 @@ class Range;
 namespace content {
 class AssociatedInterfaceProviderImpl;
 class AssociatedInterfaceRegistryImpl;
+class LegacyIPCFrameInputHandler;
 class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
@@ -228,6 +229,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       CSPDirective::Name directive,
       GURL* blocked_url,
       SourceLocation* source_location) const override;
+
+  mojom::FrameInputHandler* GetFrameInputHandler() override;
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,
@@ -445,21 +448,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // process as this or |nullptr|.
   void AdvanceFocus(blink::WebFocusType type,
                     RenderFrameProxyHost* source_proxy);
-
-  // Deletes the current selection plus the specified number of characters
-  // before and after the selection or caret.
-  void ExtendSelectionAndDelete(size_t before, size_t after);
-
-  // Deletes text before and after the current cursor position, excluding the
-  // selection. The lengths are supplied in Java chars (UTF-16 Code Unit), not
-  // in code points or in glyphs.
-  void DeleteSurroundingText(size_t before, size_t after);
-
-  // Deletes text before and after the current cursor position, excluding the
-  // selection. The lengths are supplied in code points, not in Java chars
-  // (UTF-16 Code Unit) or in glyphs. Do nothing if there are one or more
-  // invalid surrogate pairs in the requested range.
-  void DeleteSurroundingTextInCodePoints(int before, int after);
 
   // Notifies the RenderFrame that the JavaScript message that was shown was
   // closed by the user.
@@ -1244,6 +1232,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(alexclarke): Remove once there is a solution for stable frame IDs. See
   // crbug.com/715541
   std::string untrusted_devtools_frame_id_;
+
+  mojom::FrameInputHandlerPtr frame_input_handler_;
+  std::unique_ptr<LegacyIPCFrameInputHandler> legacy_frame_input_handler_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
