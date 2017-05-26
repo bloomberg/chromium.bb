@@ -96,9 +96,7 @@ void DOMTokenList::add(const Vector<String>& tokens,
   if (!ValidateTokens(tokens, exception_state))
     return;
 
-  // TODO(tkent): Add a member function for AutoReset + setValue.
-  AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(AddTokens(tokens));
+  AddTokens(tokens);
 }
 
 void DOMTokenList::remove(const AtomicString& token,
@@ -120,9 +118,7 @@ void DOMTokenList::remove(const Vector<String>& tokens,
   // See https://github.com/whatwg/dom/issues/462
   if (value().IsNull())
     return;
-  // TODO(tkent): Add a member function for AutoReset + setValue.
-  AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(RemoveTokens(tokens));
+  RemoveTokens(tokens);
 }
 
 bool DOMTokenList::toggle(const AtomicString& token,
@@ -160,55 +156,38 @@ bool DOMTokenList::supports(const AtomicString& token,
 void DOMTokenList::AddInternal(const AtomicString& token) {
   if (ContainsInternal(token))
     return;
-  // TODO(tkent): Add a member function for AutoReset + setValue.
-  AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(AddToken(token));
+  Vector<String> tokens;
+  tokens.push_back(token.GetString());
+  AddTokens(tokens);
 }
 
 void DOMTokenList::RemoveInternal(const AtomicString& token) {
-  // Check using contains first since it uses AtomicString comparisons instead
-  // of character by character testing.
+  // Check using contains first to skip unnecessary reserialization.
   if (!ContainsInternal(token))
     return;
-  // TODO(tkent): Add a member function for AutoReset + setValue.
-  AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(RemoveToken(token));
-}
-
-AtomicString DOMTokenList::AddToken(const AtomicString& token) {
   Vector<String> tokens;
   tokens.push_back(token.GetString());
-  return AddTokens(tokens);
+  RemoveTokens(tokens);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
-// This returns an AtomicString because it is always passed as argument to
-// setValue() and setValue() takes an AtomicString in argument.
-AtomicString DOMTokenList::AddTokens(const Vector<String>& tokens) {
+void DOMTokenList::AddTokens(const Vector<String>& tokens) {
   SpaceSplitString& token_set = MutableSet();
   // 2. For each token in tokens, append token to context object’s token set.
   for (const auto& token : tokens)
     token_set.Add(AtomicString(token));
   // 3. Run the update steps.
-  return SerializeSet(token_set);
-}
-
-AtomicString DOMTokenList::RemoveToken(const AtomicString& token) {
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  return RemoveTokens(tokens);
+  UpdateWithTokenSet(token_set);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-remove
-// This returns an AtomicString because it is always passed as argument to
-// setValue() and setValue() takes an AtomicString in argument.
-AtomicString DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
+void DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
   SpaceSplitString& token_set = MutableSet();
   // 2. For each token in tokens, remove token from context object’s token set.
   for (const auto& token : tokens)
     token_set.Remove(AtomicString(token));
   // 3. Run the update steps.
-  return SerializeSet(token_set);
+  UpdateWithTokenSet(token_set);
 }
 
 // https://dom.spec.whatwg.org/#concept-ordered-set-serializer
@@ -228,6 +207,12 @@ AtomicString DOMTokenList::SerializeSet(const SpaceSplitString& token_set) {
     builder.Append(token_set[i]);
   }
   return builder.ToAtomicString();
+}
+
+// https://dom.spec.whatwg.org/#concept-dtl-update
+void DOMTokenList::UpdateWithTokenSet(const SpaceSplitString& token_set) {
+  AutoReset<bool> updating(&is_in_update_step_, true);
+  setValue(SerializeSet(token_set));
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
