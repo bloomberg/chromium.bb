@@ -13,12 +13,14 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -405,8 +407,15 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
       base::subtle::NoBarrier_Load(&awaiting_acknowledge_);
   base::debug::Alias(&awaiting_acknowledge);
 
-  LOG(ERROR) << "The GPU process hung. Terminating after "
-             << timeout_.InMilliseconds() << " ms.";
+  // Don't log the message to stderr in release builds because the buffer
+  // may be full.
+  std::string message = base::StringPrintf(
+      "The GPU process hung. Terminating after %" PRId64 " ms.",
+      timeout_.InMilliseconds());
+  logging::LogMessageHandlerFunction handler = logging::GetLogMessageHandler();
+  if (handler)
+    handler(logging::LOG_ERROR, __FILE__, __LINE__, 0, message);
+  DLOG(ERROR) << message;
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;
