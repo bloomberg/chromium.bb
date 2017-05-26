@@ -2438,6 +2438,62 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
+// Tests that disconnecting right after a write without response results in an
+// error.
+// TODO(crbug.com/726534): Enable on other platforms depending on the resolution
+// of crbug.com/726534.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       DisconnectCalledDuringWriteWithoutResponse) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  characteristic1_->WriteRemoteCharacteristic(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+  gatt_connections_[0]->Disconnect();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+
+  SimulateGattDisconnection(device_);
+  base::RunLoop().RunUntilIdle();
+}
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_MACOSX)
+// Tests that disconnecting right before a write without response results in an
+// error.
+// TODO(crbug.com/726534): Enable on other platforms depending on the resolution
+// of crbug.com/726534.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       DisconnectCalledBeforeWriteWithoutResponse) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  gatt_connections_[0]->Disconnect();
+  characteristic1_->WriteRemoteCharacteristic(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+
+  SimulateGattDisconnection(device_);
+  base::RunLoop().RunUntilIdle();
+}
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID)
 // Tests that start notifications requests after a device disconnects but before
 // the disconnect task runs result in an error.
