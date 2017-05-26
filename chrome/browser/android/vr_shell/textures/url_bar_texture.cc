@@ -22,10 +22,9 @@ namespace vr_shell {
 
 namespace {
 
-// TODO(mthiesse): These values are all wrong. The UX spec is unclear.
-static constexpr SkColor kBackground = 0x66D6D6D6;
-static constexpr SkColor kBackgroundHover = 0x6EF0F0F0;
-static constexpr SkColor kBackgroundDown = 0x76F6F6F6;
+static constexpr SkColor kBackground = 0x66EBEBEB;
+static constexpr SkColor kBackgroundHover = 0xFFEAEAEA;
+static constexpr SkColor kBackgroundDown = 0xFFFAFAFA;
 static constexpr SkColor kForeground = 0xFF333333;
 static constexpr SkColor kSeparatorColor = 0x33000000;
 
