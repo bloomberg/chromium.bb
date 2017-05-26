@@ -1062,7 +1062,7 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
 
   ForceLayoutParentViewIfNeeded();
   // TODO(szager): Remove this after checking crash reports.
-  DCHECK(IsInPerformLayout());
+  CHECK(IsInPerformLayout());
 
   if (in_subtree_layout) {
     if (analyzer_) {
