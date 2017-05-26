@@ -91,10 +91,11 @@ class SessionControllerTest : public testing::Test {
   void UpdateSession(uint32_t session_id, const std::string& email) {
     mojom::UserSessionPtr session = mojom::UserSession::New();
     session->session_id = session_id;
-    session->type = user_manager::USER_TYPE_REGULAR;
-    session->account_id = AccountId::FromUserEmail(email);
-    session->display_name = email;
-    session->display_email = email;
+    session->user_info = mojom::UserInfo::New();
+    session->user_info->type = user_manager::USER_TYPE_REGULAR;
+    session->user_info->account_id = AccountId::FromUserEmail(email);
+    session->user_info->display_name = email;
+    session->user_info->display_email = email;
 
     controller_->UpdateUserSession(std::move(session));
   }
@@ -102,7 +103,7 @@ class SessionControllerTest : public testing::Test {
   std::string GetUserSessionEmails() const {
     std::string emails;
     for (const auto& session : controller_->GetUserSessions()) {
-      emails += session->display_email + ",";
+      emails += session->user_info->display_email + ",";
     }
     return emails;
   }
@@ -256,10 +257,11 @@ TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
   for (const auto& test_case : kTestCases) {
     mojom::UserSessionPtr session = mojom::UserSession::New();
     session->session_id = 1u;
-    session->type = test_case.user_type;
-    session->account_id = AccountId::FromUserEmail("user1@test.com");
-    session->display_name = "User 1";
-    session->display_email = "user1@test.com";
+    session->user_info = mojom::UserInfo::New();
+    session->user_info->type = test_case.user_type;
+    session->user_info->account_id = AccountId::FromUserEmail("user1@test.com");
+    session->user_info->display_name = "User 1";
+    session->user_info->display_email = "user1@test.com";
     controller()->UpdateUserSession(std::move(session));
 
     EXPECT_EQ(test_case.expected_status, controller()->login_status())
@@ -349,7 +351,8 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
 TEST_F(SessionControllerTest, IsUserSupervised) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
-  session->type = user_manager::USER_TYPE_SUPERVISED;
+  session->user_info = mojom::UserInfo::New();
+  session->user_info->type = user_manager::USER_TYPE_SUPERVISED;
   controller()->UpdateUserSession(std::move(session));
 
   EXPECT_TRUE(controller()->IsUserSupervised());
@@ -358,7 +361,8 @@ TEST_F(SessionControllerTest, IsUserSupervised) {
 TEST_F(SessionControllerTest, IsUserChild) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
-  session->type = user_manager::USER_TYPE_CHILD;
+  session->user_info = mojom::UserInfo::New();
+  session->user_info->type = user_manager::USER_TYPE_CHILD;
   controller()->UpdateUserSession(std::move(session));
 
   EXPECT_TRUE(controller()->IsUserChild());

@@ -257,10 +257,12 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   RunAllPendingInMessageLoop();
 
   const mojom::UserSession* active_user = controller()->GetUserSession(0);
-  EXPECT_EQ(active_user->account_id, second_user->account_id);
+  EXPECT_EQ(active_user->user_info->account_id,
+            second_user->user_info->account_id);
   // Since the name is capitalized, the email should be different than the
   // user_id.
-  EXPECT_NE(active_user->account_id.GetUserEmail(), second_user->display_email);
+  EXPECT_NE(active_user->user_info->account_id.GetUserEmail(),
+            second_user->user_info->display_email);
   tray()->CloseSystemBubble();
 }
 
@@ -275,7 +277,7 @@ TEST_F(TrayUserTest, AvatarChange) {
   const gfx::ImageSkia red_icon =
       CreateImageSkiaWithColor(kTrayItemSize, kTrayItemSize, SK_ColorRED);
   mojom::UserSessionPtr user = controller()->GetUserSession(0)->Clone();
-  user->avatar = red_icon;
+  user->user_info->avatar = red_icon;
   controller()->UpdateUserSession(std::move(user));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(red_icon),

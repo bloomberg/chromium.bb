@@ -101,11 +101,12 @@ void TestSessionControllerClient::AddUserSession(
     bool enable_settings) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = ++fake_session_id_;
-  session->type = user_type;
-  session->account_id =
+  session->user_info = mojom::UserInfo::New();
+  session->user_info->type = user_type;
+  session->user_info->account_id =
       AccountId::FromUserEmail(GetUserIdFromEmail(display_email));
-  session->display_name = "Über tray Über tray Über tray Über tray";
-  session->display_email = display_email;
+  session->user_info->display_name = "Über tray Über tray Über tray Über tray";
+  session->user_info->display_email = display_email;
   session->should_enable_settings = enable_settings;
   session->should_show_notification_tray = true;
   controller_->UpdateUserSession(std::move(session));
@@ -125,7 +126,7 @@ void TestSessionControllerClient::SwitchActiveUser(
   session_order.reserve(controller_->GetUserSessions().size());
 
   for (const auto& user_session : controller_->GetUserSessions()) {
-    if (user_session->account_id == account_id) {
+    if (user_session->user_info->account_id == account_id) {
       session_order.insert(session_order.begin(), user_session->session_id);
     } else {
       session_order.push_back(user_session->session_id);
@@ -173,7 +174,7 @@ void TestSessionControllerClient::CycleActiveUser(
     return;
   }
 
-  SwitchActiveUser((*it)->account_id);
+  SwitchActiveUser((*it)->user_info->account_id);
 }
 
 }  // namespace test

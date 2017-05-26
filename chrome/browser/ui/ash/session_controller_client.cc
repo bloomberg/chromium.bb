@@ -68,15 +68,17 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
 
   ash::mojom::UserSessionPtr session = ash::mojom::UserSession::New();
   session->session_id = user_session_id;
-  session->type = user.GetType();
-  session->account_id = user.GetAccountId();
-  session->display_name = base::UTF16ToUTF8(user.display_name());
-  session->display_email = user.display_email();
+  session->user_info = ash::mojom::UserInfo::New();
+  session->user_info->type = user.GetType();
+  session->user_info->account_id = user.GetAccountId();
+  session->user_info->display_name = base::UTF16ToUTF8(user.display_name());
+  session->user_info->display_email = user.display_email();
 
-  session->avatar = user.GetImage();
-  if (session->avatar.isNull()) {
-    session->avatar = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PROFILE_PICTURE_LOADING);
+  session->user_info->avatar = user.GetImage();
+  if (session->user_info->avatar.isNull()) {
+    session->user_info->avatar =
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_PROFILE_PICTURE_LOADING);
   }
 
   if (user.IsSupervised()) {

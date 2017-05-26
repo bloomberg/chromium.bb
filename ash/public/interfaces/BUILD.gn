@@ -27,6 +27,7 @@ mojom("interfaces_internal") {
     "touch_view.mojom",
     "tray_action.mojom",
     "update.mojom",
+    "user_info.mojom",
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
