@@ -534,6 +534,7 @@ std::vector<DemuxerStream*> ChunkDemuxer::GetAllStreams() {
 }
 
 void ChunkDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
+  base::AutoLock auto_lock(lock_);
   DCHECK(!cb.is_null());
   for (const auto& stream : audio_streams_)
     stream->SetStreamStatusChangeCB(cb);
