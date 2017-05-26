@@ -1018,7 +1018,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
 
   InterpolationQuality interpolation_quality =
       element->EnsureComputedStyle()->ImageRendering() ==
-              kImageRenderingPixelated
+              EImageRendering::kPixelated
           ? kInterpolationNone
           : kInterpolationHigh;
   RespectImageOrientationEnum should_respect_image_orientation =

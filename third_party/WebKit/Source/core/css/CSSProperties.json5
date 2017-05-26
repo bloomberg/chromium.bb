@@ -1265,7 +1265,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "EImageRendering",
-      default_value: "kImageRenderingAuto",
+      default_value: "EImageRendering::kAuto",
       field_size: 3,
       field_group: "rare-inherited",
     },

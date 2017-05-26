@@ -2796,7 +2796,7 @@ void CompositedLayerMapping::UpdateImageContents() {
       image, LayoutObject::ShouldRespectImageOrientation(&image_layout_object));
 
   graphics_layer_->SetFilterQuality(
-      GetLayoutObject().Style()->ImageRendering() == kImageRenderingPixelated
+      GetLayoutObject().Style()->ImageRendering() == EImageRendering::kPixelated
           ? kNone_SkFilterQuality
           : kLow_SkFilterQuality);
 

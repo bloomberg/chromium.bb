@@ -313,12 +313,12 @@ enum TextOrientation {
 
 enum TextOverflow { kTextOverflowClip = 0, kTextOverflowEllipsis };
 
-enum EImageRendering {
-  kImageRenderingAuto,
-  kImageRenderingOptimizeSpeed,
-  kImageRenderingOptimizeQuality,
-  kImageRenderingOptimizeContrast,
-  kImageRenderingPixelated
+enum class EImageRendering {
+  kAuto,
+  kOptimizeSpeed,
+  kOptimizeQuality,
+  kOptimizeContrast,
+  kPixelated
 };
 
 enum class RubyPosition { kBefore, kAfter };

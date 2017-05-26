@@ -73,7 +73,7 @@ InterpolationQuality ImageQualityController::ChooseInterpolationQuality(
     Image* image,
     const void* layer,
     const LayoutSize& layout_size) {
-  if (object.Style()->ImageRendering() == kImageRenderingPixelated)
+  if (object.Style()->ImageRendering() == EImageRendering::kPixelated)
     return kInterpolationNone;
 
   if (kInterpolationDefault == kInterpolationLow)
@@ -179,7 +179,7 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
   if (!layer)
     return false;
 
-  if (object.Style()->ImageRendering() == kImageRenderingOptimizeContrast)
+  if (object.Style()->ImageRendering() == EImageRendering::kOptimizeContrast)
     return true;
 
   if (LocalFrame* frame = object.GetFrame()) {
