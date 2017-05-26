@@ -146,10 +146,6 @@
     "type": "raw",
     "args": [],
   },
-  "aura_builder": {
-    "label": "//:aura_builder",
-    "type": "additional_compile_target",
-  },
   "aura_unittests": {
     "label": "//ui/aura:aura_unittests",
     "type": "windowed_test_launcher",
