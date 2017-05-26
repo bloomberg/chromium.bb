@@ -76,7 +76,7 @@ void TraySupervisedUser::OnUserSessionUpdated(const AccountId& account_id) {
   DCHECK(user_session);
 
   // Only respond to updates for the active user.
-  if (user_session->account_id != account_id)
+  if (user_session->user_info->account_id != account_id)
     return;
 
   // Show notifications when custodian data first becomes available on login

@@ -206,7 +206,7 @@ void TrayUser::UpdateAvatarImage(LoginStatus status) {
 
   const mojom::UserSession* const user_session =
       session_controller->GetUserSession(0);
-  avatar_->SetImage(user_session->avatar,
+  avatar_->SetImage(user_session->user_info->avatar,
                     gfx::Size(kTrayItemSize, kTrayItemSize));
 
   // Unit tests might come here with no images for some users.

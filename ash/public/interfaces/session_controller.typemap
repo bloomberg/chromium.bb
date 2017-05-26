@@ -6,16 +6,13 @@ mojom = "//ash/public/interfaces/session_controller.mojom"
 public_headers = [
   "//ash/public/cpp/session_types.h",
   "//components/session_manager/session_manager_types.h",
-  "//components/user_manager/user_type.h",
 ]
 traits_headers = [ "//ash/public/interfaces/session_controller_traits.h" ]
 public_deps = [
   "//components/session_manager:base",
-  "//components/user_manager",
 ]
 type_mappings = [
   "ash.mojom.AddUserSessionPolicy=ash::AddUserSessionPolicy",
   "ash.mojom.CycleUserDirection=ash::CycleUserDirection",
   "ash.mojom.SessionState=session_manager::SessionState",
-  "ash.mojom.UserType=user_manager::UserType",
 ]

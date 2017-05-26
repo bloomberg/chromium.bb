@@ -4,8 +4,8 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
-import "ui/gfx/image/mojo/image.mojom";
 
 // Matches session_manager::SessionState.
 enum SessionState {
@@ -37,34 +37,6 @@ enum SessionState {
   LOGIN_SECONDARY,
 };
 
-// Matches user_manager::UserType.
-enum UserType {
-  // Regular user, has a user name and password.
-  REGULAR,
-
-  // Guest user, logs in without authentication.
-  GUEST,
-
-  // Public account user, logs in without authentication. Available only if
-  // enabled through policy.
-  PUBLIC_ACCOUNT,
-
-  // Supervised user, logs in only with local authentication.
-  SUPERVISED,
-
-  // Kiosk app robot, logs in without authentication.
-  KIOSK,
-
-  // Child user, with supervised options.
-  CHILD,
-
-  // Android app in kiosk mode, logs in without authentication.
-  ARC_KIOSK,
-
-  // Active Directory user. Authenticates against Active Directory server.
-  ACTIVE_DIRECTORY,
-};
-
 // Matches ash::CycleUserDirection.
 enum CycleUserDirection {
   NEXT,  // Cycle to the next user.
@@ -80,11 +52,9 @@ struct UserSession {
   // and incremented by one for each subsequent user session.
   uint32 session_id;
 
-  UserType type;
-  signin.mojom.AccountId account_id;
-  string display_name;
-  string display_email;
-  gfx.mojom.ImageSkia avatar;
+  // Contains general user information state, like the account id, display name,
+  // and avatar.
+  UserInfo user_info;
 
   // For supervised users only, the email address of the custodian account.
   // Empty for non-supervised users. Available after profile is loaded.

@@ -446,7 +446,7 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   // The session controller received session info and user session.
   EXPECT_LT(0u, session_controller.last_user_session()->session_id);
   EXPECT_EQ(user_manager::USER_TYPE_SUPERVISED,
-            session_controller.last_user_session()->type);
+            session_controller.last_user_session()->user_info->type);
 
   // Simulate profile creation after login.
   TestingProfile* user_profile = CreateTestingProfile(user);

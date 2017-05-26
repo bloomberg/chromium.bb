@@ -5,6 +5,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 
 #include "ash/login/lock_screen_controller.h"
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,7 +43,7 @@ void LockContentsView::ButtonPressed(views::Button* sender,
   const mojom::UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);
   Shell::Get()->lock_screen_controller()->AuthenticateUser(
-      user_session->account_id, std::string(),
+      user_session->user_info->account_id, std::string(),
       false /* authenticated_by_pin */);
 }
 
