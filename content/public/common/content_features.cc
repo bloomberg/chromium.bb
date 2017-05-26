@@ -337,7 +337,7 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 // Autofill Accessibility in Android.
 // crbug.com/627860
 const base::Feature kAndroidAutofillAccessibility{
-    "AndroidAutofillAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidAutofillAccessibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
