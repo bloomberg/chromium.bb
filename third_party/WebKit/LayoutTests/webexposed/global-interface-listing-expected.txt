@@ -620,8 +620,9 @@ interface CSSKeyframesRule : CSSRule
     setter name
 interface CSSKeywordValue : CSSStyleValue
     attribute @@toStringTag
-    getter keywordValue
+    getter value
     method constructor
+    setter value
 interface CSSMatrixComponent : CSSTransformComponent
     attribute @@toStringTag
     getter matrix

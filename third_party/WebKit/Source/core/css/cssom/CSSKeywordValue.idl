@@ -11,5 +11,5 @@
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSKeywordValue : CSSStyleValue {
-    readonly attribute DOMString keywordValue;
+    attribute DOMString value;
 };
