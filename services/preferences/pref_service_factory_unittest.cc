@@ -119,25 +119,38 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
   }
 
   // Create a fully initialized PrefService synchronously.
-  std::unique_ptr<PrefService> Create() {
+  std::unique_ptr<PrefService> Create() { return CreateImpl({}); }
+
+  std::unique_ptr<PrefService> CreateWithLocalLayeredPrefStores() {
+    return CreateImpl(
+        {{
+             {PrefValueStore::COMMAND_LINE_STORE, above_user_prefs_pref_store_},
+             {PrefValueStore::RECOMMENDED_STORE, below_user_prefs_pref_store_},
+         },
+         base::KEEP_LAST_OF_DUPES});
+  }
+
+  std::unique_ptr<PrefService> CreateImpl(
+      base::flat_map<PrefValueStore::PrefStoreType, scoped_refptr<PrefStore>>
+          local_pref_stores) {
     std::unique_ptr<PrefService> pref_service;
     base::RunLoop run_loop;
-    CreateAsync(std::vector<PrefValueStore::PrefStoreType>(),
-                run_loop.QuitClosure(), &pref_service);
+    CreateAsync(std::move(local_pref_stores), run_loop.QuitClosure(),
+                &pref_service);
     run_loop.Run();
     return pref_service;
   }
 
-  void CreateAsync(
-      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      base::Closure callback,
-      std::unique_ptr<PrefService>* out) {
+  void CreateAsync(base::flat_map<PrefValueStore::PrefStoreType,
+                                  scoped_refptr<PrefStore>> local_pref_stores,
+                   base::Closure callback,
+                   std::unique_ptr<PrefService>* out) {
     auto pref_registry = make_scoped_refptr(new PrefRegistrySimple());
     pref_registry->RegisterIntegerPref(kKey, kInitialValue);
     pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
     pref_registry->RegisterDictionaryPref(kDictionaryKey);
     ConnectToPrefService(
-        connector(), pref_registry, already_connected_types,
+        connector(), std::move(pref_registry), std::move(local_pref_stores),
         base::Bind(&PrefServiceFactoryTest::OnCreate, callback, out));
   }
 
@@ -235,6 +248,22 @@ TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore) {
   above_user_prefs_pref_store()->SetValue(kKey,
                                           base::MakeUnique<base::Value>(4), 0);
   WaitForPrefChange(pref_service.get(), kKey);
+  EXPECT_EQ(4, pref_service->GetInteger(kKey));
+}
+
+// Check that local read-only pref store changes are observed.
+TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_Local) {
+  auto pref_service = CreateWithLocalLayeredPrefStores();
+
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+
+  below_user_prefs_pref_store()->SetValue(
+      kKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+  EXPECT_EQ(kUpdatedValue, pref_service->GetInteger(kKey));
+  pref_service->SetInteger(kKey, 3);
+  EXPECT_EQ(3, pref_service->GetInteger(kKey));
+  above_user_prefs_pref_store()->SetValue(kKey,
+                                          base::MakeUnique<base::Value>(4), 0);
   EXPECT_EQ(4, pref_service->GetInteger(kKey));
 }
 
@@ -543,8 +572,7 @@ TEST_F(PrefServiceFactoryManualPrefStoreRegistrationTest,
   std::unique_ptr<PrefService> pref_service;
   base::RunLoop run_loop;
   auto barrier = base::BarrierClosure(2, run_loop.QuitClosure());
-  CreateAsync(std::vector<PrefValueStore::PrefStoreType>(), barrier,
-              &pref_service);
+  CreateAsync({}, barrier, &pref_service);
 
   add_observer_run_loop.Run();
   ASSERT_TRUE(below_user_prefs.observer_added());
@@ -568,14 +596,7 @@ TEST_F(PrefServiceFactoryManualPrefStoreRegistrationTest,
 // do not wait for those stores to be registered with the pref service.
 TEST_F(PrefServiceFactoryManualPrefStoreRegistrationTest,
        LocalButNotRegisteredReadOnlyStores) {
-  std::unique_ptr<PrefService> pref_service;
-  base::RunLoop run_loop;
-  CreateAsync(
-      {PrefValueStore::RECOMMENDED_STORE, PrefValueStore::COMMAND_LINE_STORE},
-      run_loop.QuitClosure(), &pref_service);
-
-  run_loop.Run();
-  EXPECT_TRUE(pref_service);
+  EXPECT_TRUE(CreateWithLocalLayeredPrefStores());
 }
 
 }  // namespace
