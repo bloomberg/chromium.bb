@@ -41,8 +41,8 @@ namespace blink {
 class DataObjectItem;
 class DataTransfer;
 class File;
+class FunctionStringCallback;
 class ScriptState;
-class StringCallback;
 
 class CORE_EXPORT DataTransferItem final
     : public GarbageCollected<DataTransferItem>,
@@ -56,7 +56,7 @@ class CORE_EXPORT DataTransferItem final
   String kind() const;
   String type() const;
 
-  void getAsString(ScriptState*, StringCallback*) const;
+  void getAsString(ScriptState*, FunctionStringCallback*) const;
   File* getAsFile() const;
 
   DataTransfer* GetDataTransfer() { return data_transfer_.Get(); }

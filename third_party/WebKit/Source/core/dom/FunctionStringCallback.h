@@ -28,21 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StringCallback_h
-#define StringCallback_h
+#ifndef FunctionStringCallback_h
+#define FunctionStringCallback_h
 
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
-class StringCallback : public GarbageCollectedFinalized<StringCallback> {
+class FunctionStringCallback
+    : public GarbageCollectedFinalized<FunctionStringCallback> {
  public:
-  virtual ~StringCallback() {}
+  virtual ~FunctionStringCallback() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleEvent(const String& data) = 0;
 };
 
 }  // namespace blink
 
-#endif  // StringCallback_h
+#endif  // FunctionStringCallback_h

@@ -34,7 +34,7 @@
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/StringCallback.h"
+#include "core/dom/FunctionStringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -70,7 +70,7 @@ String DataTransferItem::type() const {
 }
 
 static void RunGetAsStringTask(ExecutionContext* context,
-                               StringCallback* callback,
+                               FunctionStringCallback* callback,
                                const String& data) {
   probe::AsyncTask async_task(context, callback);
   if (context)
@@ -78,7 +78,7 @@ static void RunGetAsStringTask(ExecutionContext* context,
 }
 
 void DataTransferItem::getAsString(ScriptState* script_state,
-                                   StringCallback* callback) const {
+                                   FunctionStringCallback* callback) const {
   if (!data_transfer_->CanReadData())
     return;
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)

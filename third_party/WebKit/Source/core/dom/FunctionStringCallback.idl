@@ -30,7 +30,6 @@
 
 // https://html.spec.whatwg.org/#the-datatransferitem-interface
 
-// TODO(markdittmer): Spec defines this as FunctionStringCallback.
-callback interface StringCallback {
+callback interface FunctionStringCallback {
     void handleEvent(DOMString data);
 };

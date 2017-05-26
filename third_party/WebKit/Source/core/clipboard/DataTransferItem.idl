@@ -33,7 +33,6 @@
 interface DataTransferItem {
     readonly attribute DOMString kind;
     readonly attribute DOMString type;
-    // TODO(foolip): The callback argument should be a FunctionStringCallback.
-    [CallWith=ScriptState] void getAsString(StringCallback? callback);
+    [CallWith=ScriptState] void getAsString(FunctionStringCallback? callback);
     File? getAsFile();
 };
