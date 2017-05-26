@@ -2914,6 +2914,7 @@ if (is_linux || is_mac) {
       ":net",
       ":test_support",
       "//base",
+      "//build/config:exe_and_shlib_deps",
     ]
   }
 
@@ -2928,6 +2929,7 @@ if (is_linux || is_mac) {
       ":net",
       ":test_support",
       "//base",
+      "//build/config:exe_and_shlib_deps",
       "//url",
     ]
   }

@@ -409,6 +409,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":receiver",
       ":test_support",
       "//base",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//media",
       "//media/audio:test_support",
@@ -440,6 +441,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":sender",
       ":test_support",
       "//base",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//media",
     ]
@@ -466,6 +468,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":test_support",
       "//base",
       "//base/test:test_support",
+      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//media",
       "//media/base:test_support",
