@@ -262,6 +262,7 @@ class DownloadItemTest : public testing::Test {
     create_info_->save_info =
         std::unique_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
     create_info_->save_info->prompt_for_save_location = false;
+    create_info_->initiator = url::Origin(GURL("http://example.com/"));
     create_info_->url_chain.push_back(GURL("http://example.com/download"));
     create_info_->etag = "SomethingToSatisfyResumption";
   }

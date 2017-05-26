@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_net_log_parameters.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/download_item.h"
 #include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class DownloadFile;
@@ -716,6 +718,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // Value of |received_bytes_| at the time the download was interrupted with
   // CONTENT_LENGTH_MISMATCH.
   int64_t received_bytes_at_length_mismatch = -1;
+
+  base::Optional<url::Origin> initiator_;
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 

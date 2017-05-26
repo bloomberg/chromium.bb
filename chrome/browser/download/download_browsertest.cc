@@ -95,6 +95,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -325,8 +326,10 @@ bool HasDataAndName(const history::DownloadRow& row) {
 
 DownloadTestObserverNotInProgress::DownloadTestObserverNotInProgress(
     DownloadManager* download_manager,
-    size_t count)
-    : DownloadTestObserver(download_manager, count, ON_DANGEROUS_DOWNLOAD_FAIL),
+    size_t count,
+    content::DownloadTestObserver::DangerousDownloadAction
+        dangerous_download_action)
+    : DownloadTestObserver(download_manager, count, dangerous_download_action),
       started_observing_(false) {
   Init();
 }
@@ -420,6 +423,7 @@ class DownloadTest : public InProcessBrowserTest {
     content::DownloadInterruptReason reason;
     bool show_download_item;  // True if the download item appears on the shelf.
     bool should_redirect_to_documents;  // True if we save it in "My Documents".
+    bool is_dangerous;  // True if we expect this to be classified as dangerous.
   };
 
   struct FileErrorInjectInfo {
@@ -849,7 +853,8 @@ class DownloadTest : public InProcessBrowserTest {
                          : "DOWNLOAD_NAVIGATE")
                  << " show_item = " << download_info.show_download_item
                  << " reason = "
-                 << DownloadInterruptReasonToString(download_info.reason));
+                 << DownloadInterruptReasonToString(download_info.reason)
+                 << " is dangerous = " << download_info.is_dangerous);
 
     std::vector<DownloadItem*> download_items;
     GetDownloads(browser(), &download_items);
@@ -871,14 +876,17 @@ class DownloadTest : public InProcessBrowserTest {
     ASSERT_TRUE(web_contents);
 
     std::unique_ptr<content::DownloadTestObserver> observer;
+    content::DownloadTestObserver::DangerousDownloadAction
+        dangerous_download_action =
+            download_info.is_dangerous
+                ? content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT
+                : content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL;
     if (download_info.reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
       observer.reset(new content::DownloadTestObserverTerminal(
-          download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          download_manager, 1, dangerous_download_action));
     } else {
       observer.reset(new content::DownloadTestObserverInterrupted(
-          download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          download_manager, 1, dangerous_download_action));
     }
 
     if (download_info.download_method == DOWNLOAD_DIRECT) {
@@ -922,6 +930,10 @@ class DownloadTest : public InProcessBrowserTest {
     download_items.clear();
     GetDownloads(browser(), &download_items);
     ASSERT_EQ(downloads_expected, download_items.size());
+
+    if (download_info.is_dangerous) {
+      EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
+    }
 
     if (download_info.show_download_item) {
       // Find the last download item.
@@ -1812,7 +1824,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   ASSERT_EQ(2u, row.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row.url_chain[1].spec());
-  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row.danger_type);
+  // PlzNavigate assigns a different initiator here: http://crbug.com/726678
+  if (content::IsBrowserSideNavigationEnabled())
+    EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row.danger_type);
+  else
+    EXPECT_EQ(history::DownloadDangerType::DANGEROUS_FILE, row.danger_type);
   EXPECT_LE(start, row.start_time);
   EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize,
             row.received_bytes);
@@ -1828,7 +1844,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   std::unique_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverInterrupted(
           DownloadManagerForBrowser(browser()), 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::IsBrowserSideNavigationEnabled()
+              ? content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL
+              : content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(
       browser(), GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl));
   download_observer->WaitForFinished();
@@ -1849,7 +1867,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   ASSERT_EQ(2u, row1.url_chain.size());
   EXPECT_EQ(redirect_url.spec(), row1.url_chain[0].spec());
   EXPECT_EQ(download_url.spec(), row1.url_chain[1].spec());
-  EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
+  if (content::IsBrowserSideNavigationEnabled())
+    EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
+  else
+    EXPECT_EQ(history::DownloadDangerType::USER_VALIDATED, row1.danger_type);
   EXPECT_LE(start, row1.start_time);
   EXPECT_GE(end, row1.end_time);
   EXPECT_EQ(0, row1.received_bytes);  // There's no ETag. So the intermediate
@@ -2447,44 +2468,46 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
   DownloadInfo download_info[] = {
       {// Normal navigated download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
+       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false, false},
       {// Normal direct download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false},
+       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, false, false},
       {// Direct download with 404 error.
        "there_IS_no_spoon.zip", "there_IS_no_spoon.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false},
+       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false,
+       false},
       {// Navigated download with 404 error.
        "there_IS_no_spoon.zip", "there_IS_no_spoon.zip", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, false, false},
+       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, false, false,
+       false},
       {// Direct download with 400 error.
        "zip_file_not_found.zip", "zip_file_not_found.zip", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, true, false},
+       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, true, false, false},
       {// Navigated download with 400 error.
        "zip_file_not_found.zip", "", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false},
+       content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false, false},
       {// Simulates clicking on <a href="http://..." download="">. The name does
        // not resolve. But since this is an explicit download, the download
        // should appear on the shelf and the error should be indicated.
        "download-anchor-attrib-name-not-resolved.html",
        "http://doesnotexist/shouldnotberesolved", DOWNLOAD_NAVIGATE,
-       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false},
+       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false, true},
       {// Simulates clicking on <a href="http://..." download=""> where the URL
        // leads to a 404 response. This is different from the previous test case
        // in that the ResourceLoader issues a OnResponseStarted() callback since
        // the headers are successfully received.
        "download-anchor-attrib-404.html", "there_IS_no_spoon.zip",
        DOWNLOAD_NAVIGATE, content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
-       true, false},
+       true, false, false},
       {// Similar to the above, but the resulting response contains a status
        // code of 400.
        "download-anchor-attrib-400.html", "zip_file_not_found.zip",
        DOWNLOAD_NAVIGATE, content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
-       true, false},
+       true, false, false},
       {// Direct download of a URL where the hostname doesn't resolve.
        "http://doesnotexist/shouldnotdownloadsuccessfully",
        "http://doesnotexist/shouldnotdownloadsuccessfully", DOWNLOAD_DIRECT,
-       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false}};
+       content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false, false}};
 
   DownloadFilesCheckErrors(arraysize(download_info), download_info);
 }
@@ -2591,10 +2614,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
   DownloadInfo download_info[] = {
       {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
        // This passes because we switch to the My Documents folder.
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true},
+       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true, false},
       {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
        // This passes because we switch to the My Documents folder.
-       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true}};
+       content::DOWNLOAD_INTERRUPT_REASON_NONE, true, true, false}};
 
   DownloadFilesToReadonlyFolder(arraysize(download_info), download_info);
 }
@@ -2836,7 +2859,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
   std::unique_ptr<content::DownloadTestObserver> waiter(
       new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
 
   // Click on the link with the alt key pressed. This will download the link
   // target.
@@ -3266,7 +3289,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
           DownloadManagerForBrowser(browser())));
   std::unique_ptr<DownloadTestObserverNotInProgress> completion_observer(
       new DownloadTestObserverNotInProgress(
-          DownloadManagerForBrowser(browser()), 1));
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   // Wait for two transitions to a resumable state
   std::unique_ptr<content::DownloadTestObserver> resumable_observer(
       new DownloadTestObserverResumable(DownloadManagerForBrowser(browser()),

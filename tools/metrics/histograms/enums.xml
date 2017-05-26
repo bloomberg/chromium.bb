@@ -7788,6 +7788,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="22" label="Completed with content length mismatch"/>
   <int value="23" label="More bytes received after content length mismatch"/>
   <int value="24" label="No bytes received after content length mismatch"/>
+  <int value="25"
+      label="Cross origin download without content disposition headers"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType" type="int">
