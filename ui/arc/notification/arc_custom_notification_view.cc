@@ -84,7 +84,8 @@ class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
       ui::LocatedEvent* located_event = event->AsLocatedEvent();
       located_event->target()->ConvertEventToTarget(widget->GetNativeWindow(),
                                                     located_event);
-      if (located_event->type() == ui::ET_MOUSE_MOVED) {
+      if (located_event->type() == ui::ET_MOUSE_MOVED ||
+          located_event->IsMouseWheelEvent()) {
         widget->OnMouseEvent(located_event->AsMouseEvent());
       } else if (located_event->IsScrollEvent()) {
         widget->OnScrollEvent(located_event->AsScrollEvent());
