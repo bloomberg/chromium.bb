@@ -37,25 +37,25 @@ namespace blink {
 void PluginListBuilder::AddPlugin(const WebString& name,
                                   const WebString& description,
                                   const WebString& file_name) {
-  PluginInfo info;
-  info.name = name;
-  info.desc = description;
-  info.file = file_name;
-  results_->push_back(info);
+  if (results_)
+    results_->push_back(new PluginInfo(name, file_name, description));
 }
 
 void PluginListBuilder::AddMediaTypeToLastPlugin(const WebString& name,
                                                  const WebString& description) {
-  MimeClassInfo info;
-  info.type = name;
-  info.desc = description;
-  results_->back().mimes.push_back(info);
+  if (results_) {
+    MimeClassInfo* info =
+        new MimeClassInfo(name, description, *results_->back());
+    results_->back()->AddMimeType(info);
+  }
 }
 
 void PluginListBuilder::AddFileExtensionToLastMediaType(
     const WebString& extension) {
-  MimeClassInfo& info = results_->back().mimes.back();
-  info.extensions.push_back(extension);
+  if (results_) {
+    MimeClassInfo& info = *results_->back()->mimes_.back();
+    info.extensions_.push_back(extension);
+  }
 }
 
 }  // namespace blink

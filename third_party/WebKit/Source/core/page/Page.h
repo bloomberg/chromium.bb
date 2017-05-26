@@ -132,7 +132,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   ViewportDescription GetViewportDescription() const;
 
   static void RefreshPlugins();
-  PluginData* GetPluginData(SecurityOrigin* main_frame_origin) const;
+  PluginData* GetPluginData(SecurityOrigin* main_frame_origin);
 
   EditorClient& GetEditorClient() const { return *editor_client_; }
   SpellCheckerClient& GetSpellCheckerClient() const {
@@ -324,7 +324,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // longer needed.
   Member<Frame> main_frame_;
 
-  mutable RefPtr<PluginData> plugin_data_;
+  Member<PluginData> plugin_data_;
 
   EditorClient* const editor_client_;
   SpellCheckerClient* const spell_checker_client_;
