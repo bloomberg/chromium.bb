@@ -37,7 +37,12 @@ UserManagerBrowserTest.prototype = {
   runAccessibilityChecks: false,
 };
 
-TEST_F('UserManagerBrowserTest', 'UserManagerTest', function() {
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_UserManagerTest DISABLED_UserManagerTest');
+GEN('#else');
+GEN('#define MAYBE_UserManagerTest UserManagerTest');
+GEN('#endif');
+TEST_F('UserManagerBrowserTest', 'MAYBE_UserManagerTest', function() {
   user_manager.control_bar_tests.registerTests();
   user_manager.create_profile_tests.registerTests();
   user_manager.import_supervised_user_tests.registerTests();
