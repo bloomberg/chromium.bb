@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//extensions/features/features.gni")
 import("//tools/json_schema_compiler/json_features.gni")
+
+assert(enable_extensions)
 
 json_features("test_api_features") {
   feature_type = "APIFeature"
