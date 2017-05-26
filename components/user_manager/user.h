@@ -190,6 +190,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if the user Profile is created.
   bool is_profile_created() const { return profile_is_created_; }
 
+  static User* CreatePublicAccountUserForTesting(const AccountId& account_id) {
+    return CreatePublicAccountUser(account_id);
+  }
+
  protected:
   friend class UserManagerBase;
   friend class chromeos::ChromeUserManagerImpl;

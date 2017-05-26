@@ -32,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
@@ -152,6 +153,21 @@ bool GetUserLockAttributes(const user_manager::User* user,
         prefs->GetString(prefs::kMultiProfileUserBehavior);
   }
   return true;
+}
+
+// Sets the neccessary delegates in Public Session. They will be active for the
+// whole user-session and they will go away together with the browser process
+// during logout (the browser process is destroyed during logout), ie. they are
+// not freed and they leak but that is fine.
+void SetPublicAccountDelegates() {
+  extensions::PermissionsUpdater::SetPlatformDelegate(
+      new extensions::PermissionsUpdaterDelegateChromeOS);
+
+  extensions::ExtensionTabUtil::SetPlatformDelegate(
+      new extensions::ExtensionTabUtilDelegateChromeOS);
+
+  extensions::ActiveTabPermissionGranter::SetPlatformDelegate(
+      new extensions::ActiveTabPermissionGranterDelegateChromeOS);
 }
 
 }  // namespace
@@ -837,19 +853,7 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   GetUserImageManager(user->GetAccountId())->UserLoggedIn(false, true);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 
-  // In Public Sessions set the PS delegate on PermissionsUpdater (used to
-  // remove clipboard read permission from extensions in PS). This delegate will
-  // be active for the whole user-session and it will go away together with the
-  // browser process during logout (the browser process is destroyed during
-  // logout), ie. it's not freed and it leaks but that is fine.
-  extensions::PermissionsUpdater::SetPlatformDelegate(
-      new extensions::PermissionsUpdaterDelegateChromeOS);
-
-  // In Public Sessions set the PS delegate on ExtensionTabUtil (used to scrub
-  // URL down to origin for security reasons). See comment above about
-  // PermissionsUpdaterDelegateChromeOS for more info.
-  extensions::ExtensionTabUtil::SetPlatformDelegate(
-      new extensions::ExtensionTabUtilDelegateChromeOS);
+  SetPublicAccountDelegates();
 }
 
 void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {

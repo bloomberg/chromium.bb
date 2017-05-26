@@ -3589,6 +3589,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
           Read and change all your data on the websites you visit
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_CURRENT_HOST" desc="Permission string for access to data on current website.">
+          Read and change all your data on the current website when invoked
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY" desc="Permission string for read-only access to data on all websites.">
           Read all your data on the websites you visit
         </message>

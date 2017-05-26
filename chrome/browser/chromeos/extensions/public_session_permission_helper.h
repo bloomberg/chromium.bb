@@ -37,7 +37,8 @@ using PromptFactory = base::Callback<std::unique_ptr<ExtensionInstallPrompt>(
 //
 // This function sets up the prompt asking the user for additional
 // permission(s), handles the result, caches it, and then runs the callback with
-// the allowed permissions as the argument.
+// the allowed permissions as the argument. It returns true if this
+// permission(s) is already resolved, and false otherwise.
 //
 // The user will be prompted about a certain permission only once, and that
 // choice will be cached and used in any subsequent requests that use the same
@@ -47,13 +48,20 @@ using PromptFactory = base::Callback<std::unique_ptr<ExtensionInstallPrompt>(
 //
 // Caller must ensure that web_contents is valid. Must be called on UI thread.
 //
+// Callback can be null (permission_helper::RequestResolvedCallback()), in which
+// case it's not invoked but the permission prompt is still shown.
+//
 // Passing in a null prompt_factory (permission_helper::PromptFactory())
 // callback gets the default behaviour (ie. it is is used only for tests).
-void HandlePermissionRequest(const Extension& extension,
+bool HandlePermissionRequest(const Extension& extension,
                              const PermissionIDSet& requested_permissions,
                              content::WebContents* web_contents,
                              const RequestResolvedCallback& callback,
                              const PromptFactory& prompt_factory);
+
+// Returns true if user granted this permission to the extension.
+bool PermissionAllowed(const Extension* extension,
+                       APIPermission::ID permission);
 
 // Used to completely reset state in between tests.
 void ResetPermissionsForTesting();

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/extension.h"
@@ -30,11 +31,16 @@ using extensions::Extension;
 using extensions::Manifest;
 using Result = ExtensionInstallPrompt::Result;
 
+namespace extensions {
+namespace permission_helper {
 namespace {
 
 auto permission_a = APIPermission::kAudio;
 auto permission_b = APIPermission::kBookmark;
 bool did_show_dialog;
+
+const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
+const char kNonWhitelistedId[] = "bogus";
 
 scoped_refptr<Extension> LoadManifestHelper(const std::string& id) {
   std::string error;
@@ -49,6 +55,11 @@ bool get_did_show_dialog_and_reset() {
   bool tmp = did_show_dialog;
   did_show_dialog = false;
   return tmp;
+}
+
+base::Callback<void(const PermissionIDSet&)> BindQuitLoop(base::RunLoop* loop) {
+  return base::Bind(
+      [](base::RunLoop* loop, const PermissionIDSet&) { loop->Quit(); }, loop);
 }
 
 class ProgrammableInstallPrompt
@@ -83,9 +94,6 @@ class ProgrammableInstallPrompt
 
 }  // namespace
 
-namespace extensions {
-namespace permission_helper {
-
 class PublicSessionPermissionHelperTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -110,6 +118,8 @@ class PublicSessionPermissionHelperTest
   scoped_refptr<Extension> extension_b_;
 
   std::vector<PermissionIDSet> allowed_permissions_;
+
+  chromeos::ScopedTestPublicSessionLoginState login_state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicSessionPermissionHelperTest);
@@ -249,6 +259,59 @@ TEST_F(PublicSessionPermissionHelperTest, TestTwoPromptsDeny) {
   EXPECT_TRUE(allowed_permissions_.at(0).Equals({}));
   prompt2->Resolve(Result::ACCEPTED);
   EXPECT_TRUE(allowed_permissions_.at(1).Equals({permission_b}));
+}
+
+TEST_F(PublicSessionPermissionHelperTest, WhitelistedExtension) {
+  auto extension = LoadManifestHelper(kWhitelistedId);
+  // Whitelisted extension can use any permission.
+  EXPECT_TRUE(PermissionAllowed(extension.get(), permission_a));
+  EXPECT_TRUE(PermissionAllowed(extension.get(), permission_b));
+  // Whitelisted extension is already handled (no permission prompt needed).
+  EXPECT_TRUE(HandlePermissionRequest(*extension, {permission_a},
+                                      web_contents(), RequestResolvedCallback(),
+                                      PromptFactory()));
+  EXPECT_TRUE(PermissionAllowed(extension.get(), permission_a));
+  EXPECT_TRUE(PermissionAllowed(extension.get(), permission_b));
+}
+
+TEST_F(PublicSessionPermissionHelperTest, NonWhitelistedExtension) {
+  auto extension = LoadManifestHelper(kNonWhitelistedId);
+  EXPECT_FALSE(PermissionAllowed(extension.get(), permission_a));
+  EXPECT_FALSE(PermissionAllowed(extension.get(), permission_b));
+  // Prompt for permission_a, grant it, verify.
+  {
+    ScopedTestDialogAutoConfirm auto_confirm(
+        ScopedTestDialogAutoConfirm::ACCEPT);
+    // Permission not handled yet, need to show a prompt.
+    base::RunLoop loop;
+    EXPECT_FALSE(HandlePermissionRequest(*extension, {permission_a},
+                                         web_contents(), BindQuitLoop(&loop),
+                                         PromptFactory()));
+    loop.Run();
+    EXPECT_TRUE(PermissionAllowed(extension.get(), permission_a));
+    EXPECT_FALSE(PermissionAllowed(extension.get(), permission_b));
+  }
+  // Already handled (allow), doesn't show a prompt.
+  EXPECT_TRUE(HandlePermissionRequest(*extension, {permission_a},
+                                      web_contents(), RequestResolvedCallback(),
+                                      PromptFactory()));
+  // Prompt for permission_b, deny it, verify.
+  {
+    ScopedTestDialogAutoConfirm auto_confirm(
+        ScopedTestDialogAutoConfirm::CANCEL);
+    // Permission not handled yet, need to show a prompt.
+    base::RunLoop loop;
+    EXPECT_FALSE(HandlePermissionRequest(*extension, {permission_b},
+                                         web_contents(), BindQuitLoop(&loop),
+                                         PromptFactory()));
+    loop.Run();
+    EXPECT_TRUE(PermissionAllowed(extension.get(), permission_a));
+    EXPECT_FALSE(PermissionAllowed(extension.get(), permission_b));
+  }
+  // Already handled (deny), doesn't show a prompt.
+  EXPECT_TRUE(HandlePermissionRequest(*extension, {permission_b},
+                                      web_contents(), RequestResolvedCallback(),
+                                      PromptFactory()));
 }
 
 }  // namespace permission_helper

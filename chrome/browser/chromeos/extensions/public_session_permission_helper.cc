@@ -15,14 +15,20 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 namespace permission_helper {
@@ -34,6 +40,11 @@ std::unique_ptr<ExtensionInstallPrompt> CreateExtensionInstallPrompt(
   return base::MakeUnique<ExtensionInstallPrompt>(web_contents);
 }
 
+bool PermissionCheckNeeded(const Extension* extension) {
+  return !chromeos::DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
+      extension->id());
+}
+
 // This class is the internal implementation of HandlePermissionRequest(). It
 // contains the actual prompt showing and resolving logic, and it caches the
 // user choices.
@@ -43,11 +54,14 @@ class PublicSessionPermissionHelper {
   PublicSessionPermissionHelper(PublicSessionPermissionHelper&& other);
   ~PublicSessionPermissionHelper();
 
-  void HandlePermissionRequestImpl(const Extension& extension,
+  bool HandlePermissionRequestImpl(const Extension& extension,
                                    const PermissionIDSet& requested_permissions,
                                    content::WebContents* web_contents,
                                    const RequestResolvedCallback& callback,
                                    const PromptFactory& prompt_factory);
+
+  bool PermissionAllowedImpl(const Extension* extension,
+                             APIPermission::ID permission);
 
  private:
   void ResolvePermissionPrompt(const ExtensionInstallPrompt* prompt,
@@ -82,13 +96,18 @@ PublicSessionPermissionHelper::PublicSessionPermissionHelper(
 
 PublicSessionPermissionHelper::~PublicSessionPermissionHelper() {}
 
-void PublicSessionPermissionHelper::HandlePermissionRequestImpl(
+bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
     const Extension& extension,
     const PermissionIDSet& requested_permissions,
     content::WebContents* web_contents,
     const RequestResolvedCallback& callback,
     const PromptFactory& prompt_factory) {
-  CHECK(web_contents);
+  DCHECK(profiles::IsPublicSession());
+  if (!PermissionCheckNeeded(&extension)) {
+    if (!callback.is_null())
+      callback.Run(requested_permissions);
+    return true;
+  }
 
   PermissionIDSet unresolved_permissions = PermissionIDSet::Difference(
       requested_permissions, allowed_permission_set_);
@@ -96,20 +115,22 @@ void PublicSessionPermissionHelper::HandlePermissionRequestImpl(
       unresolved_permissions, denied_permission_set_);
   if (unresolved_permissions.empty()) {
     // All requested permissions are already resolved.
-    callback.Run(FilterAllowedPermissions(requested_permissions));
-    return;
+    if (!callback.is_null())
+      callback.Run(FilterAllowedPermissions(requested_permissions));
+    return true;
   }
 
   // Since not all permissions are resolved yet, queue the callback to be called
   // when all of them are resolved.
-  callbacks_.push_back(RequestCallback(callback, requested_permissions));
+  if (!callback.is_null())
+    callbacks_.push_back(RequestCallback(callback, requested_permissions));
 
   PermissionIDSet unprompted_permissions = PermissionIDSet::Difference(
       unresolved_permissions, prompted_permission_set_);
   if (unprompted_permissions.empty()) {
     // Some permissions aren't resolved yet, but they are currently being
     // prompted for, so no need to show a prompt.
-    return;
+    return false;
   }
 
   // Some permissions need prompting, setup the prompt and show it.
@@ -121,6 +142,19 @@ void PublicSessionPermissionHelper::HandlePermissionRequestImpl(
   auto permission_set = base::MakeUnique<PermissionSet>(
       new_apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
   auto prompt = prompt_factory.Run(web_contents);
+
+  auto permissions_prompt = base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+      ExtensionInstallPrompt::PERMISSIONS_PROMPT);
+  // activeTab has no permission message by default, so one is added here.
+  if (unprompted_permissions.ContainsID(APIPermission::kActiveTab)) {
+    PermissionMessages messages;
+    messages.push_back(PermissionMessage(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_CURRENT_HOST),
+        extensions::PermissionIDSet()));
+    permissions_prompt->AddPermissions(
+        messages, ExtensionInstallPrompt::REGULAR_PERMISSIONS);
+  }
+
   // This Unretained is safe because the lifetime of this object is until
   // process exit.
   prompt->ShowDialog(
@@ -129,11 +163,20 @@ void PublicSessionPermissionHelper::HandlePermissionRequestImpl(
                  std::move(unprompted_permissions)),
       &extension,
       nullptr,  // Use the extension icon.
-      base::MakeUnique<ExtensionInstallPrompt::Prompt>(
-          ExtensionInstallPrompt::PERMISSIONS_PROMPT),
+      std::move(permissions_prompt),
       std::move(permission_set),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   prompts_.insert(std::move(prompt));
+
+  return false;
+}
+
+bool PublicSessionPermissionHelper::PermissionAllowedImpl(
+    const Extension* extension,
+    APIPermission::ID permission) {
+  DCHECK(profiles::IsPublicSession());
+  return !PermissionCheckNeeded(extension) ||
+         allowed_permission_set_.ContainsID(permission);
 }
 
 void PublicSessionPermissionHelper::ResolvePermissionPrompt(
@@ -203,7 +246,7 @@ base::LazyInstance<std::map<ExtensionId, PublicSessionPermissionHelper>>::Leaky
 
 }  // namespace
 
-void HandlePermissionRequest(const Extension& extension,
+bool HandlePermissionRequest(const Extension& extension,
                              const PermissionIDSet& requested_permissions,
                              content::WebContents* web_contents,
                              const RequestResolvedCallback& callback,
@@ -214,6 +257,13 @@ void HandlePermissionRequest(const Extension& extension,
                                      : prompt_factory;
   return g_helpers.Get()[extension.id()].HandlePermissionRequestImpl(
       extension, requested_permissions, web_contents, callback, factory);
+}
+
+bool PermissionAllowed(const Extension* extension,
+                       APIPermission::ID permission) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return g_helpers.Get()[extension->id()].PermissionAllowedImpl(extension,
+                                                                permission);
 }
 
 void ResetPermissionsForTesting() {
