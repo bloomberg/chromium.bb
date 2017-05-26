@@ -116,6 +116,7 @@ Page::Page(PageClients& page_clients)
       overscroll_controller_(
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
       main_frame_(nullptr),
+      plugin_data_(nullptr),
       editor_client_(page_clients.editor_client),
       spell_checker_client_(page_clients.spell_checker_client),
       use_counter_(page_clients.chrome_client &&
@@ -290,14 +291,18 @@ void Page::RefreshPlugins() {
   for (const Page* page : AllPages()) {
     // Clear out the page's plugin data.
     if (page->plugin_data_)
-      page->plugin_data_ = nullptr;
+      page->plugin_data_->ResetPluginData();
   }
 }
 
-PluginData* Page::GetPluginData(SecurityOrigin* main_frame_origin) const {
-  if (!plugin_data_ ||
+PluginData* Page::GetPluginData(SecurityOrigin* main_frame_origin) {
+  if (!plugin_data_)
+    plugin_data_ = PluginData::Create();
+
+  if (!plugin_data_->Origin() ||
       !main_frame_origin->IsSameSchemeHostPort(plugin_data_->Origin()))
-    plugin_data_ = PluginData::Create(main_frame_origin);
+    plugin_data_->UpdatePluginList(main_frame_origin);
+
   return plugin_data_.Get();
 }
 
@@ -628,6 +633,7 @@ DEFINE_TRACE(Page) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);
   visitor->Trace(main_frame_);
+  visitor->Trace(plugin_data_);
   visitor->Trace(validation_message_client_);
   visitor->Trace(use_counter_);
   Supplementable<Page>::Trace(visitor);

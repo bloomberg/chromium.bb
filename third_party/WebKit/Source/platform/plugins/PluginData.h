@@ -21,47 +21,80 @@
 #define PluginData_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-struct PluginInfo;
+class PluginInfo;
 
-struct MimeClassInfo {
-  String type;
-  String desc;
-  Vector<String> extensions;
+class PLATFORM_EXPORT MimeClassInfo final
+    : public GarbageCollectedFinalized<MimeClassInfo> {
+ public:
+  DECLARE_TRACE();
+
+  MimeClassInfo(const String& type, const String& desc, PluginInfo&);
+
+  const String& Type() const { return type_; }
+  const String& Description() const { return description_; }
+  const Vector<String>& Extensions() const { return extensions_; }
+  const PluginInfo* Plugin() const { return plugin_; }
+
+ private:
+  friend class PluginData;
+  friend class PluginListBuilder;
+
+  String type_;
+  String description_;
+  Vector<String> extensions_;
+  Member<PluginInfo> plugin_;
 };
 
-inline bool operator==(const MimeClassInfo& a, const MimeClassInfo& b) {
-  return a.type == b.type && a.desc == b.desc && a.extensions == b.extensions;
-}
+class PLATFORM_EXPORT PluginInfo final
+    : public GarbageCollectedFinalized<PluginInfo> {
+ public:
+  DECLARE_TRACE();
 
-struct PluginInfo {
-  String name;
-  String file;
-  String desc;
-  Vector<MimeClassInfo> mimes;
+  PluginInfo(const String& name, const String& filename, const String& desc);
+
+  void AddMimeType(MimeClassInfo*);
+
+  const MimeClassInfo* GetMimeClassInfo(size_t index) const;
+  const MimeClassInfo* GetMimeClassInfo(const String& type) const;
+  size_t GetMimeClassInfoSize() const;
+
+  const String& Name() const { return name_; }
+  const String& Filename() const { return filename_; }
+  const String& Description() const { return description_; }
+
+ private:
+  friend class MimeClassInfo;
+  friend class PluginData;
+  friend class PluginListBuilder;
+
+  String name_;
+  String filename_;
+  String description_;
+  HeapVector<Member<MimeClassInfo>> mimes_;
 };
 
-class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
+class PLATFORM_EXPORT PluginData final
+    : public GarbageCollectedFinalized<PluginData> {
   WTF_MAKE_NONCOPYABLE(PluginData);
 
  public:
-  static PassRefPtr<PluginData> Create(SecurityOrigin* main_frame_origin) {
-    return AdoptRef(new PluginData(main_frame_origin));
-  }
+  DECLARE_TRACE();
 
-  const Vector<PluginInfo>& Plugins() const { return plugins_; }
-  const Vector<MimeClassInfo>& Mimes() const { return mimes_; }
-  const Vector<size_t>& MimePluginIndices() const {
-    return mime_plugin_indices_;
-  }
+  static PluginData* Create() { return new PluginData(); }
+
+  const HeapVector<Member<PluginInfo>>& Plugins() const { return plugins_; }
+  const HeapVector<Member<MimeClassInfo>>& Mimes() const { return mimes_; }
   const SecurityOrigin* Origin() const { return main_frame_origin_.Get(); }
+  void UpdatePluginList(SecurityOrigin* main_frame_origin);
+  void ResetPluginData();
 
   bool SupportsMimeType(const String& mime_type) const;
   String PluginNameForMimeType(const String& mime_type) const;
@@ -71,12 +104,10 @@ class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
   static void RefreshBrowserSidePluginCache();
 
  private:
-  explicit PluginData(SecurityOrigin* main_frame_origin);
-  const PluginInfo* PluginInfoForMimeType(const String& mime_type) const;
+  PluginData() {}
 
-  Vector<PluginInfo> plugins_;
-  Vector<MimeClassInfo> mimes_;
-  Vector<size_t> mime_plugin_indices_;
+  HeapVector<Member<PluginInfo>> plugins_;
+  HeapVector<Member<MimeClassInfo>> mimes_;
   RefPtr<SecurityOrigin> main_frame_origin_;
 };
 

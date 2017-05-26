@@ -27,25 +27,23 @@
 
 namespace blink {
 
-DOMMimeType::DOMMimeType(PassRefPtr<PluginData> plugin_data,
-                         LocalFrame* frame,
-                         unsigned index)
-    : ContextClient(frame),
-      plugin_data_(std::move(plugin_data)),
-      index_(index) {}
+DOMMimeType::DOMMimeType(LocalFrame* frame,
+                         const MimeClassInfo& mime_class_info)
+    : ContextClient(frame), mime_class_info_(&mime_class_info) {}
 
 DOMMimeType::~DOMMimeType() {}
 
 DEFINE_TRACE(DOMMimeType) {
   ContextClient::Trace(visitor);
+  visitor->Trace(mime_class_info_);
 }
 
 const String& DOMMimeType::type() const {
-  return GetMimeClassInfo().type;
+  return mime_class_info_->Type();
 }
 
 String DOMMimeType::suffixes() const {
-  const Vector<String>& extensions = GetMimeClassInfo().extensions;
+  const Vector<String>& extensions = mime_class_info_->Extensions();
 
   StringBuilder builder;
   for (size_t i = 0; i < extensions.size(); ++i) {
@@ -57,7 +55,7 @@ String DOMMimeType::suffixes() const {
 }
 
 const String& DOMMimeType::description() const {
-  return GetMimeClassInfo().desc;
+  return mime_class_info_->Description();
 }
 
 DOMPlugin* DOMMimeType::enabledPlugin() const {
@@ -68,8 +66,7 @@ DOMPlugin* DOMMimeType::enabledPlugin() const {
       !GetFrame()->Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return nullptr;
 
-  return DOMPlugin::Create(plugin_data_.Get(), GetFrame(),
-                           plugin_data_->MimePluginIndices()[index_]);
+  return DOMPlugin::Create(GetFrame(), *mime_class_info_->Plugin());
 }
 
 }  // namespace blink

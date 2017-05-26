@@ -46,20 +46,19 @@ DOMPlugin* DOMPluginArray::item(unsigned index) {
   PluginData* data = GetPluginData();
   if (!data)
     return nullptr;
-  const Vector<PluginInfo>& plugins = data->Plugins();
+  const HeapVector<Member<PluginInfo>>& plugins = data->Plugins();
   if (index >= plugins.size())
     return nullptr;
-  return DOMPlugin::Create(data, GetFrame(), index);
+  return DOMPlugin::Create(GetFrame(), *plugins[index]);
 }
 
 DOMPlugin* DOMPluginArray::namedItem(const AtomicString& property_name) {
   PluginData* data = GetPluginData();
   if (!data)
     return nullptr;
-  const Vector<PluginInfo>& plugins = data->Plugins();
-  for (unsigned i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].name == property_name)
-      return DOMPlugin::Create(data, GetFrame(), i);
+  for (const PluginInfo* plugin : data->Plugins()) {
+    if (plugin->Name() == property_name)
+      return DOMPlugin::Create(GetFrame(), *plugin);
   }
   return nullptr;
 }

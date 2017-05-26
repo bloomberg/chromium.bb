@@ -30,51 +30,84 @@
 
 namespace blink {
 
-PluginData::PluginData(SecurityOrigin* main_frame_origin)
-    : main_frame_origin_(main_frame_origin) {
+DEFINE_TRACE(MimeClassInfo) {
+  visitor->Trace(plugin_);
+}
+
+MimeClassInfo::MimeClassInfo(const String& type,
+                             const String& description,
+                             PluginInfo& plugin)
+    : type_(type), description_(description), plugin_(&plugin) {}
+
+DEFINE_TRACE(PluginInfo) {
+  visitor->Trace(mimes_);
+}
+
+PluginInfo::PluginInfo(const String& name,
+                       const String& filename,
+                       const String& description)
+    : name_(name), filename_(filename), description_(description) {}
+
+void PluginInfo::AddMimeType(MimeClassInfo* info) {
+  mimes_.push_back(info);
+}
+
+const MimeClassInfo* PluginInfo::GetMimeClassInfo(size_t index) const {
+  if (index > mimes_.size())
+    return nullptr;
+  return mimes_[index];
+}
+
+const MimeClassInfo* PluginInfo::GetMimeClassInfo(const String& type) const {
+  for (MimeClassInfo* mime : mimes_) {
+    if (mime->Type() == type)
+      return mime;
+  }
+
+  return nullptr;
+}
+
+size_t PluginInfo::GetMimeClassInfoSize() const {
+  return mimes_.size();
+}
+
+DEFINE_TRACE(PluginData) {
+  visitor->Trace(plugins_);
+  visitor->Trace(mimes_);
+}
+
+// static
+void PluginData::RefreshBrowserSidePluginCache() {
+  PluginListBuilder builder(nullptr);
+  Platform::Current()->GetPluginList(true, WebSecurityOrigin::CreateUnique(),
+                                     &builder);
+}
+
+void PluginData::UpdatePluginList(SecurityOrigin* main_frame_origin) {
+  main_frame_origin_ = main_frame_origin;
   PluginListBuilder builder(&plugins_);
   Platform::Current()->GetPluginList(
       false, WebSecurityOrigin(main_frame_origin_), &builder);
 
-  for (unsigned i = 0; i < plugins_.size(); ++i) {
-    const PluginInfo& plugin = plugins_[i];
-    for (unsigned j = 0; j < plugin.mimes.size(); ++j) {
-      mimes_.push_back(plugin.mimes[j]);
-      mime_plugin_indices_.push_back(i);
-    }
+  for (PluginInfo* plugin_info : plugins_) {
+    for (MimeClassInfo* mime_class_info : plugin_info->mimes_)
+      mimes_.push_back(mime_class_info);
   }
+}
+
+void PluginData::ResetPluginData() {
+  plugins_.clear();
+  mimes_.clear();
+  main_frame_origin_ = nullptr;
 }
 
 bool PluginData::SupportsMimeType(const String& mime_type) const {
-  for (unsigned i = 0; i < mimes_.size(); ++i)
-    if (mimes_[i].type == mime_type)
+  for (const MimeClassInfo* info : mimes_) {
+    if (info->type_ == mime_type)
       return true;
-  return false;
-}
-
-const PluginInfo* PluginData::PluginInfoForMimeType(
-    const String& mime_type) const {
-  for (unsigned i = 0; i < mimes_.size(); ++i) {
-    const MimeClassInfo& info = mimes_[i];
-
-    if (info.type == mime_type)
-      return &plugins_[mime_plugin_indices_[i]];
   }
 
-  return 0;
-}
-
-String PluginData::PluginNameForMimeType(const String& mime_type) const {
-  if (const PluginInfo* info = PluginInfoForMimeType(mime_type))
-    return info->name;
-  return String();
-}
-
-void PluginData::RefreshBrowserSidePluginCache() {
-  Vector<PluginInfo> plugins;
-  PluginListBuilder builder(&plugins);
-  Platform::Current()->GetPluginList(true, WebSecurityOrigin::CreateUnique(),
-                                     &builder);
+  return false;
 }
 
 }  // namespace blink
