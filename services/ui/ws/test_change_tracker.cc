@@ -152,6 +152,9 @@ std::string ChangeToDescription(const Change& change,
       return base::StringPrintf("SurfaceCreated window_id=%s surface_id=%s",
                                 WindowIdToString(change.window_id).c_str(),
                                 change.surface_id.ToString().c_str());
+    case CHANGE_TYPE_TRANSFORM_CHANGED:
+      return base::StringPrintf("TransformChanged window_id=%s",
+                                WindowIdToString(change.window_id).c_str());
   }
   return std::string();
 }
@@ -269,6 +272,13 @@ void TestChangeTracker::OnWindowBoundsChanged(
   change.bounds = old_bounds;
   change.bounds2 = new_bounds;
   change.local_surface_id = local_surface_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnWindowTransformChanged(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_TRANSFORM_CHANGED;
+  change.window_id = window_id;
   AddChange(change);
 }
 

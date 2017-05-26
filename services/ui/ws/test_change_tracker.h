@@ -44,6 +44,7 @@ enum ChangeType {
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
   CHANGE_TYPE_OPACITY,
   CHANGE_TYPE_SURFACE_CHANGED,
+  CHANGE_TYPE_TRANSFORM_CHANGED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -94,6 +95,7 @@ struct Change {
   cc::SurfaceId surface_id;
   gfx::Size frame_size;
   float device_scale_factor;
+  gfx::Transform transform;
   // Set in OnWindowInputEvent() if the event is a KeyEvent.
   std::unordered_map<std::string, std::vector<uint8_t>> key_event_properties;
 };
@@ -157,6 +159,7 @@ class TestChangeTracker {
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+  void OnWindowTransformChanged(Id window_id);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,

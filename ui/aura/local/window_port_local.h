@@ -34,6 +34,8 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
   void OnVisibilityChanged(bool visible) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
+  void OnDidChangeTransform(const gfx::Transform& old_transform,
+                            const gfx::Transform& new_transform) override;
   std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) override;
   void OnPropertyChanged(const void* key,

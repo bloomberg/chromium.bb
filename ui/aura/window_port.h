@@ -23,6 +23,7 @@ class CompositorFrameSink;
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace aura {
@@ -63,6 +64,9 @@ class AURA_EXPORT WindowPort {
 
   virtual void OnDidChangeBounds(const gfx::Rect& old_bounds,
                                  const gfx::Rect& new_bounds) = 0;
+
+  virtual void OnDidChangeTransform(const gfx::Transform& old_transform,
+                                    const gfx::Transform& new_transform) = 0;
 
   // Called before a property is changed. The return value from this is supplied
   // into OnPropertyChanged() so that WindowPort may pass data between the two

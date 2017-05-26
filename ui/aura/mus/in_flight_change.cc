@@ -66,6 +66,28 @@ void InFlightDragChange::SetRevertValueFrom(const InFlightChange& change) {}
 
 void InFlightDragChange::Revert() {}
 
+// InFlightTransformChange -----------------------------------------------------
+
+InFlightTransformChange::InFlightTransformChange(
+    WindowTreeClient* window_tree_client,
+    WindowMus* window,
+    const gfx::Transform& revert_transform)
+    : InFlightChange(window, ChangeType::TRANSFORM),
+      window_tree_client_(window_tree_client),
+      revert_transform_(revert_transform) {}
+
+InFlightTransformChange::~InFlightTransformChange() {}
+
+void InFlightTransformChange::SetRevertValueFrom(const InFlightChange& change) {
+  revert_transform_ =
+      static_cast<const InFlightTransformChange&>(change).revert_transform_;
+}
+
+void InFlightTransformChange::Revert() {
+  window_tree_client_->SetWindowTransformFromServer(window(),
+                                                    revert_transform_);
+}
+
 // CrashInFlightChange --------------------------------------------------------
 
 CrashInFlightChange::CrashInFlightChange(WindowMus* window, ChangeType type)

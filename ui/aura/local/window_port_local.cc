@@ -82,6 +82,10 @@ void WindowPortLocal::OnVisibilityChanged(bool visible) {}
 void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {}
 
+void WindowPortLocal::OnDidChangeTransform(
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {}
+
 std::unique_ptr<ui::PropertyData> WindowPortLocal::OnWillChangeProperty(
     const void* key) {
   return nullptr;

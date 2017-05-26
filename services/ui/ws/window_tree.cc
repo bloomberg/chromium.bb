@@ -722,6 +722,18 @@ void WindowTree::ProcessWindowBoundsChanged(
                                   local_surface_id);
 }
 
+void WindowTree::ProcessWindowTransformChanged(
+    const ServerWindow* window,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform,
+    bool originated_change) {
+  ClientWindowId client_window_id;
+  if (originated_change || !IsWindowKnown(window, &client_window_id))
+    return;
+  client()->OnWindowTransformChanged(client_window_id.id, old_transform,
+                                     new_transform);
+}
+
 void WindowTree::ProcessClientAreaChanged(
     const ServerWindow* window,
     const gfx::Insets& new_client_area,
@@ -1558,6 +1570,35 @@ void WindowTree::SetWindowBounds(
     window->SetBounds(bounds, local_surface_id);
   } else {
     DVLOG(1) << "SetWindowBounds failed (access denied)";
+  }
+  client()->OnChangeCompleted(change_id, success);
+}
+
+void WindowTree::SetWindowTransform(uint32_t change_id,
+                                    Id window_id,
+                                    const gfx::Transform& transform) {
+  // Clients shouldn't have a need to set the transform of the embed root, so
+  // we don't bother routing it to the window-manager.
+
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  DVLOG(3) << "set window transform client window_id=" << window_id
+           << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0)
+           << " transform=" << transform.ToString();
+
+  if (!window) {
+    DVLOG(1) << "SetWindowTransform failed (invalid window id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  // Only the owner of the window can change the bounds.
+  const bool success = access_policy_->CanSetWindowTransform(window);
+  if (success) {
+    Operation op(this, window_server_, OperationType::SET_WINDOW_TRANSFORM);
+    window->SetTransform(transform);
+  } else {
+    DVLOG(1) << "SetWindowTransform failed (access denied)";
   }
   client()->OnChangeCompleted(change_id, success);
 }

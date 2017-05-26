@@ -27,6 +27,7 @@ enum class WindowTreeChangeType {
   PROPERTY,
   REMOVE_TRANSIENT,
   REORDER,
+  TRANSFORM,
   VISIBLE,
 
   // This covers all cases that aren't used in tests.
@@ -125,6 +126,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
       uint32_t window_id,
       const gfx::Rect& bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+  void SetWindowTransform(uint32_t change_id,
+                          uint32_t window_id,
+                          const gfx::Transform& transform) override;
   void SetClientArea(uint32_t window_id,
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&

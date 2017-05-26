@@ -19,6 +19,7 @@
 #include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 
@@ -53,6 +54,7 @@ enum class ChangeType {
   REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
   REORDER,
   SET_MODAL,
+  TRANSFORM,
   VISIBLE,
 };
 
@@ -171,6 +173,24 @@ class InFlightDragChange : public InFlightChange {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InFlightDragChange);
+};
+
+class InFlightTransformChange : public InFlightChange {
+ public:
+  InFlightTransformChange(WindowTreeClient* window_tree_client,
+                          WindowMus* window,
+                          const gfx::Transform& revert_transform);
+  ~InFlightTransformChange() override;
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  WindowTreeClient* window_tree_client_;
+  gfx::Transform revert_transform_;
+
+  DISALLOW_COPY_AND_ASSIGN(InFlightTransformChange);
 };
 
 // Inflight change that crashes on failure. This is useful for changes that are

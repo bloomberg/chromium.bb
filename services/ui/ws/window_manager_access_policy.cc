@@ -100,6 +100,11 @@ bool WindowManagerAccessPolicy::CanSetWindowBounds(
   return WasCreatedByThisClient(window);
 }
 
+bool WindowManagerAccessPolicy::CanSetWindowTransform(
+    const ServerWindow* window) const {
+  return WasCreatedByThisClient(window);
+}
+
 bool WindowManagerAccessPolicy::CanSetWindowProperties(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window);

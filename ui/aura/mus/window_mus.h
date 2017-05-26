@@ -20,6 +20,7 @@ class SurfaceInfo;
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace ui {
@@ -79,6 +80,7 @@ class AURA_EXPORT WindowMus {
   virtual void SetBoundsFromServer(
       const gfx::Rect& bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) = 0;
+  virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
   virtual void SetOpacityFromServer(float opacity) = 0;
   virtual void SetCursorFromServer(const ui::CursorData& cursor) = 0;

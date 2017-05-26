@@ -320,7 +320,10 @@ void ServerWindow::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
 
+  const gfx::Transform old_transform = transform_;
   transform_ = transform;
+  for (auto& observer : observers_)
+    observer.OnWindowTransformChanged(this, old_transform, transform);
 }
 
 void ServerWindow::SetProperty(const std::string& name,

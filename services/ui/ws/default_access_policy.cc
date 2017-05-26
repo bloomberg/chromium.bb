@@ -114,6 +114,11 @@ bool DefaultAccessPolicy::CanSetWindowBounds(const ServerWindow* window) const {
   return WasCreatedByThisClient(window);
 }
 
+bool DefaultAccessPolicy::CanSetWindowTransform(
+    const ServerWindow* window) const {
+  return WasCreatedByThisClient(window);
+}
+
 bool DefaultAccessPolicy::CanSetWindowProperties(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window);

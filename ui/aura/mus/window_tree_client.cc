@@ -665,6 +665,12 @@ void WindowTreeClient::SetWindowBoundsFromServer(
       local_surface_id);
 }
 
+void WindowTreeClient::SetWindowTransformFromServer(
+    WindowMus* window,
+    const gfx::Transform& transform) {
+  window->SetTransformFromServer(transform);
+}
+
 void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
                                                   bool visible) {
   if (!IsRoot(window)) {
@@ -814,6 +820,15 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   ScheduleInFlightBoundsChange(
       window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),
       gfx::ConvertRectToPixel(device_scale_factor, new_bounds));
+}
+
+void WindowTreeClient::OnWindowMusTransformChanged(
+    WindowMus* window,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {
+  const uint32_t change_id = ScheduleInFlightChange(
+      base::MakeUnique<InFlightTransformChange>(this, window, old_transform));
+  tree_->SetWindowTransform(change_id, window->server_id(), new_transform);
 }
 
 void WindowTreeClient::OnWindowMusAddChild(WindowMus* parent,
@@ -1137,6 +1152,21 @@ void WindowTreeClient::OnWindowBoundsChanged(
     return;
 
   SetWindowBoundsFromServer(window, new_bounds, local_surface_id);
+}
+
+void WindowTreeClient::OnWindowTransformChanged(
+    Id window_id,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+
+  InFlightTransformChange new_change(this, window, new_transform);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  SetWindowTransformFromServer(window, new_transform);
 }
 
 void WindowTreeClient::OnClientAreaChanged(
