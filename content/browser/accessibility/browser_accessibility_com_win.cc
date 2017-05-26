@@ -2200,6 +2200,10 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
   if (!start_offset || !end_offset || !text)
     return E_INVALIDARG;
 
+  *start_offset = 0;
+  *end_offset = 0;
+  *text = nullptr;
+
   HandleSpecialTextOffset(&offset);
   if (offset < 0)
     return E_INVALIDARG;
@@ -2211,31 +2215,22 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
 
   // The IAccessible2 spec says we don't have to implement the "sentence"
   // boundary type, we can just let the screenreader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = NULL;
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
     return S_FALSE;
-  }
 
   // According to the IA2 Spec, only line boundaries should succeed when
   // the offset is one past the end of the text.
-  if (offset == text_len) {
-    if (boundary_type == IA2_TEXT_BOUNDARY_LINE) {
-      --offset;
-    } else {
-      *start_offset = 0;
-      *end_offset = 0;
-      *text = nullptr;
-      return S_FALSE;
-    }
-  }
+  if (offset == text_len && boundary_type != IA2_TEXT_BOUNDARY_LINE)
+    return S_FALSE;
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
-  return get_text(*start_offset, *end_offset, text);
+  LONG start = FindBoundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  LONG end = FindBoundary(boundary_type, start, ui::FORWARDS_DIRECTION);
+  if (end < offset)
+    return S_FALSE;
+
+  *start_offset = start;
+  *end_offset = end;
+  return get_text(start, end, text);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
@@ -2253,19 +2248,21 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
   if (!start_offset || !end_offset || !text)
     return E_INVALIDARG;
 
-  // The IAccessible2 spec says we don't have to implement the "sentence"
-  // boundary type, we can just let the screenreader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = NULL;
-    return S_FALSE;
-  }
+  *start_offset = 0;
+  *end_offset = 0;
+  *text = NULL;
 
   const base::string16& text_str = owner()->GetText();
+  LONG text_len = text_str.length();
+  if (offset > text_len)
+    return E_INVALIDARG;
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
+    return S_FALSE;
+
+  *start_offset = FindBoundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -2285,20 +2282,22 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
   if (!start_offset || !end_offset || !text)
     return E_INVALIDARG;
 
-  // The IAccessible2 spec says we don't have to implement the "sentence"
-  // boundary type, we can just let the screenreader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = NULL;
-    return S_FALSE;
-  }
+  *start_offset = 0;
+  *end_offset = 0;
+  *text = NULL;
 
   const base::string16& text_str = owner()->GetText();
+  LONG text_len = text_str.length();
+  if (offset > text_len)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
+    return S_FALSE;
 
   *start_offset = offset;
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, ui::FORWARDS_DIRECTION);
+  *end_offset = FindBoundary(boundary_type, offset, ui::FORWARDS_DIRECTION);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -4725,7 +4724,6 @@ ui::TextBoundaryType BrowserAccessibilityComWin::IA2TextBoundaryToTextBoundary(
 }
 
 LONG BrowserAccessibilityComWin::FindBoundary(
-    const base::string16& text,
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
@@ -4793,9 +4791,9 @@ LONG BrowserAccessibilityComWin::FindBoundary(
 
   // TODO(nektar): |AXPosition| can handle other types of boundaries as well.
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
-  return ui::FindAccessibleTextBoundary(text, owner()->GetLineStartOffsets(),
-                                        boundary, start_offset, direction,
-                                        affinity);
+  return ui::FindAccessibleTextBoundary(
+      owner()->GetText(), owner()->GetLineStartOffsets(), boundary,
+      start_offset, direction, affinity);
 }
 
 LONG BrowserAccessibilityComWin::FindStartOfStyle(
