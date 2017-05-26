@@ -453,6 +453,9 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+  void OnWindowTransformChanged(uint32_t window,
+                                const gfx::Transform& old_transform,
+                                const gfx::Transform& new_transform) override;
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,

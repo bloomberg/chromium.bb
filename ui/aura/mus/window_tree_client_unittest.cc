@@ -474,6 +474,31 @@ TEST_F(WindowTreeClientWmTest, TwoInFlightBoundsChangesBothCanceled) {
   EXPECT_EQ(original_bounds, root_window()->bounds());
 }
 
+TEST_F(WindowTreeClientWmTest, TwoInFlightTransformsChangesBothCanceled) {
+  const gfx::Transform original_transform(root_window()->layer()->transform());
+  gfx::Transform transform1;
+  transform1.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
+  gfx::Transform transform2;
+  transform2.Scale(SkIntToMScalar(3), SkIntToMScalar(3));
+  root_window()->SetTransform(transform1);
+  EXPECT_EQ(transform1, root_window()->layer()->transform());
+
+  root_window()->SetTransform(transform2);
+  EXPECT_EQ(transform2, root_window()->layer()->transform());
+
+  // Tell the client the first transform failed. As there is a still a change in
+  // flight nothing should happen.
+  ASSERT_TRUE(window_tree()->AckFirstChangeOfType(
+      WindowTreeChangeType::TRANSFORM, false));
+  EXPECT_EQ(transform2, root_window()->layer()->transform());
+
+  // Tell the client the seconds transform failed. Should now fallback to
+  // original value.
+  ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::TRANSFORM, false));
+  EXPECT_EQ(original_transform, root_window()->layer()->transform());
+}
+
 // Verifies properties are set if the server replied that the change succeeded.
 TEST_F(WindowTreeClientWmTest, SetPropertySucceeded) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));

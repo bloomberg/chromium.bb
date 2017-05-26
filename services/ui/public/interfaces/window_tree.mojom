@@ -20,6 +20,7 @@ import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/transform.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
 // Windows are identified by a uint32. The upper 16 bits are the connection id,
@@ -110,6 +111,10 @@ interface WindowTree {
   // the frame in the provided |local_frame_id|, if any.
   SetWindowBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds,
                   cc.mojom.LocalSurfaceId? local_surface_id);
+
+  SetWindowTransform(uint32 change_id,
+                     uint32 window_id,
+                     gfx.mojom.Transform transform);
 
   // Sets the client area of the specified window. The client area is specified
   // by way of insets. Everything outside of the insets, and not in
@@ -373,6 +378,10 @@ interface WindowTreeClient {
                         gfx.mojom.Rect old_bounds,
                         gfx.mojom.Rect new_bounds,
                         cc.mojom.LocalSurfaceId? local_surface_id);
+
+  OnWindowTransformChanged(uint32 window,
+                           gfx.mojom.Transform old_transform,
+                           gfx.mojom.Transform new_transform);
 
   OnClientAreaChanged(uint32 window_id,
                       gfx.mojom.Insets new_client_area,

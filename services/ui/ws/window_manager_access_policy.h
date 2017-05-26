@@ -44,6 +44,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetWindowCompositorFrameSink(
       const ServerWindow* window) const override;
   bool CanSetWindowBounds(const ServerWindow* window) const override;
+  bool CanSetWindowTransform(const ServerWindow* window) const override;
   bool CanSetWindowProperties(const ServerWindow* window) const override;
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;
   bool CanSetCapture(const ServerWindow* window) const override;

@@ -52,6 +52,7 @@ class AccessPolicy {
   virtual bool CanSetWindowCompositorFrameSink(
       const ServerWindow* window) const = 0;
   virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowTransform(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowProperties(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowTextInputState(const ServerWindow* window) const = 0;
   virtual bool CanSetCapture(const ServerWindow* window) const = 0;

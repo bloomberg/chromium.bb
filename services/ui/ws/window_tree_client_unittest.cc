@@ -321,6 +321,11 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     tracker()->OnWindowBoundsChanged(window_id, old_bounds, new_bounds,
                                      local_surface_id);
   }
+  void OnWindowTransformChanged(Id window_id,
+                                const gfx::Transform& old_transform,
+                                const gfx::Transform& new_transform) override {
+    tracker()->OnWindowTransformChanged(window_id);
+  }
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,
@@ -2255,6 +2260,34 @@ TEST_F(WindowTreeClientTest, AddUnknownWindowKnownParent) {
                 IdToString(window_2_1_in_wm) + " parent=" +
                 IdToString(window_2_2_in_wm) + "]",
             ChangeWindowDescription(*changes1()));
+}
+
+TEST_F(WindowTreeClientTest, Transform) {
+  const Id window1 = wt_client1()->NewWindow(100);
+  ASSERT_TRUE(window1);
+  ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window1));
+
+  // Establish the second client at |window1|.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window1));
+
+  // The first window created in the second client gets a server id of 2,1
+  // regardless of the id the client uses.
+  const Id window1_in_client2 = BuildWindowId(client_id_1(), 1);
+  const Id window2 = wt_client2()->NewWindow(11);
+  ASSERT_TRUE(wt_client2()->AddWindow(window1_in_client2, window2));
+  const Id window2_in_client1 = BuildWindowId(client_id_2(), 1);
+  wt_client1()->WaitForChangeCount(1);
+  changes1()->clear();
+
+  // Change the transform of |window2| and make sure server gets it.
+  gfx::Transform transform;
+  transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
+  const uint32_t transform_change_id = 12;
+  wt2()->SetWindowTransform(transform_change_id, window2, transform);
+  ASSERT_TRUE(wt_client2()->WaitForChangeCompleted(transform_change_id));
+  wt_client1()->WaitForChangeCount(1);
+  EXPECT_EQ("TransformChanged window_id=" + IdToString(window2_in_client1),
+            SingleChangeToDescription(*changes1()));
 }
 
 // TODO(sky): need to better track changes to initial client. For example,

@@ -349,6 +349,11 @@ void TestWindowTreeClient::OnWindowBoundsChanged(
                                  std::move(new_bounds), local_surface_id);
 }
 
+void TestWindowTreeClient::OnWindowTransformChanged(
+    uint32_t window,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {}
+
 void TestWindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
     const gfx::Insets& new_client_area,

@@ -173,6 +173,10 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
         if (iter->data.property_name == data.property_name)
           return iter;
         break;
+      case ServerChangeType::TRANSFORM:
+        if (iter->data.transform == data.transform)
+          return iter;
+        break;
       case ServerChangeType::VISIBLE:
         if (iter->data.visible == data.visible)
           return iter;
@@ -232,6 +236,13 @@ void WindowPortMus::SetBoundsFromServer(
   else
     local_surface_id_ = cc::LocalSurfaceId();
   window_->SetBounds(bounds);
+}
+
+void WindowPortMus::SetTransformFromServer(const gfx::Transform& transform) {
+  ServerChangeData data;
+  data.transform = transform;
+  ScopedServerChange change(this, ServerChangeType::TRANSFORM, data);
+  window_->SetTransform(transform);
 }
 
 void WindowPortMus::SetVisibleFromServer(bool visible) {
@@ -458,6 +469,16 @@ void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
     window_tree_client_->OnWindowMusBoundsChanged(this, old_bounds, new_bounds);
   if (client_surface_embedder_)
     client_surface_embedder_->UpdateSizeAndGutters();
+}
+
+void WindowPortMus::OnDidChangeTransform(const gfx::Transform& old_transform,
+                                         const gfx::Transform& new_transform) {
+  ServerChangeData change_data;
+  change_data.transform = new_transform;
+  if (!RemoveChangeByTypeAndData(ServerChangeType::TRANSFORM, change_data)) {
+    window_tree_client_->OnWindowMusTransformChanged(this, old_transform,
+                                                     new_transform);
+  }
 }
 
 std::unique_ptr<ui::PropertyData> WindowPortMus::OnWillChangeProperty(

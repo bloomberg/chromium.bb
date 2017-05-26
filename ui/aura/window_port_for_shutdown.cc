@@ -37,6 +37,10 @@ void WindowPortForShutdown::OnVisibilityChanged(bool visible) {}
 void WindowPortForShutdown::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {}
 
+void WindowPortForShutdown::OnDidChangeTransform(
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {}
+
 std::unique_ptr<ui::PropertyData> WindowPortForShutdown::OnWillChangeProperty(
     const void* key) {
   return nullptr;

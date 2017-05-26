@@ -143,6 +143,12 @@ void TestWindowTree::SetWindowBounds(
   OnChangeReceived(change_id, WindowTreeChangeType::BOUNDS);
 }
 
+void TestWindowTree::SetWindowTransform(uint32_t change_id,
+                                        uint32_t window_id,
+                                        const gfx::Transform& transform) {
+  OnChangeReceived(change_id, WindowTreeChangeType::TRANSFORM);
+}
+
 void TestWindowTree::SetClientArea(
     uint32_t window_id,
     const gfx::Insets& insets,

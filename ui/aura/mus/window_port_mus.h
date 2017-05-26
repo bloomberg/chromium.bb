@@ -125,6 +125,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     REMOVE,
     REMOVE_TRANSIENT,
     REORDER,
+    TRANSFORM,
     // This is used when a REORDER *may* occur as the result of a transient
     // child being added or removed. As there is no guarantee the move will
     // actually happen (the window may be in place already) this change is not
@@ -144,6 +145,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     bool visible;
     // Applies to PROPERTY.
     std::string property_name;
+    // Applies to TRANSFORM.
+    gfx::Transform transform;
   };
 
   // Used to identify a change the server.
@@ -210,6 +213,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetBoundsFromServer(
       const gfx::Rect& bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+  void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
   void SetCursorFromServer(const ui::CursorData& cursor) override;
@@ -245,6 +249,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnVisibilityChanged(bool visible) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
+  void OnDidChangeTransform(const gfx::Transform& old_transform,
+                            const gfx::Transform& new_transform) override;
   std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) override;
   void OnPropertyChanged(const void* key,

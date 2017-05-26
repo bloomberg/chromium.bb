@@ -386,6 +386,16 @@ void WindowServer::ProcessWindowBoundsChanged(
   }
 }
 
+void WindowServer::ProcessWindowTransformChanged(
+    const ServerWindow* window,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {
+  for (auto& pair : tree_map_) {
+    pair.second->ProcessWindowTransformChanged(
+        window, old_transform, new_transform, IsOperationSource(pair.first));
+  }
+}
+
 void WindowServer::ProcessClientAreaChanged(
     const ServerWindow* window,
     const gfx::Insets& new_client_area,
@@ -719,9 +729,17 @@ void WindowServer::OnWindowBoundsChanged(ServerWindow* window,
 
   ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
                              window->current_local_surface_id());
-  if (!window->parent())
+  UpdateNativeCursorFromMouseLocation(window);
+}
+
+void WindowServer::OnWindowTransformChanged(
+    ServerWindow* window,
+    const gfx::Transform& old_transform,
+    const gfx::Transform& new_transform) {
+  if (in_destructor_)
     return;
 
+  ProcessWindowTransformChanged(window, old_transform, new_transform);
   UpdateNativeCursorFromMouseLocation(window);
 }
 

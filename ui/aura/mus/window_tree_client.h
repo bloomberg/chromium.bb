@@ -184,6 +184,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightBoundsChange;
   friend class InFlightFocusChange;
   friend class InFlightPropertyChange;
+  friend class InFlightTransformChange;
   friend class InFlightVisibleChange;
   friend class WindowPortMus;
   friend class WindowTreeClientPrivate;
@@ -291,6 +292,8 @@ class AURA_EXPORT WindowTreeClient
       WindowMus* window,
       const gfx::Rect& revert_bounds_in_pixels,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+  void SetWindowTransformFromServer(WindowMus* window,
+                                    const gfx::Transform& transform);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
@@ -304,6 +307,9 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowMusBoundsChanged(WindowMus* window,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds);
+  void OnWindowMusTransformChanged(WindowMus* window,
+                                   const gfx::Transform& old_transform,
+                                   const gfx::Transform& new_transform);
   void OnWindowMusAddChild(WindowMus* parent, WindowMus* child);
   void OnWindowMusRemoveChild(WindowMus* parent, WindowMus* child);
   void OnWindowMusMoveChild(WindowMus* parent,
@@ -347,6 +353,9 @@ class AURA_EXPORT WindowTreeClient
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+  void OnWindowTransformChanged(Id window_id,
+                                const gfx::Transform& old_transform,
+                                const gfx::Transform& new_transform) override;
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,
