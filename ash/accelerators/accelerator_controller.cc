@@ -45,7 +45,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
@@ -424,10 +423,10 @@ void HandleToggleOverview() {
 }
 
 bool CanHandleWindowSnap() {
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return false;
-  wm::WindowState* window_state = active_window->GetWindowState();
+  wm::WindowState* window_state = wm::GetWindowState(active_window);
   // Disable window snapping shortcut key for full screen window due to
   // http://crbug.com/135487.
   return (window_state && window_state->IsUserPositionable() &&
@@ -443,9 +442,9 @@ void HandleWindowSnap(AcceleratorAction action) {
   const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
                               ? wm::WM_EVENT_CYCLE_SNAP_LEFT
                               : wm::WM_EVENT_CYCLE_SNAP_RIGHT);
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* active_window = wm::GetActiveWindow();
   DCHECK(active_window);
-  active_window->GetWindowState()->OnWMEvent(&event);
+  wm::GetWindowState(active_window)->OnWMEvent(&event);
 }
 
 void HandleWindowMinimize() {
