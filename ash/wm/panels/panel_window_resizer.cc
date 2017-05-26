@@ -12,7 +12,6 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -199,8 +198,7 @@ void PanelWindowResizer::FinishDragging() {
 
 void PanelWindowResizer::UpdateLauncherPosition() {
   if (panel_container_) {
-    GetPanelLayoutManager()->shelf()->UpdateIconPositionForPanel(
-        WmWindow::Get(GetTarget()));
+    GetPanelLayoutManager()->shelf()->UpdateIconPositionForPanel(GetTarget());
   }
 }
 

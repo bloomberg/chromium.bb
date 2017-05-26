@@ -22,7 +22,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
@@ -131,9 +130,9 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void CheckWindowAndItemPlacement(aura::Window* first, aura::Window* second) {
     Shelf* shelf = GetPrimaryShelf();
     const gfx::Rect first_item_bounds =
-        shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(first));
+        shelf->GetScreenBoundsOfItemIconForWindow(first);
     const gfx::Rect second_item_bounds =
-        shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(second));
+        shelf->GetScreenBoundsOfItemIconForWindow(second);
     if (!base::i18n::IsRTL()) {
       EXPECT_TRUE((first->bounds().x() < second->bounds().x()) ||
                   (first->bounds().y() < second->bounds().y()));

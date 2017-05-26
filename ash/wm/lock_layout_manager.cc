@@ -9,7 +9,6 @@
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"

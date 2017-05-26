@@ -141,9 +141,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     // Waits until all shelf view animations are done.
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
 
-    WmWindow* wm_panel = WmWindow::Get(panel);
-    Shelf* shelf = wm_panel->GetRootWindowController()->shelf();
-    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
+    Shelf* shelf = GetShelfForWindow(panel);
+    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
@@ -177,9 +176,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     base::RunLoop().RunUntilIdle();
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
-    WmWindow* wm_panel = WmWindow::Get(panel);
-    Shelf* shelf = wm_panel->GetRootWindowController()->shelf();
-    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
+    Shelf* shelf = GetShelfForWindow(panel);
+    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
     gfx::Rect panel_bounds = panel->GetBoundsInScreen();
@@ -231,11 +229,11 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   }
 
   Shelf* GetShelfForWindow(aura::Window* window) {
-    return WmWindow::Get(window)->GetRootWindowController()->GetShelf();
+    return RootWindowController::ForWindow(window)->shelf();
   }
 
-  void SetAlignment(aura::Window* root_window, ShelfAlignment alignment) {
-    GetShelfForWindow(root_window)->SetAlignment(alignment);
+  void SetAlignment(aura::Window* window, ShelfAlignment alignment) {
+    GetShelfForWindow(window)->SetAlignment(alignment);
   }
 
   void SetShelfAutoHideBehavior(aura::Window* window,
@@ -628,10 +626,8 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   int window_x2 = w2->GetBoundsInRootWindow().CenterPoint().x();
   int window_x3 = w3->GetBoundsInRootWindow().CenterPoint().x();
   Shelf* shelf = GetPrimaryShelf();
-  int icon_x1 =
-      shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(w1.get())).x();
-  int icon_x2 =
-      shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(w2.get())).x();
+  int icon_x1 = shelf->GetScreenBoundsOfItemIconForWindow(w1.get()).x();
+  int icon_x2 = shelf->GetScreenBoundsOfItemIconForWindow(w2.get()).x();
   // TODO(crbug.com/698887): investigate failure in Mash.
   if (Shell::GetAshConfig() != Config::MASH)
     EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);

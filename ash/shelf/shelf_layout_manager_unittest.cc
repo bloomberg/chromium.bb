@@ -27,7 +27,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -1097,10 +1096,8 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_2->Show();
 
-  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
-            WmWindow::Get(window_1)->GetRootWindow());
-  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
-            WmWindow::Get(window_2)->GetRootWindow());
+  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(), window_1->GetRootWindow());
+  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(), window_2->GetRootWindow());
 
   // Activate one window in one display.
   wm::ActivateWindow(window_1);
@@ -1222,10 +1219,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_2->Show();
 
-  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
-            WmWindow::Get(window_1)->GetRootWindow());
-  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
-            WmWindow::Get(window_2)->GetRootWindow());
+  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(), window_1->GetRootWindow());
+  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(), window_2->GetRootWindow());
   EXPECT_TRUE(window_1->IsVisible());
   EXPECT_TRUE(window_2->IsVisible());
 
@@ -1315,7 +1310,7 @@ TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
   wm::PinWindow(window1, /* trusted */ false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  WmWindow::Get(window1)->GetWindowState()->Restore();
+  wm::GetWindowState(window1)->Restore();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
 

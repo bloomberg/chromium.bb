@@ -529,17 +529,17 @@ void Shell::NotifyVirtualKeyboardActivated(bool activated,
     observer.OnVirtualKeyboardStateChanged(activated, root_window);
 }
 
-void Shell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {
+void Shell::NotifyShelfCreatedForRootWindow(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfCreatedForRootWindow(root_window);
 }
 
-void Shell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
+void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAlignmentChanged(root_window);
 }
 
-void Shell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
+void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAutoHideBehaviorChanged(root_window);
 }

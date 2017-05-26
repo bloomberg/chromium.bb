@@ -13,7 +13,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 
@@ -44,13 +43,13 @@ TEST_F(ScreenPinningControllerTest, OnlyOnePinnedWindow) {
   wm::ActivateWindow(w1);
 
   wm::PinWindow(w1, /* trusted */ false);
-  EXPECT_TRUE(WmWindow::Get(w1)->GetWindowState()->IsPinned());
-  EXPECT_FALSE(WmWindow::Get(w2)->GetWindowState()->IsPinned());
+  EXPECT_TRUE(wm::GetWindowState(w1)->IsPinned());
+  EXPECT_FALSE(wm::GetWindowState(w2)->IsPinned());
 
   // Prohibit to pin two (or more) windows.
   wm::PinWindow(w2, /* trusted */ false);
-  EXPECT_TRUE(WmWindow::Get(w1)->GetWindowState()->IsPinned());
-  EXPECT_FALSE(WmWindow::Get(w2)->GetWindowState()->IsPinned());
+  EXPECT_TRUE(wm::GetWindowState(w1)->IsPinned());
+  EXPECT_FALSE(wm::GetWindowState(w2)->IsPinned());
 }
 
 TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
@@ -73,7 +72,7 @@ TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
   {
     wm::ActivateWindow(w2);
     const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-    WmWindow::Get(w2)->GetWindowState()->OnWMEvent(&event);
+    wm::GetWindowState(w2)->OnWMEvent(&event);
   }
   {
     // Verify that w1 is still in front of w2.
@@ -89,7 +88,7 @@ TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
   {
     wm::ActivateWindow(w2);
     const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-    WmWindow::Get(w2)->GetWindowState()->OnWMEvent(&event);
+    wm::GetWindowState(w2)->OnWMEvent(&event);
   }
   {
     // Verify that w1 is still in front of w2.
@@ -105,7 +104,7 @@ TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
   {
     wm::ActivateWindow(w2);
     const wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-    WmWindow::Get(w2)->GetWindowState()->OnWMEvent(&event);
+    wm::GetWindowState(w2)->OnWMEvent(&event);
   }
   {
     // Verify that w1 is still in front of w2.
@@ -121,7 +120,7 @@ TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
   {
     wm::ActivateWindow(w2);
     const wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-    WmWindow::Get(w2)->GetWindowState()->OnWMEvent(&event);
+    wm::GetWindowState(w2)->OnWMEvent(&event);
   }
   {
     // Verify that w1 is still in front of w2.
@@ -134,13 +133,13 @@ TEST_F(ScreenPinningControllerTest, FullscreenInPinnedMode) {
   }
 
   // Restore w1.
-  WmWindow::Get(w1)->GetWindowState()->Restore();
+  wm::GetWindowState(w1)->Restore();
 
   // Now, fullscreen-ize w2 should put it in front of w1.
   {
     wm::ActivateWindow(w2);
     const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-    WmWindow::Get(w2)->GetWindowState()->OnWMEvent(&event);
+    wm::GetWindowState(w2)->OnWMEvent(&event);
   }
   {
     // Verify that w1 is still in front of w2.

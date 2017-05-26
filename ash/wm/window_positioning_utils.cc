@@ -14,7 +14,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

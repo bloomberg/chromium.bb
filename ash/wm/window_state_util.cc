@@ -6,7 +6,6 @@
 
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
-#include "ash/wm_window.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {

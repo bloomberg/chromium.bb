@@ -13,7 +13,6 @@
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -432,9 +431,8 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
 }
 
 gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
-  WmWindow* wm_window = WmWindow::Get(window);
   Shelf* shelf = Shelf::ForWindow(window);
-  gfx::Rect item_rect = shelf->GetScreenBoundsOfItemIconForWindow(wm_window);
+  gfx::Rect item_rect = shelf->GetScreenBoundsOfItemIconForWindow(window);
 
   // The launcher item is visible and has an icon.
   if (!item_rect.IsEmpty())

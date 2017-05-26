@@ -8,9 +8,9 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -24,15 +24,16 @@ ImmersiveContextAsh::~ImmersiveContextAsh() {}
 
 void ImmersiveContextAsh::InstallResizeHandleWindowTargeter(
     ImmersiveFullscreenController* controller) {
-  WmWindow* window = WmWindow::Get(controller->widget()->GetNativeWindow());
-  window->InstallResizeHandleWindowTargeter(controller);
+  aura::Window* window = controller->widget()->GetNativeWindow();
+  window->SetEventTargeter(
+      base::MakeUnique<ResizeHandleWindowTargeter>(window, controller));
 }
 
 void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
     ImmersiveFullscreenController* controller,
     bool entering) {
-  WmWindow* window = WmWindow::Get(controller->widget()->GetNativeWindow());
-  wm::WindowState* window_state = window->GetWindowState();
+  aura::Window* window = controller->widget()->GetNativeWindow();
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
   window_state->set_hide_shelf_when_fullscreen(!entering);
   // Update the window's immersive mode state for the window manager.
@@ -43,8 +44,10 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
 }
 
 gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-  return window->GetDisplayNearestWindow().bounds();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+  return display.bounds();
 }
 
 void ImmersiveContextAsh::AddPointerWatcher(

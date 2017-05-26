@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

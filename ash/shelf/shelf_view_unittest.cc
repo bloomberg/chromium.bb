@@ -37,7 +37,6 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/wallpaper_controller_test_api.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1726,9 +1725,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-  start_point =
-      secondary_shelf->GetWindow()->ConvertPointFromScreen(start_point);
-
+  ::wm::ConvertPointFromScreen(secondary_shelf->GetWindow(), &start_point);
   ui::test::EventGenerator generator(Shell::GetAllRootWindows()[1],
                                      start_point);
 

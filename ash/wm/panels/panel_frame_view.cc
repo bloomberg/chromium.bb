@@ -8,7 +8,7 @@
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -24,7 +24,8 @@ const char PanelFrameView::kViewClassName[] = "PanelFrameView";
 
 PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
     : frame_(frame), caption_button_container_(nullptr), window_icon_(nullptr) {
-  GetWidgetWindow()->InstallResizeHandleWindowTargeter(nullptr);
+  GetWidgetWindow()->SetEventTargeter(
+      base::MakeUnique<ResizeHandleWindowTargeter>(GetWidgetWindow(), nullptr));
   DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
     InitHeaderPainter();
@@ -38,8 +39,8 @@ PanelFrameView::~PanelFrameView() {
 void PanelFrameView::SetFrameColors(SkColor active_frame_color,
                                     SkColor inactive_frame_color) {
   header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
-  GetWidgetWindow()->aura_window()->SetProperty(
-      aura::client::kTopViewColor, header_painter_->GetInactiveFrameColor());
+  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
+                                 header_painter_->GetInactiveFrameColor());
 }
 
 const char* PanelFrameView::GetClassName() const {
@@ -48,8 +49,8 @@ const char* PanelFrameView::GetClassName() const {
 
 void PanelFrameView::InitHeaderPainter() {
   header_painter_.reset(new DefaultHeaderPainter);
-  GetWidgetWindow()->aura_window()->SetProperty(
-      aura::client::kTopViewColor, header_painter_->GetInactiveFrameColor());
+  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
+                                 header_painter_->GetInactiveFrameColor());
 
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   AddChildView(caption_button_container_);
@@ -63,8 +64,8 @@ void PanelFrameView::InitHeaderPainter() {
   }
 }
 
-WmWindow* PanelFrameView::GetWidgetWindow() {
-  return WmWindow::Get(frame_->GetNativeWindow());
+aura::Window* PanelFrameView::GetWidgetWindow() {
+  return frame_->GetNativeWindow();
 }
 
 int PanelFrameView::NonClientTopBorderHeight() const {
@@ -86,8 +87,8 @@ void PanelFrameView::Layout() {
   if (!header_painter_)
     return;
   header_painter_->LayoutHeader();
-  GetWidgetWindow()->aura_window()->SetProperty(aura::client::kTopViewInset,
-                                                NonClientTopBorderHeight());
+  GetWidgetWindow()->SetProperty(aura::client::kTopViewInset,
+                                 NonClientTopBorderHeight());
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {

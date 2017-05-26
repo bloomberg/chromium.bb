@@ -14,7 +14,6 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

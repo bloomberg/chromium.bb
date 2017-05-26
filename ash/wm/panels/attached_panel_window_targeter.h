@@ -26,8 +26,8 @@ class AttachedPanelWindowTargeter : public ::wm::EasyResizeWindowTargeter,
   ~AttachedPanelWindowTargeter() override;
 
   // ShellObserver:
-  void OnShelfCreatedForRootWindow(WmWindow* root_window) override;
-  void OnShelfAlignmentChanged(WmWindow* root_window) override;
+  void OnShelfCreatedForRootWindow(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
  private:
   void UpdateTouchExtend(aura::Window* root_window);

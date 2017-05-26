@@ -63,6 +63,7 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
+class WmWindow;
 class WorkspaceController;
 
 namespace mus {

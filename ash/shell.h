@@ -175,7 +175,6 @@ class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
 class WindowTreeHostManager;
-class WmWindow;
 
 enum class Config;
 enum class LoginStatus;
@@ -599,15 +598,15 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Notifies observers that the shelf was created for |root_window|.
   // TODO(jamescook): Move to Shelf.
-  void NotifyShelfCreatedForRootWindow(WmWindow* root_window);
+  void NotifyShelfCreatedForRootWindow(aura::Window* root_window);
 
   // Notifies observers that |root_window|'s shelf changed alignment.
   // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAlignmentChanged(WmWindow* root_window);
+  void NotifyShelfAlignmentChanged(aura::Window* root_window);
 
   // Notifies observers that |root_window|'s shelf changed auto-hide behavior.
   // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window);
+  void NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window);
 
   // Used to provide better error messages for Shell::Get() under mash.
   static void SetIsBrowserProcessWithMash();

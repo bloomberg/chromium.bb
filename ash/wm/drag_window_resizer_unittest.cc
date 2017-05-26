@@ -14,7 +14,6 @@
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"

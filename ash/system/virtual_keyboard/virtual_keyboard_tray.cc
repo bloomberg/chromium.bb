@@ -14,9 +14,9 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
-#include "ash/wm_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -64,8 +64,9 @@ void VirtualKeyboardTray::HideBubbleWithView(
 void VirtualKeyboardTray::ClickedOutsideBubble() {}
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
-  const int64_t display_id =
-      shelf_->GetWindow()->GetDisplayNearestWindow().id();
+  const int64_t display_id = display::Screen::GetScreen()
+                                 ->GetDisplayNearestWindow(shelf_->GetWindow())
+                                 .id();
   Shell::Get()->keyboard_ui()->ShowInDisplay(display_id);
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially

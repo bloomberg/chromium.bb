@@ -96,7 +96,7 @@ class ASH_EXPORT PanelLayoutManager
 
   // ShellObserver:
   void OnOverviewModeEnded() override;
-  void OnShelfAlignmentChanged(WmWindow* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;
 
