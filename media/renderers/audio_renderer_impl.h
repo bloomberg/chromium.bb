@@ -248,6 +248,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Whether the stream is possibly encrypted.
   bool is_encrypted_;
 
+  // Similar to |last_decoded_channel_layout_|, used to configure the channel
+  // mask given to the |algorithm_| for efficient playback rate changes.
+  int last_decoded_channels_;
+
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
   base::Lock lock_;

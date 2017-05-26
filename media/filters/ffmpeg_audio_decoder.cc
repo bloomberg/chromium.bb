@@ -227,10 +227,9 @@ bool FFmpegAudioDecoder::FFmpegDecode(
 
       bool is_sample_rate_change =
           av_frame_->sample_rate != config_.samples_per_second();
-      bool is_config_stale =
-          is_sample_rate_change ||
-          channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
-          av_frame_->format != av_sample_format_;
+      bool is_config_stale = is_sample_rate_change ||
+                             channels != config_.channels() ||
+                             av_frame_->format != av_sample_format_;
 
       // Only consider channel layout changes for AAC.
       // TODO(tguilbert, dalecurtis): Due to http://crbug.com/600538 we need to
@@ -250,8 +249,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
               << config_.samples_per_second()
               << ", ChannelLayout: " << channel_layout << " vs "
               << config_.channel_layout() << ", Channels: " << channels
-              << " vs "
-              << ChannelLayoutToChannelCount(config_.channel_layout());
+              << " vs " << config_.channels();
           config_.Initialize(config_.codec(), config_.sample_format(),
                              channel_layout, av_frame_->sample_rate,
                              config_.extra_data(), config_.encryption_scheme(),
@@ -264,7 +262,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
               << "Unsupported midstream configuration change!"
               << " Sample Rate: " << av_frame_->sample_rate << " vs "
               << config_.samples_per_second() << ", Channels: " << channels
-              << " vs " << ChannelLayoutToChannelCount(config_.channel_layout())
+              << " vs " << config_.channels()
               << ", Sample Format: " << av_frame_->format << " vs "
               << av_sample_format_;
           // This is an unrecoverable error, so bail out.
@@ -278,8 +276,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
       output = reinterpret_cast<AudioBuffer*>(
           av_buffer_get_opaque(av_frame_->buf[0]));
 
-      DCHECK_EQ(ChannelLayoutToChannelCount(config_.channel_layout()),
-                output->channel_count());
+      DCHECK_EQ(config_.channels(), output->channel_count());
       const int unread_frames = output->frame_count() - av_frame_->nb_samples;
       DCHECK_GE(unread_frames, 0);
       if (unread_frames > 0)
@@ -344,11 +341,9 @@ bool FFmpegAudioDecoder::ConfigureDecoder(const AudioDecoderConfig& config) {
   av_frame_.reset(av_frame_alloc());
   av_sample_format_ = codec_context_->sample_fmt;
 
-  if (codec_context_->channels !=
-      ChannelLayoutToChannelCount(config.channel_layout())) {
+  if (codec_context_->channels != config.channels()) {
     MEDIA_LOG(ERROR, media_log_)
-        << "Audio configuration specified "
-        << ChannelLayoutToChannelCount(config.channel_layout())
+        << "Audio configuration specified " << config.channels()
         << " channels, but FFmpeg thinks the file contains "
         << codec_context_->channels << " channels";
     ReleaseFFmpegResources();
@@ -417,9 +412,11 @@ int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
   DCHECK_GE(frames_required, frame->nb_samples);
 
   ChannelLayout channel_layout =
-      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
+      config_.channel_layout() == CHANNEL_LAYOUT_DISCRETE
+          ? CHANNEL_LAYOUT_DISCRETE
+          : ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
 
-  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+  if (config_.channel_layout() == CHANNEL_LAYOUT_UNSUPPORTED) {
     DLOG(ERROR) << "Unsupported channel layout.";
     return AVERROR(EINVAL);
   }

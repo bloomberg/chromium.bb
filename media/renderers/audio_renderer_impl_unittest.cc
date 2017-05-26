@@ -679,6 +679,29 @@ TEST_F(AudioRendererImplTest, ChannelMask) {
     ASSERT_TRUE(mask[ch]);
 }
 
+// Verify that the proper channel mask is configured when downmixing is applied
+// to the input with discrete layout. The default hardware layout is stereo.
+TEST_F(AudioRendererImplTest, ChannelMask_DownmixDiscreteLayout) {
+  int audio_channels = 9;
+
+  AudioDecoderConfig audio_config(
+      kCodecOpus, kSampleFormat, CHANNEL_LAYOUT_DISCRETE,
+      kInputSamplesPerSecond, EmptyExtraData(), Unencrypted());
+  audio_config.SetChannelsForDiscrete(audio_channels);
+  demuxer_stream_.set_audio_decoder_config(audio_config);
+  ConfigureDemuxerStream(true);
+
+  // Fake an attached webaudio client.
+  sink_->SetIsOptimizedForHardwareParameters(false);
+
+  Initialize();
+  std::vector<bool> mask = channel_mask();
+  EXPECT_FALSE(mask.empty());
+  ASSERT_EQ(mask.size(), static_cast<size_t>(audio_channels));
+  for (int ch = 0; ch < audio_channels; ++ch)
+    ASSERT_TRUE(mask[ch]);
+}
+
 TEST_F(AudioRendererImplTest, Underflow_Flush) {
   Initialize();
   Preroll();

@@ -566,6 +566,24 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_4ch_ChannelMapping2) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear-opus-4ch-channelmapping2.ogg", kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_11ch_ChannelMapping2) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear-opus-11ch-channelmapping2.ogg", kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
 
@@ -2194,6 +2212,24 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 // Verify that Opus audio in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-opus-end-trimming.webm"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest,
+       BasicPlayback_AudioOnly_Opus_4ch_ChannelMapping2_WebM) {
+  ASSERT_EQ(
+      PIPELINE_OK,
+      Start("bear-opus-end-trimming-4ch-channelmapping2.webm", kClockless));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest,
+       BasicPlayback_AudioOnly_Opus_11ch_ChannelMapping2_WebM) {
+  ASSERT_EQ(
+      PIPELINE_OK,
+      Start("bear-opus-end-trimming-11ch-channelmapping2.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
