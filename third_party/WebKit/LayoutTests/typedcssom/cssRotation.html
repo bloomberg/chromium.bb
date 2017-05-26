@@ -5,7 +5,7 @@
 <script>
 var EPSILON = 1e-6; // float epsilon
 function angle(deg) {
-  return new CSSAngleValue(deg, 'deg');
+  return new CSSUnitValue(deg, 'deg');
 }
 
 var values = [
@@ -35,7 +35,7 @@ var values = [
     is2D: false, cssText: "rotate3d(2, 3.7, -4, -1.2deg)",
     asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9998067, 0.01448049, 0.0132978, 0, -0.0143841,
     0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1]))},
-  {input: new CSSRotation(1, 0, 0, new CSSAngleValue(0.5, 'turn')), angle: 180, x: 1, y: 0, z: 0,
+  {input: new CSSRotation(1, 0, 0, new CSSUnitValue(0.5, 'turn')), angle: 180, x: 1, y: 0, z: 0,
     is2D: false, cssText: "rotate3d(1, 0, 0, 0.5turn)",
     asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([1, 0, 0, 0, 0, -1, 1.2246467991473532e-16, 0, 0,
     -1.2246467991473532e-16, -1, 0, 0, 0, 0, 1]))}

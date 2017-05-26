@@ -7,14 +7,14 @@
 <script>
 
 test(function() {
-  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSUnitValue(10, 'px'));
   assert_equals(testElement.styleMap.get('width').cssText, '10px');
 }, "Setting and getting round trips");
 
 test(function() {
-  testElement.styleMap.set('WIDTH', new CSSSimpleLength(40, 'px'));
+  testElement.styleMap.set('WIDTH', new CSSUnitValue(40, 'px'));
   assert_equals(testElement.styleMap.get('WiDtH').cssText, '40px');
-  testElement.styleMap.set('wIdTh', new CSSSimpleLength(50, 'px'));
+  testElement.styleMap.set('wIdTh', new CSSUnitValue(50, 'px'));
   assert_equals(testElement.styleMap.get('width').cssText, '50px');
 }, "Setting and getting is not case sensitive");
 
@@ -24,27 +24,27 @@ test(function() {
 }, "Changes to element.style are reflected in the element.styleMap");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSSimpleLength(30, 'px'));
+  testElement.styleMap.set('width', new CSSUnitValue(30, 'px'));
   assert_equals(testElement.style.width, '30px');
 }, "Changes to element.styleMap are reflected in element.style");
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('width', new CSSNumberValue(4));
+    testElement.styleMap.set('width', new CSSUnitValue(4, 'number'));
   });
 }, "Attempting to set an invalid type for a property throws");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSSimpleLength(2, 'px'));
+  testElement.styleMap.set('width', new CSSUnitValue(2, 'px'));
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('width', new CSSNumberValue(4));
+    testElement.styleMap.set('width', new CSSUnitValue(4, 'number'));
   });
   assert_equals(testElement.styleMap.get('width').cssText, '2px');
 }, "Attempting to set an invalid type for a property does not change the value");
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('lemons', new CSSNumberValue(4));
+    testElement.styleMap.set('lemons', new CSSUnitValue(4, 'number'));
   });
   assert_throws(new TypeError(), function() {
     testElement.styleMap.set('lemons', null);

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL cssText returns a string with the x and y positions cssStrings separated by a space CSSCalcValue is not defined
+Harness: the test ran to completion.
+

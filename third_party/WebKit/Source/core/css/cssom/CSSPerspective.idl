@@ -6,10 +6,10 @@
 // like "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssperspective
 [
-    Constructor(CSSLengthValue length),
+    Constructor(CSSNumericValue length),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSPerspective : CSSTransformComponent {
-    readonly attribute CSSLengthValue length;
+    readonly attribute CSSNumericValue length;
 };

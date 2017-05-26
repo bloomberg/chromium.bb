@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS getProperties returns an empty list when no properties have been set 
+FAIL getProperties returns the name of a property if it is set Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Accessing another property doesn't add a spurious result Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL property name does not appear in result after deletion Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL getProperties returns multiple properties if they are set. Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS getProperties returns expected values for custom properties 
+PASS getProperties returns expected values when @apply is used 
+PASS getProperties returns only one @apply when multiple things are applied 
+Harness: the test ran to completion.
+

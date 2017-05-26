@@ -6,12 +6,14 @@
 #define CSSNumericValue_h
 
 #include "core/CoreExport.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class CSSUnitValue;
 class ExceptionState;
 
 class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
@@ -20,6 +22,10 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
  public:
   static CSSNumericValue* parse(const String& css_text, ExceptionState&);
+  static CSSNumericValue* FromCSSValue(const CSSValue&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
 
   virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
     // TODO(meade): Implement.
@@ -41,6 +47,13 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   virtual CSSNumericValue* to(const String&, ExceptionState&) {
     // TODO(meade): Implement.
     return nullptr;
+  }
+
+  // Internal methods.
+  virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) { return nullptr; }
+  bool ContainsPercent() const {
+    // TODO(meade): Implement.
+    return false;
   }
 
  protected:

@@ -1,0 +1,59 @@
+This is a testharness.js-based test.
+PASS Setting height to max-content 
+PASS Setting height to min-content 
+PASS Setting height to fit-content 
+PASS Setting height to auto 
+PASS Setting height to initial 
+PASS Setting height to inherit 
+PASS Setting height to unset 
+FAIL Setting height to CSSUnitValue with value 1px Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 3em Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 4ex Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 5ch Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 6rem Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 7vw Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 8vh Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 9vmin Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 10vmax Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 11cm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 12mm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting height to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Setting height to invalid value CSSUnitValue throws 
+PASS Setting height to invalid value null throws 
+PASS Setting height to invalid value undefined throws 
+PASS Setting height to invalid value true throws 
+PASS Setting height to invalid value false throws 
+PASS Setting height to invalid value 1 throws 
+PASS Setting height to invalid value hello throws 
+PASS Setting height to invalid value [object Object] throws 
+PASS Setting height to invalid value CSSKeywordValue throws 
+PASS Getting height when it is set to max-content 
+PASS Getting height when it is set to min-content 
+PASS Getting height when it is set to fit-content 
+PASS Getting height when it is set to auto 
+PASS Getting height when it is set to initial 
+PASS Getting height when it is set to inherit 
+PASS Getting height when it is set to unset 
+FAIL Getting height with a CSSUnitValue whose value is 1px assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 3em assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 4ex assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 5ch assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 6rem assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 7vw assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 8vh assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 9vmin assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 10vmax assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 11cm assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 12mm assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 13in assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 14pc assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting height with a CSSUnitValue whose value is 15pt assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL getAll for single-valued height assert_equals: Returned type is incorrect: expected "CSSUnitValue" but got "CSSStyleValue"
+PASS Delete height removes the value from the styleMap 
+FAIL height shows up in getProperties Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Setting height to a sequence throws 
+PASS Appending to height throws 
+Harness: the test ran to completion.
+

@@ -1,0 +1,53 @@
+This is a testharness.js-based test.
+PASS Setting right to auto 
+PASS Setting right to initial 
+PASS Setting right to inherit 
+PASS Setting right to unset 
+FAIL Setting right to CSSUnitValue with value 1px Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 3em Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 4ex Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 5ch Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 6rem Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 7vw Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 8vh Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 9vmin Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 10vmax Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 11cm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 12mm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting right to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Setting right to invalid value CSSUnitValue throws 
+PASS Setting right to invalid value null throws 
+PASS Setting right to invalid value undefined throws 
+PASS Setting right to invalid value true throws 
+PASS Setting right to invalid value false throws 
+PASS Setting right to invalid value 1 throws 
+PASS Setting right to invalid value hello throws 
+PASS Setting right to invalid value [object Object] throws 
+PASS Setting right to invalid value CSSKeywordValue throws 
+PASS Getting right when it is set to auto 
+PASS Getting right when it is set to initial 
+PASS Getting right when it is set to inherit 
+PASS Getting right when it is set to unset 
+FAIL Getting right with a CSSUnitValue whose value is 1px assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 3em assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 4ex assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 5ch assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 6rem assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 7vw assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 8vh assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 9vmin assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 10vmax assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 11cm assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 12mm assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 13in assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 14pc assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Getting right with a CSSUnitValue whose value is 15pt assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL getAll for single-valued right assert_equals: Returned type is incorrect: expected "CSSUnitValue" but got "CSSStyleValue"
+PASS Delete right removes the value from the styleMap 
+FAIL right shows up in getProperties Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Setting right to a sequence throws 
+PASS Appending to right throws 
+Harness: the test ran to completion.
+

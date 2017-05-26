@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Getting a 10px left results in a CSSUnitValue assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+PASS getAll for left returns a single value 
+Harness: the test ran to completion.
+

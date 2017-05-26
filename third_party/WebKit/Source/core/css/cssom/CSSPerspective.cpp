@@ -8,11 +8,11 @@
 
 namespace blink {
 
-CSSPerspective* CSSPerspective::Create(const CSSLengthValue* length,
+CSSPerspective* CSSPerspective::Create(const CSSNumericValue* length,
                                        ExceptionState& exception_state) {
   if (length->ContainsPercent()) {
     exception_state.ThrowTypeError(
-        "CSSPerspective does not support CSSLengthValues with percent units");
+        "CSSPerspective does not support CSSNumericValues with percent units");
     return nullptr;
   }
   return new CSSPerspective(length);
@@ -21,16 +21,17 @@ CSSPerspective* CSSPerspective::Create(const CSSLengthValue* length,
 CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
   DCHECK_EQ(value.length(), 1U);
-  CSSLengthValue* length =
-      CSSLengthValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  CSSNumericValue* length =
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   DCHECK(!length->ContainsPercent());
   return new CSSPerspective(length);
 }
 
 CSSFunctionValue* CSSPerspective::ToCSSValue() const {
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
-  result->Append(*length_->ToCSSValue());
-  return result;
+  return nullptr;
+  // CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+  // result->Append(*length_->ToCSSValue());
+  // return result;
 }
 
 }  // namespace blink
