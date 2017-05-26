@@ -1266,6 +1266,31 @@ class GroupNamedtuplesByKeyTests(cros_test_lib.TestCase):
         expected_result)
 
 
+class InvertDictionayTests(cros_test_lib.TestCase):
+  """Tests for InvertDictionary."""
+
+  def testInvertDictionary(self):
+    """Test InvertDictionary."""
+    changes = ['change_1', 'change_2', 'change_3', 'change_4']
+    slaves = ['slave_1', 'slave_2', 'slave_3', 'slave_4']
+    slave_changes_dict = {
+        slaves[0]: set(changes[0:1]),
+        slaves[1]: set(changes[0:2]),
+        slaves[2]: set(changes[2:4]),
+        slaves[3]: set()
+    }
+    change_slaves_dict = cros_build_lib.InvertDictionary(
+        slave_changes_dict)
+
+    expected_dict = {
+        changes[0]: set(slaves[0:2]),
+        changes[1]: set([slaves[1]]),
+        changes[2]: set([slaves[2]]),
+        changes[3]: set([slaves[2]])
+    }
+    self.assertDictEqual(change_slaves_dict, expected_dict)
+
+
 class Test_iflatten_instance(cros_test_lib.TestCase):
   """Test iflatten_instance function."""
 

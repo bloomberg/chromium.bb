@@ -1435,7 +1435,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(11)
   def GetActionsForChanges(self, changes, ignore_patch_number=True,
-                           start_time=None):
+                           status=None, action=None, start_time=None):
     """Gets all the actions for the given changes.
 
     Note, this includes all patches of the given changes.
@@ -1446,6 +1446,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       ignore_patch_number: Boolean indicating whether to ignore patch_number of
         the changes. If ignore_patch_number is False, only get the actions with
         matched patch_number. Default to True.
+      status: If provided, only return the actions with build is |status| (a
+        member of constants.BUILDER_ALL_STATUSES). Default to None.
+      action: If provided, only return the actions is |action| (a member of
+        constants.CL_ACTIONS). Default to None.
       start_time: If provided, only return the actions with timestamp >=
         start_time. Default to None.
 
@@ -1456,6 +1460,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       return []
 
     clauses = []
+    basic_conds = []
+    if status is not None:
+      basic_conds.append('status = "%s"' % status)
+    if action is not None:
+      basic_conds.append('action = "%s"' % action)
+    if start_time is not None:
+      basic_conds.append('timestamp > TIMESTAMP("%s")' % start_time)
+
     # Note: We are using a string of OR statements rather than a 'WHERE IN'
     # style clause, because 'WHERE IN' does not make use of multi-column
     # indexes, and therefore has poor performance with a large table.
@@ -1469,9 +1481,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         patch_number = int(change.patch_number)
         conds.append('patch_number = %d' % patch_number)
 
-      if start_time is not None:
-        conds.append('timestamp > TIMESTAMP("%s")' % start_time)
-
+      conds.extend(basic_conds)
       conds_str = ' AND '.join(conds)
       clauses.append('(' + conds_str + ')')
 

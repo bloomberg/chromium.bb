@@ -277,7 +277,7 @@ class FakeCIDBConnection(object):
     self.buildStageTable[build_stage_id]['status'] = status
 
   def GetActionsForChanges(self, changes, ignore_patch_number=True,
-                           start_time=None):
+                           status=None, action=None, start_time=None):
     """Gets all the actions for the given changes.
 
     Args:
@@ -286,6 +286,10 @@ class FakeCIDBConnection(object):
       ignore_patch_number: Boolean indicating whether to ignore patch_number of
         the changes. If ignore_patch_number is False, only get the actions with
         matched patch_number. Default to True.
+      status: If provided, only return the actions with build is |status| (a
+        member of constants.BUILDER_ALL_STATUSES). Default to None.
+      action: If provided, only return the actions is |action| (a member of
+        constants.CL_ACTIONS). Default to None.
       start_time: If provided, only return the actions with timestamp >=
         start_time. Default to None.
 
@@ -295,6 +299,10 @@ class FakeCIDBConnection(object):
     values = []
     for row in self.GetActionHistory():
       if start_time is not None and row.timestamp < start_time:
+        continue
+      if status is not None and row.status != status:
+        continue
+      if action is not None and row.action != action:
         continue
 
       for change in changes:
