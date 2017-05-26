@@ -67,7 +67,7 @@ public class PaymentRequestShowTwiceTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
-                        PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS));
+                        JourneyLogger.NO_SHOW_CONCURRENT_REQUESTS));
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());

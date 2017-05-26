@@ -129,7 +129,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
     }
 
     /**
@@ -151,7 +151,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
     }
 
     /**
@@ -179,7 +179,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
     }
 
     /**
@@ -200,7 +200,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                 mPaymentRequestTestRule.getActivity());
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_MOJO_RENDERER_CLOSING);
+                JourneyLogger.ABORT_REASON_MOJO_RENDERER_CLOSING);
     }
 
     /**
@@ -219,7 +219,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.expectResultContains(new String[] {"Abort"});
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_MERCHANT);
+                JourneyLogger.ABORT_REASON_ABORTED_BY_MERCHANT);
     }
 
     /**
@@ -248,7 +248,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
-                        PaymentRequestMetrics.NO_SHOW_NO_MATCHING_PAYMENT_METHOD));
+                        JourneyLogger.NO_SHOW_NO_MATCHING_PAYMENT_METHOD));
     }
 
     /**
@@ -273,7 +273,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
-                        PaymentRequestMetrics.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD));
+                        JourneyLogger.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD));
     }
 
     /**

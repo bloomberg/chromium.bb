@@ -98,15 +98,29 @@ void JourneyLoggerAndroid::SetEventOccurred(
   journey_logger_.SetEventOccurred(static_cast<JourneyLogger::Event>(jevent));
 }
 
-void JourneyLoggerAndroid::RecordJourneyStatsHistograms(
+void JourneyLoggerAndroid::SetCompleted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  journey_logger_.SetCompleted();
+}
+
+void JourneyLoggerAndroid::SetAborted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    jint jcompletion_status) {
-  DCHECK_GE(jcompletion_status, 0);
-  DCHECK_LT(jcompletion_status,
-            JourneyLogger::CompletionStatus::COMPLETION_STATUS_MAX);
-  journey_logger_.RecordJourneyStatsHistograms(
-      static_cast<JourneyLogger::CompletionStatus>(jcompletion_status));
+    jint jreason) {
+  DCHECK_GE(jreason, 0);
+  DCHECK_LT(jreason, JourneyLogger::AbortReason::ABORT_REASON_MAX);
+  journey_logger_.SetAborted(static_cast<JourneyLogger::AbortReason>(jreason));
+}
+
+void JourneyLoggerAndroid::SetNotShown(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint jreason) {
+  DCHECK_GE(jreason, 0);
+  DCHECK_LT(jreason, JourneyLogger::NotShownReason::NOT_SHOWN_REASON_MAX);
+  journey_logger_.SetNotShown(
+      static_cast<JourneyLogger::NotShownReason>(jreason));
 }
 
 static jlong InitJourneyLoggerAndroid(

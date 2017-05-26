@@ -25,8 +25,7 @@ TEST(JourneyLoggerTest,
   JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
                        /*ukm_recorder=*/nullptr);
 
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_NOT_USED,
@@ -55,8 +54,7 @@ TEST(JourneyLoggerTest,
   // The merchant does not query CanMakePayment, show the PaymentRequest and the
   // user aborts it.
   logger.SetShowCalled();
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_NOT_USED,
@@ -85,8 +83,7 @@ TEST(JourneyLoggerTest,
   // The merchant does not query CanMakePayment, show the PaymentRequest and
   // there is an abort not initiated by the user.
   logger.SetShowCalled();
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_NOT_USED,
@@ -115,8 +112,7 @@ TEST(JourneyLoggerTest,
   // The merchant does not query CanMakePayment, show the PaymentRequest and the
   // user completes it.
   logger.SetShowCalled();
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_NOT_USED,
@@ -144,8 +140,7 @@ TEST(JourneyLoggerTest,
 
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetCanMakePaymentValue(false);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -178,8 +173,7 @@ TEST(JourneyLoggerTest,
 
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetCanMakePaymentValue(true);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -213,8 +207,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(false);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -247,8 +240,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(false);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -281,8 +273,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(false);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -316,8 +307,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(true);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -352,8 +342,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(true);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -388,8 +377,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(true);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount("PaymentRequest.CanMakePayment.Usage",
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
@@ -424,8 +412,7 @@ TEST(JourneyLoggerTest,
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetShowCalled();
   logger.SetCanMakePaymentValue(true);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -445,8 +432,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
 
   // Simulate that the user completes the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
@@ -470,8 +456,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
 
   // Simulate that the user aborts the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
@@ -495,8 +480,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
 
   // Simulate that the checkout is aborted.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
@@ -521,8 +505,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
 
   // Simulate that the user completes the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
@@ -546,8 +529,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
 
   // Simulate that the user completes the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
+  logger.SetCompleted();
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
@@ -572,8 +554,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
 
   // Simulate that the user aborts the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
@@ -597,9 +578,8 @@ TEST(JourneyLoggerTest,
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
 
-  // Simulate that the user aborts the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
+  // Simulate that the the checkout is aborted.
+  logger.SetAborted(JourneyLogger::ABORT_REASON_OTHER);
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
@@ -625,8 +605,7 @@ TEST(JourneyLoggerTest,
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
 
   // Simulate that the user aborts the checkout.
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
@@ -658,10 +637,8 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   logger2.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
 
   // Simulate that the user completes one checkout and aborts the other.
-  logger1.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_COMPLETED);
-  logger2.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger1.SetCompleted();
+  logger2.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   // Make sure the appropriate metrics were logged for logger1.
   histogram_tester.ExpectBucketCount(
@@ -699,8 +676,7 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_CheckoutFunnelUkm) {
   // clicking pay.
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
-  logger.RecordJourneyStatsHistograms(
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+  logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   // Make sure the UKM was logged correctly.
   ASSERT_EQ(1U, ukm_recorder.sources_count());
