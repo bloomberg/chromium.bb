@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/favicon/core/fallback_icon_service.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
