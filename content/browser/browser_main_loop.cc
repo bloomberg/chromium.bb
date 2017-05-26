@@ -54,6 +54,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -797,6 +798,13 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
                  "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
     DOMStorageArea::EnableAggressiveCommitDelay();
     LevelDBWrapperImpl::EnableAggressiveCommitDelay();
+  }
+
+  if (parsed_command_line_.HasSwitch(switches::kIsolateOrigins)) {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    policy->AddIsolatedOriginsFromCommandLine(
+        parsed_command_line_.GetSwitchValueASCII(switches::kIsolateOrigins));
   }
 
   // Enable memory-infra dump providers.

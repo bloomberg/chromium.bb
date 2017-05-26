@@ -4,6 +4,7 @@
 
 #include "content/browser/site_instance_impl.h"
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -308,7 +309,22 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
   if (dest_url == blank_page)
     return true;
 
+  // If either URL has an isolated origin, compare origins rather than sites.
+  url::Origin src_origin(src_url);
+  url::Origin dest_origin(dest_url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsIsolatedOrigin(src_origin) ||
+      policy->IsIsolatedOrigin(dest_origin))
+    return src_origin == dest_origin;
+
   // If the schemes differ, they aren't part of the same site.
+  //
+  // Note that this happens after the isolated origin check, since blob or
+  // filesystem URLs will fail this check even though they might have the
+  // same origin.
+  //
+  // TODO(alexmos): This check seems broken for nested URLs involving
+  // non-isolated origins too.  See https://crbug.com/726370.
   if (src_url.scheme() != dest_url.scheme())
     return false;
 
@@ -327,6 +343,11 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);
   url::Origin origin(url);
+
+  // Isolated origins should use the full origin as their site URL.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsIsolatedOrigin(origin))
+    return origin.GetURL();
 
   // If the url has a host, then determine the site.
   if (!origin.host().empty()) {
@@ -353,6 +374,12 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 // static
 GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
                                        const GURL& url) {
+  // Don't resolve URLs corresponding to isolated origins, as isolated origins
+  // take precedence over hosted apps.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsIsolatedOrigin(url::Origin(url)))
+    return url;
+
   return GetContentClient()->browser()->
       GetEffectiveURL(browser_context, url);
 }
@@ -365,10 +392,15 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
     return true;
 
+  // Always require a dedicated process for isolated origins.
+  GURL site_url = GetSiteForURL(browser_context, url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsIsolatedOrigin(url::Origin(site_url)))
+    return true;
+
   // Let the content embedder enable site isolation for specific URLs. Use the
   // canonical site url for this check, so that schemes with nested origins
   // (blob and filesystem) work properly.
-  GURL site_url = GetSiteForURL(browser_context, url);
   if (GetContentClient()->IsSupplementarySiteIsolationModeEnabled() &&
       GetContentClient()->browser()->DoesSiteRequireDedicatedProcess(
           browser_context, site_url)) {

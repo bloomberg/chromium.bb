@@ -2142,6 +2142,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIgnoreAutoplayRestrictionsForTests,
     switches::kInertVisualViewport,
     switches::kIPCConnectionTimeout,
+    switches::kIsolateOrigins,
     switches::kIsRunningInMash,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,

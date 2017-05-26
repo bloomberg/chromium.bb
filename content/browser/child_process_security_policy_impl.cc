@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
@@ -257,14 +258,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
-  bool CanAccessDataForOrigin(const GURL& gurl) {
+  bool CanAccessDataForOrigin(const GURL& site_url) {
     if (origin_lock_.is_empty())
       return true;
-    // TODO(creis): We must pass the valid browser_context to convert hosted
-    // apps URLs.  Currently, hosted apps cannot set cookies in this mode.
-    // See http://crbug.com/160576.
-    GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
-    return origin_lock_ == site_gurl;
+    return origin_lock_ == site_url;
   }
 
   void LockToOrigin(const GURL& gurl) {
@@ -988,7 +985,16 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 }
 
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
-                                                            const GURL& gurl) {
+                                                            const GURL& url) {
+  // It's important to call GetSiteForURL before acquiring |lock_|, since
+  // GetSiteForURL consults IsIsolatedOrigin, which needs to grab the same
+  // lock.
+  //
+  // TODO(creis): We must pass the valid browser_context to convert hosted apps
+  // URLs. Currently, hosted apps cannot set cookies in this mode. See
+  // http://crbug.com/160576.
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(NULL, url);
+
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end()) {
@@ -996,7 +1002,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     // workaround for https://crbug.com/600441
     return true;
   }
-  return state->second->CanAccessDataForOrigin(gurl);
+  return state->second->CanAccessDataForOrigin(site_url);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasSpecificPermissionForOrigin(
@@ -1058,6 +1064,34 @@ bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
     return false;
 
   return state->second->can_send_midi_sysex();
+}
+
+void ChildProcessSecurityPolicyImpl::AddIsolatedOrigin(
+    const url::Origin& origin) {
+  CHECK(!origin.unique())
+      << "Cannot register a unique origin as an isolated origin.";
+  CHECK(!IsIsolatedOrigin(origin))
+      << "Duplicate isolated origin: " << origin.Serialize();
+
+  base::AutoLock lock(lock_);
+  isolated_origins_.insert(origin);
+}
+
+void ChildProcessSecurityPolicyImpl::AddIsolatedOriginsFromCommandLine(
+    const std::string& origin_list) {
+  for (const base::StringPiece& origin_piece :
+       base::SplitStringPiece(origin_list, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    url::Origin origin((GURL(origin_piece)));
+    if (!origin.unique())
+      AddIsolatedOrigin(origin);
+  }
+}
+
+bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
+    const url::Origin& origin) {
+  base::AutoLock lock(lock_);
+  return isolated_origins_.find(origin) != isolated_origins_.end();
 }
 
 }  // namespace content

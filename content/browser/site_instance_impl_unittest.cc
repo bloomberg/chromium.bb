@@ -843,4 +843,70 @@ TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
   EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
 }
 
+TEST_F(SiteInstanceTest, IsolatedOrigins) {
+  GURL foo_url("http://www.foo.com");
+  GURL isolated_foo_url("http://isolated.foo.com");
+  GURL isolated_bar_url("http://isolated.bar.com");
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin(isolated_foo_url)));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, foo_url, isolated_foo_url));
+
+  policy->AddIsolatedOrigin(url::Origin(isolated_foo_url));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(isolated_foo_url)));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin(foo_url)));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin(GURL("http://foo.com"))));
+  EXPECT_FALSE(
+      policy->IsIsolatedOrigin(url::Origin(GURL("http://www.bar.com"))));
+  EXPECT_FALSE(
+      policy->IsIsolatedOrigin(url::Origin(GURL("https://isolated.foo.com"))));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(
+      url::Origin(GURL("http://isolated.foo.com:12345"))));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(
+      url::Origin(GURL("http://bar.isolated.foo.com"))));
+
+  policy->AddIsolatedOrigin(url::Origin(isolated_bar_url));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(isolated_bar_url)));
+
+  // IsSameWebSite should compare origins rather than sites if either URL is an
+  // isolated origin.
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, foo_url, isolated_foo_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, isolated_foo_url, foo_url));
+  EXPECT_FALSE(
+      SiteInstance::IsSameWebSite(nullptr, isolated_foo_url, isolated_bar_url));
+  EXPECT_TRUE(
+      SiteInstance::IsSameWebSite(nullptr, isolated_foo_url, isolated_foo_url));
+
+  // Ensure blob and filesystem URLs with isolated origins are compared
+  // correctly.
+  GURL isolated_blob_foo_url("blob:http://isolated.foo.com/uuid");
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, isolated_foo_url,
+                                          isolated_blob_foo_url));
+  GURL isolated_filesystem_foo_url("filesystem:http://isolated.foo.com/bar/");
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, isolated_foo_url,
+                                          isolated_filesystem_foo_url));
+
+  // The site URL for an isolated origin should be the full origin rather than
+  // eTLD+1.
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(nullptr, isolated_foo_url));
+  EXPECT_EQ(isolated_bar_url,
+            SiteInstance::GetSiteForURL(nullptr, isolated_bar_url));
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(nullptr, isolated_blob_foo_url));
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(nullptr, isolated_filesystem_foo_url));
+
+  // Isolated origins always require a dedicated process.
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      nullptr, isolated_foo_url));
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      nullptr, isolated_bar_url));
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      nullptr, isolated_blob_foo_url));
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      nullptr, isolated_filesystem_foo_url));
+}
+
 }  // namespace content

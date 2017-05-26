@@ -41,6 +41,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // different process from the main frame.
   static bool IsTopDocumentIsolationEnabled();
 
+  // Returns true if there exist origins that require process isolation.  Such
+  // origins require a dedicated process, and hence they make cross-process
+  // iframes possible.
+  static bool AreIsolatedOriginsEnabled();
+
  private:
   SiteIsolationPolicy();  // Not instantiable.
 

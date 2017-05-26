@@ -589,6 +589,11 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // connection from the browser before killing itself.
 const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 
+// Require dedicated processes for a set of origins, specified as a
+// comma-separated list. For example:
+//   --isolate-origins=https://www.foo.com,https://www.bar.com
+const char kIsolateOrigins[] = "isolate-origins";
+
 // Chrome is running in Mash.
 const char kIsRunningInMash[] = "is-running-in-mash";
 
