@@ -8,7 +8,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
+#include "core/editing/markers/TextMatchMarker.h"
 #include "third_party/WebKit/Source/core/editing/VisibleUnits.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ bool TextMatchMarkerListImpl::IsEmpty() const {
 
 void TextMatchMarkerListImpl::Add(DocumentMarker* marker) {
   DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
-      &markers_, RenderedDocumentMarker::Create(*marker));
+      &markers_, TextMatchMarker::Create(*marker));
 }
 
 void TextMatchMarkerListImpl::Clear() {
@@ -58,7 +58,7 @@ DEFINE_TRACE(TextMatchMarkerListImpl) {
 }
 
 static void UpdateMarkerRenderedRect(const Node& node,
-                                     RenderedDocumentMarker& marker) {
+                                     TextMatchMarker& marker) {
   const Position start_position(&const_cast<Node&>(node), marker.StartOffset());
   const Position end_position(&const_cast<Node&>(node), marker.EndOffset());
   EphemeralRange range(start_position, end_position);
@@ -69,13 +69,12 @@ Vector<IntRect> TextMatchMarkerListImpl::RenderedRects(const Node& node) const {
   Vector<IntRect> result;
 
   for (DocumentMarker* marker : markers_) {
-    RenderedDocumentMarker* const rendered_marker =
-        ToRenderedDocumentMarker(marker);
-    if (!rendered_marker->IsValid())
-      UpdateMarkerRenderedRect(node, *rendered_marker);
-    if (!rendered_marker->IsRendered())
+    TextMatchMarker* const text_match_marker = ToTextMatchMarker(marker);
+    if (!text_match_marker->IsValid())
+      UpdateMarkerRenderedRect(node, *text_match_marker);
+    if (!text_match_marker->IsRendered())
       continue;
-    result.push_back(rendered_marker->RenderedRect());
+    result.push_back(text_match_marker->RenderedRect());
   }
 
   return result;

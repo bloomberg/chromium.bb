@@ -37,8 +37,8 @@
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/GrammarMarkerListImpl.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
+#include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
@@ -446,7 +446,7 @@ void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
   const HeapVector<Member<DocumentMarker>>& markers_in_list =
       marker_list->GetMarkers();
   for (auto& marker : markers_in_list)
-    ToRenderedDocumentMarker(marker)->Invalidate();
+    ToTextMatchMarker(marker)->Invalidate();
 
   InvalidatePaintForTickmarks(node);
 }

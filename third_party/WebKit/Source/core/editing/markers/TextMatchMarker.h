@@ -24,21 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderedDocumentMarker_h
-#define RenderedDocumentMarker_h
+#ifndef TextMatchMarker_h
+#define TextMatchMarker_h
 
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
 
-class RenderedDocumentMarker final : public DocumentMarker {
+class TextMatchMarker final : public DocumentMarker {
  private:
   enum class State { kInvalid, kValidNull, kValidNotNull };
 
  public:
-  static RenderedDocumentMarker* Create(const DocumentMarker& marker) {
-    return new RenderedDocumentMarker(marker);
+  static TextMatchMarker* Create(const DocumentMarker& marker) {
+    return new TextMatchMarker(marker);
   }
 
   bool IsRendered() const { return state_ == State::kValidNotNull; }
@@ -68,18 +68,17 @@ class RenderedDocumentMarker final : public DocumentMarker {
   bool IsValid() const { return state_ != State::kInvalid; }
 
  private:
-  explicit RenderedDocumentMarker(const DocumentMarker& marker)
+  explicit TextMatchMarker(const DocumentMarker& marker)
       : DocumentMarker(marker), state_(State::kInvalid) {}
 
   LayoutRect rendered_rect_;
   State state_;
 };
 
-DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
+DEFINE_TYPE_CASTS(TextMatchMarker, DocumentMarker, marker, true, true);
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::RenderedDocumentMarker);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::TextMatchMarker);
 
 #endif
