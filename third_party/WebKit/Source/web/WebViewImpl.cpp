@@ -135,6 +135,7 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebImage.h"
+#include "public/platform/WebInputEvent.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebTextInputInfo.h"
 #include "public/platform/WebURLRequest.h"
@@ -151,6 +152,7 @@
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMeaningfulLayout.h"
 #include "public/web/WebMediaPlayerAction.h"
+#include "public/web/WebMenuSourceType.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginAction.h"
@@ -3495,16 +3497,18 @@ void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
   page_->GetContextMenuController().ClearContextMenu();
 }
 
-void WebViewImpl::ShowContextMenu() {
+void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
   if (!GetPage())
     return;
 
   GetPage()->GetContextMenuController().ClearContextMenu();
   {
     ContextMenuAllowedScope scope;
-    if (LocalFrame* focused_frame =
-            ToLocalFrame(GetPage()->GetFocusController().FocusedOrMainFrame()))
-      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr);
+    if (LocalFrame* focused_frame = ToLocalFrame(
+            GetPage()->GetFocusController().FocusedOrMainFrame())) {
+      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                                 source_type);
+    }
   }
 }
 

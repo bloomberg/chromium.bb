@@ -2417,7 +2417,8 @@ void RenderViewImpl::OnShowContextMenu(
   has_host_context_menu_location_ = true;
   host_context_menu_location_ = location;
   if (webview())
-    webview()->ShowContextMenu();
+    webview()->ShowContextMenu(
+        static_cast<blink::WebMenuSourceType>(source_type));
   has_host_context_menu_location_ = false;
 }
 
