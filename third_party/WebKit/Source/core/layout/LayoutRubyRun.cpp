@@ -236,7 +236,7 @@ void LayoutRubyRun::UpdateLayout() {
   }
 
   if (Style()->IsFlippedLinesWritingMode() ==
-      (Style()->GetRubyPosition() == kRubyPositionAfter)) {
+      (Style()->GetRubyPosition() == RubyPosition::kAfter)) {
     LayoutUnit first_line_top;
     if (LayoutRubyBase* rb = RubyBase()) {
       RootInlineBox* root_box = rb->FirstRootBox();

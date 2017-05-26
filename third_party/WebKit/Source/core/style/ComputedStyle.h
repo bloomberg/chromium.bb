@@ -1814,12 +1814,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // -webkit-ruby-position
-  static RubyPosition InitialRubyPosition() { return kRubyPositionBefore; }
+  static RubyPosition InitialRubyPosition() { return RubyPosition::kBefore; }
   RubyPosition GetRubyPosition() const {
     return static_cast<RubyPosition>(rare_inherited_data_->ruby_position_);
   }
   void SetRubyPosition(RubyPosition position) {
-    SET_VAR(rare_inherited_data_, ruby_position_, position);
+    SET_VAR(rare_inherited_data_, ruby_position_,
+            static_cast<unsigned>(position));
   }
 
   // -webkit-tap-highlight-color

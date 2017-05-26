@@ -211,11 +211,12 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   document.View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());
 
-  EXPECT_EQ(kRubyPositionBefore, outer_sticky->StyleRef().GetRubyPosition());
-  EXPECT_EQ(kRubyPositionAfter, child->StyleRef().GetRubyPosition());
-  EXPECT_EQ(kRubyPositionAfter, grandchild->StyleRef().GetRubyPosition());
-  EXPECT_EQ(kRubyPositionAfter, inner_sticky->StyleRef().GetRubyPosition());
-  EXPECT_EQ(kRubyPositionAfter, great_grandchild->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kBefore, outer_sticky->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kAfter, child->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kAfter, grandchild->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kAfter, inner_sticky->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kAfter,
+            great_grandchild->StyleRef().GetRubyPosition());
 
   // Setting -webkit-ruby value shouldn't have affected the sticky subtree bit.
   EXPECT_TRUE(outer_sticky->StyleRef().SubtreeIsSticky());

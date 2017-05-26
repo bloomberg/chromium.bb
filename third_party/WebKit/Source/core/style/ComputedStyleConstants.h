@@ -321,7 +321,7 @@ enum EImageRendering {
   kImageRenderingPixelated
 };
 
-enum RubyPosition { kRubyPositionBefore, kRubyPositionAfter };
+enum class RubyPosition { kBefore, kAfter };
 
 static const size_t kGridAutoFlowBits = 4;
 enum InternalGridAutoFlowAlgorithm {
