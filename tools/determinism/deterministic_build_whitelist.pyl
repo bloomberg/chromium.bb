@@ -334,7 +334,6 @@
     'udp_proxy.exe',
     'ui_base_unittests.exe',
     'ui_library.dll',
-    'ui_service_unittests.exe',
     'ui_struct_traits_unittests.exe',
     'ui_touch_selection_unittests.exe',
     'unit_tests.exe',

@@ -222,14 +222,9 @@ static_library("test_support") {
   ]
 }
 
-group("tests") {
+source_set("tests") {
   testonly = true
-  deps = [
-    ":ui_service_unittests",
-  ]
-}
 
-service_test("ui_service_unittests") {
   sources = [
     "cursor_location_manager_unittest.cc",
     "cursor_state_unittest.cc",
@@ -268,8 +263,6 @@ service_test("ui_service_unittests") {
     sources += [ "platform_display_default_unittest.cc" ]
   }
 
-  catalog = ":ui_service_unittests_catalog"
-
   deps = [
     ":lib",
     ":test_support",
@@ -301,13 +294,12 @@ service_test("ui_service_unittests") {
   ]
 }
 
-service_manifest("ui_service_unittests_app_manifest") {
-  name = "ui_service_unittests_app"
-  source = "ui_service_unittests_app_manifest.json"
+service_manifest("unittests_manifest") {
+  name = "ui_service_unittests"
+  source = "test_manifest.json"
 }
 
-catalog("ui_service_unittests_catalog") {
-  embedded_services = [ ":ui_service_unittests_app_manifest" ]
-
-  standalone_services = [ "//services/ui:manifest" ]
+catalog("tests_catalog") {
+  testonly = true
+  embedded_services = [ ":unittests_manifest" ]
 }

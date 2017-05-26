@@ -10,8 +10,6 @@ source_set("tests") {
 
   sources = [
     "property_type_converters_unittest.cc",
-    "window_server_test_suite.cc",
-    "window_server_test_suite.h",
   ]
 
   deps = [

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/i18n/icu_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -36,6 +37,9 @@ class ServiceTestSuite : public base::TestSuite {
     params.single_process = true;
     ui::OzonePlatform::InitializeForGPU(params);
 #endif
+
+    // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.
+    base::i18n::AllowMultipleInitializeCallsForTesting();
   }
 
   void Shutdown() override {

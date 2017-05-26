@@ -37,6 +37,10 @@ service_test("service_unittests") {
     if (is_linux && !is_chromeos) {
       deps += [ "//services/ui/demo:tests" ]
     }
+
+    if (use_ozone || (!is_chromeos && !is_mac)) {
+      deps += [ "//services/ui/ws:tests" ]
+    }
   }
 
   if (is_android) {
@@ -81,6 +85,10 @@ catalog("service_unittests_catalog") {
 
     if (is_linux && !is_chromeos) {
       catalog_deps += [ "//services/ui/demo:tests_catalog" ]
+    }
+
+    if (use_ozone || !is_chromeos) {
+      catalog_deps += [ "//services/ui/ws:tests_catalog" ]
     }
   }
 }
