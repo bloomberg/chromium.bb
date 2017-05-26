@@ -22,6 +22,18 @@ function runImportTests(worklet, opt_path) {
     }, 'Importing scripts resolves all the given promises.');
 
     promise_test(function() {
+        return worklet.addModule(path + 'resources/import-nested-worklet-script.js').then(function(undefined_arg) {
+            assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
+        });
+    }, 'Importing nested scripts resolves the given promise');
+
+    promise_test(function() {
+        return worklet.addModule(path + 'resources/import-cyclic-worklet-script.js').then(function(undefined_arg) {
+            assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
+        });
+    }, 'Importing cyclic scripts resolves the given promise');
+
+    promise_test(function() {
         return worklet.addModule(path + 'resources/throwing-worklet-script.js').then(function(undefined_arg) {
             assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
         });
