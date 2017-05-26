@@ -836,7 +836,7 @@ RenderFrameDevToolsAgentHost::GetWakeLockService() {
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
-          device::mojom::WakeLockType::PreventAppSuspension,
+          device::mojom::WakeLockType::PreventDisplaySleep,
           device::mojom::WakeLockReason::ReasonOther, "DevTools",
           std::move(request));
     }
