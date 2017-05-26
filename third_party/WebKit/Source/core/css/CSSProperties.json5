@@ -1886,10 +1886,9 @@
     {
       name: "speak",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "ESpeak",
-      default_value: "ESpeak::kNormal",
-      field_size: 3,
+      field_template: "keyword",
+      keywords: ["none", "normal", "spell-out", "digits", "literal-punctuation", "no-punctuation"],
+      default_value: "normal",
       field_group: "rare-inherited",
     },
     {
