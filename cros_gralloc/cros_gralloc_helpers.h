@@ -44,7 +44,8 @@ enum {
 
 constexpr uint32_t cros_gralloc_magic = 0xABCDDCBA;
 
-constexpr uint32_t num_ints_handle = ((sizeof(struct cros_gralloc_handle)) / sizeof(int));
+constexpr uint32_t handle_data_size =
+    ((sizeof(struct cros_gralloc_handle) - offsetof(cros_gralloc_handle, fds[0])) / sizeof(int));
 
 constexpr uint32_t sw_access = GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK;
 
