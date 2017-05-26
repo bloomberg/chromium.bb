@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +25,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "ipc/ipc_security_test_util.h"
+#include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -420,6 +423,46 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
       url::kDataScheme));
   EXPECT_EQ(url::kAboutBlankURL,
             controller.GetLastCommittedEntry()->GetURL().spec());
+}
+
+// Test to verify that an exploited renderer process trying to specify a
+// non-empty URL for base_url_for_data_url on navigation is correctly
+// terminated.
+// TODO(nasko): This test case belongs better in
+// security_exploit_browsertest.cc, so move it there once PlzNavigate is on
+// by default.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       ValidateBaseUrlForDataUrl) {
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+  CommonNavigationParams common_params(
+      url, Referrer(), ui::PAGE_TRANSITION_LINK,
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true, false,
+      base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
+      embedded_test_server()->GetURL("foo.com",
+                                     "/title3.html"),  // base_url_for_data_url
+      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      base::Optional<SourceLocation>(), CSPDisposition::CHECK);
+  BeginNavigationParams begin_params(
+      std::string(), net::LOAD_NORMAL, false, false,
+      REQUEST_CONTEXT_TYPE_LOCATION,
+      blink::WebMixedContentContextType::kBlockable, false, url::Origin(url));
+  FrameHostMsg_BeginNavigation msg(rfh->GetRoutingID(), common_params,
+                                   begin_params);
+
+  // Receiving the invalid IPC message should lead to renderer process
+  // termination.
+  RenderProcessHostWatcher process_exit_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(rfh->GetProcess()->GetChannel(),
+                                               msg);
+  process_exit_observer.Wait();
 }
 
 }  // namespace content
