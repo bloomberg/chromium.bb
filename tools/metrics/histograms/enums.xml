@@ -21683,6 +21683,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1456004000" label="VrShell:disabled"/>
+  <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
@@ -22445,6 +22446,7 @@ from previous Chrome versions.
   <int value="1318073661" label="MaterialDesignExtensions:enabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
+  <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>

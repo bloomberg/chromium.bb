@@ -87,6 +87,10 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used for the vertical margin UI experiment.
+const base::Feature kUIExperimentVerticalLayout{
+    "OmniboxUIExperimentVerticalLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used for the vertical margin UI experiment.
 const base::Feature kUIExperimentVerticalMargin{
     "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
 

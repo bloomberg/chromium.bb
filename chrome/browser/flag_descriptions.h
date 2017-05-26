@@ -494,6 +494,9 @@ extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
+extern const char kOmniboxUIVerticalLayoutName[];
+extern const char kOmniboxUIVerticalLayoutDescription[];
+
 extern const char kOmniboxUIVerticalMarginName[];
 extern const char kOmniboxUIVerticalMarginDescription[];
 
