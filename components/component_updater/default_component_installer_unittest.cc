@@ -8,16 +8,23 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
 #include "components/component_updater/default_component_installer.h"
+#include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/update_client.h"
@@ -25,6 +32,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ComponentUnpacker = update_client::ComponentUnpacker;
 using Configurator = update_client::Configurator;
 using CrxUpdateItem = update_client::CrxUpdateItem;
 using TestConfigurator = update_client::TestConfigurator;
@@ -42,6 +50,19 @@ const uint8_t kSha256Hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,
                                0x8e, 0xd5, 0xfa, 0x54, 0xb0, 0xd2, 0xdd, 0xa5,
                                0x6e, 0x05, 0x6b, 0xe8, 0x73, 0x47, 0xf6, 0xc4,
                                0x11, 0x9f, 0xbc, 0xb3, 0x09, 0xb3, 0x5b, 0x40};
+
+constexpr base::FilePath::CharType relative_install_dir[] =
+    FILE_PATH_LITERAL("fake");
+
+base::FilePath test_file(const char* file) {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("update_client")
+      .AppendASCII(file);
+}
 
 class MockUpdateClient : public UpdateClient {
  public:
@@ -72,6 +93,7 @@ class MockUpdateClient : public UpdateClient {
 
 class FakeInstallerTraits : public ComponentInstallerTraits {
  public:
+  FakeInstallerTraits() {}
   ~FakeInstallerTraits() override {}
 
   bool VerifyInstallation(const base::DictionaryValue& manifest,
@@ -97,7 +119,7 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
       std::unique_ptr<base::DictionaryValue> manifest) override {}
 
   base::FilePath GetRelativeInstallDir() const override {
-    return base::FilePath(FILE_PATH_LITERAL("fake"));
+    return base::FilePath(relative_install_dir);
   }
 
   void GetHash(std::vector<uint8_t>* hash) const override { GetPkHash(hash); }
@@ -135,15 +157,22 @@ class DefaultComponentInstallerTest : public testing::Test {
 
  protected:
   void RunThreads();
+  void Unpack(const base::FilePath& crx_path);
+  ComponentUnpacker::Result result() const { return result_; }
 
  private:
+  void UnpackComplete(const ComponentUnpacker::Result& result);
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
+      base::ThreadTaskRunnerHandle::Get();
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
   scoped_refptr<TestConfigurator> config_;
   scoped_refptr<MockUpdateClient> update_client_;
   std::unique_ptr<ComponentUpdateService> component_updater_;
+  ComponentUnpacker::Result result_;
 };
 
 DefaultComponentInstallerTest::DefaultComponentInstallerTest()
@@ -151,13 +180,14 @@ DefaultComponentInstallerTest::DefaultComponentInstallerTest()
           base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   quit_closure_ = runloop_.QuitClosure();
 
-  config_ = new TestConfigurator(
+  config_ = base::MakeRefCounted<TestConfigurator>(
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
       base::ThreadTaskRunnerHandle::Get());
 
-  update_client_ = new MockUpdateClient();
+  update_client_ = base::MakeRefCounted<MockUpdateClient>();
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
-  component_updater_.reset(new CrxUpdateService(config_, update_client_));
+  component_updater_ =
+      base::MakeUnique<CrxUpdateService>(config_, update_client_);
 }
 
 DefaultComponentInstallerTest::~DefaultComponentInstallerTest() {
@@ -167,6 +197,25 @@ DefaultComponentInstallerTest::~DefaultComponentInstallerTest() {
 
 void DefaultComponentInstallerTest::RunThreads() {
   runloop_.Run();
+}
+
+void DefaultComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
+  auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
+      std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
+      crx_path, nullptr, nullptr, config_->GetSequencedTaskRunner());
+  component_unpacker->Unpack(base::Bind(
+      &DefaultComponentInstallerTest::UnpackComplete, base::Unretained(this)));
+  RunThreads();
+}
+
+void DefaultComponentInstallerTest::UnpackComplete(
+    const ComponentUnpacker::Result& result) {
+  result_ = result;
+
+  EXPECT_EQ(update_client::UnpackerError::kNone, result_.error);
+  EXPECT_EQ(0, result_.extended_error);
+
+  main_thread_task_runner_->PostTask(FROM_HERE, quit_closure_);
 }
 
 }  // namespace
@@ -205,10 +254,8 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
   EXPECT_CALL(update_client(), GetCrxUpdateState(id, _)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
 
-  std::unique_ptr<ComponentInstallerTraits> traits(new FakeInstallerTraits());
-
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
+      base::MakeUnique<FakeInstallerTraits>());
   installer->Register(component_updater(), base::Closure());
 
   RunThreads();
@@ -230,6 +277,57 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
   EXPECT_EQ(expected_attrs, component.installer_attributes);
   EXPECT_TRUE(component.requires_network_encryption);
   EXPECT_TRUE(component.supports_group_policy_enable_component_updates);
+}
+
+// Tests that the unpack path is removed when the install succeeded.
+TEST_F(DefaultComponentInstallerTest, UnpackPathInstallSuccess) {
+  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
+      base::MakeUnique<FakeInstallerTraits>());
+
+  Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+
+  const auto unpack_path = result().unpack_path;
+  EXPECT_TRUE(base::DirectoryExists(unpack_path));
+
+  const auto manifest = update_client::ReadManifest(unpack_path);
+
+  base::ScopedPathOverride scoped_path_override(DIR_COMPONENT_USER);
+  base::FilePath base_dir;
+  EXPECT_TRUE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
+  base_dir = base_dir.Append(relative_install_dir);
+  EXPECT_TRUE(base::CreateDirectory(base_dir));
+  const auto result = installer->Install(*manifest, unpack_path);
+  EXPECT_EQ(0, result.error);
+  EXPECT_FALSE(base::PathExists(unpack_path));
+
+  EXPECT_CALL(update_client(), Stop()).Times(1);
+}
+
+// Tests that the unpack path is removed when the install failed.
+TEST_F(DefaultComponentInstallerTest, UnpackPathInstallError) {
+  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
+      base::MakeUnique<FakeInstallerTraits>());
+
+  Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+
+  const auto unpack_path = result().unpack_path;
+  EXPECT_TRUE(base::DirectoryExists(unpack_path));
+
+  const auto manifest = update_client::ReadManifest(unpack_path);
+
+  // Test the precondition that DIR_COMPONENT_USER is not registered with
+  // the path service.
+  base::FilePath base_dir;
+  EXPECT_FALSE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
+
+  // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
+  const auto result = installer->Install(*manifest, unpack_path);
+  EXPECT_EQ(
+      static_cast<int>(update_client::InstallError::NO_DIR_COMPONENT_USER),
+      result.error);
+  EXPECT_FALSE(base::PathExists(unpack_path));
+
+  EXPECT_CALL(update_client(), Stop()).Times(1);
 }
 
 }  // namespace component_updater
