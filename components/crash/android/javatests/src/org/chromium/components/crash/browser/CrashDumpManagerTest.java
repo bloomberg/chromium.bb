@@ -44,6 +44,7 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_NoCallback() throws IOException {
         File minidump = new File(mTempDir, "mini.dmp");
         assertTrue(minidump.createNewFile());
