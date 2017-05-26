@@ -14,6 +14,7 @@ namespace blink {
 
 // Fuzzer for blink::MHTMLParser.
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
   MHTMLParser mhtml_parser(SharedBuffer::Create(data, size));
   HeapVector<Member<ArchiveResource>> mhtml_archives =
       mhtml_parser.ParseArchive();
@@ -27,9 +28,4 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   return blink::LLVMFuzzerTestOneInput(data, size);
-}
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  blink::InitializeBlinkFuzzTest(argc, argv);
-  return 0;
 }

@@ -11,11 +11,8 @@
 #include "platform/wtf/text/WTFString.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static blink::BlinkFuzzerTestSupport test_support =
+      blink::BlinkFuzzerTestSupport();
   blink::ParseJSON(WTF::String(data, size), 500);
-  return 0;
-}
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  blink::InitializeBlinkFuzzTest(argc, argv);
   return 0;
 }

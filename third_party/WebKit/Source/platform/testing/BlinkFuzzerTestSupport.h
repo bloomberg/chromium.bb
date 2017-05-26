@@ -7,9 +7,17 @@
 
 namespace blink {
 
-// InitializeBlinkFuzzTest will spin up an environment similar to
-// webkit_unit_tests. It should be called in LLVMFuzzerInitialize.
-void InitializeBlinkFuzzTest(int* argc, char*** argv);
+// Instantiating BlinkFuzzerTestSupport will spin up an environment similar to
+// webkit_unit_tests. It should be statically initialized and leaked in fuzzers.
+class BlinkFuzzerTestSupport {
+ public:
+  // Use this constructor in LLVMFuzzerTestOneInput.
+  BlinkFuzzerTestSupport();
+
+  // Use this constructor in LLVMFuzzerInitialize only if argv is necessary.
+  BlinkFuzzerTestSupport(int argc, char** argv);
+  ~BlinkFuzzerTestSupport();
+};
 
 }  // namespace blink
 
