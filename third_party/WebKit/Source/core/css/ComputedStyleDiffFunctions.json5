@@ -45,7 +45,19 @@
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom", "line-height", "font", "-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing", "TextAutosizingMultiplier"],
+                "padding-bottom", "-webkit-highlight", "text-indent", 
+                "text-align-last", "TextIndentLine", "EffectiveZoom", 
+                "word-break", "overflow-wrap", "-webkit-line-break", 
+                "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
+                "HyphenationLimitAfter", "-webkit-hyphenate-character", 
+                "RespectImageOrientation", "-webkit-ruby-position", 
+                "TextEmphasisMark", "TextEmphasisPosition", 
+                "TextEmphasisCustomMark", "text-justify", "text-orientation", 
+                "text-combine-upright", "tab-size", "text-size-adjust", 
+                "list-style-image", "line-height-step", 
+                "-webkit-text-stroke-width", "line-height", "font", 
+                "-webkit-border-horizontal-spacing", 
+                "-webkit-border-vertical-spacing", "TextAutosizingMultiplier"],
         methods_to_diff: [
           {
             method: "BorderLeftWidth()",
@@ -136,11 +148,46 @@
         ]
     },
     {
+        name: "DiffNeedsFullLayoutAndPaintInvalidationDisplayTableType",
+        methods_to_diff: [
+          {
+            method: "BorderCollapse()",
+            field_dependencies: ["border-collapse"]
+          },
+          {
+            method: "EmptyCells()",
+            field_dependencies: ["empty-cells"]
+          },
+          {
+            method: "CaptionSide()",
+            field_dependencies: ["caption-side"]
+          },
+          {
+            method: "TableLayout()",
+            field_dependencies: ["table-layout"]
+          },
+        ]
+    },
+    {
+        name: "DiffNeedsFullLayoutAndPaintInvalidationDisplayListItem",
+        methods_to_diff: [
+          {
+            method: "ListStyleType()",
+            field_dependencies: ["list-style-type"]
+          },
+          {
+            method: "ListStylePosition()",
+            field_dependencies: ["list-style-position"]
+          },
+        ]
+    },
+    {
         name: "DiffNeedsFullLayout",
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
     },
     {
         name: "DiffNeedsPaintInvalidationObject",
+        fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering"],
         methods_to_diff: [
           {
             method: "Visibility()",
@@ -164,6 +211,44 @@
             field_dependencies: ["visibility"]
           }
         ]
-    }
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
+        fields_to_diff: ["TextEmphasisFill", "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
+        methods_to_diff: [
+          {
+            method: "TextFillColor()",
+            field_dependencies: ["-webkit-text-fill-color"]
+          },
+          {
+            method: "TextStrokeColor()",
+            field_dependencies: ["-webkit-text-stroke-color"]
+          },
+          {
+            method: "TextEmphasisColor()",
+            field_dependencies: ["-webkit-text-emphasis-color"]
+          },
+          {
+            method: "VisitedLinkTextFillColor()",
+            field_dependencies: ["VisitedLinkTextFillColor"]
+          },
+          {
+            method: "VisitedLinkTextStrokeColor()",
+            field_dependencies: ["VisitedLinkTextStrokeColor"]
+          },
+          {
+            method: "VisitedLinkTextEmphasisColor()",
+            field_dependencies: ["VisitedLinkTextEmphasisColor"]
+          },
+          {
+            method: "CaretColor()",
+            field_dependencies: ["caret-color"]
+          },
+          {
+            method: "VisitedLinkCaretColor()",
+            field_dependencies: ["VisitedLinkCaretColor"]
+          },
+        ]
+    },
   ],
 }

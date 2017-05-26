@@ -650,67 +650,9 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     }
   }
 
-  if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
-    if (rare_inherited_data_->highlight_ !=
-            other.rare_inherited_data_->highlight_ ||
-        rare_inherited_data_->text_indent_ !=
-            other.rare_inherited_data_->text_indent_ ||
-        rare_inherited_data_->text_align_last_ !=
-            other.rare_inherited_data_->text_align_last_ ||
-        rare_inherited_data_->text_indent_line_ !=
-            other.rare_inherited_data_->text_indent_line_ ||
-        rare_inherited_data_->effective_zoom_ !=
-            other.rare_inherited_data_->effective_zoom_ ||
-        rare_inherited_data_->word_break_ !=
-            other.rare_inherited_data_->word_break_ ||
-        rare_inherited_data_->overflow_wrap_ !=
-            other.rare_inherited_data_->overflow_wrap_ ||
-        rare_inherited_data_->line_break_ !=
-            other.rare_inherited_data_->line_break_ ||
-        rare_inherited_data_->text_security_ !=
-            other.rare_inherited_data_->text_security_ ||
-        rare_inherited_data_->hyphens_ !=
-            other.rare_inherited_data_->hyphens_ ||
-        rare_inherited_data_->hyphenation_limit_before_ !=
-            other.rare_inherited_data_->hyphenation_limit_before_ ||
-        rare_inherited_data_->hyphenation_limit_after_ !=
-            other.rare_inherited_data_->hyphenation_limit_after_ ||
-        rare_inherited_data_->hyphenation_string_ !=
-            other.rare_inherited_data_->hyphenation_string_ ||
-        rare_inherited_data_->respect_image_orientation_ !=
-            other.rare_inherited_data_->respect_image_orientation_ ||
-        rare_inherited_data_->ruby_position_ !=
-            other.rare_inherited_data_->ruby_position_ ||
-        rare_inherited_data_->text_emphasis_mark_ !=
-            other.rare_inherited_data_->text_emphasis_mark_ ||
-        rare_inherited_data_->text_emphasis_position_ !=
-            other.rare_inherited_data_->text_emphasis_position_ ||
-        rare_inherited_data_->text_emphasis_custom_mark_ !=
-            other.rare_inherited_data_->text_emphasis_custom_mark_ ||
-        rare_inherited_data_->text_justify_ !=
-            other.rare_inherited_data_->text_justify_ ||
-        rare_inherited_data_->text_orientation_ !=
-            other.rare_inherited_data_->text_orientation_ ||
-        rare_inherited_data_->text_combine_ !=
-            other.rare_inherited_data_->text_combine_ ||
-        rare_inherited_data_->tab_size_ !=
-            other.rare_inherited_data_->tab_size_ ||
-        rare_inherited_data_->text_size_adjust_ !=
-            other.rare_inherited_data_->text_size_adjust_ ||
-        rare_inherited_data_->list_style_image_ !=
-            other.rare_inherited_data_->list_style_image_ ||
-        rare_inherited_data_->line_height_step_ !=
-            other.rare_inherited_data_->line_height_step_ ||
-        rare_inherited_data_->text_stroke_width_ !=
-            other.rare_inherited_data_->text_stroke_width_)
-      return true;
-  }
-
   if (IsDisplayTableType(Display())) {
-    if (BorderCollapse() != other.BorderCollapse() ||
-        EmptyCells() != other.EmptyCells() ||
-        CaptionSide() != other.CaptionSide() ||
-        TableLayout() != other.TableLayout())
+    if (ComputedStyleBase::
+            DiffNeedsFullLayoutAndPaintInvalidationDisplayTableType(other))
       return true;
 
     // In the collapsing border model, 'hidden' suppresses other borders, while
@@ -734,8 +676,8 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
           other.BorderRightStyle() == EBorderStyle::kHidden)))
       return true;
   } else if (Display() == EDisplay::kListItem) {
-    if (ListStyleType() != other.ListStyleType() ||
-        ListStylePosition() != other.ListStylePosition())
+    if (ComputedStyleBase::
+            DiffNeedsFullLayoutAndPaintInvalidationDisplayListItem(other))
       return true;
   }
 
@@ -811,16 +753,6 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
   if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
       *background_data_ != *other.background_data_)
     return true;
-
-  if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
-    if (rare_inherited_data_->user_modify_ !=
-            other.rare_inherited_data_->user_modify_ ||
-        rare_inherited_data_->user_select_ !=
-            other.rare_inherited_data_->user_select_ ||
-        rare_inherited_data_->image_rendering_ !=
-            other.rare_inherited_data_->image_rendering_)
-      return true;
-  }
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
     if (rare_non_inherited_data_->user_drag !=
@@ -991,7 +923,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
           rare_inherited_data_->applied_text_decorations_ !=
               other.rare_inherited_data_->applied_text_decorations_ ||
           CaretColor() != CaretColor() ||
-          VisitedLinkCaretColor() != other.VisitedLinkCaretColor()))) {
+          VisitedLinkCaretColor() != other.VisitedLinkCaretColor())) ||
+        ComputedStyleBase::
+            UpdatePropertySpecificDifferencesTextDecorationOrColor(other)) {
       diff.SetTextDecorationOrColorChanged();
     }
   }
