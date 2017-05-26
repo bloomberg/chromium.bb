@@ -8,10 +8,8 @@
 podrow {
   /* Temporarily disabled because animation interferes with updating screen's
    size. */
-  height: 100%;
   overflow: visible;
   position: absolute;
-  width: 100%;
 }
 
 /* Hide the pod row while images are loading. */
@@ -27,12 +25,9 @@ pin-keyboard {
   -webkit-tap-highlight-color: transparent;
   border-radius: 2px;
   cursor: pointer;
-  height: 346px;
+  opacity: 0.64;
   outline: none;
   position: absolute;
-  top: 0;
-  transform: scale3d(0.9, 0.9, 0.9);
-  width: 306px;
   z-index: 0;
 }
 
@@ -57,19 +52,18 @@ pin-keyboard {
   opacity: .75;
 }
 
-podrow[ncolumns='6'] .pod {
-  transform: scale3d(0.8, 0.8, 0.8);
-}
-
 .pod.focused {
-  /* Focused pod has the same size no matter how many pods. */
   cursor: default;
-  transform: scale3d(1, 1, 1) !important;
+  opacity: 1;
   z-index: 1;
 }
 
 .pod.focused[auth-type='userClick'] {
   cursor: pointer;
+}
+
+.pod.hovered {
+  opacity: 1;
 }
 
 .user-image-pane {
@@ -114,7 +108,6 @@ html[dir=rtl] .user-image-pane {
 html:not([screen=login-add-user]) .pod .user-image {
   max-height: 160px;
   max-width: 160px;
-  opacity: 0.7;
   position: absolute;
 }
 
@@ -653,8 +646,7 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 
 .action-box-menu-remove:hover,
 .action-box-menu-remove:focus {
-  background-color: grey;
-  color: white;
+  font-weight: bold;
 }
 
 .action-box-remove-user-warning {
@@ -1021,4 +1013,83 @@ html[dir=rtl] .expanded-pane-contents {
   50% { opacity: 0; }
   75% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.large-pod {
+  height: 346px;
+  width: 306px;
+}
+
+.small-pod {
+  height: 74px;
+  width: 304px;
+}
+
+.small-pod.extra-small {
+  height: 60px;
+  width: 282px;
+}
+
+.small-user-image-container {
+  align-items: center;
+  height: 74px;
+  justify-content: center;
+  position: absolute;
+  transition: height 180ms ease-in-out,
+              left 180ms ease-in-out,
+              right 180ms ease-in-out,
+              top 180ms ease-in-out,
+              width 180ms ease-in-out;
+  width: 74px;
+}
+
+.small-pod.extra-small .small-user-image-container {
+  height: 60px;
+  width: 60px;
+}
+
+.small-pod-image {
+  border-radius: 50%;
+  height: 100%;
+  width: 100%;
+}
+
+.small-pod-name {
+  color: #FFFFFF;
+  flex: auto;
+  font-family: "Roboto";
+  font-size: 20px;
+  height: 28px;
+  left: 90px;
+  opacity: 1;
+  outline: none;
+  overflow: hidden;
+  padding: 23px 0;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 214px;
+}
+
+.small-pod.extra-small .small-pod-name {
+  left: 76px;
+  padding: 16px 0;
+  width: 190px;
+}
+
+.small-pod-container.scroll {
+  background-color: rgba(20, 29, 40, .2);
+}
+
+.small-pod-container-mask {
+  background: linear-gradient(#00B0FF, transparent);
+  height: 112px;
+  opacity: 0.6;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+
+.small-pod-container-mask.rotate {
+  transform: rotate(180deg);
 }
