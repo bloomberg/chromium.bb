@@ -57,23 +57,6 @@ source_set("server_gpu") {
   ]
 }
 
-source_set("run_all_service_tests") {
-  testonly = true
-
-  sources = [
-    "run_all_service_tests.cc",
-  ]
-
-  deps = [
-    "//base/test:test_support",
-    "//mojo/edk/system",
-  ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-}
-
 source_set("task_runner_test_base") {
   testonly = true
 
