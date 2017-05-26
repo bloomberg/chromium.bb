@@ -82,7 +82,8 @@ int64_t av1_warp_error(WarpedMotionParams *wm,
                        const uint8_t *ref, int width, int height, int stride,
                        uint8_t *dst, int p_col, int p_row, int p_width,
                        int p_height, int p_stride, int subsampling_x,
-                       int subsampling_y, int x_scale, int y_scale);
+                       int subsampling_y, int x_scale, int y_scale,
+                       int64_t best_error);
 
 // Returns the error between the frame described by 'ref' and the frame
 // described by 'dst'.
@@ -90,8 +91,8 @@ int64_t av1_frame_error(
 #if CONFIG_HIGHBITDEPTH
     int use_hbd, int bd,
 #endif  // CONFIG_HIGHBITDEPTH
-    const uint8_t *ref, int stride, uint8_t *dst, int p_col, int p_row,
-    int p_width, int p_height, int p_stride);
+    const uint8_t *ref, int stride, uint8_t *dst, int p_width, int p_height,
+    int p_stride);
 
 void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_HIGHBITDEPTH

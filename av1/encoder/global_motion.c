@@ -131,8 +131,8 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
                                  uint8_t *ref, int r_width, int r_height,
                                  int r_stride, uint8_t *dst, int d_width,
-                                 int d_height, int d_stride,
-                                 int n_refinements) {
+                                 int d_height, int d_stride, int n_refinements,
+                                 int64_t best_frame_error) {
   static const int max_trans_model_params[TRANS_TYPES] = {
     0, 2, 4, 6, 8, 8, 8
   };
@@ -154,7 +154,8 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
                               ref, r_width, r_height, r_stride,
                               dst + border * d_stride + border, border, border,
                               d_width - 2 * border, d_height - 2 * border,
-                              d_stride, 0, 0, 16, 16);
+                              d_stride, 0, 0, 16, 16, best_frame_error);
+  best_error = AOMMIN(best_error, best_frame_error);
   step = 1 << (n_refinements + 1);
   for (i = 0; i < n_refinements; i++, step >>= 1) {
     for (p = 0; p < n_params; ++p) {
@@ -174,7 +175,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
           ref, r_width, r_height, r_stride, dst + border * d_stride + border,
           border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
-          0, 0, 16, 16);
+          0, 0, 16, 16, best_error);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -190,7 +191,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
           ref, r_width, r_height, r_stride, dst + border * d_stride + border,
           border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
-          0, 0, 16, 16);
+          0, 0, 16, 16, best_error);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -209,7 +210,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
             ref, r_width, r_height, r_stride, dst + border * d_stride + border,
             border, border, d_width - 2 * border, d_height - 2 * border,
-            d_stride, 0, 0, 16, 16);
+            d_stride, 0, 0, 16, 16, best_error);
         if (step_error < best_error) {
           best_error = step_error;
           best_param = *param;
