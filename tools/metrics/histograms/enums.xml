@@ -21878,6 +21878,7 @@ from previous Chrome versions.
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
+  <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
