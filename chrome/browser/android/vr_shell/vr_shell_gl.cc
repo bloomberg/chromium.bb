@@ -1132,9 +1132,11 @@ void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    const vr::Colorf& backgroundColor = scene_->GetBackgroundColor();
-    glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b,
-                 backgroundColor.a);
+    const SkColor backgroundColor = scene_->GetBackgroundColor();
+    glClearColor(SkColorGetR(backgroundColor) / 255.0,
+                 SkColorGetG(backgroundColor) / 255.0,
+                 SkColorGetB(backgroundColor) / 255.0,
+                 SkColorGetA(backgroundColor) / 255.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   std::vector<const UiElement*> elements = scene_->GetWorldElements();

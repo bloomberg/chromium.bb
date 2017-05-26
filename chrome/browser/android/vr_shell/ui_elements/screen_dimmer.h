@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
-#include "device/vr/vr_types.h"
 
 namespace vr_shell {
 
@@ -21,11 +20,6 @@ class ScreenDimmer : public UiElement {
   // UiElement interface.
   void Render(VrShellRenderer* renderer,
               vr::Mat4f view_proj_matrix) const final;
-
- private:
-  vr::Colorf inner_color_;
-  vr::Colorf outer_color_;
-  float opacity_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };
