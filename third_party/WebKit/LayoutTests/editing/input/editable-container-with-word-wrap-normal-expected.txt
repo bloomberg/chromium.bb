@@ -11,7 +11,7 @@ PASS editableContainer.scrollLeft > 0 is true
 
 Final caret rect is calculated by following constraints
 1) ScrollWidth = text content width + caret width
-2) Caret rect is always within container bounding box (thus substracting the scroll left)
+2) Caret rect is always within container bounding box (thus subtracting the scroll left)
 PASS startCaretRect.left + editableContainer.scrollWidth - editableContainer.scrollLeft - caretWidth is finalCaretRect.right
 PASS successfullyParsed is true
 
