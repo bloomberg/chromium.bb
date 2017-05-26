@@ -87,10 +87,10 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
 void install_callback(update_client::Error error) {}
 
 TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
-  auto* bppp = new BrowserProcessPlatformPart();
-  ASSERT_EQ(bppp->IsCompatibleCrOSComponent("a"), false);
-  bppp->AddCompatibleCrOSComponent("a");
-  ASSERT_EQ(bppp->IsCompatibleCrOSComponent("a"), true);
+  BrowserProcessPlatformPart bppp;
+  ASSERT_EQ(bppp.IsCompatibleCrOSComponent("a"), false);
+  bppp.AddCompatibleCrOSComponent("a");
+  ASSERT_EQ(bppp.IsCompatibleCrOSComponent("a"), true);
 }
 
 TEST_F(CrOSComponentInstallerTest, RegisterComponentFail) {
