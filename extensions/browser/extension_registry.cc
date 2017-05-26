@@ -41,8 +41,8 @@ std::unique_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
 }
 
 base::Version ExtensionRegistry::GetStoredVersion(const ExtensionId& id) const {
-  // TODO(lazyboy): Why not TERMINATED? https://crbug.com/724563.
   int include_mask = ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
+                     ExtensionRegistry::TERMINATED |
                      ExtensionRegistry::BLACKLISTED |
                      ExtensionRegistry::BLOCKED;
   const Extension* registry_extension = GetExtensionById(id, include_mask);
