@@ -17,6 +17,7 @@
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/base/ime/text_input_type.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
@@ -67,6 +68,19 @@ class FlexibleRoleTestView : public View {
   DISALLOW_COPY_AND_ASSIGN(FlexibleRoleTestView);
 };
 
+class TestLabelButton : public LabelButton {
+ public:
+  TestLabelButton() : LabelButton(nullptr, base::string16()) {
+    // Make sure the label doesn't cover the hit test co-ordinates.
+    label()->SetSize(gfx::Size(1, 1));
+  }
+
+  using LabelButton::label;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLabelButton);
+};
+
 class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
  public:
   NativeWidgetMacAccessibilityTest() {}
@@ -114,6 +128,43 @@ class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
 };
 
 }  // namespace
+
+// Check that potentially keyboard-focusable elements are always leaf nodes.
+TEST_F(NativeWidgetMacAccessibilityTest, FocusableElementsAreLeafNodes) {
+  // LabelButtons will have a label inside the button. The label should be
+  // ignored because the button is potentially keyboard focusable.
+  TestLabelButton* button = new TestLabelButton();
+  button->SetSize(widget()->GetContentsView()->size());
+  widget()->GetContentsView()->AddChildView(button);
+  EXPECT_NSEQ(NSAccessibilityButtonRole,
+              AttributeValueAtMidpoint(NSAccessibilityRoleAttribute));
+  EXPECT_EQ(
+      0u,
+      [[button->GetNativeViewAccessible()
+          accessibilityAttributeValue:NSAccessibilityChildrenAttribute] count]);
+
+  // The exception is if the child is explicitly marked accessibility focusable.
+  button->label()->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
+  EXPECT_EQ(
+      1u,
+      [[button->GetNativeViewAccessible()
+          accessibilityAttributeValue:NSAccessibilityChildrenAttribute] count]);
+  EXPECT_EQ(button->label()->GetNativeViewAccessible(),
+            [[button->GetNativeViewAccessible()
+                accessibilityAttributeValue:NSAccessibilityChildrenAttribute]
+                objectAtIndex:0]);
+
+  // If the child is disabled, it should still be traversable.
+  button->label()->SetEnabled(false);
+  EXPECT_EQ(
+      1u,
+      [[button->GetNativeViewAccessible()
+          accessibilityAttributeValue:NSAccessibilityChildrenAttribute] count]);
+  EXPECT_EQ(button->label()->GetNativeViewAccessible(),
+            [[button->GetNativeViewAccessible()
+                accessibilityAttributeValue:NSAccessibilityChildrenAttribute]
+                objectAtIndex:0]);
+}
 
 // Test for NSAccessibilityChildrenAttribute, and ensure it excludes ignored
 // children from the accessibility tree.

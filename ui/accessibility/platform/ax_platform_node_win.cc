@@ -1117,8 +1117,10 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_HASPOPUP;
   if (state & (1 << ui::AX_STATE_HOVERED))
     msaa_state |= STATE_SYSTEM_HOTTRACKED;
-  if (state & (1 << ui::AX_STATE_INVISIBLE))
+  if (state & (1 << ui::AX_STATE_INVISIBLE) ||
+      GetData().role == ui::AX_ROLE_IGNORED) {
     msaa_state |= STATE_SYSTEM_INVISIBLE;
+  }
   if (state & (1 << ui::AX_STATE_LINKED))
     msaa_state |= STATE_SYSTEM_LINKED;
   if (state & (1 << ui::AX_STATE_OFFSCREEN))

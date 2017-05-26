@@ -425,6 +425,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_PANEL;
     case ui::AX_ROLE_GROUP:
       return ATK_ROLE_PANEL;
+    case ui::AX_ROLE_IGNORED:
+      return ATK_ROLE_REDUNDANT_OBJECT;
     case ui::AX_ROLE_IMAGE:
       return ATK_ROLE_IMAGE;
     case ui::AX_ROLE_MENU_ITEM:

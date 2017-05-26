@@ -820,7 +820,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Sets |focus_behavior| and advances focus if necessary.
+  // Gets/sets |focus_behavior|. SetFocusBehavior() advances focus if necessary.
+  FocusBehavior focus_behavior() const { return focus_behavior_; }
   void SetFocusBehavior(FocusBehavior focus_behavior);
 
   // Returns true if this view is focusable, |enabled_| and drawn.
@@ -1215,9 +1216,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual DragInfo* GetDragInfo();
 
   // Focus ---------------------------------------------------------------------
-
-  // Returns last set focus behavior.
-  FocusBehavior focus_behavior() const { return focus_behavior_; }
 
   // Override to be notified when focus has changed either to or from this View.
   virtual void OnFocus();

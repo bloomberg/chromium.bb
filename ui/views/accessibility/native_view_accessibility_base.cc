@@ -14,6 +14,30 @@
 
 namespace views {
 
+namespace {
+
+bool IsAccessibilityFocusableWhenEnabled(View* view) {
+  return view->focus_behavior() != View::FocusBehavior::NEVER &&
+         view->IsDrawn();
+}
+
+// Used to determine if a View should be ignored by accessibility clients by
+// being a non-keyboard-focusable child of a keyboard-focusable ancestor. E.g.,
+// LabelButtons contain Labels, but a11y should just show that there's a button.
+bool IsViewUnfocusableChildOfFocusableAncestor(View* view) {
+  if (IsAccessibilityFocusableWhenEnabled(view))
+    return false;
+
+  while (view->parent()) {
+    view = view->parent();
+    if (IsAccessibilityFocusableWhenEnabled(view))
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : view_(view),
       parent_widget_(nullptr),
@@ -65,6 +89,11 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   if (!view_->IsDrawn())
     data_.AddState(ui::AX_STATE_INVISIBLE);
 
+  // Make sure this element is excluded from the a11y tree if there's a
+  // focusable parent. All keyboard focusable elements should be leaf nodes.
+  // Exceptions to this rule will themselves be accessibility focusable.
+  if (IsViewUnfocusableChildOfFocusableAncestor(view_))
+    data_.role = ui::AX_ROLE_IGNORED;
   return data_;
 }
 
