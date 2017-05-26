@@ -70,7 +70,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual std::unique_ptr<CompositorResizeLock>
   DelegatedFrameHostCreateResizeLock() = 0;
 
-  virtual void OnBeginFrame(const cc::BeginFrameArgs& args) = 0;
+  virtual void OnBeginFrame() = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
 };
 

@@ -516,7 +516,9 @@ void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,
 }
 
 void DelegatedFrameHost::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  client_->OnBeginFrame(args);
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->OnBeginFrame(args);
+  client_->OnBeginFrame();
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {

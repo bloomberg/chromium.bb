@@ -153,15 +153,6 @@ void RendererCompositorFrameSink::DidNotProduceFrame(
 void RendererCompositorFrameSink::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  IPC_BEGIN_MESSAGE_MAP(RendererCompositorFrameSink, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrameIPC)
-  IPC_END_MESSAGE_MAP()
-}
-
-void RendererCompositorFrameSink::OnBeginFrameIPC(
-    const cc::BeginFrameArgs& args) {
-  if (external_begin_frame_source_)
-    external_begin_frame_source_->OnBeginFrame(args);
 }
 
 void RendererCompositorFrameSink::DidReceiveCompositorFrameAck(
@@ -171,8 +162,8 @@ void RendererCompositorFrameSink::DidReceiveCompositorFrameAck(
 }
 
 void RendererCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  // See crbug.com/709689.
-  NOTREACHED() << "BeginFrames are delivered using Chrome IPC.";
+  if (external_begin_frame_source_)
+    external_begin_frame_source_->OnBeginFrame(args);
 }
 
 void RendererCompositorFrameSink::ReclaimResources(

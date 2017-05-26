@@ -435,8 +435,8 @@ BrowserCompositorMac::DelegatedFrameHostCreateResizeLock() {
   return nullptr;
 }
 
-void BrowserCompositorMac::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  client_->BrowserCompositorMacSendBeginFrame(args);
+void BrowserCompositorMac::OnBeginFrame() {
+  client_->BrowserCompositorMacOnBeginFrame();
 }
 
 bool BrowserCompositorMac::IsAutoResizeEnabled() const {

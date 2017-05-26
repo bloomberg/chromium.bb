@@ -99,7 +99,6 @@ class RendererCompositorFrameSink
   };
 
   void OnMessageReceived(const IPC::Message& message);
-  void OnBeginFrameIPC(const cc::BeginFrameArgs& args);
 
   // cc::mojom::MojoCompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
