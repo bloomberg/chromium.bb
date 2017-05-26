@@ -24,6 +24,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -193,8 +194,38 @@ const net::HttpResponseInfo* ServiceWorkerWriteToCacheJob::http_info() const {
 void ServiceWorkerWriteToCacheJob::InitNetRequest(
     int extra_load_flags) {
   DCHECK(request());
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("service_worker_write_to_cache_job",
+                                          R"(
+          semantics {
+            sender: "ServiceWorker System"
+            description:
+              "When a ServiceWorker is registered, its script and immediate "
+              "imports are cached for performance and offline access. The "
+              "resources are periodically updated."
+            trigger:
+              "User visits a site which registers a ServiceWorker."
+            data: "None"
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: true
+            cookies_store: "user"
+            setting:
+              "Users can control this feature via the 'Cookies' setting under "
+              "'Privacy, Content settings'. If cookies are disabled for a "
+              "single site, serviceworkers are disabled for the site only. If "
+              "they are totally disabled, all serviceworker requests will be "
+              "stopped."
+            chrome_policy {
+              DefaultCookiesSetting {
+                policy_options {mode: MANDATORY}
+                DefaultCookiesSetting: 2
+              }
+            }
+          })");
   net_request_ = request()->context()->CreateRequest(
-      request()->url(), request()->priority(), this);
+      request()->url(), request()->priority(), this, traffic_annotation);
   net_request_->set_first_party_for_cookies(
       request()->first_party_for_cookies());
   net_request_->set_initiator(request()->initiator());
