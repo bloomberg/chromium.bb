@@ -1,4 +1,4 @@
-/* Adopted from LayoutTests/webexposed/resources/global-interface-listing.js */
+/* Adopted from LayoutTests/resources/global-interface-listing.js */
 
 // Run all the code in a local scope.
 (function() {
@@ -17,7 +17,7 @@ var globals = [];
 // List of builtin JS constructors; Blink is not controlling what properties these
 // objects have, so exercising them in a Blink test doesn't make sense.
 //
-// This list should be kept in sync with the one at LayoutTests/webexposed/resources/global-interface-listing.js
+// This list should be kept in sync with the one at LayoutTests/resources/global-interface-listing.js
 var js_builtins = new Set([
     'Array',
     'ArrayBuffer',
