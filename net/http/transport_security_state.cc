@@ -43,8 +43,9 @@ namespace {
 #include "net/http/transport_security_state_ct_policies.inc"
 #include "net/http/transport_security_state_static.h"
 
-const size_t kMaxHPKPReportCacheEntries = 50;
-const int kTimeToRememberHPKPReportsMins = 60;
+// Parameters for remembering sent HPKP and Expect-CT reports.
+const size_t kMaxReportCacheEntries = 50;
+const int kTimeToRememberReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
 
 // Points to the active transport security state source.
@@ -742,7 +743,8 @@ TransportSecurityState::TransportSecurityState()
       enable_static_expect_ct_(true),
       enable_static_expect_staple_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
-      sent_reports_cache_(kMaxHPKPReportCacheEntries) {
+      sent_hpkp_reports_cache_(kMaxReportCacheEntries),
+      sent_expect_ct_reports_cache_(kMaxReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
@@ -890,7 +892,7 @@ TransportSecurityState::CheckCTRequirements(
       GetDynamicExpectCTState(hostname, &state)) {
     if (expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
-      expect_ct_reporter_->OnExpectCTFailed(
+      MaybeNotifyExpectCTFailed(
           host_port_pair, state.report_uri, validated_certificate_chain,
           served_certificate_chain, signed_certificate_timestamps);
     }
@@ -1167,15 +1169,15 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
 
   // Limit the rate at which duplicate reports are sent to the same
   // report URI. The same report will not be sent within
-  // |kTimeToRememberHPKPReportsMins|, which reduces load on servers and
+  // |kTimeToRememberReportsMins|, which reduces load on servers and
   // also prevents accidental loops (a.com triggers a report to b.com
   // which triggers a report to a.com). See section 2.1.4 of RFC 7469.
-  if (sent_reports_cache_.Get(report_cache_key, base::TimeTicks::Now()))
+  if (sent_hpkp_reports_cache_.Get(report_cache_key, base::TimeTicks::Now()))
     return PKPStatus::VIOLATED;
-  sent_reports_cache_.Put(
+  sent_hpkp_reports_cache_.Put(
       report_cache_key, true, base::TimeTicks::Now(),
       base::TimeTicks::Now() +
-          base::TimeDelta::FromMinutes(kTimeToRememberHPKPReportsMins));
+          base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
 
   report_sender_->Send(pkp_state.report_uri, "application/json; charset=utf-8",
                        serialized_report, base::Callback<void()>(),
@@ -1202,6 +1204,33 @@ bool TransportSecurityState::GetStaticExpectCTState(
   expect_ct_state->report_uri = GURL(
       g_hsts_source->expect_ct_report_uris[result.expect_ct_report_uri_id]);
   return true;
+}
+
+void TransportSecurityState::MaybeNotifyExpectCTFailed(
+    const HostPortPair& host_port_pair,
+    const GURL& report_uri,
+    const X509Certificate* validated_certificate_chain,
+    const X509Certificate* served_certificate_chain,
+    const SignedCertificateTimestampAndStatusList&
+        signed_certificate_timestamps) {
+  // Do not send repeated reports to the same host/port pair within
+  // |kTimeToRememberReportsMins|. Theoretically, there could be scenarios in
+  // which the same host/port generates different reports and it would be useful
+  // to the server operator to receive those different reports, but such
+  // scenarios are not expected to arise very often in practice.
+  const std::string report_cache_key(host_port_pair.ToString());
+  if (sent_expect_ct_reports_cache_.Get(report_cache_key,
+                                        base::TimeTicks::Now())) {
+    return;
+  }
+  sent_expect_ct_reports_cache_.Put(
+      report_cache_key, true, base::TimeTicks::Now(),
+      base::TimeTicks::Now() +
+          base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
+
+  expect_ct_reporter_->OnExpectCTFailed(
+      host_port_pair, report_uri, validated_certificate_chain,
+      served_certificate_chain, signed_certificate_timestamps);
 }
 
 bool TransportSecurityState::GetStaticExpectStapleState(
@@ -1448,10 +1477,10 @@ void TransportSecurityState::ProcessExpectCTHeader(
       return;
     ExpectCTState state;
     if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
-      expect_ct_reporter_->OnExpectCTFailed(
-          host_port_pair, state.report_uri, ssl_info.cert.get(),
-          ssl_info.unverified_cert.get(),
-          ssl_info.signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri,
+                                ssl_info.cert.get(),
+                                ssl_info.unverified_cert.get(),
+                                ssl_info.signed_certificate_timestamps);
     }
     return;
   }
@@ -1484,10 +1513,9 @@ void TransportSecurityState::ProcessExpectCTHeader(
     // processing the header.
     if (expect_ct_reporter_ && !report_uri.is_empty() &&
         !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
-      expect_ct_reporter_->OnExpectCTFailed(
-          host_port_pair, report_uri, ssl_info.cert.get(),
-          ssl_info.unverified_cert.get(),
-          ssl_info.signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(host_port_pair, report_uri, ssl_info.cert.get(),
+                                ssl_info.unverified_cert.get(),
+                                ssl_info.signed_certificate_timestamps);
     }
     return;
   }
@@ -1502,6 +1530,11 @@ void TransportSecurityState::SetShouldRequireCTForTesting(bool* required) {
     return;
   }
   g_ct_required_for_testing = *required ? 1 : -1;
+}
+
+void TransportSecurityState::ClearReportCachesForTesting() {
+  sent_hpkp_reports_cache_.Clear();
+  sent_expect_ct_reports_cache_.Clear();
 }
 
 // static
