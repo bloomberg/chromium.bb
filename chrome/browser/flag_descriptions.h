@@ -832,6 +832,10 @@ extern const char kBackgroundLoaderForDownloadsDescription[];
 extern const char kChromeHomeExpandButtonName[];
 extern const char kChromeHomeExpandButtonDescription[];
 
+extern const char kChromeHomeSwipeLogicName[];
+extern const char kChromeHomeSwipeLogicDescription[];
+extern const char kChromeHomeSwipeLogicRestrictArea[];
+
 extern const char kChromeHomeName[];
 extern const char kChromeHomeDescription[];
 
