@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 
@@ -62,8 +62,9 @@ public class ArticleSnippetsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
-
-    private ViewRenderer mViewRenderer;
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            new RenderTestRule("chrome/test/data/android/render_tests");
 
     private SuggestionsUiDelegate mUiDelegate;
     private FakeSuggestionsSource mSnippetsSource;
@@ -102,14 +103,13 @@ public class ArticleSnippetsTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         int first = mAdapter.getFirstCardPosition();
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first), "short_snippet");
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 1), "long_snippet");
+        mRenderTestRule.render(mRecyclerView.getChildAt(first), "short_snippet");
+        mRenderTestRule.render(mRecyclerView.getChildAt(first + 1), "long_snippet");
 
         int firstOfSecondCategory = first + 1 /* card 2 */ + 1 /* header */ + 1 /* card 3*/;
 
-        mViewRenderer.renderAndCompare(
-                mRecyclerView.getChildAt(firstOfSecondCategory), "minimal_snippet");
-        mViewRenderer.renderAndCompare(mRecyclerView, "snippets");
+        mRenderTestRule.render(mRecyclerView.getChildAt(firstOfSecondCategory), "minimal_snippet");
+        mRenderTestRule.render(mRecyclerView, "snippets");
 
         // See how everything looks in narrow layout.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -130,13 +130,13 @@ public class ArticleSnippetsTest {
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first), "short_snippet_narrow");
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 1), "long_snippet_narrow");
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(firstOfSecondCategory),
-                "long_minimal_snippet_narrow");
-        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(firstOfSecondCategory + 1),
+        mRenderTestRule.render(mRecyclerView.getChildAt(first), "short_snippet_narrow");
+        mRenderTestRule.render(mRecyclerView.getChildAt(first + 1), "long_snippet_narrow");
+        mRenderTestRule.render(
+                mRecyclerView.getChildAt(firstOfSecondCategory), "long_minimal_snippet_narrow");
+        mRenderTestRule.render(mRecyclerView.getChildAt(firstOfSecondCategory + 1),
                 "short_minimal_snippet_narrow");
-        mViewRenderer.renderAndCompare(mRecyclerView, "snippets_narrow");
+        mRenderTestRule.render(mRecyclerView, "snippets_narrow");
     }
 
     private void setupTestData() {
@@ -200,8 +200,6 @@ public class ArticleSnippetsTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mViewRenderer = new ViewRenderer(mActivityTestRule.getActivity(),
-                "chrome/test/data/android/render_tests", this.getClass().getSimpleName());
         mUiDelegate = new MockUiDelegate();
         mSnippetsSource = new FakeSuggestionsSource();
     }
