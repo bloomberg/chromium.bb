@@ -2081,7 +2081,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_minnie',
   ])
   _mnc_no_hwtest_boards = frozenset([
-      'glados-cheets',
   ])
   _nyc_hwtest_boards = frozenset([
       'caroline',
