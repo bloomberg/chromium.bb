@@ -209,6 +209,9 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // ones) will be in ComputedStyleBase.
 class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
                                   public RefCounted<ComputedStyle> {
+  // Needed to allow access to private/protected getters of fields to allow diff
+  // generation
+  friend class ComputedStyleBase<ComputedStyle>;
   // Used by Web Animations CSS. Sets the color styles.
   friend class AnimatedStyleBuilder;
   // Used by Web Animations CSS. Gets visited and unvisited colors separately.
