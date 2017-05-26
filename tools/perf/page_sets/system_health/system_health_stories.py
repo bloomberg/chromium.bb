@@ -4,6 +4,7 @@
 
 import os
 
+from page_sets.system_health import chrome_stories
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
@@ -29,6 +30,14 @@ class SystemHealthStorySet(story.StorySet):
           case and not story_class.NAME.startswith(case + ':')):
         continue
       self.AddStory(story_class(self, take_memory_measurement))
+
+
+class SystemHealthBlankStorySet(story.StorySet):
+  """A story set containing the chrome:blank story only."""
+  def __init__(self, take_memory_measurement=False):
+    super(SystemHealthBlankStorySet, self).__init__()
+    self.AddStory(
+        chrome_stories.BlankAboutBlankStory(self, take_memory_measurement))
 
 
 class DesktopSystemHealthStorySet(SystemHealthStorySet):
