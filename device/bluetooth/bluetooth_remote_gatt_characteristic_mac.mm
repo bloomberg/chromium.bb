@@ -74,8 +74,8 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
       gatt_service_(gatt_service),
       cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN),
       weak_ptr_factory_(this) {
-  uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
-      [cb_characteristic_.get() UUID]);
+  uuid_ =
+      BluetoothAdapterMac::BluetoothUUIDWithCBUUID([cb_characteristic_ UUID]);
   identifier_ = base::SysNSStringToUTF8(
       [NSString stringWithFormat:@"%s-%p", uuid_.canonical_value().c_str(),
                                  (void*)cb_characteristic_]);
@@ -104,7 +104,7 @@ BluetoothUUID BluetoothRemoteGattCharacteristicMac::GetUUID() const {
 
 BluetoothGattCharacteristic::Properties
 BluetoothRemoteGattCharacteristicMac::GetProperties() const {
-  return ConvertProperties(cb_characteristic_.get().properties);
+  return ConvertProperties([cb_characteristic_ properties]);
 }
 
 BluetoothGattCharacteristic::Permissions
@@ -125,7 +125,7 @@ BluetoothRemoteGattService* BluetoothRemoteGattCharacteristicMac::GetService()
 }
 
 bool BluetoothRemoteGattCharacteristicMac::IsNotifying() const {
-  return cb_characteristic_.get().isNotifying == YES;
+  return [cb_characteristic_ isNotifying] == YES;
 }
 
 std::vector<BluetoothRemoteGattDescriptor*>
@@ -223,8 +223,7 @@ void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
   DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
   subscribe_to_notification_callbacks_ =
       std::make_pair(callback, error_callback);
-  [GetCBPeripheral() setNotifyValue:YES
-                  forCharacteristic:cb_characteristic_.get()];
+  [GetCBPeripheral() setNotifyValue:YES forCharacteristic:cb_characteristic_];
 }
 
 void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
@@ -238,16 +237,14 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
   DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
   unsubscribe_from_notification_callbacks_ =
       std::make_pair(callback, error_callback);
-  [GetCBPeripheral() setNotifyValue:NO
-                  forCharacteristic:cb_characteristic_.get()];
+  [GetCBPeripheral() setNotifyValue:NO forCharacteristic:cb_characteristic_];
 }
 
 void BluetoothRemoteGattCharacteristicMac::DiscoverDescriptors() {
   VLOG(1) << *this << ": Discover descriptors.";
   is_discovery_complete_ = false;
   ++discovery_pending_count_;
-  [GetCBPeripheral()
-      discoverDescriptorsForCharacteristic:cb_characteristic_.get()];
+  [GetCBPeripheral() discoverDescriptorsForCharacteristic:cb_characteristic_];
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
@@ -286,7 +283,7 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
 }
 
 void BluetoothRemoteGattCharacteristicMac::UpdateValue() {
-  NSData* nsdata_value = cb_characteristic_.get().value;
+  NSData* nsdata_value = [cb_characteristic_ value];
   const uint8_t* buffer = static_cast<const uint8_t*>(nsdata_value.bytes);
   value_.assign(buffer, buffer + nsdata_value.length);
 }
@@ -372,7 +369,7 @@ void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {
     descriptor_identifier_to_remove.insert(iter.first);
   }
 
-  for (CBDescriptor* cb_descriptor in cb_characteristic_.get().descriptors) {
+  for (CBDescriptor* cb_descriptor in [cb_characteristic_ descriptors]) {
     BluetoothRemoteGattDescriptorMac* gatt_descriptor_mac =
         GetBluetoothRemoteGattDescriptorMac(cb_descriptor);
     if (gatt_descriptor_mac) {
@@ -427,7 +424,7 @@ CBCharacteristicWriteType BluetoothRemoteGattCharacteristicMac::GetCBWriteType()
 
 CBCharacteristic* BluetoothRemoteGattCharacteristicMac::GetCBCharacteristic()
     const {
-  return cb_characteristic_.get();
+  return cb_characteristic_;
 }
 
 BluetoothAdapterMac* BluetoothRemoteGattCharacteristicMac::GetMacAdapter()

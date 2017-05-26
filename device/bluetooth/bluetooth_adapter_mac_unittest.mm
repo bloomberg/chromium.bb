@@ -69,7 +69,7 @@ class BluetoothAdapterMacTest : public testing::Test {
     }
     base::scoped_nsobject<MockCBPeripheral> mock_peripheral(
         [[MockCBPeripheral alloc] initWithUTF8StringIdentifier:identifier]);
-    return [mock_peripheral.get().peripheral retain];
+    return [[mock_peripheral peripheral] retain];
   }
 
   NSDictionary* AdvertisementData() {
@@ -234,7 +234,7 @@ TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
-  if (mock_peripheral.get() == nil)
+  if (!mock_peripheral)
     return;
   EXPECT_EQ(kTestHashAddress, GetHashAddress(mock_peripheral));
 }
@@ -244,7 +244,7 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
-  if (mock_peripheral.get() == nil)
+  if (!mock_peripheral)
     return;
   base::scoped_nsobject<NSDictionary> advertisement_data(AdvertisementData());
 

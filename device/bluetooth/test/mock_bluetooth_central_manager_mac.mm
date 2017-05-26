@@ -78,16 +78,16 @@ using base::scoped_nsobject;
 }
 
 - (NSArray*)retrieveConnectedPeripheralServiceUUIDs {
-  return [[_retrieveConnectedPeripheralServiceUUIDs.get() copy] autorelease];
+  return [[_retrieveConnectedPeripheralServiceUUIDs copy] autorelease];
 }
 
 - (NSArray*)retrieveConnectedPeripheralsWithServices:(NSArray*)services {
-  [_retrieveConnectedPeripheralServiceUUIDs.get()
+  [_retrieveConnectedPeripheralServiceUUIDs
       addObjectsFromArray:[services copy]];
   NSMutableArray* connectedPeripherals = [[NSMutableArray alloc] init];
   for (CBUUID* uuid in services) {
     NSSet* peripheralSet =
-        [_connectedMockPeripheralPerServiceUUID.get() objectForKey:uuid];
+        [_connectedMockPeripheralPerServiceUUID objectForKey:uuid];
     [connectedPeripherals addObjectsFromArray:peripheralSet.allObjects];
   }
   return connectedPeripherals;
@@ -97,11 +97,11 @@ using base::scoped_nsobject;
                   withServiceUUIDs:(NSSet*)serviceUUIDs {
   for (CBUUID* uuid in serviceUUIDs) {
     NSMutableSet* peripheralSet =
-        [_connectedMockPeripheralPerServiceUUID.get() objectForKey:uuid];
+        [_connectedMockPeripheralPerServiceUUID objectForKey:uuid];
     if (!peripheralSet) {
       peripheralSet = [NSMutableSet set];
-      [_connectedMockPeripheralPerServiceUUID.get() setObject:peripheralSet
-                                                       forKey:uuid];
+      [_connectedMockPeripheralPerServiceUUID setObject:peripheralSet
+                                                 forKey:uuid];
     }
     [peripheralSet addObject:peripheral];
   }

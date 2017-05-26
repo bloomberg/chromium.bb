@@ -100,12 +100,12 @@ BluetoothAdapterMac::BluetoothAdapterMac()
             initWithDiscoveryManager:low_energy_discovery_manager_.get()
                           andAdapter:this]);
     low_energy_central_manager_.reset([[CBCentralManager alloc]
-        initWithDelegate:low_energy_central_manager_delegate_.get()
+        initWithDelegate:low_energy_central_manager_delegate_
                    queue:dispatch_get_main_queue()]);
     low_energy_discovery_manager_->SetCentralManager(
-        low_energy_central_manager_.get());
+        low_energy_central_manager_);
   }
-  DCHECK(classic_discovery_manager_.get());
+  DCHECK(classic_discovery_manager_);
 }
 
 BluetoothAdapterMac::~BluetoothAdapterMac() {
@@ -293,8 +293,7 @@ void BluetoothAdapterMac::SetCentralManagerForTesting(
   central_manager.delegate = low_energy_central_manager_delegate_;
   low_energy_central_manager_.reset(central_manager,
                                     base::scoped_policy::RETAIN);
-  low_energy_discovery_manager_->SetCentralManager(
-      low_energy_central_manager_.get());
+  low_energy_discovery_manager_->SetCentralManager(low_energy_central_manager_);
 }
 
 CBCentralManager* BluetoothAdapterMac::GetCentralManager() {

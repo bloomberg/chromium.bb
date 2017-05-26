@@ -31,7 +31,7 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
       connected_(false),
       discovery_pending_count_(0) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
-  DCHECK(peripheral_.get());
+  DCHECK(peripheral_);
   peripheral_delegate_.reset([[BluetoothLowEnergyPeripheralDelegate alloc]
       initWithBluetoothLowEnergyDeviceMac:this]);
   [peripheral_ setDelegate:peripheral_delegate_];

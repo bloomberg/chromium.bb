@@ -26,7 +26,7 @@ BluetoothRemoteGattServiceMac::BluetoothRemoteGattServiceMac(
       is_primary_(is_primary),
       is_discovery_complete_(false),
       discovery_pending_count_(0) {
-  uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID([service_.get() UUID]);
+  uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID([service_ UUID]);
   identifier_ = base::SysNSStringToUTF8(
       [NSString stringWithFormat:@"%s-%p", uuid_.canonical_value().c_str(),
                                  (void*)service_]);
@@ -214,7 +214,7 @@ CBPeripheral* BluetoothRemoteGattServiceMac::GetCBPeripheral() const {
 }
 
 CBService* BluetoothRemoteGattServiceMac::GetService() const {
-  return service_.get();
+  return service_;
 }
 
 BluetoothRemoteGattCharacteristicMac*
