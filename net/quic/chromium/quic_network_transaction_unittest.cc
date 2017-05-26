@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -903,6 +904,112 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   int log_stream_id;
   ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &log_stream_id));
   EXPECT_EQ(3, log_stream_id);
+}
+
+TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(30000, 'A');
+  response_headers["key2"] = std::string(30000, 'A');
+  response_headers["key3"] = std::string(30000, 'A');
+  response_headers["key4"] = std::string(30000, 'A');
+  response_headers["key5"] = std::string(30000, 'A');
+  response_headers["key6"] = std::string(30000, 'A');
+  response_headers["key7"] = std::string(30000, 'A');
+  response_headers["key8"] = std::string(30000, 'A');
+  SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
+                              std::move(response_headers));
+  SpdyFramer response_framer(SpdyFramer::ENABLE_COMPRESSION);
+  SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+
+  QuicPacketNumber packet_number = 1;
+  size_t chunk_size = 1200;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    mock_quic_data.AddRead(ConstructServerDataPacket(
+        packet_number++, kHeadersStreamId, false, false, offset,
+        base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+
+  mock_quic_data.AddRead(
+      ConstructServerDataPacket(packet_number, GetNthClientInitiatedStreamId(0),
+                                false, true, 0, "hello!"));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddAsyncWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddAsyncWrite(
+      ConstructClientAckPacket(4, packet_number, 3, 1));
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(30000, 'A');
+  response_headers["key2"] = std::string(30000, 'A');
+  response_headers["key3"] = std::string(30000, 'A');
+  response_headers["key4"] = std::string(30000, 'A');
+  response_headers["key5"] = std::string(30000, 'A');
+  response_headers["key6"] = std::string(30000, 'A');
+  response_headers["key7"] = std::string(30000, 'A');
+  response_headers["key8"] = std::string(30000, 'A');
+  response_headers["key9"] = std::string(30000, 'A');
+  SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
+                              std::move(response_headers));
+  SpdyFramer response_framer(SpdyFramer::ENABLE_COMPRESSION);
+  SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+
+  QuicPacketNumber packet_number = 1;
+  size_t chunk_size = 1200;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    mock_quic_data.AddRead(ConstructServerDataPacket(
+        packet_number++, kHeadersStreamId, false, false, offset,
+        base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+
+  mock_quic_data.AddRead(
+      ConstructServerDataPacket(packet_number, GetNthClientInitiatedStreamId(0),
+                                false, true, 0, "hello!"));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddAsyncWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddAsyncWrite(ConstructClientAckAndRstPacket(
+      4, GetNthClientInitiatedStreamId(0), QUIC_HEADERS_TOO_LARGE,
+      packet_number, 3, 1));
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 }
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
