@@ -10,7 +10,7 @@
 
 namespace blink {
 
-{% if origin_trial_features %}
+{% if optional_features %}
 class ScriptState;
 {% endif %}
 {% if named_constructor %}
@@ -138,7 +138,7 @@ class {{v8_class}} {
   {% endfor %}
   {% endif %}
 
-  {% for feature in origin_trial_features %}
+  {% for feature in optional_features %}
 
   static void install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
   static void install{{feature.name}}(ScriptState*, v8::Local<v8::Object> instance);

@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/mojo_context_state.h"
 #include "gin/per_context_data.h"
+#include "third_party/WebKit/public/web/WebContextFeatures.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -64,6 +65,22 @@ MojoContextState* MojoBindingsController::GetContextState() {
   MojoContextStateData* context_state = static_cast<MojoContextStateData*>(
       context_data->GetUserData(kMojoContextStateKey));
   return context_state ? context_state->state.get() : NULL;
+}
+
+void MojoBindingsController::DidCreateScriptContext(
+    v8::Local<v8::Context> context,
+    int world_id) {
+  // NOTE: Layout tests already get this turned on by the RuntimeEnabled feature
+  // setting. We avoid manually installing them here for layout tests, because
+  // some layout tests (namely at
+  // least virtual/stable/webexposed/global-interface-listing.html) may be run
+  // with such features explicitly disabled. We do not want to unconditionally
+  // install Mojo bindings in such environments.
+  //
+  // We also only allow these bindings to be installed when creating the main
+  // world context.
+  if (bindings_type_ != MojoBindingsType::FOR_LAYOUT_TESTS && world_id == 0)
+    blink::WebContextFeatures::EnableMojoJS(context, true);
 }
 
 void MojoBindingsController::WillReleaseScriptContext(

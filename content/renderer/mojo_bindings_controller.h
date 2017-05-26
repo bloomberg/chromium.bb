@@ -22,6 +22,10 @@ enum class MojoBindingsType { FOR_WEB_UI, FOR_LAYOUT_TESTS };
 // bindings. It creates (and destroys) a MojoContextState at the appropriate
 // times and handles the necessary browser messages. MojoBindingsController
 // destroys itself when the RendererFrame it is created with is destroyed.
+//
+// TODO(rockot): Clean up this class as we migrate everything to the native
+// Blink bindings, which only require the implementation of
+// DidCreateScriptContext() we have here.
 class MojoBindingsController
     : public RenderFrameObserver,
       public RenderFrameObserverTracker<MojoBindingsController> {
@@ -39,6 +43,8 @@ class MojoBindingsController
   MojoContextState* GetContextState();
 
   // RenderFrameObserver overrides:
+  void DidCreateScriptContext(v8::Local<v8::Context> context,
+                              int world_id) override;
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidClearWindowObject() override;

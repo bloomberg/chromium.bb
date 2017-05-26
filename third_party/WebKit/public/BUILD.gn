@@ -467,6 +467,7 @@ source_set("blink_headers") {
     "web/WebColorSuggestion.h",
     "web/WebCompositionUnderline.h",
     "web/WebConsoleMessage.h",
+    "web/WebContextFeatures.h",
     "web/WebContextMenuData.h",
     "web/WebCryptoNormalize.h",
     "web/WebCustomElement.h",

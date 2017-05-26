@@ -437,6 +437,11 @@ def origin_trial_feature_name(definition_or_member):
     return extended_attributes.get('OriginTrialEnabled') or extended_attributes.get('FeaturePolicy')
 
 
+# [ContextEnabled]
+def context_enabled_feature_name(definition_or_member):
+    return definition_or_member.extended_attributes.get('ContextEnabled')
+
+
 # [RuntimeEnabled]
 def runtime_enabled_feature_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes

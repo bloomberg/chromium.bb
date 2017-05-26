@@ -1,12 +1,8 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+'use strict';
 
-[
-    ActiveScriptWrappable,
-    DependentLifetime,
-    ContextEnabled=MojoJS,
-    RuntimeEnabled=MojoJS,
-] interface MojoWatcher {
-    MojoResult cancel();
+window.isNativeMojoAvailable = () => {
+  return 'Mojo' in self && 'MojoHandle' in self && 'MojoWatcher' in self;
 };

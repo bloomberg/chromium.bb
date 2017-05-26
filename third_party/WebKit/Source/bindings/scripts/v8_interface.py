@@ -45,8 +45,9 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import (cpp_name_or_partial, cpp_name, has_extended_attribute_value,
-                          runtime_enabled_feature_name, is_legacy_interface_type_checking)
+from v8_utilities import (context_enabled_feature_name, cpp_name_or_partial, cpp_name,
+                          has_extended_attribute_value, runtime_enabled_feature_name,
+                          is_legacy_interface_type_checking)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -142,7 +143,33 @@ def origin_trial_features(interface, constants, attributes, methods):
     if features:
         includes.add('platform/bindings/ScriptState.h')
         includes.add('core/origin_trials/OriginTrials.h')
-    return sorted(features)
+    return features
+
+
+def context_enabled_features(attributes):
+    """ Returns a list of context-enabled features from a set of attributes.
+
+    Each element is a dictionary with the feature's |name| and lists of
+    |attributes| associated with the feature.
+    """
+    KEY = 'context_enabled_feature_name'  # pylint: disable=invalid-name
+
+    def member_filter(members):
+        return sorted([member for member in members if member.get(KEY) and not member.get('exposed_test')])
+
+    def member_filter_by_name(members, name):
+        return [member for member in members if member[KEY] == name]
+
+    # Collect all members visible on this interface with a defined origin trial
+    context_enabled_attributes = member_filter(attributes)
+    feature_names = set([member[KEY] for member in context_enabled_attributes])
+    features = [{'name': name,
+                 'attributes': member_filter_by_name(context_enabled_attributes, name),
+                 'needs_instance': False}
+                for name in feature_names]
+    if features:
+        includes.add('platform/bindings/ScriptState.h')
+    return features
 
 
 def interface_context(interface, interfaces):
@@ -233,6 +260,7 @@ def interface_context(interface, interfaces):
         'V8Window', 'V8HTMLDocument', 'V8Document', 'V8Node', 'V8EventTarget']
 
     context = {
+        'context_enabled_feature_name': context_enabled_feature_name(interface),  # [ContextEnabled]
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
         'is_gc_type': True,
@@ -418,9 +446,11 @@ def interface_context(interface, interfaces):
         'has_named_properties_object': is_global and context['named_property_getter'],
     })
 
-    # Origin Trials
+    # Origin Trials and ContextEnabled features
     context.update({
-        'origin_trial_features': origin_trial_features(interface, context['constants'], context['attributes'], context['methods']),
+        'optional_features':
+            sorted(origin_trial_features(interface, context['constants'], context['attributes'], context['methods']) +
+                   context_enabled_features(context['attributes'])),
     })
 
     # Cross-origin interceptors
