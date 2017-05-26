@@ -140,5 +140,9 @@ class WebrtcPageSet(story.StorySet):
 
 class WebrtcExpectations(story.expectations.StoryExpectations):
   def SetExpectations(self):
-    self.DisableStory('multiple_peerconnections', [story.expectations.ALL],
+    self.DisableStory('multiple_peerconnections',
+                      [story.expectations.ALL],
                       'crbug.com/725502')
+    self.DisableStory('30s_datachannel_transfer',
+                      [story.expectations.ALL_DESKTOP],
+                      'crbug.com/726811')
