@@ -39,8 +39,8 @@ class ArcMetricsService
   void OnProcessInstanceClosed();
 
   // MetricsHost overrides.
-  void ReportBootProgress(
-      std::vector<mojom::BootProgressEventPtr> events) override;
+  void ReportBootProgress(std::vector<mojom::BootProgressEventPtr> events,
+                          mojom::BootType boot_type) override;
 
  private:
   bool CalledOnValidThread();

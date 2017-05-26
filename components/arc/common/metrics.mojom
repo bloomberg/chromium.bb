@@ -1,8 +1,24 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Next MinVersion: 2
 
 module arc.mojom;
+
+[Extensible]
+enum BootType {
+  // This is used only for backward compatibility reasons and the value has to
+  // be 0.
+  UNKNOWN = 0,
+
+  // This is for the very first (opt-in) boot.
+  FIRST_BOOT = 1,
+  // This is for the first boot after Chrome OS update which also updates the
+  // ARC image.
+  FIRST_BOOT_AFTER_UPDATE = 2,
+  // This is for a regular boot.
+  REGULAR_BOOT = 3,
+};
 
 // Describes a boot progress event.
 struct BootProgressEvent {
@@ -23,11 +39,14 @@ struct BootProgressEvent {
   int64 uptimeMillis;
 };
 
+// Next method ID: 1
 interface MetricsHost {
   // Report boot progress events from ARC instance.
-  ReportBootProgress@0(array<BootProgressEvent> events);
+  ReportBootProgress@0(array<BootProgressEvent> events,
+                       [MinVersion=1] BootType boot_type);
 };
 
+// Next method ID: 1
 interface MetricsInstance {
   Init@0(MetricsHost host_ptr);
 };
