@@ -52,7 +52,8 @@ namespace {
 class PathBuilderPkitsTestDelegate {
  public:
   static bool Verify(std::vector<std::string> cert_ders,
-                     std::vector<std::string> crl_ders) {
+                     std::vector<std::string> crl_ders,
+                     const PkitsTestSettings& settings) {
     if (cert_ders.empty()) {
       ADD_FAILURE() << "cert_ders is empty";
       return false;
@@ -112,7 +113,7 @@ TEST_F(PkitsTest01SignatureVerificationCustomPathBuilderFoo,
                                "ValidDSASignaturesTest4EE"};
   const char* const crls[] = {"TrustAnchorRootCRL", "DSACACRL"};
   // DSA signatures are intentionally unsupported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.1.5 Valid DSA Parameter Inheritance Test5
@@ -124,7 +125,7 @@ TEST_F(PkitsTest01SignatureVerificationCustomPathBuilderFoo,
   const char* const crls[] = {"TrustAnchorRootCRL", "DSACACRL",
                               "DSAParametersInheritedCACRL"};
   // DSA signatures are intentionally unsupported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 class PkitsTest13SignatureVerificationCustomPathBuilderFoo
@@ -139,7 +140,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
   const char* const crls[] = {"TrustAnchorRootCRL",
                               "nameConstraintsRFC822CA1CRL"};
   // Name constraints on rfc822Names are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.13.23 Valid RFC822 nameConstraints Test23
@@ -151,7 +152,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
   const char* const crls[] = {"TrustAnchorRootCRL",
                               "nameConstraintsRFC822CA2CRL"};
   // Name constraints on rfc822Names are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.13.25 Valid RFC822 nameConstraints Test25
@@ -163,7 +164,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
   const char* const crls[] = {"TrustAnchorRootCRL",
                               "nameConstraintsRFC822CA3CRL"};
   // Name constraints on rfc822Names are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.13.27 Valid DN and RFC822 nameConstraints Test27
@@ -176,7 +177,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
   const char* const crls[] = {"TrustAnchorRootCRL", "nameConstraintsDN1CACRL",
                               "nameConstraintsDN1subCA3CRL"};
   // Name constraints on rfc822Names are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.13.34 Valid URI nameConstraints Test34
@@ -187,7 +188,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
                                "ValidURInameConstraintsTest34EE"};
   const char* const crls[] = {"TrustAnchorRootCRL", "nameConstraintsURI1CACRL"};
   // Name constraints on uniformResourceIdentifiers are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 // Modified version of 4.13.36 Valid URI nameConstraints Test36
@@ -198,7 +199,7 @@ TEST_F(PkitsTest13SignatureVerificationCustomPathBuilderFoo,
                                "ValidURInameConstraintsTest36EE"};
   const char* const crls[] = {"TrustAnchorRootCRL", "nameConstraintsURI2CACRL"};
   // Name constraints on uniformResourceIdentifiers are not supported.
-  ASSERT_FALSE(this->Verify(certs, crls));
+  ASSERT_FALSE(this->Verify(certs, crls, {}));
 }
 
 INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,

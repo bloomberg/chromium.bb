@@ -4331,6 +4331,7 @@ test("net_unittests") {
     "cert/internal/certificate_policies_unittest.cc",
     "cert/internal/extended_key_usage_unittest.cc",
     "cert/internal/name_constraints_unittest.cc",
+    "cert/internal/nist_pkits_unittest.cc",
     "cert/internal/nist_pkits_unittest.h",
     "cert/internal/parse_certificate_unittest.cc",
     "cert/internal/parse_name_unittest.cc",
