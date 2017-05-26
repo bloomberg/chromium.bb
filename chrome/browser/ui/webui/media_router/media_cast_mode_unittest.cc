@@ -13,8 +13,9 @@ using testing::HasSubstr;
 namespace media_router {
 
 TEST(MediaCastModeTest, MediaCastModeToDescription) {
-  EXPECT_FALSE(MediaCastModeToDescription(MediaCastMode::DEFAULT, "youtube.com")
-                   .empty());
+  EXPECT_FALSE(
+      MediaCastModeToDescription(MediaCastMode::PRESENTATION, "youtube.com")
+          .empty());
   EXPECT_FALSE(
       MediaCastModeToDescription(MediaCastMode::TAB_MIRROR, "").empty());
   EXPECT_FALSE(
@@ -22,7 +23,7 @@ TEST(MediaCastModeTest, MediaCastModeToDescription) {
 }
 
 TEST(MediaCastModeTest, IsValidCastModeNum) {
-  EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::DEFAULT));
+  EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::PRESENTATION));
   EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::TAB_MIRROR));
   EXPECT_TRUE(IsValidCastModeNum(MediaCastMode::DESKTOP_MIRROR));
   EXPECT_FALSE(IsValidCastModeNum(-1));

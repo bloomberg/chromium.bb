@@ -14,10 +14,9 @@ namespace media_router {
 std::string MediaCastModeToDescription(
     MediaCastMode mode, const std::string& host) {
   switch (mode) {
-    case MediaCastMode::DEFAULT:
-      return l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE,
-          base::UTF8ToUTF16(host));
+    case MediaCastMode::PRESENTATION:
+      return l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
+                                       base::UTF8ToUTF16(host));
     case MediaCastMode::TAB_MIRROR:
       return l10n_util::GetStringUTF8(
           IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE);
@@ -32,7 +31,7 @@ std::string MediaCastModeToDescription(
 
 bool IsValidCastModeNum(int cast_mode_num) {
   switch (cast_mode_num) {
-    case MediaCastMode::DEFAULT:
+    case MediaCastMode::PRESENTATION:
     case MediaCastMode::TAB_MIRROR:
     case MediaCastMode::DESKTOP_MIRROR:
       return true;

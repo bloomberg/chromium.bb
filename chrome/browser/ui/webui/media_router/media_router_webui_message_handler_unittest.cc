@@ -336,7 +336,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   std::vector<MediaRoute::Id> joinable_route_ids = {route.media_route_id()};
   std::unordered_map<MediaRoute::Id, MediaCastMode> current_cast_modes;
   current_cast_modes.insert(
-      std::make_pair(route.media_route_id(), MediaCastMode::DEFAULT));
+      std::make_pair(route.media_route_id(), MediaCastMode::PRESENTATION));
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));
@@ -349,7 +349,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   EXPECT_EQ(route.description(), GetStringFromDict(route_value, "description"));
   EXPECT_EQ(route.is_local(), GetBooleanFromDict(route_value, "isLocal"));
   EXPECT_TRUE(GetBooleanFromDict(route_value, "canJoin"));
-  EXPECT_EQ(MediaCastMode::DEFAULT,
+  EXPECT_EQ(MediaCastMode::PRESENTATION,
             GetIntegerFromDict(route_value, "currentCastMode"));
   std::string expected_path = base::StringPrintf("%s://%s/%s",
                                   extensions::kExtensionScheme,
@@ -385,9 +385,11 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesIncognito) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, SetCastModesList) {
-  CastModeSet cast_modes({MediaCastMode::DEFAULT, MediaCastMode::TAB_MIRROR,
+  CastModeSet cast_modes({MediaCastMode::PRESENTATION,
+                          MediaCastMode::TAB_MIRROR,
                           MediaCastMode::DESKTOP_MIRROR});
-  handler_->UpdateCastModes(cast_modes, "www.host.com", MediaCastMode::DEFAULT);
+  handler_->UpdateCastModes(cast_modes, "www.host.com",
+                            MediaCastMode::PRESENTATION);
   const base::ListValue* set_cast_mode_list =
       ExtractListFromCallArg("media_router.ui.setCastModeList");
 
@@ -399,7 +401,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, SetCastModesList) {
     EXPECT_EQ(MediaCastModeToDescription(*i, "www.host.com"),
               GetStringFromDict(cast_mode, "description"));
     EXPECT_EQ("www.host.com", GetStringFromDict(cast_mode, "host"));
-    EXPECT_EQ(*i == MediaCastMode::DEFAULT,
+    EXPECT_EQ(*i == MediaCastMode::PRESENTATION,
               GetBooleanFromDict(cast_mode, "isForced"));
   }
 }
@@ -538,9 +540,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, RecordCastModeSelection) {
   base::ListValue args;
-  args.AppendInteger(MediaCastMode::DEFAULT);
+  args.AppendInteger(MediaCastMode::PRESENTATION);
   EXPECT_CALL(*mock_media_router_ui_,
-              RecordCastModeSelection(MediaCastMode::DEFAULT))
+              RecordCastModeSelection(MediaCastMode::PRESENTATION))
       .Times(1);
   handler_->OnReportSelectedCastMode(&args);
 

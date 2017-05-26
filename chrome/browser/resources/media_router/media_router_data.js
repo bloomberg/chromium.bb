@@ -16,9 +16,9 @@ cr.exportPath('media_router');
 media_router.CastModeType = {
   // Note: AUTO mode is only used to configure the sink list container to show
   // all sinks. Individual sinks are configured with a specific cast mode
-  // (DEFAULT, TAB_MIRROR, DESKTOP_MIRROR).
+  // (PRESENTATION, TAB_MIRROR, DESKTOP_MIRROR).
   AUTO: -1,
-  DEFAULT: 0x1,
+  PRESENTATION: 0x1,
   TAB_MIRROR: 0x2,
   DESKTOP_MIRROR: 0x4,
 };
