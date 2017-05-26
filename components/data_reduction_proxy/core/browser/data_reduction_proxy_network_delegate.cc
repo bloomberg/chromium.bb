@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -43,19 +44,67 @@ namespace data_reduction_proxy {
 
 namespace {
 
-// |lofi_low_header_added| is set to true iff Lo-Fi "q=low" request header can
-// be added to the Chrome proxy headers.
-// |received_content_length| is the number of prefilter bytes received.
-// |original_content_length| is the length of resource if accessed directly
-// without data saver proxy.
-// |freshness_lifetime| contains information on how long the resource will be
-// fresh for and how long is the usability.
+// Records the occurrence of |sample| in |name| histogram. UMA macros are not
+// used because the |name| is not static.
+void RecordNewContentLengthHistogram(const std::string& name, int64_t sample) {
+  base::UmaHistogramCustomCounts(
+      name, sample,
+      1,          // Minimum sample size in bytes.
+      128 << 20,  // Maximum sample size in bytes. 128MB is chosen because some
+                  // video requests can be very large.
+      50          // Bucket count.
+      );
+}
+
+void RecordNewContentLengthHistograms(
+    bool is_https,
+    bool is_video,
+    DataReductionProxyRequestType request_type,
+    int64_t received_content_length) {
+  std::string prefix = "Net.HttpContentLength";
+  std::string connection_type = is_https ? ".Https" : ".Http";
+  std::string suffix = ".Other";
+  // TODO(crbug.com/726411): Differentiate between a bypass and a disabled
+  // proxy config.
+  switch (request_type) {
+    case VIA_DATA_REDUCTION_PROXY:
+      suffix = ".ViaDRP";
+      break;
+    case HTTPS:
+      suffix = ".Direct";
+      break;
+    case SHORT_BYPASS:
+    case LONG_BYPASS:
+      suffix = ".BypassedDRP";
+      break;
+    case UPDATE:
+    case UNKNOWN_TYPE:
+    default:
+      // Value already properly initialized to ".Other"
+      break;
+  }
+  // Record a histogram for all traffic, including video.
+  RecordNewContentLengthHistogram(prefix + connection_type + suffix,
+                                  received_content_length);
+  if (is_video) {
+    RecordNewContentLengthHistogram(
+        prefix + connection_type + suffix + ".Video", received_content_length);
+  }
+}
+
+// |lofi_low_header_added| is set to true iff Lo-Fi request header
+// can be added to the Chrome proxy header. |received_content_length| is
+// the number of prefilter bytes received. |original_content_length| is the
+// length of resource if accessed directly without data saver proxy.
+// |freshness_lifetime| specifies how long the resource will
+// be fresh for.
 void RecordContentLengthHistograms(bool lofi_low_header_added,
                                    bool is_https,
                                    bool is_video,
                                    int64_t received_content_length,
                                    int64_t original_content_length,
-                                   const base::TimeDelta& freshness_lifetime) {
+                                   const base::TimeDelta& freshness_lifetime,
+                                   DataReductionProxyRequestType request_type) {
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
   if (original_content_length >= 0) {
@@ -84,17 +133,11 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
     original_content_length = received_content_length;
   }
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength", received_content_length);
-  if (is_https) {
-    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Https",
-                            received_content_length);
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Http",
-                            received_content_length);
-  }
-  if (is_video) {
-    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Video",
-                            received_content_length);
-  }
+
+  // Record the new histograms broken down by HTTP/HTTPS and video/non-video
+  RecordNewContentLengthHistograms(is_https, is_video, request_type,
+                                   received_content_length);
+
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLength",
                           original_content_length);
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifference",
@@ -102,8 +145,7 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpContentFreshnessLifetime",
                               freshness_lifetime.InSeconds(),
                               base::TimeDelta::FromHours(1).InSeconds(),
-                              base::TimeDelta::FromDays(30).InSeconds(),
-                              100);
+                              base::TimeDelta::FromDays(30).InSeconds(), 100);
   if (freshness_lifetime.InSeconds() <= 0)
     return;
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable",
@@ -570,7 +612,7 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
           data_reduction_proxy_io_data_->lofi_decider() &&
           data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFi(request),
       is_https, is_video, request.received_response_content_length(),
-      original_content_length, freshness_lifetime);
+      original_content_length, freshness_lifetime, request_type);
 
   if (data_reduction_proxy_io_data_ && data_reduction_proxy_bypass_stats_) {
     // Record BypassedBytes histograms for the request.

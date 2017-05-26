@@ -93,9 +93,40 @@ const std::string kDifferenceValidOCLLoFiOnHistogramName =
     "Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn";
 
 const std::string kReceivedHistogramName = "Net.HttpContentLength";
-const std::string kReceivedInsecureHistogramName = "Net.HttpContentLength.Http";
-const std::string kReceivedSecureHistogramName = "Net.HttpContentLength.Https";
-const std::string kReceivedVideoHistogramName = "Net.HttpContentLength.Video";
+const std::string kReceivedInsecureDirectHistogramName =
+    "Net.HttpContentLength.Http.Direct";
+const std::string kReceivedInsecureViaDRPHistogramName =
+    "Net.HttpContentLength.Http.ViaDRP";
+const std::string kReceivedInsecureBypassedHistogramName =
+    "Net.HttpContentLength.Http.BypassedDRP";
+const std::string kReceivedInsecureOtherHistogramName =
+    "Net.HttpContentLength.Http.Other";
+const std::string kReceivedSecureDirectHistogramName =
+    "Net.HttpContentLength.Https.Direct";
+const std::string kReceivedSecureViaDRPHistogramName =
+    "Net.HttpContentLength.Https.ViaDRP";
+const std::string kReceivedSecureBypassedHistogramName =
+    "Net.HttpContentLength.Https.BypassedDRP";
+const std::string kReceivedSecureOtherHistogramName =
+    "Net.HttpContentLength.Https.Other";
+const std::string kReceivedSecureOtheristogramName =
+    "Net.HttpContentLength.Https.Other";
+const std::string kReceivedVideoInsecureDirectHistogramName =
+    "Net.HttpContentLength.Http.Direct.Video";
+const std::string kReceivedVideoInsecureViaDRPHistogramName =
+    "Net.HttpContentLength.Http.ViaDRP.Video";
+const std::string kReceivedVideoInsecureBypassedHistogramName =
+    "Net.HttpContentLength.Http.BypassedDRP.Video";
+const std::string kReceivedVideoInsecureOtherHistogramName =
+    "Net.HttpContentLength.Http.Other.Video";
+const std::string kReceivedVideoSecureDirectHistogramName =
+    "Net.HttpContentLength.Https.Direct.Video";
+const std::string kReceivedVideoSecureViaDRPHistogramName =
+    "Net.HttpContentLength.Https.ViaDRP.Video";
+const std::string kReceivedVideoSecureBypassedHistogramName =
+    "Net.HttpContentLength.Https.BypassedDRP.Video";
+const std::string kReceivedVideoSecureOtherHistogramName =
+    "Net.HttpContentLength.Https.Other.Video";
 const std::string kOriginalHistogramName = "Net.HttpOriginalContentLength";
 const std::string kDifferenceHistogramName = "Net.HttpContentLengthDifference";
 const std::string kFreshnessLifetimeHistogramName =
@@ -1203,11 +1234,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       kOriginalContentLength - kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kReceivedHistogramName,
                                       kResponseContentLength, 1);
-  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureViaDRPHistogramName,
                                       kResponseContentLength, 1);
-  histogram_tester.ExpectTotalCount(kReceivedSecureHistogramName, 0);
-  histogram_tester.ExpectTotalCount(kReceivedVideoHistogramName, 0);
-  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
+  histogram_tester.ExpectTotalCount(kReceivedInsecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureViaDRPHistogramName,
+                                    0);
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureViaDRPHistogramName,
                                       kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kOriginalHistogramName,
                                       kOriginalContentLength, 1);
@@ -1319,11 +1352,28 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetVideoHistograms) {
   FetchURLRequest(GURL(kTestURL), nullptr, video_response_headers,
                   kResponseContentLength, 0);
 
-  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureViaDRPHistogramName,
                                       kResponseContentLength, 1);
-  histogram_tester.ExpectTotalCount(kReceivedSecureHistogramName, 0);
-  histogram_tester.ExpectUniqueSample(kReceivedVideoHistogramName,
+  histogram_tester.ExpectTotalCount(kReceivedInsecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedInsecureBypassedHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedInsecureOtherHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureViaDRPHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureBypassedHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureOtherHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kReceivedVideoInsecureViaDRPHistogramName,
                                       kResponseContentLength, 1);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureDirectHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureBypassedHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureOtherHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureViaDRPHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureBypassedHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureOtherHistogramName, 0);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetSSLHistograms) {
@@ -1344,10 +1394,28 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetSSLHistograms) {
   FetchURLRequest(GURL(kSecureTestURL), nullptr, secure_response_headers,
                   kResponseContentLength, 0);
 
-  histogram_tester.ExpectTotalCount(kReceivedInsecureHistogramName, 0);
-  histogram_tester.ExpectUniqueSample(kReceivedSecureHistogramName,
+  histogram_tester.ExpectTotalCount(kReceivedInsecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedInsecureViaDRPHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedInsecureBypassedHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedInsecureOtherHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureViaDRPHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureBypassedHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedSecureOtherHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kReceivedSecureDirectHistogramName,
                                       kResponseContentLength, 1);
-  histogram_tester.ExpectTotalCount(kReceivedVideoHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureViaDRPHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureDirectHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureBypassedHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoInsecureOtherHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureViaDRPHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureDirectHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureBypassedHistogramName,
+                                    0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoSecureOtherHistogramName, 0);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
