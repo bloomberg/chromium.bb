@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
@@ -43,6 +44,8 @@ class AutofillPaymentInstrument
   base::string16 GetMissingInfoLabel() override;
   bool IsValidForCanMakePayment() override;
   void RecordUse() override;
+  base::string16 GetLabel() const override;
+  base::string16 GetSublabel() const override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const autofill::CreditCard& card,

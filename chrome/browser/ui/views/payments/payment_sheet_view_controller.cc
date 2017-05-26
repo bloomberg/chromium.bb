@@ -710,18 +710,19 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> selected_instrument_label =
-        base::MakeUnique<views::Label>(selected_instrument->label());
+        base::MakeUnique<views::Label>(selected_instrument->GetLabel());
     selected_instrument_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(selected_instrument_label.release());
 
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> selected_instrument_sublabel =
-        base::MakeUnique<views::Label>(selected_instrument->sublabel());
+        base::MakeUnique<views::Label>(selected_instrument->GetSublabel());
     selected_instrument_sublabel->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(selected_instrument_sublabel.release());
 
-    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
-        selected_instrument->icon_resource_id(), selected_instrument->label());
+    std::unique_ptr<views::ImageView> card_icon_view =
+        CreateInstrumentIconView(selected_instrument->icon_resource_id(),
+                                 selected_instrument->GetLabel());
     card_icon_view->SetImageSize(gfx::Size(32, 20));
 
     return builder.Id(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)
@@ -736,7 +737,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
                                       /*button_enabled=*/true);
     } else if (state()->available_instruments().size() == 1) {
       return builder.CreateWithButton(
-          state()->available_instruments()[0]->label(),
+          state()->available_instruments()[0]->GetLabel(),
           l10n_util::GetStringUTF16(IDS_CHOOSE),
           /*button_enabled=*/true);
     } else {
@@ -744,7 +745,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
           IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW,
           state()->available_instruments().size() - 1);
       return builder.CreateWithButton(
-          state()->available_instruments()[0]->label(), format,
+          state()->available_instruments()[0]->GetLabel(), format,
           state()->available_instruments().size() - 1,
           l10n_util::GetStringUTF16(IDS_CHOOSE),
           /*button_enabled=*/true);

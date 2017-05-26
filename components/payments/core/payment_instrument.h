@@ -47,24 +47,21 @@ class PaymentInstrument {
   virtual bool IsValidForCanMakePayment() = 0;
   // Records the use of this payment instrument.
   virtual void RecordUse() = 0;
+  // Return the sub/label of payment instrument, to be displayed to the user.
+  virtual base::string16 GetLabel() const = 0;
+  virtual base::string16 GetSublabel() const = 0;
 
   const std::string& method_name() const { return method_name_; }
-  const base::string16& label() const { return label_; }
-  const base::string16& sublabel() const { return sublabel_; }
   int icon_resource_id() const { return icon_resource_id_; }
   Type type() { return type_; }
 
  protected:
   PaymentInstrument(const std::string& method_name,
-                    const base::string16& label,
-                    const base::string16& sublabel,
                     int icon_resource_id,
                     Type type);
 
  private:
   const std::string method_name_;
-  const base::string16 label_;
-  const base::string16 sublabel_;
   int icon_resource_id_;
   Type type_;
 

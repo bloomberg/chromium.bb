@@ -7,13 +7,9 @@
 namespace payments {
 
 PaymentInstrument::PaymentInstrument(const std::string& method_name,
-                                     const base::string16& label,
-                                     const base::string16& sublabel,
                                      int icon_resource_id,
                                      Type type)
     : method_name_(method_name),
-      label_(label),
-      sublabel_(sublabel),
       icon_resource_id_(icon_resource_id),
       type_(type) {}
 
