@@ -2281,9 +2281,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            FlexDirection() == kFlowColumnReverse;
   }
   bool HasBoxReflect() const { return BoxReflect(); }
-  bool ReflectionDataEquivalent(const ComputedStyle* other_style) const {
+  bool ReflectionDataEquivalent(const ComputedStyle& other) const {
     return rare_non_inherited_data_->ReflectionDataEquivalent(
-        *other_style->rare_non_inherited_data_);
+        *other.rare_non_inherited_data_);
   }
 
   // Mask utility functions.
@@ -3062,10 +3062,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Content utility functions.
-  bool ContentDataEquivalent(const ComputedStyle* other_style) const {
-    return const_cast<ComputedStyle*>(this)
-        ->rare_non_inherited_data_->ContentDataEquivalent(
-            *const_cast<ComputedStyle*>(other_style)->rare_non_inherited_data_);
+  bool ContentDataEquivalent(const ComputedStyle& other) const {
+    return rare_non_inherited_data_->ContentDataEquivalent(
+        *other.rare_non_inherited_data_);
   }
 
   // Contain utility functions.
@@ -3188,9 +3187,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // check hasTransform(), as it is possible for two styles to have matching
   // transform operations but differ in other transform-impacting style
   // respects.
-  bool TransformDataEquivalent(const ComputedStyle& other_style) const {
+  bool TransformDataEquivalent(const ComputedStyle& other) const {
     return rare_non_inherited_data_->transform_ ==
-           other_style.rare_non_inherited_data_->transform_;
+           other.rare_non_inherited_data_->transform_;
   }
   bool Preserves3D() const {
     return UsedTransformStyle3D() != kTransformStyle3DFlat;
