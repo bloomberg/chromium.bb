@@ -1182,7 +1182,7 @@
             }
           ]
         },
-        "test": "service_unittests"
+        "test": "services_unittests"
       },
       {
         "merge": {

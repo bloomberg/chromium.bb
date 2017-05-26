@@ -13,8 +13,8 @@ import("//testing/test.gni")
 # To add tests for a new service, please define a "tests" source_set in the
 # service subdirectory and add it as a dependency here. If your unit tests
 # use the ServiceTest framework, you must also include corresponding catalog
-# entries in the "service_unittests_catalog" target below.
-service_test("service_unittests") {
+# entries in the "services_unittests_catalog" target below.
+service_test("services_unittests") {
   deps = [
     "//services/data_decoder:tests",
     "//services/device:tests",
@@ -63,10 +63,10 @@ service_test("service_unittests") {
 
   test_runner = "//services/test:run_all_service_tests"
 
-  catalog = ":service_unittests_catalog"
+  catalog = ":services_unittests_catalog"
 }
 
-catalog("service_unittests_catalog") {
+catalog("services_unittests_catalog") {
   testonly = true
   catalog_deps = [
     "//services/device:tests_catalog",

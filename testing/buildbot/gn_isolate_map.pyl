@@ -833,8 +833,8 @@
     "label": "//services:service_junit_tests",
     "type": "junit_test",
   },
-  "service_unittests": {
-    "label": "//services:service_unittests",
+  "services_unittests": {
+    "label": "//services:services_unittests",
     "type": "windowed_test_launcher",
   },
   "setup_unittests": {
