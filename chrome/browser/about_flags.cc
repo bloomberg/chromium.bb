@@ -3033,6 +3033,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewVirtualKeyboardBehavior)},
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    {"enable-picture-in-picture",
+     flag_descriptions::kEnablePictureInPictureName,
+     flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnablePictureInPicture)},
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

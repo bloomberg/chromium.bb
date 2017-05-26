@@ -1062,6 +1062,11 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
+const char kEnablePictureInPictureName[] = "Enable picture in picture.";
+
+const char kEnablePictureInPictureDescription[] =
+    "Enable the picture in picture feature for videos.";
+
 const char kTraceUploadUrlName[] = "Trace label for navigation tracing";
 
 const char kTraceUploadUrlDescription[] =
