@@ -442,7 +442,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
 
   AtomicString value = token.Value().ToAtomicString().LowerASCII();
   bool has_arguments = token.GetType() == kFunctionToken;
-  selector->UpdatePseudoType(value, has_arguments);
+  selector->UpdatePseudoType(value, has_arguments, context_->Mode());
 
   if (!RuntimeEnabledFeatures::cssSelectorsFocusWithinEnabled() &&
       selector->GetPseudoType() == CSSSelector::kPseudoFocusWithin)

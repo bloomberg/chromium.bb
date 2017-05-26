@@ -1063,11 +1063,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
     case CSSSelector::kPseudoVideoPersistent:
-      if (!is_ua_rule_ || !isHTMLVideoElement(element))
-        return false;
-      return toHTMLVideoElement(element).IsPersistent();
+      DCHECK(is_ua_rule_);
+      return isHTMLVideoElement(element) &&
+             toHTMLVideoElement(element).IsPersistent();
     case CSSSelector::kPseudoVideoPersistentAncestor:
-      return is_ua_rule_ && element.ContainsPersistentVideo();
+      DCHECK(is_ua_rule_);
+      return element.ContainsPersistentVideo();
     case CSSSelector::kPseudoInRange:
       if (mode_ == kResolvingStyle)
         element.GetDocument().SetContainsValidityStyleRules();
@@ -1095,12 +1096,13 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoHostContext:
       return CheckPseudoHost(context, result);
     case CSSSelector::kPseudoSpatialNavigationFocus:
-      return is_ua_rule_ && MatchesSpatialNavigationFocusPseudoClass(element);
+      DCHECK(is_ua_rule_);
+      return MatchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::kPseudoListBox:
-      return is_ua_rule_ && MatchesListBoxPseudoClass(element);
+      DCHECK(is_ua_rule_);
+      return MatchesListBoxPseudoClass(element);
     case CSSSelector::kPseudoHostHasAppearance:
-      if (!is_ua_rule_)
-        return false;
+      DCHECK(is_ua_rule_);
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
         if (root->GetType() != ShadowRootType::kUserAgent)
           return false;
@@ -1164,8 +1166,7 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       return false;
     }
     case CSSSelector::kPseudoBlinkInternalElement:
-      if (!is_ua_rule_)
-        return false;
+      DCHECK(is_ua_rule_);
       if (ShadowRoot* root = element.ContainingShadowRoot())
         return root->GetType() == ShadowRootType::kUserAgent &&
                element.ShadowPseudoId() == selector.Value();

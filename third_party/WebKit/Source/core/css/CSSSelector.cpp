@@ -54,7 +54,7 @@ static_assert(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector),
               "CSSSelector should stay small");
 
 void CSSSelector::CreateRareData() {
-  DCHECK_NE(match_, static_cast<unsigned>(kTag));
+  DCHECK_NE(Match(), kTag);
   if (has_rare_data_)
     return;
   AtomicString value(data_.value_);
@@ -488,15 +488,25 @@ PseudoId CSSSelector::ParsePseudoId(const String& name) {
       AtomicString(name.Substring(name_without_colons_start)), false));
 }
 
-void CSSSelector::UpdatePseudoType(const AtomicString& value,
-                                   bool has_arguments) {
-  DCHECK(match_ == kPseudoClass || match_ == kPseudoElement ||
-         match_ == kPagePseudoClass);
+void CSSSelector::UpdatePseudoPage(const AtomicString& value) {
+  DCHECK_EQ(Match(), kPagePseudoClass);
+  SetValue(value);
+  PseudoType type = ParsePseudoType(value, false);
+  if (type != kPseudoFirstPage && type != kPseudoLeftPage &&
+      type != kPseudoRightPage) {
+    type = kPseudoUnknown;
+  }
+  pseudo_type_ = type;
+}
 
+void CSSSelector::UpdatePseudoType(const AtomicString& value,
+                                   bool has_arguments,
+                                   CSSParserMode mode) {
+  DCHECK(match_ == kPseudoClass || match_ == kPseudoElement);
   SetValue(value);
   SetPseudoType(ParsePseudoType(value, has_arguments));
 
-  switch (pseudo_type_) {
+  switch (GetPseudoType()) {
     case kPseudoAfter:
     case kPseudoBefore:
     case kPseudoFirstLetter:
@@ -519,19 +529,26 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoScrollbarTrackPiece:
     case kPseudoSelection:
     case kPseudoWebKitCustomElement:
-    case kPseudoBlinkInternalElement:
     case kPseudoContent:
     case kPseudoShadow:
     case kPseudoSlotted:
       if (match_ != kPseudoElement)
         pseudo_type_ = kPseudoUnknown;
       break;
-    case kPseudoFirstPage:
-    case kPseudoLeftPage:
-    case kPseudoRightPage:
-      if (match_ != kPagePseudoClass)
+    case kPseudoBlinkInternalElement:
+      if (match_ != kPseudoElement || mode != kUASheetMode)
         pseudo_type_ = kPseudoUnknown;
       break;
+    case kPseudoHostHasAppearance:
+    case kPseudoListBox:
+    case kPseudoSpatialNavigationFocus:
+    case kPseudoVideoPersistent:
+    case kPseudoVideoPersistentAncestor:
+      if (mode != kUASheetMode) {
+        pseudo_type_ = kPseudoUnknown;
+        break;
+      }
+    // fallthrough
     case kPseudoActive:
     case kPseudoAny:
     case kPseudoAnyLink:
@@ -558,7 +575,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoHorizontal:
     case kPseudoHost:
     case kPseudoHostContext:
-    case kPseudoHostHasAppearance:
     case kPseudoHover:
     case kPseudoInRange:
     case kPseudoIncrement:
@@ -568,7 +584,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoLastChild:
     case kPseudoLastOfType:
     case kPseudoLink:
-    case kPseudoListBox:
     case kPseudoNoButton:
     case kPseudoNot:
     case kPseudoNthChild:
@@ -587,7 +602,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoRoot:
     case kPseudoScope:
     case kPseudoSingleButton:
-    case kPseudoSpatialNavigationFocus:
     case kPseudoStart:
     case kPseudoTarget:
     case kPseudoUnknown:
@@ -596,10 +610,14 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoVertical:
     case kPseudoVisited:
     case kPseudoWindowInactive:
-    case kPseudoVideoPersistent:
-    case kPseudoVideoPersistentAncestor:
       if (match_ != kPseudoClass)
         pseudo_type_ = kPseudoUnknown;
+      break;
+    case kPseudoFirstPage:
+    case kPseudoLeftPage:
+    case kPseudoRightPage:
+      pseudo_type_ = kPseudoUnknown;
+      break;
   }
 }
 

@@ -196,10 +196,21 @@ TEST_F(HTMLVideoElementPersistentTest, internalPseudoClassOnlyUAStyleSheet) {
   EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
+  DummyExceptionStateForTesting exception_state;
+
   EXPECT_FALSE(DivElement()->matches(":-webkit-full-screen"));
-  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor"));
-  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent"));
-  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor",
+                                     exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
+  EXPECT_FALSE(
+      VideoElement()->matches(":-internal-video-persistent", exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor",
+                                       exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 
   UserGestureIndicator gesture_indicator(
       DocumentUserGestureToken::Create(&GetDocument()));
@@ -214,9 +225,18 @@ TEST_F(HTMLVideoElementPersistentTest, internalPseudoClassOnlyUAStyleSheet) {
 
   // The :internal-* rules apply only from the UA stylesheet.
   EXPECT_TRUE(DivElement()->matches(":-webkit-full-screen"));
-  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor"));
-  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent"));
-  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor",
+                                     exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
+  EXPECT_FALSE(
+      VideoElement()->matches(":-internal-video-persistent", exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor",
+                                       exception_state));
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 }
 
 TEST_F(HTMLVideoElementPersistentTest, removeContainerWhilePersisting) {
