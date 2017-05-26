@@ -148,7 +148,7 @@ class CORE_EXPORT ComputedStyleBase {
   // TODO(sashab): Remove initialFoo() static methods and update callers to
   // use resetFoo(), which can be more efficient.
 
-  {% for field in computed_style.all_fields %}
+  {% for field in computed_style.all_fields|sort(attribute='name') %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_public_methods(field)|indent(2)}}
 
@@ -173,7 +173,7 @@ class CORE_EXPORT ComputedStyleBase {
     {% endfor %}
   }
 
-  {% for field in computed_style.all_fields %}
+  {% for field in computed_style.all_fields|sort(attribute='name') %}
   {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_protected_methods(field)|indent(2)}}
