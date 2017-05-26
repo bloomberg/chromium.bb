@@ -546,12 +546,6 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
   }
   return false;
 }
-
-void ChromeClientImpl::SetStatusbarText(const String& message) {
-  if (web_view_->Client())
-    web_view_->Client()->SetStatusText(message);
-}
-
 bool ChromeClientImpl::TabsToLinks() {
   return web_view_->TabsToLinks();
 }

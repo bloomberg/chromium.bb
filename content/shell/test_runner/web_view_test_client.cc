@@ -72,14 +72,6 @@ blink::WebView* WebViewTestClient::CreateView(
   return reinterpret_cast<blink::WebView*>(0xdeadbeef);
 }
 
-void WebViewTestClient::SetStatusText(const blink::WebString& text) {
-  if (!test_runner()->shouldDumpStatusCallbacks())
-    return;
-  delegate()->PrintMessage(
-      std::string("UI DELEGATE STATUS CALLBACK: setStatusText:") +
-      text.Utf8().data() + "\n");
-}
-
 // Simulate a print by going into print mode and then exit straight away.
 void WebViewTestClient::PrintPage(blink::WebLocalFrame* frame) {
   blink::WebSize page_size_in_pixels = frame->View()->Size();

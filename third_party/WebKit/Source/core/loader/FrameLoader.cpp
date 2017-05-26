@@ -1047,16 +1047,6 @@ void FrameLoader::CommitProvisionalLoad() {
   Client()->TransitionToCommittedForNewPage();
 
   frame_->GetNavigationScheduler().Cancel();
-
-  // If we are still in the process of initializing an empty document then its
-  // frame is not in a consistent state for rendering, so avoid
-  // setJSStatusBarText since it may cause clients to attempt to render the
-  // frame.
-  if (!state_machine_.CreatingInitialEmptyDocument()) {
-    LocalDOMWindow* window = frame_->DomWindow();
-    window->setStatus(String());
-    window->setDefaultStatus(String());
-  }
 }
 
 bool FrameLoader::IsLoadingMainFrame() const {

@@ -169,8 +169,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void ClosePagePopup(PagePopup*) override{};
   DOMWindow* PagePopupWindowForTesting() const override { return nullptr; }
 
-  void SetStatusbarText(const String&) override {}
-
   bool TabsToLinks() override { return false; }
 
   void InvalidateRect(const IntRect&) override {}

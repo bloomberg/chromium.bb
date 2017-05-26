@@ -1628,8 +1628,6 @@ void RenderViewImpl::MoveValidationMessage(
       GetRoutingID(), AdjustValidationMessageAnchor(anchor_in_viewport)));
 }
 
-void RenderViewImpl::SetStatusText(const WebString& text) {}
-
 void RenderViewImpl::UpdateTargetURL(const GURL& url,
                                      const GURL& fallback_url) {
   GURL latest_url = url.is_empty() ? fallback_url : url;

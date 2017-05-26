@@ -145,9 +145,6 @@ class WebViewClient : protected WebWidgetClient {
 
   // UI ------------------------------------------------------------------
 
-  // Called when script modifies window.status
-  virtual void SetStatusText(const WebString&) {}
-
   // Called when hovering over an anchor with the given URL.
   virtual void SetMouseOverURL(const WebURL&) {}
 

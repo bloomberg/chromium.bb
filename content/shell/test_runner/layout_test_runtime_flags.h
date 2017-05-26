@@ -172,9 +172,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // is invoked.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_create_view)
 
-  // If true, the test_shell will dump all changes to window.status.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_window_status_changes)
-
   // If true, the test_shell will output descriptive test for spellcheck
   // execution.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_spell_check_callbacks)

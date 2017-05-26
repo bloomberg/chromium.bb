@@ -135,7 +135,6 @@ class TestRunner : public WebTestRunner {
   bool canOpenWindows() const;
   bool shouldDumpResourceLoadCallbacks() const;
   bool shouldDumpResourceResponseMIMETypes() const;
-  bool shouldDumpStatusCallbacks() const;
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
@@ -426,11 +425,6 @@ class TestRunner : public WebTestRunner {
   // contains the empty string, all subresource loads will be disallowed.
   void SetDisallowedSubresourcePathSuffixes(
       const std::vector<std::string>& suffixes);
-
-  // This function sets a flag that tells the test_shell to dump all calls
-  // to window.status().
-  // It takes no arguments, and ignores any that may be present.
-  void DumpWindowStatusChanges();
 
   // This function sets a flag that tells the test_shell to dump all
   // the lines of descriptive text about spellcheck execution.
