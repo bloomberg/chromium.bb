@@ -4246,8 +4246,8 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
 
   mbmi->tx_type = tx_type;
-  mbmi->min_tx_size = TX_SIZES_ALL;
   inter_block_yrd(cpi, x, rd_stats, bsize, ref_best_rd, rd_stats_stack);
+  mbmi->min_tx_size = mbmi->inter_tx_size[0][0];
 
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 
