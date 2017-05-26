@@ -1762,6 +1762,73 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   EXPECT_EQ(0, delegate->on_data_sent_count());
 }
 
+TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
+  const char kBody[] = "here is some data";
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
+  AddWrite(ConstructRequestHeadersPacketInner(
+      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      &spdy_request_headers_frame_length, &header_stream_offset));
+  AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, kFin, 0,
+                                                   {kBody}));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<TestDelegateBase> delegate(
+      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback();  // OnStreamReady
+
+  // Send a Data packet with fin set.
+  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer(kBody));
+  delegate->SendData(buf1, buf1->size(), /*fin*/ true);
+  delegate->WaitUntilNextCallback();  // OnDataSent
+
+  // Server acks the request.
+  ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
+
+  // Server sends the response headers.
+  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(ConstructResponseHeadersPacket(
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, nullptr));
+
+  delegate->WaitUntilNextCallback();  // OnHeadersReceived
+
+  EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
+
+  // Read the body, which will complete asynchronously.
+  TestCompletionCallback cb;
+  int rv = delegate->ReadData(cb.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  const char kResponseBody[] = "Hello world!";
+
+  // Server sends data with the fin set, which should result in the stream
+  // being closed and hence no RST_STREAM will be sent.
+  ProcessPacket(
+      ConstructServerDataPacket(3, !kIncludeVersion, kFin, 0, kResponseBody));
+  EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)), cb.WaitForResult());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, delegate->on_data_read_count());
+  EXPECT_EQ(1, delegate->on_data_sent_count());
+}
+
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;

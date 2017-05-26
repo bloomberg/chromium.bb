@@ -51,7 +51,6 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
   }
   MOCK_METHOD2(OnTrailingHeadersAvailableMock,
                void(const SpdyHeaderBlock& headers, size_t frame_len));
-  MOCK_METHOD0(OnDataAvailable, void());
   MOCK_METHOD0(OnClose, void());
   MOCK_METHOD1(OnError, void(int));
   MOCK_METHOD0(HasSendHeadersComplete, bool());
@@ -263,6 +262,10 @@ class QuicChromiumClientStreamTest
     return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, n);
   }
 
+  void ResetStreamCallback(QuicChromiumClientStream* stream, int /*rv*/) {
+    stream->Reset(QUIC_STREAM_CANCELLED);
+  }
+
   QuicCryptoClientConfig crypto_config_;
   std::unique_ptr<QuicChromiumClientStream::Handle> handle_;
   testing::StrictMock<MockDelegate> delegate_;
@@ -388,25 +391,43 @@ TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   stream_->OnStreamFrame(frame2);
 }
 
-TEST_P(QuicChromiumClientStreamTest, OnDataAvailableBeforeHeaders) {
-  EXPECT_CALL(delegate_, OnClose());
-
-  EXPECT_CALL(delegate_, OnDataAvailable()).Times(0);
-  stream_->OnDataAvailable();
-}
-
 TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
   InitializeHeaders();
   ProcessHeadersFull(headers_);
 
   const char data[] = "hello world!";
+  int data_len = strlen(data);
   stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
                                          /*offset=*/0, data));
 
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .WillOnce(testing::Invoke(CreateFunctor(
-          &QuicChromiumClientStreamTest::ReadData, base::Unretained(this),
-          QuicStringPiece(data, arraysize(data) - 1))));
+  // Read the body and verify that it arrives correctly.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(data_len,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
+
+  EXPECT_CALL(delegate_, OnClose());
+}
+
+TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
+  InitializeHeaders();
+  ProcessHeadersFull(headers_);
+
+  const char data[] = "hello world!";
+  int data_len = strlen(data);
+
+  // Start to read the body.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
+
+  stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
+                                         /*offset=*/0, data));
+
+  EXPECT_EQ(data_len, callback.WaitForResult());
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose());
@@ -434,12 +455,21 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   EXPECT_CALL(session_, SendRstStream(kTestStreamId, QUIC_STREAM_CANCELLED, 0));
 
   const char data[] = "hello world!";
+  int data_len = strlen(data);
+
+  // Start to read the body.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle_->ReadBody(
+                buffer.get(), 2 * data_len,
+                base::Bind(&QuicChromiumClientStreamTest::ResetStreamCallback,
+                           base::Unretained(this), stream_)));
+
+  // Receive the data and close the stream during the callback.
   stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
                                          /*offset=*/0, data));
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .WillOnce(testing::Invoke(CreateFunctor(
-          &QuicChromiumClientStream::Reset,
-          base::Unretained(stream_), QUIC_STREAM_CANCELLED)));
+
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose());
@@ -457,13 +487,16 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   ProcessHeadersFull(headers_);
 
   const char data[] = "hello world!";
+  int data_len = strlen(data);
   stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
                                          /*offset=*/0, data));
 
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .WillOnce(testing::Invoke(CreateFunctor(
-          &QuicChromiumClientStreamTest::ReadData, base::Unretained(this),
-          QuicStringPiece(data, arraysize(data) - 1))));
+  // Read the body and verify that it arrives correctly.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(data_len,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
 
   SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
@@ -477,16 +510,9 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   run_loop.Run();
 
-  // OnDataAvailable callback should follow trailers notification.
-  base::RunLoop run_loop3;
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .Times(1)
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
-                                        base::Unretained(this),
-                                        QuicStringPiece())),
-          testing::InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); })));
-  run_loop3.Run();
+  // Read the body and verify that it arrives correctly.
+  EXPECT_EQ(0,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
 
   // Make sure kFinalOffsetHeaderKey is gone from the delivered actual trailers.
   trailers.erase(kFinalOffsetHeaderKey);
@@ -502,24 +528,21 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   ProcessHeadersFull(headers_);
 
   const char data[] = "hello world!";
+  int data_len = strlen(data);
   stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
                                          /*offset=*/0, data));
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .Times(1)
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(
-              &QuicChromiumClientStreamTest::ReadData, base::Unretained(this),
-              QuicStringPiece(data, arraysize(data) - 1))),
-          testing::Invoke([&run_loop]() { run_loop.Quit(); })));
-
-  // Wait for the read to complete.
-  run_loop.Run();
+  // Read the body and verify that it arrives correctly.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(data_len,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
 
   // Read again, and it will be pending.
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(1));
-  EXPECT_THAT(stream_->Read(buffer.get(), 1), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(
+      handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()),
+      IsError(ERR_IO_PENDING));
 
   SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
@@ -535,16 +558,8 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   run_loop2.Run();
 
-  // OnDataAvailable callback should follow trailers notification.
-  base::RunLoop run_loop3;
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .Times(1)
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
-                                        base::Unretained(this),
-                                        QuicStringPiece())),
-          testing::InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); })));
-  run_loop3.Run();
+  // Read the body and verify that it arrives correctly.
+  EXPECT_EQ(0, callback.WaitForResult());
 
   // Make sure the stream is properly closed since trailers and data are all
   // consumed.
@@ -565,20 +580,16 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   ProcessHeadersFull(headers_);
 
   const char data[] = "hello world!";
+  int data_len = strlen(data);
   stream_->OnStreamFrame(QuicStreamFrame(kTestStreamId, /*fin=*/false,
                                          /*offset=*/0, data));
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .Times(1)
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(
-              &QuicChromiumClientStreamTest::ReadData, base::Unretained(this),
-              QuicStringPiece(data, arraysize(data) - 1))),
-          testing::Invoke([&run_loop]() { run_loop.Quit(); })));
-
-  // Wait for the read to complete.
-  run_loop.Run();
+  // Read the body and verify that it arrives correctly.
+  TestCompletionCallback callback;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  EXPECT_EQ(data_len,
+            handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
 
   // Deliver trailers. Delegate notification is posted asynchronously.
   SpdyHeaderBlock trailers;
@@ -587,9 +598,11 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
   QuicHeaderList t = ProcessTrailers(trailers);
 
+  EXPECT_FALSE(stream_->IsDoneReading());
   // Read again, it return ERR_IO_PENDING.
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(1));
-  EXPECT_THAT(stream_->Read(buffer.get(), 1), ERR_IO_PENDING);
+  EXPECT_THAT(
+      handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()),
+      IsError(ERR_IO_PENDING));
 
   // Trailers are not delivered
   EXPECT_FALSE(stream_->IsDoneReading());
@@ -602,15 +615,9 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
   run_loop2.Run();
 
-  base::RunLoop run_loop3;
+  // Read the body and verify that it arrives correctly.
   // OnDataAvailable() should follow right after and Read() will return 0.
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
-                                        base::Unretained(this),
-                                        QuicStringPiece())),
-          testing::Invoke([&run_loop3]() { run_loop3.Quit(); })));
-  run_loop3.Run();
+  EXPECT_EQ(0, callback.WaitForResult());
 
   // Make sure the stream is properly closed since trailers and data are all
   // consumed.

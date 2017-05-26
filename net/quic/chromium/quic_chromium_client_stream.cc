@@ -23,7 +23,10 @@ namespace net {
 
 QuicChromiumClientStream::Handle::Handle(QuicChromiumClientStream* stream,
                                          Delegate* delegate)
-    : stream_(stream), delegate_(delegate), read_headers_buffer_(nullptr) {
+    : stream_(stream),
+      delegate_(delegate),
+      read_headers_buffer_(nullptr),
+      read_body_buffer_len_(0) {
   SaveState();
 }
 
@@ -58,7 +61,16 @@ void QuicChromiumClientStream::Handle::OnTrailingHeadersAvailable(
 }
 
 void QuicChromiumClientStream::Handle::OnDataAvailable() {
-  delegate_->OnDataAvailable();
+  if (!read_body_callback_)
+    return;  // Wait for ReadBody to be called.
+
+  int rv = stream_->Read(read_body_buffer_, read_body_buffer_len_);
+  if (rv == ERR_IO_PENDING)
+    return;  // Spurrious, likely because of trailers?
+
+  read_body_buffer_ = nullptr;
+  read_body_buffer_len_ = 0;
+  ResetAndReturn(&read_body_callback_).Run(rv);
 }
 
 void QuicChromiumClientStream::Handle::OnClose() {
@@ -95,6 +107,23 @@ int QuicChromiumClientStream::Handle::ReadInitialHeaders(
 
   read_headers_buffer_ = header_block;
   read_headers_callback_ = callback;
+  return ERR_IO_PENDING;
+}
+
+int QuicChromiumClientStream::Handle::ReadBody(
+    IOBuffer* buffer,
+    int buffer_len,
+    const CompletionCallback& callback) {
+  if (!stream_)
+    return ERR_CONNECTION_CLOSED;
+
+  int rv = stream_->Read(buffer, buffer_len);
+  if (rv != ERR_IO_PENDING)
+    return rv;
+
+  read_body_callback_ = callback;
+  read_body_buffer_ = buffer;
+  read_body_buffer_len_ = buffer_len;
   return ERR_IO_PENDING;
 }
 

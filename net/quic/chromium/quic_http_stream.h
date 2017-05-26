@@ -69,7 +69,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void SetPriority(RequestPriority priority) override;
 
   // QuicChromiumClientStream::Delegate implementation
-  void OnDataAvailable() override;
   void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
                                   size_t frame_len) override;
   void OnClose() override;
@@ -125,7 +124,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void OnReadResponseHeadersComplete(int rv);
   int ProcessResponseHeaders(const SpdyHeaderBlock& headers);
 
-  int ReadAvailableData(IOBuffer* buf, int buf_len);
+  void OnReadBodyComplete(int rv);
+  int HandleReadComplete(int rv);
+
   void EnterStateSendHeaders();
 
   void ResetStream();

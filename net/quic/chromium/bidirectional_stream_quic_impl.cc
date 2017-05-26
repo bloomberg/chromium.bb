@@ -112,20 +112,25 @@ int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
     // If the stream is already closed, there is no body to read.
     return response_status_;
   }
-  int rv = stream_->Read(buffer, buffer_len);
-  if (rv != ERR_IO_PENDING) {
-    if (stream_->IsDoneReading()) {
-      // If the write side is closed, OnFinRead() will call
-      // BidirectionalStreamQuicImpl::OnClose().
-      stream_->OnFinRead();
-    }
-    return rv;
+  int rv = stream_->ReadBody(
+      buffer, buffer_len,
+      base::Bind(&BidirectionalStreamQuicImpl::OnReadDataComplete,
+                 weak_factory_.GetWeakPtr()));
+  if (rv == ERR_IO_PENDING) {
+    read_buffer_ = buffer;
+    read_buffer_len_ = buffer_len;
+    return ERR_IO_PENDING;
   }
-  // Read will complete asynchronously and Delegate::OnReadCompleted will be
-  // called upon completion.
-  read_buffer_ = buffer;
-  read_buffer_len_ = buffer_len;
-  return ERR_IO_PENDING;
+
+  if (rv < 0)
+    return rv;
+
+  if (stream_->IsDoneReading()) {
+    // If the write side is closed, OnFinRead() will call
+    // BidirectionalStreamQuicImpl::OnClose().
+    stream_->OnFinRead();
+  }
+  return rv;
 }
 
 void BidirectionalStreamQuicImpl::SendData(const scoped_refptr<IOBuffer>& data,
@@ -236,22 +241,6 @@ void BidirectionalStreamQuicImpl::OnTrailingHeadersAvailable(
   // |this| can be destroyed after this point.
 }
 
-void BidirectionalStreamQuicImpl::OnDataAvailable() {
-  // Return early if ReadData has not been called.
-  if (!read_buffer_)
-    return;
-
-  int rv = ReadData(read_buffer_.get(), read_buffer_len_);
-  if (rv == ERR_IO_PENDING) {
-    // Spurrious notification. Wait for the next one.
-    return;
-  }
-  read_buffer_ = nullptr;
-  read_buffer_len_ = 0;
-  if (delegate_)
-    delegate_->OnDataRead(rv);
-}
-
 void BidirectionalStreamQuicImpl::OnClose() {
   DCHECK(stream_);
 
@@ -321,6 +310,21 @@ void BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete(int rv) {
   connect_timing_ = session_->GetConnectTiming();
   if (delegate_)
     delegate_->OnHeadersReceived(initial_headers_);
+}
+
+void BidirectionalStreamQuicImpl::OnReadDataComplete(int rv) {
+  DCHECK_GE(rv, 0);
+  read_buffer_ = nullptr;
+  read_buffer_len_ = 0;
+
+  if (stream_->IsDoneReading()) {
+    // If the write side is closed, OnFinRead() will call
+    // BidirectionalStreamQuicImpl::OnClose().
+    stream_->OnFinRead();
+  }
+
+  if (delegate_)
+    delegate_->OnDataRead(rv);
 }
 
 void BidirectionalStreamQuicImpl::NotifyError(int error) {
