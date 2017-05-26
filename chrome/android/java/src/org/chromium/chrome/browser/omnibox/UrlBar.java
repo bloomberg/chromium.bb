@@ -646,7 +646,7 @@ public class UrlBar extends AutocompleteEditText {
         if (urlComponents.first.length() > 1) {
             bringPointIntoView(1);
         }
-        bringPointIntoView(urlComponents.first.length());
+        setSelection(urlComponents.first.length());
 
         return true;
     }
