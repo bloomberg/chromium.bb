@@ -9,7 +9,6 @@ action("embed_js_in_cpp") {
   script = "embed_js_in_cpp.py"
 
   js_files = [
-    "js/add_cookie.js",
     "js/call_function.js",
     "js/execute_async_script.js",
     "js/focus.js",
