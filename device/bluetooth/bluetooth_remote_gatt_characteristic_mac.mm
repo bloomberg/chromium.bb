@@ -292,6 +292,19 @@ void BluetoothRemoteGattCharacteristicMac::UpdateValue() {
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
+  // We could have called cancelPeripheralConnection, which causes
+  // [CBPeripheral state] to be CBPeripheralStateDisconnected, before or during
+  // a write without response callback so we flush all pending writes.
+  // TODO(crbug.com/726534): Remove once we can avoid calling DidWriteValue
+  // when we disconnect before or during a write without response call.
+  if (HasPendingWrite() &&
+      GetCBPeripheral().state != CBPeripheralStateConnected) {
+    std::pair<base::Closure, ErrorCallback> callbacks;
+    callbacks.swap(write_characteristic_value_callbacks_);
+    callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    return;
+  }
+
   CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
   if (!HasPendingWrite()) {
     // In case of buggy device, nothing should be done if receiving extra
@@ -300,6 +313,7 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
             << ": Write notification while no write operation pending.";
     return;
   }
+
   std::pair<base::Closure, ErrorCallback> callbacks;
   callbacks.swap(write_characteristic_value_callbacks_);
   if (error) {
