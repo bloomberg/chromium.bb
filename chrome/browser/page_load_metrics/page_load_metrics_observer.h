@@ -336,13 +336,16 @@ class PageLoadMetricsObserver {
   // tracked at the time a navigation commits will not receive any of the
   // callbacks below.
 
-  // OnTimingUpdate is triggered when an updated PageLoadTiming is
-  // available. This method may be called multiple times over the course of the
-  // page load. This method is currently only intended for use in testing. Most
-  // implementers should implement one of the On* callbacks, such as
-  // OnFirstContentfulPaint or OnDomContentLoadedEventStart. Please email
-  // loading-dev@chromium.org if you intend to override this method.
-  virtual void OnTimingUpdate(const mojom::PageLoadTiming& timing,
+  // OnTimingUpdate is triggered when an updated PageLoadTiming is available at
+  // the page (page is essentially main frame, with merged values across all
+  // frames for some paint timing values) or subframe level. This method may be
+  // called multiple times over the course of the page load. This method is
+  // currently only intended for use in testing. Most implementers should
+  // implement one of the On* callbacks, such as OnFirstContentfulPaint or
+  // OnDomContentLoadedEventStart. Please email loading-dev@chromium.org if you
+  // intend to override this method.
+  virtual void OnTimingUpdate(bool is_subframe,
+                              const mojom::PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
 
   // OnUserInput is triggered when a new user input is passed in to

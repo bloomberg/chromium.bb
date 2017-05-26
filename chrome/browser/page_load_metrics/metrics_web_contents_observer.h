@@ -60,11 +60,7 @@ class MetricsWebContentsObserver
 
     void OnGoingAway();
 
-    // Invoked when a new PageLoadTiming update has been received and processed.
-    virtual void OnTimingUpdated(bool is_main_frame,
-                                 const mojom::PageLoadTiming& timing,
-                                 const mojom::PageLoadMetadata& metadata) {}
-
+    virtual void OnCommit(PageLoadTracker* tracker) {}
     virtual void DidReceiveTimingUpdate(IPCType type) {}
 
    private:

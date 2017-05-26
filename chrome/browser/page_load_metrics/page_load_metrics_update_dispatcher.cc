@@ -300,6 +300,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
     return;
   }
 
+  client_->OnSubFrameTimingChanged(new_timing);
+
   base::TimeDelta navigation_start_offset = it->second;
   MergePaintTiming(navigation_start_offset, *(new_timing.paint_timing),
                    false /* is_main_frame */);

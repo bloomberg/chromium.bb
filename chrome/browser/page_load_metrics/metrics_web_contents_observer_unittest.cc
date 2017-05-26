@@ -38,18 +38,14 @@ const char kFilteredCommitUrl[] = "https://whatever.com/ignore-on-commit";
 
 // Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
 // provided std::vector, so they can be analyzed by unit tests.
-class TestPageLoadMetricsObserver
-    : public PageLoadMetricsObserver,
-      public MetricsWebContentsObserver::TestingObserver {
+class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
  public:
   TestPageLoadMetricsObserver(
-      content::WebContents* web_contents,
       std::vector<mojom::PageLoadTimingPtr>* updated_timings,
       std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
       std::vector<mojom::PageLoadTimingPtr>* complete_timings,
       std::vector<GURL>* observed_committed_urls)
-      : MetricsWebContentsObserver::TestingObserver(web_contents),
-        updated_timings_(updated_timings),
+      : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
         observed_committed_urls_(observed_committed_urls) {}
@@ -61,17 +57,13 @@ class TestPageLoadMetricsObserver
     return CONTINUE_OBSERVING;
   }
 
-  void OnTimingUpdate(const mojom::PageLoadTiming& timing,
+  void OnTimingUpdate(bool is_subframe,
+                      const mojom::PageLoadTiming& timing,
                       const PageLoadExtraInfo& extra_info) override {
-    updated_timings_->push_back(timing.Clone());
-  }
-
-  void OnTimingUpdated(bool is_main_frame,
-                       const mojom::PageLoadTiming& timing,
-                       const mojom::PageLoadMetadata& metadata) override {
-    if (!is_main_frame) {
+    if (is_subframe)
       updated_subframe_timings_->push_back(timing.Clone());
-    }
+    else
+      updated_timings_->push_back(timing.Clone());
   }
 
   void OnComplete(const mojom::PageLoadTiming& timing,
@@ -126,16 +118,14 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
 class TestPageLoadMetricsEmbedderInterface
     : public PageLoadMetricsEmbedderInterface {
  public:
-  explicit TestPageLoadMetricsEmbedderInterface(
-      content::WebContents* web_contents)
-      : web_contents_(web_contents), is_ntp_(false) {}
+  TestPageLoadMetricsEmbedderInterface() : is_ntp_(false) {}
 
   bool IsNewTabPageUrl(const GURL& url) override { return is_ntp_; }
   void set_is_ntp(bool is_ntp) { is_ntp_ = is_ntp; }
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
-        web_contents_, &updated_timings_, &updated_subframe_timings_,
-        &complete_timings_, &observed_committed_urls_));
+        &updated_timings_, &updated_subframe_timings_, &complete_timings_,
+        &observed_committed_urls_));
     tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
@@ -166,7 +156,6 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<mojom::PageLoadTimingPtr> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
   std::vector<GURL> completed_filtered_urls_;
-  content::WebContents* web_contents_;
   bool is_ntp_;
 };
 
@@ -192,20 +181,18 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
                             content::RenderFrameHost* render_frame_host) {
-    observer_->OnTimingUpdated(render_frame_host, timing,
-                               mojom::PageLoadMetadata());
+    observer()->OnTimingUpdated(render_frame_host, timing,
+                                mojom::PageLoadMetadata());
   }
 
   void AttachObserver() {
-    embedder_interface_ =
-        new TestPageLoadMetricsEmbedderInterface(web_contents());
-    // Owned by the web_contents. Tests must be careful not to call
-    // SimulateTimingUpdate after they call DeleteContents() without also
-    // calling AttachObserver() again. Otherwise they will use-after-free the
-    // observer_.
-    observer_ = MetricsWebContentsObserver::CreateForWebContents(
-        web_contents(), base::nullopt, base::WrapUnique(embedder_interface_));
-    observer_->WasShown();
+    auto embedder_interface =
+        base::MakeUnique<TestPageLoadMetricsEmbedderInterface>();
+    embedder_interface_ = embedder_interface.get();
+    MetricsWebContentsObserver* observer =
+        MetricsWebContentsObserver::CreateForWebContents(
+            web_contents(), base::nullopt, std::move(embedder_interface));
+    observer->WasShown();
   }
 
   void CheckErrorEvent(InternalErrorLoadEvent error, int count) {
@@ -255,9 +242,12 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  MetricsWebContentsObserver* observer() {
+    return MetricsWebContentsObserver::FromWebContents(web_contents());
+  }
+
   base::HistogramTester histogram_tester_;
   TestPageLoadMetricsEmbedderInterface* embedder_interface_;
-  MetricsWebContentsObserver* observer_;
 
  private:
   int num_errors_;
@@ -648,7 +638,7 @@ TEST_F(MetricsWebContentsObserverTest, FlushMetricsOnAppEnterBackground) {
   histogram_tester_.ExpectTotalCount(
       internal::kPageLoadCompletedAfterAppBackground, 0);
 
-  observer_->FlushMetricsOnAppEnterBackground();
+  observer()->FlushMetricsOnAppEnterBackground();
 
   histogram_tester_.ExpectTotalCount(
       internal::kPageLoadCompletedAfterAppBackground, 1);
