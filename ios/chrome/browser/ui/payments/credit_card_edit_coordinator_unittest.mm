@@ -31,6 +31,7 @@ class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
  public:
   MockTestPersonalDataManager() : TestPersonalDataManager() {}
   MOCK_METHOD1(AddCreditCard, void(const autofill::CreditCard&));
+  MOCK_METHOD1(UpdateCreditCard, void(const autofill::CreditCard&));
 };
 
 class MockPaymentRequest : public PaymentRequest {
@@ -173,6 +174,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
               AddCreditCard(CreditCardMatches("4111111111111111", "John Doe",
                                               "12", "2090", "12345")))
       .Times(1);
+  // No credit card should get updated in the PersonalDataManager.
+  EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
 
   // Call the controller delegate method.
   CreditCardEditViewController* view_controller =
@@ -223,6 +226,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
       .Times(1);
   // No credit card should get added to the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_, AddCreditCard(_)).Times(0);
+  // No credit card should get updated in the PersonalDataManager.
+  EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
 
   // Call the controller delegate method.
   CreditCardEditViewController* view_controller =
@@ -273,6 +278,11 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
   EXPECT_CALL(*payment_request_, AddCreditCard(_)).Times(0);
   // No credit card should get added to the PersonalDataManager.
   EXPECT_CALL(personal_data_manager_, AddCreditCard(_)).Times(0);
+  // Expect a credit card to be updated in the PersonalDataManager.
+  EXPECT_CALL(personal_data_manager_,
+              UpdateCreditCard(CreditCardMatches("4111111111111111", "John Doe",
+                                                 "12", "2090", "12345")))
+      .Times(1);
 
   // Call the controller delegate method.
   CreditCardEditViewController* view_controller =
