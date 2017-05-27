@@ -248,7 +248,9 @@ Polymer({
 
     settings.navigateTo(
         settings.Route.BASIC,
-        query.length > 0 ? new URLSearchParams('search=' + query) : undefined,
+        query.length > 0 ?
+            new URLSearchParams('search=' + encodeURIComponent(query)) :
+            undefined,
         /* removeSearch */ true);
   },
 

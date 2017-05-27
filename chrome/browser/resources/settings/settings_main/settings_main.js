@@ -270,7 +270,7 @@ Polymer({
           this.toolbarSpinnerActive = false;
           this.inSearchMode_ = !result.wasClearSearch;
           this.showNoResultsFound_ =
-              this.inSearchMode_ && result.didFindMatches;
+              this.inSearchMode_ && !result.didFindMatches;
 
           if (this.inSearchMode_) {
             Polymer.IronA11yAnnouncer.requestAvailability();
