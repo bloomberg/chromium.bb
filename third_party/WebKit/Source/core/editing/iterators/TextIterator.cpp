@@ -229,7 +229,6 @@ void TextIteratorAlgorithm<Strategy>::Initialize(Node* start_container,
     return;
 
   fully_clipped_stack_.SetUpFullyClippedStack(node_);
-  offset_ = node_ == start_container_ ? start_offset_ : 0;
   iteration_progress_ = kHandledNone;
 
   // Calculate first out of bounds node.
@@ -405,7 +404,6 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
         iteration_progress_ < kHandledChildren && !isHTMLImageElement(*node_)
             ? Strategy::FirstChild(*node_)
             : nullptr;
-    offset_ = 0;
     if (!next) {
       // 2. If we've already iterated children or they are not available, go to
       // the next sibling node.
@@ -472,8 +470,6 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
             --shadow_depth_;
             fully_clipped_stack_.Pop();
           }
-          handled_first_letter_ = false;
-          first_letter_text_ = nullptr;
           continue;
         }
       }
@@ -485,8 +481,6 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     if (node_)
       fully_clipped_stack_.PushFullyClippedState(node_);
     iteration_progress_ = kHandledNone;
-    handled_first_letter_ = false;
-    first_letter_text_ = nullptr;
 
     // how would this ever be?
     if (text_state_.PositionNode())
@@ -594,6 +588,10 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
+
+  offset_ = node_ == start_container_ ? start_offset_ : 0;
+  handled_first_letter_ = false;
+  first_letter_text_ = nullptr;
 
   Text* text_node = ToText(node_);
   LayoutText* layout_object = text_node->GetLayoutObject();
