@@ -51,10 +51,6 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
                                          profile_.GetRequestContext())) {}
 
   void SetUp() override {
-    EXPECT_CALL(test_dial_registry_,
-                RegisterObserver(media_sink_service_.get()));
-    EXPECT_CALL(test_dial_registry_, OnListenerAdded());
-
     media_sink_service_->SetDialRegistryForTest(&test_dial_registry_);
 
     auto mock_description_service =
@@ -69,9 +65,6 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    EXPECT_CALL(test_dial_registry_,
-                UnregisterObserver(media_sink_service_.get()));
-    EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
   }
 
  protected:
@@ -95,26 +88,6 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(DialMediaSinkServiceImplTest);
 };
-
-TEST_F(DialMediaSinkServiceImplTest, TestStart) {
-  media_sink_service_->Start();
-
-  DialRegistry::DeviceList deviceList;
-  DialDeviceData first_device("first", GURL("http://127.0.0.1/dd.xml"),
-                              base::Time::Now());
-  DialDeviceData second_device("second", GURL("http://127.0.0.2/dd.xml"),
-                               base::Time::Now());
-  DialDeviceData third_device("third", GURL("http://127.0.0.3/dd.xml"),
-                              base::Time::Now());
-  deviceList.push_back(first_device);
-  deviceList.push_back(second_device);
-  deviceList.push_back(third_device);
-
-  EXPECT_CALL(*mock_description_service_, GetDeviceDescriptions(deviceList, _));
-
-  media_sink_service_->OnDialDeviceEvent(deviceList);
-  EXPECT_TRUE(media_sink_service_->finish_timer_->IsRunning());
-}
 
 TEST_F(DialMediaSinkServiceImplTest, TestOnDeviceDescriptionAvailable) {
   DialDeviceData device_data("first", GURL("http://127.0.0.1/dd.xml"),
@@ -165,6 +138,29 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
   EXPECT_TRUE(mock_timer_->IsRunning());
+}
+
+TEST_F(DialMediaSinkServiceImplTest, TestRestartAfterStop) {
+  EXPECT_CALL(test_dial_registry_, RegisterObserver(media_sink_service_.get()))
+      .Times(2);
+  EXPECT_CALL(test_dial_registry_, OnListenerAdded()).Times(2);
+  media_sink_service_->Start();
+  EXPECT_TRUE(mock_timer_->IsRunning());
+
+  EXPECT_CALL(test_dial_registry_,
+              UnregisterObserver(media_sink_service_.get()));
+  EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
+  media_sink_service_->Stop();
+
+  mock_timer_ =
+      new base::MockTimer(true /*retain_user_task*/, false /*is_repeating*/);
+  media_sink_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
+  media_sink_service_->Start();
+  EXPECT_TRUE(mock_timer_->IsRunning());
+
+  EXPECT_CALL(test_dial_registry_,
+              UnregisterObserver(media_sink_service_.get()));
+  EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
 }
 
 }  // namespace media_router

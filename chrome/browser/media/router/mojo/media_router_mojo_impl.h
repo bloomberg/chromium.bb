@@ -29,6 +29,7 @@
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
@@ -44,6 +45,7 @@ class Extension;
 namespace media_router {
 
 enum class MediaRouteProviderWakeReason;
+class DialMediaSinkServiceProxy;
 
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
@@ -111,7 +113,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& domain,
       const MediaSinkSearchResponseCallback& sink_callback) override;
   void ProvideSinks(const std::string& provider_name,
-                    const std::vector<MediaSinkInternal>& sinks) override;
+                    std::vector<MediaSinkInternal> sinks) override;
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 
@@ -214,8 +216,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Standard constructor, used by
   // MediaRouterMojoImplFactory::GetApiForBrowserContext.
-  explicit MediaRouterMojoImpl(
-      extensions::EventPageTracker* event_page_tracker);
+  MediaRouterMojoImpl(extensions::EventPageTracker* event_page_tracker,
+                      content::BrowserContext* context);
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
@@ -304,7 +306,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       mojom::MediaStatusObserverPtr mojo_observer);
 
   void DoProvideSinks(const std::string& provider_name,
-                      const std::vector<MediaSinkInternal>& sinks);
+                      std::vector<MediaSinkInternal> sinks);
 
   // Error handler callback for |binding_| and |media_route_provider_|.
   void OnConnectionError();
@@ -400,6 +402,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void OnFirewallCheckComplete(bool firewall_can_use_local_ports);
 #endif
 
+  // Start browser side sink discovery.
+  void StartDiscovery();
+
   // Requests MRPM to update media sinks.  This allows MRPs that only do
   // discovery on sink queries an opportunity to update discovery results
   // even if the MRP SinkAvailability is marked UNAVAILABLE.
@@ -469,6 +474,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Stores route controllers that can be used to send media commands to the
   // extension.
   std::unordered_map<MediaRoute::Id, MediaRouteController*> route_controllers_;
+
+  // Media sink service for DIAL devices.
+  scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
+
+  content::BrowserContext* const context_;
 
 #if defined(OS_WIN)
   // A pair of flags to ensure that mDNS discovery is only enabled on Windows

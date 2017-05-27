@@ -148,9 +148,8 @@ void MediaRouterAndroid::SearchSinks(
   NOTIMPLEMENTED();
 }
 
-void MediaRouterAndroid::ProvideSinks(
-    const std::string& provider_name,
-    const std::vector<MediaSinkInternal>& sinks) {
+void MediaRouterAndroid::ProvideSinks(const std::string& provider_name,
+                                      std::vector<MediaSinkInternal> sinks) {
   NOTIMPLEMENTED();
 }
 

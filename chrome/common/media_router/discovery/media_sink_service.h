@@ -24,7 +24,7 @@ class MediaSinkService {
   // Callback to be invoked when this class finishes sink discovering.
   // Arg 0: Sinks discovered and resolved by the service.
   using OnSinksDiscoveredCallback =
-      base::Callback<void(const std::vector<MediaSinkInternal>&)>;
+      base::Callback<void(std::vector<MediaSinkInternal>)>;
 
   explicit MediaSinkService(
       const OnSinksDiscoveredCallback& sink_discovery_callback);

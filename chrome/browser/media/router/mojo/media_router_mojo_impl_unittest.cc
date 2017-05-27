@@ -1414,7 +1414,8 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
     DCHECK(process_manager_);
 
     // Create MR and its proxy, so that it can be accessed through Mojo.
-    media_router_.reset(new MediaRouterMojoImpl(process_manager_));
+    media_router_.reset(
+        new MediaRouterMojoImpl(process_manager_, profile_.get()));
     ProcessEventLoop();
   }
 
