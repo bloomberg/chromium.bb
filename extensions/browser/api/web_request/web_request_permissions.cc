@@ -52,12 +52,13 @@ bool IsSensitiveURL(const GURL& url,
   // TODO(battre) Merge this, CanExtensionAccessURL and
   // PermissionsData::CanAccessPage into one function.
   bool sensitive_chrome_url = false;
-  base::StringPiece host = url.host_piece();
-  while (host.ends_with("."))
-    host.remove_suffix(1u);
   const char kGoogleCom[] = "google.com";
   const char kClient[] = "clients";
-  if (url.DomainIs(kGoogleCom)) {
+  url::Origin origin(url);
+  if (origin.DomainIs(kGoogleCom)) {
+    base::StringPiece host = url.host_piece();
+    while (host.ends_with("."))
+      host.remove_suffix(1u);
     // Check for "clients[0-9]*.google.com" hosts.
     // This protects requests to several internal services such as sync,
     // extension update pings, captive portal detection, fraudulent certificate
@@ -90,13 +91,13 @@ bool IsSensitiveURL(const GURL& url,
     // Safebrowsing and Chrome Webstore URLs are always protected, i.e. also
     // for requests from common renderers.
     sensitive_chrome_url = sensitive_chrome_url ||
-                           url.DomainIs("sb-ssl.google.com") ||
                            (url.DomainIs("chrome.google.com") &&
                             base::StartsWith(url.path_piece(), "/webstore",
                                              base::CompareCase::SENSITIVE));
   }
   return sensitive_chrome_url || extension_urls::IsWebstoreUpdateUrl(url) ||
-         extension_urls::IsBlacklistUpdateUrl(url);
+         extension_urls::IsBlacklistUpdateUrl(url) ||
+         extension_urls::IsSafeBrowsingUrl(origin, url.path_piece());
 }
 
 // static
