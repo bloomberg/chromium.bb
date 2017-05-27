@@ -264,7 +264,7 @@ gfx::Insets BubbleFrameView::GetInsets() const {
   return insets;
 }
 
-gfx::Size BubbleFrameView::GetPreferredSize() const {
+gfx::Size BubbleFrameView::CalculatePreferredSize() const {
   // Get the preferred size of the client area.
   gfx::Size client_size = GetWidget()->client_view()->GetPreferredSize();
   // Expand it to include the bubble border and space for the arrow.

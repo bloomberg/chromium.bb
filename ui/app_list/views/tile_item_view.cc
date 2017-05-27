@@ -139,7 +139,7 @@ void TileItemView::UpdateBackgroundColor() {
   SchedulePaint();
 }
 
-gfx::Size TileItemView::GetPreferredSize() const {
+gfx::Size TileItemView::CalculatePreferredSize() const {
   return gfx::Size(kTileSize, kTileSize);
 }
 

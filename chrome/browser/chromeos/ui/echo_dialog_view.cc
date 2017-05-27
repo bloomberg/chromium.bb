@@ -163,7 +163,7 @@ void EchoDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
   listener_->OnMoreInfoLinkClicked();
 }
 
-gfx::Size EchoDialogView::GetPreferredSize() const {
+gfx::Size EchoDialogView::CalculatePreferredSize() const {
   gfx::Size size =
       gfx::Size(kDialogLabelPreferredWidth,
                 label_->GetHeightForWidth(kDialogLabelPreferredWidth));

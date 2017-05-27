@@ -127,7 +127,7 @@ void SubmenuView::Layout() {
   }
 }
 
-gfx::Size SubmenuView::GetPreferredSize() const {
+gfx::Size SubmenuView::CalculatePreferredSize() const {
   if (!has_children())
     return gfx::Size();
 

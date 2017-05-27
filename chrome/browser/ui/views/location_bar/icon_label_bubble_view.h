@@ -86,7 +86,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   virtual bool IsBubbleShowing() const;
 
   // views::InkDropHostView:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

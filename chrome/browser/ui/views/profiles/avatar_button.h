@@ -31,7 +31,7 @@ class AvatarButton : public views::LabelButton,
   // views::LabelButton:
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size GetMinimumSize() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;

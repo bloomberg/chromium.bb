@@ -33,7 +33,7 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView
   void ShowAndFadeOut();
 
   // views::BubbleDialogDelegateView override:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   int GetDialogButtons() const override;
   void Init() override;

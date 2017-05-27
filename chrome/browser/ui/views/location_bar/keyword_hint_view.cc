@@ -116,7 +116,7 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
   }
 }
 
-gfx::Size KeywordHintView::GetPreferredSize() const {
+gfx::Size KeywordHintView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return gfx::Size(leading_label_->GetPreferredSize().width() +
                        chip_container_->GetPreferredSize().width() +

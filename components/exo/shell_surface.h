@@ -242,7 +242,7 @@ class ShellSurface : public SurfaceDelegate,
   void GetWidgetHitTestMask(gfx::Path* mask) const override;
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
 
   // Overridden from ash::wm::WindowStateObserver:

@@ -124,6 +124,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       contents_view_(NULL),
       focused_view_(FOCUS_SEARCH_BOX) {
   SetLayoutManager(new views::FillLayout);
+  SetPreferredSize(gfx::Size(kPreferredWidth, kPreferredHeight));
   AddChildView(content_container_);
 
   SetShadow(GetShadowForZHeight(2));
@@ -284,10 +285,6 @@ void SearchBoxView::SetBackButtonLabel(bool folder) {
              : IDS_APP_LIST_BACK));
   back_button_->SetAccessibleName(back_button_label);
   back_button_->SetTooltipText(back_button_label);
-}
-
-gfx::Size SearchBoxView::GetPreferredSize() const {
-  return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {

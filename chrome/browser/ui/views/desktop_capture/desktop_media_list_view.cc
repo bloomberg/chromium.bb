@@ -95,7 +95,7 @@ DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
   return nullptr;
 }
 
-gfx::Size DesktopMediaListView::GetPreferredSize() const {
+gfx::Size DesktopMediaListView::CalculatePreferredSize() const {
   int total_rows =
       (child_count() + active_style_->columns - 1) / active_style_->columns;
   return gfx::Size(active_style_->columns * active_style_->item_size.width(),

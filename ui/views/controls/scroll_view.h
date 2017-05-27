@@ -98,7 +98,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetHasFocusIndicator(bool has_focus_indicator);
 
   // View overrides:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;

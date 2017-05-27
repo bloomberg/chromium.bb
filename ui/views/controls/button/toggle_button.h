@@ -28,7 +28,7 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   friend class TestToggleButton;

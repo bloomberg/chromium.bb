@@ -80,7 +80,7 @@ class NetworkConfigView : public views::DialogDelegateView,
  protected:
   // views::View overrides:
   void Layout() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
@@ -170,7 +170,7 @@ class ControlledSettingIndicatorView : public views::View {
 
  protected:
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   bool managed_;

@@ -190,7 +190,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
     if (operation_ == QUIT_ON_CLOSE)
       base::MessageLoop::current()->QuitWhenIdle();
   }
-  gfx::Size GetPreferredSize() const override { return gfx::Size(800, 300); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(800, 300);
+  }
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {

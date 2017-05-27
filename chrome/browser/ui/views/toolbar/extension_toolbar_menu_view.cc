@@ -56,10 +56,10 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
 ExtensionToolbarMenuView::~ExtensionToolbarMenuView() {
 }
 
-gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
-  gfx::Size s = views::ScrollView::GetPreferredSize();
-  // views::ScrollView::GetPreferredSize() includes the contents' size, but
-  // not the scrollbar width. Add it in if necessary.
+gfx::Size ExtensionToolbarMenuView::CalculatePreferredSize() const {
+  gfx::Size s = views::ScrollView::CalculatePreferredSize();
+  // views::ScrollView::CalculatePreferredSize() includes the contents' size,
+  // but not the scrollbar width. Add it in if necessary.
   if (container_->GetPreferredSize().height() > max_height_)
     s.Enlarge(GetScrollBarLayoutWidth(), 0);
   return s;

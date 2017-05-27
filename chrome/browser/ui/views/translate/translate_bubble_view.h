@@ -93,7 +93,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // views::View methods.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::ComboboxListener methods.
   void OnPerformAction(views::Combobox* combobox) override;

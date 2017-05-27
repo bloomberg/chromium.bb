@@ -121,7 +121,7 @@ WebShareTargetPickerView::~WebShareTargetPickerView() {
   table_->SetModel(nullptr);
 }
 
-gfx::Size WebShareTargetPickerView::GetPreferredSize() const {
+gfx::Size WebShareTargetPickerView::CalculatePreferredSize() const {
   return gfx::Size(kDialogWidth, kDialogHeight);
 }
 

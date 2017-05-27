@@ -60,7 +60,7 @@ void NativeViewHost::NativeViewDestroyed() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, View overrides:
 
-gfx::Size NativeViewHost::GetPreferredSize() const {
+gfx::Size NativeViewHost::CalculatePreferredSize() const {
   return preferred_size_;
 }
 

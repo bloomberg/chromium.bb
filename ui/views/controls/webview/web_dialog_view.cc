@@ -66,7 +66,7 @@ content::WebContents* WebDialogView::web_contents() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::View implementation:
 
-gfx::Size WebDialogView::GetPreferredSize() const {
+gfx::Size WebDialogView::CalculatePreferredSize() const {
   gfx::Size out;
   if (delegate_)
     delegate_->GetDialogSize(&out);

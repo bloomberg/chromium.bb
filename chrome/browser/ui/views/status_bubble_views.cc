@@ -678,7 +678,7 @@ void StatusBubbleViews::Reposition() {
   // Overlap the client edge that's shown in restored mode, or when there is no
   // client edge this makes the bubble snug with the corner of the window.
   int overlap = kShadowThickness;
-  int height = GetPreferredSize().height();
+  int height = GetPreferredHeight();
   int base_view_height = base_view()->bounds().height();
   gfx::Point origin(-overlap, base_view_height - height + overlap);
   SetBounds(origin.x(), origin.y(), base_view()->bounds().width() / 3, height);
@@ -698,8 +698,8 @@ void StatusBubbleViews::RepositionPopup() {
   }
 }
 
-gfx::Size StatusBubbleViews::GetPreferredSize() {
-  return gfx::Size(0, gfx::FontList().GetHeight() + kTotalVerticalPadding);
+int StatusBubbleViews::GetPreferredHeight() {
+  return gfx::FontList().GetHeight() + kTotalVerticalPadding;
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {

@@ -50,7 +50,7 @@ class TaskManagerView : public TableViewDelegate,
   void SetSortDescriptor(const TableSortDescriptor& descriptor) override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::DialogDelegateView:

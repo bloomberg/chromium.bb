@@ -40,7 +40,7 @@ class RequestFileSystemDialogView : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override;
   bool Cancel() override;
   bool Accept() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Insets GetInsets() const override;
 
  private:

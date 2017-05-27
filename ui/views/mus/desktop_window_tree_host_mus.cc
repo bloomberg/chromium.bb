@@ -95,7 +95,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   void UpdateWindowTitle() override {}
   void SizeConstraintsChanged() override {}
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     return widget_->non_client_view()
         ->GetWindowBoundsForClientBounds(
             gfx::Rect(widget_->client_view()->GetPreferredSize()))

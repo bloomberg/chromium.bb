@@ -59,7 +59,9 @@ class TestDialog : public DialogDelegateView {
     return closeable_;
   }
 
-  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(200, 200);
+  }
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     return should_handle_escape_;
   }

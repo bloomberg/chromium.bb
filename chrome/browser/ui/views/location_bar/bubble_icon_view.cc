@@ -63,7 +63,7 @@ bool BubbleIconView::GetTooltipText(const gfx::Point& p,
   return !IsBubbleShowing() && image_->GetTooltipText(p, tooltip);
 }
 
-gfx::Size BubbleIconView::GetPreferredSize() const {
+gfx::Size BubbleIconView::CalculatePreferredSize() const {
   gfx::Rect image_rect(image_->GetPreferredSize());
   image_rect.Inset(-gfx::Insets(LocationBarView::kIconInteriorPadding));
   DCHECK_EQ(image_rect.height(),

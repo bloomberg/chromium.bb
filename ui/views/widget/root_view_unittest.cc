@@ -549,7 +549,7 @@ class RootViewTestDialogDelegate : public DialogDelegateView {
   int layout_count() const { return layout_count_; }
 
   // DialogDelegateView:
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
+  gfx::Size CalculatePreferredSize() const override { return preferred_size_; }
   void Layout() override {
     EXPECT_EQ(size(), preferred_size_);
     ++layout_count_;

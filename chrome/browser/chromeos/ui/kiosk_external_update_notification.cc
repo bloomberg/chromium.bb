@@ -64,7 +64,7 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(kPreferredWidth, kPreferredHeight);
   }
 

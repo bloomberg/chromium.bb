@@ -76,7 +76,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   virtual bool IsTriggerableEventType(const ui::Event& event);
 
   // Overridden from View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

@@ -92,7 +92,9 @@ class WindowDelegateView : public views::WidgetDelegateView {
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Window");
   }
-  gfx::Size GetPreferredSize() const override { return gfx::Size(300, 300); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(300, 300);
+  }
 
  private:
   const uint32_t traits_;
@@ -123,7 +125,9 @@ class ModalWindow : public views::WidgetDelegateView,
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(200, 200);
+  }
   void Layout() override {
     gfx::Size open_ps = open_button_->GetPreferredSize();
     gfx::Rect local_bounds = GetLocalBounds();
@@ -187,7 +191,9 @@ class NonModalTransient : public views::WidgetDelegateView {
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  gfx::Size GetPreferredSize() const override { return gfx::Size(250, 250); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(250, 250);
+  }
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override { return true; }

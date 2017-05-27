@@ -18,7 +18,7 @@ class MenuSeparator : public View {
 
   // View overrides.
   void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   // The type of the separator.

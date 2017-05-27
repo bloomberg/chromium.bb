@@ -72,7 +72,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
 
 UserManagerProfileDialogDelegate::~UserManagerProfileDialogDelegate() {}
 
-gfx::Size UserManagerProfileDialogDelegate::GetPreferredSize() const {
+gfx::Size UserManagerProfileDialogDelegate::CalculatePreferredSize() const {
   return gfx::Size(UserManagerProfileDialog::kDialogWidth,
                    UserManagerProfileDialog::kDialogHeight);
 }
@@ -404,7 +404,7 @@ bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-gfx::Size UserManagerView::GetPreferredSize() const {
+gfx::Size UserManagerView::CalculatePreferredSize() const {
   return gfx::Size(UserManager::kWindowWidth, UserManager::kWindowHeight);
 }
 

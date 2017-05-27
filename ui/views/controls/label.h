@@ -204,7 +204,7 @@ class VIEWS_EXPORT Label : public View,
 
   // View:
   int GetBaseline() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;

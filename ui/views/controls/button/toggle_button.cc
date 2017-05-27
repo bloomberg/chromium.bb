@@ -147,7 +147,7 @@ void ToggleButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 
-gfx::Size ToggleButton::GetPreferredSize() const {
+gfx::Size ToggleButton::CalculatePreferredSize() const {
   gfx::Rect rect(kTrackWidth, kTrackHeight);
   rect.Inset(gfx::Insets(-kTrackVerticalMargin, -kTrackHorizontalMargin));
   if (border())

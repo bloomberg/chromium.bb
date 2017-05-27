@@ -80,7 +80,7 @@ bool RequestFileSystemDialogView::Accept() {
   return true;
 }
 
-gfx::Size RequestFileSystemDialogView::GetPreferredSize() const {
+gfx::Size RequestFileSystemDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogMaxWidth,
                    child_at(0)->GetHeightForWidth(kDialogMaxWidth));
 }

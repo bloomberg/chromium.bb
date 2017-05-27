@@ -450,7 +450,7 @@ gfx::Size ContentsView::GetDefaultContentsSize() const {
   return apps_container_view_->GetPreferredSize();
 }
 
-gfx::Size ContentsView::GetPreferredSize() const {
+gfx::Size ContentsView::CalculatePreferredSize() const {
   gfx::Rect search_box_bounds = GetDefaultSearchBoxBounds();
   gfx::Rect default_contents_bounds = GetDefaultContentsBounds();
   gfx::Vector2d bottom_right =

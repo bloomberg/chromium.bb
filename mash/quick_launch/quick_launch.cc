@@ -65,7 +65,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     bounds.Inset(5, 5);
     prompt_->SetBoundsRect(bounds);
   }
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     gfx::Size ps = prompt_->GetPreferredSize();
     ps.Enlarge(500, 10);
     return ps;

@@ -121,7 +121,7 @@ class EntryView : public views::View {
 
   // views::View:
   void Layout() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -151,7 +151,7 @@ void EntryView::Layout() {
   content->SetBounds(0, y, content_width, content_height);
 }
 
-gfx::Size EntryView::GetPreferredSize() const {
+gfx::Size EntryView::CalculatePreferredSize() const {
   DCHECK_EQ(1, child_count());
   gfx::Size size = child_at(0)->GetPreferredSize();
   size.SetToMax(gfx::Size(kWidth, settings::kEntryHeight));
@@ -587,7 +587,7 @@ gfx::Size NotifierSettingsView::GetMinimumSize() const {
   return size;
 }
 
-gfx::Size NotifierSettingsView::GetPreferredSize() const {
+gfx::Size NotifierSettingsView::CalculatePreferredSize() const {
   gfx::Size preferred_size;
   gfx::Size title_size = title_label_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();

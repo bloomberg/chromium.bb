@@ -140,7 +140,7 @@ class ToolbarView : public views::AccessiblePaneView,
                                   ui::Accelerator* accelerator) const override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
   void OnThemeChanged() override;
@@ -166,9 +166,9 @@ class ToolbarView : public views::AccessiblePaneView,
                       bool animate) override;
 
   // Used to avoid duplicating the near-identical logic of
-  // ToolbarView::GetPreferredSize() and ToolbarView::GetMinimumSize(). These
-  // two functions call through to GetSizeInternal(), passing themselves as the
-  // function pointer |View::*get_size|.
+  // ToolbarView::CalculatePreferredSize() and ToolbarView::GetMinimumSize().
+  // These two functions call through to GetSizeInternal(), passing themselves
+  // as the function pointer |View::*get_size|.
   gfx::Size GetSizeInternal(gfx::Size (View::*get_size)() const) const;
 
   // Given toolbar contents of size |size|, returns the total toolbar size.

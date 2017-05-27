@@ -380,7 +380,7 @@ void DownloadItemView::UpdateDropdownButton() {
       GetTextColor());
 }
 
-gfx::Size DownloadItemView::GetPreferredSize() const {
+gfx::Size DownloadItemView::CalculatePreferredSize() const {
   int width = 0;
   // We set the height to the height of two rows or text plus margins.
   int child_height = font_list_.GetBaseline() + kVerticalTextPadding +

@@ -221,7 +221,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
 NotificationView::~NotificationView() {
 }
 
-gfx::Size NotificationView::GetPreferredSize() const {
+gfx::Size NotificationView::CalculatePreferredSize() const {
   int top_width = top_view_->GetPreferredSize().width() +
                   icon_view_->GetPreferredSize().width();
   int bottom_width = bottom_view_->GetPreferredSize().width();

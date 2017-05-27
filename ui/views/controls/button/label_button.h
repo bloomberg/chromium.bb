@@ -98,7 +98,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // View:
   void SetBorder(std::unique_ptr<Border> border) override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   const char* GetClassName() const override;

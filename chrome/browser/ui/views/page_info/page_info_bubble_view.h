@@ -130,7 +130,7 @@ class PageInfoBubbleView : public content::WebContentsObserver,
                               int event_flags) override;
 
   // views::View implementation.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // PageInfoUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;

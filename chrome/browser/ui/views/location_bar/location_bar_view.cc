@@ -408,7 +408,7 @@ void LocationBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_GROUP;
 }
 
-gfx::Size LocationBarView::GetPreferredSize() const {
+gfx::Size LocationBarView::CalculatePreferredSize() const {
   // Compute minimum height.
   gfx::Size min_size(0, GetLayoutConstant(LOCATION_BAR_HEIGHT));
 

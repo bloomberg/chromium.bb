@@ -202,7 +202,7 @@ content::PageNavigator* DownloadShelfView::GetNavigator() {
   return browser_;
 }
 
-gfx::Size DownloadShelfView::GetPreferredSize() const {
+gfx::Size DownloadShelfView::CalculatePreferredSize() const {
   gfx::Size prefsize(kEndPadding + kStartPadding + kCloseAndLinkPadding, 0);
   AdjustSize(close_button_, &prefsize);
   AdjustSize(show_all_view_, &prefsize);

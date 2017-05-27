@@ -247,7 +247,7 @@ void CustomFrameView::Layout() {
   LayoutClientView();
 }
 
-gfx::Size CustomFrameView::GetPreferredSize() const {
+gfx::Size CustomFrameView::CalculatePreferredSize() const {
   return frame_->non_client_view()->GetWindowBoundsForClientBounds(
       gfx::Rect(frame_->client_view()->GetPreferredSize())).size();
 }

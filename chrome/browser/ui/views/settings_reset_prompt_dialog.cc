@@ -135,6 +135,6 @@ bool SettingsResetPromptDialog::Close() {
 
 // View overrides.
 
-gfx::Size SettingsResetPromptDialog::GetPreferredSize() const {
+gfx::Size SettingsResetPromptDialog::CalculatePreferredSize() const {
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }

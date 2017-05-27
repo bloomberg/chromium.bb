@@ -37,7 +37,7 @@ class FixedWidthLabel : public views::Label {
   explicit FixedWidthLabel(int width);
   ~FixedWidthLabel() override;
 
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   int width_;
@@ -53,7 +53,7 @@ FixedWidthLabel::FixedWidthLabel(int width) : width_(width) {
 FixedWidthLabel::~FixedWidthLabel() {
 }
 
-gfx::Size FixedWidthLabel::GetPreferredSize() const {
+gfx::Size FixedWidthLabel::CalculatePreferredSize() const {
   return gfx::Size(width_, GetHeightForWidth(width_));
 }
 

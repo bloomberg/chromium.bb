@@ -57,7 +57,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool ShouldDefaultButtonBeBlue() const override;
 
   // views::View
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate
   base::string16 GetWindowTitle() const override;

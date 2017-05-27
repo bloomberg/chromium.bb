@@ -584,7 +584,7 @@ base::string16 Combobox::GetTextForRow(int row) {
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, View overrides:
 
-gfx::Size Combobox::GetPreferredSize() const {
+gfx::Size Combobox::CalculatePreferredSize() const {
   // The preferred size will drive the local bounds which in turn is used to set
   // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();

@@ -61,7 +61,7 @@ class MESSAGE_CENTER_EXPORT MessageListView
  protected:
   // Overridden from views::View.
   void Layout() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void PaintChildren(const ui::PaintContext& context) override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;

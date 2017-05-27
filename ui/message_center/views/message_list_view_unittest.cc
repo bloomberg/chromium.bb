@@ -46,7 +46,7 @@ class MockNotificationView : public NotificationView {
                        Test* test);
   ~MockNotificationView() override;
 
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
 
@@ -67,10 +67,10 @@ MockNotificationView::MockNotificationView(MessageCenterController* controller,
 
 MockNotificationView::~MockNotificationView() {}
 
-gfx::Size MockNotificationView::GetPreferredSize() const {
+gfx::Size MockNotificationView::CalculatePreferredSize() const {
   test_->RegisterCall(GET_PREFERRED_SIZE);
   DCHECK(child_count() > 0);
-  return NotificationView::GetPreferredSize();
+  return NotificationView::CalculatePreferredSize();
 }
 
 int MockNotificationView::GetHeightForWidth(int width) const {

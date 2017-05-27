@@ -31,7 +31,7 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
   void SizeConstraintsChanged() override;
 
   // View overrides:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   const char* GetClassName() const override;

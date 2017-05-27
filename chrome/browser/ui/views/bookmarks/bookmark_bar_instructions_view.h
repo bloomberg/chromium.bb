@@ -32,7 +32,7 @@ class BookmarkBarInstructionsView : public views::View,
 
  private:
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   const char* GetClassName() const override;
   void OnThemeChanged() override;

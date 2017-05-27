@@ -54,7 +54,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
       views::BubbleBorder::Arrow arrow);
   ~ContentSettingBubbleContents() override;
 
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  protected:
   // views::BubbleDialogDelegateView:

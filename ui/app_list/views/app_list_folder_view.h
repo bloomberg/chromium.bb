@@ -60,7 +60,7 @@ class AppListFolderView : public views::View,
   void CloseFolderPage();
 
   // views::View
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 

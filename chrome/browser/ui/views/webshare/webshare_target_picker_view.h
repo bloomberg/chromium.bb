@@ -42,7 +42,7 @@ class WebShareTargetPickerView : public views::DialogDelegateView,
   ~WebShareTargetPickerView() override;
 
   // views::View overrides:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate overrides:
   ui::ModalType GetModalType() const override;

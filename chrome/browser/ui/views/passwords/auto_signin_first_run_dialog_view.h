@@ -37,7 +37,7 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   int GetDialogButtons() const override;
 
   // views::View
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

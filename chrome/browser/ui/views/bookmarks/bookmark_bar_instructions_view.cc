@@ -54,7 +54,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
   }
 }
 
-gfx::Size BookmarkBarInstructionsView::GetPreferredSize() const {
+gfx::Size BookmarkBarInstructionsView::CalculatePreferredSize() const {
   int height = 0, width = 0;
   for (int i = 0; i < child_count(); ++i) {
     const views::View* view = child_at(i);

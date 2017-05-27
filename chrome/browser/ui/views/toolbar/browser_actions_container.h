@@ -159,7 +159,7 @@ class BrowserActionsContainer : public views::View,
   int GetWidthForMaxWidth(int max_width) const;
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;

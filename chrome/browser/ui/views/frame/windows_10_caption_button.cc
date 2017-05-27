@@ -23,7 +23,7 @@ Windows10CaptionButton::Windows10CaptionButton(
   set_animate_on_state_change(true);
 }
 
-gfx::Size Windows10CaptionButton::GetPreferredSize() const {
+gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
   // TODO(bsep): The sizes in this function are for 1x device scale and don't
   // match Windows button sizes at hidpi.
   constexpr int kButtonHeightRestored = 29;

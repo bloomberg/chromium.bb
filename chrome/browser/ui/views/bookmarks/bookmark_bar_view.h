@@ -163,7 +163,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   int GetToolbarOverlap() const;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool CanProcessEventsWithinSubtree() const override;
   void Layout() override;

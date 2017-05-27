@@ -38,8 +38,8 @@ class PreferredSizeLabel : public Label {
   ~PreferredSizeLabel() override {}
 
   // Label:
-  gfx::Size GetPreferredSize() const override {
-    return gfx::Size(50, Label::GetPreferredSize().height());
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(50, Label::CalculatePreferredSize().height());
   }
 
  private:
@@ -63,7 +63,7 @@ class MultilineExample::RenderTextView : public View {
     render_text_->Draw(canvas);
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     // Turn off multiline mode to get the single-line text size, which is the
     // preferred size for this view.
     render_text_->SetMultiline(false);

@@ -658,8 +658,8 @@ void ExpandableContainerView::DetailsView::AddDetail(
   layout_->AddView(detail_label);
 }
 
-gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() const {
-  gfx::Size size = views::View::GetPreferredSize();
+gfx::Size ExpandableContainerView::DetailsView::CalculatePreferredSize() const {
+  gfx::Size size = views::View::CalculatePreferredSize();
   return gfx::Size(size.width(), size.height() * state_);
 }
 

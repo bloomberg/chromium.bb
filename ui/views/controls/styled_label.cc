@@ -210,7 +210,7 @@ gfx::Insets StyledLabel::GetInsets() const {
   return insets;
 }
 
-gfx::Size StyledLabel::GetPreferredSize() const {
+gfx::Size StyledLabel::CalculatePreferredSize() const {
   return calculated_size_;
 }
 

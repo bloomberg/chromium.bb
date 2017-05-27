@@ -45,7 +45,7 @@ void OverlayScrollBar::Thumb::Init() {
   layer()->SetAnimator(ui::LayerAnimator::CreateImplicitAnimator());
 }
 
-gfx::Size OverlayScrollBar::Thumb::GetPreferredSize() const {
+gfx::Size OverlayScrollBar::Thumb::CalculatePreferredSize() const {
   // The visual size of the thumb is kThumbThickness, but it slides back and
   // forth by kThumbHoverOffset. To make event targetting work well, expand the
   // width of the thumb such that it's always taking up the full width of the

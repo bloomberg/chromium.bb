@@ -164,7 +164,7 @@ const char* SearchResultView::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size SearchResultView::GetPreferredSize() const {
+gfx::Size SearchResultView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 

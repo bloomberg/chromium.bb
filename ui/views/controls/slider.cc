@@ -217,7 +217,7 @@ const char* Slider::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size Slider::GetPreferredSize() const {
+gfx::Size Slider::CalculatePreferredSize() const {
   const int kSizeMajor = 200;
   const int kSizeMinor = 40;
 

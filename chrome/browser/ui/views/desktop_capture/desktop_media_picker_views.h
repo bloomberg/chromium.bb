@@ -46,7 +46,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void TabSelectedAt(int index) override;
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::DialogDelegateView overrides.
   ui::ModalType GetModalType() const override;

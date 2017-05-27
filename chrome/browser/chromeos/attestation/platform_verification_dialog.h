@@ -59,7 +59,7 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,

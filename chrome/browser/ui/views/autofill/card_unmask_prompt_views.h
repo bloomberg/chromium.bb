@@ -57,7 +57,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   View* CreateFootnoteView() override;
 
   // views::View
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   int GetHeightForWidth(int width) const override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;

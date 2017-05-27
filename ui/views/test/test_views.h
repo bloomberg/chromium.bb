@@ -28,7 +28,7 @@ class StaticSizedView : public View {
   }
 
   // View overrides:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
 
@@ -49,7 +49,7 @@ class ProportionallySizedView : public View {
   void SetPreferredWidth(int width);
 
   int GetHeightForWidth(int w) const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   // The multiplicative factor between width and height, i.e.

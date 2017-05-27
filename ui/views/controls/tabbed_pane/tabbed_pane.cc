@@ -78,7 +78,7 @@ class MdTab : public Tab {
   void OnStateChanged() override;
 
   // Overridden from View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void OnFocus() override;
   void OnBlur() override;
 
@@ -207,7 +207,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-gfx::Size Tab::GetPreferredSize() const {
+gfx::Size Tab::CalculatePreferredSize() const {
   gfx::Size size(preferred_title_size_);
   size.Enlarge(GetInsets().width(), GetInsets().height());
   return size;
@@ -296,8 +296,9 @@ void MdTab::OnStateChanged() {
                                                gfx::Font::NORMAL, font_weight));
 }
 
-gfx::Size MdTab::GetPreferredSize() const {
-  return gfx::Size(Tab::GetPreferredSize().width(), kHarmonyTabStripTabHeight);
+gfx::Size MdTab::CalculatePreferredSize() const {
+  return gfx::Size(Tab::CalculatePreferredSize().width(),
+                   kHarmonyTabStripTabHeight);
 }
 
 void MdTab::OnFocus() {
@@ -574,7 +575,7 @@ void TabbedPane::SelectTabAt(int index) {
     SelectTab(tab);
 }
 
-gfx::Size TabbedPane::GetPreferredSize() const {
+gfx::Size TabbedPane::CalculatePreferredSize() const {
   gfx::Size size;
   for (int i = 0; i < contents_->child_count(); ++i)
     size.SetToMax(contents_->child_at(i)->GetPreferredSize());

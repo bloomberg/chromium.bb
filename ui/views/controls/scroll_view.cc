@@ -293,9 +293,9 @@ void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
   SchedulePaint();
 }
 
-gfx::Size ScrollView::GetPreferredSize() const {
+gfx::Size ScrollView::CalculatePreferredSize() const {
   if (!is_bounded())
-    return View::GetPreferredSize();
+    return View::CalculatePreferredSize();
 
   gfx::Size size = contents_->GetPreferredSize();
   size.SetToMax(gfx::Size(size.width(), min_height_));

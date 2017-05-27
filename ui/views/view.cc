@@ -424,8 +424,6 @@ gfx::Rect View::GetBoundsInScreen() const {
 gfx::Size View::GetPreferredSize() const {
   if (preferred_size_)
     return *preferred_size_;
-  if (layout_manager_.get())
-    return layout_manager_->GetPreferredSize(this);
   return CalculatePreferredSize();
 }
 
@@ -1493,6 +1491,8 @@ bool View::HasObserver(const ViewObserver* observer) const {
 // Size and disposition --------------------------------------------------------
 
 gfx::Size View::CalculatePreferredSize() const {
+  if (layout_manager_.get())
+    return layout_manager_->GetPreferredSize(this);
   return gfx::Size();
 }
 
