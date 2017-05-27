@@ -140,6 +140,13 @@ void VrGLThread::SetFullscreen(bool enabled) {
                                                 weak_scene_manager_, enabled));
 }
 
+void VrGLThread::SetIncognito(bool incognito) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetIncognito, weak_scene_manager_,
+                            incognito));
+}
+
 void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
                                           bool can_go_forward) {
   WaitUntilThreadStarted();

@@ -22,27 +22,18 @@ using security_state::SecurityLevel;
 
 namespace vr_shell {
 
-static constexpr SkColor kEmphasizedColor = 0xFF000000;
-static constexpr SkColor kDeemphasizedColor = 0xFF5A5A5A;
+static const SkColor kEmphasizedColor = 0xFF000000;
+static const SkColor kDeemphasizedColor = 0xFF5A5A5A;
 static const SkColor kSecureColor = gfx::kGoogleGreen700;
 static const SkColor kWarningColor = gfx::kGoogleRed700;
+
+static const SkColor kIncognitoDeemphasizedColor = 0xFFE6E6E6;
+static const SkColor kIncognitoEmphasizedColor = 0xFFFFFFFF;
+static const SkColor kIncognitoSecureColor = 0xFFE6E6E6;
+static const SkColor kIncognitoWarningColor = 0xFFE6E6E6;
+
 static constexpr int kUrlWidth = 400;
 static constexpr int kUrlHeight = 30;
-
-class MockRenderText : public RenderTextWrapper {
- public:
-  MockRenderText() : RenderTextWrapper(nullptr) {}
-  ~MockRenderText() override {}
-
-  MOCK_METHOD1(SetColor, void(SkColor value));
-  MOCK_METHOD2(ApplyColor, void(SkColor value, const gfx::Range& range));
-  MOCK_METHOD2(SetStyle, void(gfx::TextStyle style, bool value));
-  MOCK_METHOD3(ApplyStyle,
-               void(gfx::TextStyle style, bool value, const gfx::Range& range));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRenderText);
-};
 
 class TestUrlBarTexture : public UrlBarTexture {
  public:
@@ -83,6 +74,21 @@ TestUrlBarTexture::TestUrlBarTexture()
   gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
 }
 
+class MockRenderText : public RenderTextWrapper {
+ public:
+  MockRenderText() : RenderTextWrapper(nullptr) {}
+  ~MockRenderText() override {}
+
+  MOCK_METHOD1(SetColor, void(SkColor value));
+  MOCK_METHOD2(ApplyColor, void(SkColor value, const gfx::Range& range));
+  MOCK_METHOD2(SetStyle, void(gfx::TextStyle style, bool value));
+  MOCK_METHOD3(ApplyStyle,
+               void(gfx::TextStyle style, bool value, const gfx::Range& range));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockRenderText);
+};
+
 class UrlEmphasisTest : public testing::Test {
  protected:
   void Verify(const std::string& url_string,
@@ -94,7 +100,12 @@ class UrlEmphasisTest : public testing::Test {
         url, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
         &parsed, nullptr, nullptr);
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
-    UrlBarTexture::ApplyUrlStyling(formatted_url, parsed, level, &mock_);
+    UrlBarTexture::ApplyUrlStyling(
+        formatted_url, parsed, level, &mock_,
+        ColorScheme::GetColorScheme(ColorScheme::kModeNormal));
+    UrlBarTexture::ApplyUrlStyling(
+        formatted_url, parsed, level, &mock_,
+        ColorScheme::GetColorScheme(ColorScheme::kModeIncognito));
   }
 
   testing::InSequence in_sequence_;
@@ -105,6 +116,9 @@ TEST_F(UrlEmphasisTest, SecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(8, 16)));
   EXPECT_CALL(mock_, ApplyColor(kSecureColor, gfx::Range(0, 5)));
+  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(8, 16)));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoSecureColor, gfx::Range(0, 5)));
   Verify("https://host.com/page", SecurityLevel::SECURE,
          "https://host.com/page");
 }
@@ -112,6 +126,8 @@ TEST_F(UrlEmphasisTest, SecureHttpsHost) {
 TEST_F(UrlEmphasisTest, NotSecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(8, 16)));
+  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(8, 16)));
   Verify("https://host.com/page", SecurityLevel::HTTP_SHOW_WARNING,
          "https://host.com/page");
 }
@@ -119,6 +135,8 @@ TEST_F(UrlEmphasisTest, NotSecureHttpsHost) {
 TEST_F(UrlEmphasisTest, NotSecureHttpHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 8)));
+  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 8)));
   Verify("http://host.com/page", SecurityLevel::HTTP_SHOW_WARNING,
          "host.com/page");
 }
@@ -129,6 +147,11 @@ TEST_F(UrlEmphasisTest, DangerousHttpsHost) {
   EXPECT_CALL(mock_, ApplyColor(kWarningColor, gfx::Range(0, 5)));
   EXPECT_CALL(mock_, ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
                                 gfx::Range(0, 5)));
+  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(8, 16)));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoWarningColor, gfx::Range(0, 5)));
+  EXPECT_CALL(mock_, ApplyStyle(gfx::TextStyle::DIAGONAL_STRIKE, true,
+                                gfx::Range(0, 5)));
   Verify("https://host.com/page", SecurityLevel::DANGEROUS,
          "https://host.com/page");
 }
@@ -136,6 +159,8 @@ TEST_F(UrlEmphasisTest, DangerousHttpsHost) {
 TEST_F(UrlEmphasisTest, Data) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 4)));
+  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
+  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 4)));
   Verify("data:text/html,lots of data", SecurityLevel::NONE,
          "data:text/html,lots of data");
 }

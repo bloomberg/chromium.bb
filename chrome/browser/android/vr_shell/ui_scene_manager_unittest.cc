@@ -140,6 +140,61 @@ TEST_F(UiSceneManagerTest, CctButtonVisibleInCct) {
   EXPECT_TRUE(IsVisible(kCloseButton));
 }
 
+TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  // Hold onto the background color to make sure it changes.
+  SkColor initial_background = scene_->GetBackgroundColor();
+  manager_->SetFullscreen(true);
+
+  {
+    SCOPED_TRACE("Entered Fullsceen");
+    // Make sure background has changed for fullscreen.
+    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
+  }
+
+  SkColor fullscreen_background = scene_->GetBackgroundColor();
+
+  manager_->SetIncognito(true);
+
+  {
+    SCOPED_TRACE("Entered Incognito");
+    // Make sure background has changed for incognito.
+    EXPECT_NE(fullscreen_background, scene_->GetBackgroundColor());
+    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
+  }
+
+  SkColor incognito_background = scene_->GetBackgroundColor();
+
+  manager_->SetIncognito(false);
+
+  {
+    SCOPED_TRACE("Exited Incognito");
+    EXPECT_EQ(fullscreen_background, scene_->GetBackgroundColor());
+  }
+
+  manager_->SetFullscreen(false);
+
+  {
+    SCOPED_TRACE("Exited Fullsceen");
+    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
+  }
+
+  manager_->SetIncognito(true);
+
+  {
+    SCOPED_TRACE("Entered Incognito");
+    EXPECT_EQ(incognito_background, scene_->GetBackgroundColor());
+  }
+
+  manager_->SetIncognito(false);
+
+  {
+    SCOPED_TRACE("Exited Incognito");
+    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
+  }
+}
+
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   std::set<UiElementDebugId> visible_in_browsing = {
       UiElementDebugId::kContentQuad,     UiElementDebugId::kBackplane,

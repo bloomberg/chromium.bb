@@ -10,10 +10,10 @@
 namespace vr_shell {
 
 struct ColorScheme {
-  // TODO(vollick): Add support for incognito.
   enum Mode : int {
     kModeNormal = 0,
     kModeFullscreen,
+    kModeIncognito,
     kNumModes,
   };
 
@@ -25,6 +25,26 @@ struct ColorScheme {
   SkColor floor;
   SkColor ceiling;
   SkColor floor_grid;
+
+  // The foreground color is used for text and sometimes for icons.
+  SkColor foreground;
+  SkColor emphasized;
+  SkColor deemphasized;
+
+  // This is the background color. To be used behind text in the foreground
+  // color. The related hover and down colors are to be used for buttons.
+  SkColor background;
+  SkColor background_hover;
+  SkColor background_down;
+
+  // If you have a segmented element, its separators should use this color.
+  SkColor separator;
+
+  // Some content changes color based on the security level. Those visuals
+  // should respect these colors.
+  SkColor secure;
+  SkColor insecure;
+  SkColor warning;
 };
 
 }  // namespace vr_shell

@@ -231,4 +231,13 @@ bool UiElement::HitTest(const gfx::PointF& point) const {
          point.y() <= 1.0f;
 }
 
+void UiElement::SetMode(ColorScheme::Mode mode) {
+  if (mode_ == mode)
+    return;
+  mode_ = mode;
+  OnSetMode();
+}
+
+void UiElement::OnSetMode() {}
+
 }  // namespace vr_shell

@@ -34,6 +34,7 @@
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
@@ -168,11 +169,12 @@ void VrShell::SetUiState() {
     ui_->SetURL(GURL());
     ui_->SetLoading(false);
     ui_->SetFullscreen(false);
-    ui_->SetURL(GURL());
+    ui_->SetIncognito(false);
   } else {
     ui_->SetURL(web_contents_->GetVisibleURL());
     ui_->SetLoading(web_contents_->IsLoading());
     ui_->SetFullscreen(web_contents_->IsFullscreen());
+    ui_->SetIncognito(web_contents_->GetBrowserContext()->IsOffTheRecord());
   }
 }
 

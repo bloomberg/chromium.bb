@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/textures/close_button_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
@@ -255,7 +254,6 @@ void UiSceneManager::CreateBackground() {
   element = base::MakeUnique<UiElement>();
   element->set_debug_id(kFloorGrid);
   element->set_id(AllocateId());
-  element->set_fill(vr_shell::Fill::GRID_GRADIENT);
   element->set_size({kSceneSize, kSceneSize, 1.0});
   element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
@@ -354,13 +352,15 @@ void UiSceneManager::ConfigureScene() {
     main_content_->set_size({kContentWidth, kContentHeight, 1});
   }
 
-  UpdateBackgroundColor();
+  scene_->SetMode(mode());
   scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
+  UpdateBackgroundColor();
 }
 
 void UiSceneManager::UpdateBackgroundColor() {
-  scene_->SetBackgroundColor(color_scheme().horizon);
+  // TODO(vollick): it would be nice if ceiling, floor and the grid were
+  // UiElement subclasses and could respond to the OnSetMode signal.
   ceiling_->set_center_color(color_scheme().ceiling);
   ceiling_->set_edge_color(color_scheme().horizon);
   floor_->set_center_color(color_scheme().floor);
@@ -388,6 +388,13 @@ void UiSceneManager::SetScreenCapturingIndicator(bool enabled) {
 void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
   secure_origin_ = secure;
   ConfigureSecurityWarnings();
+}
+
+void UiSceneManager::SetIncognito(bool incognito) {
+  if (incognito == incognito_)
+    return;
+  incognito_ = incognito;
+  ConfigureScene();
 }
 
 void UiSceneManager::OnAppButtonClicked() {
@@ -465,9 +472,16 @@ int UiSceneManager::AllocateId() {
   return next_available_id_++;
 }
 
+ColorScheme::Mode UiSceneManager::mode() const {
+  if (incognito_)
+    return ColorScheme::kModeIncognito;
+  if (fullscreen_)
+    return ColorScheme::kModeFullscreen;
+  return ColorScheme::kModeNormal;
+}
+
 const ColorScheme& UiSceneManager::color_scheme() const {
-  return ColorScheme::GetColorScheme(fullscreen_ ? ColorScheme::kModeFullscreen
-                                                 : ColorScheme::kModeNormal);
+  return ColorScheme::GetColorScheme(mode());
 }
 
 }  // namespace vr_shell
