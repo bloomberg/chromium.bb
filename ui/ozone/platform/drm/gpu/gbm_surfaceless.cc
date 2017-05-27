@@ -35,8 +35,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
       surface_factory_(surface_factory),
       window_(std::move(window)),
       widget_(widget),
-      has_implicit_external_sync_(
-          HasEGLExtension("EGL_ARM_implicit_external_sync")),
+      has_native_fence_sync_(HasEGLExtension("EGL_ANDROID_native_fence_sync")),
       weak_factory_(this) {
   surface_factory_->RegisterSurface(window_->widget(), this);
   unsubmitted_frames_.push_back(base::MakeUnique<PendingFrame>());
@@ -114,7 +113,7 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
 
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
-  EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
+  EGLSyncKHR fence = InsertFence(has_native_fence_sync_);
   if (!fence) {
     callback.Run(gfx::SwapResult::SWAP_FAILED);
     return;
@@ -206,12 +205,10 @@ void GbmSurfaceless::SubmitFrame() {
   }
 }
 
-EGLSyncKHR GbmSurfaceless::InsertFence(bool implicit) {
-  const EGLint attrib_list[] = {EGL_SYNC_CONDITION_KHR,
-                                EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
-                                EGL_NONE};
-  return eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR,
-                          implicit ? attrib_list : NULL);
+EGLSyncKHR GbmSurfaceless::InsertFence(bool native) {
+  return eglCreateSyncKHR(
+      GetDisplay(), native ? EGL_SYNC_NATIVE_FENCE_ANDROID : EGL_SYNC_FENCE_KHR,
+      nullptr);
 }
 
 void GbmSurfaceless::FenceRetired(EGLSyncKHR fence, PendingFrame* frame) {
