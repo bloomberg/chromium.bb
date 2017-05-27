@@ -106,6 +106,11 @@ int suite_vce_tests_init(void)
 	family_id = device_handle->info.family_id;
 	vce_harvest_config = device_handle->info.vce_harvest_config;
 
+	if (family_id >= AMDGPU_FAMILY_RV) {
+		printf("\n\nThe ASIC NOT support VCE, all sub-tests will pass\n");
+		return CUE_SUCCESS;
+	}
+
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
 		return CUE_SINIT_FAILED;
@@ -125,6 +130,9 @@ int suite_vce_tests_init(void)
 int suite_vce_tests_clean(void)
 {
 	int r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return CUE_SUCCESS;
 
 	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
 				     ib_mc_address, IB_SIZE);
@@ -236,6 +244,9 @@ static void amdgpu_cs_vce_create(void)
 {
 	unsigned align = (family_id >= AMDGPU_FAMILY_AI) ? 256 : 16;
 	int len, r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return;
 
 	enc.width = vce_create[6];
 	enc.height = vce_create[7];
@@ -430,6 +441,9 @@ static void amdgpu_cs_vce_encode(void)
 	unsigned align = (family_id >= AMDGPU_FAMILY_AI) ? 256 : 16;
 	int i, r;
 
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return;
+
 	vbuf_size = ALIGN(enc.width, align) * ALIGN(enc.height, 16) * 1.5;
 	cpb_size = vbuf_size * 10;
 	num_resources = 0;
@@ -507,6 +521,9 @@ static void amdgpu_cs_vce_encode(void)
 static void amdgpu_cs_vce_destroy(void)
 {
 	int len, r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return;
 
 	num_resources  = 0;
 	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
