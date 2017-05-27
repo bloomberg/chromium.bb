@@ -146,6 +146,21 @@ AshTestBase::~AshTestBase() {
       << "You have overridden TearDown but never called AshTestBase::TearDown";
 }
 
+void AshTestBase::UnblockCompositors() {
+  // In order for frames to be generated, a cc::LocalSurfaceId must be given to
+  // the ui::Compositor. Normally that cc::LocalSurfaceId comes from the window
+  // server but in unit tests, there is no window server so we just make up a
+  // cc::LocalSurfaceId to allow the layer compositor to make forward progress.
+  if (Shell::GetAshConfig() == Config::MUS ||
+      Shell::GetAshConfig() == Config::MASH) {
+    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    for (aura::Window* root : root_windows) {
+      cc::LocalSurfaceId id(1, base::UnguessableToken::Create());
+      root->GetHost()->compositor()->SetLocalSurfaceId(id);
+    }
+  }
+}
+
 void AshTestBase::SetUp() {
   setup_called_ = true;
 
@@ -164,6 +179,8 @@ void AshTestBase::SetUp() {
   if (Shell::GetAshConfig() == Config::CLASSIC)
     Shell::Get()->cursor_manager()->EnableMouseEvents();
 
+  UnblockCompositors();
+
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as
   // delayed events which create race conditions on slower tests.
@@ -177,6 +194,11 @@ void AshTestBase::SetUp() {
 void AshTestBase::TearDown() {
   teardown_called_ = true;
   Shell::Get()->session_controller()->NotifyChromeTerminating();
+
+  // Some tasks are blocked on progress by the layer compositor. The layer
+  // compositor might be blocked if created during a unit test.
+  UnblockCompositors();
+
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
@@ -219,7 +241,6 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
   return GetActiveDisplayRotation(display::Display::InternalDisplayId());
 }
 
-// static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   if (Shell::GetAshConfig() == Config::MASH) {
     ash_test_helper_->UpdateDisplayForMash(display_specs);
@@ -227,6 +248,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
     display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
         .UpdateDisplay(display_specs);
   }
+  UnblockCompositors();
 }
 
 aura::Window* AshTestBase::CurrentContext() {

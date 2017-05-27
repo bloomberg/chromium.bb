@@ -52,7 +52,8 @@ namespace ui {
 Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
                        ui::ContextFactoryPrivate* context_factory_private,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       bool enable_surface_synchronization)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
@@ -125,8 +126,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.enable_surface_synchronization =
-      command_line->HasSwitch(cc::switches::kEnableSurfaceSynchronization);
+  settings.enable_surface_synchronization = enable_surface_synchronization;
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();
 

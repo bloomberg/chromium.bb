@@ -57,7 +57,8 @@ TestCompositorHostX11::TestCompositorHostX11(
       compositor_(context_factory_private_->AllocateFrameSinkId(),
                   context_factory_,
                   context_factory_private_,
-                  base::ThreadTaskRunnerHandle::Get()) {}
+                  base::ThreadTaskRunnerHandle::Get(),
+                  false /* enable_surface_synchronization */) {}
 
 TestCompositorHostX11::~TestCompositorHostX11() {}
 

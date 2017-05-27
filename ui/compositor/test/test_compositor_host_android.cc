@@ -22,7 +22,8 @@ class TestCompositorHostAndroid : public TestCompositorHost {
       ui::ContextFactoryPrivate* context_factory_private) {
     compositor_.reset(new ui::Compositor(
         context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, base::ThreadTaskRunnerHandle::Get()));
+        context_factory_private, base::ThreadTaskRunnerHandle::Get(),
+        false /* enable_surface_synchronization */));
     // TODO(sievers): Support onscreen here.
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
     compositor_->SetScaleAndSize(1.0f,

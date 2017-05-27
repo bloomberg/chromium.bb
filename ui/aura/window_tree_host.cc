@@ -4,8 +4,10 @@
 
 #include "ui/aura/window_tree_host.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/switches.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -255,12 +257,16 @@ void WindowTreeHost::CreateCompositor(const cc::FrameSinkId& frame_sink_id) {
   DCHECK(context_factory);
   ui::ContextFactoryPrivate* context_factory_private =
       Env::GetInstance()->context_factory_private();
-  compositor_.reset(
-      new ui::Compositor((!context_factory_private || frame_sink_id.is_valid())
-                             ? frame_sink_id
-                             : context_factory_private->AllocateFrameSinkId(),
-                         context_factory, context_factory_private,
-                         base::ThreadTaskRunnerHandle::Get()));
+  bool enable_surface_synchronization =
+      aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization);
+  compositor_.reset(new ui::Compositor(
+      (!context_factory_private || frame_sink_id.is_valid())
+          ? frame_sink_id
+          : context_factory_private->AllocateFrameSinkId(),
+      context_factory, context_factory_private,
+      base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization));
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);

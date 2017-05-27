@@ -143,7 +143,8 @@ class ReflectorImplTest : public testing::Test {
             compositor_task_runner_.get())));
     compositor_.reset(new ui::Compositor(
         context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, compositor_task_runner_.get()));
+        context_factory_private, compositor_task_runner_.get(),
+        false /* enable_surface_synchronization */));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 
     auto context_provider = cc::TestContextProvider::Create();
