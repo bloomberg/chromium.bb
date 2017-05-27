@@ -65,8 +65,8 @@ webview,
 }
 
 .content {
-  /* Default window inner height (688px) minus image caption height (300px) */
-  height: 388px;
+  /* Default window inner height (687px) minus image caption height (300px) */
+  height: 387px;
   margin: 0;
   padding: 0;
 }
