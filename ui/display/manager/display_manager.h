@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -488,6 +489,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   Display::Rotation registered_internal_display_rotation_ = Display::ROTATE_0;
 
   bool unified_desktop_enabled_ = false;
+
+  base::Closure created_mirror_window_;
 
   base::ObserverList<DisplayObserver> observers_;
 

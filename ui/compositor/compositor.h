@@ -179,7 +179,8 @@ class COMPOSITOR_EXPORT Compositor
   Compositor(const cc::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             bool enable_surface_synchronization);
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }

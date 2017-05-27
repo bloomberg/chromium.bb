@@ -582,8 +582,6 @@ class AURA_EXPORT WindowTreeClient
 
   bool in_destructor_;
 
-  bool enable_surface_synchronization_ = false;
-
   // A mapping to shared memory that is one 32 bit integer long. The window
   // server uses this to let us synchronously read the cursor location.
   mojo::ScopedSharedBufferMapping cursor_location_mapping_;

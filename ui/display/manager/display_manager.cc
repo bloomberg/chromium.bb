@@ -1439,12 +1439,17 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 }
 
 void DisplayManager::CreateMirrorWindowIfAny() {
-  if (software_mirroring_display_list_.empty() || !delegate_)
+  if (software_mirroring_display_list_.empty() || !delegate_) {
+    if (!created_mirror_window_.is_null())
+      base::ResetAndReturn(&created_mirror_window_).Run();
     return;
+  }
   DisplayInfoList list;
   for (auto& display : software_mirroring_display_list_)
     list.push_back(GetDisplayInfo(display.id()));
   delegate_->CreateOrUpdateMirroringDisplay(list);
+  if (!created_mirror_window_.is_null())
+    base::ResetAndReturn(&created_mirror_window_).Run();
 }
 
 void DisplayManager::ApplyDisplayLayout(DisplayLayout* layout,
@@ -1461,8 +1466,12 @@ void DisplayManager::ApplyDisplayLayout(DisplayLayout* layout,
 }
 
 void DisplayManager::RunPendingTasksForTest() {
-  if (!software_mirroring_display_list_.empty())
-    base::RunLoop().RunUntilIdle();
+  if (software_mirroring_display_list_.empty())
+    return;
+
+  base::RunLoop run_loop;
+  created_mirror_window_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void DisplayManager::NotifyMetricsChanged(const Display& display,
