@@ -847,8 +847,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
       int tell2;
       od_rollback_buffer dc_buf;
 
-      dc_rate = -OD_LOG2((double)(skip_cdf[3] - skip_cdf[2])/
-       (double)(skip_cdf[2] - skip_cdf[1]));
+      dc_rate = -OD_LOG2((double)(OD_ICDF(skip_cdf[3]) - OD_ICDF(skip_cdf[2]))/
+       (double)(OD_ICDF(skip_cdf[2]) - OD_ICDF(skip_cdf[1])));
       dc_rate += 1;
 
 #if !CONFIG_ANS
@@ -931,12 +931,12 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
   {
     double skip_rate;
     if (out[0] != 0) {
-      skip_rate = -OD_LOG2((skip_cdf[1] - skip_cdf[0])/
-     (double)skip_cdf[3]);
+      skip_rate = -OD_LOG2((OD_ICDF(skip_cdf[1]) - OD_ICDF(skip_cdf[0]))/
+     (double)OD_ICDF(skip_cdf[3]));
     }
     else {
-      skip_rate = -OD_LOG2(skip_cdf[0]/
-     (double)skip_cdf[3]);
+      skip_rate = -OD_LOG2(OD_ICDF(skip_cdf[0])/
+     (double)OD_ICDF(skip_cdf[3]));
     }
     tell -= (int)floor(.5+8*skip_rate);
   }
@@ -951,8 +951,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
         int tell2;
         od_rollback_buffer dc_buf;
 
-        dc_rate = -OD_LOG2((double)(skip_cdf[1] - skip_cdf[0])/
-         (double)skip_cdf[0]);
+        dc_rate = -OD_LOG2((double)(OD_ICDF(skip_cdf[1]) - OD_ICDF(skip_cdf[0]))/
+         (double)OD_ICDF(skip_cdf[0]));
         dc_rate += 1;
 
 #if !CONFIG_ANS
