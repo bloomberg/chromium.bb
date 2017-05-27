@@ -75,7 +75,8 @@ void ViewElement::SetVisible(bool visible) {
 
 std::pair<aura::Window*, gfx::Rect> ViewElement::GetNodeWindowAndBounds()
     const {
-  return std::make_pair(view_->GetWidget()->GetNativeWindow(), view_->bounds());
+  return std::make_pair(view_->GetWidget()->GetNativeWindow(),
+                        view_->GetBoundsInScreen());
 }
 
 // static

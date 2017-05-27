@@ -5,6 +5,8 @@
 #include "ash/devtools/ash_devtools_css_agent.h"
 #include "ash/devtools/ash_devtools_dom_agent.h"
 #include "ash/devtools/ui_element.h"
+#include "ash/devtools/view_element.h"
+#include "ash/devtools/widget_element.h"
 #include "ash/devtools/window_element.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -635,16 +637,35 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
 
   HighlightNode(window_node->getNodeId());
   ExpectHighlighted(window->GetBoundsInScreen(), 0);
+  devtools::UIElement* element =
+      dom_agent()->GetElementFromNodeId(window_node->getNodeId());
+  ASSERT_EQ(devtools::UIElementType::WINDOW, element->type());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().first, window.get());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().second,
+            window->GetBoundsInScreen());
 
   HideHighlight(0);
 
   HighlightNode(widget_node->getNodeId());
   ExpectHighlighted(widget->GetWindowBoundsInScreen(), 0);
 
+  element = dom_agent()->GetElementFromNodeId(widget_node->getNodeId());
+  ASSERT_EQ(devtools::UIElementType::WIDGET, element->type());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().first, widget->GetNativeWindow());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().second,
+            widget->GetWindowBoundsInScreen());
+
   HideHighlight(0);
 
   HighlightNode(root_view_node->getNodeId());
   ExpectHighlighted(root_view->GetBoundsInScreen(), 0);
+
+  element = dom_agent()->GetElementFromNodeId(root_view_node->getNodeId());
+  ASSERT_EQ(devtools::UIElementType::VIEW, element->type());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().first,
+            root_view->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(element->GetNodeWindowAndBounds().second,
+            root_view->GetBoundsInScreen());
 
   HideHighlight(0);
 
