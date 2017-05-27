@@ -451,16 +451,11 @@ void ExtensionService::Init() {
     load_command_line_extensions = false;
   }
 #endif
-  if (load_saved_extensions) {
+  if (load_saved_extensions)
     extensions::InstalledLoader(this).LoadAllExtensions();
-  } else {
-    // InstalledLoader::LoadAllExtensions normally calls
-    // OnLoadedInstalledExtensions itself, but here we circumvent that path.
-    // Call OnLoadedInstalledExtensions directly.
-    // TODO(devlin): LoadInstalledExtensions() is synchronous - we can simplify
-    // this.
-    OnLoadedInstalledExtensions();
-  }
+
+  OnInstalledExtensionsLoaded();
+
   LoadExtensionsFromCommandLineFlag(switches::kDisableExtensionsExcept);
   if (load_command_line_extensions)
     LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
@@ -1455,6 +1450,7 @@ void ExtensionService::ReloadExtensionsForTest() {
   UnloadAllExtensionsInternal();
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
+  OnInstalledExtensionsLoaded();
   // Don't call SetReadyAndNotifyListeners() since tests call this multiple
   // times.
 }
@@ -1470,25 +1466,6 @@ void ExtensionService::SetReadyAndNotifyListeners() {
       extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
-}
-
-void ExtensionService::OnLoadedInstalledExtensions() {
-  if (updater_)
-    updater_->Start();
-
-  // Enable any Shared Modules that incorrectly got disabled previously.
-  // This is temporary code to fix incorrect behavior from previous versions of
-  // Chrome and can be removed after several releases (perhaps M60).
-  extensions::ExtensionList to_enable;
-  for (const auto& extension : registry_->disabled_extensions()) {
-    if (SharedModuleInfo::IsSharedModule(extension.get()))
-      to_enable.push_back(extension);
-  }
-  for (const auto& extension : to_enable) {
-    EnableExtension(extension->id());
-  }
-
-  OnBlacklistUpdated();
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
@@ -2560,4 +2537,23 @@ void ExtensionService::OnProfileDestructionStarted() {
        ++it) {
     UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
   }
+}
+
+void ExtensionService::OnInstalledExtensionsLoaded() {
+  if (updater_)
+    updater_->Start();
+
+  // Enable any Shared Modules that incorrectly got disabled previously.
+  // This is temporary code to fix incorrect behavior from previous versions of
+  // Chrome and can be removed after several releases (perhaps M60).
+  extensions::ExtensionList to_enable;
+  for (const auto& extension : registry_->disabled_extensions()) {
+    if (SharedModuleInfo::IsSharedModule(extension.get()))
+      to_enable.push_back(extension);
+  }
+  for (const auto& extension : to_enable) {
+    EnableExtension(extension->id());
+  }
+
+  OnBlacklistUpdated();
 }

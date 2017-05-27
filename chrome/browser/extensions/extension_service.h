@@ -317,9 +317,6 @@ class ExtensionService
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
-  // Called when the initial extensions load has completed.
-  virtual void OnLoadedInstalledExtensions();
-
   // Informs the service that an extension's files are in place for loading.
   //
   // |extension|     the extension
@@ -586,6 +583,9 @@ class ExtensionService
       Profile* profile,
       const base::FilePath& install_dir,
       const base::FilePath& extension_path);
+
+  // Called when the initial extensions load has completed.
+  void OnInstalledExtensionsLoaded();
 
   const base::CommandLine* command_line_ = nullptr;
 
