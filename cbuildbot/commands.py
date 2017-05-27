@@ -24,6 +24,7 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
+from chromite.cbuildbot import tree_status
 from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -962,6 +963,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     job_id = _HWTestCreate(cmd, debug, **swarming_args)
     if wait_for_results and job_id:
       pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
+      suite_details_link = tree_status.ConstructViceroySuiteDetailsURL(
+          job_id=job_id)
+      logging.PrintBuildbotLink('Suite details', suite_details_link)
       # Only dump the json output when tests don't pass, since the json output
       # is used to decide whether we can do subsystem based partial submission.
       running_json_dump_flag = not pass_hwtest

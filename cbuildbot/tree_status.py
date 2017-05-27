@@ -448,3 +448,22 @@ def ConstructViceroyBuildDetailsURL(build_id):
   _LINK = ('https://viceroy.corp.google.com/'
            'chromeos/build_details?build_id=%(build_id)s')
   return _LINK % {'build_id': build_id}
+
+
+def ConstructViceroySuiteDetailsURL(job_id=None, build_id=None):
+  """Return the dashboard (viceroy) URL of suite details for job or build.
+
+  Args:
+    job_id: AFE job id.
+    build_id: CIDB id for the master build.
+
+  Returns:
+    The fully formed URL.
+  """
+  if job_id is None and build_id is None:
+    return None
+  _LINK = 'https://viceroy.corp.google.com/chromeos/suite_details?'
+  if job_id:
+    return _LINK + 'job_id=%d' % int(job_id)
+  else:
+    return _LINK + 'build_id=%d' % int(build_id)

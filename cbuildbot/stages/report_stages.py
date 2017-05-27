@@ -866,6 +866,10 @@ class ReportStage(generic_stages.BuilderStage,
       if build_id is not None:
         details_link = tree_status.ConstructViceroyBuildDetailsURL(build_id)
         logging.PrintBuildbotLink('Build details', details_link)
+        suite_details_link = tree_status.ConstructViceroySuiteDetailsURL(
+            build_id=build_id)
+        logging.PrintBuildbotLink('Build details', details_link)
+        logging.PrintBuildbotLink('Suite details', suite_details_link)
 
       # Generate links to archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the link
