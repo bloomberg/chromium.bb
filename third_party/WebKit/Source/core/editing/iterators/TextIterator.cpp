@@ -587,6 +587,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
+  last_text_node_ = ToText(node_);
 
   text_node_ = ToText(node_);
   offset_ = text_node_ == start_container_ ? start_offset_ : 0;
@@ -594,8 +595,6 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   first_letter_text_ = nullptr;
 
   LayoutText* layout_object = text_node_->GetLayoutObject();
-
-  last_text_node_ = text_node_;
   String str = layout_object->GetText();
 
   // handle pre-formatted text
@@ -706,8 +705,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
           !layout_object->Style()->IsCollapsibleWhiteSpace(
               text_state_.LastCharacter()) &&
           text_state_.LastCharacter()) {
-        if (last_text_node_ == text_node_ && run_start > 0 &&
-            str[run_start - 1] == ' ') {
+        if (run_start > 0 && str[run_start - 1] == ' ') {
           unsigned space_run_start = run_start - 1;
           while (space_run_start > 0 && str[space_run_start - 1] == ' ')
             --space_run_start;
@@ -887,19 +885,20 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return true;
   }
 
+  DCHECK_EQ(last_text_node_, text_node_);
   if (behavior_.CollapseTrailingSpace()) {
-    if (last_text_node_) {
-      String str = last_text_node_->GetLayoutObject()->GetText();
+    if (text_node_) {
+      String str = text_node_->GetLayoutObject()->GetText();
       if (last_text_node_ended_with_collapsed_space_ && offset_ > 0 &&
           str[offset_ - 1] == ' ') {
         SpliceBuffer(kSpaceCharacter, Strategy::Parent(*last_text_node_),
-                     last_text_node_, 1, 1);
+                     text_node_, 1, 1);
         return false;
       }
     }
   } else if (last_text_node_ended_with_collapsed_space_) {
     SpliceBuffer(kSpaceCharacter, Strategy::Parent(*last_text_node_),
-                 last_text_node_, 1, 1);
+                 text_node_, 1, 1);
     return false;
   }
 
