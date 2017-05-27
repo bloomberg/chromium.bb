@@ -15,34 +15,53 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
     bool is_sensitive_if_request_from_common_renderer;
     bool is_sensitive_if_request_from_browser_or_webui_renderer;
   } cases[] = {
-      {"http://www.google.com", false, false},
+      {"https://www.google.com", false, false},
       {"http://www.example.com", false, false},
-      {"http://clients.google.com", false, true},
-      {"http://clients4.google.com", false, true},
-      {"http://clients9999.google.com", false, true},
-      {"http://clients9999..google.com", false, false},
-      {"http://clients9999.example.google.com", false, false},
-      {"http://clients.google.com.", false, true},
-      {"http://.clients.google.com.", false, true},
+      {"https://www.example.com", false, false},
+      {"https://clients.google.com", false, true},
+      {"https://clients4.google.com", false, true},
+      {"https://clients9999.google.com", false, true},
+      {"https://clients9999..google.com", false, false},
+      {"https://clients9999.example.google.com", false, false},
+      {"https://clients.google.com.", false, true},
+      {"https://.clients.google.com.", false, true},
       {"http://google.example.com", false, false},
       {"http://www.example.com", false, false},
-      {"http://clients.google.com", false, true},
-      {"http://sb-ssl.google.com", true, true},
-      {"http://sb-ssl.random.google.com", false, false},
-      {"http://chrome.google.com", false, false},
-      {"http://chrome.google.com/webstore", true, true},
-      {"http://chrome.google.com/webstore?query", true, true},
+      {"https://www.example.com", false, false},
+      {"https://clients.google.com", false, true},
+      {"https://sb-ssl.google.com", true, true},
+      {"https://sb-ssl.random.google.com", false, false},
+      {"https://safebrowsing.googleapis.com", true, true},
+      {"blob:https://safebrowsing.googleapis.com/"
+       "fc3f440b-78ed-469f-8af8-7a1717ff39ae",
+       true, true},
+      {"filesystem:https://safebrowsing.googleapis.com/path", true, true},
+      {"https://safebrowsing.googleapis.com.", true, true},
+      {"https://safebrowsing.googleapis.com/v4", true, true},
+      {"https://safebrowsing.googleapis.com:80/v4", true, true},
+      {"https://safebrowsing.googleapis.com./v4", true, true},
+      {"https://safebrowsing.googleapis.com/v5", true, true},
+      {"https://safebrowsing.google.com/safebrowsing", true, true},
+      {"https://safebrowsing.google.com/safebrowsing/anything", true, true},
+      {"https://safebrowsing.google.com", false, false},
+      {"https://chrome.google.com", false, false},
+      {"https://chrome.google.com/webstore", true, true},
+      {"https://chrome.google.com./webstore", true, true},
+      {"blob:https://chrome.google.com/fc3f440b-78ed-469f-8af8-7a1717ff39ae",
+       false, false},
+      {"https://chrome.google.com:80/webstore", true, true},
+      {"https://chrome.google.com/webstore?query", true, true},
   };
   for (const TestCase& test : cases) {
-    EXPECT_EQ(
-        test.is_sensitive_if_request_from_common_renderer,
-        IsSensitiveURL(GURL(test.url),
-                       false /* is_request_from_browser_or_webui_renderer */))
+    GURL url(test.url);
+    EXPECT_TRUE(url.is_valid()) << test.url;
+    EXPECT_EQ(test.is_sensitive_if_request_from_common_renderer,
+              IsSensitiveURL(
+                  url, false /* is_request_from_browser_or_webui_renderer */))
         << test.url;
-    EXPECT_EQ(
-        test.is_sensitive_if_request_from_browser_or_webui_renderer,
-        IsSensitiveURL(GURL(test.url),
-                       true /* is_request_from_browser_or_webui_renderer */))
+    EXPECT_EQ(test.is_sensitive_if_request_from_browser_or_webui_renderer,
+              IsSensitiveURL(
+                  url, true /* is_request_from_browser_or_webui_renderer */))
         << test.url;
   }
 }

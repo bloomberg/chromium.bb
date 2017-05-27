@@ -12,6 +12,7 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -95,6 +96,14 @@ bool IsBlacklistUpdateUrl(const GURL& url) {
   if (client)
     return client->IsBlacklistUpdateURL(url);
   return false;
+}
+
+bool IsSafeBrowsingUrl(const url::Origin& origin, base::StringPiece path) {
+  return origin.DomainIs("sb-ssl.google.com") ||
+         origin.DomainIs("safebrowsing.googleapis.com") ||
+         (origin.DomainIs("safebrowsing.google.com") &&
+          base::StartsWith(path, "/safebrowsing",
+                           base::CompareCase::SENSITIVE));
 }
 
 }  // namespace extension_urls
