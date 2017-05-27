@@ -1914,37 +1914,32 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
                                      const Functor& func,
                                      FindClosestMatchingLayerState* state) {
   // We want to iterate from front to back when hit testing.
-  {
-    base::ElapsedTimer timer;
-    for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
-      if (!func(layer))
-        continue;
+  for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
+    if (!func(layer))
+      continue;
 
-      float distance_to_intersection = 0.f;
-      bool hit = false;
-      if (layer->Is3dSorted())
-        hit = PointHitsLayer(layer, screen_space_point,
-                             &distance_to_intersection);
-      else
-        hit = PointHitsLayer(layer, screen_space_point, nullptr);
+    float distance_to_intersection = 0.f;
+    bool hit = false;
+    if (layer->Is3dSorted())
+      hit =
+          PointHitsLayer(layer, screen_space_point, &distance_to_intersection);
+    else
+      hit = PointHitsLayer(layer, screen_space_point, nullptr);
 
-      if (!hit)
-        continue;
+    if (!hit)
+      continue;
 
-      bool in_front_of_previous_candidate =
-          state->closest_match &&
-          layer->GetSortingContextId() ==
-              state->closest_match->GetSortingContextId() &&
-          distance_to_intersection >
-              state->closest_distance + std::numeric_limits<float>::epsilon();
+    bool in_front_of_previous_candidate =
+        state->closest_match &&
+        layer->GetSortingContextId() ==
+            state->closest_match->GetSortingContextId() &&
+        distance_to_intersection >
+            state->closest_distance + std::numeric_limits<float>::epsilon();
 
-      if (!state->closest_match || in_front_of_previous_candidate) {
-        state->closest_distance = distance_to_intersection;
-        state->closest_match = layer;
-      }
+    if (!state->closest_match || in_front_of_previous_candidate) {
+      state->closest_distance = distance_to_intersection;
+      state->closest_match = layer;
     }
-    UMA_HISTOGRAM_COUNTS("Compositing.LayerTreeImpl.FindClosestMatchingLayerUs",
-                         timer.Elapsed().InMicroseconds());
   }
 }
 

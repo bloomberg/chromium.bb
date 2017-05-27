@@ -8204,6 +8204,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Compositing.LayerTreeImpl.FindClosestMatchingLayerUs"
     units="microseconds">
+  <obsolete>
+    Deprecated 05/2017 in Issue 710306. Histogram was used temporarily for
+    tracking a potential performance regression.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent finding the closest matching layer to a given point, in
