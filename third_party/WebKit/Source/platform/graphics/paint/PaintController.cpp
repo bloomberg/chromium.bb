@@ -70,6 +70,9 @@ bool PaintController::UseCachedDrawingIfPossible(
 
   ++num_cached_new_items_;
   EnsureNewDisplayItemListInitialCapacity();
+  // Visual rect can change without needing invalidation of the client, e.g.
+  // when ancestor clip changes. Update the visual rect to the current value.
+  current_paint_artifact_.GetDisplayItemList()[cached_item].UpdateVisualRect();
   if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
     ProcessNewItem(MoveItemFromCurrentListToNewList(cached_item));
 
@@ -516,6 +519,19 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
             cached_chunk->id ? &*cached_chunk->id : nullptr,
             cached_chunk->properties);
       }
+
+#if DCHECK_IS_ON()
+      // Visual rect change should not happen in a cached subsequence.
+      // However, because of different method of pixel snapping in different
+      // paths, there are false positives. Just log an error.
+      if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
+        LOG(ERROR) << "Visual rect changed in a cached subsequence: "
+                   << cached_item->Client().DebugName()
+                   << " old=" << cached_item->VisualRect().ToString()
+                   << " new=" << cached_item->Client().VisualRect().ToString();
+      }
+#endif
+
       ProcessNewItem(MoveItemFromCurrentListToNewList(current_index));
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         DCHECK((!new_paint_chunks_.LastChunk().id && !cached_chunk->id) ||
@@ -529,15 +545,6 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
   }
 }
 
-DISABLE_CFI_PERF
-static IntRect VisualRectForDisplayItem(
-    const DisplayItem& display_item,
-    const LayoutSize& offset_from_layout_object) {
-  LayoutRect visual_rect = display_item.Client().VisualRect();
-  visual_rect.Move(-offset_from_layout_object);
-  return EnclosingIntRect(visual_rect);
-}
-
 void PaintController::ResetCurrentListIndices() {
   next_item_to_match_ = 0;
   next_item_to_index_ = 0;
@@ -548,13 +555,13 @@ void PaintController::ResetCurrentListIndices() {
 }
 
 DISABLE_CFI_PERF
-void PaintController::CommitNewDisplayItems(
-    const LayoutSize& offset_from_layout_object) {
+void PaintController::CommitNewDisplayItems() {
   TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
                "current_display_list_size",
                (int)current_paint_artifact_.GetDisplayItemList().size(),
                "num_non_cached_new_items",
                (int)new_display_item_list_.size() - num_cached_new_items_);
+
   num_cached_new_items_ = 0;
   // These data structures are used during painting only.
   DCHECK(!IsSkippingCache());
@@ -587,10 +594,6 @@ void PaintController::CommitNewDisplayItems(
     // No reason to continue the analysis once we have a veto.
     if (num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto)
       num_slow_paths += item.NumberOfSlowPaths();
-
-    // TODO(wkorman): Only compute and append visual rect for drawings.
-    new_display_item_list_.AppendVisualRect(
-        VisualRectForDisplayItem(item, offset_from_layout_object));
 
     if (item.IsCacheable()) {
       item.Client().SetDisplayItemsCached(current_cache_generation_);
@@ -676,8 +679,7 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 void PaintController::AppendDebugDrawingAfterCommit(
     const DisplayItemClient& display_item_client,
     sk_sp<PaintRecord> record,
-    const FloatRect& record_bounds,
-    const LayoutSize& offset_from_layout_object) {
+    const FloatRect& record_bounds) {
   DCHECK(new_display_item_list_.IsEmpty());
   DrawingDisplayItem& display_item =
       current_paint_artifact_.GetDisplayItemList()
@@ -685,9 +687,6 @@ void PaintController::AppendDebugDrawingAfterCommit(
               display_item_client, DisplayItem::kDebugDrawing,
               std::move(record), record_bounds);
   display_item.SetSkippedCache();
-  // TODO(wkorman): Only compute and append visual rect for drawings.
-  current_paint_artifact_.GetDisplayItemList().AppendVisualRect(
-      VisualRectForDisplayItem(display_item, offset_from_layout_object));
 }
 
 void PaintController::GenerateRasterInvalidations(PaintChunk& new_chunk) {
@@ -801,13 +800,13 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
             moved_to_index >= new_chunk.end_index) {
           // The item has been moved into another chunk, so need to invalidate
           // it in the old chunk.
-          client_to_invalidate =
-              &new_display_item_list_[moved_to_index].Client();
+          const auto& new_item = new_display_item_list_[moved_to_index];
+          client_to_invalidate = &new_item.Client();
           // And invalidate in the new chunk into which the item was moved.
           PaintChunk& moved_to_chunk =
               new_paint_chunks_.FindChunkByDisplayItemIndex(moved_to_index);
           AddRasterInvalidation(*client_to_invalidate, moved_to_chunk,
-                                FloatRect(client_to_invalidate->VisualRect()));
+                                FloatRect(new_item.VisualRect()));
         } else if (moved_to_index < highest_moved_to_index) {
           // The item has been moved behind other cached items, so need to
           // invalidate the area that is probably exposed by the item moved
@@ -824,10 +823,8 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
     if (client_to_invalidate &&
         invalidated_clients_in_old_chunk.insert(client_to_invalidate)
             .is_new_entry) {
-      AddRasterInvalidation(
-          *client_to_invalidate, new_chunk,
-          FloatRect(current_paint_artifact_.GetDisplayItemList().VisualRect(
-              old_index)));
+      AddRasterInvalidation(*client_to_invalidate, new_chunk,
+                            FloatRect(old_item.VisualRect()));
     }
   }
 
@@ -839,7 +836,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
         invalidated_clients_in_new_chunk.insert(&new_item.Client())
             .is_new_entry) {
       AddRasterInvalidation(new_item.Client(), new_chunk,
-                            FloatRect(new_item.Client().VisualRect()));
+                            FloatRect(new_item.VisualRect()));
     }
   }
 }

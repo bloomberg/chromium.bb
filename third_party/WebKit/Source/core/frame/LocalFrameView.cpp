@@ -3254,7 +3254,7 @@ void LocalFrameView::PaintTree() {
       if (RuntimeEnabledFeatures::printBrowserEnabled())
         graphics_context.SetPrinting(true);
       Paint(graphics_context, CullRect(LayoutRect::InfiniteIntRect()));
-      paint_controller_->CommitNewDisplayItems(LayoutSize());
+      paint_controller_->CommitNewDisplayItems();
     }
   } else {
     // A null graphics layer can occur for painting of SVG images that are not

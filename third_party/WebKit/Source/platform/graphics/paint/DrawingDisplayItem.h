@@ -42,7 +42,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const IntRect& visual_rect,
+  void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
                                   WebDisplayItemList*) const override;
   bool DrawsContent() const override;
 
