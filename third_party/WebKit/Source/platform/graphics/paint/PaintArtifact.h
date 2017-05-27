@@ -84,7 +84,8 @@ class PLATFORM_EXPORT PaintArtifact final {
       const PropertyTreeState& replay_state = PropertyTreeState::Root()) const;
 
   // Writes the paint artifact into a WebDisplayItemList.
-  void AppendToWebDisplayItemList(WebDisplayItemList*) const;
+  void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
+                                  WebDisplayItemList*) const;
 
  private:
   DisplayItemList display_item_list_;

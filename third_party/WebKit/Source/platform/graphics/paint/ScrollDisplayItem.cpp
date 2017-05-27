@@ -16,7 +16,7 @@ void BeginScrollDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginScrollDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   WebDisplayItemList::ScrollContainerId scroll_container_id = &Client();
   list->AppendScrollItem(current_offset_, scroll_container_id);
@@ -37,7 +37,7 @@ void EndScrollDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndScrollDisplayItem::AppendToWebDisplayItemList(
-    const IntRect& visual_rect,
+    const LayoutSize&,
     WebDisplayItemList* list) const {
   list->AppendEndScrollItem();
 }
