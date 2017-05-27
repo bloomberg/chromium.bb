@@ -168,7 +168,7 @@ main (int argc, char **argv)
 
   /*if (optind != argc - 1)
     {
-      /* Print error message and exit.  *
+      // Print error message and exit.
       if (optind < argc - 1)
 	fprintf (stderr, "%s: extra operand: %s\n",
 		 program_name, argv[optind + 1]);
