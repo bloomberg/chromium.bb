@@ -15,7 +15,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"

@@ -20,7 +20,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -75,7 +75,8 @@ MessageBoxView::InitParams::InitParams(const base::string16& message)
     : options(NO_OPTIONS),
       message(message),
       message_width(kDefaultMessageWidth),
-      inter_row_vertical_spacing(kRelatedControlVerticalSpacing) {}
+      inter_row_vertical_spacing(LayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_VERTICAL)) {}
 
 MessageBoxView::InitParams::~InitParams() {
 }

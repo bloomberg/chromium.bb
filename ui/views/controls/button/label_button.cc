@@ -25,7 +25,6 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
