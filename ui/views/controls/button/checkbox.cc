@@ -15,6 +15,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -167,6 +168,11 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
       kInkDropSmallCornerRadius, image()->GetMirroredBounds().CenterPoint(),
       GetInkDropBaseColor(), ink_drop_visible_opacity()));
   return ripple;
+}
+
+std::unique_ptr<views::InkDropHighlight> Checkbox::CreateInkDropHighlight()
+    const {
+  return nullptr;
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {

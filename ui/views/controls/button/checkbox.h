@@ -40,7 +40,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // Returns whether MD is enabled; exists for the sake of brevity.
   static bool UseMd();
 
-  // Overridden from LabelButton:
+  // LabelButton:
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -48,6 +48,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
   SkColor GetInkDropBaseColor() const override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
 
@@ -65,7 +66,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   virtual const gfx::VectorIcon& GetVectorIcon() const;
 
  private:
-  // Overridden from Button:
+  // Button:
   void NotifyClick(const ui::Event& event) override;
 
   ui::NativeTheme::Part GetThemePart() const override;
