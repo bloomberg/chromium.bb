@@ -237,6 +237,7 @@ int main(int argn, char **args)
 		}		
 		
 		if(!strncmp("~force", inputLine, 6))
+		{
 		if(fgets(inputLine, BUF_MAX - 97, input))
 		{
 			in_line++;
@@ -245,6 +246,7 @@ int main(int argn, char **args)
 		}
 		else
 			continue;		
+		}
 		
 		if(inputLine[0] == '#')
 		{
@@ -271,6 +273,7 @@ int main(int argn, char **args)
 		}			
 
 		if(!strncmp("~emp", inputLine, 4))
+		{
 		if(fgets(inputLine, BUF_MAX - 97, input))
 		{
 			in_line++;
@@ -289,9 +292,11 @@ int main(int argn, char **args)
 			fprintf(stderr, "ERROR:  unexpected on of file, #%d\n", in_line);
 			return 1;
 		}
+		}
 		
 
 		if(!strncmp("~etn", inputLine, 4))
+		{
 		if(fgets(inputLine, BUF_MAX - 97, input))
 		{
 			in_line++;
@@ -319,74 +324,99 @@ int main(int argn, char **args)
 			fprintf(stderr, "ERROR:  unexpected on of file, #%d\n", in_line);
 			return 1;
 		}
+		}
 		
 		if(!strncmp("~under", inputLine, 6))
+		{
 		if(inputEmphasis(underline, underLine, underText, &underLen))
 			continue;
 		else
 			return 1;
+		}
 		
 		if(!strncmp("~bold", inputLine, 5))
+		{
 		if(inputEmphasis(bold, boldLine, boldText, &boldLen))
 			continue;
 		else
 			return 1;
+		}
 		
 		if(!strncmp("~italic", inputLine, 7))
+		{
 		if(inputEmphasis(italic, italicLine, italicText, &italicLen))
 			continue;
 		else
 			return 1;
+		}
 		
 		if(!strncmp("~script", inputLine, 7))
+		{
 		if(inputEmphasis(emph_4, scriptLine, scriptText, &scriptLen))
 			continue;
 		else
 			return 1;
+		}
 		
 		if(!strncmp("~trans_note_1", inputLine, 13))
+		{
 		if(inputEmphasis(emph_6, tnote1Line, tnote1Text, &tnote1Len))
 			continue;
 		else
 			return 1;
+		}
 		if(!strncmp("~trans_note_2", inputLine, 13))
+		{
 		if(inputEmphasis(emph_7, tnote2Line, tnote2Text, &tnote2Len))
 			continue;
 		else
 			return 1;
+		}
 		if(!strncmp("~trans_note_3", inputLine, 13))
+		{
 		if(inputEmphasis(emph_8, tnote3Line, tnote3Text, &tnote3Len))
 			continue;
 		else
 			return 1;
+		}
 		if(!strncmp("~trans_note_4", inputLine, 13))
+		{
 		if(inputEmphasis(emph_9, tnote4Line, tnote4Text, &tnote4Len))
 			continue;
 		else
 			return 1;
+		}
 		if(!strncmp("~trans_note_5", inputLine, 13))
+		{
 		if(inputEmphasis(emph_10, tnote5Line, tnote5Text, &tnote5Len))
 			continue;
 		else
 			return 1;
+		}
 
 		if(!strncmp("~no_contract", inputLine, 12))
+		{
 		if(inputEmphasis(no_contract, noContractLine, noContractText, &noContractLen))
 			continue;
 		else
 			return 1;
+		}
 
 		if(!strncmp("~direct_trans", inputLine, 13))
+		{
 		if(inputEmphasis(computer_braille, directTransLine, directTransText, &directTransLen))
 			continue;
 		else
 			return 1;
+		}
 
 		if(!strncmp("~trans_note", inputLine, 11))
+		{
 		if(inputEmphasis(emph_5, tnoteLine, tnoteText, &tnoteLen))
 			continue;
 		else
 			return 1;
+		}
 
 		memcpy(emp1, emphasis, BUF_MAX * sizeof(formtype));
 		memcpy(emp2, emphasis, BUF_MAX * sizeof(formtype));

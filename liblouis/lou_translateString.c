@@ -3303,7 +3303,9 @@ resolveEmphasisPassages(
 	if(in_pass)
 	{
 		if(word_cnt >= table->emphRules[emphRule][lenPhraseOffset])
+		{
 		if(pass_end >= 0)
+		{
 		if(in_word)
 		{
 			convertToPassage(
@@ -3315,6 +3317,8 @@ resolveEmphasisPassages(
 			convertToPassage(
 				pass_start, pass_end, word_start, buffer, emphRule,
 				bit_begin, bit_end, bit_word, bit_symbol, table, wordBuffer, inputPositions, outputPositions, cursorPosition, cursorStatus, compbrlStart, compbrlEnd);
+		}
+		}
 		}
 	}
 }
@@ -3402,11 +3406,13 @@ resolveEmphasisResets(
 			in_pass = 0;
 		
 		if(!in_pass)
+		{
 		if(buffer[i] & bit_begin)
 			in_pass = 1;
 		else
 		{		
 			if(!in_word)
+			{
 			if(buffer[i] & bit_word)
 			{
 				/*   deal with case when reset
@@ -3439,10 +3445,14 @@ resolveEmphasisResets(
 			/*   it is possible for a character to have been
 			     marked as a symbol when it should not be one   */
 			else if(buffer[i] & bit_symbol)
+			{
 			if(wordBuffer[i] & WORD_RESET || !checkAttr(currentInput[i], CTC_Letter, 0, table))
 				buffer[i] &= ~bit_symbol;
+			}
+			}
 			
 			if(in_word)
+			{
 			
 			/*   at end of word   */
 			if(!(wordBuffer[i] & WORD_CHAR)
@@ -3478,6 +3488,7 @@ resolveEmphasisResets(
 				if(wordBuffer[i] & WORD_RESET || !checkAttr(currentInput[i], CTC_Letter, 0, table))
 				{
 					if(!checkAttr(currentInput[i], CTC_Letter, 0, table))
+					{
 					if(checkAttr(currentInput[i], CTC_CapsMode, 0, table)) {
 						/*   chars marked as not resetting   */
 						orig_reset = i;
@@ -3489,6 +3500,7 @@ resolveEmphasisResets(
 							buffer[j] &= ~bit_word;
 //						word_reset = 1;
 						orig_reset = -1;
+					}
 					}
 					
 					/*   check if symbol is not already resetting   */
@@ -3524,6 +3536,8 @@ resolveEmphasisResets(
 				
 				letter_cnt++;
 			}	
+			}
+		}
 		}
 	}
 	

@@ -1414,6 +1414,7 @@ static int pattern_check_expression(
 	{
 		/*   end of input expression   */
 		if(EXPR_TYPE(expr_crs) == PTN_END_OF_INPUT)
+		{
 		if(*input_crs * input_dir >= input_minmax * input_dir)
 		{
 			if(not)
@@ -1429,6 +1430,7 @@ static int pattern_check_expression(
 			else
 				CHECK_OUTPUT(RETURN, 0, __LINE__, "end of input failed:  input")
 			return not;
+		}
 		}
 
 		/*   no more input   */
