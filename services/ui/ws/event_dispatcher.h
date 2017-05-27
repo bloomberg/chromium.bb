@@ -16,6 +16,7 @@
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/drag_cursor_updater.h"
+#include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -29,7 +30,6 @@ class PointerEvent;
 namespace ws {
 
 class Accelerator;
-struct DeepestWindow;
 class DragController;
 class DragSource;
 class DragTargetConnection;
@@ -151,27 +151,6 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
  private:
   friend class test::EventDispatcherTestApi;
 
-  // Keeps track of state associated with an active pointer.
-  struct PointerTarget {
-    PointerTarget()
-        : window(nullptr),
-          is_mouse_event(false),
-          in_nonclient_area(false),
-          is_pointer_down(false) {}
-
-    // The target window, which may be null. null is used in two situations:
-    // when there is no valid window target, or there was a target but the
-    // window is destroyed before a corresponding release/cancel.
-    ServerWindow* window;
-
-    bool is_mouse_event;
-
-    // Did the pointer event start in the non-client area.
-    bool in_nonclient_area;
-
-    bool is_pointer_down;
-  };
-
   void SetMouseCursorSourceWindow(ServerWindow* window);
 
   void ProcessKeyEvent(const ui::KeyEvent& event,
@@ -205,11 +184,6 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   void UpdateTargetForPointer(int32_t pointer_id,
                               const ui::LocatedEvent& event);
 
-  // Returns a PointerTarget for the supplied event. If there is no valid
-  // event target for the specified location |window| in the returned value is
-  // null.
-  PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event);
-
   // Returns true if any pointers are in the pressed/down state.
   bool AreAnyPointersDown() const;
 
@@ -238,9 +212,6 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   Accelerator* FindAccelerator(const ui::KeyEvent& event,
                                const ui::mojom::AcceleratorPhase phase);
 
-  DeepestWindow FindDeepestVisibleWindowForEvents(gfx::Point* location,
-                                                  int64_t* display_id);
-
   // Clears the implicit captures in |pointer_targets_|, with the exception of
   // |window|. |window| may be null. |client_id| is the target client of
   // |window|.
@@ -265,6 +236,8 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   std::unique_ptr<DragController> drag_controller_;
 
   ModalWindowController modal_window_controller_;
+
+  std::unique_ptr<EventTargeter> event_targeter_;
 
   bool mouse_button_down_;
   ServerWindow* mouse_cursor_source_window_;
