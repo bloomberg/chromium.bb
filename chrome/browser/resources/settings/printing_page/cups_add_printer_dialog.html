@@ -149,6 +149,12 @@
         background-color: var(--paper-green-100);
         padding: 10px 20px;
       }
+      
+      .dialog-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
     </style>
     <add-printer-dialog>
       <div class="dialog-title">$i18n{addPrintersManuallyTitle}</div>
@@ -218,14 +224,23 @@
         </div>
       </div>
       <div class="dialog-buttons">
-        <paper-button class="cancel-button secondary-button"
-            on-tap="onCancelTap_">
-          $i18n{cancelButtonText}
-        </paper-button>
-        <paper-button class="action-button" on-tap="switchToManufacturerDialog_"
-            disabled="[[!newPrinter.printerName]]">
-          $i18n{addPrinterButtonText}
-        </paper-button>
+        <div>  <!-- Left group -->
+          <paper-button class="secondary-button"
+              on-tap="switchToDiscoveryDialog_">
+            $i18n{discoverPrintersButtonText}
+          </paper-button> 
+        </div>
+        <div>  <!-- Right group -->
+          <paper-button class="cancel-button secondary-button"
+              on-tap="onCancelTap_">
+            $i18n{cancelButtonText}
+          </paper-button>
+          <paper-button class="action-button"
+              on-tap="switchToManufacturerDialog_"
+              disabled="[[!newPrinter.printerName]]">
+            $i18n{addPrinterButtonText}
+          </paper-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>
