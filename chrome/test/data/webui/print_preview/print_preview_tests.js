@@ -76,6 +76,17 @@ cr.define('print_preview_test', function() {
   }
 
   /**
+   * @param {?HTMLElement} el
+   * @param {boolean} isDisplayed
+   */
+  function checkElementDisplayed(el, isDisplayed) {
+    assertNotEquals(null, el);
+    expectEquals(isDisplayed,
+                 !el.hidden,
+                 'element="' + el.id + '" of class "' + el.classList + '"');
+  }
+
+  /**
    * @param {string} printerId
    * @return {!Object}
    */
@@ -120,6 +131,38 @@ cr.define('print_preview_test', function() {
         }
       }
     };
+  }
+
+  /**
+   * Even though animation duration and delay is set to zero, it is necessary to
+   * wait until the animation has finished.
+   * @return {!Promise} A promise firing when the animation is done.
+   */
+  function whenAnimationDone(elementId) {
+    return new Promise(function(resolve) {
+      // Add a listener for the animation end event.
+      var element = $(elementId);
+      element.addEventListener('animationend', function f(e) {
+        element.removeEventListener(f, 'animationend');
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Expand the 'More Settings' div to expose all options.
+   */
+  function expandMoreSettings() {
+    var moreSettings = $('more-settings');
+    checkSectionVisible(moreSettings, true);
+    moreSettings.click();
+  }
+
+  /** @return {boolean} */
+  function isPrintAsImageEnabled() {
+    // Should be enabled by default on non Windows/Mac.
+    return (!cr.isWindows && !cr.isMac &&
+            loadTimeData.getBoolean('printPdfAsImageEnabled'));
   }
 
   suite('PrintPreview', function() {
@@ -361,6 +404,368 @@ cr.define('print_preview_test', function() {
                 'BarDevice',
                 printPreview.destinationStore_.selectedDestination.id);
           });
-        });
+    });
+
+    test('SystemDialogLinkIsHiddenInAppKioskMode', function() {
+      if (!cr.isChromeOS)
+        initialSettings.isInAppKioskMode_ = true;
+
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            if (cr.isChromeOS)
+              assertEquals(null, $('system-dialog-link'));
+            else
+              checkElementDisplayed($('system-dialog-link'), false);
+          });
+    });
+
+    test('SectionsDisabled', function() {
+      checkSectionVisible($('layout-settings'), false);
+      checkSectionVisible($('color-settings'), false);
+      checkSectionVisible($('copies-settings'), false);
+
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            var device = getCddTemplate('FooDevice');
+            device.capabilities.printer.color = {
+              option: [{is_default: true, type: 'STANDARD_COLOR'}]
+            };
+            delete device.capabilities.printer.copies;
+            setCapabilities(device);
+
+            checkSectionVisible($('layout-settings'), true);
+            checkSectionVisible($('color-settings'), false);
+            checkSectionVisible($('copies-settings'), false);
+
+            return whenAnimationDone('other-options-collapsible');
+          });
+    });
+
+    // When the source is 'PDF' and 'Save as PDF' option is selected, we hide
+    // the fit to page option.
+    test('PrintToPDFSelectedCapabilities', function() {
+      // Add PDF printer.
+      initialSettings.isDocumentModifiable_ = false;
+      initialSettings.systemDefaultDestinationId_ = 'Save as PDF';
+      setInitialSettings();
+
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        var device = {
+          printerId: 'Save as PDF',
+          capabilities: {
+            version: '1.0',
+            printer: {
+              page_orientation: {
+                option: [
+                  {type: 'AUTO', is_default: true},
+                  {type: 'PORTRAIT'},
+                  {type: 'LANDSCAPE'}
+                ]
+              },
+              color: {
+                option: [
+                  {type: 'STANDARD_COLOR', is_default: true}
+                ]
+              },
+              media_size: {
+                option: [
+                  { name: 'NA_LETTER',
+                    width_microns: 0,
+                    height_microns: 0,
+                    is_default: true
+                  }
+                ]
+              }
+            }
+          }
+        };
+        setCapabilities(device);
+
+        var otherOptions = $('other-options-settings');
+        // If rasterization is an option, other options should be visible. If
+        // not, there should be no available other options.
+        checkSectionVisible(otherOptions, isPrintAsImageEnabled());
+        if (isPrintAsImageEnabled()) {
+          checkElementDisplayed(
+              otherOptions.querySelector('#fit-to-page-container'), false);
+          checkElementDisplayed(
+              otherOptions.querySelector('#rasterize-container'), true);
+        }
+        checkSectionVisible($('media-size-settings'), false);
+        checkSectionVisible($('scaling-settings'), false);
+      });
+    });
+
+    // When the source is 'HTML', we always hide the fit to page option and show
+    // media size option.
+    test('SourceIsHTMLCapabilities', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        setCapabilities(getCddTemplate('FooDevice'));
+
+        var otherOptions = $('other-options-settings');
+        var fitToPage = otherOptions.querySelector('#fit-to-page-container');
+        var rasterize;
+        if (isPrintAsImageEnabled())
+          rasterize = otherOptions.querySelector('#rasterize-container');
+        var mediaSize = $('media-size-settings');
+        var scalingSettings = $('scaling-settings');
+
+        // Check that options are collapsed (section is visible, because duplex
+        // is available).
+        checkSectionVisible(otherOptions, true);
+        checkElementDisplayed(fitToPage, false);
+        if (isPrintAsImageEnabled())
+          checkElementDisplayed(rasterize, false);
+        checkSectionVisible(mediaSize, false);
+        checkSectionVisible(scalingSettings, false);
+
+        expandMoreSettings();
+
+        checkElementDisplayed(fitToPage, false);
+        if (isPrintAsImageEnabled())
+          checkElementDisplayed(rasterize, false);
+        checkSectionVisible(mediaSize, true);
+        checkSectionVisible(scalingSettings, true);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // When the source is "PDF", depending on the selected destination printer,
+    // we show/hide the fit to page option and hide media size selection.
+    test('SourceIsPDFCapabilities', function() {
+      initialSettings.isDocumentModifiable_ = false;
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            var otherOptions = $('other-options-settings');
+            var scalingSettings = $('scaling-settings');
+            var fitToPageContainer =
+                otherOptions.querySelector('#fit-to-page-container');
+            var rasterizeContainer;
+            if (isPrintAsImageEnabled()) {
+              rasterizeContainer =
+                otherOptions.querySelector('#rasterize-container');
+            }
+
+            checkSectionVisible(otherOptions, true);
+            checkElementDisplayed(fitToPageContainer, true);
+            if (isPrintAsImageEnabled())
+              checkElementDisplayed(rasterizeContainer, false);
+            expectTrue(
+                fitToPageContainer.querySelector('.checkbox').checked);
+            expandMoreSettings();
+            if (isPrintAsImageEnabled()) {
+              checkElementDisplayed(rasterizeContainer, true);
+              expectFalse(
+                  rasterizeContainer.querySelector('.checkbox').checked);
+            }
+            checkSectionVisible($('media-size-settings'), true);
+            checkSectionVisible(scalingSettings, true);
+
+            return whenAnimationDone('other-options-collapsible');
+          });
+    });
+
+    // When the source is "PDF", depending on the selected destination printer,
+    // we show/hide the fit to page option and hide media size selection.
+    test('ScalingUnchecksFitToPage', function() {
+      initialSettings.isDocumentModifiable_ = false;
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            var otherOptions = $('other-options-settings');
+            var scalingSettings = $('scaling-settings');
+
+            checkSectionVisible(otherOptions, true);
+            var fitToPageContainer =
+                otherOptions.querySelector('#fit-to-page-container');
+            checkElementDisplayed(fitToPageContainer, true);
+            expectTrue(
+                fitToPageContainer.querySelector('.checkbox').checked);
+            expandMoreSettings();
+            checkSectionVisible($('media-size-settings'), true);
+            checkSectionVisible(scalingSettings, true);
+
+            // Change scaling input
+            var scalingInput = scalingSettings.querySelector('.user-value');
+            expectEquals('100', scalingInput.value);
+            scalingInput.stepUp(5);
+            expectEquals('105', scalingInput.value);
+
+            // Trigger the event
+            var enterEvent = document.createEvent('Event');
+            enterEvent.initEvent('keydown');
+            enterEvent.keyCode = 'Enter';
+            scalingInput.dispatchEvent(enterEvent);
+            expectFalse(
+                fitToPageContainer.querySelector('.checkbox').checked);
+
+            return whenAnimationDone('other-options-collapsible');
+          });
+    });
+
+    // When the number of copies print preset is set for source 'PDF', we update
+    // the copies value if capability is supported by printer.
+    test('CheckNumCopiesPrintPreset', function() {
+      initialSettings.isDocumentModifiable_ = false;
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        setCapabilities(getCddTemplate('FooDevice'));
+
+        // Indicate that the number of copies print preset is set for source
+        // PDF.
+        var printPresetOptions = {
+          disableScaling: true,
+          copies: 2
+        };
+        var printPresetOptionsEvent = new Event(
+            print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
+        printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
+        nativeLayer.getEventTarget().
+            dispatchEvent(printPresetOptionsEvent);
+
+        checkSectionVisible($('copies-settings'), true);
+        expectEquals(
+            printPresetOptions.copies,
+            parseInt($('copies-settings').querySelector('.user-value').value));
+
+        return whenAnimationDone('other-options-collapsible');
+      });
+    });
+
+    // When the duplex print preset is set for source 'PDF', we update the
+    // duplex setting if capability is supported by printer.
+    test('CheckDuplexPrintPreset', function() {
+      initialSettings.isDocumentModifiable_ = false;
+      setInitialSettings();
+
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            // Indicate that the duplex print preset is set to "long edge" for
+            // source PDF.
+            var printPresetOptions = {
+              duplex: 1
+            };
+            var printPresetOptionsEvent = new Event(
+                print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
+            printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
+            nativeLayer.getEventTarget().
+                dispatchEvent(printPresetOptionsEvent);
+
+            var otherOptions = $('other-options-settings');
+            checkSectionVisible(otherOptions, true);
+            var duplexContainer =
+                otherOptions.querySelector('#duplex-container');
+            checkElementDisplayed(duplexContainer, true);
+            expectTrue(duplexContainer.querySelector('.checkbox').checked);
+
+            return whenAnimationDone('other-options-collapsible');
+          });
+    });
+
+    // Make sure that custom margins controls are properly set up.
+    test('CustomMarginsControlsCheck', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            printPreview.printTicketStore_.marginsType.updateValue(
+                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+
+            ['left', 'top', 'right', 'bottom'].forEach(function(margin) {
+              var control =
+                  $('preview-area').querySelector('.margin-control-' + margin);
+              assertNotEquals(null, control);
+              var input = control.querySelector('.margin-control-textbox');
+              assertTrue(input.hasAttribute('aria-label'));
+              assertNotEquals('undefined', input.getAttribute('aria-label'));
+            });
+            return whenAnimationDone('more-settings');
+          });
+    });
+
+    // Page layout has zero margins. Hide header and footer option.
+    test('PageLayoutHasNoMarginsHideHeaderFooter', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            var otherOptions = $('other-options-settings');
+            var headerFooter =
+                otherOptions.querySelector('#header-footer-container');
+
+            // Check that options are collapsed (section is visible, because
+            // duplex is available).
+            checkSectionVisible(otherOptions, true);
+            checkElementDisplayed(headerFooter, false);
+
+            expandMoreSettings();
+
+            checkElementDisplayed(headerFooter, true);
+
+            printPreview.printTicketStore_.marginsType.updateValue(
+                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            printPreview.printTicketStore_.customMargins.updateValue(
+                new print_preview.Margins(0, 0, 0, 0));
+
+            checkElementDisplayed(headerFooter, false);
+
+            return whenAnimationDone('more-settings');
+          });
+    });
+
+    // Page layout has half-inch margins. Show header and footer option.
+    test('PageLayoutHasMarginsShowHeaderFooter', function() {
+      setInitialSettings();
+      nativeLayer.whenCalled('getInitialSettings').then(
+          function() {
+            setLocalDestinations();
+            setCapabilities(getCddTemplate('FooDevice'));
+
+            var otherOptions = $('other-options-settings');
+            var headerFooter =
+                otherOptions.querySelector('#header-footer-container');
+
+            // Check that options are collapsed (section is visible, because
+            // duplex is available).
+            checkSectionVisible(otherOptions, true);
+            checkElementDisplayed(headerFooter, false);
+
+            expandMoreSettings();
+
+            checkElementDisplayed(headerFooter, true);
+
+            printPreview.printTicketStore_.marginsType.updateValue(
+                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            printPreview.printTicketStore_.customMargins.updateValue(
+                new print_preview.Margins(36, 36, 36, 36));
+
+            checkElementDisplayed(headerFooter, true);
+
+            return whenAnimationDone('more-settings');
+          });
+    });
+
+
   });
 });
