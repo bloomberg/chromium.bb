@@ -79654,6 +79654,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.SharedArrayAllocationSizes" units="MB">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>kschimpf@chromium.org</owner>
+  <summary>
+    Number of megabytes requested in shared array buffer allocations.
+  </summary>
+</histogram>
+
 <histogram name="V8.UsageAnalysis">
   <obsolete>
     This histogram is no longer present in V8.
