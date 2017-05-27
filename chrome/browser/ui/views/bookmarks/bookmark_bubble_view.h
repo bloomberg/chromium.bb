@@ -67,27 +67,35 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   ~BookmarkBubbleView() override;
 
-  // views::WidgetDelegate:
-  void WindowClosing() override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  // views::LocationBarBubbleDelegateView:
+  View* GetInitiallyFocusedView() override;
+  base::string16 GetWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
+  void WindowClosing() override;
+  View* CreateFootnoteView() override;
+  const char* GetClassName() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ComboboxListener:
+  void OnPerformAction(views::Combobox* combobox) override;
+
+  // DesktopIOSPromotionFootnoteDelegate:
+  void OnIOSPromotionFootnoteLinkClicked() override;
 
  protected:
-  // views::BubbleDialogDelegateView method.
+  // views::LocationBarBubbleDelegateView:
   void Init() override;
-  base::string16 GetWindowTitle() const override;
 
  private:
   friend class BookmarkBubbleViewTest;
   friend class BookmarkBubbleViewBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
-
-  // views::BubbleDialogDelegateView:
-  const char* GetClassName() const override;
-  View* GetInitiallyFocusedView() override;
-  View* CreateFootnoteView() override;
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
@@ -100,16 +108,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Returns the title to display.
   base::string16 GetTitle();
 
-  // Overridden from views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // Overridden from views::ButtonListener:
-  // Closes the bubble or opens the edit dialog.
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // Overridden from views::ComboboxListener:
-  void OnPerformAction(views::Combobox* combobox) override;
-
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);
 
@@ -118,9 +116,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   // Sets the title and parent of the node.
   void ApplyEdits();
-
-  // DesktopIOSPromotionFootnoteDelegate :
-  void OnIOSPromotionFootnoteLinkClicked() override;
 
 #if defined(OS_WIN)
   // Check eligiblity to showthe iOS promotion from a specific entry point.

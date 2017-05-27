@@ -130,6 +130,39 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   delete parent_combobox_;
 }
 
+// views::WidgetDelegate -------------------------------------------------------
+
+views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
+  return title_tf_;
+}
+
+base::string16 BookmarkBubbleView::GetWindowTitle() const {
+#if defined(OS_WIN)
+  if (is_showing_ios_promotion_) {
+    return desktop_ios_promotion::GetPromoTitle(
+        desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
+  }
+#endif
+  return l10n_util::GetStringUTF16(newly_bookmarked_
+                                       ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
+                                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
+}
+
+gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
+#if defined(OS_WIN)
+  if (is_showing_ios_promotion_) {
+    return desktop_ios_promotion::GetPromoImage(
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldDefaultColor));
+  }
+#endif
+  return gfx::ImageSkia();
+}
+
+bool BookmarkBubbleView::ShouldShowWindowIcon() const {
+  return is_showing_ios_promotion_;
+}
+
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
@@ -139,6 +172,34 @@ void BookmarkBubbleView::WindowClosing() {
 
   if (observer_)
     observer_->OnBookmarkBubbleHidden();
+}
+
+// views::DialogDelegate -------------------------------------------------------
+
+views::View* BookmarkBubbleView::CreateFootnoteView() {
+#if defined(OS_WIN)
+  if (!is_showing_ios_promotion_ &&
+      IsIOSPromotionEligible(
+          desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_FOOTNOTE)) {
+    footnote_view_ = new DesktopIOSPromotionFootnoteView(profile_, this);
+    return footnote_view_;
+  }
+#endif
+  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
+    return nullptr;
+
+  base::RecordAction(UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
+
+  footnote_view_ =
+      new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
+                              IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
+  return footnote_view_;
+}
+
+// views::View -----------------------------------------------------------------
+
+const char* BookmarkBubbleView::GetClassName() const {
+  return "BookmarkBubbleView";
 }
 
 bool BookmarkBubbleView::AcceleratorPressed(
@@ -159,6 +220,40 @@ bool BookmarkBubbleView::AcceleratorPressed(
 
   return LocationBarBubbleDelegateView::AcceleratorPressed(accelerator);
 }
+
+void BookmarkBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  LocationBarBubbleDelegateView::GetAccessibleNodeData(node_data);
+  node_data->SetName(l10n_util::GetStringUTF8(
+      newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
+                        : IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK));
+}
+
+// views::ButtonListener -------------------------------------------------------
+
+void BookmarkBubbleView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  HandleButtonPressed(sender);
+}
+
+// views::ComboboxListener -----------------------------------------------------
+
+void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
+  if (combobox->selected_index() + 1 == parent_model_.GetItemCount()) {
+    base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
+    ShowEditor();
+  }
+}
+
+// DesktopIOSPromotionFootnoteDelegate -----------------------------------------
+
+void BookmarkBubbleView::OnIOSPromotionFootnoteLinkClicked() {
+#if defined(OS_WIN)
+  ShowIOSPromotion(
+      desktop_ios_promotion::PromotionEntryPoint::FOOTNOTE_FOLLOWUP_BUBBLE);
+#endif
+}
+
+// views::BubbleDialogDelegateView ---------------------------------------------
 
 void BookmarkBubbleView::Init() {
   remove_button_ = views::MdTextButton::CreateSecondaryUiButton(
@@ -241,61 +336,7 @@ void BookmarkBubbleView::Init() {
   AddChildView(bookmark_details_view_.get());
 }
 
-gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
-#if defined(OS_WIN)
-  if (is_showing_ios_promotion_) {
-    return desktop_ios_promotion::GetPromoImage(
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_TextfieldDefaultColor));
-  }
-#endif
-  return gfx::ImageSkia();
-}
-
-bool BookmarkBubbleView::ShouldShowWindowIcon() const {
-  return is_showing_ios_promotion_;
-}
-
-base::string16 BookmarkBubbleView::GetWindowTitle() const {
-#if defined(OS_WIN)
-  if (is_showing_ios_promotion_) {
-    return desktop_ios_promotion::GetPromoTitle(
-        desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
-  }
-#endif
-  return l10n_util::GetStringUTF16(newly_bookmarked_
-                                       ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
-}
-
-const char* BookmarkBubbleView::GetClassName() const {
-  return "BookmarkBubbleView";
-}
-
-views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
-  return title_tf_;
-}
-
-views::View* BookmarkBubbleView::CreateFootnoteView() {
-#if defined(OS_WIN)
-  if (!is_showing_ios_promotion_ &&
-      IsIOSPromotionEligible(
-          desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_FOOTNOTE)) {
-    footnote_view_ = new DesktopIOSPromotionFootnoteView(profile_, this);
-    return footnote_view_;
-  }
-#endif
-  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
-    return nullptr;
-
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
-
-  footnote_view_ =
-      new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
-                              IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
-  return footnote_view_;
-}
+// Private methods -------------------------------------------------------------
 
 BookmarkBubbleView::BookmarkBubbleView(
     views::View* anchor_view,
@@ -336,25 +377,6 @@ base::string16 BookmarkBubbleView::GetTitle() {
   else
     NOTREACHED();
   return base::string16();
-}
-
-void BookmarkBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  LocationBarBubbleDelegateView::GetAccessibleNodeData(node_data);
-  node_data->SetName(l10n_util::GetStringUTF8(
-      newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                        : IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK));
-}
-
-void BookmarkBubbleView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  HandleButtonPressed(sender);
-}
-
-void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
-  if (combobox->selected_index() + 1 == parent_model_.GetItemCount()) {
-    base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
-    ShowEditor();
-  }
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
@@ -417,13 +439,6 @@ void BookmarkBubbleView::ApplyEdits() {
     }
     parent_model_.MaybeChangeParent(node, parent_combobox_->selected_index());
   }
-}
-
-void BookmarkBubbleView::OnIOSPromotionFootnoteLinkClicked() {
-#if defined(OS_WIN)
-  ShowIOSPromotion(
-      desktop_ios_promotion::PromotionEntryPoint::FOOTNOTE_FOLLOWUP_BUBBLE);
-#endif
 }
 
 #if defined(OS_WIN)
