@@ -139,7 +139,7 @@ void LayoutListMarker::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  LayoutUnit block_offset;
+  LayoutUnit block_offset = LogicalTop();
   for (LayoutBox* o = ParentBox(); o && o != ListItem(); o = o->ParentBox()) {
     block_offset += o->LogicalTop();
   }
