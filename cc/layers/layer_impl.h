@@ -287,6 +287,9 @@ class CC_EXPORT LayerImpl {
   ViewportLayerType viewport_layer_type() const {
     return static_cast<ViewportLayerType>(viewport_layer_type_);
   }
+  bool is_viewport_layer_type() const {
+    return viewport_layer_type() != NOT_VIEWPORT_LAYER;
+  }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset CurrentScrollOffset() const;
