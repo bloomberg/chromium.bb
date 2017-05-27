@@ -54,7 +54,7 @@ ImportLockDialogView::ImportLockDialogView(
 ImportLockDialogView::~ImportLockDialogView() {
 }
 
-gfx::Size ImportLockDialogView::GetPreferredSize() const {
+gfx::Size ImportLockDialogView::CalculatePreferredSize() const {
   return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS,
       IDS_IMPORTLOCK_DIALOG_HEIGHT_LINES));

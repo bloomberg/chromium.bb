@@ -259,7 +259,7 @@ void NetworkConfigView::Layout() {
   child_config_view_->SetBounds(0, 0, width(), height());
 }
 
-gfx::Size NetworkConfigView::GetPreferredSize() const {
+gfx::Size NetworkConfigView::CalculatePreferredSize() const {
   gfx::Size result(views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_MINIMUM_HEIGHT_LINES));
@@ -339,7 +339,7 @@ ControlledSettingIndicatorView::ControlledSettingIndicatorView(
 
 ControlledSettingIndicatorView::~ControlledSettingIndicatorView() {}
 
-gfx::Size ControlledSettingIndicatorView::GetPreferredSize() const {
+gfx::Size ControlledSettingIndicatorView::CalculatePreferredSize() const {
   return (managed_ && visible()) ? image_view_->GetPreferredSize()
                                  : gfx::Size();
 }

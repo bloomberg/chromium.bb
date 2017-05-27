@@ -46,7 +46,7 @@ class ArcNotificationView : public message_center::MessageView {
 
   // Overridden from views::View:
   const char* GetClassName() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool HasFocus() const override;
   void RequestFocus() override;

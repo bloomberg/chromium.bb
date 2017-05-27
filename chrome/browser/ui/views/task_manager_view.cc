@@ -156,7 +156,7 @@ void TaskManagerView::SetSortDescriptor(const TableSortDescriptor& descriptor) {
   tab_table_->SetSortDescriptors(descriptor_list);
 }
 
-gfx::Size TaskManagerView::GetPreferredSize() const {
+gfx::Size TaskManagerView::CalculatePreferredSize() const {
   return gfx::Size(460, 270);
 }
 

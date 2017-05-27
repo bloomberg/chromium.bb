@@ -39,7 +39,7 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   void SetTextFocus();
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   class FolderNameView;

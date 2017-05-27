@@ -45,7 +45,7 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   int GetPosition() const;
 
   // View overrides:
-  gfx::Size GetPreferredSize() const override = 0;
+  gfx::Size CalculatePreferredSize() const override = 0;
 
  protected:
   // View overrides:

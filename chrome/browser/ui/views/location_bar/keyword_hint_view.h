@@ -46,7 +46,7 @@ class KeywordHintView : public views::CustomButton {
 
  private:
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   // The minimum size is just big enough to show the tab.
   gfx::Size GetMinimumSize() const override;
   void Layout() override;

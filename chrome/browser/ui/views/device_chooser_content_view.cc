@@ -111,7 +111,7 @@ void DeviceChooserContentView::Layout() {
   views::View::Layout();
 }
 
-gfx::Size DeviceChooserContentView::GetPreferredSize() const {
+gfx::Size DeviceChooserContentView::CalculatePreferredSize() const {
   return gfx::Size(402, 320);
 }
 

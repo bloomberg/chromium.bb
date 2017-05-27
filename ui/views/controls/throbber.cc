@@ -62,7 +62,7 @@ void Throbber::SetChecked(bool checked) {
   SchedulePaint();
 }
 
-gfx::Size Throbber::GetPreferredSize() const {
+gfx::Size Throbber::CalculatePreferredSize() const {
   return gfx::Size(kDefaultDiameter, kDefaultDiameter);
 }
 

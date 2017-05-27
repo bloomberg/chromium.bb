@@ -40,7 +40,7 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
 
    protected:
     // BaseScrollBarThumb:
-    gfx::Size GetPreferredSize() const override;
+    gfx::Size CalculatePreferredSize() const override;
     void OnPaint(gfx::Canvas* canvas) override;
     void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
     void OnStateChanged() override;

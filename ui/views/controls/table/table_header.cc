@@ -166,7 +166,7 @@ const char* TableHeader::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size TableHeader::GetPreferredSize() const {
+gfx::Size TableHeader::CalculatePreferredSize() const {
   return gfx::Size(1, kVerticalPadding * 2 + font_list_.GetHeight());
 }
 

@@ -16,7 +16,7 @@ class Windows10CaptionButton : public views::CustomButton {
   Windows10CaptionButton(GlassBrowserFrameView* frame_view, ViewID button_type);
 
   // views::CustomButton:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:

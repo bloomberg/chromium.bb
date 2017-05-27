@@ -212,7 +212,7 @@ class VIEWS_EXPORT Textfield : public View,
   // View overrides:
   gfx::Insets GetInsets() const override;
   int GetBaseline() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   void SetBorder(std::unique_ptr<Border> b) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;

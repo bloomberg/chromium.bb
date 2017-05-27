@@ -308,7 +308,7 @@ int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
   return preferred_width;
 }
 
-gfx::Size BrowserActionsContainer::GetPreferredSize() const {
+gfx::Size BrowserActionsContainer::CalculatePreferredSize() const {
   if (ShownInsideMenu())
     return toolbar_actions_bar_->GetFullSize();
 

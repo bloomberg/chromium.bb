@@ -247,7 +247,7 @@ class TabStrip : public views::View,
   void Layout() override;
   void PaintChildren(const ui::PaintContext& context) override;
   const char* GetClassName() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   // NOTE: the drag and drop methods are invoked from FrameView. This is done
   // to allow for a drop region that extends outside the bounds of the TabStrip.
   void OnDragEntered(const ui::DropTargetEvent& event) override;

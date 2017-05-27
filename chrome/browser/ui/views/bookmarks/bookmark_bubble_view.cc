@@ -60,8 +60,8 @@ class UnsizedCombobox : public views::Combobox {
   explicit UnsizedCombobox(ui::ComboboxModel* model) : views::Combobox(model) {}
   ~UnsizedCombobox() override {}
 
-  gfx::Size GetPreferredSize() const override {
-    return gfx::Size(0, views::Combobox::GetPreferredSize().height());
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(0, views::Combobox::CalculatePreferredSize().height());
   }
 
  private:

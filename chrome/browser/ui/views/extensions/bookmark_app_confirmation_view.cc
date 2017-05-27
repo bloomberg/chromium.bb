@@ -167,7 +167,7 @@ bool BookmarkAppConfirmationView::IsDialogButtonEnabled(
 }
 
 gfx::Size BookmarkAppConfirmationView::GetMinimumSize() const {
-  gfx::Size size(views::DialogDelegateView::GetPreferredSize());
+  gfx::Size size(views::DialogDelegateView::CalculatePreferredSize());
   size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
   return size;
 }

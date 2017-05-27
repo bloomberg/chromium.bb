@@ -874,7 +874,7 @@ void ShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
 ////////////////////////////////////////////////////////////////////////////////
 // views::Views overrides:
 
-gfx::Size ShellSurface::GetPreferredSize() const {
+gfx::Size ShellSurface::CalculatePreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 

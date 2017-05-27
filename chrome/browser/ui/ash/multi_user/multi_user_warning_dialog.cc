@@ -43,7 +43,7 @@ class TeleportWarningView : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   void InitDialog();
@@ -99,7 +99,7 @@ base::string16 TeleportWarningView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_VISIT_DESKTOP_WARNING_TITLE);
 }
 
-gfx::Size TeleportWarningView::GetPreferredSize() const {
+gfx::Size TeleportWarningView::CalculatePreferredSize() const {
   return gfx::Size(
       kDefaultWidth,
       GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));

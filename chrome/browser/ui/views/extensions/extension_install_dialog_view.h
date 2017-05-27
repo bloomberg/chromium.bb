@@ -165,7 +165,7 @@ class ExpandableContainerView : public views::View,
     ~DetailsView() override {}
 
     // views::View:
-    gfx::Size GetPreferredSize() const override;
+    gfx::Size CalculatePreferredSize() const override;
 
     void AddDetail(const base::string16& detail);
 

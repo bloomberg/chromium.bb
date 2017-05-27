@@ -53,7 +53,7 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
   bool Close() override;
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::ButtonListener overrides.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

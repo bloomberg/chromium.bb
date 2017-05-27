@@ -18,7 +18,7 @@ StaticSizedView::StaticSizedView(const gfx::Size& preferred_size)
 
 StaticSizedView::~StaticSizedView() {}
 
-gfx::Size StaticSizedView::GetPreferredSize() const {
+gfx::Size StaticSizedView::CalculatePreferredSize() const {
   return preferred_size_;
 }
 
@@ -44,10 +44,10 @@ int ProportionallySizedView::GetHeightForWidth(int w) const {
   return w * factor_;
 }
 
-gfx::Size ProportionallySizedView::GetPreferredSize() const {
+gfx::Size ProportionallySizedView::CalculatePreferredSize() const {
   if (preferred_width_ >= 0)
     return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
-  return View::GetPreferredSize();
+  return View::CalculatePreferredSize();
 }
 
 CloseWidgetView::CloseWidgetView(ui::EventType event_type)

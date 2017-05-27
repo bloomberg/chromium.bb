@@ -276,7 +276,7 @@ void MessageCenterView::Layout() {
     GetWidget()->GetRootView()->SchedulePaint();
 }
 
-gfx::Size MessageCenterView::GetPreferredSize() const {
+gfx::Size MessageCenterView::CalculatePreferredSize() const {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating()) {
     int content_width =

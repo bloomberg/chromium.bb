@@ -43,7 +43,7 @@ class UserManagerProfileDialogDelegate
   void OnDialogDestroyed();
 
   // views::DialogDelegate:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
@@ -118,7 +118,7 @@ class UserManagerView : public views::DialogDelegateView {
 
   // views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::DialogDelegateView:
   bool CanResize() const override;

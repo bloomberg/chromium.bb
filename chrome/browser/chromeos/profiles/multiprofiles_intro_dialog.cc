@@ -43,7 +43,7 @@ class MultiprofilesIntroView : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   void InitDialog();
@@ -99,7 +99,7 @@ base::string16 MultiprofilesIntroView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_MULTIPROFILES_INTRO_HEADLINE);
 }
 
-gfx::Size MultiprofilesIntroView::GetPreferredSize() const {
+gfx::Size MultiprofilesIntroView::CalculatePreferredSize() const {
   return gfx::Size(
       kDefaultWidth,
       GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));

@@ -32,7 +32,7 @@ class TabIconView : public views::MenuButton {
 
  private:
   // views::MenuButton:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 

@@ -135,7 +135,7 @@ void ImeWindowFrameView::UpdateWindowTitle() {}
 
 void ImeWindowFrameView::SizeConstraintsChanged() {}
 
-gfx::Size ImeWindowFrameView::GetPreferredSize() const {
+gfx::Size ImeWindowFrameView::CalculatePreferredSize() const {
   gfx::Size pref_size =
       ime_window_view_->window()->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref_size.width(), pref_size.height());

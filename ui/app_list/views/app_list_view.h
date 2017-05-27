@@ -69,7 +69,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   views::Widget* search_box_widget() const { return search_box_widget_; }
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
 

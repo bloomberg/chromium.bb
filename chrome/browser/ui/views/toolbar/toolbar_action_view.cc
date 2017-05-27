@@ -175,7 +175,7 @@ gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
 
-gfx::Size ToolbarActionView::GetPreferredSize() const {
+gfx::Size ToolbarActionView::CalculatePreferredSize() const {
   return gfx::Size(ToolbarActionsBar::IconWidth(false),
                    ToolbarActionsBar::IconHeight());
 }

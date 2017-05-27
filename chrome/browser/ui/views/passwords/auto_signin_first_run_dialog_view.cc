@@ -124,7 +124,7 @@ int AutoSigninFirstRunDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-gfx::Size AutoSigninFirstRunDialogView::GetPreferredSize() const {
+gfx::Size AutoSigninFirstRunDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
 }
 

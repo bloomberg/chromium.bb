@@ -142,7 +142,7 @@ int CredentialsItemView::GetPreferredHeight() const {
   return GetPreferredSize().height();
 }
 
-gfx::Size CredentialsItemView::GetPreferredSize() const {
+gfx::Size CredentialsItemView::CalculatePreferredSize() const {
   gfx::Size labels_size = GetTextLabelsSize(upper_label_, lower_label_);
   gfx::Size size = gfx::Size(kAvatarImageSize + labels_size.width(),
                              std::max(kAvatarImageSize, labels_size.height()));

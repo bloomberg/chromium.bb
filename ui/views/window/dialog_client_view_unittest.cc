@@ -47,7 +47,7 @@ class DialogClientViewTest : public test::WidgetTest,
   }
 
   // DialogDelegateView:
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
+  gfx::Size CalculatePreferredSize() const override { return preferred_size_; }
   gfx::Size GetMinimumSize() const override { return min_size_; }
   gfx::Size GetMaximumSize() const override { return max_size_; }
   ClientView* CreateClientView(Widget* widget) override {

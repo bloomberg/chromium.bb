@@ -43,7 +43,7 @@ SkColor SelectedKeywordView::GetTextColor() const {
           : ui::NativeTheme::kColorId_LinkEnabled);
 }
 
-gfx::Size SelectedKeywordView::GetPreferredSize() const {
+gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
 }

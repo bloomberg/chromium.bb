@@ -170,7 +170,7 @@ class VIEWS_EXPORT TableView
   // View overrides:
   void Layout() override;
   const char* GetClassName() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;

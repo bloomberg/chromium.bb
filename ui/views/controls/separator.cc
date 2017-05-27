@@ -33,7 +33,7 @@ void Separator::SetPreferredHeight(int height) {
 ////////////////////////////////////////////////////////////////////////////////
 // Separator, View overrides:
 
-gfx::Size Separator::GetPreferredSize() const {
+gfx::Size Separator::CalculatePreferredSize() const {
   gfx::Size size(kThickness, preferred_height_);
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());

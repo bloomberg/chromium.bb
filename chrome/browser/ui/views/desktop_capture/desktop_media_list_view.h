@@ -39,7 +39,7 @@ class DesktopMediaListView : public views::View,
   DesktopMediaSourceView* GetSelection();
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

@@ -36,7 +36,7 @@ class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
   void SizeConstraintsChanged() override {}
 
   // views::View implementation.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;

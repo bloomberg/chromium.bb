@@ -319,7 +319,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     // This function will be called during widget initialization, i.e. before
     // SetBoundInScreen has been called. No-op in that case.
     if (selection_bound_.type() == gfx::SelectionBound::EMPTY)

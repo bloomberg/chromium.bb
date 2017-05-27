@@ -284,7 +284,7 @@ void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddStringAttribute(ui::AX_ATTR_SHORTCUT, "Alt+Shift+A");
 }
 
-gfx::Size InfoBarView::GetPreferredSize() const {
+gfx::Size InfoBarView::CalculatePreferredSize() const {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
   const int related_control_spacing = layout_provider->GetDistanceMetric(

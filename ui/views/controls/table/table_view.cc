@@ -345,7 +345,7 @@ const char* TableView::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size TableView::GetPreferredSize() const {
+gfx::Size TableView::CalculatePreferredSize() const {
   int width = 50;
   if (header_ && !visible_columns_.empty())
     width = visible_columns_.back().x + visible_columns_.back().width;

@@ -312,7 +312,7 @@ int Label::GetBaseline() const {
   return GetInsets().top() + font_list().GetBaseline();
 }
 
-gfx::Size Label::GetPreferredSize() const {
+gfx::Size Label::CalculatePreferredSize() const {
   // Return a size of (0, 0) if the label is not visible and if the
   // |collapse_when_hidden_| flag is set.
   // TODO(munjal): This logic probably belongs to the View class. But for now,

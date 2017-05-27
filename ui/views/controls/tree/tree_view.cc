@@ -371,7 +371,7 @@ void TreeView::Layout() {
   LayoutEditor();
 }
 
-gfx::Size TreeView::GetPreferredSize() const {
+gfx::Size TreeView::CalculatePreferredSize() const {
   return preferred_size_;
 }
 

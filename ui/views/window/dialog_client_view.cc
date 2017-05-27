@@ -167,9 +167,9 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
-gfx::Size DialogClientView::GetPreferredSize() const {
+gfx::Size DialogClientView::CalculatePreferredSize() const {
   return GetBoundingSizeForVerticalStack(
-      ClientView::GetPreferredSize(),
+      ClientView::CalculatePreferredSize(),
       button_row_container_->GetPreferredSize());
 }
 

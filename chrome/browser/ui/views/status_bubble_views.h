@@ -46,7 +46,7 @@ class StatusBubbleViews : public StatusBubble {
 
   // The bubble only has a preferred height: the sum of the height of
   // the font and kTotalVerticalPadding.
-  gfx::Size GetPreferredSize();
+  int GetPreferredHeight();
 
   // Calculate and set new position for status bubble.
   void Reposition();

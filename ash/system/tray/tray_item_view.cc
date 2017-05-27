@@ -85,7 +85,7 @@ int TrayItemView::GetAnimationDurationMS() {
 
 gfx::Size TrayItemView::CalculatePreferredSize() const {
   DCHECK_EQ(1, child_count());
-  gfx::Size inner_size = views::View::GetPreferredSize();
+  gfx::Size inner_size = views::View::CalculatePreferredSize();
   if (image_view_)
     inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
   gfx::Rect rect(inner_size);

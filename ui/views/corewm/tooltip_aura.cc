@@ -99,7 +99,7 @@ class TooltipAura::TooltipView : public views::View {
     OnPaintBorder(canvas);
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     gfx::Size view_size = render_text_->GetStringSize();
     gfx::Insets insets = border()->GetInsets();
     view_size.Enlarge(insets.width(), insets.height());

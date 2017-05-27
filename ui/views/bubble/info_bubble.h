@@ -28,7 +28,7 @@ class InfoBubble : public BubbleDialogDelegateView {
 
   // BubbleDialogDelegateView:
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void OnWidgetDestroyed(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;

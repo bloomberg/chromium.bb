@@ -89,7 +89,7 @@ class BookmarkEditorView : public BookmarkEditor,
   bool Accept() override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::TreeViewController:

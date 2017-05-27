@@ -46,7 +46,7 @@ class ImeWindowFrameView : public views::NonClientFrameView,
   void SizeConstraintsChanged() override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;

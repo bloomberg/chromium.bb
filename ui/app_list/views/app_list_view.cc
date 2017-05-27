@@ -279,7 +279,7 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
   }
 }
 
-gfx::Size AppListView::GetPreferredSize() const {
+gfx::Size AppListView::CalculatePreferredSize() const {
   return app_list_main_view_->GetPreferredSize();
 }
 

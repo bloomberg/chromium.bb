@@ -97,7 +97,7 @@ void AppsContainerView::ReparentDragEnded() {
   show_state_ = AppsContainerView::SHOW_APPS;
 }
 
-gfx::Size AppsContainerView::GetPreferredSize() const {
+gfx::Size AppsContainerView::CalculatePreferredSize() const {
   const gfx::Size grid_size = apps_grid_view_->GetPreferredSize();
   const gfx::Size folder_view_size = app_list_folder_view_->GetPreferredSize();
 

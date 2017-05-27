@@ -528,7 +528,9 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     return override_snap_.value_or(
         BubbleDialogDelegateView::ShouldSnapFrameWidth());
   }
-  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(200, 200);
+  }
 
  private:
   base::Optional<bool> override_snap_;

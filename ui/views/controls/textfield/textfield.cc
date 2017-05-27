@@ -585,7 +585,7 @@ int Textfield::GetBaseline() const {
   return GetInsets().top() + GetRenderText()->GetBaseline();
 }
 
-gfx::Size Textfield::GetPreferredSize() const {
+gfx::Size Textfield::CalculatePreferredSize() const {
   const gfx::Insets& insets = GetInsets();
   return gfx::Size(GetFontList().GetExpectedTextWidth(default_width_in_chars_) +
                    insets.width(), GetFontList().GetHeight() + insets.height());

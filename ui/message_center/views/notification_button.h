@@ -28,7 +28,7 @@ class NotificationButton : public views::CustomButton {
   void SetTitle(const base::string16& title);
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;

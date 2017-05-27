@@ -157,7 +157,7 @@ class InfobarView : public views::View {
   }
 
   // views::View overrides.
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     // Always return the preferred size, even if not currently visible. This
     // ensures that the layout manager always reserves space within the view
     // so it can be made visible when necessary. Otherwise, changing the

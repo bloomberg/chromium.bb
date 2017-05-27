@@ -231,7 +231,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   void SetAccessibleName(const base::string16& name);
 
   // NonClientView, View overrides:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;

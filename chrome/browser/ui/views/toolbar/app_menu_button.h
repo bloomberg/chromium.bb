@@ -56,7 +56,7 @@ class AppMenuButton : public views::MenuButton,
   void RemoveMenuListener(views::MenuListener* listener);
 
   // views::MenuButton:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
 

@@ -67,7 +67,7 @@ class EchoDialogView : public views::DialogDelegateView,
                               int event_flags) override;
 
   // views::View override.
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // Sets the border and bounds for the styled label containing the dialog
   // text.

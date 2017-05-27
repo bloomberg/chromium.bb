@@ -486,7 +486,7 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
 
-gfx::Size ToolbarView::GetPreferredSize() const {
+gfx::Size ToolbarView::CalculatePreferredSize() const {
   return GetSizeInternal(&View::GetPreferredSize);
 }
 

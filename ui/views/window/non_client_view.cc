@@ -146,7 +146,7 @@ void NonClientView::SetAccessibleName(const base::string16& name) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, View overrides:
 
-gfx::Size NonClientView::GetPreferredSize() const {
+gfx::Size NonClientView::CalculatePreferredSize() const {
   // TODO(pkasting): This should probably be made to look similar to
   // GetMinimumSize() below.  This will require implementing GetPreferredSize()
   // better in the various frame views.

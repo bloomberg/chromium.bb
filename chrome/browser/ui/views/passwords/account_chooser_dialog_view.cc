@@ -178,7 +178,7 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(message_id);
 }
 
-gfx::Size AccountChooserDialogView::GetPreferredSize() const {
+gfx::Size AccountChooserDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
 }
 

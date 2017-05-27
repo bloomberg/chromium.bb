@@ -559,7 +559,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
                          ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
     return gfx::Size(kSeparatorWidth, 1);
@@ -828,7 +828,7 @@ int BookmarkBarView::GetPreferredHeight() const {
   return height;
 }
 
-gfx::Size BookmarkBarView::GetPreferredSize() const {
+gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   gfx::Size prefsize;
   int preferred_height = GetPreferredHeight();
   if (IsDetached()) {

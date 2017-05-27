@@ -47,7 +47,7 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::CustomButton {
   const char* GetClassName() const override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void Layout() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // The orientation of the candidate view.
   ui::CandidateWindow::Orientation orientation_;

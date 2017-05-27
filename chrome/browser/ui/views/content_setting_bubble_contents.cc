@@ -186,8 +186,8 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
   RemoveAllChildViews(true);
 }
 
-gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
-  gfx::Size preferred_size(views::View::GetPreferredSize());
+gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
+  gfx::Size preferred_size(views::View::CalculatePreferredSize());
   int preferred_width =
       (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
        (kMinMultiLineContentsWidth > preferred_size.width()))

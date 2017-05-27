@@ -154,7 +154,7 @@ void MessageListView::UpdateNotification(MessageView* view,
   DoUpdateIfPossible();
 }
 
-gfx::Size MessageListView::GetPreferredSize() const {
+gfx::Size MessageListView::CalculatePreferredSize() const {
   // Just returns the current size. All size change must be done in
   // |DoUpdateIfPossible()| with animation , because we don't want to change
   // the size in unexpected timing.

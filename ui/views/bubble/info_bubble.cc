@@ -86,9 +86,9 @@ NonClientFrameView* InfoBubble::CreateNonClientFrameView(Widget* widget) {
   return frame_;
 }
 
-gfx::Size InfoBubble::GetPreferredSize() const {
+gfx::Size InfoBubble::CalculatePreferredSize() const {
   if (preferred_width_ == 0)
-    return BubbleDialogDelegateView::GetPreferredSize();
+    return BubbleDialogDelegateView::CalculatePreferredSize();
 
   int pref_width = preferred_width_;
   pref_width -= frame_->GetInsets().width();

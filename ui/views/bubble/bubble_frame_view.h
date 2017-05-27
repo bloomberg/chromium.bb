@@ -55,7 +55,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // View:
   const char* GetClassName() const override;
   gfx::Insets GetInsets() const override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;

@@ -40,7 +40,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   ~NotificationView() override;
 
   // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void Layout() override;
   void OnFocus() override;

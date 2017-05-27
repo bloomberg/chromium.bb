@@ -41,7 +41,7 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
   void InitControls();
 
   // DialogDelegateView:
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;

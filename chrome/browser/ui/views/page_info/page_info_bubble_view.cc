@@ -567,9 +567,9 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
                      weak_factory_.GetWeakPtr(), source));
 }
 
-gfx::Size PageInfoBubbleView::GetPreferredSize() const {
+gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
   if (header_ == nullptr && site_settings_view_ == nullptr)
-    return views::View::GetPreferredSize();
+    return views::View::CalculatePreferredSize();
 
   int height = 0;
   if (header_)

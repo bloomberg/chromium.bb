@@ -246,7 +246,7 @@ bool TranslateBubbleView::AcceleratorPressed(
   return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
 }
 
-gfx::Size TranslateBubbleView::GetPreferredSize() const {
+gfx::Size TranslateBubbleView::CalculatePreferredSize() const {
   int width = 0;
   for (int i = 0; i < child_count(); i++) {
     const views::View* child = child_at(i);

@@ -30,7 +30,7 @@ class ScrollViewExample::ScrollableView : public View {
     AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(width(), height());
   }
 

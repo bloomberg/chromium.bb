@@ -37,7 +37,7 @@ class APP_LIST_EXPORT SpeechView : public views::View,
 
   // Overridden from views::View:
   void Layout() override;
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   views::ImageButton* mic_button() { return mic_button_; }
 

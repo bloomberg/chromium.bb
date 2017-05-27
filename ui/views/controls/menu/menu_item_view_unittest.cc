@@ -19,7 +19,7 @@ class SquareView : public views::View {
   ~SquareView() override {}
 
  private:
-  gfx::Size GetPreferredSize() const override { return gfx::Size(1, 1); }
+  gfx::Size CalculatePreferredSize() const override { return gfx::Size(1, 1); }
   int GetHeightForWidth(int width) const override { return width; }
 };
 

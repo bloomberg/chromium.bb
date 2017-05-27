@@ -300,7 +300,7 @@ void OmniboxResultView::OnSelected() {
     NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 }
 
-gfx::Size OmniboxResultView::GetPreferredSize() const {
+gfx::Size OmniboxResultView::CalculatePreferredSize() const {
   int height = GetTextHeight() + (2 * GetVerticalMargin());
   if (match_.answer)
     height += GetAnswerHeight() + kVerticalPadding;

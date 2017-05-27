@@ -138,7 +138,7 @@ class SimpleWM::WindowListView : public views::WidgetDelegateView,
     stroke_bounds.set_height(1);
     canvas->FillRect(stroke_bounds, SK_ColorDKGRAY);
   }
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     std::unique_ptr<views::MdTextButton> measure_button(
         views::MdTextButton::Create(nullptr, base::UTF8ToUTF16("Sample")));
     int height =

@@ -42,7 +42,7 @@ class MenuScrollButton : public View {
         pref_height_(MenuItemView::pref_menu_height()) {
   }
 
-  gfx::Size GetPreferredSize() const override {
+  gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(MenuConfig::instance().scroll_arrow_height * 2 - 1,
                      pref_height_);
   }
@@ -202,7 +202,7 @@ void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
   bubble_border_->set_arrow_offset(offset);
 }
 
-gfx::Size MenuScrollViewContainer::GetPreferredSize() const {
+gfx::Size MenuScrollViewContainer::CalculatePreferredSize() const {
   gfx::Size prefsize = scroll_view_->GetContents()->GetPreferredSize();
   gfx::Insets insets = GetInsets();
   prefsize.Enlarge(insets.width(), insets.height());

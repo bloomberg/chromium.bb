@@ -183,7 +183,7 @@ void LabelButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 
-gfx::Size LabelButton::GetPreferredSize() const {
+gfx::Size LabelButton::CalculatePreferredSize() const {
   if (cached_preferred_size_valid_)
     return cached_preferred_size_;
 

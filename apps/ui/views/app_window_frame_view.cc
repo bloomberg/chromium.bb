@@ -235,7 +235,7 @@ void AppWindowFrameView::SizeConstraintsChanged() {
   }
 }
 
-gfx::Size AppWindowFrameView::GetPreferredSize() const {
+gfx::Size AppWindowFrameView::CalculatePreferredSize() const {
   gfx::Size pref = widget_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
   return widget_->non_client_view()

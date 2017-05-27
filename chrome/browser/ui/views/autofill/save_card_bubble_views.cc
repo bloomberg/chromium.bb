@@ -149,7 +149,7 @@ bool SaveCardBubbleViews::ShouldDefaultButtonBeBlue() const {
   return true;
 }
 
-gfx::Size SaveCardBubbleViews::GetPreferredSize() const {
+gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
   return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
 }
 

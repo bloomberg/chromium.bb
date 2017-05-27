@@ -173,7 +173,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void SetupSpinnerOverlay();
 
   // views::View
-  gfx::Size GetPreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 

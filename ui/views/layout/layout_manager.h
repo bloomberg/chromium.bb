@@ -25,7 +25,7 @@ class View;
 // How a LayoutManager operates is specific to the LayoutManager. Non-trivial
 // LayoutManagers calculate preferred size and layout information using the
 // minimum and preferred size of the children of the View. That is, they
-// make use of View::GetMinimumSize(), View::GetPreferredSize() and/or
+// make use of View::GetMinimumSize(), View::CalculatePreferredSize() and/or
 // View::GetHeightForWidth().
 class VIEWS_EXPORT LayoutManager {
  public:
@@ -41,14 +41,14 @@ class VIEWS_EXPORT LayoutManager {
 
   // Return the preferred size, which is typically the size needed to give each
   // child of |host| its preferred size. Generally this is calculated using the
-  // View::GetPreferredSize() on each of the children of |host|.
+  // View::CalculatePreferredSize() on each of the children of |host|.
   virtual gfx::Size GetPreferredSize(const View* host) const = 0;
 
   // Return the preferred height for a particular width. Generally this is
-  // calculated using View::GetHeightForWidth() or View::GetPreferredSize() on
-  // each of the children of |host|. Override this function if the preferred
-  // height varies based on the size. For example, a multi-line labels preferred
-  // height may change with the width.
+  // calculated using View::GetHeightForWidth() or
+  // View::CalculatePreferredSize() on each of the children of |host|. Override
+  // this function if the preferred height varies based on the size. For
+  // example, a multi-line labels preferred height may change with the width.
   // The default implementation returns GetPreferredSize().height().
   virtual int GetPreferredHeightForWidth(const View* host, int width) const;
 

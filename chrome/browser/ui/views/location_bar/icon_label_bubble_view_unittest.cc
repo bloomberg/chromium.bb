@@ -348,8 +348,8 @@ TEST_F(IconLabelBubbleViewTest, GestureInkDropState) {
 #endif
 
 #if defined(USE_ASH)
-// Verifies IconLabelBubbleView::GetPreferredSize() doesn't crash when there is
-// a widget but no compositor.
+// Verifies IconLabelBubbleView::CalculatePreferredSize() doesn't crash when
+// there is a widget but no compositor.
 using IconLabelBubbleViewCrashTest = views::ViewsTestBase;
 
 TEST_F(IconLabelBubbleViewCrashTest,
