@@ -15,7 +15,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
@@ -307,7 +306,7 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
       old_state_type == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       target_state == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
-        WmWindow::Get(window_state->window()));
+        window_state->window());
   }
 
   if ((window_state->window()->layer()->GetTargetVisibility() ||
