@@ -265,6 +265,22 @@ bool TextIteratorAlgorithm<Strategy>::IsInsideAtomicInlineElement() const {
 }
 
 template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::HandleRemainingTextRuns() {
+  if (ShouldProceedToRemainingText())
+    ProceedToRemainingText();
+  // Handle remembered text box
+  if (text_box_) {
+    HandleTextBox();
+    return text_state_.PositionNode();
+  }
+  // Handle remembered pre-formatted text node.
+  if (!needs_handle_pre_formatted_text_node_)
+    return false;
+  HandlePreFormattedTextNode();
+  return text_state_.PositionNode();
+}
+
+template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::Advance() {
   if (should_stop_)
     return;
@@ -291,20 +307,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     return;
   }
 
-  if (ShouldProceedToRemainingText())
-    ProceedToRemainingText();
-  // Handle remembered text box
-  if (text_box_) {
-    HandleTextBox();
-    if (text_state_.PositionNode())
-      return;
-  }
-  // Handle remembered pre-formatted text node.
-  if (needs_handle_pre_formatted_text_node_) {
-    HandlePreFormattedTextNode();
-    if (text_state_.PositionNode())
-      return;
-  }
+  if (HandleRemainingTextRuns())
+    return;
 
   while (node_ && (node_ != past_end_node_ || shadow_depth_ > 0)) {
     if (!should_stop_ && StopsOnFormControls() &&
@@ -870,6 +874,29 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
 }
 
 template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::FixLeadingWhiteSpaceForReplacedElement(
+    Node* parent) {
+  // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
+  // we can get rid of this function.
+
+  if (behavior_.CollapseTrailingSpace()) {
+    if (text_node_) {
+      String str = text_node_->GetLayoutObject()->GetText();
+      if (last_text_node_ended_with_collapsed_space_ && offset_ > 0 &&
+          str[offset_ - 1] == ' ') {
+        SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
+        return true;
+      }
+    }
+  } else if (last_text_node_ended_with_collapsed_space_) {
+    SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
+    return true;
+  }
+
+  return false;
+}
+
+template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   if (fully_clipped_stack_.Top())
     return false;
@@ -886,20 +913,10 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   }
 
   DCHECK_EQ(last_text_node_, text_node_);
-  if (behavior_.CollapseTrailingSpace()) {
-    if (text_node_) {
-      String str = text_node_->GetLayoutObject()->GetText();
-      if (last_text_node_ended_with_collapsed_space_ && offset_ > 0 &&
-          str[offset_ - 1] == ' ') {
-        SpliceBuffer(kSpaceCharacter, Strategy::Parent(*last_text_node_),
-                     text_node_, 1, 1);
-        return false;
-      }
-    }
-  } else if (last_text_node_ended_with_collapsed_space_) {
-    SpliceBuffer(kSpaceCharacter, Strategy::Parent(*last_text_node_),
-                 text_node_, 1, 1);
-    return false;
+  if (last_text_node_) {
+    if (FixLeadingWhiteSpaceForReplacedElement(
+            Strategy::Parent(*last_text_node_)))
+      return false;
   }
 
   if (EntersTextControls() && layout_object->IsTextControl()) {
@@ -1200,17 +1217,21 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
 }
 
 template <typename Strategy>
+void TextIteratorAlgorithm<Strategy>::ResetCollapsedWhiteSpaceFixup() {
+  // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
+  // we can get rid of this function.
+  last_text_node_ended_with_collapsed_space_ = false;
+}
+
+template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::SpliceBuffer(UChar c,
                                                    Node* text_node,
                                                    Node* offset_base_node,
                                                    int text_start_offset,
                                                    int text_end_offset) {
-  // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
-  // TextIterator, but is always reset when we call spliceBuffer, we
-  // wrap TextIteratorTextState::spliceBuffer() with this function.
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
                            text_end_offset);
-  last_text_node_ended_with_collapsed_space_ = false;
+  ResetCollapsedWhiteSpaceFixup();
 }
 
 template <typename Strategy>
@@ -1218,12 +1239,9 @@ void TextIteratorAlgorithm<Strategy>::EmitText(Node* text_node,
                                                LayoutText* layout_object,
                                                int text_start_offset,
                                                int text_end_offset) {
-  // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
-  // TextIterator, but is always reset when we call spliceBuffer, we
-  // wrap TextIteratorTextState::spliceBuffer() with this function.
   text_state_.EmitText(text_node, layout_object, text_start_offset,
                        text_end_offset);
-  last_text_node_ended_with_collapsed_space_ = false;
+  ResetCollapsedWhiteSpaceFixup();
 }
 
 template <typename Strategy>
