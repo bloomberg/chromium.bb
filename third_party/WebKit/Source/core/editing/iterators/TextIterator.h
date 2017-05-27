@@ -230,6 +230,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   Member<Node> end_node_;
   Member<Node> past_end_node_;
 
+  // The current text node, from which text is being emitted.
+  Member<Text> text_node_;
+
   // Used when there is still some pending text from the current node; when
   // these are false and 0, we go back to normal iterating.
   bool needs_another_newline_;

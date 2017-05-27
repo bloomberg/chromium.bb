@@ -521,8 +521,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
   // TODO(xiaochengh): Get rid of repeated computation of these fields.
-  Text* const text_node = ToText(node_);
-  LayoutText* const layout_object = text_node->GetLayoutObject();
+  LayoutText* const layout_object = text_node_->GetLayoutObject();
   const String str = layout_object->GetText();
 
   needs_handle_pre_formatted_text_node_ = false;
@@ -531,7 +530,7 @@ void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
       HasVisibleTextNode(layout_object)) {
     if (!behavior_.CollapseTrailingSpace() ||
         (offset_ > 0 && str[offset_ - 1] == ' ')) {
-      SpliceBuffer(kSpaceCharacter, text_node, 0, offset_, offset_);
+      SpliceBuffer(kSpaceCharacter, text_node_, 0, offset_, offset_);
       needs_handle_pre_formatted_text_node_ = true;
       return;
     }
@@ -542,11 +541,11 @@ void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
       const String first_letter = first_letter_text_->GetText();
       const unsigned run_start = offset_;
       const bool stops_in_first_letter =
-          text_node == end_container_ &&
+          text_node_ == end_container_ &&
           end_offset_ <= static_cast<int>(first_letter.length());
       const unsigned run_end =
           stops_in_first_letter ? end_offset_ : first_letter.length();
-      EmitText(text_node, first_letter_text_, run_start, run_end);
+      EmitText(text_node_, first_letter_text_, run_start, run_end);
       first_letter_text_ = nullptr;
       text_box_ = 0;
       offset_ = run_end;
@@ -565,7 +564,7 @@ void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
   DCHECK_GE(static_cast<unsigned>(offset_), layout_object->TextStartOffset());
   const unsigned run_start = offset_ - layout_object->TextStartOffset();
   const unsigned str_length = str.length();
-  const unsigned end = (text_node == end_container_)
+  const unsigned end = (text_node_ == end_container_)
                            ? end_offset_ - layout_object->TextStartOffset()
                            : str_length;
   const unsigned run_end = std::min(str_length, end);
@@ -573,7 +572,7 @@ void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
   if (run_start >= run_end)
     return;
 
-  EmitText(text_node, text_node->GetLayoutObject(), run_start, run_end);
+  EmitText(text_node_, text_node_->GetLayoutObject(), run_start, run_end);
 }
 
 template <typename Strategy>
@@ -589,14 +588,14 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
 
-  offset_ = node_ == start_container_ ? start_offset_ : 0;
+  text_node_ = ToText(node_);
+  offset_ = text_node_ == start_container_ ? start_offset_ : 0;
   handled_first_letter_ = false;
   first_letter_text_ = nullptr;
 
-  Text* text_node = ToText(node_);
-  LayoutText* layout_object = text_node->GetLayoutObject();
+  LayoutText* layout_object = text_node_->GetLayoutObject();
 
-  last_text_node_ = text_node;
+  last_text_node_ = text_node_;
   String str = layout_object->GetText();
 
   // handle pre-formatted text
@@ -652,7 +651,7 @@ size_t TextIteratorAlgorithm<Strategy>::RestoreCollapsedTrailingSpace(
       text_box_->Root().LastChild() != text_box_)
     return subrun_end;
 
-  const String& text = ToLayoutText(node_->GetLayoutObject())->GetText();
+  const String& text = text_node_->GetLayoutObject()->GetText();
   if (text.EndsWith(' ') == 0 || subrun_end != text.length() - 1 ||
       text[subrun_end - 1] == ' ')
     return subrun_end;
@@ -675,9 +674,8 @@ size_t TextIteratorAlgorithm<Strategy>::RestoreCollapsedTrailingSpace(
 
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
-  LayoutText* layout_object = first_letter_text_
-                                  ? first_letter_text_
-                                  : ToLayoutText(node_->GetLayoutObject());
+  LayoutText* layout_object =
+      first_letter_text_ ? first_letter_text_ : text_node_->GetLayoutObject();
   const unsigned text_start_offset = layout_object->TextStartOffset();
 
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
@@ -689,7 +687,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
     // emitted (after handling whitespace collapsing).
     const unsigned start = offset_ - layout_object->TextStartOffset();
     const unsigned end =
-        (node_ == end_container_)
+        (text_node_ == end_container_)
             ? static_cast<unsigned>(end_offset_) - text_start_offset
             : INT_MAX;
     while (text_box_) {
@@ -708,14 +706,15 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
           !layout_object->Style()->IsCollapsibleWhiteSpace(
               text_state_.LastCharacter()) &&
           text_state_.LastCharacter()) {
-        if (last_text_node_ == node_ && run_start > 0 &&
+        if (last_text_node_ == text_node_ && run_start > 0 &&
             str[run_start - 1] == ' ') {
           unsigned space_run_start = run_start - 1;
           while (space_run_start > 0 && str[space_run_start - 1] == ' ')
             --space_run_start;
-          EmitText(node_, layout_object, space_run_start, space_run_start + 1);
+          EmitText(text_node_, layout_object, space_run_start,
+                   space_run_start + 1);
         } else {
-          SpliceBuffer(kSpaceCharacter, node_, 0, run_start, run_start);
+          SpliceBuffer(kSpaceCharacter, text_node_, 0, run_start, run_start);
         }
         return;
       }
@@ -752,10 +751,12 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
         if (str[run_start] == '\n') {
           // We need to preserve new lines in case of PreLine.
           // See bug crbug.com/317365.
-          if (layout_object->Style()->WhiteSpace() == EWhiteSpace::kPreLine)
-            SpliceBuffer('\n', node_, 0, run_start, run_start);
-          else
-            SpliceBuffer(kSpaceCharacter, node_, 0, run_start, run_start + 1);
+          if (layout_object->Style()->WhiteSpace() == EWhiteSpace::kPreLine) {
+            SpliceBuffer('\n', text_node_, 0, run_start, run_start);
+          } else {
+            SpliceBuffer(kSpaceCharacter, text_node_, 0, run_start,
+                         run_start + 1);
+          }
           offset_ = text_start_offset + run_start + 1;
         } else {
           size_t subrun_end = str.find('\n', run_start);
@@ -766,7 +767,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
           }
 
           offset_ = text_start_offset + subrun_end;
-          EmitText(node_, layout_object, run_start, subrun_end);
+          EmitText(text_node_, layout_object, run_start, subrun_end);
         }
 
         // If we are doing a subrun that doesn't go to the end of the text box,
@@ -815,7 +816,7 @@ template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::ShouldProceedToRemainingText() const {
   if (text_box_ || !remaining_text_box_)
     return false;
-  if (node_ != end_container_)
+  if (text_node_ != end_container_)
     return true;
   return offset_ < end_offset_;
 }
@@ -825,7 +826,7 @@ void TextIteratorAlgorithm<Strategy>::ProceedToRemainingText() {
   text_box_ = remaining_text_box_;
   remaining_text_box_ = 0;
   first_letter_text_ = nullptr;
-  offset_ = ToLayoutText(node_->GetLayoutObject())->TextStartOffset();
+  offset_ = text_node_->GetLayoutObject()->TextStartOffset();
 }
 
 template <typename Strategy>
