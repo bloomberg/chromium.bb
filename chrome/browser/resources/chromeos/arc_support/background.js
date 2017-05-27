@@ -46,7 +46,7 @@ var INNER_WIDTH = 960;
  * Host window inner default height.
  * @const {number}
  */
-var INNER_HEIGHT = 688;
+var INNER_HEIGHT = 687;
 
 
 /**
