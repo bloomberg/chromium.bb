@@ -117,13 +117,10 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
 
       # Copy framework.
       shutil.copytree(os.path.join(build_dir, 'Cronet.framework'),
-          os.path.join(out_dir, 'Dynamic', target_dir, 'Cronet.framework'))
+                      os.path.join(out_dir, target_dir, 'Cronet.framework'))
       # Copy symbols.
       shutil.copytree(os.path.join(build_dir, 'Cronet.dSYM'),
-          os.path.join(out_dir, 'Dynamic', target_dir, 'Cronet.framework.dSYM'))
-      # Copy static framework.
-      shutil.copytree(os.path.join(build_dir, 'Static', 'Cronet.framework'),
-          os.path.join(out_dir, 'Static', target_dir, 'Cronet.framework'))
+          os.path.join(out_dir, target_dir, 'Cronet.framework.dSYM'))
 
   # Copy common files from last built package.
   package_dir = os.path.join(build_dir, 'cronet')
@@ -134,7 +131,7 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
   shutil.copytree(os.path.join(build_dir,
                                'Cronet.framework', 'Headers'),
                   os.path.join(out_dir, 'Headers'))
-  print 'Cronet framework is packaged into %s' % out_dir
+  print 'Cronet dynamic framework is packaged into %s' % out_dir
 
 
 def main():
