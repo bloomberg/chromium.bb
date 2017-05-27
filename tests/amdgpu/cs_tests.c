@@ -90,6 +90,11 @@ int suite_cs_tests_init(void)
 	chip_rev = device_handle->info.chip_rev;
 	chip_id = device_handle->info.chip_external_rev;
 
+	if (family_id >= AMDGPU_FAMILY_RV) {
+		printf("\n\nThe ASIC NOT support UVD, all sub-tests will pass\n");
+		return CUE_SUCCESS;
+	}
+
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
 		return CUE_SINIT_FAILED;
@@ -113,6 +118,9 @@ int suite_cs_tests_init(void)
 int suite_cs_tests_clean(void)
 {
 	int r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return CUE_SUCCESS;
 
 	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
 				     ib_mc_address, IB_SIZE);
@@ -192,6 +200,9 @@ static void amdgpu_cs_uvd_create(void)
 	void *msg;
 	int i, r;
 
+	if (family_id >= AMDGPU_FAMILY_RV)
+		return;
+
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
@@ -262,6 +273,9 @@ static void amdgpu_cs_uvd_decode(void)
 	uint64_t sum;
 	uint8_t *ptr;
 	int i, r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+                return;
 
 	req.alloc_size = 4*1024; /* msg */
 	req.alloc_size += 4*1024; /* fb */
@@ -401,6 +415,9 @@ static void amdgpu_cs_uvd_destroy(void)
 	uint64_t va = 0;
 	void *msg;
 	int i, r;
+
+	if (family_id >= AMDGPU_FAMILY_RV)
+                return;
 
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
