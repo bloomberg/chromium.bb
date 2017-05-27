@@ -501,7 +501,7 @@ def DirectCompositionPages(base_name):
       'pixel_video_mp4.html',
       base_name + '_DirectComposition_Video_MP4',
       test_rect=[0, 0, 300, 300],
-      revision=2,
+      revision=3,
       browser_args=browser_args),
 
     PixelTestPage(
