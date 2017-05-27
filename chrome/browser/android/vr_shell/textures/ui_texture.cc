@@ -29,6 +29,8 @@ namespace {
 
 static constexpr char kDefaultFontFamily[] = "sans-serif";
 
+static bool force_font_fallback_failure_for_testing_ = false;
+
 std::set<UChar32> CollectDifferentChars(base::string16 text) {
   std::set<UChar32> characters;
   for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
@@ -162,20 +164,33 @@ gfx::FontList UiTexture::GetDefaultFontList(int size) {
   return gfx::FontList(gfx::Font(kDefaultFontFamily, size));
 }
 
-gfx::FontList UiTexture::GetFontList(int size, base::string16 text) {
+bool UiTexture::GetFontList(int size,
+                            base::string16 text,
+                            gfx::FontList* font_list) {
+  if (force_font_fallback_failure_for_testing_)
+    return false;
+
   gfx::Font default_font(kDefaultFontFamily, size);
   std::vector<gfx::Font> fonts{default_font};
 
   std::set<std::string> names;
   // TODO(acondor): Query BrowserProcess to obtain the application locale.
   for (UChar32 c : CollectDifferentChars(text)) {
-    std::string name = GetFallbackFontNameForChar(default_font, c, "");
-    if (!name.empty())
+    std::string name;
+    bool found_name = GetFallbackFontNameForChar(default_font, c, "", &name);
+    if (!found_name)
+      return false;
+    if (name.empty())
       names.insert(name);
   }
   for (const auto& name : names)
     fonts.push_back(gfx::Font(name, size));
-  return gfx::FontList(fonts);
+  *font_list = gfx::FontList(fonts);
+  return true;
+}
+
+void UiTexture::SetForceFontFallbackFailureForTesting(bool force) {
+  force_font_fallback_failure_for_testing_ = force;
 }
 
 }  // namespace vr_shell

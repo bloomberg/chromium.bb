@@ -582,12 +582,14 @@ void VrShell::ExitFullscreen() {
   }
 }
 
-void VrShell::ExitVrDueToUnsupportedMode() {
+void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
   ui_->SetIsExiting();
   main_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
       kExitVrDueToUnsupportedModeDelay);
+  UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
+                            UiUnsupportedMode::kCount);
 }
 
 void VrShell::OnVRVsyncProviderRequest(

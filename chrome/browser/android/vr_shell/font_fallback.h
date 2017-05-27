@@ -22,11 +22,19 @@ namespace vr_shell {
 //   preferred_locale: preferred locale identifier (if any) for |c|
 //                     (e.g. "en", "ja", "zh-CN")
 //
-// Returns: the font name. The value is empty if the request could not be
-// satisfied or if the provided default font supports it.
-std::string GetFallbackFontNameForChar(const gfx::Font& default_font,
-                                       UChar32 c,
-                                       const std::string& preferred_locale);
+// The funtion, if it succeeds, sets |font_name|. Even if it succeeds, it may
+// set |font_name| to the empty string if the character is supported by the
+// default font.
+//
+// Returns:
+//   * false, if the request could not be satisfied or if the provided default
+//     font supports it.
+//   * true, otherwis.
+//
+bool GetFallbackFontNameForChar(const gfx::Font& default_font,
+                                UChar32 c,
+                                const std::string& preferred_locale,
+                                std::string* font_name);
 
 }  // namespace vr_shell
 

@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "device/vr/vr_types.h"
 
 namespace vr_shell {
@@ -66,6 +67,7 @@ class UiSceneManager {
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
   void OnCloseButtonClicked();
+  void OnUnsupportedMode(UiUnsupportedMode mode);
   int AllocateId();
   const ColorScheme& color_scheme() const;
 

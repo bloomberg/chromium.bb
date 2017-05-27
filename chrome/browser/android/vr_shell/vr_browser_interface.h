@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
 
@@ -44,6 +45,7 @@ class VrBrowserInterface {
   virtual void NavigateBack() = 0;
   virtual void ExitCct() = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
+  virtual void OnUnsupportedMode(UiUnsupportedMode mode) = 0;
 };
 
 }  // namespace vr_shell

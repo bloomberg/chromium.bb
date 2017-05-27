@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/vr_shell/textures/url_bar_texture.h"
+
+#include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/vr_shell/textures/render_text_wrapper.h"
@@ -10,14 +13,23 @@
 #include "components/url_formatter/url_formatter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/render_text.h"
 
 using security_state::SecurityLevel;
 
 namespace vr_shell {
 
-class MockRenderText : public vr_shell::RenderTextWrapper {
+static constexpr SkColor kEmphasizedColor = 0xFF000000;
+static constexpr SkColor kDeemphasizedColor = 0xFF5A5A5A;
+static const SkColor kSecureColor = gfx::kGoogleGreen700;
+static const SkColor kWarningColor = gfx::kGoogleRed700;
+static constexpr int kUrlWidth = 400;
+static constexpr int kUrlHeight = 30;
+
+class MockRenderText : public RenderTextWrapper {
  public:
   MockRenderText() : RenderTextWrapper(nullptr) {}
   ~MockRenderText() override {}
@@ -32,10 +44,44 @@ class MockRenderText : public vr_shell::RenderTextWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockRenderText);
 };
 
-static constexpr SkColor kEmphasizedColor = 0xFF000000;
-static constexpr SkColor kDeemphasizedColor = 0xFF5A5A5A;
-static const SkColor kSecureColor = gfx::kGoogleGreen700;
-static const SkColor kWarningColor = gfx::kGoogleRed700;
+class TestUrlBarTexture : public UrlBarTexture {
+ public:
+  TestUrlBarTexture();
+  ~TestUrlBarTexture() override {}
+
+  void DrawURL(const GURL& gurl) {
+    unsupported_mode_ = UiUnsupportedMode::kCount;
+    SetURL(gurl);
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+        texture_size_.width(), texture_size_.height());
+    DrawAndLayout(surface->getCanvas(), texture_size_);
+  }
+
+  void SetForceFontFallbackFailure(bool force) {
+    SetForceFontFallbackFailureForTesting(force);
+  }
+
+  // Reports the last unsupported mode that was encountered. Returns kCount if
+  // no unsupported mode was encountered.
+  UiUnsupportedMode unsupported_mode() const { return unsupported_mode_; }
+
+ private:
+  void OnUnsupportedFeature(UiUnsupportedMode mode) {
+    unsupported_mode_ = mode;
+  }
+
+  gfx::Size texture_size_;
+  gfx::Rect bounds_;
+  UiUnsupportedMode unsupported_mode_ = UiUnsupportedMode::kCount;
+};
+
+TestUrlBarTexture::TestUrlBarTexture()
+    : UrlBarTexture(base::Bind(&TestUrlBarTexture::OnUnsupportedFeature,
+                               base::Unretained(this))),
+      texture_size_(kUrlWidth, kUrlHeight),
+      bounds_(kUrlWidth, kUrlHeight) {
+  gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
+}
 
 class UrlEmphasisTest : public testing::Test {
  protected:
@@ -92,6 +138,18 @@ TEST_F(UrlEmphasisTest, Data) {
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 4)));
   Verify("data:text/html,lots of data", SecurityLevel::NONE,
          "data:text/html,lots of data");
+}
+
+TEST(UrlBarTextureTest, WillFailOnUnhandledCodePoint) {
+  TestUrlBarTexture texture;
+  texture.DrawURL(GURL("https://foo.com"));
+  EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
+  texture.SetForceFontFallbackFailure(true);
+  texture.DrawURL(GURL("https://bar.com"));
+  EXPECT_EQ(UiUnsupportedMode::kUnhandledCodePoint, texture.unsupported_mode());
+  texture.SetForceFontFallbackFailure(false);
+  texture.DrawURL(GURL("https://baz.com"));
+  EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
 }
 
 }  // namespace vr_shell

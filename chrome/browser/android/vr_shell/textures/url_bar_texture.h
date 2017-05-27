@@ -8,8 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -29,7 +31,8 @@ class UrlBarTexture : public UiTexture {
     FLAG_BACK_DOWN = 1 << 1,
   };
 
-  UrlBarTexture();
+  explicit UrlBarTexture(
+      const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
@@ -65,6 +68,7 @@ class UrlBarTexture : public UiTexture {
   std::unique_ptr<gfx::RenderText> url_render_text_;
   GURL last_drawn_gurl_;
   security_state::SecurityLevel last_drawn_security_level_;
+  base::Callback<void(UiUnsupportedMode)> failure_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlBarTexture);
 };

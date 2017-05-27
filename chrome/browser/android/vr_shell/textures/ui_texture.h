@@ -78,7 +78,10 @@ class UiTexture {
 
   static bool IsRTL();
   static gfx::FontList GetDefaultFontList(int size);
-  static gfx::FontList GetFontList(int size, base::string16 text);
+  static bool GetFontList(int size,
+                          base::string16 text,
+                          gfx::FontList* font_list);
+  static void SetForceFontFallbackFailureForTesting(bool force);
 
  private:
   bool dirty_ = true;
