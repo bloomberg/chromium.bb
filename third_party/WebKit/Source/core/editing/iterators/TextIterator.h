@@ -150,6 +150,14 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool ShouldHandleFirstLetter(const LayoutText&) const;
   bool ShouldProceedToRemainingText() const;
   void ProceedToRemainingText();
+  void ResetCollapsedWhiteSpaceFixup();
+
+  // Returns true if more text is emitted without traversing to the next node.
+  bool HandleRemainingTextRuns();
+
+  // Returns true if a leading white space is emitted before a replaced element.
+  bool FixLeadingWhiteSpaceForReplacedElement(Node* parent);
+
   void SpliceBuffer(UChar,
                     Node* text_node,
                     Node* offset_base_node,
