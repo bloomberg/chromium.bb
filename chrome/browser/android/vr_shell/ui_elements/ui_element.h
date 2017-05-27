@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "device/vr/vr_types.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -243,6 +244,12 @@ class UiElement : public WorldRectangle {
   // allow finer control of element visibility.
   virtual void SetEnabled(bool enabled);
 
+  void SetMode(ColorScheme::Mode mode);
+  ColorScheme::Mode mode() const { return mode_; }
+
+ protected:
+  virtual void OnSetMode();
+
  private:
   // Valid IDs are non-negative.
   int id_ = -1;
@@ -315,6 +322,8 @@ class UiElement : public WorldRectangle {
   UiElementDebugId debug_id_ = UiElementDebugId::kNone;
 
   Transform transform_;
+
+  ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

@@ -29,6 +29,7 @@ class UiInterface {
   virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
   virtual void SetSecurityLevel(security_state::SecurityLevel level) = 0;
+  virtual void SetIncognito(bool enabled) = 0;
   virtual void SetWebVrSecureOrigin(bool secure) = 0;
   virtual void SetLoading(bool loading) = 0;
   virtual void SetLoadProgress(float progress) = 0;

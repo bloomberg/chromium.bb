@@ -23,6 +23,7 @@ class RenderText;
 namespace vr_shell {
 
 class RenderTextWrapper;
+struct ColorScheme;
 
 class UrlBarTexture : public UiTexture {
  public:
@@ -50,13 +51,16 @@ class UrlBarTexture : public UiTexture {
   static void ApplyUrlStyling(const base::string16& formatted_url,
                               const url::Parsed& parsed,
                               security_state::SecurityLevel security_level,
-                              vr_shell::RenderTextWrapper* render_text);
+                              vr_shell::RenderTextWrapper* render_text,
+                              const ColorScheme& color_scheme);
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
   float ToPixels(float meters) const;
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
+  void OnSetMode() override;
+  const ColorScheme& color_scheme() const;
 
   gfx::SizeF size_;
   bool hovered_ = false;

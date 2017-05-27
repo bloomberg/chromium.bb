@@ -65,4 +65,8 @@ void TexturedElement::Flush(SkSurface* surface) {
                GL_RGBA, GL_UNSIGNED_BYTE, pixmap.addr());
 }
 
+void TexturedElement::OnSetMode() {
+  GetTexture()->SetMode(mode());
+}
+
 }  // namespace vr_shell

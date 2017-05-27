@@ -56,6 +56,15 @@ bool UiTexture::HitTest(const gfx::PointF& point) const {
   return false;
 }
 
+void UiTexture::SetMode(ColorScheme::Mode mode) {
+  if (mode_ == mode)
+    return;
+  mode_ = mode;
+  OnSetMode();
+}
+
+void UiTexture::OnSetMode() {}
+
 std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     const base::string16& text,
     const gfx::FontList& font_list,
