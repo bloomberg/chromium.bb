@@ -136,8 +136,8 @@ Polymer({
       // Combine the SearchRequests results to a single SearchResult object.
       return {
         canceled: requests.some(function(r) { return r.canceled; }),
-        didFindMatches: requests.every(function(r) {
-          return !r.didFindMatches();
+        didFindMatches: requests.some(function(r) {
+          return r.didFindMatches();
         }),
         // All requests correspond to the same user query, so only need to check
         // one of them.

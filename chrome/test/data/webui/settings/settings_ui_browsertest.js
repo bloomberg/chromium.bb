@@ -133,6 +133,11 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
       var value = 'GOOG';
       searchField.setValue(value);
       assertEquals(value, settings.getQueryParameters().get('search'));
+
+      // Test that search queries are properly URL encoded.
+      value = '+++';
+      searchField.setValue(value);
+      assertEquals(value, settings.getQueryParameters().get('search'));
     });
 
      test('whitespace only search query is ignored', function() {
