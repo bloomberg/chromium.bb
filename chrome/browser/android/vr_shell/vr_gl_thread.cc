@@ -128,6 +128,12 @@ void VrGLThread::ToggleCardboardGamepad(bool enabled) {
       base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
 }
 
+void VrGLThread::OnUnsupportedMode(UiUnsupportedMode mode) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VrShell::ExitVrDueToUnsupportedMode, weak_vr_shell_, mode));
+}
+
 void VrGLThread::SetFullscreen(bool enabled) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetFullscreen,

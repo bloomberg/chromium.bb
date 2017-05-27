@@ -46,7 +46,8 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
   paint.setColor(kBackgroundColor);
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT);
-  auto fonts = GetFontList(size_.height() * kFontSizeFactor, text);
+  gfx::FontList fonts;
+  GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(0, kTextHeightFactor * size_.height());
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines =

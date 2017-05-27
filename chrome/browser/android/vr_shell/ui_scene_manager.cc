@@ -271,7 +271,9 @@ void UiSceneManager::CreateBackground() {
 
 void UiSceneManager::CreateUrlBar() {
   // TODO(cjgrant): Incorporate final size and position.
-  auto url_bar = base::MakeUnique<UrlBar>(512);
+  auto url_bar = base::MakeUnique<UrlBar>(
+      512,
+      base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_debug_id(kUrlBar);
   url_bar->set_id(AllocateId());
   url_bar->set_translation({0, kUrlBarVerticalOffset, -kUrlBarDistance});
@@ -453,6 +455,10 @@ void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
 
 void UiSceneManager::OnCloseButtonClicked() {
   browser_->ExitCct();
+}
+
+void UiSceneManager::OnUnsupportedMode(UiUnsupportedMode mode) {
+  browser_->OnUnsupportedMode(mode);
 }
 
 int UiSceneManager::AllocateId() {

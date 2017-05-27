@@ -36790,6 +36790,10 @@ from previous Chrome versions.
   <int value="6" label="L2TP/IPSec Username/Password"/>
 </enum>
 
+<enum name="VRUnsupportedMode" type="int">
+  <int value="0" label="Unhandled code point in URL"/>
+</enum>
+
 <enum name="VRViewerType" type="int">
   <int value="0" label="UNKNOWN_TYPE"/>
   <int value="1" label="CARDBOARD"/>

@@ -102,7 +102,10 @@ gfx::PointF percentToMeters(const gfx::PointF& percent) {
 
 }  // namespace
 
-UrlBarTexture::UrlBarTexture() : security_level_(SecurityLevel::DANGEROUS) {}
+UrlBarTexture::UrlBarTexture(
+    const base::Callback<void(UiUnsupportedMode)>& failure_callback)
+    : security_level_(SecurityLevel::DANGEROUS),
+      failure_callback_(failure_callback) {}
 
 UrlBarTexture::~UrlBarTexture() = default;
 
@@ -242,7 +245,10 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
       &parsed, nullptr, nullptr);
 
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
-  auto font_list = GetFontList(pixel_font_height, text);
+
+  gfx::FontList font_list;
+  if (!GetFontList(pixel_font_height, text, &font_list))
+    failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
   std::unique_ptr<gfx::RenderText> render_text(
       gfx::RenderText::CreateInstance());

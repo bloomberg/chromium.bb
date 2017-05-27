@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
+#include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -20,7 +21,8 @@ class UrlBarTexture;
 
 class UrlBar : public TexturedElement {
  public:
-  explicit UrlBar(int preferred_width);
+  UrlBar(int preferred_width,
+         const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBar() override;
 
   void OnHoverEnter(const gfx::PointF& position) override;

@@ -43,7 +43,8 @@ void ExitWarningTexture::Draw(SkCanvas* sk_canvas,
   paint.setColor(kBackgroundColor);
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE);
-  auto fonts = GetFontList(size_.width() * kFontSizeFactor, text);
+  gfx::FontList fonts;
+  GetFontList(size_.width() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(size_.width() * kTextWidthFactor, 0);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines =

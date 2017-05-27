@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
@@ -161,7 +162,7 @@ class VrShell : public device::PresentingGvrDelegate,
   void ForceExitVr();
   void ExitPresent();
   void ExitFullscreen();
-  void ExitVrDueToUnsupportedMode();
+  void ExitVrDueToUnsupportedMode(UiUnsupportedMode mode);
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
   void SubmitControllerModel(std::unique_ptr<VrControllerModel> model);

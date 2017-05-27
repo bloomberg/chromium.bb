@@ -80328,6 +80328,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VR.Shell.EncounteredUnsupportedMode" enum="VRUnsupportedMode">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    We must exit VR mode when browsing in certain situations. This tracks which
+    situations are encountered in practice.
+  </summary>
+</histogram>
+
 <histogram name="VRDisplayPresentResult" enum="PresentationResult">
   <owner>billorr@chromium.org</owner>
   <summary>

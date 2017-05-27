@@ -19,9 +19,10 @@ constexpr int64_t kUpdateDelayMS = 50;
 
 }  // namespace
 
-UrlBar::UrlBar(int preferred_width)
+UrlBar::UrlBar(int preferred_width,
+               const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>()) {}
+      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)) {}
 
 UrlBar::~UrlBar() = default;
 
