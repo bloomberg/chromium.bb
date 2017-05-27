@@ -123,6 +123,11 @@
 - (void)regionDataLoaderDidSucceedWithRegions:
     (NSMutableArray<NSString*>*)regions {
   self.regions = regions;
+  // Enable the previously disabled field and reset its value to the first
+  // region or nil, if there are no regions.
+  self.regionField.enabled = YES;
+  self.regionField.value = regions.count ? regions[0] : nil;
+
   // Notify the view controller asynchronously to allow for the view to update.
   __weak AddressEditMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{

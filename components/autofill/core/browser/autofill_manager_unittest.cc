@@ -160,7 +160,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   std::string SaveImportedProfile(const AutofillProfile& profile) override {
     num_times_save_imported_profile_called_++;
-    AddProfile(base::MakeUnique<AutofillProfile>(profile));
+    AddProfile(profile);
     return profile.guid();
   }
 
@@ -180,9 +180,11 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
-  void AddProfile(std::unique_ptr<AutofillProfile> profile) {
-    profile->set_modification_date(AutofillClock::Now());
-    web_profiles_.push_back(std::move(profile));
+  void AddProfile(const AutofillProfile& profile) override {
+    std::unique_ptr<AutofillProfile> profile_ptr =
+        base::MakeUnique<AutofillProfile>(profile);
+    profile_ptr->set_modification_date(AutofillClock::Now());
+    web_profiles_.push_back(std::move(profile_ptr));
   }
 
   void AddCreditCard(const CreditCard& credit_card) override {
@@ -673,7 +675,7 @@ class TestAutofillManager : public AutofillManager {
   }
 
   void AddProfile(std::unique_ptr<AutofillProfile> profile) {
-    personal_data_->AddProfile(std::move(profile));
+    personal_data_->AddProfile(*profile);
   }
 
   void AddCreditCard(const CreditCard& credit_card) {

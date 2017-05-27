@@ -271,10 +271,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(field.fieldType == EditorFieldTypeTextField);
   AutofillEditItem* item =
       base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
-
-  // Enable the previously disabled text field and reset its value.
-  item.textFieldEnabled = YES;
-  item.textFieldValue = nil;
+  item.textFieldEnabled = field.enabled;
+  item.textFieldValue = field.value;
 
   // Cache the options if there are any and set the text field's UIPickerView.
   if (options.count) {
