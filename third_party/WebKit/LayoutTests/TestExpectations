@@ -883,7 +883,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling2.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling3.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling5.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-pre-block.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-pre-block.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-empty-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-large-and-small-float-below.html [ Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-obeys-container-padding.html [ Failure ]
