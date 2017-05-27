@@ -120,6 +120,8 @@ static_library("common") {
     "partial_circular_buffer.cc",
     "partial_circular_buffer.h",
     "pause_tabs_field_trial.h",
+    "pdf_uma.cc",
+    "pdf_uma.h",
     "pref_names_util.cc",
     "pref_names_util.h",
     "prerender_messages.h",

@@ -44,15 +44,6 @@ class PluginUMAReporter {
     PLUGIN_TYPE_MAX
   };
 
-  // Must be kept in sync with PDFLoadStatus enum in histograms.xml.
-  // This enum should be treated as append-only.
-  enum PDFLoadStatus {
-    LOADED_FULL_PAGE_PDF_WITH_PDFIUM = 0,
-    LOADED_EMBEDDED_PDF_WITH_PDFIUM = 1,
-    SHOWED_DISABLED_PLUGIN_PLACEHOLDER_FOR_EMBEDDED_PDF = 2,
-    PDF_LOAD_STATUS_COUNT
-  };
-
   // Sends UMA data, i.e. plugin's type.
   class UMASender {
    public:
@@ -63,8 +54,6 @@ class PluginUMAReporter {
 
   // Returns singleton instance.
   static PluginUMAReporter* GetInstance();
-
-  static void ReportPDFLoadStatus(PDFLoadStatus status);
 
   void ReportPluginMissing(const std::string& plugin_mime_type,
                            const GURL& plugin_src);

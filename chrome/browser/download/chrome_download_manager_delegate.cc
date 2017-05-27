@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pdf_uma.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
@@ -206,6 +207,8 @@ const DownloadPathReservationTracker::FilenameConflictAction
     kDefaultPlatformConflictAction = DownloadPathReservationTracker::UNIQUIFY;
 #endif
 
+constexpr char kPDFMimeType[] = "application/pdf";
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -286,6 +289,11 @@ void ChromeDownloadManagerDelegate::ReturnNextId(
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     DownloadItem* download,
     const content::DownloadTargetCallback& callback) {
+  if (download->GetTargetFilePath().empty() &&
+      download->GetMimeType() == kPDFMimeType && !download->HasUserGesture()) {
+    ReportPDFLoadStatus(PDFLoadStatus::kTriggeredNoGestureDriveByDownload);
+  }
+
   DownloadTargetDeterminer::CompletionCallback target_determined_callback =
       base::Bind(&ChromeDownloadManagerDelegate::OnDownloadTargetDetermined,
                  weak_ptr_factory_.GetWeakPtr(),
