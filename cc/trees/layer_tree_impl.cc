@@ -178,11 +178,11 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   // If pending tree topology changed and we still want to notify the pending
   // tree about scroll offset in the active tree, we may not find the
   // corresponding pending layer.
-  if (LayerById(layer_id)) {
+  if (auto* layer = LayerById(layer_id)) {
     // TODO(sunxd): when we have a layer_id to property_tree index map in
     // property trees, use the transform_id parameter instead of looking for
     // indices from LayerImpls.
-    transform_id = LayerById(layer_id)->transform_tree_index();
+    transform_id = layer->transform_tree_index();
   } else {
     DCHECK(!IsActiveTree());
     return;
@@ -219,9 +219,6 @@ void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
 
   int scroll_layer_id, clip_layer_id;
   if (IsViewportLayerId(layer_id)) {
-    if (!InnerViewportContainerLayer())
-      return;
-
     // For scrollbar purposes, a change to any of the four viewport layers
     // should affect the scrollbars tied to the outermost layers, which express
     // the sum of the entire viewport.
@@ -258,11 +255,15 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
     return;
 
   gfx::ScrollOffset current_offset = scroll_layer->CurrentScrollOffset();
-  if (IsViewportLayerId(scroll_layer_id)) {
+  float viewport_vertical_adjust = 0;
+
+  bool is_viewport_scrollbar = scroll_layer->is_viewport_layer_type();
+  if (is_viewport_scrollbar) {
     current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
     if (OuterViewportContainerLayer())
       clip_size.SetToMin(OuterViewportContainerLayer()->BoundsForScrolling());
     clip_size.Scale(1 / current_page_scale_factor());
+    viewport_vertical_adjust = clip_layer->ViewportBoundsDelta().y();
   }
 
   bool y_offset_did_change = false;
@@ -276,10 +277,10 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
       scrollbar->SetClipLayerLength(clip_size.height());
       scrollbar->SetScrollLayerLength(scroll_size.height());
     }
-    scrollbar->SetVerticalAdjust(clip_layer->ViewportBoundsDelta().y());
+    scrollbar->SetVerticalAdjust(viewport_vertical_adjust);
   }
 
-  if (y_offset_did_change && IsViewportLayerId(scroll_layer_id))
+  if (y_offset_did_change && is_viewport_scrollbar)
     TRACE_COUNTER_ID1("cc", "scroll_offset_y", scroll_layer->id(),
                       current_offset.y());
 }
