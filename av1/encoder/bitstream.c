@@ -855,6 +855,9 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     if (token == BLOCK_Z_TOKEN) {
       aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
       p++;
+#if CONFIG_VAR_TX
+      break;
+#endif
       continue;
     }
 
