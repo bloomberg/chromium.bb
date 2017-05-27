@@ -4,9 +4,14 @@
 
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 
+#include "base/guid.h"
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/address_edit_mediator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
@@ -76,7 +81,10 @@ using ::AutofillTypeFromAutofillUIType;
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
                                 validateField:(EditorField*)field {
-  // TODO(crbug.com/602666): Validation.
+  if (!field.value.length && field.isRequired) {
+    return l10n_util::GetNSString(
+        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  }
   return nil;
 }
 
@@ -98,7 +106,32 @@ using ::AutofillTypeFromAutofillUIType;
 
 - (void)addressEditViewController:(AddressEditViewController*)controller
            didFinishEditingFields:(NSArray<EditorField*>*)fields {
-  // TODO(crbug.com/602666): Create or edit an address as appropriate.
+  // Create an empty autofill profile. If an address is being edited, copy over
+  // the information.
+  autofill::AutofillProfile address =
+      self.address ? *self.address
+                   : autofill::AutofillProfile(base::GenerateGUID(),
+                                               autofill::kSettingsOrigin);
+
+  for (EditorField* field in fields) {
+    address.SetRawInfo(AutofillTypeFromAutofillUIType(field.autofillUIType),
+                       base::SysNSStringToUTF16(field.value));
+  }
+
+  if (!self.address) {
+    self.paymentRequest->GetPersonalDataManager()->AddProfile(address);
+
+    // Add the profile to the list of profiles in |self.paymentRequest|.
+    self.address = self.paymentRequest->AddAutofillProfile(address);
+  } else {
+    // Override the origin.
+    address.set_origin(autofill::kSettingsOrigin);
+    self.paymentRequest->GetPersonalDataManager()->UpdateProfile(address);
+
+    // Update the original profile instance that is being edited.
+    *self.address = address;
+  }
+
   [self.delegate addressEditCoordinator:self
                 didFinishEditingAddress:self.address];
 }

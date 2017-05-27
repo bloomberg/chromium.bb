@@ -131,10 +131,10 @@ class PersonalDataManager : public KeyedService,
       const CreditCard& imported_credit_card);
 
   // Adds |profile| to the web database.
-  void AddProfile(const AutofillProfile& profile);
+  virtual void AddProfile(const AutofillProfile& profile);
 
   // Updates |profile| which already exists in the web database.
-  void UpdateProfile(const AutofillProfile& profile);
+  virtual void UpdateProfile(const AutofillProfile& profile);
 
   // Removes the profile or credit card represented by |guid|.
   virtual void RemoveByGUID(const std::string& guid);

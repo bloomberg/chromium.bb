@@ -147,9 +147,10 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
                       saveCreditCard:(BOOL)saveCreditCard {
   // Create an empty credit card. If a credit card is being edited, copy over
   // the information.
-  autofill::CreditCard creditCard("", autofill::kSettingsOrigin);
-  if (_creditCard)
-    creditCard = *_creditCard;
+  autofill::CreditCard creditCard =
+      _creditCard ? *_creditCard
+                  : autofill::CreditCard(base::GenerateGUID(),
+                                         autofill::kSettingsOrigin);
 
   for (EditorField* field in fields) {
     if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
@@ -162,15 +163,15 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   }
 
   if (!_creditCard) {
-    if (saveCreditCard) {
-      // The new credit card does not yet have a valid GUID.
-      creditCard.set_guid(base::GenerateGUID());
+    if (saveCreditCard)
       _paymentRequest->GetPersonalDataManager()->AddCreditCard(creditCard);
-    }
 
     // Add the credit card to the list of credit cards in |_paymentRequest|.
     _creditCard = _paymentRequest->AddCreditCard(creditCard);
   } else {
+    // Override the origin.
+    creditCard.set_origin(autofill::kSettingsOrigin);
+
     // Update the original credit card instance that is being edited.
     *_creditCard = creditCard;
 
