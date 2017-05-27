@@ -55,9 +55,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(zakerinasab): check / generate reference images.
     self.Fail('Pixel_Canvas2DUntagged', bug=713632)
 
-    # TODO(jbauman): Remove when new baseline exists.
-    self.Fail('Pixel_DirectComposition_Video_MP4', bug=704389)
-
     # Failures on Haswell GPUs on macOS after upgrade to 10.12.4.
     self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker',
               ['mac', ('intel', 0x0a2e)], bug=718183)
