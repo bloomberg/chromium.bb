@@ -490,9 +490,9 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
 
   // Cleanup.
   chromeos::WallpaperManager::Shutdown();
-  free(ActiveTabPermissionGranter::SetPlatformDelegate(nullptr));
+  delete ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 }  // namespace extensions
