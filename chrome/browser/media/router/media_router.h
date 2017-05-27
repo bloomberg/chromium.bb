@@ -178,7 +178,7 @@ class MediaRouter : public KeyedService {
   // |provider_name|: Name of the MediaSinkService providing the sinks.
   // |sinks|: sinks discovered by MediaSinkService.
   virtual void ProvideSinks(const std::string& provider_name,
-                            const std::vector<MediaSinkInternal>& sinks) = 0;
+                            std::vector<MediaSinkInternal> sinks) = 0;
 
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.

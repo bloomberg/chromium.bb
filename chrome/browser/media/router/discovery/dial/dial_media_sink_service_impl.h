@@ -47,6 +47,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestTimer);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            TestOnDeviceDescriptionAvailable);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestRestartAfterStop);
 
   // api::dial::DialRegistry::Observer implementation
   void OnDialDeviceEvent(const DialRegistry::DeviceList& devices) override;
@@ -66,6 +67,9 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Raw pointer to DialRegistry singleton.
   DialRegistry* dial_registry_ = nullptr;
+
+  // DialRegistry for unit test.
+  DialRegistry* test_dial_registry_ = nullptr;
 
   // Device data list from current round of discovery.
   DialRegistry::DeviceList current_devices_;

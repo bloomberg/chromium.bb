@@ -222,6 +222,7 @@ class MediaRouterMojoTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
+  TestingProfile profile_;
   std::unique_ptr<MediaRouterMojoImpl> mock_media_router_;
   std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
 

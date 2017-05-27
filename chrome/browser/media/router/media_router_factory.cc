@@ -78,8 +78,8 @@ KeyedService* MediaRouterFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   media_router = new MediaRouterAndroid(context);
 #else
-  media_router =
-      new MediaRouterMojoImpl(extensions::ProcessManager::Get(context));
+  media_router = new MediaRouterMojoImpl(
+      extensions::ProcessManager::Get(context), context);
 #endif
   media_router->Initialize();
   return media_router;

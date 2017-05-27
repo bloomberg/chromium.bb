@@ -51,4 +51,14 @@ void MediaSinkServiceBase::StartTimer() {
                                   base::Unretained(this)));
 }
 
+void MediaSinkServiceBase::StopTimer() {
+  finish_timer_.reset();
+}
+
+void MediaSinkServiceBase::RestartTimer() {
+  if (!finish_timer_ || finish_timer_->IsRunning())
+    return;
+  StartTimer();
+}
+
 }  // namespace media_router

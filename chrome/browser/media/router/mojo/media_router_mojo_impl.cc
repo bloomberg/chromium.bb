@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_proxy.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/route_message_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_message.h"
@@ -59,11 +61,13 @@ MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
 MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 
 MediaRouterMojoImpl::MediaRouterMojoImpl(
-    extensions::EventPageTracker* event_page_tracker)
+    extensions::EventPageTracker* event_page_tracker,
+    content::BrowserContext* context)
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
       availability_(mojom::MediaRouter::SinkAvailability::UNAVAILABLE),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
+      context_(context),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(event_page_tracker_);
@@ -76,6 +80,8 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (dial_media_sink_service_proxy_)
+    dial_media_sink_service_proxy_->Stop();
 }
 
 // static
@@ -427,14 +433,16 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
   return route_controller;
 }
 
-void MediaRouterMojoImpl::ProvideSinks(
-    const std::string& provider_name,
-    const std::vector<MediaSinkInternal>& sinks) {
+void MediaRouterMojoImpl::ProvideSinks(const std::string& provider_name,
+                                       std::vector<MediaSinkInternal> sinks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DVLOG_WITH_INSTANCE(1) << "OnDialMediaSinkDiscovered found " << sinks.size()
+                         << " devices...";
 
   SetWakeReason(MediaRouteProviderWakeReason::PROVIDE_SINKS);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoProvideSinks,
-                        base::Unretained(this), provider_name, sinks));
+                        base::Unretained(this), provider_name,
+                        std::move(sinks)));
 }
 
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
@@ -751,9 +759,8 @@ void MediaRouterMojoImpl::DoSearchSinks(
       sink_id, source_id, std::move(sink_search_criteria), sink_callback);
 }
 
-void MediaRouterMojoImpl::DoProvideSinks(
-    const std::string& provider_name,
-    const std::vector<MediaSinkInternal>& sinks) {
+void MediaRouterMojoImpl::DoProvideSinks(const std::string& provider_name,
+                                         std::vector<MediaSinkInternal> sinks) {
   DVLOG_WITH_INSTANCE(1) << "DoProvideSinks";
   media_route_provider_->ProvideSinks(provider_name, sinks);
 }
@@ -1005,6 +1012,9 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider() {
     DoEnsureMdnsDiscoveryEnabled();
   }
 #endif
+
+  if (media_router::DialLocalDiscoveryEnabled())
+    StartDiscovery();
 }
 
 void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
@@ -1069,6 +1079,20 @@ void MediaRouterMojoImpl::OnFirewallCheckComplete(
     EnsureMdnsDiscoveryEnabled();
 }
 #endif
+
+void MediaRouterMojoImpl::StartDiscovery() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DVLOG_WITH_INSTANCE(1) << "StartDiscovery";
+
+  if (!dial_media_sink_service_proxy_) {
+    dial_media_sink_service_proxy_ = new DialMediaSinkServiceProxy(
+        base::Bind(&MediaRouterMojoImpl::ProvideSinks,
+                   weak_factory_.GetWeakPtr(), "dial"),
+        context_);
+  }
+
+  dial_media_sink_service_proxy_->Start();
+}
 
 void MediaRouterMojoImpl::UpdateMediaSinks(
     const MediaSource::Id& source_id) {
