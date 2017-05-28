@@ -38,7 +38,7 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240));
     surface_->Initialize();
 
-    share_group_ = new gl::GLShareGroup;
+    share_group_ = new gl::GLShareGroup();
     context_ = new gl::GLContextEGL(share_group_.get());
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
@@ -47,8 +47,8 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     texture_id_ = surface_texture_->texture_id();
     // Bind and un-bind the texture, since that's required for glIsTexture to
     // return true.
-    glBindTexture(GL_TEXTURE_2D, texture_id_);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
     ASSERT_TRUE(glIsTexture(texture_id_));
   }
 
@@ -95,7 +95,7 @@ TEST_F(SurfaceTextureGLOwnerTest, DestructionWorksWithWrongContext) {
       new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240)));
   new_surface->Initialize();
 
-  scoped_refptr<gl::GLShareGroup> new_share_group(new gl::GLShareGroup);
+  scoped_refptr<gl::GLShareGroup> new_share_group(new gl::GLShareGroup());
   scoped_refptr<gl::GLContext> new_context(
       new gl::GLContextEGL(new_share_group.get()));
   new_context->Initialize(new_surface.get(), gl::GLContextAttribs());

@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace media {
@@ -33,6 +34,15 @@ scoped_refptr<SurfaceTextureGLOwner> SurfaceTextureGLOwner::Create() {
   glGenTextures(1, &texture_id);
   if (!texture_id)
     return nullptr;
+
+  // Set the parameters on the texture.
+  gl::ScopedActiveTexture active_texture(GL_TEXTURE0);
+  gl::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES, texture_id);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   return new SurfaceTextureGLOwner(texture_id);
 }
