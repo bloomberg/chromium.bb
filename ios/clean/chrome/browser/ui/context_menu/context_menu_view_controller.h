@@ -9,13 +9,14 @@
 
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_consumer.h"
 
+@protocol ContextMenuCommands;
+@class ContextMenuContext;
+
 // A view controller that displays a context menu.
 @interface ContextMenuViewController : UIAlertController<ContextMenuConsumer>
 
-// Create an instance of this class with the dispatcher |dispatcher|.
-//
-// PLACEHOLDER: Once commands are defined, define a protocol for the dispatcher.
-- (instancetype)initWithDispatcher:(id)dispatcher;
+// Designated initializer that uses |dispatcher| to communicate commands.
+- (instancetype)initWithDispatcher:(id<ContextMenuCommands>)dispatcher;
 
 @end
 

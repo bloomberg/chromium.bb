@@ -6,12 +6,15 @@
 
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
+#import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
@@ -30,12 +33,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<SettingsCommands,
+@interface TabGridCoordinator ()<ContextMenuCommands,
+                                 SettingsCommands,
                                  TabGridCommands,
                                  ToolsMenuCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
+@property(nonatomic, weak) TabCoordinator* activeTabCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
 @end
@@ -44,6 +49,7 @@
 @synthesize viewController = _viewController;
 @synthesize settingsCoordinator = _settingsCoordinator;
 @synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
+@synthesize activeTabCoordinator = _activeTabCoordinator;
 @synthesize mediator = _mediator;
 
 #pragma mark - Properties
@@ -58,6 +64,7 @@
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
 
+  [self registerForContextMenuCommands];
   [self registerForSettingsCommands];
   [self registerForTabGridCommands];
   [self registerForToolsMenuCommands];
@@ -99,13 +106,53 @@
                          completion:nil];
 }
 
+#pragma mark - ContextMenuCommands
+
+- (void)openContextMenuLinkInNewTab:(ContextMenuContext*)context {
+  [self createAndShowNewTabInTabGrid];
+  ContextMenuContextImpl* contextImpl =
+      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
+  [self openURL:net::NSURLWithGURL(contextImpl.linkURL)];
+}
+
+- (void)openContextMenuImageInNewTab:(ContextMenuContext*)context {
+  [self createAndShowNewTabInTabGrid];
+  ContextMenuContextImpl* contextImpl =
+      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
+  [self openURL:net::NSURLWithGURL(contextImpl.imageURL)];
+}
+
+#pragma mark - SettingsCommands
+
+- (void)showSettings {
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(closeSettings)];
+  SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
+  [self addOverlayCoordinator:settingsCoordinator];
+  self.settingsCoordinator = settingsCoordinator;
+  [settingsCoordinator start];
+}
+
+- (void)closeSettings {
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  [dispatcher stopDispatchingForSelector:@selector(closeSettings)];
+  [self.settingsCoordinator stop];
+  [self.settingsCoordinator.parentCoordinator
+      removeChildCoordinator:self.settingsCoordinator];
+  // self.settingsCoordinator should be presumed to be nil after this point.
+}
+
 #pragma mark - TabGridCommands
 
 - (void)showTabGridTabAtIndex:(int)index {
   self.webStateList.ActivateWebStateAt(index);
   // PLACEHOLDER: The tab coordinator should be able to get the active webState
   // on its own.
+  [self.activeTabCoordinator stop];
+  [self removeChildCoordinator:self.activeTabCoordinator];
   TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
+  self.activeTabCoordinator = tabCoordinator;
   tabCoordinator.webState = self.webStateList.GetWebStateAt(index);
   tabCoordinator.presentationKey =
       [NSIndexPath indexPathForItem:index inSection:0];
@@ -155,27 +202,6 @@
   [self removeChildCoordinator:self.toolsMenuCoordinator];
 }
 
-#pragma mark - SettingsCommands
-
-- (void)showSettings {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeSettings)];
-  SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
-  [self addOverlayCoordinator:settingsCoordinator];
-  self.settingsCoordinator = settingsCoordinator;
-  [settingsCoordinator start];
-}
-
-- (void)closeSettings {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher stopDispatchingForSelector:@selector(closeSettings)];
-  [self.settingsCoordinator stop];
-  [self.settingsCoordinator.parentCoordinator
-      removeChildCoordinator:self.settingsCoordinator];
-  // self.settingsCoordinator should be presumed to be nil after this point.
-}
-
 #pragma mark - URLOpening
 
 - (void)openURL:(NSURL*)URL {
@@ -194,6 +220,19 @@
 }
 
 #pragma mark - PrivateMethods
+
+- (void)registerForContextMenuCommands {
+  // Right now these are unregistered in |-stop|.  However, once incognito is
+  // implemented, these commands will need to be unregistered before switching
+  // to incognito mode, as "open in new tab" commands are meant to be handled
+  // by the incognito TabGridCoordinator.
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(openContextMenuLinkInNewTab:)];
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(openContextMenuImageInNewTab:)];
+}
 
 - (void)registerForSettingsCommands {
   [self.browser->dispatcher() startDispatchingToTarget:self
