@@ -650,14 +650,10 @@ bool WebFrameWidgetImpl::SelectionTextDirection(WebTextDirection& start,
           .ToNormalizedEphemeralRange()
           .IsNull())
     return false;
-  start = ToWebTextDirection(
-      PrimaryDirectionOf(*selection.ComputeVisibleSelectionInDOMTreeDeprecated()
-                              .Start()
-                              .AnchorNode()));
-  end = ToWebTextDirection(
-      PrimaryDirectionOf(*selection.ComputeVisibleSelectionInDOMTreeDeprecated()
-                              .end()
-                              .AnchorNode()));
+  start = ToWebTextDirection(PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
+  end = ToWebTextDirection(PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().end().AnchorNode()));
   return true;
 }
 
