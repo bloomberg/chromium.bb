@@ -548,6 +548,11 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                      set(['completed_success', 'completed_failure',
                           'completed_canceled']))
 
+  def testGetCompletedBuildsWithBuildbucketAndRetriableBuilds(self):
+    """Tests GetCompletedBuilds with Buildbucket and retriable builds."""
+    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
+    self._Mock_GetSlaveStatusesFromBuildbucket(
+        BuildbucketInfos.GetFullBuildbucketInfoDict())
     self._Mock_GetRetriableBuilds(builds=set(['completed_failure']))
     slave_status = self._GetSlaveStatus(
         builders_array=self._GetFullBuildConfigs(),
@@ -555,6 +560,25 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
     self.assertEqual(slave_status._GetCompletedBuilds(),
                      set(['completed_success', 'completed_canceled']))
+
+  def testGetCompletedBuildsWithBuildbucketOnlyCompletedInCIDB(self):
+    """Tests when builds only completed in CIDB not Buildbucket."""
+    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
+    buildbucket_info_dict = {
+        'scheduled': BuildbucketInfos.GetScheduledBuild(),
+        'started': BuildbucketInfos.GetStartedBuild(),
+        'completed_success': BuildbucketInfos.GetSuccessBuild(),
+        'completed_failure': BuildbucketInfos.GetStartedBuild(),
+        'completed_canceled': BuildbucketInfos.GetCanceledBuild()
+    }
+
+    self._Mock_GetSlaveStatusesFromBuildbucket(buildbucket_info_dict)
+    slave_status = self._GetSlaveStatus(
+        builders_array=self._GetFullBuildConfigs(),
+        config=self.master_cq_config)
+
+    self.assertEqual(slave_status._GetCompletedBuilds(),
+                     set(['completed_success', 'completed_failure']))
 
   def testGetBuildsToRetry(self):
     """Test GetBuildsToRetry."""
@@ -1106,7 +1130,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         'failure': BuildbucketInfos.GetFailureBuild(),
         'canceled': BuildbucketInfos.GetCanceledBuild(),
     }
-    slave_status.buildbucket_info_dict = updated_buildbucket_info_dict
+    slave_status.new_buildbucket_info_dict = updated_buildbucket_info_dict
     content = {
         'build':{
             'status': 'SCHEDULED',
