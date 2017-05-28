@@ -278,20 +278,7 @@ void WebViewHelper::Resize(WebSize size) {
 
 TestWebFrameClient::TestWebFrameClient() {}
 
-// TODO(dcheng): https://crbug.com/578349 tracks the removal of this code. This
-// override exists only to handle the confusing provisional frame case.
 void TestWebFrameClient::FrameDetached(WebLocalFrame* frame, DetachType type) {
-  if (type == DetachType::kRemove && frame->Parent()) {
-    // Since this may be detaching a provisional frame, make sure |child| is
-    // actually linked into the frame tree (i.e. it is present in its parent
-    // node's children list) before trying to remove it as a child.
-    for (WebFrame* child = frame->Parent()->FirstChild(); child;
-         child = child->NextSibling()) {
-      if (child == frame)
-        frame->Parent()->RemoveChild(frame);
-    }
-  }
-
   if (frame->FrameWidget())
     frame->FrameWidget()->Close();
 
@@ -307,8 +294,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties) {
   WebLocalFrame* frame =
-      WebLocalFrame::Create(scope, this, GetInterfaceProvider(), nullptr);
-  parent->AppendChild(frame);
+      parent->CreateLocalChild(scope, this, GetInterfaceProvider(), nullptr);
   return frame;
 }
 
@@ -327,8 +313,6 @@ TestWebRemoteFrameClient::TestWebRemoteFrameClient()
                                         nullptr)) {}
 
 void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
-  if (type == DetachType::kRemove && frame_->Parent())
-    frame_->Parent()->RemoveChild(frame_);
   frame_->Close();
 }
 

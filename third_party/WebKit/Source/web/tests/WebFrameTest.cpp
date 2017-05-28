@@ -4537,9 +4537,8 @@ class ContextLifetimeTestMainFrameClient
       const WebParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties&) override {
     WebLocalFrame* frame =
-        WebLocalFrame::Create(scope, &child_client_, nullptr, nullptr);
+        parent->CreateLocalChild(scope, &child_client_, nullptr, nullptr);
     child_client_.SetFrame(frame);
-    parent->AppendChild(frame);
     return frame;
   }
 
@@ -7472,8 +7471,7 @@ class TestCachePolicyWebFrameClient
     DCHECK(child_client_);
     child_frame_creation_count_++;
     WebLocalFrame* frame =
-        WebLocalFrame::Create(scope, child_client_, nullptr, nullptr);
-    parent->AppendChild(frame);
+        parent->CreateLocalChild(scope, child_client_, nullptr, nullptr);
     return frame;
   }
 
@@ -11911,8 +11909,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
         const WebParsedFeaturePolicy& container_policy,
         const WebFrameOwnerProperties&) override {
       WebLocalFrame* frame =
-          WebLocalFrame::Create(scope, &child_client_, nullptr, nullptr);
-      parent->AppendChild(frame);
+          parent->CreateLocalChild(scope, &child_client_, nullptr, nullptr);
       return frame;
     }
 
@@ -12115,8 +12112,7 @@ class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
       const WebFrameOwnerProperties& frameOwnerProperties) override {
     DCHECK(child_client_);
     WebLocalFrame* frame =
-        WebLocalFrame::Create(scope, child_client_, nullptr, nullptr);
-    parent->AppendChild(frame);
+        parent->CreateLocalChild(scope, child_client_, nullptr, nullptr);
     return frame;
   }
 

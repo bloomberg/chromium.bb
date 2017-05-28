@@ -64,6 +64,10 @@ void RemoteFrameClientImpl::Detached(FrameDetachType type) {
     return;
 
   client->FrameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
+
+  if (type == FrameDetachType::kRemove)
+    web_frame_->DetachFromParent();
+
   // Clear our reference to RemoteFrame at the very end, in case the client
   // refers to it.
   web_frame_->SetCoreFrame(nullptr);

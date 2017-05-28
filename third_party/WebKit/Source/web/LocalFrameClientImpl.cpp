@@ -316,6 +316,10 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
 
   client->FrameDetached(web_frame_,
                         static_cast<WebFrameClient::DetachType>(type));
+
+  if (type == FrameDetachType::kRemove)
+    web_frame_->DetachFromParent();
+
   // Clear our reference to LocalFrame at the very end, in case the client
   // refers to it.
   web_frame_->SetCoreFrame(nullptr);
