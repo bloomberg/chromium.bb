@@ -172,6 +172,7 @@ ScopedMessagePipeHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
 
 ScopedMessagePipeHandle Core::CreatePartialMessagePipe(
     const ports::PortRef& port) {
+  RequestContext request_context;
   return ScopedMessagePipeHandle(
       MessagePipeHandle(AddDispatcher(new MessagePipeDispatcher(
           GetNodeController(), port, kUnknownPipeIdForDebug, 1))));
@@ -182,22 +183,26 @@ void Core::SendBrokerClientInvitation(
     ConnectionParams connection_params,
     const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
     const ProcessErrorCallback& process_error_callback) {
+  RequestContext request_context;
   GetNodeController()->SendBrokerClientInvitation(
       target_process, std::move(connection_params), attached_ports,
       process_error_callback);
 }
 
 void Core::AcceptBrokerClientInvitation(ConnectionParams connection_params) {
+  RequestContext request_context;
   GetNodeController()->AcceptBrokerClientInvitation(
       std::move(connection_params));
 }
 
 uint64_t Core::ConnectToPeer(ConnectionParams connection_params,
                              const ports::PortRef& port) {
+  RequestContext request_context;
   return GetNodeController()->ConnectToPeer(std::move(connection_params), port);
 }
 
 void Core::ClosePeerConnection(uint64_t peer_connection_id) {
+  RequestContext request_context;
   GetNodeController()->ClosePeerConnection(peer_connection_id);
 }
 
@@ -450,6 +455,10 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
   if (num_handles > kMaxHandlesPerMessage)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
+  // If serialization fails below this point, one or more handles may be closed.
+  // This requires an active RequestContext.
+  RequestContext request_context;
+
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   {
     base::AutoLock lock(handles_lock_);
@@ -482,6 +491,7 @@ MojoResult Core::FreeMessage(MojoMessageHandle message) {
   if (!message)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
+  RequestContext request_context;
   delete reinterpret_cast<MessageForTransit*>(message);
 
   return MOJO_RESULT_OK;
