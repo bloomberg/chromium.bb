@@ -9,11 +9,20 @@
 
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
+@class ContextMenuContextImpl;
+
 // A coordinator for a UI element that displays the web view associated with
 // |webState|.
 // HACK: Named WebContentMenuCoordinator to avoid collision with the
 // old architecture ContextMenuCoordinator class.
 @interface WebContextMenuCoordinator : BrowserCoordinator
+
+// Initializer that takes the parameters used to specify which context menu
+// options to display.
+- (instancetype)initWithContext:(ContextMenuContextImpl*)context
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_WEB_CONTEXT_MENU_CONTEXT_MENU_COORDINATOR_H_
