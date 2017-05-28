@@ -81,6 +81,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   ~ZoomBubbleView() override;
 
   // LocationBarBubbleDelegateView:
+  int GetDialogButtons() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

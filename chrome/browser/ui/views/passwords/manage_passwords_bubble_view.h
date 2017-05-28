@@ -73,6 +73,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   ~ManagePasswordsBubbleView() override;
 
   // LocationBarBubbleDelegateView:
+  int GetDialogButtons() const override;
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
   void CloseBubble() override;

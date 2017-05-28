@@ -813,6 +813,11 @@ ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
     manage_passwords_bubble_ = nullptr;
 }
 
+int ManagePasswordsBubbleView::GetDialogButtons() const {
+  // TODO(tapted): DialogClientView should manage buttons.
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
   return initially_focused_view_;
 }
