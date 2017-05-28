@@ -641,7 +641,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, stream_->WriteStreamData(QuicStringPiece(kData1, kDataLen),
+  EXPECT_EQ(OK, handle_->WriteStreamData(QuicStringPiece(kData1, kDataLen),
                                          true, callback.callback()));
 }
 
@@ -657,7 +657,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
       .WillOnce(Return(QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            stream_->WriteStreamData(QuicStringPiece(kData1, kDataLen), true,
+            handle_->WriteStreamData(QuicStringPiece(kData1, kDataLen), true,
                                      callback.callback()));
   ASSERT_FALSE(callback.have_result());
 
@@ -682,7 +682,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
       .WillOnce(Return(QuicConsumedData(buf2->size(), true)));
   TestCompletionCallback callback;
   EXPECT_EQ(
-      OK, stream_->WritevStreamData({buf1, buf2}, {buf1->size(), buf2->size()},
+      OK, handle_->WritevStreamData({buf1, buf2}, {buf1->size(), buf2->size()},
                                     true, callback.callback()));
 }
 
@@ -702,7 +702,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
       .WillOnce(Return(QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            stream_->WritevStreamData({buf1.get(), buf2.get()},
+            handle_->WritevStreamData({buf1.get(), buf2.get()},
                                       {buf1->size(), buf2->size()}, true,
                                       callback.callback()));
   ASSERT_FALSE(callback.have_result());

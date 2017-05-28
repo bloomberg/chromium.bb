@@ -73,6 +73,13 @@ void QuicChromiumClientStream::Handle::OnDataAvailable() {
   ResetAndReturn(&read_body_callback_).Run(rv);
 }
 
+void QuicChromiumClientStream::Handle::OnCanWrite() {
+  if (!write_callback_)
+    return;
+
+  base::ResetAndReturn(&write_callback_).Run(OK);
+}
+
 void QuicChromiumClientStream::Handle::OnClose() {
   if (stream_)
     SaveState();
@@ -144,7 +151,12 @@ int QuicChromiumClientStream::Handle::WriteStreamData(
     const CompletionCallback& callback) {
   if (!stream_)
     return ERR_CONNECTION_CLOSED;
-  return stream_->WriteStreamData(data, fin, callback);
+
+  if (stream_->WriteStreamData(data, fin))
+    return OK;
+
+  write_callback_ = callback;
+  return ERR_IO_PENDING;
 }
 
 int QuicChromiumClientStream::Handle::WritevStreamData(
@@ -154,7 +166,12 @@ int QuicChromiumClientStream::Handle::WritevStreamData(
     const CompletionCallback& callback) {
   if (!stream_)
     return ERR_CONNECTION_CLOSED;
-  return stream_->WritevStreamData(buffers, lengths, fin, callback);
+
+  if (stream_->WritevStreamData(buffers, lengths, fin))
+    return OK;
+
+  write_callback_ = callback;
+  return ERR_IO_PENDING;
 }
 
 int QuicChromiumClientStream::Handle::Read(IOBuffer* buf, int buf_len) {
@@ -386,9 +403,8 @@ void QuicChromiumClientStream::OnClose() {
 void QuicChromiumClientStream::OnCanWrite() {
   QuicStream::OnCanWrite();
 
-  if (!HasBufferedData() && !write_callback_.is_null()) {
-    base::ResetAndReturn(&write_callback_).Run(OK);
-  }
+  if (!HasBufferedData() && handle_)
+    handle_->OnCanWrite();
 }
 
 size_t QuicChromiumClientStream::WriteHeaders(
@@ -415,27 +431,18 @@ SpdyPriority QuicChromiumClientStream::priority() const {
                                : kV3HighestPriority;
 }
 
-int QuicChromiumClientStream::WriteStreamData(
-    QuicStringPiece data,
-    bool fin,
-    const CompletionCallback& callback) {
-  // We should not have data buffered.
+bool QuicChromiumClientStream::WriteStreamData(QuicStringPiece data, bool fin) {
+  // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
   WriteOrBufferData(data, fin, nullptr);
-  if (!HasBufferedData()) {
-    return OK;
-  }
-
-  write_callback_ = callback;
-  return ERR_IO_PENDING;
+  return !HasBufferedData();  // Was all data written?
 }
 
-int QuicChromiumClientStream::WritevStreamData(
+bool QuicChromiumClientStream::WritevStreamData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
-    bool fin,
-    const CompletionCallback& callback) {
+    bool fin) {
   // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
@@ -444,12 +451,7 @@ int QuicChromiumClientStream::WritevStreamData(
     QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
     WriteOrBufferData(string_data, is_fin, nullptr);
   }
-  if (!HasBufferedData()) {
-    return OK;
-  }
-
-  write_callback_ = callback;
-  return ERR_IO_PENDING;
+  return !HasBufferedData();  // Was all data written?
 }
 
 std::unique_ptr<QuicChromiumClientStream::Handle>
