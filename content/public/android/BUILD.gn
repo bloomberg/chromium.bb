@@ -118,7 +118,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ChildProcessConstants.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncher.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
-    "java/src/org/chromium/content/browser/ChildSpawnData.java",
     "java/src/org/chromium/content/browser/ContentClassFactory.java",
     "java/src/org/chromium/content/browser/ContentFeatureList.java",
     "java/src/org/chromium/content/browser/ContentNfcDelegate.java",

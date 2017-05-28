@@ -98,8 +98,8 @@ public class ChildProcessConnection {
                 try {
                     TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
                     Intent intent = createServiceBindIntent();
-                    if (mChildProcessCommonParameters != null) {
-                        intent.putExtras(mChildProcessCommonParameters);
+                    if (mServiceBundle != null) {
+                        intent.putExtras(mServiceBundle);
                     }
                     mBound = mContext.bindService(intent, this, mBindFlags);
                 } finally {
@@ -151,7 +151,7 @@ public class ChildProcessConnection {
     // Parameters passed to the child process through the service binding intent.
     // If the service gets recreated by the framework the intent will be reused, so these parameters
     // should be common to all processes of that type.
-    private final Bundle mChildProcessCommonParameters;
+    private final Bundle mServiceBundle;
 
     private final ChildProcessCreationParams mCreationParams;
 
@@ -218,24 +218,23 @@ public class ChildProcessConnection {
     // Set to true once unbind() was called.
     private boolean mUnbound;
 
-    ChildProcessConnection(Context context, DeathCallback deathCallback, ComponentName serviceName,
-            boolean bindAsExternalService, Bundle childProcessCommonParameters,
-            ChildProcessCreationParams creationParams) {
-        this(context, deathCallback, serviceName, bindAsExternalService,
-                childProcessCommonParameters, creationParams, true /* doBind */);
+    ChildProcessConnection(Context context, ComponentName serviceName,
+            boolean bindAsExternalService, Bundle serviceBundle,
+            ChildProcessCreationParams creationParams, DeathCallback deathCallback) {
+        this(context, serviceName, bindAsExternalService, serviceBundle, creationParams,
+                true /* doBind */, deathCallback);
     }
 
-    private ChildProcessConnection(Context context, DeathCallback deathCallback,
-            ComponentName serviceName, boolean bindAsExternalService,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams,
-            boolean doBind) {
+    private ChildProcessConnection(Context context, ComponentName serviceName,
+            boolean bindAsExternalService, Bundle serviceBundle,
+            ChildProcessCreationParams creationParams, boolean doBind,
+            DeathCallback deathCallback) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
         mDeathCallback = deathCallback;
         mCreationParams = creationParams;
         mServiceName = serviceName;
-
-        mChildProcessCommonParameters = childProcessCommonParameters;
+        mServiceBundle = serviceBundle;
 
         if (doBind) {
             int defaultFlags = Context.BIND_AUTO_CREATE
@@ -613,10 +612,9 @@ public class ChildProcessConnection {
     /** Creates a connection with no service bindings. */
     @VisibleForTesting
     static ChildProcessConnection createUnboundConnectionForTesting(Context context,
-            DeathCallback deathCallback, ComponentName serviceName, boolean bindAsExternalService,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-        return new ChildProcessConnection(context, deathCallback, serviceName,
-                bindAsExternalService, childProcessCommonParameters, creationParams,
-                false /* doBind */);
+            ComponentName serviceName, boolean bindAsExternalService, Bundle serviceBundle,
+            ChildProcessCreationParams creationParams, DeathCallback deathCallback) {
+        return new ChildProcessConnection(context, serviceName, bindAsExternalService,
+                serviceBundle, creationParams, false /* doBind */, deathCallback);
     }
 }

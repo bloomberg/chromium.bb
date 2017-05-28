@@ -8,14 +8,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.process_launcher.ChildProcessCreationParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 
 /**
  * This class is responsible for allocating and managing connections to child
@@ -25,22 +26,30 @@ import java.util.Queue;
 public class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
+    /** Listener that clients can use to get notified when connections get freed. */
+    public interface Listener {
+        void onConnectionFreed(
+                ChildConnectionAllocator allocator, ChildProcessConnection connection);
+    }
+
     /** Factory interface. Used by tests to specialize created connections. */
     @VisibleForTesting
     protected interface ConnectionFactory {
-        ChildProcessConnection createConnection(ChildSpawnData spawnData, ComponentName serviceName,
-                boolean bindAsExternalService, ChildProcessConnection.DeathCallback deathCallback);
+        ChildProcessConnection createConnection(Context context, ComponentName serviceName,
+                boolean bindAsExternalService, Bundle serviceBundle,
+                ChildProcessCreationParams creationParams,
+                ChildProcessConnection.DeathCallback deathCallback);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
     private static class ConnectionFactoryImpl implements ConnectionFactory {
         @Override
-        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
-                ComponentName serviceName, boolean bindAsExternalService,
+        public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
+                boolean bindAsExternalService, Bundle serviceBundle,
+                ChildProcessCreationParams creationParams,
                 ChildProcessConnection.DeathCallback deathCallback) {
-            return new ChildProcessConnection(spawnData.getContext(), deathCallback, serviceName,
-                    bindAsExternalService, spawnData.getServiceBundle(),
-                    spawnData.getCreationParams());
+            return new ChildProcessConnection(context, serviceName, bindAsExternalService,
+                    serviceBundle, creationParams, deathCallback);
         }
     }
 
@@ -50,13 +59,12 @@ public class ChildConnectionAllocator {
     private final String mPackageName;
     private final String mServiceClassName;
     private final boolean mBindAsExternalService;
+    private final ChildProcessCreationParams mCreationParams;
 
     // The list of free (not bound) service indices.
     private final ArrayList<Integer> mFreeConnectionIndices;
 
-    // Each Allocator keeps a queue for the pending spawn data. Once a connection is free, we
-    // dequeue the pending spawn data from the same allocator as the connection.
-    private final Queue<ChildSpawnData> mPendingSpawnQueue = new LinkedList<>();
+    private final List<Listener> mListeners = new ArrayList<>();
 
     private ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
 
@@ -64,7 +72,8 @@ public class ChildConnectionAllocator {
      * Factory method that retrieves the service name and number of service from the
      * AndroidManifest.xml.
      */
-    public static ChildConnectionAllocator create(Context context, String packageName,
+    public static ChildConnectionAllocator create(Context context,
+            ChildProcessCreationParams creationParams, String packageName,
             String serviceClassNameManifestKey, String numChildServicesManifestKey,
             boolean bindAsExternalService) {
         String serviceClassName = null;
@@ -96,7 +105,7 @@ public class ChildConnectionAllocator {
         }
 
         return new ChildConnectionAllocator(
-                packageName, serviceClassName, bindAsExternalService, numServices);
+                creationParams, packageName, serviceClassName, bindAsExternalService, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
@@ -124,14 +133,16 @@ public class ChildConnectionAllocator {
      * instead of being retrieved from the AndroidManifest.xml.
      */
     @VisibleForTesting
-    public static ChildConnectionAllocator createForTest(String packageName,
-            String serviceClassName, int serviceCount, boolean bindAsExternalService) {
+    public static ChildConnectionAllocator createForTest(ChildProcessCreationParams creationParams,
+            String packageName, String serviceClassName, int serviceCount,
+            boolean bindAsExternalService) {
         return new ChildConnectionAllocator(
-                packageName, serviceClassName, bindAsExternalService, serviceCount);
+                creationParams, packageName, serviceClassName, bindAsExternalService, serviceCount);
     }
 
-    private ChildConnectionAllocator(String packageName, String serviceClassName,
-            boolean bindAsExternalService, int numChildServices) {
+    private ChildConnectionAllocator(ChildProcessCreationParams creationParams, String packageName,
+            String serviceClassName, boolean bindAsExternalService, int numChildServices) {
+        mCreationParams = creationParams;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
         mBindAsExternalService = bindAsExternalService;
@@ -142,30 +153,28 @@ public class ChildConnectionAllocator {
         }
     }
 
-    // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
-    public ChildProcessConnection allocate(ChildSpawnData spawnData,
-            ChildProcessConnection.DeathCallback deathCallback, boolean queueIfNoSlotAvailable) {
+    /** @return a connection ready to be bound, or null if there are no free slots. */
+    public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
+            ChildProcessConnection.DeathCallback deathCallback) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
-            if (queueIfNoSlotAvailable) {
-                mPendingSpawnQueue.add(spawnData);
-            }
             return null;
         }
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
         ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
 
-        mChildProcessConnections[slot] = mConnectionFactory.createConnection(
-                spawnData, serviceName, mBindAsExternalService, deathCallback);
+        mChildProcessConnections[slot] = mConnectionFactory.createConnection(context, serviceName,
+                mBindAsExternalService, serviceBundle, mCreationParams, deathCallback);
         Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }
 
-    // Also return the first ChildSpawnData in the pending queue, if any.
-    public ChildSpawnData free(ChildProcessConnection connection) {
+    /** Frees a connection and notifies listeners. */
+    public void free(ChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
+
         // mChildProcessConnections is relatively short (20 items at max at this point).
         // We are better of iterating than caching in a map.
         int slot = Arrays.asList(mChildProcessConnections).indexOf(connection);
@@ -178,7 +187,11 @@ public class ChildConnectionAllocator {
             mFreeConnectionIndices.add(slot);
             Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName, slot);
         }
-        return mPendingSpawnQueue.poll();
+        // Copy the listeners list so listeners can unregister themselves while we are iterating.
+        List<Listener> listeners = new ArrayList<>(mListeners);
+        for (Listener listener : listeners) {
+            listener.onConnectionFreed(this, connection);
+        }
     }
 
     public String getPackageName() {
@@ -198,6 +211,16 @@ public class ChildConnectionAllocator {
         return mChildProcessConnections.length;
     }
 
+    public void addListener(Listener listener) {
+        assert !mListeners.contains(listener);
+        mListeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        boolean removed = mListeners.remove(listener);
+        assert removed;
+    }
+
     @VisibleForTesting
     void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
         mConnectionFactory = connectionFactory;
@@ -213,17 +236,5 @@ public class ChildConnectionAllocator {
     @VisibleForTesting
     ChildProcessConnection[] connectionArrayForTesting() {
         return mChildProcessConnections;
-    }
-
-    @VisibleForTesting
-    void enqueuePendingQueueForTesting(ChildSpawnData spawnData) {
-        assert LauncherThread.runningOnLauncherThread();
-        mPendingSpawnQueue.add(spawnData);
-    }
-
-    @VisibleForTesting
-    int pendingSpawnsCountForTesting() {
-        assert LauncherThread.runningOnLauncherThread();
-        return mPendingSpawnQueue.size();
     }
 }

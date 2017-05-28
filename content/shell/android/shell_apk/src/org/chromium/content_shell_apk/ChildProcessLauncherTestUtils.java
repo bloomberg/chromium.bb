@@ -67,6 +67,15 @@ public final class ChildProcessLauncherTestUtils {
         });
     }
 
+    public static boolean hasConnection(final ChildProcessLauncherHelper childProcessLauncher) {
+        return runOnLauncherAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return childProcessLauncher.hasConnection();
+            }
+        });
+    }
+
     public static ChildProcessConnection getConnection(
             final ChildProcessLauncherHelper childProcessLauncher) {
         return runOnLauncherAndGetResult(new Callable<ChildProcessConnection>() {

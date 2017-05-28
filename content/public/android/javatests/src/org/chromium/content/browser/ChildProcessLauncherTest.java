@@ -192,142 +192,80 @@ public class ChildProcessLauncherTest {
     }
 
     /**
-     * Tests spawning a pending process from queue.
+     * Tests that connection requests get queued when no slot is availabe and created once a slot
+     * frees up .
      */
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
+    @ChildProcessAllocatorSettings(sandboxedServiceCount = 1)
     public void testPendingSpawnQueue() throws RemoteException {
         final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Assert.assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
-        // Start and connect to a new service.
-        final ChildProcessConnection connection = startConnection();
-        Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+        ChildProcessCreationParams creationParams =
+                getDefaultChildProcessCreationParams(appContext.getPackageName());
 
-        // Queue up a new spawn request. There is no way to kill the pending connection, leak it
-        // until the browser restart.
-        final String packageName = appContext.getPackageName();
-        final boolean inSandbox = true;
-        enqueuePendingSpawnForTesting(appContext, sProcessWaitArguments,
-                getDefaultChildProcessCreationParams(packageName), inSandbox);
-        Assert.assertEquals(1, pendingSpawnsCountForTesting(appContext, packageName, inSandbox));
+        final ChildProcessLauncherHelper connectionLauncher1 =
+                ChildProcessLauncherTestUtils.startForTesting(appContext, true /* sandboxed */,
+                        false /* alwaysInForeground */, sProcessWaitArguments,
+                        new FileDescriptorInfo[0], creationParams);
+        Assert.assertTrue(ChildProcessLauncherTestUtils.hasConnection(connectionLauncher1));
 
-        // Initiate the connection setup.
-        triggerConnectionSetup(connection);
+        final ChildProcessLauncherHelper connectionLauncher2 =
+                ChildProcessLauncherTestUtils.startForTesting(appContext, true /* sandboxed */,
+                        false /* alwaysInForeground */, sProcessWaitArguments,
+                        new FileDescriptorInfo[0], creationParams);
+        Assert.assertFalse(ChildProcessLauncherTestUtils.hasConnection(connectionLauncher2));
 
-        // Verify that the connection completes the setup.
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(1, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return ChildProcessLauncher.connectedServicesCountForTesting();
-                    }
-                }));
-
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("The connection failed to get a pid in setup.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ChildProcessLauncherTestUtils.getConnectionPid(connection) != 0;
-                    }
-                });
-
-        // Crash the service.
-        connection.crashServiceForTesting();
-
-        // Verify that a new service is started for the pending spawn.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
-            public Integer call() {
-                return pendingSpawnsCountForTesting(appContext, packageName, inSandbox);
+            public Boolean call() {
+                return ChildProcessLauncherTestUtils.getConnection(connectionLauncher1) != null;
             }
         }));
 
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(1, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return allocatedChromeSandboxedConnectionsCount();
-                    }
-                }));
+        final ChildProcessConnection connection1 =
+                ChildProcessLauncherTestUtils.getConnection(connectionLauncher1);
 
-        // Verify that the connection completes the setup for the pending spawn.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
             @Override
-            public Integer call() {
-                return ChildProcessLauncher.connectedServicesCountForTesting();
+            public void run() {
+                try {
+                    connection1.crashServiceForTesting();
+                } catch (RemoteException e) {
+                }
+            }
+        });
+
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(true, new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return ChildProcessLauncherTestUtils.getConnection(connectionLauncher2) != null;
             }
         }));
+
+        final ChildProcessConnection connection2 =
+                ChildProcessLauncherTestUtils.getConnection(connectionLauncher2);
+        Assert.assertNotNull(connection2);
     }
 
     /**
-     * Tests service number of connections for external APKs and regular tabs are assigned properly,
-     * i.e. from different ChildConnectionAllocators.
+     * Tests that external APKs and regular use different ChildConnectionAllocators.
      */
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
     @ChildProcessAllocatorSettings(
             sandboxedServiceCount = 4, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
-    public void testServiceNumberAllocation() {
+    public void testAllocatorForPackage() {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        Assert.assertEquals(0,
-                allocatedSandboxedConnectionsCountForTesting(
-                        appContext, EXTERNAL_APK_PACKAGE_NAME));
-        Assert.assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
-        // Start and connect to a new service of an external APK.
-        ChildProcessConnection externalApkConnection =
-                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
-        // Start and connect to a new service for a regular tab.
-        ChildProcessConnection tabConnection = allocateConnection(appContext.getPackageName());
-
-        // Verify that one connection is allocated for an external APK and a regular tab
-        // respectively.
-        Assert.assertEquals(1,
-                allocatedSandboxedConnectionsCountForTesting(
-                        appContext, EXTERNAL_APK_PACKAGE_NAME));
-        Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
-
-        // Verify that connections allocated for an external APK and the regular tab are from
-        // different ChildConnectionAllocators, since both ChildConnectionAllocators start
-        // allocating connections from number 0.
-        Assert.assertEquals(
-                0, ChildProcessLauncherTestUtils.getConnectionServiceNumber(externalApkConnection));
-        Assert.assertEquals(
-                0, ChildProcessLauncherTestUtils.getConnectionServiceNumber(tabConnection));
-    }
-
-    /**
-     * Tests that after reaching the maximum allowed connections for an external APK, we can't
-     * allocate a new connection to the APK, but we can still allocate a connection for a regular
-     * tab.
-     */
-    @Test
-    @MediumTest
-    @Feature({"ProcessManagement"})
-    @ChildProcessAllocatorSettings(
-            sandboxedServiceCount = 1, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
-    public void testExceedMaximumConnectionNumber() {
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        Assert.assertEquals(0,
-                allocatedSandboxedConnectionsCountForTesting(
-                        appContext, EXTERNAL_APK_PACKAGE_NAME));
-
-        // Setup a connection for an external APK to reach the maximum allowed connection number.
-        ChildProcessConnection externalApkConnection =
-                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
-        Assert.assertNotNull(externalApkConnection);
-
-        // Verify that there isn't any connection available for the external APK.
-        ChildProcessConnection exceedNumberExternalApkConnection =
-                allocateConnection(EXTERNAL_APK_PACKAGE_NAME);
-        Assert.assertNull(exceedNumberExternalApkConnection);
-
-        // Verify that we can still allocate connection for a regular tab.
-        ChildProcessConnection tabConnection = allocateConnection(appContext.getPackageName());
-        Assert.assertNotNull(tabConnection);
+        ChildConnectionAllocator connectionAllocator = getChildConnectionAllocator(
+                appContext, appContext.getPackageName(), true /* sandboxed */);
+        ChildConnectionAllocator externalConnectionAllocator = getChildConnectionAllocator(
+                appContext, EXTERNAL_APK_PACKAGE_NAME, true /* sandboxed */);
+        Assert.assertNotEquals(connectionAllocator, externalConnectionAllocator);
     }
 
     /**
@@ -494,6 +432,40 @@ public class ChildProcessLauncherTest {
                 ChildProcessLauncher.stop(ChildProcessLauncherTestUtils.getConnectionPid(conn));
             }
         });
+
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for connection to be freed") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return allocatedChromeSandboxedConnectionsCount() == 0;
+                    }
+                });
+    }
+
+    // Tests that the warm-up connection is freed from its allocator if it crashes.
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testWarmUpProcessCrash() throws RemoteException {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        warmUpOnUiThreadBlocking(context);
+
+        Assert.assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+
+        final ChildProcessConnection warmupConnection = getWarmUpConnection();
+        Assert.assertNotNull(warmupConnection);
+
+        waitForConnectionToConnect(warmupConnection);
+
+        warmupConnection.crashServiceForTesting();
+
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for connection to be freed") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return allocatedChromeSandboxedConnectionsCount() == 0;
+                    }
+                });
     }
 
     @Test
@@ -605,6 +577,27 @@ public class ChildProcessLauncherTest {
                 context, getDefaultChildProcessCreationParams(context.getPackageName()));
 
         // Wait for the service to connect.
+        waitForConnectionToConnect(connection);
+        return connection;
+    }
+
+    private void waitForConnectionToConnect(final ChildProcessConnection connection) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("The connection wasn't established.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return connection.isConnected();
+                    }
+                });
+    }
+
+    private ChildProcessConnection startChildService() {
+        // Allocate a new connection.
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final ChildProcessConnection connection = allocateBoundConnectionForTesting(
+                context, getDefaultChildProcessCreationParams(context.getPackageName()));
+
+        // Wait for the service to connect.
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("The connection wasn't established.") {
                     @Override
@@ -617,11 +610,22 @@ public class ChildProcessLauncherTest {
 
     private static void startRendererProcess(
             Context context, int paramId, FileDescriptorInfo[] filesToMap) {
-        assert LauncherThread.runningOnLauncherThread();
-        ChildProcessLauncherHelper.createAndStart(0L /* nativePointer */, paramId,
+        ChildProcessLauncherHelper.createAndStart(0L, paramId,
                 new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
                         + ContentSwitches.SWITCH_RENDERER_PROCESS},
                 filesToMap);
+    }
+
+    private static ChildConnectionAllocator getChildConnectionAllocator(
+            final Context context, final String packageName, final boolean sandboxed) {
+        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                new Callable<ChildConnectionAllocator>() {
+                    @Override
+                    public ChildConnectionAllocator call() {
+                        return ChildProcessLauncher.getConnectionAllocator(context,
+                                getDefaultChildProcessCreationParams(packageName), sandboxed);
+                    }
+                });
     }
 
     private static ChildProcessConnection allocateBoundConnectionForTesting(
@@ -630,60 +634,10 @@ public class ChildProcessLauncherTest {
                 new Callable<ChildProcessConnection>() {
                     @Override
                     public ChildProcessConnection call() {
-                        return ChildProcessLauncher.allocateBoundConnection(
-                                new ChildSpawnData(context, null /* commandLine */,
-                                        null /* filesToBeMapped */, null /* LaunchCallback */,
-                                        null /* childProcessCallback */, true /* inSandbox */,
-                                        false /* alwaysInForeground */, creationParams),
-                                null /* startCallback */, false /* forWarmUp */);
+                        return ChildProcessLauncher.allocateSandboxedBoundConnectionForTesting(
+                                context, creationParams);
                     }
                 });
-    }
-
-    /**
-     * Returns a new connection if it is allocated. Note this function only allocates a connection
-     * but doesn't really start the connection to bind a service. It is for testing whether the
-     * connection is allocated properly for different application packages.
-     */
-    private ChildProcessConnection allocateConnection(final String packageName) {
-        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
-                new Callable<ChildProcessConnection>() {
-                    @Override
-                    public ChildProcessConnection call() {
-                        // Allocate a new connection.
-                        Context context = InstrumentationRegistry.getTargetContext();
-                        ChildProcessCreationParams creationParams =
-                                getDefaultChildProcessCreationParams(packageName);
-                        return ChildProcessLauncher.allocateConnection(
-                                new ChildSpawnData(context, null /* serviceBundle */,
-                                        null /* connectionBundle */, null /* launchCallback */,
-                                        null /* childProcessCallback */, true /* inSandbox */,
-                                        false /* alwaysInForeground */, creationParams),
-                                false /* forWarmUp */);
-                    }
-                });
-    }
-
-    private static void enqueuePendingSpawnForTesting(final Context context,
-            final String[] commandLine, final ChildProcessCreationParams creationParams,
-            final boolean inSandbox) {
-        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                String packageName = ChildProcessLauncher.getPackageNameFromCreationParams(
-                        context, creationParams, inSandbox);
-                boolean bindAsExternalService =
-                        ChildProcessLauncher.isServiceExternalFromCreationParams(
-                                creationParams, inSandbox);
-                ChildConnectionAllocator allocator = ChildProcessLauncher.getConnectionAllocator(
-                        context, packageName, inSandbox, bindAsExternalService);
-
-                allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context,
-                        null /* serviceBundle */, null /* connectionBundle */,
-                        null /* launchCallback */, null /* childProcessCallback */,
-                        true /* inSandbox */, false /* alwaysInForeground */, creationParams));
-            }
-        });
     }
 
     private static int allocatedSandboxedConnectionsCountForTesting(
@@ -692,9 +646,16 @@ public class ChildProcessLauncherTest {
                 new Callable<Integer>() {
                     @Override
                     public Integer call() {
+                        ChildProcessCreationParams creationParams = null;
+                        if (packageName != null) {
+                            // The creationParams is just used for the package name.
+                            creationParams = new ChildProcessCreationParams(packageName,
+                                    true /* isExternalService */, 0 /* libraryProcessType */,
+                                    false /* bindToCallerCheck */);
+                        }
                         return ChildProcessLauncher
-                                .getConnectionAllocator(context, packageName, true /*isSandboxed */,
-                                        false /* bindToCallerCheck */)
+                                .getConnectionAllocator(
+                                        context, creationParams, true /* isSandboxed */)
                                 .allocatedConnectionsCountForTesting();
                     }
                 });
@@ -707,23 +668,10 @@ public class ChildProcessLauncherTest {
                     @Override
                     public ChildProcessConnection[] call() {
                         return ChildProcessLauncher
-                                .getConnectionAllocator(context, packageName, true /*isSandboxed */,
-                                        false /* bindToCallerCheck */)
+                                .getConnectionAllocator(context,
+                                        getDefaultChildProcessCreationParams(packageName),
+                                        true /*isSandboxed */)
                                 .connectionArrayForTesting();
-                    }
-                });
-    }
-
-    private static int pendingSpawnsCountForTesting(
-            final Context context, final String packageName, final boolean inSandbox) {
-        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
-                new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return ChildProcessLauncher
-                                .getConnectionAllocator(context, packageName, inSandbox,
-                                        false /* bindToCallerCheck */)
-                                .pendingSpawnsCountForTesting();
                     }
                 });
     }
@@ -733,12 +681,15 @@ public class ChildProcessLauncherTest {
      */
     private int allocatedChromeSandboxedConnectionsCount() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        return allocatedSandboxedConnectionsCountForTesting(context, context.getPackageName());
+        return allocatedSandboxedConnectionsCountForTesting(context, null /* packageName */);
     }
 
-    private ChildProcessCreationParams getDefaultChildProcessCreationParams(String packageName) {
-        return new ChildProcessCreationParams(packageName, false /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */);
+    private static ChildProcessCreationParams getDefaultChildProcessCreationParams(
+            String packageName) {
+        return packageName == null
+                ? null
+                : new ChildProcessCreationParams(packageName, false /* isExternalService */,
+                          LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */);
     }
 
     private void triggerConnectionSetup(final ChildProcessConnection connection) {
@@ -747,7 +698,7 @@ public class ChildProcessLauncherTest {
             public void run() {
                 Bundle connectionBundle = ChildProcessLauncherHelper.createConnectionBundle(
                         sProcessWaitArguments, new FileDescriptorInfo[0]);
-                ChildProcessLauncher.triggerConnectionSetup(connection, connectionBundle,
+                ChildProcessLauncher.setupConnection(connection, connectionBundle,
                         null /* launchCallback */, null /* childProcessCallback */,
                         true /* addToBindingmanager */);
             }
@@ -765,5 +716,15 @@ public class ChildProcessLauncherTest {
                 });
 
         return ChildProcessLauncherTestUtils.getConnection(launcherHelper);
+    }
+
+    private static ChildProcessConnection getWarmUpConnection() {
+        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(
+                new Callable<ChildProcessConnection>() {
+                    @Override
+                    public ChildProcessConnection call() {
+                        return ChildProcessLauncher.getWarmUpConnectionForTesting();
+                    }
+                });
     }
 }
