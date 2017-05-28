@@ -1564,41 +1564,31 @@ TEST_F(TextfieldTest, DragToSelect) {
   EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
 }
 
-// This test checks that dragging above the textfield selects to the beginning
-// and dragging below the textfield selects to the end, but only on platforms
-// where that is the expected behavior.
+// Ensures dragging above or below the textfield extends a selection to either
+// end, depending on the relative x offsets of the text and mouse cursors.
 TEST_F(TextfieldTest, DragUpOrDownSelectsToEnd) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  const base::string16 expected_up = base::ASCIIToUTF16(
+  const base::string16 expected_left = base::ASCIIToUTF16(
       gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? "hello" : "lo");
-  const base::string16 expected_down = base::ASCIIToUTF16(
+  const base::string16 expected_right = base::ASCIIToUTF16(
       gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? " world" : " w");
-  const int kStartX = GetCursorPositionX(5);
-  const int kDownX = GetCursorPositionX(7);
-  const int kUpX = GetCursorPositionX(3);
-  gfx::Point start_point(kStartX, GetCursorYForTesting());
-  gfx::Point down_point(kDownX, 500);
-  gfx::Point up_point(kUpX, -500);
+  const int right_x = GetCursorPositionX(7);
+  const int left_x = GetCursorPositionX(3);
 
-  MoveMouseTo(start_point);
+  // All drags start from here.
+  MoveMouseTo(gfx::Point(GetCursorPositionX(5), GetCursorYForTesting()));
   PressLeftMouseButton();
-  DragMouseTo(up_point);
-  ReleaseLeftMouseButton();
-  EXPECT_EQ(textfield_->GetSelectedText(), expected_up);
 
-  // Click at |up_point|. This is important because drags do not count as clicks
-  // for the purpose of double-click detection, so if this test doesn't click
-  // somewhere other than |start_point| before the code below runs, the second
-  // click at |start_point| will be interpreted as a double-click instead of the
-  // start of a drag.
-  ClickLeftMouseButton();
-
-  MoveMouseTo(start_point);
-  PressLeftMouseButton();
-  DragMouseTo(down_point);
-  ReleaseLeftMouseButton();
-  EXPECT_EQ(textfield_->GetSelectedText(), expected_down);
+  // Perform one continuous drag, checking the selection at various points.
+  DragMouseTo(gfx::Point(left_x, -500));
+  EXPECT_EQ(expected_left, textfield_->GetSelectedText());  // NW.
+  DragMouseTo(gfx::Point(right_x, -500));
+  EXPECT_EQ(expected_right, textfield_->GetSelectedText());  // NE.
+  DragMouseTo(gfx::Point(right_x, 500));
+  EXPECT_EQ(expected_right, textfield_->GetSelectedText());  // SE.
+  DragMouseTo(gfx::Point(left_x, 500));
+  EXPECT_EQ(expected_left, textfield_->GetSelectedText());  // SW.
 }
 
 #if defined(OS_WIN)

@@ -99,6 +99,18 @@ std::string SecondaryUiModeToString(
   return info.param == SecondaryUiMode::MD ? "MD" : "NonMD";
 }
 
+// Makes an RTL string by mapping 0..6 to [א,ב,ג,ד,ה,ו,ז].
+base::string16 ToRTL(const char* ascii) {
+  base::string16 rtl;
+  for (const char* c = ascii; *c; ++c) {
+    if (*c >= '0' && *c <= '6')
+      rtl += L'\x5d0' + (*c - '0');
+    else
+      rtl += static_cast<base::string16::value_type>(*c);
+  }
+  return rtl;
+}
+
 }  // namespace
 
 class LabelTest : public ViewsTestBase {
@@ -149,6 +161,14 @@ class LabelTest : public ViewsTestBase {
 // Test fixture for text selection related tests.
 class LabelSelectionTest : public LabelTest {
  public:
+  // Alias this long identifier for more readable tests.
+  static constexpr bool kExtends =
+      gfx::RenderText::kDragToEndIfOutsideVerticalBounds;
+
+  // Some tests use cardinal directions to index an array of points above and
+  // below the label in either visual direction.
+  enum { NW, NORTH, NE, SE, SOUTH, SW };
+
   LabelSelectionTest() {}
 
   // LabelTest overrides:
@@ -1034,47 +1054,147 @@ TEST_F(LabelSelectionTest, MouseDragMultilineLTR) {
   PerformMouseDragTo(gfx::Point(100, GetCursorPoint(6).y()));
   EXPECT_STR_EQ("cd\nefgh", GetSelectedText());
 
-  PerformMouseDragTo(gfx::Point(GetCursorPoint(3).x(), -5));
-  EXPECT_STR_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? "ab" : "c",
-                GetSelectedText());
+  const gfx::Point points[] = {
+      {GetCursorPoint(1).x(), -5},   // NW.
+      {GetCursorPoint(2).x(), -5},   // NORTH.
+      {GetCursorPoint(3).x(), -5},   // NE.
+      {GetCursorPoint(8).x(), 100},  // SE.
+      {GetCursorPoint(7).x(), 100},  // SOUTH.
+      {GetCursorPoint(6).x(), 100},  // SW.
+  };
+  constexpr const char* kExtendLeft = "ab";
+  constexpr const char* kExtendRight = "cd\nefgh";
 
-  PerformMouseDragTo(gfx::Point(GetCursorPoint(7).x(), 100));
-  EXPECT_STR_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? "cd\nefgh"
-                                                                   : "cd\nef",
-                GetSelectedText());
+  // For multiline, N* extends left, S* extends right.
+  PerformMouseDragTo(points[NW]);
+  EXPECT_STR_EQ(kExtends ? kExtendLeft : "b", GetSelectedText());
+  PerformMouseDragTo(points[NORTH]);
+  EXPECT_STR_EQ(kExtends ? kExtendLeft : "", GetSelectedText());
+  PerformMouseDragTo(points[NE]);
+  EXPECT_STR_EQ(kExtends ? kExtendLeft : "c", GetSelectedText());
+  PerformMouseDragTo(points[SE]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "cd\nefg", GetSelectedText());
+  PerformMouseDragTo(points[SOUTH]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "cd\nef", GetSelectedText());
+  PerformMouseDragTo(points[SW]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "cd\ne", GetSelectedText());
+}
+
+// Single line fields consider the x offset as well. Ties go to the right.
+TEST_F(LabelSelectionTest, MouseDragSingleLineLTR) {
+  label()->SetText(ASCIIToUTF16("abcdef"));
+  label()->SizeToPreferredSize();
+  ASSERT_TRUE(label()->SetSelectable(true));
+  PerformMousePress(GetCursorPoint(2));
+  const gfx::Point points[] = {
+      {GetCursorPoint(1).x(), -5},   // NW.
+      {GetCursorPoint(2).x(), -5},   // NORTH.
+      {GetCursorPoint(3).x(), -5},   // NE.
+      {GetCursorPoint(3).x(), 100},  // SE.
+      {GetCursorPoint(2).x(), 100},  // SOUTH.
+      {GetCursorPoint(1).x(), 100},  // SW.
+  };
+  constexpr const char* kExtendLeft = "ab";
+  constexpr const char* kExtendRight = "cdef";
+
+  // For single line, western directions extend left, all others extend right.
+  PerformMouseDragTo(points[NW]);
+  EXPECT_STR_EQ(kExtends ? kExtendLeft : "b", GetSelectedText());
+  PerformMouseDragTo(points[NORTH]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "", GetSelectedText());
+  PerformMouseDragTo(points[NE]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "c", GetSelectedText());
+  PerformMouseDragTo(points[SE]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "c", GetSelectedText());
+  PerformMouseDragTo(points[SOUTH]);
+  EXPECT_STR_EQ(kExtends ? kExtendRight : "", GetSelectedText());
+  PerformMouseDragTo(points[SW]);
+  EXPECT_STR_EQ(kExtends ? kExtendLeft : "b", GetSelectedText());
 }
 
 TEST_F(LabelSelectionTest, MouseDragMultilineRTL) {
   label()->SetMultiLine(true);
-  label()->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\n\x5d3\x5d4\x5d5"));
+  label()->SetText(ToRTL("012\n345"));
+  // Sanity check.
+  EXPECT_EQ(WideToUTF16(L"\x5d0\x5d1\x5d2\n\x5d3\x5d4\x5d5"), label()->text());
+
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
   ASSERT_EQ(2u, GetLineCount());
 
-  PerformMousePress(GetCursorPoint(1));
+  PerformMousePress(GetCursorPoint(1));  // Note: RTL drag starts at 1, not 2.
   PerformMouseDragTo(GetCursorPoint(0));
-  EXPECT_EQ(WideToUTF16(L"\x5d0"), GetSelectedText());
+  EXPECT_EQ(ToRTL("0"), GetSelectedText());
 
   PerformMouseDragTo(GetCursorPoint(6));
-  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4"), GetSelectedText());
+  EXPECT_EQ(ToRTL("12\n34"), GetSelectedText());
 
   PerformMouseDragTo(gfx::Point(-5, GetCursorPoint(6).y()));
-  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4\x5d5"), GetSelectedText());
+  EXPECT_EQ(ToRTL("12\n345"), GetSelectedText());
 
   PerformMouseDragTo(gfx::Point(100, GetCursorPoint(6).y()));
-  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n"), GetSelectedText());
+  EXPECT_EQ(ToRTL("12\n"), GetSelectedText());
 
-  PerformMouseDragTo(gfx::Point(GetCursorPoint(2).x(), -5));
-  EXPECT_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds
-                ? WideToUTF16(L"\x5d0")
-                : WideToUTF16(L"\x5d1"),
-            GetSelectedText());
+  const gfx::Point points[] = {
+      {GetCursorPoint(2).x(), -5},   // NW: Now towards the end of the string.
+      {GetCursorPoint(1).x(), -5},   // NORTH,
+      {GetCursorPoint(0).x(), -5},   // NE: Towards the start.
+      {GetCursorPoint(4).x(), 100},  // SE.
+      {GetCursorPoint(5).x(), 100},  // SOUTH.
+      {GetCursorPoint(6).x(), 100},  // SW.
+  };
 
-  PerformMouseDragTo(gfx::Point(GetCursorPoint(6).x(), 100));
-  EXPECT_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds
-                ? WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4\x5d5")
-                : WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4"),
-            GetSelectedText());
+  // Visual right, so to the beginning of the string for RTL.
+  const base::string16 extend_right = ToRTL("0");
+  const base::string16 extend_left = ToRTL("12\n345");
+
+  // For multiline, N* extends right, S* extends left.
+  PerformMouseDragTo(points[NW]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL("1"), GetSelectedText());
+  PerformMouseDragTo(points[NORTH]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL(""), GetSelectedText());
+  PerformMouseDragTo(points[NE]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL("0"), GetSelectedText());
+  PerformMouseDragTo(points[SE]);
+  EXPECT_EQ(kExtends ? extend_left : ToRTL("12\n"), GetSelectedText());
+  PerformMouseDragTo(points[SOUTH]);
+  EXPECT_EQ(kExtends ? extend_left : ToRTL("12\n3"), GetSelectedText());
+  PerformMouseDragTo(points[SW]);
+  EXPECT_EQ(kExtends ? extend_left : ToRTL("12\n34"), GetSelectedText());
+}
+
+TEST_F(LabelSelectionTest, MouseDragSingleLineRTL) {
+  label()->SetText(ToRTL("0123456"));
+  label()->SizeToPreferredSize();
+  ASSERT_TRUE(label()->SetSelectable(true));
+
+  PerformMousePress(GetCursorPoint(1));
+  const gfx::Point points[] = {
+      {GetCursorPoint(2).x(), -5},   // NW.
+      {GetCursorPoint(1).x(), -5},   // NORTH.
+      {GetCursorPoint(0).x(), -5},   // NE.
+      {GetCursorPoint(0).x(), 100},  // SE.
+      {GetCursorPoint(1).x(), 100},  // SOUTH.
+      {GetCursorPoint(2).x(), 100},  // SW.
+  };
+
+  // Visual right, so to the beginning of the string for RTL.
+  const base::string16 extend_right = ToRTL("0");
+  const base::string16 extend_left = ToRTL("123456");
+
+  // For single line, western directions extend left, all others extend right.
+  PerformMouseDragTo(points[NW]);
+  EXPECT_EQ(kExtends ? extend_left : ToRTL("1"), GetSelectedText());
+  PerformMouseDragTo(points[NORTH]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL(""), GetSelectedText());
+  PerformMouseDragTo(points[NE]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL("0"), GetSelectedText());
+  PerformMouseDragTo(points[SE]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL("0"), GetSelectedText());
+  PerformMouseDragTo(points[SOUTH]);
+  EXPECT_EQ(kExtends ? extend_right : ToRTL(""), GetSelectedText());
+  PerformMouseDragTo(points[SW]);
+  EXPECT_EQ(kExtends ? extend_left : ToRTL("1"), GetSelectedText());
 }
 
 // Verify the initially selected word on a double click, remains selected on

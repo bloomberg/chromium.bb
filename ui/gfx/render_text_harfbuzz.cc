@@ -896,19 +896,24 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& view_point) {
   DCHECK(!lines().empty());
 
   int line_index = GetLineContainingYCoord((view_point - GetLineOffset(0)).y());
-  // Clip line index to a valid value in case kDragToEndIfOutsideVerticalBounds
-  // is false. Else, drag to end.
+  // Handle kDragToEndIfOutsideVerticalBounds above or below the text in a
+  // single-line by extending towards the mouse cursor.
+  if (RenderText::kDragToEndIfOutsideVerticalBounds && !multiline() &&
+      (line_index < 0 || line_index >= static_cast<int>(lines().size()))) {
+    SelectionModel selection_start = GetSelectionModelForSelectionStart();
+    bool left = view_point.x() < GetCursorBounds(selection_start, true).x();
+    return EdgeSelectionModel(left ? CURSOR_LEFT : CURSOR_RIGHT);
+  }
+  // Otherwise, clamp |line_index| to a valid value or drag to logical ends.
   if (line_index < 0) {
     if (RenderText::kDragToEndIfOutsideVerticalBounds)
       return EdgeSelectionModel(GetVisualDirectionOfLogicalBeginning());
-    else
-      line_index = 0;
+    line_index = 0;
   }
   if (line_index >= static_cast<int>(lines().size())) {
     if (RenderText::kDragToEndIfOutsideVerticalBounds)
       return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
-    else
-      line_index = lines().size() - 1;
+    line_index = lines().size() - 1;
   }
   const internal::Line& line = lines()[line_index];
 
