@@ -20,6 +20,7 @@ namespace arc {
 namespace {
 
 constexpr base::TimeDelta kUmaMinTime = base::TimeDelta::FromMilliseconds(1);
+constexpr base::TimeDelta kUmaMaxTime = base::TimeDelta::FromSeconds(60);
 constexpr int kUmaNumBuckets = 50;
 
 constexpr base::TimeDelta kRequestProcessListPeriod =
@@ -31,7 +32,7 @@ constexpr char kBootProgressEnableScreen[] = "boot_progress_enable_screen";
 std::string BootTypeToString(mojom::BootType boot_type) {
   switch (boot_type) {
     case mojom::BootType::UNKNOWN:
-      return "";  // for backward compatibility.
+      break;
     case mojom::BootType::FIRST_BOOT:
       return ".FirstBoot";
     case mojom::BootType::FIRST_BOOT_AFTER_UPDATE:
@@ -158,25 +159,24 @@ void ArcMetricsService::ReportBootProgress(
     std::vector<mojom::BootProgressEventPtr> events,
     mojom::BootType boot_type) {
   DCHECK(CalledOnValidThread());
-  // TODO(yusukes): Return immediately with with LOG(ERROR) when |boot_type| is
-  // UNKNOWN. Once the container is updated, we'll never see the boot type.
+  if (boot_type == mojom::BootType::UNKNOWN) {
+    LOG(WARNING) << "boot_type is unknown. Skip recording UMA.";
+    return;
+  }
   int64_t arc_start_time_in_ms =
       (arc_start_time_ - base::TimeTicks()).InMilliseconds();
   const std::string suffix = BootTypeToString(boot_type);
-  // TODO(yusukes): Define kUmaMaxTime and always use 60s.
-  const base::TimeDelta max_time = base::TimeDelta::FromSeconds(
-      boot_type == mojom::BootType::UNKNOWN ? 30 : 60);
   for (const auto& event : events) {
     VLOG(2) << "Report boot progress event:" << event->event << "@"
             << event->uptimeMillis;
     const std::string name = "Arc." + event->event + suffix;
     const base::TimeDelta elapsed_time = base::TimeDelta::FromMilliseconds(
         event->uptimeMillis - arc_start_time_in_ms);
-    base::UmaHistogramCustomTimes(name, elapsed_time, kUmaMinTime, max_time,
+    base::UmaHistogramCustomTimes(name, elapsed_time, kUmaMinTime, kUmaMaxTime,
                                   kUmaNumBuckets);
     if (event->event.compare(kBootProgressEnableScreen) == 0) {
       base::UmaHistogramCustomTimes("Arc.AndroidBootTime" + suffix,
-                                    elapsed_time, kUmaMinTime, max_time,
+                                    elapsed_time, kUmaMinTime, kUmaMaxTime,
                                     kUmaNumBuckets);
     }
   }
