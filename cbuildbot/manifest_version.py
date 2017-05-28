@@ -17,6 +17,7 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import repository
+from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -593,16 +594,26 @@ class BuildSpecsManager(object):
 
     Returns:
       A dict mapping build_config names (strings) to
-        builder_status_lib.BuilderStatus instances.
+        builder_status_lib.BuilderStatus instances; or an empty dict if no
+        slaves were scheduled.
     """
-    logging.info('Getting slave BuilderStatuses for %s', master_build_id)
+    if (self.config is not None and
+        self.metadata is not None and
+        config_lib.UseBuildbucketScheduler(self.config)):
+      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
+          self.metadata)
+      builders_array = scheduled_buildbucket_info_dict.keys()
+
+    logging.info('Getting slave BuilderStatuses for builders array: %s',
+                 builders_array)
+
+    if not builders_array:
+      return {}
+
     start_time = datetime.datetime.now()
 
     def _PrintRemainingTime(remaining):
       logging.info('%s until timeout...', remaining)
-
-    # Check for build completion until all builders report in.
-    builds_timed_out = False
 
     slave_status = build_status.SlaveStatus(
         start_time, builders_array, master_build_id, db,
@@ -621,8 +632,23 @@ class BuildSpecsManager(object):
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)
     except timeout_util.TimeoutError:
-      builds_timed_out = True
+      logging.error('Not all builds finished before timeout (%d minutes)'
+                    ' reached.', int((timeout / 60) + 0.5))
 
+    return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
+
+  def _GetSlaveBuilderStatus(self, master_build_id, db, builders_array):
+    """Get BuilderStatus for slaves.
+
+    Args:
+      master_build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
+      builders_array: A list of build configs of the slaves.
+
+    Returns:
+      A dict mapping build configs (strings) to their
+        builder_status_lib.BuilderStatus instances.
+    """
     slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
         master_build_id, db, self.config, self.metadata,
         self.buildbucket_client, builders_array, self.dry_run)
@@ -639,11 +665,6 @@ class BuildSpecsManager(object):
           ' BuilderStatus.dashboard_url %s ' %
           (builder, builder_status.status, message,
            builder_status.dashboard_url))
-
-    if builds_timed_out:
-      logging.error('Not all builds finished before timeout (%d minutes)'
-                    ' reached.', int((timeout / 60) + 0.5))
-
     return slave_builder_status_dict
 
   def GetLatestPassingSpec(self):

@@ -487,9 +487,10 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveCIDBStatusInfo',
                      side_effect=status_runs)
+    buildbucket_info_dict = {x: None for x in builders}
     self.PatchObject(buildbucket_lib,
                      'GetBuildInfoDict',
-                     side_effect=buildbucket_info_dicts)
+                     return_value=buildbucket_info_dict)
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveBuildbucketInfo',
                      side_effect=buildbucket_info_dicts)
@@ -497,12 +498,14 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     final_status_dict = status_runs[-1]
     message_mock = mock.Mock()
     message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
-    build_statuses = [
-        builder_status_lib.BuilderStatus(
-            final_status_dict.get(x).status, message_mock) for x in builders]
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetBuilderStatusForBuild',
-                     side_effect=build_statuses)
+    slave_builder_status_dict = {
+        x: builder_status_lib.BuilderStatus(
+            final_status_dict.get(x).status, message_mock)
+        for x in builders
+    }
+    self.PatchObject(manifest_version.BuildSpecsManager,
+                     '_GetSlaveBuilderStatus',
+                     return_value=slave_builder_status_dict)
 
     return self.manager.GetBuildersStatus(
         'builderid', mock.Mock(), builders)
@@ -699,3 +702,35 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      'GetBuilderStatusForBuild',
                      side_effect=[builder_status_1, builder_status_2])
     self.manager.GetBuildersStatus(1, mock.Mock(), ['build_1', 'build_2'])
+
+  def testGetBuildersStatusWithoutScheduledSlaves(self):
+    self.manager = self._CreateCanaryMasterManager()
+    self.PatchObject(buildbucket_lib,
+                     'GetBuildInfoDict',
+                     return_value={})
+
+    self.assertEqual(self.manager.GetBuildersStatus(
+        1, mock.Mock(), ['build_1', 'build_2']), {})
+
+  def testGetSlaveBuilderStatus(self):
+    """Test _GetSlaveBuilderStatus."""
+    self.manager = self._CreateCanaryMasterManager()
+    builders = ['build1', 'build2']
+    status_dict = {
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
+    }
+    message_mock = mock.Mock()
+    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
+    build_statuses = [
+        builder_status_lib.BuilderStatus(
+            status_dict.get(x).status, message_mock) for x in builders]
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
+                     side_effect=build_statuses)
+    slave_builder_status_dict = self.manager._GetSlaveBuilderStatus(
+        mock.Mock(), mock.Mock(), builders)
+    self.assertEqual(len(slave_builder_status_dict), 2)
+    self.assertItemsEqual(builders, slave_builder_status_dict.keys())
