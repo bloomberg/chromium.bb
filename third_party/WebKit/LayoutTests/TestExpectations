@@ -859,6 +859,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/br-with-clear.html [ Failure
 crbug.com/635619 virtual/layout_ng/fast/block/float/canvas-with-floats-marked-for-layout.html [ Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/centered-float-avoidance-complexity.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/checkbox-and-radio-avoid-floats.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/clamped-right-float.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-element-too-wide-for-containing-block.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-intruding-floats-when-moving-to-inline-parent-3.html [ Crash Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-to-fit.html [ Failure ]

@@ -22,6 +22,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
  public:
   explicit NGLineBoxFragmentBuilder(NGInlineNode*);
 
+  NGLineBoxFragmentBuilder& SetWritingMode(NGWritingMode);
+  NGWritingMode WritingMode() const { return writing_mode_; }
+
   NGLineBoxFragmentBuilder& SetDirection(TextDirection);
 
   NGLineBoxFragmentBuilder& SetInlineSize(LayoutUnit);
@@ -36,6 +39,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;
   }
+  Vector<RefPtr<NGPhysicalFragment>>& MutableChildren() { return children_; }
+  const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
+  Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
   void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
@@ -48,6 +54,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   RefPtr<NGPhysicalLineBoxFragment> ToLineBoxFragment();
 
  private:
+  NGWritingMode writing_mode_;
   TextDirection direction_;
 
   Persistent<NGInlineNode> node_;
