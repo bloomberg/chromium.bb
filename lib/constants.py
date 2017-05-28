@@ -660,7 +660,6 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'rambi-pre-cq',                   # baytrail     kernel 4.4       vmtest
     'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
     'whirlwind-no-vmtest-pre-cq',     # brillo
-    'x86-alex-no-vmtest-pre-cq',      # x86          kernel 3.8
 ]
 
 # The name of the pre-cq launching config.
