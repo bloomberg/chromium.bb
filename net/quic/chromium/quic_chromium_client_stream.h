@@ -157,6 +157,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
                                     size_t frame_len);
     void OnDataAvailable();
+    void OnCanWrite();
     void OnClose();
     void OnError(int error);
 
@@ -166,12 +167,18 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     QuicChromiumClientStream* stream_;  // Unowned.
     Delegate* delegate_;                // Owns this.
 
+    // Callback to be invoked when ReadHeaders completes asynchronously.
     CompletionCallback read_headers_callback_;
     SpdyHeaderBlock* read_headers_buffer_;
 
+    // Callback to be invoked when ReadBody completes asynchronously.
     CompletionCallback read_body_callback_;
     IOBuffer* read_body_buffer_;
     int read_body_buffer_len_;
+
+    // Callback to be invoked when WriteStreamData or WritevStreamData completes
+    // asynchronously.
+    CompletionCallback write_callback_;
 
     QuicStreamId id_;
     QuicErrorCode connection_error_;
@@ -217,15 +224,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   // of client-side streams should be able to set the priority.
   using QuicSpdyStream::SetPriority;
 
-  int WriteStreamData(QuicStringPiece data,
-                      bool fin,
-                      const CompletionCallback& callback);
+  // Writes |data| to the peer and closes the write side if |fin| is true.
+  // Returns true if the data have been fully written. If the data was not fully
+  // written, returns false and OnCanWrite() will be invoked later.
+  bool WriteStreamData(QuicStringPiece data, bool fin);
   // Same as WriteStreamData except it writes data from a vector of IOBuffers,
   // with the length of each buffer at the corresponding index in |lengths|.
-  int WritevStreamData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
-                       const std::vector<int>& lengths,
-                       bool fin,
-                       const CompletionCallback& callback);
+  bool WritevStreamData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
+                        const std::vector<int>& lengths,
+                        bool fin);
 
   // Creates a new Handle for this stream and sets |delegate| on the handle.
   // Must only be called once.
@@ -273,10 +280,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
   // True when initial headers have been sent.
   bool initial_headers_sent_;
-
-  // Callback to be invoked when WriteStreamData or WritevStreamData completes
-  // asynchronously.
-  CompletionCallback write_callback_;
 
   QuicClientSessionBase* session_;
 
