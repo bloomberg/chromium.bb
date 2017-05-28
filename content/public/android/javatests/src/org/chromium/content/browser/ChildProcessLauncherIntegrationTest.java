@@ -43,12 +43,13 @@ public class ChildProcessLauncherIntegrationTest {
         private final List<TestChildProcessConnection> mConnections = new ArrayList<>();
 
         @Override
-        public ChildProcessConnection createConnection(ChildSpawnData spawnData,
-                ComponentName serviceName, boolean bindAsExternalService,
+        public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
+                boolean bindAsExternalService, Bundle serviceBundle,
+                ChildProcessCreationParams creationParams,
                 ChildProcessConnection.DeathCallback deathCallback) {
-            TestChildProcessConnection connection = new TestChildProcessConnection(
-                    spawnData.getContext(), deathCallback, serviceName, bindAsExternalService,
-                    spawnData.getServiceBundle(), spawnData.getCreationParams());
+            TestChildProcessConnection connection =
+                    new TestChildProcessConnection(context, serviceName, bindAsExternalService,
+                            serviceBundle, creationParams, deathCallback);
             mConnections.add(connection);
             return connection;
         }
@@ -61,12 +62,12 @@ public class ChildProcessLauncherIntegrationTest {
     private static class TestChildProcessConnection extends ChildProcessConnection {
         private RuntimeException mRemovedBothInitialAndStrongBinding;
 
-        public TestChildProcessConnection(Context context,
-                ChildProcessConnection.DeathCallback deathCallback, ComponentName serviceName,
+        public TestChildProcessConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle childProcessCommonParameters,
-                ChildProcessCreationParams creationParams) {
-            super(context, deathCallback, serviceName, bindAsExternalService,
-                    childProcessCommonParameters, creationParams);
+                ChildProcessCreationParams creationParams,
+                ChildProcessConnection.DeathCallback deathCallback) {
+            super(context, serviceName, bindAsExternalService, childProcessCommonParameters,
+                    creationParams, deathCallback);
         }
 
         @Override

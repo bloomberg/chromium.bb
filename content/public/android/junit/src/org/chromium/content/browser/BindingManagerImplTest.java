@@ -67,12 +67,12 @@ public class BindingManagerImplTest {
          * connection is established: with initial binding bound and no strong binding.
          */
         private TestChildProcessConnection(int pid) {
-            super(null /* context */, null /* deathCallback */,
-                    new ComponentName("org.chromium.test", "TestService"),
+            super(null /* context */, new ComponentName("org.chromium.test", "TestService"),
                     false /* isExternalService */, null /* childProcessCommonParameters */,
                     new ChildProcessCreationParams("org.chromium.test",
                             false /* isExternalService */, 0 /* libraryProcessType */,
-                            false /* bindToCallerCheck */));
+                            false /* bindToCallerCheck */),
+                    null /* deathCallback */);
             mPid = pid;
         }
 

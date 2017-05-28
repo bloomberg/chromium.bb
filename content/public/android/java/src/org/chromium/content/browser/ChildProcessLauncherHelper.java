@@ -44,6 +44,12 @@ public class ChildProcessLauncherHelper {
     // The actual service connection. Set once we have connected to the service.
     private ChildProcessConnection mChildProcessConnection;
 
+    // True if a connection is available for this launcher (mChildProcessConnection being set when
+    // the connection is eastblished and might still be null). If false it means no connection was
+    // available and a request for one has been queued.
+    // This is used by tests.
+    private boolean mHasConnection;
+
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
             int id, int fd, boolean autoClose, long offset, long size) {
@@ -113,11 +119,12 @@ public class ChildProcessLauncherHelper {
         onBeforeConnectionAllocated(serviceBundle);
 
         Bundle connectionBundle = createConnectionBundle(commandLine, filesToBeMapped);
-        ChildProcessLauncher.start(context, serviceBundle,
+        mHasConnection = ChildProcessLauncher.start(context, serviceBundle,
                 connectionBundle, new ChildProcessLauncher.LaunchCallback() {
                     @Override
                     public void onChildProcessStarted(ChildProcessConnection connection) {
                         mChildProcessConnection = connection;
+                        mHasConnection = true;
 
                         // Proactively close the FDs rather than waiting for the GC to do it.
                         try {
@@ -286,5 +293,10 @@ public class ChildProcessLauncherHelper {
     @VisibleForTesting
     public ChildProcessConnection getChildProcessConnection() {
         return mChildProcessConnection;
+    }
+
+    @VisibleForTesting
+    public boolean hasConnection() {
+        return mHasConnection;
     }
 }
