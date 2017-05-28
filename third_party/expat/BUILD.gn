@@ -33,6 +33,11 @@ if (is_linux && !is_chromecast && !use_libfuzzer && !use_afl) {
 
     public_configs = [ ":expat_config" ]
 
+    # TODO(thakis): Remove this once clang no longer crashes when building
+    # libexpat with -Oz.
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+
     defines = [ "_LIB" ]
     if (is_win) {
       defines += [ "COMPILED_FROM_DSP" ]
