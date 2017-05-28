@@ -51,7 +51,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
-  int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldDefaultButtonBeBlue() const override;

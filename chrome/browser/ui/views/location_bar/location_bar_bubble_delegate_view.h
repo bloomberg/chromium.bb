@@ -50,9 +50,6 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   // Displays the bubble with appearance and behavior tailored for |reason|.
   void ShowForReason(DisplayReason reason);
 
-  // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
-
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,

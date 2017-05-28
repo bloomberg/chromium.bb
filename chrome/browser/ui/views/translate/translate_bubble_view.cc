@@ -155,6 +155,11 @@ void TranslateBubbleView::CloseBubble() {
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
+int TranslateBubbleView::GetDialogButtons() const {
+  // TODO(estade): this should be using GetDialogButtons().
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void TranslateBubbleView::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
@@ -918,7 +923,6 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   advanced_cancel_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
   advanced_cancel_button_->set_id(BUTTON_ID_CANCEL);
-  // TODO(estade): this should be using GetDialogButtons().
   layout->AddView(advanced_done_button_);
   layout->AddView(advanced_cancel_button_);
 

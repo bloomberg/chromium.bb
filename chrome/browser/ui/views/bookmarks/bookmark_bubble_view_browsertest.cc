@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+
+#include "base/command_line.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
-#endif
 
 namespace {
 
@@ -40,68 +39,61 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+    // Don't persist bookmark changes to disk. BookmarkStorage does its writes
+    // on the UI thread, which violates base::ThreadRestrictions.
+    bookmark_model->ClearStore();
     bookmarks::AddIfNotBookmarked(bookmark_model, GURL(kTestBookmarkURL),
                                   base::string16());
   }
 
   void TearDownOnMainThread() override { profile_.reset(); }
 
+  // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
-
-    if ("bookmark_details" == name) {
+    if (name == "bookmark_details") {
 #if !defined(OS_CHROMEOS)
       SigninManagerFactory::GetForProfile(profile_.get())
           ->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
 #endif
-      BookmarkBubbleView::ShowBubble(
-          browser_view->toolbar()->location_bar()->star_view(), gfx::Rect(),
-          nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
-          true);
-    } else if ("bookmark_details_signed_in" == name) {
+    } else {
       SigninManagerFactory::GetForProfile(profile_.get())
           ->SetAuthenticatedAccountInfo(kTestGaiaID, kTestUserEmail);
-      BookmarkBubbleView::ShowBubble(
-          browser_view->toolbar()->location_bar()->star_view(), gfx::Rect(),
-          nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
-          true);
-#if defined(OS_WIN)
-    } else if ("ios_promotion" == name) {
-      SigninManagerFactory::GetForProfile(profile_.get())
-          ->SetAuthenticatedAccountInfo(kTestGaiaID, kTestUserEmail);
-      BookmarkBubbleView::ShowBubble(
-          browser_view->toolbar()->location_bar()->star_view(), gfx::Rect(),
-          nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
-          true);
-      BookmarkBubbleView::bookmark_bubble()->ShowIOSPromotion(
-          desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_BUBBLE);
-#endif
+    }
+
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    BookmarkBubbleView::ShowBubble(
+        browser_view->toolbar()->location_bar()->star_view(), gfx::Rect(),
+        nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
+        true);
+    if (name == "ios_promotion") {
+      BookmarkBubbleView::bookmark_bubble()->HandleButtonPressed(
+          BookmarkBubbleView::bookmark_bubble()->save_button_);
     }
   }
 
  private:
   std::unique_ptr<TestingProfile> profile_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleViewBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_bookmark_details) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RunDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_bookmark_details_signed_in) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RunDialog();
 }
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_ios_promotion) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kForceDesktopIOSPromotion);
   RunDialog();
 }
 #endif

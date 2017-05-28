@@ -7,10 +7,9 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
@@ -68,6 +67,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   ~BookmarkBubbleView() override;
 
   // views::LocationBarBubbleDelegateView:
+  int GetDialogButtons() const override;
   View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
@@ -94,8 +94,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
  private:
   friend class BookmarkBubbleViewTest;
   friend class BookmarkBubbleViewBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
@@ -105,20 +103,20 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
                      const GURL& url,
                      bool newly_bookmarked);
 
-  // Returns the title to display.
-  base::string16 GetTitle();
+  // Returns the name of the bookmark.
+  base::string16 GetBookmarkName();
 
-  // Handle the message when the user presses a button.
+  // Closes the bubble, opens the edit dialog, or shows the iOS promo.
   void HandleButtonPressed(views::Button* sender);
 
   // Shows the BookmarkEditor.
   void ShowEditor();
 
-  // Sets the title and parent of the node.
+  // Sets the bookmark name and parent of the node.
   void ApplyEdits();
 
 #if defined(OS_WIN)
-  // Check eligiblity to showthe iOS promotion from a specific entry point.
+  // Check eligibility to show the iOS promotion from a specific entry point.
   bool IsIOSPromotionEligible(
       desktop_ios_promotion::PromotionEntryPoint entry_point);
 
@@ -152,19 +150,19 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Button to bring up the editor.
   views::LabelButton* edit_button_;
 
-  // Button to close the window.
-  views::LabelButton* close_button_;
+  // Button to save the bookmark.
+  views::LabelButton* save_button_;
 
-  // Textfield showing the title of the bookmark.
-  views::Textfield* title_tf_;
+  // Textfield showing the name of the bookmark.
+  views::Textfield* name_field_;
 
   // Combobox showing a handful of folders the user can choose from, including
   // the current parent.
   views::Combobox* parent_combobox_;
 
-  // Bookmark details view, contains the details of the bookmark with controls
-  // to edit it.
-  std::unique_ptr<View> bookmark_details_view_;
+  // The regular bookmark bubble contents, with all the edit fields and dialog
+  // buttons. TODO(tapted): Move the buttons to the DialogClientView.
+  views::View* bookmark_contents_view_;
 
   // iOS promotion view.
   DesktopIOSPromotionBubbleView* ios_promo_view_;

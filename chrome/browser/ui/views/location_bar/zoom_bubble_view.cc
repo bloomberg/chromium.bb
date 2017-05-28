@@ -238,6 +238,10 @@ ZoomBubbleView::~ZoomBubbleView() {
     immersive_mode_controller_->RemoveObserver(this);
 }
 
+int ZoomBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
   if (!zoom_bubble_ || !zoom_bubble_->auto_close_ ||
       event->type() != ui::ET_GESTURE_TAP) {

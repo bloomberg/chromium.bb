@@ -132,12 +132,6 @@ bool SaveCardBubbleViews::Close() {
   return true;
 }
 
-int SaveCardBubbleViews::GetDialogButtons() const {
-  // This is the default for BubbleDialogDelegateView, but it's not the default
-  // for LocationBarBubbleDelegateView.
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
