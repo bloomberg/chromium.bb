@@ -6,6 +6,7 @@
 #define NGFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
@@ -31,6 +32,7 @@ class CORE_EXPORT NGFragment {
   // Returns the offset relative to the parent fragment's content-box.
   LayoutUnit InlineOffset() const;
   LayoutUnit BlockOffset() const;
+  NGLogicalOffset Offset() const;
 
   NGPhysicalFragment::NGFragmentType Type() const;
 

@@ -28,6 +28,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   RefPtr<NGPhysicalFragment> PhysicalFragment() const {
     return physical_fragment_;
   }
+  RefPtr<NGPhysicalFragment>& MutablePhysicalFragment() {
+    return physical_fragment_;
+  }
 
   const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
       const {

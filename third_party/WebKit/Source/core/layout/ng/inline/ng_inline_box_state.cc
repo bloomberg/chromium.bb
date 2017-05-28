@@ -7,6 +7,8 @@
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -34,6 +36,16 @@ void NGInlineBoxState::AccumulateUsedFonts(const NGInlineItem& item,
         fallback_font->GetFontMetrics().FixedLineSpacing());
     metrics.Unite(fallback_metrics);
   }
+}
+
+void NGInlineBoxState::SetNeedsBoxFragment(
+    LayoutUnit position,
+    LayoutUnit borders_paddings_block_start,
+    LayoutUnit borders_paddings_block_height) {
+  needs_box_fragment = true;
+  line_left_position = position;
+  this->borders_paddings_block_start = borders_paddings_block_start;
+  this->borders_paddings_block_height = borders_paddings_block_height;
 }
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
@@ -67,13 +79,12 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     const NGInlineItem& item,
-    NGLineBoxFragmentBuilder* line_box,
-    NGTextFragmentBuilder* text_builder) {
+    NGLineBoxFragmentBuilder* line_box) {
   stack_.resize(stack_.size() + 1);
   NGInlineBoxState* box = &stack_.back();
   box->fragment_start = line_box->Children().size();
+  box->item = &item;
   box->style = item.Style();
-  text_builder->SetDirection(box->style->Direction());
   return box;
 }
 
@@ -81,8 +92,9 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
     const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGInlineBoxState* box,
-    FontBaseline baseline_type) {
-  EndBoxState(box, line_box, baseline_type);
+    FontBaseline baseline_type,
+    LayoutUnit position) {
+  EndBoxState(box, line_box, baseline_type, position);
   // TODO(kojii): When the algorithm restarts from a break token, the stack may
   // underflow. We need either synthesize a missing box state, or push all
   // parents on initialize.
@@ -92,11 +104,15 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
 
 void NGInlineLayoutStateStack::OnEndPlaceItems(
     NGLineBoxFragmentBuilder* line_box,
-    FontBaseline baseline_type) {
+    FontBaseline baseline_type,
+    LayoutUnit position) {
   for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
     NGInlineBoxState* box = &(*it);
-    EndBoxState(box, line_box, baseline_type);
+    EndBoxState(box, line_box, baseline_type, position);
   }
+
+  if (!box_placeholders_.IsEmpty())
+    CreateBoxFragments(line_box);
 
   DCHECK(!LineBoxState().metrics.IsEmpty());
   line_box->SetMetrics(LineBoxState().metrics);
@@ -104,13 +120,117 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
 
 void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
                                            NGLineBoxFragmentBuilder* line_box,
-                                           FontBaseline baseline_type) {
+                                           FontBaseline baseline_type,
+                                           LayoutUnit position) {
+  if (box->needs_box_fragment)
+    AddBoxFragmentPlaceholder(box, line_box, baseline_type, position);
+
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
 
   // Unite the metrics to the parent box.
   if (position_pending == kPositionNotPending && box != stack_.begin()) {
     box[-1].metrics.Unite(box->metrics);
+  }
+}
+
+// Crete a placeholder for a box fragment.
+// We keep a flat list of fragments because it is more suitable for operations
+// such as ApplyBaselineShift. Later, CreateBoxFragments() creates box fragments
+// from placeholders.
+void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
+    NGInlineBoxState* box,
+    NGLineBoxFragmentBuilder* line_box,
+    FontBaseline baseline_type,
+    LayoutUnit position) {
+  if (box->fragment_start == line_box->Children().size()) {
+    // Don't create a placeholder if the inline box is empty.
+    // Whether to create this box or not affects layout when the line contains
+    // only this box, since this box participates the line height.
+    // TODO(kojii): Testing indicates that we should create a box if it has
+    // borders, but not for backgrounds. But creating such a RootInlineBox needs
+    // additional code. The plan is to enable such line box when NG paint is
+    // enabled.
+    return;
+  }
+
+  // The inline box should have the height of the font metrics without the
+  // line-height property. Compute from style because |box->metrics| includes
+  // the line-height property.
+  DCHECK(box->style);
+  const ComputedStyle& style = *box->style;
+  NGLineHeightMetrics metrics(style, baseline_type);
+
+  // Extend the block direction of the box by borders and paddings. Inline
+  // direction is already included into positions in NGLineBreaker.
+  NGLogicalRect bounds(
+      box->line_left_position,
+      -metrics.ascent - box->borders_paddings_block_start,
+      position - box->line_left_position,
+      metrics.LineHeight() + box->borders_paddings_block_height);
+
+  // The start is marked only in BoxFragmentPlaceholder, while end is marked
+  // in both BoxFragmentPlaceholder and the list itself.
+  // With a list of 4 text fragments:
+  // |  0  |  1  |  2  |  3  |
+  // |text0|text1|text2|text3|
+  // By adding a BoxFragmentPlaceholder(2,4) (end is exclusive), it becomes:
+  // |  0  |  1  |  2  |  3  |  4  |
+  // |text0|text1|text2|text3|null |
+  // The "null" is added to the list to compute baseline shift of the box
+  // separately from text fragments.
+  unsigned fragment_end = line_box->Children().size();
+  box_placeholders_.push_back(BoxFragmentPlaceholder{
+      box->fragment_start, fragment_end, box->item, bounds.size});
+  line_box->AddChild(nullptr, bounds.offset);
+}
+
+// Create box fragments and construct a tree from the placeholders.
+void NGInlineLayoutStateStack::CreateBoxFragments(
+    NGLineBoxFragmentBuilder* line_box) {
+  DCHECK(!box_placeholders_.IsEmpty());
+
+  Vector<RefPtr<NGPhysicalFragment>> children =
+      std::move(line_box->MutableChildren());
+  Vector<NGLogicalOffset> offsets = std::move(line_box->MutableOffsets());
+  DCHECK(line_box->Children().IsEmpty() && line_box->Offsets().IsEmpty());
+
+  // At this point, children is a list of text fragments and box placeholders.
+  // |  0  |  1  |  2  |  3  |  4  |  5  |
+  // |text0|text1|text2|text3|null1|text5|
+  // When there is a BoxFragmentPlaceholder(2,4), this loop creates a box
+  // fragment with text2 and text3 as its children and changes the list to:
+  // |  0  |  1  |  2  |  3  |  4  |  5  |
+  // |text0|text1|null |null | box |text5|
+  for (const BoxFragmentPlaceholder& placeholder : box_placeholders_) {
+    NGFragmentBuilder box(NGPhysicalFragment::kFragmentBox,
+                          placeholder.item->GetLayoutObject());
+    const NGLogicalOffset& box_offset = offsets[placeholder.fragment_end];
+    for (unsigned i = placeholder.fragment_start; i < placeholder.fragment_end;
+         i++) {
+      if (RefPtr<NGPhysicalFragment>& child = children[i]) {
+        box.AddChild(std::move(child), offsets[i] - box_offset);
+        DCHECK(!children[i]);
+      }
+    }
+
+    box.SetWritingMode(line_box->WritingMode());
+    box.SetDirection(placeholder.item->Direction());
+    box.SetSize(placeholder.size);
+    // TODO(kojii): Overflow size should be computed from children.
+    box.SetOverflowSize(placeholder.size);
+    RefPtr<NGLayoutResult> layout_result = box.ToBoxFragment();
+    DCHECK(!children[placeholder.fragment_end]);
+    children[placeholder.fragment_end] =
+        std::move(layout_result->MutablePhysicalFragment());
+  }
+  box_placeholders_.clear();
+
+  // Add the list to line_box by skipping null fragments; i.e., fragments added
+  // to box children.
+  for (unsigned i = 0; i < children.size(); i++) {
+    if (children[i])
+      line_box->AddChild(children[i], offsets[i]);
   }
 }
 

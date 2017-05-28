@@ -14,7 +14,15 @@
 namespace blink {
 
 NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(NGInlineNode* node)
-    : direction_(TextDirection::kLtr), node_(node) {}
+    : writing_mode_(kHorizontalTopBottom),
+      direction_(TextDirection::kLtr),
+      node_(node) {}
+
+NGLineBoxFragmentBuilder& NGLineBoxFragmentBuilder::SetWritingMode(
+    NGWritingMode writing_mode) {
+  writing_mode_ = writing_mode;
+  return *this;
+}
 
 NGLineBoxFragmentBuilder& NGLineBoxFragmentBuilder::SetDirection(
     TextDirection direction) {

@@ -24,6 +24,10 @@ class CORE_EXPORT NGFragmentBuilder final {
  public:
   NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, NGLayoutInputNode*);
 
+  // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
+  // has NGInlineItem but does not have corresponding NGLayoutInputNode.
+  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, LayoutObject*);
+
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
@@ -149,6 +153,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   TextDirection direction_;
 
   Persistent<NGLayoutInputNode> node_;
+  LayoutObject* layout_object_;
 
   NGLogicalSize size_;
   NGLogicalSize overflow_;

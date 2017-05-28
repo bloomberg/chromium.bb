@@ -222,6 +222,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
   NGLineBoxFragmentBuilder line_box(Node());
+  line_box.SetWritingMode(ConstraintSpace().WritingMode());
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
@@ -253,13 +254,26 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
                                       item_result.end_offset);
       line_box.AddChild(std::move(text_fragment), {position, box->text_top});
     } else if (item.Type() == NGInlineItem::kOpenTag) {
-      box = box_states_.OnOpenTag(item, &line_box, &text_builder);
+      box = box_states_.OnOpenTag(item, &line_box);
       // Compute text metrics for all inline boxes since even empty inlines
       // influence the line height.
       // https://drafts.csswg.org/css2/visudet.html#line-height
       box->ComputeTextMetrics(*item.Style(), baseline_type_);
+      text_builder.SetDirection(box->style->Direction());
+      // TODO(kojii): We may need more conditions to create box fragments.
+      if (item.Style()->HasBoxDecorationBackground()) {
+        // TODO(kojii): These are once computed in NGLineBreaker. Should copy to
+        // NGInlineItemResult to reuse here.
+        NGBoxStrut borders = ComputeBorders(*constraint_space_, *item.Style());
+        NGBoxStrut paddings = ComputePadding(*constraint_space_, *item.Style());
+        // TODO(kojii): Set paint edges.
+        box->SetNeedsBoxFragment(position,
+                                 borders.block_start + paddings.block_start,
+                                 borders.BlockSum() + paddings.BlockSum());
+      }
     } else if (item.Type() == NGInlineItem::kCloseTag) {
-      box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
+      box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_,
+                                   position);
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, position, &line_box,
                               &text_builder);
@@ -286,7 +300,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     return true;  // The line was empty.
   }
 
-  box_states_.OnEndPlaceItems(&line_box, baseline_type_);
+  box_states_.OnEndPlaceItems(&line_box, baseline_type_, position);
 
   // The baselines are always placed at pixel boundaries. Not doing so results
   // in incorrect layout of text decorations, most notably underlines.
@@ -342,7 +356,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     NGTextFragmentBuilder* text_builder) {
   DCHECK(item_result->layout_result);
 
-  NGInlineBoxState* box = box_states_.OnOpenTag(item, line_box, text_builder);
+  NGInlineBoxState* box = box_states_.OnOpenTag(item, line_box);
 
   // For replaced elements, inline-block elements, and inline-table elements,
   // the height is the height of their margin box.
@@ -371,6 +385,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
+  text_builder->SetDirection(item.Style()->Direction());
   text_builder->SetSize({fragment.InlineSize(), block_size});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
   RefPtr<NGPhysicalTextFragment> text_fragment = text_builder->ToTextFragment(
@@ -378,7 +393,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       item_result->end_offset);
   line_box->AddChild(std::move(text_fragment), {position, line_top});
 
-  return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
+  return box_states_.OnCloseTag(item, line_box, box, baseline_type_,
+                                LayoutUnit(0));
 }
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
