@@ -840,8 +840,7 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
     const blink::WebParsedFeaturePolicy& container_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   blink::WebLocalFrame* frame =
-      blink::WebLocalFrame::Create(scope, this, nullptr, nullptr);
-  parent->AppendChild(frame);
+      parent->CreateLocalChild(scope, this, nullptr, nullptr);
   return frame;
 }
 

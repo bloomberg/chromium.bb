@@ -239,6 +239,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebString LayerTreeAsText(bool show_debug_info = false) const override;
 
   // WebLocalFrame methods:
+  WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
+                                      WebFrameClient*,
+                                      blink::InterfaceProvider*,
+                                      blink::InterfaceRegistry*) override;
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
   void SetDevToolsAgentClient(WebDevToolsAgentClient*) override;
@@ -336,6 +340,7 @@ class WEB_EXPORT WebLocalFrameImpl final
                                               blink::InterfaceRegistry*,
                                               WebRemoteFrame*,
                                               WebSandboxFlags);
+
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const FrameLoadRequest&,

@@ -3293,14 +3293,12 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   child_render_frame->unique_name_helper_.set_propagated_name(
       params.frame_unique_name);
   child_render_frame->InitializeBlameContext(this);
-  blink::WebLocalFrame* web_frame = WebLocalFrame::Create(
+  blink::WebLocalFrame* web_frame = parent->CreateLocalChild(
       scope, child_render_frame,
       child_render_frame->blink_interface_provider_.get(),
       child_render_frame->blink_interface_registry_.get());
   child_render_frame->BindToWebFrame(web_frame);
 
-  // Add the frame to the frame tree and initialize it.
-  parent->AppendChild(web_frame);
   child_render_frame->in_frame_tree_ = true;
   child_render_frame->Initialize();
 
@@ -3355,14 +3353,6 @@ void RenderFrameImpl::FrameDetached(blink::WebLocalFrame* frame,
   CHECK(it != g_frame_map.Get().end());
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
-
-  // Only remove the frame from the renderer's frame tree if the frame is
-  // being detached for removal and is already inserted in the frame tree.
-  // In the case of a swap, the frame needs to remain in the tree so
-  // WebFrame::swap() can replace it with the new frame.
-  if (!is_main_frame_ && in_frame_tree_ && type == DetachType::kRemove) {
-    frame->Parent()->RemoveChild(frame);
-  }
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
   // object may not be deleted immediately and other methods may try to access

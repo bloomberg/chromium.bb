@@ -338,6 +338,15 @@ void WebFrame::Close() {
   opened_frame_tracker_->Dispose();
 }
 
+void WebFrame::DetachFromParent() {
+  // TODO(dcheng): This should really just check if there's a parent, and call
+  // RemoveChild() if so. Once provisional frames are removed, this check can be
+  // simplified to just check Parent(). See https://crbug.com/578349.
+  const blink::Frame* frame = ToCoreFrame(*this);
+  if (frame->Owner() && frame->Owner()->ContentFrame() == frame)
+    Parent()->RemoveChild(this);
+}
+
 void WebFrame::InitializeCoreFrame(WebFrame& frame, Page& page) {
   if (frame.IsWebLocalFrame())
     ToWebLocalFrameBase(frame).InitializeCoreFrame(page, 0, g_null_atom);
