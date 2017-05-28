@@ -575,8 +575,9 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
                      '_UpdateSlaveInfo')
     builder_status = self._GetFailedBuilderStatus()
     triage_changes = self.GetTriageRelevantChanges()
-    self.PatchObject(triage_lib.CalculateSuspects, 'CanIgnoreFailures',
-                     return_value=(True, constants.STRATEGY_CQ_PARTIAL))
+    self.PatchObject(
+        triage_lib.CalculateSuspects, 'CanIgnoreFailures',
+        return_value=(True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES))
     ignorable_changes = triage_changes._GetIgnorableChanges(
         'test-paladin', builder_status, set(self.changes))
 
@@ -588,8 +589,9 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
                      '_UpdateSlaveInfo')
     builder_status = self._GetFailedBuilderStatus(contains_message=False)
     triage_changes = self.GetTriageRelevantChanges()
-    self.PatchObject(triage_lib.CalculateSuspects, 'CanIgnoreFailures',
-                     return_value=(True, constants.STRATEGY_CQ_PARTIAL))
+    self.PatchObject(
+        triage_lib.CalculateSuspects, 'CanIgnoreFailures',
+        return_value=(True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES))
     ignorable_changes = triage_changes._GetIgnorableChanges(
         'test-paladin', builder_status, set(self.changes))
 

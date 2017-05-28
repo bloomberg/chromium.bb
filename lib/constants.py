@@ -966,10 +966,27 @@ CL_PRECQ_CONFIG_STATUSES = (CL_PRECQ_CONFIG_STATUS_PENDING,
 
 # CL submission, rejection, or forgiven reasons (i.e. strategies).
 STRATEGY_CQ_SUCCESS = 'strategy:cq-success'
-STRATEGY_CQ_PARTIAL = 'strategy:cq-submit-partial-pool'
-STRATEGY_CQ_PARTIAL_SUBSYSTEM = 'strategy:cq-submit-partial-pool-pass-subsystem'
 STRATEGY_PRECQ_SUBMIT = 'strategy:pre-cq-submit'
 STRATEGY_NONMANIFEST = 'strategy:non-manifest-submit'
+
+# Strategy for CQ parital pool submission
+STRATEGY_CQ_PARTIAL_NOT_TESTED = 'strategy:cq-submit-partial-pool-not-tested'
+STRATEGY_CQ_PARTIAL_CQ_HISTORY = 'strategy:cq-submit-partial-pool-cq-history'
+STRATEGY_CQ_PARTIAL_IGNORED_STAGES = (
+    'strategy:cq-submit-partial-pool-ignored-stages')
+STRATEGY_CQ_PARTIAL_SUBSYSTEM = 'strategy:cq-submit-partial-pool-pass-subsystem'
+STRATEGY_CQ_PARTIAL_BUILDS_PASSED = (
+    'strategy:cq-submit-partial-pool-builds-passed')
+
+# A dict mapping CQ parital pool submission strategies to their priorities;
+# lower values have higher priorities.
+STRATEGY_CQ_PARTIAL_REASONS = {
+    STRATEGY_CQ_PARTIAL_NOT_TESTED: 1,
+    STRATEGY_CQ_PARTIAL_CQ_HISTORY: 2,
+    STRATEGY_CQ_PARTIAL_IGNORED_STAGES: 3,
+    STRATEGY_CQ_PARTIAL_SUBSYSTEM: 4,
+    STRATEGY_CQ_PARTIAL_BUILDS_PASSED: 5
+}
 
 # CQ types.
 CQ = 'cq'

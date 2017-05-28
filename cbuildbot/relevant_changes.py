@@ -69,7 +69,8 @@ class RelevantChanges(object):
 
   @classmethod
   def GetRelevantChangesForSlaves(cls, master_build_id, db, config, changes,
-                                  no_stat, slave_buildbucket_ids,
+                                  builds_not_passed_sync_stage,
+                                  slave_buildbucket_ids,
                                   include_master=False):
     """Compile a set of relevant changes for each slave.
 
@@ -78,7 +79,8 @@ class RelevantChanges(object):
       db: Instance of cidb.CIDBConnection.
       config: Instance of config_lib.BuildConfig of this build.
       changes: A list of GerritPatch instances to examine.
-      no_stat: Set of builder names of slave builders that had status None.
+      builds_not_passed_sync_stage: Set of build config names of slaves that
+        didn't pass the sync stages.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
                              scheduled by Buildbucket.
       include_master: Boolean indicating whether to include the master build in
@@ -101,11 +103,11 @@ class RelevantChanges(object):
     for k, v in changes_by_build_id.iteritems():
       changes_by_config[config_map[k]] = v
 
-    for config in no_stat:
-      # If a slave is in |no_stat|, it means that the slave never
-      # finished applying the changes in the sync stage. Hence the CL
-      # pickup actions for this slave may be
-      # inaccurate. Conservatively assume all changes are relevant.
+    for config in builds_not_passed_sync_stage:
+      # If a slave did not passed the sync stage, it means that the slave never
+      # finished applying the changes in the sync stage. Hence the CL pickup
+      # actions for this slave may be inaccurate. Conservatively assume all
+      # changes are relevant.
       changes_by_config[config] = set(changes)
 
     return changes_by_config
@@ -387,20 +389,19 @@ class TriageRelevantChanges(object):
     return accepted_stages.intersection(desired_stages)
 
   @classmethod
-  def GetBuildsPassedAnyOfStages(cls, slave_stages_dict, desired_stages):
+  def GetBuildsPassedAnyOfStages(cls, build_stages_dict, desired_stages):
     """Get builds which have passed any stage from desired_stages.
 
     Args:
-      slave_stages_dict: A dict mapping slaves config names to their stage lists
-        (see GetSlaveStages for details).
+      build_stages_dict: A dict mapping build config names to their stage lists.
       desired_stages: A set of desired stages (strings).
 
     Returns:
       A set of build config names (strings) which have passed any stage in
       desired_stages.
     """
-    return set(slave_config
-               for slave_config, stages in slave_stages_dict.iteritems()
+    return set(build_config
+               for build_config, stages in build_stages_dict.iteritems()
                if cls.PassedAnyOfStages(stages, desired_stages))
 
   def _GetRelevantChanges(self, slave_stages_dict):
@@ -419,14 +420,15 @@ class TriageRelevantChanges(object):
       containing all the applied changes.
     """
     # If a build passed the sync stage, the picked up change stats are recorded.
-    stat_builds = self.GetBuildsPassedAnyOfStages(
+    builds_passed_sync_stage = self.GetBuildsPassedAnyOfStages(
         slave_stages_dict, self.STAGE_SYNC)
-    no_stat_builds = set(self.buildbucket_info_dict.keys()) - stat_builds
+    builds_not_passed_sync_stage = (set(self.buildbucket_info_dict.keys()) -
+                                    builds_passed_sync_stage)
     slave_buildbucket_ids = [bb_info.buildbucket_id
                              for bb_info in self.buildbucket_info_dict.values()]
     slave_changes_dict = RelevantChanges.GetRelevantChangesForSlaves(
         self.master_build_id, self.db, self.config, self.changes,
-        no_stat_builds, slave_buildbucket_ids)
+        builds_not_passed_sync_stage, slave_buildbucket_ids)
 
     # Some slaves may not pick up any changes, update the value to set()
     for slave_config in self.buildbucket_info_dict:

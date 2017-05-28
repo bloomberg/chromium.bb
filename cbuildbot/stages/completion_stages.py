@@ -18,6 +18,7 @@ from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import failure_message_lib
@@ -725,51 +726,37 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
       m.increment_by(elapsed_seconds, fields=fields)
 
-  def _ShouldSubmitPartialPool(self, slave_buildbucket_ids):
-    """Determine whether we should attempt or skip SubmitPartialPool.
+  def _GetBuildsPassedSyncStage(self, build_id, db, slave_buildbucket_ids):
+    """Get builds which passed the sync stages.
 
     Args:
-        slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave
-                               builds scheduled by Buildbucket.
+      build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
+      slave_buildbucket_ids: A list of buildbucket_ids of the slave builds.
 
     Returns:
-      True if all important, non-sanity-check slaves ran and completed all
-      critical stages, and hence it is safe to attempt SubmitPartialPool. False
-      otherwise.
+      A list of the builds (master + slaves) which passed the sync stage (See
+      relevant_changes.TriageRelevantChanges.STAGE_SYNC)
     """
-    # sanity_check_slaves should not block board-aware submission, since they do
-    # not actually apply test patches.
-    sanity_check_slaves = set(self._run.config.sanity_check_slaves)
-    all_slaves = set([x.name for x in self._GetSlaveConfigs()])
-    all_slaves -= sanity_check_slaves
-    assert self._run.config.name not in all_slaves
+    assert db, 'No database connection to use.'
+    build_stages_dict = {}
 
     # Get slave stages.
-    build_id, db = self._run.GetCIDBHandle()
-    assert db, 'No database connection to use.'
     slave_stages = db.GetSlaveStages(
         build_id, buildbucket_ids=slave_buildbucket_ids)
-
-    should_submit = True
-    ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
-                         constants.BUILDER_STATUS_SKIPPED,)
-
-    # Configs that have passed critical stages.
-    configs_per_stage = {stage: set() for stage in self._CRITICAL_STAGES}
-
     for stage in slave_stages:
-      if (stage['name'] in self._CRITICAL_STAGES and
-          stage['status'] in ACCEPTED_STATUSES):
-        configs_per_stage[stage['name']].add(stage['build_config'])
+      build_stages_dict.setdefault(stage['build_config'], []).append(stage)
 
-    for stage in self._CRITICAL_STAGES:
-      missing_configs = all_slaves - configs_per_stage[stage]
-      if missing_configs:
-        logging.warning('Config(s) %s did not complete critical stage %s.',
-                        ' '.join(missing_configs), stage)
-        should_submit = False
+    # Get master stages.
+    master_stages = db.GetBuildStages(build_id)
+    for stage in master_stages:
+      build_stages_dict.setdefault(self._run.config.name, []).append(stage)
 
-    return should_submit
+    triage_relevant_changes = relevant_changes.TriageRelevantChanges
+    builds_passed_sync_stage = (
+        triage_relevant_changes.GetBuildsPassedAnyOfStages(
+            build_stages_dict, triage_relevant_changes.STAGE_SYNC))
+    return builds_passed_sync_stage
 
   def CQMasterHandleFailure(self, failing, inflight, no_stat, self_destructed,
                             slave_buildbucket_ids):
@@ -780,9 +767,9 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     sanity check builder(s) passed.
 
     Args:
-      failing: Names of the builders that failed.
-      inflight: Names of the builders that timed out.
-      no_stat: Set of builder names of slave builders that had status None.
+      failing: A set of build config names of builds that failed.
+      inflight: A set of build config names of builds that timed out.
+      no_stat: A set of build config names of builds that had status None.
       self_destructed: Boolean indicating whether the master build destructed
                        itself and stopped waiting completion of its slaves.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
@@ -794,30 +781,34 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     changes = self.sync_stage.pool.applied
 
     build_id, db = self._run.GetCIDBHandle()
+    builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
+        build_id, db, slave_buildbucket_ids)
+    builds_not_passed_sync_stage = failing.union(inflight).union(
+        no_stat).difference(builds_passed_sync_stage)
+    changes_by_config = (
+        relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
+            build_id, db, self._run.config, changes,
+            builds_not_passed_sync_stage,
+            slave_buildbucket_ids, include_master=True))
+    subsys_by_config = (
+        relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
+            build_id, db))
 
-    do_partial_submission = self._ShouldSubmitPartialPool(slave_buildbucket_ids)
+    changes_by_slaves = changes_by_config.copy()
+    # Exclude master build
+    changes_by_slaves.pop(self._run.config.name, None)
+    slaves_by_change = cros_build_lib.InvertDictionary(changes_by_slaves)
+    passed_in_history_slaves_by_change = (
+        relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
+            build_id, db, changes, slaves_by_change))
 
-    if do_partial_submission:
-      changes_by_config = (
-          relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
-              build_id, db, self._run.config, changes, no_stat,
-              slave_buildbucket_ids, include_master=True))
-      subsys_by_config = (
-          relevant_changes.RelevantChanges.GetSubsysResultForSlaves(
-              build_id, db))
-
-      # Even if there was a failure, we can submit the changes that indicate
-      # that they don't care about this failure.
-      changes = self.sync_stage.pool.SubmitPartialPool(
-          changes, messages, changes_by_config, subsys_by_config,
-          failing, inflight, no_stat)
-    else:
-      logging.warning('Not doing any partial submission, due to critical stage '
-                      'failure(s).')
-      title = 'CQ encountered a critical failure.'
-      msg = ('CQ encountered a critical failure, and hence skipped '
-             'board-aware submission. See %s' % self.ConstructDashboardURL())
-      tree_status.SendHealthAlert(self._run, title, msg)
+    # Even if some slaves didn't pass the critical stages, we can still submit
+    # some changes based on CQ history.
+    # Even if there was a failure, we can submit the changes that indicate
+    # that they don't care about this failure.
+    changes = self.sync_stage.pool.SubmitPartialPool(
+        changes, messages, changes_by_config, subsys_by_config,
+        passed_in_history_slaves_by_change, failing, inflight, no_stat)
 
     sanity_check_slaves = set(self._run.config.sanity_check_slaves)
     tot_sanity = self._ToTSanity(sanity_check_slaves, self._slave_statuses)

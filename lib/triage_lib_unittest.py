@@ -388,13 +388,13 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     subsys_by_config = None
 
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        self.changes, changes_by_config, subsys_by_config, failing,
+        self.changes, changes_by_config, subsys_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
     self.assertEquals(verified_changes, set(self.changes))
 
-  def testChangesNotVerified(self):
-    """Tests that changes are not verified if builds failed prematurely."""
+  def testChangesOnNotCompletedBuilds(self):
+    """Test changes on not completed builds."""
     failing = messages = []
     inflight = ['foo-paladin']
     no_stat = ['puppy-paladin']
@@ -404,10 +404,31 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     subsys_by_config = None
 
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        self.changes, changes_by_config, subsys_by_config, failing,
+        self.changes, changes_by_config, subsys_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
     self.assertEquals(verified_changes, set(self.changes[2:-2]))
+
+  def testChangesOnNotCompletedBuildsWithCQHistory(self):
+    """Tests changes on not completed builds with builds passed in history."""
+    failing = messages = []
+    inflight = ['foo-paladin']
+    no_stat = ['puppy-paladin']
+    changes_by_config = {'foo-paladin': set(self.changes[:2]),
+                         'bar-paladin': set(self.changes),
+                         'puppy-paladin': set(self.changes[-2:])}
+    subsys_by_config = None
+    passed_slave_by_change = {
+        self.changes[1]: {'foo-paladin'},
+        self.changes[3]: {'puppy-paladin'}
+    }
+
+    verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, subsys_by_config,
+        passed_slave_by_change, failing, inflight, no_stat, messages,
+        self.build_root)
+    verified_changes = set(verified_results.keys())
+    self.assertEquals(verified_changes, set(self.changes[1:-1]))
 
   def testChangesNotVerifiedOnFailures(self):
     """Tests that changes are not verified if failures cannot be ignored."""
@@ -421,10 +442,31 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         triage_lib.CalculateSuspects, 'CanIgnoreFailures',
         return_value=(False, None))
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        self.changes, changes_by_config, subsys_by_config, failing,
+        self.changes, changes_by_config, subsys_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
     self.assertEquals(verified_changes, set(self.changes[2:]))
+
+  def testChangesNotVerifiedOnFailuresWithCQHistory(self):
+    """Tests on not ignorable faiulres with CQ history."""
+    messages = no_stat = inflight = []
+    failing = ['cub-paladin']
+    changes_by_config = {'bar-paladin': set(self.changes),
+                         'cub-paladin': set(self.changes[:2])}
+    subsys_by_config = None
+    passed_slave_by_change = {
+        self.changes[1]: {'cub-paladin'},
+    }
+
+    self.PatchObject(
+        triage_lib.CalculateSuspects, 'CanIgnoreFailures',
+        return_value=(False, None))
+    verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, subsys_by_config,
+        passed_slave_by_change, failing, inflight, no_stat, messages,
+        self.build_root)
+    verified_changes = set(verified_results.keys())
+    self.assertEquals(verified_changes, set(self.changes[1:]))
 
   def testChangesVerifiedWhenFailuresCanBeIgnored(self):
     """Tests that changes are verified if failures can be ignored."""
@@ -436,9 +478,9 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
 
     self.PatchObject(
         triage_lib.CalculateSuspects, 'CanIgnoreFailures',
-        return_value=(True, None))
+        return_value=(True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES))
     verified_results = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        self.changes, changes_by_config, subsys_by_config, failing,
+        self.changes, changes_by_config, subsys_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
     self.assertEquals(verified_changes, set(self.changes))
@@ -463,7 +505,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     m.return_value = ('HWTest', 'VMTest', 'Foo')
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config),
-                     (True, constants.STRATEGY_CQ_PARTIAL))
+                     (True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES))
 
     m.return_value = None
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
@@ -510,6 +552,20 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
                                         'fail_subsystems': ['A']}}
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
+
+  # pylint: disable=protected-access
+  def testGetVerifiedReason(self):
+    """Test _GetVerifiedReason."""
+    verified_reasons = set()
+    self.assertEqual(
+        triage_lib.CalculateSuspects._GetVerifiedReason(verified_reasons), None)
+
+    verified_reasons = {constants.STRATEGY_CQ_PARTIAL_BUILDS_PASSED,
+                        constants.STRATEGY_CQ_PARTIAL_SUBSYSTEM,
+                        constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES}
+    self.assertEqual(
+        triage_lib.CalculateSuspects._GetVerifiedReason(verified_reasons),
+        constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES)
 
 
 class SuspectChangesTest(patch_unittest.MockPatchBase):

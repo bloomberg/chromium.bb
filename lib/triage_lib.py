@@ -591,7 +591,7 @@ class CalculateSuspects(object):
     cq_config_parser = cq_config.CQConfigParser(build_root, change)
     ignored_stages = cq_config_parser.GetStagesToIgnore()
     if ignored_stages and failing_stages.issubset(ignored_stages):
-      return (True, constants.STRATEGY_CQ_PARTIAL)
+      return (True, constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES)
 
     # Among the failed stages, except the stages that can be ignored, only
     # HWTestStage fails, and subsystem logic has been used on all configs
@@ -627,7 +627,8 @@ class CalculateSuspects(object):
 
   @classmethod
   def GetFullyVerifiedChanges(cls, changes, changes_by_config, subsys_by_config,
-                              failing, inflight, no_stat, messages, build_root):
+                              passed_in_history_slaves_by_change, failing,
+                              inflight, no_stat, messages, build_root):
     """Examines build failures and returns a set of fully verified changes.
 
     A change is fully verified if all the build configs relevant to
@@ -640,6 +641,8 @@ class CalculateSuspects(object):
         config names.
       subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
         by the config names.
+      passed_in_history_slaves_by_change: A dict mapping changes to their
+        relevant slaves (build config name strings) which passed in history.
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
@@ -669,35 +672,85 @@ class CalculateSuspects(object):
       logging.info('These changes were not tested by any slaves, '
                    'so they will be submitted: %s',
                    cros_patch.GetChangesAsString(untested_changes))
-      fully_verified.update({c: None for c in untested_changes})
+      fully_verified.update({c: constants.STRATEGY_CQ_PARTIAL_NOT_TESTED
+                             for c in untested_changes})
+
+    not_completed = set.union(no_stat, inflight)
 
     for change in all_tested_changes:
-      # If all relevant configs associated with a change passed, the
-      # change is fully verified.
+      # If each of the relevant configs associated with a change satisifies one
+      # of the conditions:
+      # 1) passed successfully; OR
+      # 2) failed with failures which can be ignored by the change; OR
+      # 3) there are builds of the relevant build config passed in history.
+      # this change will be considered as fully verified.
+      verified = True
+      verified_reasons = set()
       relevant_configs = [k for k, v in changes_by_config.iteritems() if
                           change in v]
-      if any(x in set.union(no_stat, inflight) for x in relevant_configs):
-        continue
+      passed_in_history_slaves = passed_in_history_slaves_by_change.get(
+          change, set())
+      logging.info('Checking change %s; relevant configs %s; configs passed in '
+                   'history %s.', change.PatchLink(), relevant_configs,
+                   list(passed_in_history_slaves))
 
-      failed_configs = [x for x in relevant_configs if x in failing]
-      if not failed_configs:
-        logging.info('All the %s relevant config(s) for change %s passed, so '
-                     'it will be submitted.', len(relevant_configs),
-                     cros_patch.GetChangesAsString([change]))
-        fully_verified.update({change: None})
-      else:
-        # Examine the failures and see if we can safely ignore them
-        # for the change.
-        failed_messages = [x for x in messages if x.builder in failed_configs]
-        ignore_result = cls.CanIgnoreFailures(
-            failed_messages, change, build_root, subsys_by_config)
-        if ignore_result[0]:
-          logging.info('All failures of relevant configs for change %s are '
-                       'ignorable by this change, so it will be submitted.',
-                       cros_patch.GetChangesAsString([change]))
-          fully_verified.update({change: ignore_result[1]})
+      for build_config in relevant_configs:
+        if build_config in not_completed:
+          if build_config in passed_in_history_slaves:
+            verified_reasons.add(constants.STRATEGY_CQ_PARTIAL_CQ_HISTORY)
+          else:
+            logging.info('Failed to verify change %s: relevant build %s isn\'t '
+                         'completed in current run and didn\'t pass in history',
+                         change.PatchLink(), build_config)
+            verified = False
+            break
+        elif build_config in failing:
+          failed_messages = [x for x in messages if x.builder == build_config]
+          ignore_result = cls.CanIgnoreFailures(
+              failed_messages, change, build_root, subsys_by_config)
+          if ignore_result[0]:
+            verified_reasons.add(ignore_result[1])
+          elif build_config in passed_in_history_slaves:
+            verified_reasons.add(constants.STRATEGY_CQ_PARTIAL_CQ_HISTORY)
+          else:
+            logging.info('Failed to verify change %s: relevant build %s failed '
+                         'with not ignorable failures in current run and '
+                         'didn\'t pass in history',
+                         change.PatchLink(), build_config)
+            verified = False
+            break
+        else:
+          verified_reasons.add(constants.STRATEGY_CQ_PARTIAL_BUILDS_PASSED)
+
+      if verified:
+        reason = cls._GetVerifiedReason(verified_reasons)
+        fully_verified.update({change: reason})
+        logging.info('Change %s is verified with reasons %s, choose the final '
+                     'reason %s.', change.PatchLink(), list(verified_reasons),
+                     reason)
 
     return fully_verified
+
+  @classmethod
+  def _GetVerifiedReason(cls, verified_reasons):
+    """Get a reason with the highest prioirty from a set of verified reasons.
+
+    Args:
+      verified_reasons: A set of verified reasons (memebers of
+          constants.STRATEGY_CQ_PARTIAL_REASONS).
+
+    Returns:
+      The reason with the highest prioirty.
+    """
+    if verified_reasons:
+      reasons = list(verified_reasons)
+      reason = reasons[0]
+      for r in reasons[1:]:
+        if (constants.STRATEGY_CQ_PARTIAL_REASONS[r] <
+            constants.STRATEGY_CQ_PARTIAL_REASONS[reason]):
+          reason = r
+
+      return reason
 
 
 class SuspectChanges(dict):
