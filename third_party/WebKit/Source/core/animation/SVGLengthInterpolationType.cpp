@@ -4,13 +4,13 @@
 
 #include "core/animation/SVGLengthInterpolationType.h"
 
-#include "core/animation/InterpolationEnvironment.h"
+#include <memory>
+#include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSHelper.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthContext.h"
-#include <memory>
 
 namespace blink {
 
@@ -115,7 +115,7 @@ void SVGLengthInterpolationType::Apply(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  SVGElement& element = environment.SvgElement();
+  SVGElement& element = ToSVGInterpolationEnvironment(environment).SvgElement();
   SVGLengthContext length_context(&element);
   element.SetWebAnimatedAttribute(
       Attribute(),
