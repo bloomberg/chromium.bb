@@ -39,8 +39,10 @@ namespace {
 // the total of the order. |amount_label_id| is specified to recall the view
 // later, e.g. in tests.
 std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
+                                                const base::string16& currency,
                                                 const base::string16& amount,
                                                 bool emphasize,
+                                                DialogViewID currency_label_id,
                                                 DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
@@ -64,25 +66,50 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
                      views::GridLayout::FIXED, kAmountSectionWidth,
                      kAmountSectionWidth);
 
   layout->StartRow(0, 0);
   std::unique_ptr<views::Label> label_text;
+  std::unique_ptr<views::Label> currency_text;
   std::unique_ptr<views::Label> amount_text;
   if (emphasize) {
     label_text = CreateMediumLabel(label);
+    currency_text = CreateMediumLabel(currency);
     amount_text = CreateMediumLabel(amount);
   } else {
     label_text = base::MakeUnique<views::Label>(label);
+    currency_text = base::MakeUnique<views::Label>(currency);
+    currency_text->SetDisabledColor(
+        currency_text->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_LabelDisabledColor));
+    currency_text->SetEnabled(false);
     amount_text = base::MakeUnique<views::Label>(amount);
   }
   amount_text->set_id(static_cast<int>(amount_label_id));
   amount_text->SetMultiLine(true);
   amount_text->SetAllowCharacterBreak(true);
+
+  std::unique_ptr<views::View> amount_wrapper = base::MakeUnique<views::View>();
+  views::GridLayout* wrapper_layout =
+      new views::GridLayout(amount_wrapper.get());
+  views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
+  wrapper_columns->AddColumn(views::GridLayout::LEADING,
+                             views::GridLayout::CENTER, 0,
+                             views::GridLayout::USE_PREF, 0, 0);
+  wrapper_columns->AddColumn(views::GridLayout::TRAILING,
+                             views::GridLayout::CENTER, 1,
+                             views::GridLayout::USE_PREF, 0, 0);
+
+  wrapper_layout->StartRow(0, 0);
+  currency_text->set_id(static_cast<int>(currency_label_id));
+  wrapper_layout->AddView(currency_text.release());
+  wrapper_layout->AddView(amount_text.release());
+  amount_wrapper->SetLayoutManager(wrapper_layout);
+
   layout->AddView(label_text.release());
-  layout->AddView(amount_text.release());
+  layout->AddView(amount_wrapper.release());
 
   return row;
 }
@@ -144,23 +171,19 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
   for (size_t i = 0; i < spec()->details().display_items.size(); i++) {
     DialogViewID view_id =
         i < line_items.size() ? line_items[i] : DialogViewID::VIEW_ID_NONE;
-    base::string16 value_string;
+    base::string16 currency = base::UTF8ToUTF16("");
     if (is_mixed_currency) {
-      value_string = l10n_util::GetStringFUTF16(
-          IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-          base::UTF8ToUTF16(
-              spec()->details().display_items[i]->amount->currency),
-          spec()->GetFormattedCurrencyAmount(
-              spec()->details().display_items[i]->amount));
-    } else {
-      value_string = spec()->GetFormattedCurrencyAmount(
-          spec()->details().display_items[i]->amount);
+      currency = base::UTF8ToUTF16(
+          spec()->details().display_items[i]->amount->currency);
     }
 
     content_view->AddChildView(
         CreateLineItemView(
             base::UTF8ToUTF16(spec()->details().display_items[i]->label),
-            value_string, false, view_id)
+            currency,
+            spec()->GetFormattedCurrencyAmount(
+                spec()->details().display_items[i]->amount),
+            false, DialogViewID::VIEW_ID_NONE, view_id)
             .release());
   }
 
@@ -170,9 +193,12 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
       spec()->GetFormattedCurrencyAmount(spec()->details().total->amount));
 
   content_view->AddChildView(
-      CreateLineItemView(base::UTF8ToUTF16(spec()->details().total->label),
-                         total_label_value, true,
-                         DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
+      CreateLineItemView(
+          base::UTF8ToUTF16(spec()->details().total->label),
+          base::UTF8ToUTF16(spec()->details().total->amount->currency),
+          spec()->GetFormattedCurrencyAmount(spec()->details().total->amount),
+          true, DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL,
+          DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
 }
 
