@@ -882,7 +882,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     int routing_id,
     int request_id,
     const ResourceRequest& request_data,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
@@ -946,7 +946,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     int request_id,
     const ResourceRequest& request_data,
     LoaderMap::iterator iter,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer());
   int child_id = requester_info->child_id();
@@ -1029,7 +1029,7 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
     int request_id,
     const ResourceRequest& request_data,
     int route_id,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer());
   // Caller should ensure that |request_data| is associated with a transfer.
@@ -1084,7 +1084,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     const ResourceRequest& request_data,
     const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   int child_id = requester_info->child_id();
@@ -1200,7 +1200,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
     const net::HttpRequestHeaders& headers,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
@@ -1459,7 +1459,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     int route_id,
     int child_id,
     ResourceContext* resource_context,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
@@ -1527,7 +1527,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
 std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateBaseResourceHandler(
     net::URLRequest* request,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     ResourceType resource_type) {
   std::unique_ptr<ResourceHandler> handler;
@@ -2189,7 +2189,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
     int routing_id,
     int request_id,
     const ResourceRequest& request,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   OnRequestResourceInternal(requester_info, routing_id, request_id, request,
                             std::move(mojo_request),

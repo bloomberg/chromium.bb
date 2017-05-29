@@ -83,7 +83,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
       mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       const base::Callback<WebContents*(void)>& web_contents_getter,
-      mojom::URLLoaderAssociatedRequest url_loader_request,
+      mojom::URLLoaderRequest url_loader_request,
       mojom::URLLoaderClientPtr url_loader_client_ptr,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -139,7 +139,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
   }
 
   // This could be called multiple times.
-  void Restart(mojom::URLLoaderAssociatedRequest url_loader_request,
+  void Restart(mojom::URLLoaderRequest url_loader_request,
                mojom::URLLoaderClientPtr url_loader_client_ptr) {
     url_loader_request_ = std::move(url_loader_request);
     url_loader_client_ptr_ = std::move(url_loader_client_ptr);
@@ -183,7 +183,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
   mojom::URLLoaderFactory* network_factory_;
 
   // Kept around until we create a loader.
-  mojom::URLLoaderAssociatedRequest url_loader_request_;
+  mojom::URLLoaderRequest url_loader_request_;
   mojom::URLLoaderClientPtr url_loader_client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -237,8 +237,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
-  mojom::URLLoaderAssociatedRequest loader_associated_request =
-      mojo::MakeRequest(&url_loader_associated_ptr_);
+  mojom::URLLoaderRequest loader_request = mojo::MakeRequest(&url_loader_ptr_);
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   binding_.Bind(mojo::MakeRequest(&url_loader_client_ptr_to_pass));
 
@@ -271,7 +270,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           static_cast<StoragePartitionImpl*>(storage_partition)
               ->url_loader_factory_getter(),
           base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id),
-          base::Passed(std::move(loader_associated_request)),
+          base::Passed(std::move(loader_request)),
           base::Passed(std::move(url_loader_client_ptr_to_pass)),
           base::Passed(ServiceManagerConnection::GetForProcess()
                            ->GetConnector()
@@ -284,7 +283,7 @@ NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
 }
 
 void NavigationURLLoaderNetworkService::FollowRedirect() {
-  url_loader_associated_ptr_->FollowRedirect();
+  url_loader_ptr_->FollowRedirect();
 }
 
 void NavigationURLLoaderNetworkService::ProceedWithResponse() {}

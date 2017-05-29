@@ -190,7 +190,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     int buffer_size;
 
     // For mojo loading.
-    mojom::URLLoaderAssociatedPtr url_loader;
+    mojom::URLLoaderPtr url_loader;
     std::unique_ptr<URLLoaderClientImpl> url_loader_client;
   };
   using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequestInfo>>;

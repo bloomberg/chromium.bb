@@ -17,9 +17,9 @@
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace content {
 
@@ -30,7 +30,7 @@ class AppCacheURLLoader : public AppCacheStorage::Delegate,
                           public mojom::URLLoader {
  public:
   AppCacheURLLoader(const ResourceRequest& request,
-                    mojom::URLLoaderAssociatedRequest url_loader_request,
+                    mojom::URLLoaderRequest url_loader_request,
                     int32_t routing_id,
                     int32_t request_id,
                     mojom::URLLoaderClientPtr client_info,
@@ -110,7 +110,7 @@ class AppCacheURLLoader : public AppCacheStorage::Delegate,
   ResourceRequest request_;
 
   // URLLoader proxy for the network service.
-  mojom::URLLoaderAssociatedPtr network_loader_request_;
+  mojom::URLLoaderPtr network_loader_request_;
 
   // Routing id of the request. This is 0 for navigation requests. For
   // subresource requests it is non zero.
@@ -132,7 +132,7 @@ class AppCacheURLLoader : public AppCacheStorage::Delegate,
   scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
 
   // Binds the URLLoaderClient with us.
-  mojo::AssociatedBinding<mojom::URLLoader> binding_;
+  mojo::Binding<mojom::URLLoader> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoader);
 };
@@ -160,7 +160,7 @@ void AppCacheURLLoaderFactory::CreateURLLoaderFactory(
 }
 
 void AppCacheURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest url_loader_request,
+    mojom::URLLoaderRequest url_loader_request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
