@@ -78,7 +78,7 @@ bool DOMTokenList::ValidateTokenValue(const AtomicString&,
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-contains
 bool DOMTokenList::contains(const AtomicString& token) const {
-  return ContainsInternal(token);
+  return tokens_.Contains(token);
 }
 
 void DOMTokenList::add(const AtomicString& token,
@@ -126,7 +126,7 @@ bool DOMTokenList::toggle(const AtomicString& token,
   if (!ValidateToken(token, exception_state))
     return false;
 
-  if (ContainsInternal(token)) {
+  if (contains(token)) {
     RemoveInternal(token);
     return false;
   }
@@ -154,7 +154,7 @@ bool DOMTokenList::supports(const AtomicString& token,
 }
 
 void DOMTokenList::AddInternal(const AtomicString& token) {
-  if (ContainsInternal(token))
+  if (contains(token))
     return;
   Vector<String> tokens;
   tokens.push_back(token.GetString());
@@ -163,7 +163,7 @@ void DOMTokenList::AddInternal(const AtomicString& token) {
 
 void DOMTokenList::RemoveInternal(const AtomicString& token) {
   // Check using contains first to skip unnecessary reserialization.
-  if (!ContainsInternal(token))
+  if (!contains(token))
     return;
   Vector<String> tokens;
   tokens.push_back(token.GetString());
@@ -225,10 +225,6 @@ void DOMTokenList::DidUpdateAttributeValue(const AtomicString& old_value,
     return;
   if (old_value != new_value)
     tokens_.Set(new_value);
-}
-
-bool DOMTokenList::ContainsInternal(const AtomicString& token) const {
-  return tokens_.Contains(token);
 }
 
 const AtomicString DOMTokenList::item(unsigned index) const {
