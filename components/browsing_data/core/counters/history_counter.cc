@@ -38,7 +38,7 @@ HistoryCounter::~HistoryCounter() {
 void HistoryCounter::OnInitialized() {
   if (sync_service_)
     sync_service_->AddObserver(this);
-  history_sync_enabled_ = !!web_history_service_callback_.Run();
+  history_sync_enabled_ = !!GetWebHistoryService();
 }
 
 bool HistoryCounter::HasTrackedTasks() {
@@ -49,6 +49,12 @@ const char* HistoryCounter::GetPrefName() const {
   return GetTab() == ClearBrowsingDataTab::BASIC
              ? browsing_data::prefs::kDeleteBrowsingHistoryBasic
              : browsing_data::prefs::kDeleteBrowsingHistory;
+}
+
+history::WebHistoryService* HistoryCounter::GetWebHistoryService() {
+  if (web_history_service_callback_)
+    return web_history_service_callback_.Run();
+  return nullptr;
 }
 
 void HistoryCounter::Count() {
@@ -69,8 +75,7 @@ void HistoryCounter::Count() {
       &cancelable_task_tracker_);
 
   // If the history sync is enabled, test if there is at least one synced item.
-  history::WebHistoryService* web_history =
-      web_history_service_callback_.Run();
+  history::WebHistoryService* web_history = GetWebHistoryService();
 
   if (!web_history) {
     web_counting_finished_ = true;
@@ -155,7 +160,7 @@ void HistoryCounter::MergeResults() {
 }
 
 void HistoryCounter::OnStateChanged(syncer::SyncService* sync) {
-  bool history_sync_enabled_new_state = !!web_history_service_callback_.Run();
+  bool history_sync_enabled_new_state = !!GetWebHistoryService();
 
   // If the history sync was just enabled or disabled, restart the counter
   // so that we update the result accordingly.

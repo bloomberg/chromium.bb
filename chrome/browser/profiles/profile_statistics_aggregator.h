@@ -14,11 +14,10 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task_runner.h"
 #include "chrome/browser/profiles/profile_statistics_common.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
-#include "components/history/core/browser/history_types.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
 
 class Profile;
 
@@ -65,30 +64,13 @@ class ProfileStatisticsAggregator
   void StatisticsCallbackSuccess(const char* category, int count);
   // Callback for reporting failure.
   void StatisticsCallbackFailure(const char* category);
-  // Callback for history.
-  void StatisticsCallbackHistory(history::HistoryCountResult result);
+
   // Callback for counters.
   void OnCounterResult(
       std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);
 
-  // Registers and starts a BrowsingDataCounter.
+  // Registers, initializes and starts a BrowsingDataCounter.
   void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter);
-
-  // Password counting
-  class PasswordStoreConsumerHelper
-      : public password_manager::PasswordStoreConsumer {
-   public:
-    explicit PasswordStoreConsumerHelper(ProfileStatisticsAggregator* parent)
-        : parent_(parent) {}
-
-    void OnGetPasswordStoreResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-
-   private:
-    ProfileStatisticsAggregator* parent_ = nullptr;
-
-    DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
-  };
 
   // Preference counting.
   ProfileStatValue CountPrefs() const;
@@ -107,9 +89,6 @@ class ProfileStatisticsAggregator
   base::CancelableTaskTracker tracker_;
 
   std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
-
-  // Password counting.
-  PasswordStoreConsumerHelper password_store_consumer_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileStatisticsAggregator);
 };

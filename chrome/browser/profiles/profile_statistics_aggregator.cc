@@ -18,8 +18,9 @@
 #include "chrome/browser/profiles/profile_statistics.h"
 #include "chrome/browser/profiles/profile_statistics_factory.h"
 #include "components/browsing_data/core/counters/bookmark_counter.h"
-#include "components/history/core/browser/history_service.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/browsing_data/core/counters/history_counter.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -45,21 +46,12 @@ void AccumulatePrefStats(const PrefService* pref_service,
 
 }  // namespace
 
-
-void ProfileStatisticsAggregator::PasswordStoreConsumerHelper::
-    OnGetPasswordStoreResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  parent_->StatisticsCallbackSuccess(
-      profiles::kProfileStatisticsPasswords, results.size());
-}
-
 ProfileStatisticsAggregator::ProfileStatisticsAggregator(
     Profile* profile,
     const base::Closure& done_callback)
     : profile_(profile),
       profile_path_(profile_->GetPath()),
-      done_callback_(done_callback),
-      password_store_consumer_helper_(this) {}
+      done_callback_(done_callback) {}
 
 ProfileStatisticsAggregator::~ProfileStatisticsAggregator() {}
 
@@ -88,10 +80,9 @@ void ProfileStatisticsAggregator::StartAggregator() {
   DCHECK(g_browser_process->profile_manager()->IsValidProfile(profile_));
   profile_category_stats_.clear();
 
-  // Try to cancel tasks from task trackers.
+  // Try to cancel tasks.
   tracker_.TryCancelAll();
   counters_.clear();
-  password_store_consumer_helper_.cancelable_task_tracker()->TryCancelAll();
 
   // Initiate bookmark counting.
   bookmarks::BookmarkModel* bookmark_model =
@@ -103,27 +94,26 @@ void ProfileStatisticsAggregator::StartAggregator() {
     StatisticsCallbackFailure(profiles::kProfileStatisticsBookmarks);
   }
 
-  // Initiate history counting (async).
+  // Initiate history counting.
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
 
   if (history_service) {
-    history_service->GetHistoryCount(
-        base::Time(),
-        base::Time::Max(),
-        base::Bind(&ProfileStatisticsAggregator::StatisticsCallbackHistory,
-                   this),
-        &tracker_);
+    AddCounter(base::MakeUnique<browsing_data::HistoryCounter>(
+        history_service,
+        browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
+        /*sync_service=*/nullptr));
   } else {
     StatisticsCallbackFailure(profiles::kProfileStatisticsBrowsingHistory);
   }
 
-  // Initiate stored password counting (async).
+  // Initiate stored password counting.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (password_store) {
-    password_store->GetAutofillableLogins(&password_store_consumer_helper_);
+    AddCounter(base::MakeUnique<browsing_data::PasswordsCounter>(
+        password_store, /*sync_service=*/nullptr));
   } else {
     StatisticsCallbackFailure(profiles::kProfileStatisticsPasswords);
   }
@@ -141,12 +131,17 @@ void ProfileStatisticsAggregator::OnCounterResult(
     std::unique_ptr<BrowsingDataCounter::Result> result) {
   if (!result->Finished())
     return;
-  const std::string& pref = result->source()->GetPrefName();
+  const char* pref_name = result->source()->GetPrefName();
   auto* finished_result =
       static_cast<BrowsingDataCounter::FinishedResult*>(result.get());
   int count = finished_result->Value();
-  if (pref == browsing_data::BookmarkCounter::kPrefName) {
+  if (pref_name == browsing_data::BookmarkCounter::kPrefName) {
     StatisticsCallbackSuccess(profiles::kProfileStatisticsBookmarks, count);
+  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
+    StatisticsCallbackSuccess(profiles::kProfileStatisticsBrowsingHistory,
+                              count);
+  } else if (pref_name == browsing_data::prefs::kDeletePasswords) {
+    StatisticsCallbackSuccess(profiles::kProfileStatisticsPasswords, count);
   } else {
     // TODO(dullweber): Add more cases when the other statistics are replaced.
     NOTREACHED();
@@ -189,15 +184,6 @@ void ProfileStatisticsAggregator::StatisticsCallbackFailure(
   result.count = 0;
   result.success = false;
   StatisticsCallback(category, result);
-}
-
-void ProfileStatisticsAggregator::StatisticsCallbackHistory(
-    history::HistoryCountResult result) {
-  ProfileStatValue result_converted;
-  result_converted.count = result.count;
-  result_converted.success = result.success;
-  StatisticsCallback(profiles::kProfileStatisticsBrowsingHistory,
-                     result_converted);
 }
 
 ProfileStatisticsAggregator::ProfileStatValue
