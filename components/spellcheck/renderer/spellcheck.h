@@ -153,7 +153,7 @@ class SpellCheck : public content::RenderThreadObserver,
 #endif
 
   // Bindings for SpellChecker clients.
-  mojo::BindingSet<spellcheck::mojom::SpellChecker> spellchecker_bindings_;
+  mojo::BindingSet<spellcheck::mojom::SpellChecker> bindings_;
 
   // A vector of objects used to actually check spelling, one for each enabled
   // language.

@@ -13,6 +13,7 @@
           "metrics::mojom::LeakDetector",
           "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
+          "spellcheck::mojom::SpellCheckHost",
           "startup_metric_utils::mojom::StartupMetricHost",
           "translate::mojom::ContentTranslateDriver"
         ],

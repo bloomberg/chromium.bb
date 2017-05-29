@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
-
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/spellcheck/renderer/spellcheck_provider_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 // Tests for Hunspell functionality in SpellcheckingProvider
 
@@ -16,14 +12,6 @@ using base::ASCIIToUTF16;
 using base::WideToUTF16;
 
 namespace {
-
-TEST_F(SpellCheckProviderTest, UsingHunspell) {
-  FakeTextCheckingCompletion completion;
-  provider_.RequestTextChecking(ASCIIToUTF16("hello"), &completion);
-  EXPECT_EQ(completion.completion_count_, 1U);
-  EXPECT_EQ(provider_.messages_.size(), 0U);
-  EXPECT_EQ(provider_.pending_text_request_size(), 0U);
-}
 
 // Tests that the SpellCheckProvider object sends a spellcheck request when a
 // user finishes typing a word. Also this test verifies that this object checks
@@ -35,18 +23,21 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.ResetResult();
   provider_.RequestTextChecking(base::string16(), &completion);
   EXPECT_TRUE(provider_.text_.empty());
+  EXPECT_EQ(provider_.spelling_service_call_count_, 0U);
 
   // Verify that the SpellCheckProvider class spellcheck the first word when we
   // stop typing after finishing the first word.
   provider_.ResetResult();
   provider_.RequestTextChecking(ASCIIToUTF16("First"), &completion);
   EXPECT_EQ(ASCIIToUTF16("First"), provider_.text_);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
   // Verify that the SpellCheckProvider class spellcheck the first line when we
   // type a return key, i.e. when we finish typing a line.
   provider_.ResetResult();
   provider_.RequestTextChecking(ASCIIToUTF16("First Second\n"), &completion);
   EXPECT_EQ(ASCIIToUTF16("First Second\n"), provider_.text_);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 2U);
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we
   // finish typing a word "Third" to the second line.
@@ -54,6 +45,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.RequestTextChecking(ASCIIToUTF16("First Second\nThird "),
                                 &completion);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird "), provider_.text_);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 3U);
 
   // Verify that the SpellCheckProvider class does not send a spellcheck request
   // when a user inserts whitespace characters.
@@ -61,6 +53,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.RequestTextChecking(ASCIIToUTF16("First Second\nThird   "),
                                 &completion);
   EXPECT_TRUE(provider_.text_.empty());
+  EXPECT_EQ(provider_.spelling_service_call_count_, 3U);
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we type
   // a period.
@@ -68,6 +61,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   provider_.RequestTextChecking(ASCIIToUTF16("First Second\nThird   Fourth."),
                                 &completion);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
+  EXPECT_EQ(provider_.spelling_service_call_count_, 4U);
 }
 
 // Tests that the SpellCheckProvider class does not send requests to the

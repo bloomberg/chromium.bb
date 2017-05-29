@@ -3786,11 +3786,14 @@ test("unit_tests") {
     sources += [
       "../browser/spellchecker/spellcheck_custom_dictionary_unittest.cc",
       "../browser/spellchecker/spellcheck_message_filter_platform_mac_unittest.cc",
-      "../browser/spellchecker/spellcheck_message_filter_unittest.cc",
       "../browser/spellchecker/spellcheck_service_unittest.cc",
       "../browser/spellchecker/spelling_service_client_unittest.cc",
       "../tools/convert_dict/convert_dict_unittest.cc",
     ]
+
+    if (!use_browser_spellchecker) {
+      sources += [ "../browser/spellchecker/spell_check_host_impl_unittest.cc" ]
+    }
   }
 
   if (enable_one_click_signin) {
