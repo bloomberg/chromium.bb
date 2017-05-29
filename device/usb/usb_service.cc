@@ -71,6 +71,7 @@ UsbService::CreateBlockingTaskRunner() {
 }
 
 UsbService::~UsbService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observer_list_)
     observer.WillDestroyUsbService();
 }
@@ -83,7 +84,7 @@ UsbService::UsbService(
 }
 
 scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = devices_.find(guid);
   if (it == devices_.end())
     return nullptr;
@@ -102,17 +103,17 @@ void UsbService::GetDevices(const GetDevicesCallback& callback) {
 }
 
 void UsbService::AddObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
 }
 
 void UsbService::RemoveObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
 }
 
 void UsbService::AddDeviceForTesting(scoped_refptr<UsbDevice> device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ContainsKey(devices_, device->guid()));
   devices_[device->guid()] = device;
   testing_devices_.insert(device->guid());
@@ -120,7 +121,7 @@ void UsbService::AddDeviceForTesting(scoped_refptr<UsbDevice> device) {
 }
 
 void UsbService::RemoveDeviceForTesting(const std::string& device_guid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Allow only devices added with AddDeviceForTesting to be removed with this
   // method.
   auto testing_devices_it = testing_devices_.find(device_guid);
@@ -146,14 +147,14 @@ void UsbService::GetTestDevices(
 }
 
 void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto& observer : observer_list_)
     observer.OnDeviceAdded(device);
 }
 
 void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto& observer : observer_list_)
     observer.OnDeviceRemoved(device);

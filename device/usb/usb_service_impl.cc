@@ -236,7 +236,7 @@ UsbServiceImpl::~UsbServiceImpl() {
 }
 
 void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (usb_unavailable_) {
     task_runner()->PostTask(
@@ -308,7 +308,7 @@ void UsbServiceImpl::OnUsbContext(scoped_refptr<UsbContext> context) {
 }
 
 void UsbServiceImpl::RefreshDevices() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!context_ || enumeration_in_progress_)
     return;
@@ -331,7 +331,7 @@ void UsbServiceImpl::RefreshDevices() {
 
 void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
                                   size_t device_count) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!platform_devices) {
     RefreshDevicesComplete();
     return;
@@ -395,7 +395,7 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
 }
 
 void UsbServiceImpl::RefreshDevicesComplete() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(enumeration_in_progress_);
 
   enumeration_ready_ = true;
@@ -530,7 +530,7 @@ int LIBUSB_CALL UsbServiceImpl::HotplugCallback(libusb_context* context,
 }
 
 void UsbServiceImpl::OnPlatformDeviceAdded(PlatformUsbDevice platform_device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsKey(platform_devices_, platform_device));
   EnumerateDevice(platform_device, base::Bind(&base::DoNothing));
   libusb_unref_device(platform_device);
@@ -538,7 +538,7 @@ void UsbServiceImpl::OnPlatformDeviceAdded(PlatformUsbDevice platform_device) {
 
 void UsbServiceImpl::OnPlatformDeviceRemoved(
     PlatformUsbDevice platform_device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PlatformDeviceMap::iterator it = platform_devices_.find(platform_device);
   if (it != platform_devices_.end()) {
     RemoveDevice(it->second);
