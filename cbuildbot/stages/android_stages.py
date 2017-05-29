@@ -105,31 +105,28 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
                            generic_stages.ArchivingStageMixin):
   """Stage that records Android container version in metadata.
 
-  This should attempt to generate four types of metadata:
-  - a unique Android version if it exists.
-  - a unique Android branch if it exists.
-  - a per-board Android version for each board.
-  - a per-board arc USE flag value.
+  This stage runs on every builder, not limited to Android PFQ. Metadata
+  written by this stage must reflect the actual Android version of the build
+  artifact.
+
+  Metadata written by this stage will be consumed by various external tools
+  such as GoldenEye.
   """
 
-  def __init__(self, builder_run, **kwargs):
-    super(AndroidMetadataStage, self).__init__(builder_run, **kwargs)
-    # PerformStage() will fill this out for us.
-    self.android_version = None
-    self.android_branch = None
+  def _UpdateBoardDictsForAndroidBuildInfo(self):
+    """Updates board metadata to fill in Android build info.
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def PerformStage(self):
-    # Initially get version from metadata in case the initial sync
-    # stage set it.
-    self.android_version = _GetAndroidVersionFromMetadata(
-        self._run.attrs.metadata)
-
+    Returns:
+      (versions, branches) where:
+        versions: A set of Android versions used in target boards.
+        branches: A set of Android branch names used in target boards.
+    """
     # Need to always iterate through and generate the board-specific
     # Android version metadata.  Each board must be handled separately
     # since there might be differing builds in the same release group.
-    versions = set([])
-    branches = set([])
+    versions = set()
+    branches = set()
+
     for builder_run in self._run.GetUngroupedBuilderRuns():
       for board in builder_run.config.boards:
         try:
@@ -155,33 +152,53 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
                      'has' if arc_use else 'does not have')
         builder_run.attrs.metadata.UpdateBoardDictWithDict(
             board, {'arc-use-set': arc_use})
-    # If there wasn't a version or branch specified in the manifest but there is
-    # a unique one across all the boards, treat it as the version for the
-    # entire step.
-    if self.android_version is None and len(versions) == 1:
-      self.android_version = versions.pop()
-    if self.android_branch is None and len(branches) == 1:
-      self.android_branch = branches.pop()
 
-    if self.android_version:
-      logging.PrintBuildbotStepText('tag %s' % self.android_version)
-    if self.android_branch:
-      logging.PrintBuildbotStepText('branch %s' % self.android_branch)
+    return (versions, branches)
 
-  def _WriteAndroidVersionToMetadata(self):
-    """Write Android version to metadata and upload partial json file."""
-    # Even if the stage failed, a None value for android_version still
-    # means something.  In other words, this stage tried to run.
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    versions, branches = self._UpdateBoardDictsForAndroidBuildInfo()
+
+    # Unfortunately we can't inspect Android build info in slaves from masters,
+    # so metadata is usually unavailable on masters (e.g. master-release).
+    # An exception is builders uprev'ing Android; those info is available
+    # from configs and metadata. But note that version can be still unspecified.
+    if self._android_rev:
+      uprev_version = _GetAndroidVersionFromMetadata(self._run.attrs.metadata)
+      # |uprev_version| can be not set.
+      if uprev_version:
+        versions.add(uprev_version)
+
+      uprev_branch = self._run.config.android_import_branch
+      assert uprev_branch
+      branches.add(uprev_branch)
+
+      # If we uprev Android, branch/version must be consistent.
+      assert len(versions) <= 1, 'Multiple Android versions: %r' % versions
+      assert len(branches) <= 1, 'Multiple Android branches: %r' % branches
+
+    # If there is a unique one across all the boards, treat it as the version
+    # for the build.
+    # TODO(nya): Represent "N/A" and "Multiple" differently in metadata.
+    def _Aggregate(v):
+      if not v:
+        return (None, 'N/A')
+      elif len(v) == 1:
+        return (v[0], str(v[0]))
+      return (None, 'Multiple')
+
+    metadata_version, debug_version = _Aggregate(list(versions))
+    metadata_branch, debug_branch = _Aggregate(list(branches))
+
+    # Update the primary metadata and upload it.
     self._run.attrs.metadata.UpdateKeyDictWithDict(
         'version',
-        {'android': self.android_version,
-         'android-branch': self.android_branch})
+        {'android': metadata_version, 'android-branch': metadata_branch})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
-  def Finish(self):
-    """Provide android_version to the rest of the run."""
-    self._WriteAndroidVersionToMetadata()
-    super(AndroidMetadataStage, self).Finish()
+    # Leave build info in buildbot steps page for convenience.
+    logging.PrintBuildbotStepText('tag %s' % debug_version)
+    logging.PrintBuildbotStepText('branch %s' % debug_branch)
 
 
 class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
