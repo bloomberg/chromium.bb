@@ -331,6 +331,8 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
 }
 
 void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
+  DCHECK(MatchedPropertiesCache::IsStyleCacheable(other));
+
   ComputedStyleBase::CopyNonInheritedFromCached(other);
   rare_non_inherited_data_ = other.rare_non_inherited_data_;
 
@@ -348,13 +350,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
 
   // Set correctly while computing style for children:
   // m_explicitInheritance
-
-  // unique() styles are not cacheable.
-  DCHECK(!other.Unique());
-
-  // styles with non inherited properties that reference variables are not
-  // cacheable.
-  DCHECK(!other.HasVariableReferenceFromNonInheritedProperty());
 
   // The following flags are set during matching before we decide that we get a
   // match in the MatchedPropertiesCache which in turn calls this method. The
@@ -377,7 +372,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
 
   if (svg_style_ != other.svg_style_)
     svg_style_.Access()->CopyNonInheritedFromCached(other.svg_style_.Get());
-  DCHECK_EQ(Zoom(), InitialZoom());
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const {
