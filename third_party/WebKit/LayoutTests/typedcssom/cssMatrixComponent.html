@@ -57,11 +57,11 @@ test(function() {
 }, "Test that the toString for CSSMatrixComponent is correct.");
 
 test(function() {
-  assert_throws(null, function() { new CSSMatrixComponent() });
-  assert_throws(null, function() { new CSSMatrixComponent(0) });
-  assert_throws(null, function() { new CSSMatrixComponent("string") });
-  assert_throws(null, function() { new CSSMatrixComponent(None) });
-  assert_throws(null, function() { new CSSMatrixComponent(undefined) });
+  assert_throws(new TypeError(), function() { new CSSMatrixComponent() });
+  assert_throws(new TypeError(), function() { new CSSMatrixComponent(0) });
+  assert_throws(new TypeError(), function() { new CSSMatrixComponent("string") });
+  assert_throws(new TypeError(), function() { new CSSMatrixComponent(null) });
+  assert_throws(new TypeError(), function() { new CSSMatrixComponent(undefined) });
 }, "Test that invalid number of arguments for CSSMatrixComponent throws an exception.");
 
 test(function() {

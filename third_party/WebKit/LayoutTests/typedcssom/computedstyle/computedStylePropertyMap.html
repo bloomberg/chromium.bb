@@ -37,7 +37,7 @@ test(function() {
 }, 'Unsupported and unserializable property returns null.');
 
 test(function() {
-  assert_throws(null, function() { computedStyleMap.get('bananas'); });
+  assert_throws(new TypeError(), function() { computedStyleMap.get('bananas'); });
 }, 'get() throws for an invalid property.');
 
 test(function() {
@@ -45,7 +45,7 @@ test(function() {
 }, 'has() return false for an unsupported property.');
 
 test(function() {
-  assert_throws(null, function() { computedStyleMap.has('bananas'); });
+  assert_throws(new TypeError(), function() { computedStyleMap.has('bananas'); });
 }, 'has() throws for an invalid property.');
 
 test(function() {
