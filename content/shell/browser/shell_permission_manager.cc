@@ -47,7 +47,7 @@ int ShellPermissionManager::RequestPermissions(
     bool user_gesture,
     const base::Callback<
         void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
-  std::vector<blink::mojom::PermissionStatus> result(permissions.size());
+  std::vector<blink::mojom::PermissionStatus> result;
   for (const auto& permission : permissions) {
     result.push_back(IsWhitelistedPermissionType(permission)
                          ? blink::mojom::PermissionStatus::GRANTED
