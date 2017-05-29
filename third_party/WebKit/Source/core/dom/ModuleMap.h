@@ -41,8 +41,8 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
                                SingleModuleClient*);
 
   // Synchronously get the ModuleScript for a given URL.
-  // Note: fetchSingleModuleScript of the ModuleScript must be complete before
-  // calling this.
+  // If the URL wasn't fetched, or is currently being fetched, this returns a
+  // nullptr.
   ModuleScript* GetFetchedModuleScript(const KURL&) const;
 
   Modulator* GetModulator() { return modulator_; }
