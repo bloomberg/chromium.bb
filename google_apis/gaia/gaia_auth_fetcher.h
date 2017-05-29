@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -50,15 +51,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                   const std::string& source,
                   net::URLRequestContextGetter* getter);
   ~GaiaAuthFetcher() override;
-
-  // Start a request to obtain service token for the the account identified by
-  // |sid| and |lsid| and the |service|.
-  //
-  // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
-  // called on the consumer on the original thread.
-  void StartIssueAuthToken(const std::string& sid,
-                           const std::string& lsid,
-                           const char* const service);
 
   // Start a request to obtain |service| token for the the account identified by
   // |uber_token|.
@@ -198,18 +190,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // /MergeSession requests.
   void StartGetCheckConnectionInfo();
 
-  // Starts listing any sessions that exist for the IDP. If all requested scopes
-  // have been approved by the session user, then a login hint is included in
-  // the response.
-  void StartListIDPSessions(const std::string& scopes,
-                            const std::string& domain);
-
-  // Generates an access token for the session, specifying the scopes and
-  // |login_hint|.
-  void StartGetTokenResponse(const std::string& scopes,
-                             const std::string& domain,
-                             const std::string& login_hint);
-
   // Implementation of net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
@@ -236,10 +216,12 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   //
   // HasPendingFetch() should return false before calling this method, and will
   // return true afterwards.
-  virtual void CreateAndStartGaiaFetcher(const std::string& body,
-                                         const std::string& headers,
-                                         const GURL& gaia_gurl,
-                                         int load_flags);
+  virtual void CreateAndStartGaiaFetcher(
+      const std::string& body,
+      const std::string& headers,
+      const GURL& gaia_gurl,
+      int load_flags,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Dispatch the results of a request.
   void DispatchFetchedRequest(const GURL& url,

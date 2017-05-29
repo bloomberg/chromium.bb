@@ -219,14 +219,16 @@ void GaiaAuthFetcher::CancelRequest() {
   fetch_pending_ = false;
 }
 
-void GaiaAuthFetcher::CreateAndStartGaiaFetcher(const std::string& body,
-                                                const std::string& headers,
-                                                const GURL& gaia_gurl,
-                                                int load_flags) {
+void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
+    const std::string& body,
+    const std::string& headers,
+    const GURL& gaia_gurl,
+    int load_flags,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
   fetcher_ = net::URLFetcher::Create(
       0, gaia_gurl, body.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
-      this);
+      this, traffic_annotation);
   fetcher_->SetRequestContext(getter_);
   fetcher_->SetUploadData("application/x-www-form-urlencoded", body);
   gaia::MarkURLFetcherAsGaia(fetcher_.get());
@@ -511,25 +513,37 @@ bool GaiaAuthFetcher::ParseListIdpSessionsResponse(const std::string& data,
   return true;
 }
 
-void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
-                                          const std::string& lsid,
-                                          const char* const service) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  VLOG(1) << "Starting IssueAuthToken for: " << service;
-  requested_service_ = service;
-  request_body_ = MakeIssueAuthTokenBody(sid, lsid, service);
-  CreateAndStartGaiaFetcher(request_body_, std::string(),
-                            issue_auth_token_gurl_, kLoadFlagsIgnoreCookies);
-}
 
 void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting OAuth2 token revocation";
   request_body_ = MakeRevokeTokenBody(auth_token);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_revoke_token", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description: "This request revokes an OAuth 2.0 refresh token."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered whenever "
+            "an OAuth 2.0 refresh token needs to be revoked."
+          data: "The OAuth 2.0 refresh token that should be revoked."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_revoke_gurl_,
-                            kLoadFlagsIgnoreCookies);
+                            kLoadFlagsIgnoreCookies, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
@@ -575,9 +589,38 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
   }
 
   fetch_token_from_auth_code_ = fetch_token_from_auth_code;
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_exchange_cookies", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request exchanges the cookies of a Google signed-in user "
+            "session for an OAuth 2.0 refresh token."
+          trigger:
+            "This request is part of Gaia Auth API, and may be triggered at "
+            "the end of the Chrome sign-in flow."
+          data:
+            "The Google console client ID of the Chrome application, the ID of "
+            "the device, and the index of the session in the Google "
+            "authentication cookies."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(std::string(), device_id_header,
                             client_login_to_oauth2_gurl_.Resolve(query_string),
-                            net::LOAD_NORMAL);
+                            net::LOAD_NORMAL, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
@@ -592,8 +635,36 @@ void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchangeWithDeviceId(
 
   VLOG(1) << "Starting OAuth token pair fetch";
   request_body_ = MakeGetTokenPairBody(auth_code, device_id);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_exchange_device_id", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request exchanges an authorization code for an OAuth 2.0 "
+            "refresh token."
+          trigger:
+            "This request is part of Gaia Auth API, and may be triggered at "
+            "the end of the Chrome sign-in flow."
+          data:
+            "The Google console client ID and client secret of the Chrome "
+            "application, the OAuth 2.0 authorization code, and the ID of the "
+            "device."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_token_gurl_,
-                            kLoadFlagsIgnoreCookies);
+                            kLoadFlagsIgnoreCookies, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
@@ -601,8 +672,31 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
 
   VLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
   request_body_ = MakeGetUserInfoBody(lsid);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_get_user_info", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request fetches user information of a Google account."
+          trigger:
+            "This fetcher is only used after signing in with a child account."
+          data: "The value of the Google authentication LSID cookie."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), get_user_info_gurl_,
-                            kLoadFlagsIgnoreCookies);
+                            kLoadFlagsIgnoreCookies, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
@@ -622,9 +716,37 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
   std::string continue_url("http://www.google.com");
   std::string query = MakeMergeSessionQuery(uber_token, external_cc_result,
                                             continue_url, source_);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_merge_sessions", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request adds an account to the Google authentication cookies."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered whenever "
+            "a new Google account is added to the browser."
+          data:
+            "This request includes the user-auth token and sometimes a string "
+            "containing the result of connection checks for various Google web "
+            "properties."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(std::string(), std::string(),
                             merge_session_gurl_.Resolve(query),
-                            net::LOAD_NORMAL);
+                            net::LOAD_NORMAL, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
@@ -638,8 +760,36 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
       base::StringPrintf(kOAuthHeaderFormat, access_token.c_str());
   int load_flags =
       is_bound_to_channel_id ? net::LOAD_NORMAL : kLoadFlagsIgnoreCookies;
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_fetch_for_uber", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request exchanges an Oauth2 access token for an uber-auth "
+            "token. This token may be used to add an account to the Google "
+            "authentication cookies."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered whenever "
+            "a new Google account is added to the browser."
+          data: "This request contains an OAuth 2.0 access token. "
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(std::string(), authentication_header,
-                            uberauth_token_gurl_, load_flags);
+                            uberauth_token_gurl_, load_flags,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
@@ -649,53 +799,144 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
   request_body_ = MakeOAuthLoginBody(service, source_);
   std::string authentication_header =
       base::StringPrintf(kOAuth2BearerHeaderFormat, access_token.c_str());
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_login", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request exchanges an OAuthLogin-scoped OAuth 2.0 access "
+            "token for a ClientLogin-style service tokens. The response to "
+            "this request is the same as the response to a ClientLogin "
+            "request, except that captcha challenges are never issued."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered after "
+            "signing in with a child account."
+          data:
+            "This request contains an OAuth 2.0 access token and the service "
+            "for which a ClientLogin-style should be delivered."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(request_body_, authentication_header,
-                            oauth_login_gurl_, net::LOAD_NORMAL);
+                            oauth_login_gurl_, net::LOAD_NORMAL,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartListAccounts() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_list_accounts", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request is used to list the accounts in the Google "
+            "authentication cookies."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered whenever "
+            "the list of all available accounts in the Google authentication "
+            "cookies is required."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(" ",  // To force an HTTP POST.
                             "Origin: https://www.google.com",
-                            list_accounts_gurl_, net::LOAD_NORMAL);
+                            list_accounts_gurl_, net::LOAD_NORMAL,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartLogOut() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_log_out", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request is part of the Chrome - Google authentication API "
+            "and allows its callers to sign out all Google accounts from the "
+            "content area."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered whenever "
+            "signing out of all Google accounts is required."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(std::string(), logout_headers_, logout_gurl_,
-                            net::LOAD_NORMAL);
+                            net::LOAD_NORMAL, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gaia_auth_check_connection_info", R"(
+        semantics {
+          sender: "Chrome - Google authentication API"
+          description:
+            "This request is used to fetch from the Google authentication "
+            "server the the list of URLs to check its connection info."
+          trigger:
+            "This request is part of Gaia Auth API, and is triggered once "
+            "after a Google account is added to the browser."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings, but if the user "
+            "signs out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   CreateAndStartGaiaFetcher(std::string(), std::string(),
                             get_check_connection_info_url_,
-                            kLoadFlagsIgnoreCookies);
+                            kLoadFlagsIgnoreCookies, traffic_annotation);
 }
 
-void GaiaAuthFetcher::StartListIDPSessions(const std::string& scopes,
-                                           const std::string& domain) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  request_body_ = MakeListIDPSessionsBody(scopes, domain);
-  requested_service_ = kListIdpServiceRequested;
-  CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_iframe_url_,
-                            net::LOAD_NORMAL);
-}
-
-void GaiaAuthFetcher::StartGetTokenResponse(const std::string& scopes,
-                                            const std::string& domain,
-                                            const std::string& login_hint) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  request_body_ = MakeGetTokenResponseBody(scopes, domain, login_hint);
-  requested_service_ = kGetTokenResponseRequested;
-  CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_iframe_url_,
-                            net::LOAD_NORMAL);
-}
 
 // static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
