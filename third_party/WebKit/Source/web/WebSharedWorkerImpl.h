@@ -35,7 +35,6 @@
 
 #include <memory>
 #include "core/dom/ExecutionContext.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
@@ -65,8 +64,7 @@ class WorkerScriptLoader;
 // *OnWorkerThread or have header comments.
 class WebSharedWorkerImpl final : public WebFrameClient,
                                   public WebSharedWorker,
-                                  public WebDevToolsAgentClient,
-                                  private WorkerLoaderProxyProvider {
+                                  public WebDevToolsAgentClient {
  public:
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
@@ -134,9 +132,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
 
   void ConnectTaskOnWorkerThread(std::unique_ptr<WebMessagePortChannel>);
 
-  // WorkerLoaderProxyProvider
-  ThreadableLoadingContext* GetThreadableLoadingContext() override;
-
   // 'shadow page' - created to proxy loading requests from the worker.
   // Will be accessed by worker thread when posting tasks.
   Persistent<ExecutionContext> loading_document_;
@@ -159,8 +154,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
 
   // Kept around only while main script loading is ongoing.
   RefPtr<WorkerScriptLoader> main_script_loader_;
-
-  RefPtr<WorkerLoaderProxy> loader_proxy_;
 
   WebURL url_;
   WebString name_;

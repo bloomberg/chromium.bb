@@ -52,7 +52,6 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class WorkerGlobalScope;
-class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
 struct CrossThreadResourceTimingInfoData;
 
@@ -141,7 +140,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
-                               RefPtr<WorkerLoaderProxy>,
+                               ThreadableLoadingContext*,
                                RefPtr<WebTaskRunner>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
@@ -211,7 +210,6 @@ class WorkerThreadableLoader final : public ThreadableLoader {
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   Member<WorkerGlobalScope> worker_global_scope_;
-  RefPtr<WorkerLoaderProxy> worker_loader_proxy_;
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
   ThreadableLoaderClient* client_;
 

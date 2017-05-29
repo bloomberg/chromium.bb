@@ -5,7 +5,6 @@
 #ifndef AudioWorkletThread_h
 #define AudioWorkletThread_h
 
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkletThreadHolder.h"
 #include "modules/ModulesExport.h"
@@ -21,9 +20,8 @@ class WorkerReportingProxy;
 
 class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
  public:
-  static std::unique_ptr<AudioWorkletThread> Create(
-      PassRefPtr<WorkerLoaderProxy>,
-      WorkerReportingProxy&);
+  static std::unique_ptr<AudioWorkletThread> Create(ThreadableLoadingContext*,
+                                                    WorkerReportingProxy&);
   ~AudioWorkletThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override;
@@ -46,7 +44,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   bool IsOwningBackingThread() const override { return false; }
 
  private:
-  AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+  AudioWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 };
 
 }  // namespace blink

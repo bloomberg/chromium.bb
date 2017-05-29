@@ -31,8 +31,6 @@
 #ifndef WebEmbeddedWorkerImpl_h
 #define WebEmbeddedWorkerImpl_h
 
-#include "core/workers/WorkerLoaderProxy.h"
-
 #include <memory>
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
@@ -54,8 +52,7 @@ class WorkerThread;
 
 class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
                                     public WebFrameClient,
-                                    public WebDevToolsAgentClient,
-                                    private WorkerLoaderProxyProvider {
+                                    public WebDevToolsAgentClient {
   WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 
  public:
@@ -104,9 +101,6 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   void OnScriptLoaderFinished();
   void StartWorkerThread();
 
-  // WorkerLoaderProxyProvider
-  ThreadableLoadingContext* GetThreadableLoadingContext() override;
-
   WebEmbeddedWorkerStartData worker_start_data_;
 
   std::unique_ptr<WebServiceWorkerContextClient> worker_context_client_;
@@ -119,7 +113,6 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   RefPtr<WorkerScriptLoader> main_script_loader_;
 
   std::unique_ptr<WorkerThread> worker_thread_;
-  RefPtr<WorkerLoaderProxy> loader_proxy_;
   Persistent<ServiceWorkerGlobalScopeProxy> worker_global_scope_proxy_;
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
 

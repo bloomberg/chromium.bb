@@ -21,8 +21,8 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>
 CompositorWorkerMessagingProxy::CreateWorkerThread(double origin_time) {
-  return CompositorWorkerThread::Create(LoaderProxy(), WorkerObjectProxy(),
-                                        origin_time);
+  return CompositorWorkerThread::Create(GetThreadableLoadingContext(),
+                                        WorkerObjectProxy(), origin_time);
 }
 
 }  // namespace blink

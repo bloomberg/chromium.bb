@@ -11,7 +11,6 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"

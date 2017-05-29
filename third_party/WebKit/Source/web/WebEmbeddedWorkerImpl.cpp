@@ -48,7 +48,6 @@
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
@@ -130,8 +129,6 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
 
   web_view_->Close();
   main_frame_->Close();
-  if (loader_proxy_)
-    loader_proxy_->DetachProvider(this);
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerContext(
@@ -264,14 +261,6 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
 
 void WebEmbeddedWorkerImpl::PostMessageToPageInspector(const String& message) {
   worker_inspector_proxy_->DispatchMessageFromWorker(message);
-}
-
-ThreadableLoadingContext* WebEmbeddedWorkerImpl::GetThreadableLoadingContext() {
-  if (!loading_context_) {
-    loading_context_ = ThreadableLoadingContext::Create(
-        *main_frame_->GetFrame()->GetDocument());
-  }
-  return loading_context_;
 }
 
 void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
@@ -471,9 +460,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   worker_global_scope_proxy_ =
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_);
-  loader_proxy_ = WorkerLoaderProxy::Create(this);
-  worker_thread_ =
-      ServiceWorkerThread::Create(loader_proxy_, *worker_global_scope_proxy_);
+  worker_thread_ = WTF::MakeUnique<ServiceWorkerThread>(
+      ThreadableLoadingContext::Create(*document), *worker_global_scope_proxy_);
 
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we

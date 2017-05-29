@@ -31,8 +31,8 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
@@ -128,10 +128,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   bool IsCurrentThread();
 
-  WorkerLoaderProxy* GetWorkerLoaderProxy() const {
-    CHECK(worker_loader_proxy_);
-    return worker_loader_proxy_.Get();
-  }
+  // Called on the worker thread.
+  ThreadableLoadingContext* GetLoadingContext();
 
   WorkerReportingProxy& GetWorkerReportingProxy() const {
     return worker_reporting_proxy_;
@@ -178,7 +176,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
  protected:
-  WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+  WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 
   // Factory method for creating a new worker context for the thread.
   // Called on the worker thread.
@@ -288,7 +286,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   std::unique_ptr<InspectorTaskRunner> inspector_task_runner_;
 
-  RefPtr<WorkerLoaderProxy> worker_loader_proxy_;
+  // Created on the main thread, passed to the worker thread but should kept
+  // being accessed only on the main thread.
+  CrossThreadPersistent<ThreadableLoadingContext> loading_context_;
+
   WorkerReportingProxy& worker_reporting_proxy_;
 
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;

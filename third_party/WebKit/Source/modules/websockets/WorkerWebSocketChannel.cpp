@@ -36,7 +36,6 @@
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "platform/CrossThreadFunctional.h"
@@ -161,12 +160,10 @@ DEFINE_TRACE(WorkerWebSocketChannel) {
 }
 
 Peer::Peer(Bridge* bridge,
-           PassRefPtr<WorkerLoaderProxy> loader_proxy,
            RefPtr<WebTaskRunner> worker_networking_task_runner,
            WorkerThreadLifecycleContext* worker_thread_lifecycle_context)
     : WorkerThreadLifecycleObserver(worker_thread_lifecycle_context),
       bridge_(bridge),
-      loader_proxy_(std::move(loader_proxy)),
       worker_networking_task_runner_(std::move(worker_networking_task_runner)),
       main_web_socket_channel_(nullptr) {
   DCHECK(IsMainThread());
@@ -358,7 +355,6 @@ Bridge::Bridge(WebSocketChannelClient* client,
                WorkerGlobalScope& worker_global_scope)
     : client_(client),
       worker_global_scope_(worker_global_scope),
-      loader_proxy_(worker_global_scope_->GetThread()->GetWorkerLoaderProxy()),
       parent_frame_task_runners_(
           worker_global_scope_->GetThread()->GetParentFrameTaskRunners()) {}
 
@@ -368,7 +364,7 @@ Bridge::~Bridge() {
 
 void Bridge::ConnectOnMainThread(
     std::unique_ptr<SourceLocation> location,
-    RefPtr<WorkerLoaderProxy> loader_proxy,
+    ThreadableLoadingContext* loading_context,
     RefPtr<WebTaskRunner> worker_networking_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     const KURL& url,
@@ -376,13 +372,8 @@ void Bridge::ConnectOnMainThread(
     WebSocketChannelSyncHelper* sync_helper) {
   DCHECK(IsMainThread());
   DCHECK(!peer_);
-  ThreadableLoadingContext* loading_context =
-      loader_proxy->GetThreadableLoadingContext();
-  if (!loading_context)
-    return;
-  Peer* peer =
-      new Peer(this, loader_proxy_, std::move(worker_networking_task_runner),
-               worker_thread_lifecycle_context);
+  Peer* peer = new Peer(this, std::move(worker_networking_task_runner),
+                        worker_thread_lifecycle_context);
   if (peer->Initialize(std::move(location), loading_context)) {
     peer_ = peer;
     sync_helper->SetConnectRequestResult(peer_->Connect(url, protocol));
@@ -393,22 +384,24 @@ void Bridge::ConnectOnMainThread(
 bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
                      const KURL& url,
                      const String& protocol) {
+  DCHECK(worker_global_scope_->IsContextThread());
   // Wait for completion of the task on the main thread because the mixed
   // content check must synchronously be conducted.
   WebSocketChannelSyncHelper sync_helper;
   RefPtr<WebTaskRunner> worker_networking_task_runner =
       TaskRunnerHelper::Get(TaskType::kNetworking, worker_global_scope_.Get());
+  WorkerThread* worker_thread = worker_global_scope_->GetThread();
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Bridge::ConnectOnMainThread,
-                          WrapCrossThreadPersistent(this),
-                          WTF::Passed(location->Clone()), loader_proxy_,
-                          std::move(worker_networking_task_runner),
-                          WrapCrossThreadPersistent(
-                              worker_global_scope_->GetThread()
-                                  ->GetWorkerThreadLifecycleContext()),
-                          url, protocol, CrossThreadUnretained(&sync_helper)));
+          CrossThreadBind(
+              &Bridge::ConnectOnMainThread, WrapCrossThreadPersistent(this),
+              WTF::Passed(location->Clone()),
+              WrapCrossThreadPersistent(worker_thread->GetLoadingContext()),
+              std::move(worker_networking_task_runner),
+              WrapCrossThreadPersistent(
+                  worker_thread->GetWorkerThreadLifecycleContext()),
+              url, protocol, CrossThreadUnretained(&sync_helper)));
   sync_helper.Wait();
   return sync_helper.ConnectRequestResult();
 }

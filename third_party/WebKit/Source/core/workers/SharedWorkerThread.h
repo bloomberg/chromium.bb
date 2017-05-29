@@ -41,10 +41,9 @@ class WorkerThreadStartupData;
 
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
  public:
-  static std::unique_ptr<SharedWorkerThread> Create(
-      const String& name,
-      PassRefPtr<WorkerLoaderProxy>,
-      WorkerReportingProxy&);
+  SharedWorkerThread(const String& name,
+                     ThreadableLoadingContext*,
+                     WorkerReportingProxy&);
   ~SharedWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
@@ -57,10 +56,6 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
       std::unique_ptr<WorkerThreadStartupData>) override;
 
  private:
-  SharedWorkerThread(const String& name,
-                     PassRefPtr<WorkerLoaderProxy>,
-                     WorkerReportingProxy&);
-
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   String name_;
 };

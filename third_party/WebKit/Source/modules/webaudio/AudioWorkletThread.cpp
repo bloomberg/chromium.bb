@@ -22,19 +22,19 @@ namespace blink {
 template class WorkletThreadHolder<AudioWorkletThread>;
 
 std::unique_ptr<AudioWorkletThread> AudioWorkletThread::Create(
-    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    ThreadableLoadingContext* loading_context,
     WorkerReportingProxy& worker_reporting_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::create");
   DCHECK(IsMainThread());
-  return WTF::WrapUnique(new AudioWorkletThread(std::move(worker_loader_proxy),
-                                                worker_reporting_proxy));
+  return WTF::WrapUnique(
+      new AudioWorkletThread(loading_context, worker_reporting_proxy));
 }
 
 AudioWorkletThread::AudioWorkletThread(
-    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    ThreadableLoadingContext* loading_context,
     WorkerReportingProxy& worker_reporting_proxy)
-    : WorkerThread(std::move(worker_loader_proxy), worker_reporting_proxy) {}
+    : WorkerThread(loading_context, worker_reporting_proxy) {}
 
 AudioWorkletThread::~AudioWorkletThread() {}
 

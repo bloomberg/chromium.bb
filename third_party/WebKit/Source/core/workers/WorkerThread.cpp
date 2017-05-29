@@ -201,6 +201,13 @@ bool WorkerThread::IsCurrentThread() {
   return GetWorkerBackingThread().BackingThread().IsCurrentThread();
 }
 
+ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
+  DCHECK(IsCurrentThread());
+  // This should be never called after the termination sequence starts.
+  DCHECK(loading_context_);
+  return loading_context_;
+}
+
 void WorkerThread::AppendDebuggerTask(
     std::unique_ptr<CrossThreadClosure> task) {
   DCHECK(IsMainThread());
@@ -287,12 +294,12 @@ bool WorkerThread::IsForciblyTerminated() {
   return false;
 }
 
-WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
     : worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_in_ms_(kForcibleTerminationDelayInMs),
       inspector_task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
-      worker_loader_proxy_(std::move(worker_loader_proxy)),
+      loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(WTF::WrapUnique(
           new WaitableEvent(WaitableEvent::ResetPolicy::kManual,
@@ -534,6 +541,7 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
   GlobalScope()->Dispose();
   global_scope_scheduler_->Dispose();
   console_message_storage_.Clear();
+  loading_context_.Clear();
   GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
 
