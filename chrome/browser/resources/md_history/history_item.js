@@ -66,6 +66,10 @@ cr.define('md_history', function() {
      * @return {boolean} Whether the event was handled.
      */
     onKeydown: function(row, e) {
+      // Allow Home and End to move the history list.
+      if (e.key == 'Home' || e.key == 'End')
+        return true;
+
       // Prevent iron-list from changing the focus on enter.
       if (e.key == 'Enter')
         e.stopPropagation();
