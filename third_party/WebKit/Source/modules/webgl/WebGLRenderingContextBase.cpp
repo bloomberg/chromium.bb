@@ -1053,7 +1053,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     return;
   }
 
-  drawing_buffer_ = buffer.Release();
+  drawing_buffer_ = std::move(buffer);
   drawing_buffer_->AddNewMailboxCallback(
       WTF::Bind(&WebGLRenderingContextBase::NotifyCanvasContextChanged,
                 WrapWeakPersistent(this)));
@@ -4871,8 +4871,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
     if (canvas()) {
       UseCounter::Count(canvas()->GetDocument(), UseCounter::kSVGInWebGL);
     }
-    image_for_render = DrawImageIntoBuffer(
-        image_for_render.Release(), image->width(), image->height(), func_name);
+    image_for_render =
+        DrawImageIntoBuffer(std::move(image_for_render), image->width(),
+                            image->height(), func_name);
   }
 
   TexImageFunctionType function_type;
@@ -7532,7 +7533,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     return;
   }
 
-  drawing_buffer_ = buffer.Release();
+  drawing_buffer_ = std::move(buffer);
   drawing_buffer_->AddNewMailboxCallback(
       WTF::Bind(&WebGLRenderingContextBase::NotifyCanvasContextChanged,
                 WrapWeakPersistent(this)));

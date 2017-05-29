@@ -78,7 +78,7 @@ class GLStringQuery {
     // The returnedLength excludes the null terminator. If this check wasn't
     // true, then we'd need to tell the returned String the real length.
     DCHECK_EQ(returned_length + 1, length);
-    return String(name_impl.Release());
+    return String(std::move(name_impl));
   }
 
  private:

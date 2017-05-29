@@ -105,7 +105,7 @@ void BroadcastChannel::OnMessage(const WTF::Vector<uint8_t>& message) {
                         : reinterpret_cast<const char*>(&message.front()),
       message.size());
   MessageEvent* event = MessageEvent::Create(
-      nullptr, value.Release(),
+      nullptr, std::move(value),
       GetExecutionContext()->GetSecurityOrigin()->ToString());
   event->SetTarget(this);
   bool success = GetExecutionContext()->GetEventQueue()->EnqueueEvent(event);

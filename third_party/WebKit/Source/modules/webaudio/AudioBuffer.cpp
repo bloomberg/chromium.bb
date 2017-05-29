@@ -144,7 +144,7 @@ DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(size_t length) {
       WTF::Float32Array::CreateOrNull(length);
   if (!buffer_view)
     return nullptr;
-  return DOMFloat32Array::Create(buffer_view.Release());
+  return DOMFloat32Array::Create(std::move(buffer_view));
 }
 
 AudioBuffer::AudioBuffer(unsigned number_of_channels,

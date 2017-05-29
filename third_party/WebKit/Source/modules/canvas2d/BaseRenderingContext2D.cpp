@@ -1459,7 +1459,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   bool origin_clean =
       !WouldTaintOrigin(image_source, ExecutionContext::From(script_state));
 
-  return CanvasPattern::Create(image_for_rendering.Release(), repeat_mode,
+  return CanvasPattern::Create(std::move(image_for_rendering), repeat_mode,
                                origin_clean);
 }
 

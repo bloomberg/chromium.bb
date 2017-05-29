@@ -169,13 +169,13 @@ Response* Response::Create(ScriptState* script_state,
                    form_data->Boundary().data();
     body_buffer = new BodyStreamBuffer(
         script_state,
-        new FormDataBytesConsumer(execution_context, form_data.Release()));
+        new FormDataBytesConsumer(execution_context, std::move(form_data)));
   } else if (V8URLSearchParams::hasInstance(body, isolate)) {
     RefPtr<EncodedFormData> form_data =
         V8URLSearchParams::toImpl(body.As<v8::Object>())->ToEncodedFormData();
     body_buffer = new BodyStreamBuffer(
         script_state,
-        new FormDataBytesConsumer(execution_context, form_data.Release()));
+        new FormDataBytesConsumer(execution_context, std::move(form_data)));
     content_type = "application/x-www-form-urlencoded;charset=UTF-8";
   } else if (ReadableStreamOperations::IsReadableStream(script_state,
                                                         body_value)) {

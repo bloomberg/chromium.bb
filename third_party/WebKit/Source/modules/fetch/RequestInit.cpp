@@ -150,7 +150,7 @@ RequestInit::RequestInit(ExecutionContext* context,
     RefPtr<BlobDataHandle> blob_data_handle =
         V8Blob::toImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
     content_type = blob_data_handle->GetType();
-    body = new BlobBytesConsumer(context, blob_data_handle.Release());
+    body = new BlobBytesConsumer(context, std::move(blob_data_handle));
   } else if (V8FormData::hasInstance(v8_body, isolate)) {
     RefPtr<EncodedFormData> form_data =
         V8FormData::toImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
@@ -158,14 +158,14 @@ RequestInit::RequestInit(ExecutionContext* context,
     // FormDataEncoder::generateUniqueBoundaryString.
     content_type = AtomicString("multipart/form-data; boundary=") +
                    form_data->Boundary().data();
-    body = new FormDataBytesConsumer(context, form_data.Release());
+    body = new FormDataBytesConsumer(context, std::move(form_data));
   } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
     RefPtr<EncodedFormData> form_data =
         V8URLSearchParams::toImpl(v8_body.As<v8::Object>())
             ->ToEncodedFormData();
     content_type =
         AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
-    body = new FormDataBytesConsumer(context, form_data.Release());
+    body = new FormDataBytesConsumer(context, std::move(form_data));
   } else if (v8_body->IsString()) {
     content_type = "text/plain;charset=UTF-8";
     body = new FormDataBytesConsumer(
