@@ -17,6 +17,11 @@ void AdvanceClock(int milliseconds) {
   ticks_ += TimeDelta::FromMilliseconds(milliseconds);
 }
 
+RuntimeCallStats::CounterId test_counter_1_id =
+    RuntimeCallStats::CounterId::kTestCounter1;
+RuntimeCallStats::CounterId test_counter_2_id =
+    RuntimeCallStats::CounterId::kTestCounter2;
+
 }  // namespace
 
 class RuntimeCallStatsTest : public testing::Test {
@@ -42,38 +47,44 @@ TEST_F(RuntimeCallStatsTest, InitialCountShouldBeZero) {
   EXPECT_EQ(0ul, counter.GetCount());
 }
 
+TEST_F(RuntimeCallStatsTest, StatsCounterNameIsCorrect) {
+  RuntimeCallStats stats;
+  EXPECT_EQ(0, strcmp("TestCounter1",
+                      stats.GetCounter(test_counter_1_id)->GetName()));
+}
+
 TEST_F(RuntimeCallStatsTest, CountIsUpdatedAfterLeave) {
-  RuntimeCallCounter counter("counter");
   RuntimeCallTimer timer;
   RuntimeCallStats stats;
+  RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
-  stats.Enter(&timer, &counter);
-  EXPECT_EQ(0ul, counter.GetCount());
+  stats.Enter(&timer, test_counter_1_id);
+  EXPECT_EQ(0ul, counter->GetCount());
   stats.Leave(&timer);
-  EXPECT_EQ(1ul, counter.GetCount());
+  EXPECT_EQ(1ul, counter->GetCount());
 }
 
 TEST_F(RuntimeCallStatsTest, TimeIsUpdatedAfterLeave) {
-  RuntimeCallCounter counter("counter");
-  RuntimeCallTimer timer;
   RuntimeCallStats stats;
+  RuntimeCallTimer timer;
+  RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
-  stats.Enter(&timer, &counter);
+  stats.Enter(&timer, test_counter_1_id);
   AdvanceClock(50);
   stats.Leave(&timer);
-  EXPECT_EQ(50, counter.GetTime().InMilliseconds());
+  EXPECT_EQ(50, counter->GetTime().InMilliseconds());
 }
 
 TEST_F(RuntimeCallStatsTest, CountAndTimeAreUpdatedAfterMultipleExecutions) {
-  RuntimeCallCounter counter("counter");
   RuntimeCallStats stats;
+  RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   const unsigned func_duration = 20;
   const unsigned loops = 5;
 
-  auto func = [&counter, &stats, func_duration]() {
+  auto func = [&stats, func_duration]() {
     RuntimeCallTimer timer;
-    stats.Enter(&timer, &counter);
+    stats.Enter(&timer, test_counter_1_id);
     AdvanceClock(func_duration);
     stats.Leave(&timer);
   };
@@ -81,29 +92,28 @@ TEST_F(RuntimeCallStatsTest, CountAndTimeAreUpdatedAfterMultipleExecutions) {
   for (unsigned i = 0; i < loops; i++)
     func();
 
-  EXPECT_EQ((uint64_t)loops, counter.GetCount());
-  EXPECT_EQ(loops * func_duration, counter.GetTime().InMilliseconds());
+  EXPECT_EQ((uint64_t)loops, counter->GetCount());
+  EXPECT_EQ(loops * func_duration, counter->GetTime().InMilliseconds());
 }
 
 TEST_F(RuntimeCallStatsTest, NestedTimersTest) {
   RuntimeCallStats stats;
-  RuntimeCallCounter outer_counter("outer_counter");
-  RuntimeCallCounter inner_counter("inner_counter");
+  RuntimeCallCounter* outer_counter = stats.GetCounter(test_counter_1_id);
+  RuntimeCallCounter* inner_counter = stats.GetCounter(test_counter_2_id);
 
   const unsigned inner_func_duration = 50;
   const unsigned outer_func_duration = 20;
 
-  auto inner_func = [&stats, &inner_counter, inner_func_duration]() {
+  auto inner_func = [&stats, inner_func_duration]() {
     RuntimeCallTimer timer;
-    stats.Enter(&timer, &inner_counter);
+    stats.Enter(&timer, test_counter_2_id);
     AdvanceClock(inner_func_duration);
     stats.Leave(&timer);
   };
 
-  auto outer_func = [&stats, &outer_counter, &inner_func,
-                     outer_func_duration]() {
+  auto outer_func = [&stats, &inner_func, outer_func_duration]() {
     RuntimeCallTimer timer;
-    stats.Enter(&timer, &outer_counter);
+    stats.Enter(&timer, test_counter_1_id);
     inner_func();
     AdvanceClock(outer_func_duration);
     stats.Leave(&timer);
@@ -111,39 +121,39 @@ TEST_F(RuntimeCallStatsTest, NestedTimersTest) {
 
   outer_func();
 
-  EXPECT_EQ(1ul, outer_counter.GetCount());
-  EXPECT_EQ(1ul, inner_counter.GetCount());
-  EXPECT_EQ(outer_func_duration, outer_counter.GetTime().InMilliseconds());
-  EXPECT_EQ(inner_func_duration, inner_counter.GetTime().InMilliseconds());
+  EXPECT_EQ(1ul, outer_counter->GetCount());
+  EXPECT_EQ(1ul, inner_counter->GetCount());
+  EXPECT_EQ(outer_func_duration, outer_counter->GetTime().InMilliseconds());
+  EXPECT_EQ(inner_func_duration, inner_counter->GetTime().InMilliseconds());
 }
 
 TEST_F(RuntimeCallStatsTest, RuntimeCallTimerScopeTest) {
   RuntimeCallStats stats;
-  RuntimeCallCounter counter("counter");
+  RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
-  auto func = [&stats, &counter]() {
-    RuntimeCallTimerScope scope(&stats, &counter);
+  auto func = [&stats]() {
+    RuntimeCallTimerScope scope(&stats, test_counter_1_id);
     AdvanceClock(50);
   };
 
   func();
 
-  EXPECT_EQ(1ul, counter.GetCount());
-  EXPECT_EQ(50, counter.GetTime().InMilliseconds());
+  EXPECT_EQ(1ul, counter->GetCount());
+  EXPECT_EQ(50, counter->GetTime().InMilliseconds());
 
   func();
 
-  EXPECT_EQ(2ul, counter.GetCount());
-  EXPECT_EQ(100, counter.GetTime().InMilliseconds());
+  EXPECT_EQ(2ul, counter->GetCount());
+  EXPECT_EQ(100, counter->GetTime().InMilliseconds());
 }
 
 TEST_F(RuntimeCallStatsTest, RecursiveFunctionWithScopeTest) {
   RuntimeCallStats stats;
-  RuntimeCallCounter counter("counter");
+  RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   std::function<void(int)> recursive_func;
-  recursive_func = [&stats, &counter, &recursive_func](int x) {
-    RuntimeCallTimerScope scope(&stats, &counter);
+  recursive_func = [&stats, &recursive_func](int x) {
+    RuntimeCallTimerScope scope(&stats, test_counter_1_id);
     if (x <= 0)
       return;
     AdvanceClock(50);
@@ -151,30 +161,49 @@ TEST_F(RuntimeCallStatsTest, RecursiveFunctionWithScopeTest) {
   };
   recursive_func(5);
 
-  EXPECT_EQ(6ul, counter.GetCount());
-  EXPECT_EQ(250, counter.GetTime().InMilliseconds());
+  EXPECT_EQ(6ul, counter->GetCount());
+  EXPECT_EQ(250, counter->GetTime().InMilliseconds());
 }
 
 TEST_F(RuntimeCallStatsTest, ReuseTimer) {
   RuntimeCallStats stats;
   RuntimeCallTimer timer;
-  RuntimeCallCounter counter1("counter1");
-  RuntimeCallCounter counter2("counter2");
+  RuntimeCallCounter* counter1 = stats.GetCounter(test_counter_1_id);
+  RuntimeCallCounter* counter2 = stats.GetCounter(test_counter_2_id);
 
-  stats.Enter(&timer, &counter1);
+  stats.Enter(&timer, test_counter_1_id);
   AdvanceClock(50);
   stats.Leave(&timer);
 
   timer.Reset();
 
-  stats.Enter(&timer, &counter2);
+  stats.Enter(&timer, test_counter_2_id);
   AdvanceClock(25);
   stats.Leave(&timer);
 
-  EXPECT_EQ(1ul, counter1.GetCount());
-  EXPECT_EQ(1ul, counter2.GetCount());
-  EXPECT_EQ(50, counter1.GetTime().InMilliseconds());
-  EXPECT_EQ(25, counter2.GetTime().InMilliseconds());
+  EXPECT_EQ(1ul, counter1->GetCount());
+  EXPECT_EQ(1ul, counter2->GetCount());
+  EXPECT_EQ(50, counter1->GetTime().InMilliseconds());
+  EXPECT_EQ(25, counter2->GetTime().InMilliseconds());
+}
+
+TEST_F(RuntimeCallStatsTest, ResetCallStats) {
+  RuntimeCallStats stats;
+  RuntimeCallCounter* counter1 = stats.GetCounter(test_counter_1_id);
+  RuntimeCallCounter* counter2 = stats.GetCounter(test_counter_2_id);
+
+  {
+    RuntimeCallTimerScope scope1(&stats, test_counter_1_id);
+    RuntimeCallTimerScope scope2(&stats, test_counter_2_id);
+  }
+
+  EXPECT_EQ(1ul, counter1->GetCount());
+  EXPECT_EQ(1ul, counter2->GetCount());
+
+  stats.Reset();
+
+  EXPECT_EQ(0ul, counter1->GetCount());
+  EXPECT_EQ(0ul, counter2->GetCount());
 }
 
 }  // namespace blink
