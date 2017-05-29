@@ -1017,7 +1017,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
-      base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         chrome::ShowBookmarkManager(browser);
       } else {
