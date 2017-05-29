@@ -1435,6 +1435,7 @@ class AndroidIsPinnedUprevError(failures_lib.InfrastructureFailure):
       new_android_atom: The Android atom that we failed to
                         uprev to, due to Android being pinned.
     """
+    assert new_android_atom
     msg = ('Failed up uprev to Android version %s as Android was pinned.' %
            new_android_atom)
     super(AndroidIsPinnedUprevError, self).__init__(msg)

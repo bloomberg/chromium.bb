@@ -20,6 +20,7 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import results_lib
 
+
 ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     constants.CHROMIUMOS_OVERLAY_DIR,
                                     'profiles', 'default', 'linux',
@@ -29,7 +30,8 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
 def _GetAndroidVersionFromMetadata(metadata):
   """Return the Android version from metadata; None if is does not exist.
 
-  Sync stages may have set this metadata to use a specific Android version.
+  In Android PFQ, Android version is set to metadata in master
+  (MasterSlaveLKGMSyncStage).
   """
   version_dict = metadata.GetDict().get('version', {})
   return version_dict.get('android')
@@ -41,6 +43,8 @@ class UprevAndroidStage(generic_stages.BuilderStage,
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
+    # This stage runs only in builders where |android_rev| config is set,
+    # namely Android PFQ and pre-flight-branch builders.
     if not self._android_rev:
       logging.info('Not uprevving Android.')
       return
@@ -48,12 +52,20 @@ class UprevAndroidStage(generic_stages.BuilderStage,
     android_package = self._run.config.android_package
     android_build_branch = self._run.config.android_import_branch
     android_version = _GetAndroidVersionFromMetadata(self._run.attrs.metadata)
+    android_gts_build_branch = self._run.config.android_gts_build_branch
+
+    assert android_package
+    assert android_build_branch
+    # |android_version| is usually set by MasterSlaveLKGMSyncStage, but we allow
+    # it to be unset to indicate uprev'ing to the latest version. In fact, it is
+    # not set in trybots.
+    # |android_gts_build_branch| is not set if this builder is not supposed to
+    # upload GTS bundles.
+
     logging.info('Android package: %s', android_package)
     logging.info('Android branch: %s', android_build_branch)
     logging.info('Android version: %s', android_version or 'LATEST')
-    if self._run.config.android_gts_build_branch:
-      logging.info('Android GTS branch: %s',
-                   self._run.config.android_gts_build_branch)
+    logging.info('Android GTS branch: %s', android_gts_build_branch or 'N/A')
 
     try:
       android_atom_to_build = commands.MarkAndroidAsStable(
@@ -63,26 +75,23 @@ class UprevAndroidStage(generic_stages.BuilderStage,
           android_build_branch=android_build_branch,
           boards=self._boards,
           android_version=android_version,
-          android_gts_build_branch=self._run.config.android_gts_build_branch)
+          android_gts_build_branch=android_gts_build_branch)
     except commands.AndroidIsPinnedUprevError as e:
       # If uprev failed due to a pin, record that failure (so that the
       # build ultimately fails) but try again without the pin, to allow the
       # slave to test the newer version anyway).
       android_atom_to_build = e.new_android_atom
-      if android_atom_to_build:
-        results_lib.Results.Record(self.name, e)
-        logging.PrintBuildbotStepFailure()
-        logging.error('Android is pinned. Unpinning Android and continuing '
-                      'build for Android atom %s. This stage will be marked '
-                      'as failed to prevent an uprev.',
-                      android_atom_to_build)
-        logging.info('Deleting pin file at %s and proceeding.',
-                     ANDROIDPIN_MASK_PATH)
-        osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)
-      else:
-        raise
+      results_lib.Results.Record(self.name, e)
+      logging.PrintBuildbotStepFailure()
+      logging.error('Android is pinned. Unpinning Android and continuing '
+                    'build for Android atom %s. This stage will be marked '
+                    'as failed to prevent an uprev.',
+                    android_atom_to_build)
+      logging.info('Deleting pin file at %s and proceeding.',
+                   ANDROIDPIN_MASK_PATH)
+      osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)
 
-    logging.info('android_atom_to_build = %s', android_atom_to_build)
+    logging.info('New Android package atom: %s', android_atom_to_build)
 
     if (not android_atom_to_build and
         self._run.options.buildbot and
