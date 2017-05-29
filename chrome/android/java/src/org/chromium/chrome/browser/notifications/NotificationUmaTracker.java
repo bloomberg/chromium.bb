@@ -30,7 +30,7 @@ public class NotificationUmaTracker {
     private static final String TAG = "NotifsUMATracker";
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, CONTENT_SUGGESTION, MEDIA_CAPTURE,
-            PHYSICAL_WEB, MEDIA, SITES, SYNC, SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
+            PHYSICAL_WEB, MEDIA, SITES, SYNC, WEBAPK, SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
     public @interface SystemNotificationType {}
 
     /*
@@ -52,8 +52,9 @@ public class NotificationUmaTracker {
     public static final int MEDIA = 6;
     public static final int SITES = 7;
     public static final int SYNC = 8;
+    public static final int WEBAPK = 9;
 
-    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 9;
+    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 10;
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
             "NotificationUmaTracker.LastShownNotificationType";

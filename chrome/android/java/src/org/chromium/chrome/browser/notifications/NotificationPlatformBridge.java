@@ -597,7 +597,7 @@ public class NotificationPlatformBridge {
         if (useCustomLayouts(hasImage)) {
             return new CustomNotificationBuilder(context);
         }
-        return new StandardNotificationBuilder(context);
+        return new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES);
     }
 
     /**

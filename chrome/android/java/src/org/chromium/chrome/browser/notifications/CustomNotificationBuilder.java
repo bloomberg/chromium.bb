@@ -80,7 +80,8 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
     private final Context mContext;
 
     public CustomNotificationBuilder(Context context) {
-        super(context.getResources());
+        // TODO(crbug.com/726340): Pass in the ChannelDefinition
+        super(context.getResources(), ChannelDefinitions.CHANNEL_ID_SITES);
         mContext = context;
     }
 
@@ -142,12 +143,16 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         // TODO(crbug.com/697104) We should probably use a Compat builder.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_SITES);
+                        false /* preferCompat */, mChannelId);
         builder.setTicker(mTickerText);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
-        builder.setDefaults(mDefaults);
-        builder.setVibrate(mVibratePattern);
+        builder.setPriority(mPriority);
+        // Browser channel uses silent notifications to avoid disrupting the user.
+        if (!ChannelDefinitions.CHANNEL_ID_BROWSER.equals(mChannelId)) {
+            builder.setDefaults(mDefaults);
+            builder.setVibrate(mVibratePattern);
+        }
         builder.setWhen(mTimestamp);
         builder.setOnlyAlertOnce(!mRenotify);
         builder.setContent(compactView);
