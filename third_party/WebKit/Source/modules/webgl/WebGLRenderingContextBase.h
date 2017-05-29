@@ -657,8 +657,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void OnErrorMessage(const char*, int32_t id);
 
-  void NotifyCanvasContextChanged();
-
   // Query if depth_stencil buffer is supported.
   bool IsDepthStencilSupported() { return is_depth_stencil_supported_; }
 
