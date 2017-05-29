@@ -9,6 +9,7 @@
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/window_coordinate_conversions.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
 
@@ -32,6 +33,23 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
   }
 
   return true;
+}
+
+gfx::Point ConvertPointFromParentToChild(const ServerWindow* child,
+                                         const gfx::Point& location_in_parent) {
+  if (child->transform().IsIdentity()) {
+    return gfx::Point(location_in_parent.x() - child->bounds().x(),
+                      location_in_parent.y() - child->bounds().y());
+  }
+
+  gfx::Transform transform = child->transform();
+  gfx::Transform translation;
+  translation.Translate(static_cast<float>(child->bounds().x()),
+                        static_cast<float>(child->bounds().y()));
+  transform.ConcatTransform(translation);
+  gfx::Point3F location_in_child3(gfx::PointF{location_in_parent});
+  transform.TransformPointReverse(&location_in_child3);
+  return gfx::ToFlooredPoint(location_in_child3.AsPointF());
 }
 
 bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
@@ -59,9 +77,8 @@ bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
       if (!child->visible())
         continue;
 
-      // TODO(sky): support transform.
-      gfx::Point location_in_child(location.x() - child->bounds().x(),
-                                   location.y() - child->bounds().y());
+      gfx::Point location_in_child =
+          ConvertPointFromParentToChild(child, location);
       gfx::Rect child_bounds(child->bounds().size());
       child_bounds.Inset(-child->extended_hit_test_region().left(),
                          -child->extended_hit_test_region().top(),
