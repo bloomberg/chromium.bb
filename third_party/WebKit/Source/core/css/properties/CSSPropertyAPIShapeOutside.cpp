@@ -9,6 +9,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 using namespace CSSPropertyParserHelpers;
@@ -16,7 +17,7 @@ using namespace CSSPropertyParserHelpers;
 const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   if (CSSValue* image_value = ConsumeImageOrNone(range, &context))
     return image_value;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

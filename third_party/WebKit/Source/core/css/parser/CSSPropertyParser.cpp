@@ -35,6 +35,7 @@
 #include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserIdioms.h"
+#include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
@@ -1629,8 +1630,9 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
   const CSSPropertyDescriptor& css_property_desc =
       CSSPropertyDescriptor::Get(property);
   if (css_property_desc.parseSingleValue) {
-    return css_property_desc.parseSingleValue(range_, *context_,
-                                              unresolved_property);
+    return css_property_desc.parseSingleValue(
+        range_, *context_,
+        CSSParserLocalContext(unresolved_property != property));
   }
 
   switch (property) {

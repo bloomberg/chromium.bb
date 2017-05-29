@@ -11,6 +11,7 @@
 
 // TODO(crbug.com/724912): Retire scroll-snap-coordinate
 
+class CSSParserLocalContext;
 namespace blink {
 
 using namespace CSSPropertyParserHelpers;
@@ -31,7 +32,7 @@ static CSSValueList* ConsumePositionList(CSSParserTokenRange& range,
 const CSSValue* CSSPropertyAPIScrollSnapCoordinate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   if (range.Peek().Id() == CSSValueNone)
     return ConsumeIdent(range);
   return ConsumePositionList(range, context);

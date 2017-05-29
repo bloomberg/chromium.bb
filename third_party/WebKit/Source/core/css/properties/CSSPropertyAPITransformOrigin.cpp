@@ -8,12 +8,13 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPITransformOrigin::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   if (CSSPropertyParserHelpers::ConsumeOneOrTwoValuedPosition(

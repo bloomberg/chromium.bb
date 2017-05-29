@@ -7,12 +7,13 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIVerticalAlign::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   CSSValue* parsed_value = CSSPropertyParserHelpers::ConsumeIdentRange(
       range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
   if (!parsed_value) {

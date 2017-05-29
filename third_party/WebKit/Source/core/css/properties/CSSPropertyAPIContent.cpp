@@ -12,6 +12,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 using CSSCounterValue = cssvalue::CSSCounterValue;
@@ -74,7 +75,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
 const CSSValue* CSSPropertyAPIContent::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNone, CSSValueNormal>(
           range.Peek().Id()))
     return CSSPropertyParserHelpers::ConsumeIdent(range);

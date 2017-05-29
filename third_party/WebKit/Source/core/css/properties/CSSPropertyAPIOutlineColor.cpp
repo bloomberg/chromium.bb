@@ -8,12 +8,13 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIOutlineColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueWebkitFocusRingColor)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

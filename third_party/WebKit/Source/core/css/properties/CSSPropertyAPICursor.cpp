@@ -11,6 +11,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
@@ -18,7 +19,7 @@ using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   bool in_quirks_mode = IsQuirksModeBehavior(context.Mode());
   CSSValueList* list = nullptr;
   while (CSSValue* image = CSSPropertyParserHelpers::ConsumeImage(

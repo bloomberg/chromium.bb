@@ -8,6 +8,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
@@ -19,7 +20,7 @@ static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
 const CSSValue* CSSPropertyAPISize::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
 
   if (range.Peek().Id() == CSSValueAuto) {
