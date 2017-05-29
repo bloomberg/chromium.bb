@@ -1088,6 +1088,8 @@ DEFINE_TRACE(SpellChecker) {
 
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    idle_spell_check_callback_->Deactivate();
 }
 
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
