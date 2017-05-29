@@ -15,7 +15,7 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int provider_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context) {
-  ServiceWorkerProviderHostInfo info(provider_id, MSG_ROUTING_NONE,
+  ServiceWorkerProviderHostInfo info(provider_id, 1 /* route_id */,
                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
                                      is_parent_frame_secure);
   return ServiceWorkerProviderHost::Create(process_id, std::move(info),

@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/url_schemes.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -222,6 +223,50 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   provider_host_insecure_parent->SetDocumentUrl(url);
   EXPECT_FALSE(
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
+}
+
+TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
+  ServiceWorkerProviderHost* provider_host =
+      CreateProviderHost(GURL("https://www.example.com/example.html"));
+  const int process_id = provider_host->process_id();
+  const int provider_id = provider_host->provider_id();
+  const int frame_id = provider_host->frame_id();
+  const ServiceWorkerProviderType type = provider_host->provider_type();
+  const bool is_parent_frame_secure = provider_host->is_parent_frame_secure();
+  const ServiceWorkerDispatcherHost* dispatcher_host =
+      provider_host->dispatcher_host();
+
+  std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
+      provider_host->PrepareForCrossSiteTransfer();
+
+  EXPECT_EQ(process_id, provisional_host->process_id());
+  EXPECT_EQ(provider_id, provisional_host->provider_id());
+  EXPECT_EQ(frame_id, provisional_host->frame_id());
+  EXPECT_EQ(type, provisional_host->provider_type());
+  EXPECT_EQ(is_parent_frame_secure, provisional_host->is_parent_frame_secure());
+  EXPECT_EQ(dispatcher_host, provisional_host->dispatcher_host());
+
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, provider_host->process_id());
+  EXPECT_EQ(kInvalidServiceWorkerProviderId, provider_host->provider_id());
+  EXPECT_EQ(MSG_ROUTING_NONE, provider_host->frame_id());
+  EXPECT_EQ(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_host->provider_type());
+  EXPECT_FALSE(provider_host->is_parent_frame_secure());
+  EXPECT_EQ(nullptr, provider_host->dispatcher_host());
+
+  provider_host->CompleteCrossSiteTransfer(provisional_host.get());
+
+  EXPECT_EQ(process_id, provider_host->process_id());
+  EXPECT_EQ(provider_id, provider_host->provider_id());
+  EXPECT_EQ(frame_id, provider_host->frame_id());
+  EXPECT_EQ(type, provider_host->provider_type());
+  EXPECT_EQ(is_parent_frame_secure, provider_host->is_parent_frame_secure());
+  EXPECT_EQ(dispatcher_host, provider_host->dispatcher_host());
+
+  EXPECT_EQ(kInvalidServiceWorkerProviderId, provisional_host->provider_id());
+  EXPECT_EQ(MSG_ROUTING_NONE, provisional_host->frame_id());
+  EXPECT_EQ(SERVICE_WORKER_PROVIDER_UNKNOWN, provisional_host->provider_type());
+  EXPECT_FALSE(provisional_host->is_parent_frame_secure());
+  EXPECT_EQ(nullptr, provisional_host->dispatcher_host());
 }
 
 }  // namespace content
