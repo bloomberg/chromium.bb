@@ -103,8 +103,8 @@ class HttpRequest {
               const CommandCallback& callback)
       : socket_(std::move(socket)),
         command_callback_(callback),
-        expected_size_(-1),
-        header_size_(0) {
+        expected_total_size_(0),
+        header_size_(std::string::npos) {
     SendRequest(request);
   }
 
@@ -113,8 +113,8 @@ class HttpRequest {
               const HttpUpgradeCallback& callback)
       : socket_(std::move(socket)),
         http_upgrade_callback_(callback),
-        expected_size_(-1),
-        header_size_(0) {
+        expected_total_size_(0),
+        header_size_(std::string::npos) {
     SendRequest(request);
   }
 
@@ -166,56 +166,63 @@ class HttpRequest {
   }
 
   void OnResponseData(int result) {
-    if (!CheckNetResultOrDie(result))
-      return;
-    if (result == 0) {
-      CheckNetResultOrDie(net::ERR_CONNECTION_CLOSED);
-      return;
-    }
+    do {
+      if (!CheckNetResultOrDie(result))
+        return;
+      if (result == 0) {
+        CheckNetResultOrDie(net::ERR_CONNECTION_CLOSED);
+        return;
+      }
 
-    response_.append(response_buffer_->data(), result);
-    if (expected_size_ < 0) {
-      int expected_length = 0;
+      response_.append(response_buffer_->data(), result);
 
-      // TODO(kaznacheev): Use net::HttpResponseHeader to parse the header.
-      std::string content_length = ExtractHeader("Content-Length:");
-      if (!content_length.empty()) {
-        if (!base::StringToInt(content_length, &expected_length)) {
-          CheckNetResultOrDie(net::ERR_FAILED);
-          return;
+      if (header_size_ == std::string::npos) {
+        header_size_ = response_.find("\r\n\r\n");
+
+        if (header_size_ != std::string::npos) {
+          header_size_ += 4;
+
+          int expected_body_size = 0;
+
+          // TODO(kaznacheev): Use net::HttpResponseHeader to parse the header.
+          std::string content_length = ExtractHeader("Content-Length:");
+          if (!content_length.empty()) {
+            if (!base::StringToInt(content_length, &expected_body_size)) {
+              CheckNetResultOrDie(net::ERR_FAILED);
+              return;
+            }
+          }
+
+          expected_total_size_ = header_size_ + expected_body_size;
         }
       }
 
-      header_size_ = response_.find("\r\n\r\n");
-      if (header_size_ != std::string::npos) {
-        header_size_ += 4;
-        expected_size_ = header_size_ + expected_length;
-      }
-    }
+      // WebSocket handshake doesn't contain the Content-Length header. For this
+      // case, |expected_total_size_| is set to the size of the header (opening
+      // handshake).
+      //
+      // Some (part of) WebSocket frames can be already received into
+      // |response_|.
+      if (header_size_ != std::string::npos &&
+          response_.length() >= expected_total_size_) {
+        const std::string& body = response_.substr(header_size_);
 
-    // WebSocket handshake doesn't contain the Content-Length. For this case,
-    // |expected_size_| is set to the size of the header (handshake).
-    // Some WebSocket frames can be already received into |response_|.
-    if (static_cast<int>(response_.length()) >= expected_size_) {
-      const std::string& body = response_.substr(header_size_);
-      if (!command_callback_.is_null()) {
-        command_callback_.Run(net::OK, body);
-      } else {
-        // Pass the WebSocket frames (in |body|), too.
-        http_upgrade_callback_.Run(net::OK,
-                                   ExtractHeader("Sec-WebSocket-Extensions:"),
-                                   body, std::move(socket_));
-      }
-      delete this;
-      return;
-    }
+        if (!command_callback_.is_null()) {
+          command_callback_.Run(net::OK, body);
+        } else {
+          http_upgrade_callback_.Run(net::OK,
+                                     ExtractHeader("Sec-WebSocket-Extensions:"),
+                                     body, std::move(socket_));
+        }
 
-    result = socket_->Read(
-        response_buffer_.get(),
-        kBufferSize,
-        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
-    if (result != net::ERR_IO_PENDING)
-      OnResponseData(result);
+        delete this;
+        return;
+      }
+
+      result = socket_->Read(
+          response_buffer_.get(), kBufferSize,
+          base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
+    } while (result != net::ERR_IO_PENDING);
   }
 
   std::string ExtractHeader(const std::string& header) {
@@ -253,14 +260,17 @@ class HttpRequest {
   HttpUpgradeCallback http_upgrade_callback_;
 
   scoped_refptr<net::IOBuffer> response_buffer_;
-  // Initially -1. Once the end of the header is seen:
-  // - If the Content-Length header is included, this variable is set to the
-  //   sum of the header size (including the last two CRLFs) and the value of
+
+  // Initially set to 0. Once the end of the header is seen:
+  // - If the Content-Length header is included, set to the sum of the header
+  //   size (including the last two CRLFs) and the value of
   //   the header.
   // - Otherwise, this variable is set to the size of the header (including the
   //   last two CRLFs).
-  int expected_size_;
-  // Set to the size of the header part in |response_|.
+  size_t expected_total_size_;
+  // Initially set to std::string::npos. Once the end of the header is seen,
+  // set to the size of the header part in |response_| including the two CRLFs
+  // at the end.
   size_t header_size_;
 };
 
