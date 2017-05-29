@@ -64,7 +64,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(PaymentRequestSection.EDIT_BUTTON_CHOOSE,
-                mPaymentRequestTestRule.getSummarySectionButtonState());
+                mPaymentRequestTestRule.getShippingAddressSectionButtonState());
     }
 
     /** Expand the shipping address section, select an address, and click "Pay." */
@@ -77,7 +77,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Shipping Address).
         mPaymentRequestTestRule.expectPaymentMethodRowIsSelected(0);
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_first_radio_button, mPaymentRequestTestRule.getReadyToPay());
@@ -102,7 +102,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Shipping Address).
         mPaymentRequestTestRule.expectPaymentMethodRowIsSelected(0);
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_first_radio_button, mPaymentRequestTestRule.getReadyToPay());
@@ -171,7 +171,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
         // Check that there is a selected payment method (makes sure we are not ready to pay because
         // of the Shipping Address).
         mPaymentRequestTestRule.expectPaymentMethodRowIsSelected(0);
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
@@ -196,7 +196,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
     public void testAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
@@ -223,7 +223,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press "add address" and then [X].
@@ -257,7 +257,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
     public void testQuickCloseAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press [X] and then "add address."
@@ -287,7 +287,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press "add address" and then "cancel."
@@ -321,7 +321,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
     public void testQuickCancelAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Quickly press on "cancel" and then "add address."

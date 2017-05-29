@@ -117,7 +117,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
         Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
@@ -146,7 +146,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 2, 1};
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         // Only four profiles should be suggested to the user.
         Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());
@@ -177,7 +177,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         // Only 3 profiles should be suggested, the two complete ones and the incomplete one that
         // has a street address.
@@ -206,7 +206,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
 
         // Click on the unacceptable shipping address.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressSuggestionLabel(0).contains(
                 AUTOFILL_PROFILES[3].getFullName()));
@@ -235,7 +235,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
         mDatesToSet = new int[] {5000, 5000, 5000, 1};
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfShippingAddressSuggestions());

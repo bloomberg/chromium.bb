@@ -140,7 +140,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Select the incomplete address and edit it.
@@ -184,7 +184,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws InterruptedException, ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Add a new shipping address.

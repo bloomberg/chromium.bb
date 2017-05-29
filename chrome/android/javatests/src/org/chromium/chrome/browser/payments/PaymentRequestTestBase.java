@@ -164,16 +164,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mTestCommon.clickAndWait(resourceId, helper);
     }
 
-    /**
-     * Clicks on an element in the "Shipping summary" section of the payments UI. This section
-     * combines both shipping address and shipping option. It is replaced by "Shipping address" and
-     * "Shipping option" sections upon expanding the payments UI.
-     */
-    protected void clickInShippingSummaryAndWait(final int resourceId, CallbackHelper helper)
-            throws InterruptedException, TimeoutException {
-        mTestCommon.clickInShippingSummaryAndWait(resourceId, helper);
-    }
-
     /** Clicks on an element in the "Shipping address" section of the payments UI. */
     protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
@@ -217,7 +207,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     /** Gets the button state for the shipping summary section. */
     protected int getSummarySectionButtonState() throws ExecutionException {
-        return mTestCommon.getSummarySectionButtonState();
+        return mTestCommon.getShippingAddressSectionButtonState();
     }
 
     /** Gets the button state for the contact details section. */

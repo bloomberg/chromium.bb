@@ -63,7 +63,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     public void testEditIncompleteShippingAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         Assert.assertEquals("Jon Doe\njon.doe@google.com\nPhone number required",
@@ -101,7 +101,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     public void testEditIncompleteShippingAndContactAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // There is an incomplete contact.
