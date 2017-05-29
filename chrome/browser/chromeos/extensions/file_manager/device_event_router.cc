@@ -37,8 +37,8 @@ void DeviceEventRouter::Startup() {
   is_starting_up_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DeviceEventRouter::StartupDelayed,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceEventRouter::StartupDelayed,
+                     weak_factory_.GetWeakPtr()),
       startup_time_delta_);
 }
 
@@ -130,8 +130,8 @@ void DeviceEventRouter::SuspendDone(const base::TimeDelta& sleep_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DeviceEventRouter::SuspendDoneDelayed,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceEventRouter::SuspendDoneDelayed,
+                     weak_factory_.GetWeakPtr()),
       resume_time_delta_);
 }
 
