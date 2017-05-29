@@ -37,6 +37,7 @@
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -64,7 +65,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FakeWebPlugin.h"
 #include "web/tests/FrameTestHelpers.h"
 

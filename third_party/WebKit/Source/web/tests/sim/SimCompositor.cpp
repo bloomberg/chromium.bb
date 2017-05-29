@@ -5,7 +5,9 @@
 #include "web/tests/sim/SimCompositor.h"
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -14,7 +16,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 
 namespace blink {

@@ -30,6 +30,7 @@
 
 #include "web/LocalFrameClientImpl.h"
 
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/CString.h"
@@ -39,7 +40,6 @@
 #include "public/web/WebView.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 using testing::_;
@@ -81,15 +81,15 @@ class LocalFrameClientImplTest : public ::testing::Test {
     return WebString::FromUTF8(user_agent.data(), user_agent.length());
   }
 
-  WebLocalFrameImpl* MainFrame() {
-    return ToWebLocalFrameImpl(web_view_->MainFrame());
+  WebLocalFrameBase* MainFrame() {
+    return ToWebLocalFrameBase(web_view_->MainFrame());
   }
   Document& GetDocument() {
-    return *ToWebLocalFrameImpl(main_frame_)->GetFrame()->GetDocument();
+    return *ToWebLocalFrameBase(main_frame_)->GetFrame()->GetDocument();
   }
   MockWebFrameClient& WebFrameClient() { return web_frame_client_; }
   LocalFrameClient& GetLocalFrameClient() {
-    return *ToLocalFrameClientImpl(ToWebLocalFrameImpl(web_view_->MainFrame())
+    return *ToLocalFrameClientImpl(ToWebLocalFrameBase(web_view_->MainFrame())
                                        ->GetFrame()
                                        ->Loader()
                                        .Client());

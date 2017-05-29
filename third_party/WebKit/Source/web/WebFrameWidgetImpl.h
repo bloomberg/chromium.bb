@@ -32,6 +32,7 @@
 #define WebFrameWidgetImpl_h
 
 #include "core/frame/WebFrameWidgetBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -44,7 +45,6 @@
 #include "web/CompositorMutatorImpl.h"
 #include "web/PageWidgetDelegate.h"
 #include "web/WebInputMethodControllerImpl.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -112,7 +112,7 @@ class WebFrameWidgetImpl final
   void SetRemoteViewportIntersection(const WebRect&) override;
 
   // WebFrameWidget implementation.
-  WebLocalFrameImpl* LocalRoot() const override { return local_root_; }
+  WebLocalFrameBase* LocalRoot() const override { return local_root_; }
   void SetVisibilityState(WebPageVisibilityState) override;
   void SetBackgroundColorOverride(WebColor) override;
   void ClearBackgroundColorOverride() override;
@@ -198,7 +198,7 @@ class WebFrameWidgetImpl final
   // WebFrameWidget is associated with a subtree of the frame tree,
   // corresponding to a maximal connected tree of LocalFrames. This member
   // points to the root of that subtree.
-  Member<WebLocalFrameImpl> local_root_;
+  Member<WebLocalFrameBase> local_root_;
 
   WebSize size_;
 

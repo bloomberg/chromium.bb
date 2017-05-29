@@ -46,6 +46,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
@@ -72,7 +73,6 @@
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputMethodControllerImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebPagePopupImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
@@ -93,7 +93,7 @@ WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
                                        WebLocalFrame* main_frame) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   return new WebViewFrameWidget(*client, static_cast<WebViewBase&>(*web_view),
-                                ToWebLocalFrameImpl(*main_frame));
+                                ToWebLocalFrameBase(*main_frame));
 }
 
 WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient* client,
@@ -107,7 +107,7 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient* client,
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
                                        WebLocalFrame* local_root)
     : client_(client),
-      local_root_(ToWebLocalFrameImpl(local_root)),
+      local_root_(ToWebLocalFrameBase(local_root)),
       mutator_(nullptr),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
@@ -743,7 +743,7 @@ bool WebFrameWidgetImpl::GetCompositionCharacterBounds(
   if (!frame)
     return false;
 
-  WebLocalFrameImpl* web_local_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebLocalFrameBase* web_local_frame = WebLocalFrameBase::FromFrame(frame);
   size_t character_count = range.length();
   size_t offset = range.StartOffset();
   WebVector<WebRect> result(character_count);

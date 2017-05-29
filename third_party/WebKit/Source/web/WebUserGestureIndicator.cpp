@@ -30,9 +30,10 @@
 
 #include "public/web/WebUserGestureIndicator.h"
 
+#include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/web/WebUserGestureToken.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -53,7 +54,7 @@ bool WebUserGestureIndicator::ConsumeUserGesture() {
 
 bool WebUserGestureIndicator::ProcessedUserGestureSinceLoad(
     WebLocalFrame* frame) {
-  return ToWebLocalFrameImpl(frame)->GetFrame()->HasReceivedUserGesture();
+  return ToWebLocalFrameBase(frame)->GetFrame()->HasReceivedUserGesture();
 }
 
 WebUserGestureToken WebUserGestureIndicator::CurrentUserGestureToken() {

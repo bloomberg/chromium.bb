@@ -29,6 +29,7 @@
  */
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/DateTimeChooser.h"
@@ -44,7 +45,6 @@
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/ChromeClientImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -273,7 +273,7 @@ class CreateWindowTest : public testing::Test {
 
 TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
   ScopedPageSuspender suspender;
-  LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+  LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WindowFeatures features;
   EXPECT_EQ(nullptr,
@@ -341,7 +341,7 @@ class PagePopupSuppressionTest : public testing::Test {
   PagePopupSuppressionTest() {}
 
   bool CanOpenColorChooser() {
-    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
     Color color;
     return !!chrome_client_impl_->OpenColorChooser(frame, color_chooser_client_,
                                                    color);
@@ -355,12 +355,12 @@ class PagePopupSuppressionTest : public testing::Test {
   }
 
   bool CanOpenPopupMenu() {
-    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
     return !!chrome_client_impl_->OpenPopupMenu(*frame, *select_);
   }
 
   Settings* GetSettings() {
-    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
     return frame->GetDocument()->GetSettings();
   }
 
@@ -373,7 +373,7 @@ class PagePopupSuppressionTest : public testing::Test {
     web_view_->SetMainFrame(main_frame_);
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
-    LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
     color_chooser_client_ =
         new FakeColorChooserClient(frame->GetDocument()->documentElement());
     date_time_chooser_client_ =

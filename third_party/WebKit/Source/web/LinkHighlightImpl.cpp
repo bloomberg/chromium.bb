@@ -32,6 +32,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -63,7 +64,6 @@
 #include "public/web/WebKit.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
 namespace blink {

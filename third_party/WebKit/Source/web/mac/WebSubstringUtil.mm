@@ -45,6 +45,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
@@ -57,7 +58,6 @@
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebRange.h"
-#include "web/WebLocalFrameImpl.h"
 
 using namespace blink;
 
@@ -198,7 +198,7 @@ NSAttributedString* WebSubstringUtil::AttributedSubstringInRange(
     size_t location,
     size_t length,
     WebPoint* baseline_point) {
-  LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
+  LocalFrame* frame = ToWebLocalFrameBase(web_frame)->GetFrame();
   if (frame->View()->NeedsLayout())
     frame->View()->UpdateLayout();
 
