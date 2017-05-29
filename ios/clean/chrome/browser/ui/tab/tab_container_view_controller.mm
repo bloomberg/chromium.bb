@@ -4,7 +4,6 @@
 
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 
-#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_events.h"
 #import "ios/clean/chrome/browser/ui/ui_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,6 +45,7 @@ CGFloat kTabStripHeight = 120.0f;
 @synthesize findBarViewController = _findBarViewController;
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize tabStripViewController = _tabStripViewController;
+@synthesize tabStripVisible = _tabStripVisible;
 @synthesize tabStripView = _tabStripView;
 @synthesize toolbarView = _toolbarView;
 @synthesize contentView = _contentView;
@@ -131,6 +131,15 @@ CGFloat kTabStripHeight = 120.0f;
                        toSubview:self.toolbarView];
   }
   _toolbarViewController = toolbarViewController;
+}
+
+- (void)setTabStripVisible:(BOOL)tabStripVisible {
+  if (tabStripVisible) {
+    self.tabStripHeightConstraint.constant = kTabStripHeight;
+  } else {
+    self.tabStripHeightConstraint.constant = 0.0f;
+  }
+  _tabStripVisible = tabStripVisible;
 }
 
 - (void)setTabStripViewController:(UIViewController*)tabStripViewController {
@@ -242,24 +251,14 @@ CGFloat kTabStripHeight = 120.0f;
   return nil;
 }
 
-#pragma mark - Action handling
+#pragma mark - Tab Strip actions.
 
 - (void)showTabStrip:(id)sender {
-  self.tabStripHeightConstraint.constant = kTabStripHeight;
-  // HACK: Remove fake action.
-  [[UIApplication sharedApplication] sendAction:@selector(tabStripDidShow:)
-                                             to:nil
-                                           from:sender
-                                       forEvent:nil];
+  self.tabStripVisible = YES;
 }
 
 - (void)hideTabStrip:(id)sender {
-  self.tabStripHeightConstraint.constant = 0.0f;
-  // HACK: Remove fake action.
-  [[UIApplication sharedApplication] sendAction:@selector(tabStripDidHide:)
-                                             to:nil
-                                           from:sender
-                                       forEvent:nil];
+  self.tabStripVisible = NO;
 }
 
 #pragma mark - Abstract methods to be overriden by subclass
