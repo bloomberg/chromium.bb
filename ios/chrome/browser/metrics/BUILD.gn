@@ -129,6 +129,7 @@ source_set("metrics_internal_arc") {
 }
 
 source_set("unit_tests_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "first_user_action_recorder_unittest.cc",

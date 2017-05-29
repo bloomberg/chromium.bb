@@ -7,11 +7,14 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/test/histogram_tester.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using ios_internal::SizeClassForReporting;
 using ios_internal::SizeClassForReportingForUIUserInterfaceSizeClass;
@@ -30,7 +33,7 @@ class SizeClassRecorderTest : public PlatformTest {
     histogram_tester_.reset(new base::HistogramTester());
   }
 
-  base::scoped_nsobject<SizeClassRecorder> recorder_;
+  SizeClassRecorder* recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
@@ -39,9 +42,9 @@ TEST_F(SizeClassRecorderTest, Initialization_SizeClassUnspecified) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
-  recorder_.reset();
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
+  recorder_ = nil;
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
   histogram_tester_->ExpectTotalCount(kPageLoadSizeClassHistogramName, 0);
@@ -52,9 +55,9 @@ TEST_F(SizeClassRecorderTest, Initialization_SizeClassCompact) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact]);
-  recorder_.reset();
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+  recorder_ = nil;
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
   histogram_tester_->ExpectTotalCount(kPageLoadSizeClassHistogramName, 0);
@@ -65,9 +68,9 @@ TEST_F(SizeClassRecorderTest, Initialization_SizeClassRegular) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular]);
-  recorder_.reset();
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
+  recorder_ = nil;
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
   histogram_tester_->ExpectTotalCount(kPageLoadSizeClassHistogramName, 0);
@@ -78,8 +81,8 @@ TEST_F(SizeClassRecorderTest, RecordInitialSizeClassOnAppBecomeActive) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIApplicationDidBecomeActiveNotification
                     object:nil];
@@ -95,8 +98,8 @@ TEST_F(SizeClassRecorderTest,
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIApplicationDidBecomeActiveNotification
                     object:nil];
@@ -114,8 +117,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassChangeInForeground) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [recorder_ horizontalSizeClassDidChange:UIUserInterfaceSizeClassRegular];
 
   histogram_tester_->ExpectUniqueSample(kSizeClassUsedHistogramName,
@@ -128,8 +131,8 @@ TEST_F(SizeClassRecorderTest, DontRecordSizeClassChangeInBackground) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIApplicationDidEnterBackgroundNotification
                     object:nil];
@@ -145,8 +148,8 @@ TEST_F(SizeClassRecorderTest,
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIApplicationDidEnterBackgroundNotification
                     object:nil];
@@ -165,8 +168,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Unspecified) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [recorder_
       pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
 
@@ -180,8 +183,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Compact) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [recorder_ pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
@@ -194,8 +197,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Regular) {
   if (!IsIPadIdiom())
     return;
 
-  recorder_.reset([[SizeClassRecorder alloc]
-      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified]);
+  recorder_ = [[SizeClassRecorder alloc]
+      initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
   [recorder_ pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
