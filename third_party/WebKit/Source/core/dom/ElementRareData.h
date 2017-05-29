@@ -101,11 +101,6 @@ class ElementRareData : public NodeRareData {
     class_list_ = class_list;
     ScriptWrappableVisitor::WriteBarrier(this, class_list_);
   }
-  void ClearClassListValueForQuirksMode() {
-    if (!class_list_)
-      return;
-    class_list_->ClearValueForQuirksMode();
-  }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {

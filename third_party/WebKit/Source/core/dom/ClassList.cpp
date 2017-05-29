@@ -25,50 +25,17 @@
 
 #include "core/dom/ClassList.h"
 
-#include "core/dom/Document.h"
-#include "platform/wtf/PtrUtil.h"
-
 namespace blink {
-
-using namespace HTMLNames;
 
 ClassList::ClassList(Element* element)
     : DOMTokenList(nullptr), element_(element) {}
 
 unsigned ClassList::length() const {
-  return element_->HasClass() ? ClassNames().size() : 0;
-}
-
-const AtomicString ClassList::item(unsigned index) const {
-  if (index >= length())
-    return AtomicString();
-  return ClassNames()[index];
+  return element_->HasClass() ? Tokens().size() : 0;
 }
 
 bool ClassList::ContainsInternal(const AtomicString& token) const {
-  return element_->HasClass() && ClassNames().Contains(token);
-}
-
-const SpaceSplitString& ClassList::ClassNames() const {
-  DCHECK(element_->HasClass());
-  if (element_->GetDocument().InQuirksMode()) {
-    if (!class_names_for_quirks_mode_) {
-      class_names_for_quirks_mode_ =
-          WTF::WrapUnique(new SpaceSplitString(value()));
-    }
-    return *class_names_for_quirks_mode_.get();
-  }
-  return element_->ClassNames();
-}
-
-SpaceSplitString& ClassList::MutableSet() {
-  // We can't mutate element_->ClassNames() because it is used to compare class
-  // names before/after class attribute change.
-  if (element_->HasClass())
-    mutable_set_ = ClassNames();
-  else
-    mutable_set_ = SpaceSplitString();
-  return mutable_set_;
+  return element_->HasClass() && Tokens().Contains(token);
 }
 
 DEFINE_TRACE(ClassList) {

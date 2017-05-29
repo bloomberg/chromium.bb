@@ -172,22 +172,20 @@ void DOMTokenList::RemoveInternal(const AtomicString& token) {
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
 void DOMTokenList::AddTokens(const Vector<String>& tokens) {
-  SpaceSplitString& token_set = MutableSet();
   // 2. For each token in tokens, append token to context object’s token set.
   for (const auto& token : tokens)
-    token_set.Add(AtomicString(token));
+    tokens_.Add(AtomicString(token));
   // 3. Run the update steps.
-  UpdateWithTokenSet(token_set);
+  UpdateWithTokenSet(tokens_);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-remove
 void DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
-  SpaceSplitString& token_set = MutableSet();
   // 2. For each token in tokens, remove token from context object’s token set.
   for (const auto& token : tokens)
-    token_set.Remove(AtomicString(token));
+    tokens_.Remove(AtomicString(token));
   // 3. Run the update steps.
-  UpdateWithTokenSet(token_set);
+  UpdateWithTokenSet(tokens_);
 }
 
 // https://dom.spec.whatwg.org/#concept-ordered-set-serializer

@@ -1355,6 +1355,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     }
   } else if (name == classAttr) {
     ClassAttributeChanged(params.new_value);
+    if (HasRareData() && GetElementRareData()->GetClassList()) {
+      GetElementRareData()->GetClassList()->DidUpdateAttributeValue(
+          params.old_value, params.new_value);
+    }
   } else if (name == HTMLNames::nameAttr) {
     SetHasName(!params.new_value.IsNull());
   } else if (IsStyledElement()) {
@@ -1455,9 +1459,6 @@ void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
     else
       GetElementData()->ClearClass();
   }
-
-  if (HasRareData())
-    GetElementRareData()->ClearClassListValueForQuirksMode();
 }
 
 bool Element::ShouldInvalidateDistributionWhenAttributeChanged(
@@ -1633,7 +1634,6 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
   if (HasRareData()) {
     ElementRareData* rare_data = GetElementRareData();
-    rare_data->ClearClassListValueForQuirksMode();
     if (rare_data->IntersectionObserverData())
       rare_data->IntersectionObserverData()->ActivateValidIntersectionObservers(
           *this);
@@ -3510,8 +3510,12 @@ Element* Element::closest(const AtomicString& selectors,
 
 DOMTokenList& Element::classList() {
   ElementRareData& rare_data = EnsureElementRareData();
-  if (!rare_data.GetClassList())
-    rare_data.SetClassList(ClassList::Create(this));
+  if (!rare_data.GetClassList()) {
+    ClassList* class_list = ClassList::Create(this);
+    class_list->DidUpdateAttributeValue(g_null_atom,
+                                        getAttribute(HTMLNames::classAttr));
+    rare_data.SetClassList(class_list);
+  }
   return *rare_data.GetClassList();
 }
 
