@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
+#include "ui/aura/env_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,7 +32,8 @@ class ASH_EXPORT AshDevToolsDOMAgentObserver {
 class ASH_EXPORT AshDevToolsDOMAgent
     : public NON_EXPORTED_BASE(ui::devtools::UiDevToolsBaseAgent<
                                ui::devtools::protocol::DOM::Metainfo>),
-      public UIElementDelegate {
+      public UIElementDelegate,
+      public aura::EnvObserver {
  public:
   AshDevToolsDOMAgent();
   ~AshDevToolsDOMAgent() override;
@@ -57,10 +59,16 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void RemoveObserver(AshDevToolsDOMAgentObserver* observer);
   UIElement* GetElementFromNodeId(int node_id);
   UIElement* window_element_root() const { return window_element_root_.get(); };
+  const std::vector<aura::Window*>& root_windows() const {
+    return root_windows_;
+  };
 
  private:
-  void OnNodeBoundsChanged(int node_id);
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override {}
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
 
+  void OnNodeBoundsChanged(int node_id);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForUIElement(
       UIElement* ui_element);
@@ -89,6 +97,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
   std::unique_ptr<UIElement> window_element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
   std::unique_ptr<views::Widget> widget_for_highlighting_;
+  std::vector<aura::Window*> root_windows_;
   base::ObserverList<AshDevToolsDOMAgentObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AshDevToolsDOMAgent);
