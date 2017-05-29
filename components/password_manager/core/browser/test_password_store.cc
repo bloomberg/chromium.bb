@@ -112,6 +112,13 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
   return matched_forms;
 }
 
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+TestPasswordStore::FillLoginsForSameOrganizationName(
+    const std::string& signon_realm) {
+  // TODO: Implement when needed.
+  return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+}
+
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
                                           bool custom_passphrase_sync_enabled) {
 }

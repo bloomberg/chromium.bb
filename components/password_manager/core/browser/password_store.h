@@ -182,6 +182,20 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 
+  // Returns all stored credentials with SCHEME_HTTP that have a realm whose
+  // organization-identifying name -- that is, the first domain name label below
+  // the effective TLD -- matches that of |signon_realm|. Notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  //
+  // WARNING: This is *NOT* PSL (Public Suffix List) matching. The logins
+  // returned by this method are not safe to be filled into the observed form.
+  //
+  // For example, the organization-identifying name of "https://foo.example.org"
+  // is `example`, and logins will be returned for "http://bar.example.co.uk",
+  // but not for "http://notexample.com" or "https://example.foo.com".
+  void GetLoginsForSameOrganizationName(const std::string& signon_realm,
+                                        PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
   // The request will be cancelled if the consumer is destroyed.
@@ -374,6 +388,11 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillMatchingLogins(const FormDigest& form) = 0;
 
+  // Finds and returns all organization-name-matching logins, or returns an
+  // empty list on error.
+  virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillLoginsForSameOrganizationName(const std::string& signon_realm) = 0;
+
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
@@ -463,6 +482,12 @@ class PasswordStore : protected PasswordStoreSync,
   void DisableAutoSignInForOriginsInternal(
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
+
+  // Finds all logins organization-name-matching |signon_realm| and notifies the
+  // consumer.
+  void GetLoginsForSameOrganizationNameImpl(
+      const std::string& signon_realm,
+      std::unique_ptr<GetLoginsRequest> request);
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   void GetAutofillableLoginsImpl(std::unique_ptr<GetLoginsRequest> request);

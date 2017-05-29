@@ -189,6 +189,12 @@ PasswordStoreProxyMac::FillMatchingLogins(const FormDigest& form) {
   return GetBackend()->FillMatchingLogins(form);
 }
 
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+PasswordStoreProxyMac::FillLoginsForSameOrganizationName(
+    const std::string& signon_realm) {
+  return GetBackend()->FillLoginsForSameOrganizationName(signon_realm);
+}
+
 bool PasswordStoreProxyMac::FillAutofillableLogins(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   return GetBackend()->FillAutofillableLogins(forms);

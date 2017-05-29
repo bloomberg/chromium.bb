@@ -60,6 +60,10 @@ class MockPasswordStore : public PasswordStore {
       const PasswordStore::FormDigest& form) override {
     return std::vector<std::unique_ptr<autofill::PasswordForm>>();
   }
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillLoginsForSameOrganizationName(const std::string& signon_realm) override {
+    return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+  }
   MOCK_METHOD1(FillAutofillableLogins,
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,

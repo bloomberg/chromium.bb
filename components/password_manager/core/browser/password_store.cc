@@ -225,6 +225,14 @@ void PasswordStore::GetLogins(const FormDigest& form,
   }
 }
 
+void PasswordStore::GetLoginsForSameOrganizationName(
+    const std::string& signon_realm,
+    PasswordStoreConsumer* consumer) {
+  std::unique_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
+  ScheduleTask(base::Bind(&PasswordStore::GetLoginsForSameOrganizationNameImpl,
+                          this, signon_realm, base::Passed(&request)));
+}
+
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
 }
@@ -497,6 +505,13 @@ void PasswordStore::DisableAutoSignInForOriginsInternal(
   DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
     main_thread_runner_->PostTask(FROM_HERE, completion);
+}
+
+void PasswordStore::GetLoginsForSameOrganizationNameImpl(
+    const std::string& signon_realm,
+    std::unique_ptr<GetLoginsRequest> request) {
+  request->NotifyConsumerWithResults(
+      FillLoginsForSameOrganizationName(signon_realm));
 }
 
 void PasswordStore::GetAutofillableLoginsImpl(

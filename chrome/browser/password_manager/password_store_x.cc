@@ -207,6 +207,13 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStoreX::FillMatchingLogins(
   return std::vector<std::unique_ptr<PasswordForm>>();
 }
 
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStoreX::FillLoginsForSameOrganizationName(
+    const std::string& signon_realm) {
+  // Not available on X.
+  return std::vector<std::unique_ptr<PasswordForm>>();
+}
+
 bool PasswordStoreX::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
