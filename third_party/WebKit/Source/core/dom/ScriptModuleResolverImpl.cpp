@@ -81,8 +81,15 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
   return record;
 }
 
+void ScriptModuleResolverImpl::ContextDestroyed(ExecutionContext*) {
+  // crbug.com/725816 : What we should really do is to make the map key
+  // weak reference to v8::Module.
+  record_to_module_script_map_.clear();
+}
+
 DEFINE_TRACE(ScriptModuleResolverImpl) {
   ScriptModuleResolver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);
   visitor->Trace(modulator_);
 }

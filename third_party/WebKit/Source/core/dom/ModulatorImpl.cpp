@@ -31,7 +31,9 @@ ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
       map_(this, ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
-      script_module_resolver_(ScriptModuleResolverImpl::Create(this)) {
+      script_module_resolver_(ScriptModuleResolverImpl::Create(
+          this,
+          ExecutionContext::From(script_state_.Get()))) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
   DCHECK(fetcher_);

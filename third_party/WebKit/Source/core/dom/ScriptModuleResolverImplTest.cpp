@@ -129,9 +129,9 @@ void ScriptModuleResolverImplTest::SetUp() {
 }
 
 TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {
-  ScriptModuleResolverImpl* resolver =
-      ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
+  ScriptModuleResolver* resolver = ScriptModuleResolverImpl::Create(
+      Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
   ModuleScript* referrer_module_script =
@@ -153,9 +153,9 @@ TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {
 }
 
 TEST_F(ScriptModuleResolverImplTest, ResolveInvalidModuleSpecifier) {
-  ScriptModuleResolverImpl* resolver =
-      ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
+  ScriptModuleResolver* resolver = ScriptModuleResolverImpl::Create(
+      Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
   ModuleScript* referrer_module_script =
@@ -175,9 +175,9 @@ TEST_F(ScriptModuleResolverImplTest, ResolveInvalidModuleSpecifier) {
 }
 
 TEST_F(ScriptModuleResolverImplTest, ResolveLoadFailedModule) {
-  ScriptModuleResolverImpl* resolver =
-      ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
+  ScriptModuleResolver* resolver = ScriptModuleResolverImpl::Create(
+      Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
   ModuleScript* referrer_module_script =
@@ -202,9 +202,9 @@ TEST_F(ScriptModuleResolverImplTest, ResolveLoadFailedModule) {
 }
 
 TEST_F(ScriptModuleResolverImplTest, ResolveInstantiationFailedModule) {
-  ScriptModuleResolverImpl* resolver =
-      ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
+  ScriptModuleResolver* resolver = ScriptModuleResolverImpl::Create(
+      Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
   ModuleScript* referrer_module_script =
