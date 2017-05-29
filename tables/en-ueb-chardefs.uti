@@ -148,6 +148,7 @@ display ^ 457
 sign ^ 4-26
 display _ 456
 sign _ 46-36
+sign ` 46-16 grave accent
 noback punctuation ` 4
 
 display } 12456
@@ -213,6 +214,12 @@ uplow \x016c\x016d 4-346-136 Ŭŭ
 
 uplow \x0178\x00ff 45-25-13456 Ÿÿ
 
+# Early Forms of English
+uplow \x021c\x021d 3456-13456 Ȝȝ yogh
+uplow \x00de\x00fe 3456-2346 Þþ thorn
+uplow \x00d0\x00f0 3456-1246 Ðð eth
+uplow \x01f7\x01bf 3456-2456 Ƿƿ wynn (wen)
+
 sign \x0300 45-16 ̀̀  grave accent
 noback correct [$l]"̀" "̀"*
 
@@ -265,6 +272,7 @@ uplow \x039f\x03bf 46-135 Οο Omicron
 uplow \x03a0\x03c0 46-1234 Ππ Pi
 uplow \x03a1\x03c1 46-1235 Ρρ Rho
 uplow \x03a3\x03c3 46-234 Σσ Sigma
+noback lowercase \x03c2 46-234 ς Small Letter Sigma
 uplow \x03a4\x03c4 46-2345 Ττ Tau
 uplow \x03a5\x03c5 46-136 Υυ Upsilon
 uplow \x03a6\x03c6 46-124 Φφ Phi
@@ -281,19 +289,21 @@ punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
 punctuation \x0097 36-36
+sign \x00a1 45-56-235 ¡
 punctuation \x00a1 235 ¡
 sign \x00a2 4-14 ¢ cent
 sign \x00a3 4-123 £ pound
 #sign \x00a3 3456 £
 sign \x00a4 1246 ¤ curency
 sign \x00a5 4-13456 ¥ yen
+sign \x00a6 46-1256 ¦ broken bar
 punctuation \x00a6 456-1256 ¦ broken bar
 sign \x00a7 45-234 § section
 sign \x00a8 45-25 ¨
 sign \x00a9 45-14 © copyright
 #sign \x00aa ª
 punctuation \x00ab 456-236 «
-sign \x00ac 0 ¬
+sign \x00ac 4-1456 ¬
 punctuation \x00ad 36 - soft hyphen
 sign \x00ae 45-1235 ® registered
 sign \x00af 4-36 ¯
@@ -302,16 +312,19 @@ sign \x00b4 45-56-12 ´ acute accent
 sign \x00b6 45-1234 ¶ pilcrow 
 sign \x00b8 45-12346 ¸ cedilla 
 punctuation \x00bb 456-356 »
-punctuation \x00bf 236 ¿
-uppercase \x00c6 1-6-45-235-15 Æ
-lowercase \x00e6 1-45-235-15 æ
+punctuation \x00bf 45-56-236 ¿
+uppercase \x00c6 1-6-45-235-15 Æ capital ligature ae (ash)
+lowercase \x00e6 1-45-235-15 æ lowercase ligature ae (ash)
+uppercase \x0152 135-6-45-235-15 Œ capital ligature oe
+lowercase \x0153 135-45-235-15 œ ligature oe
 
-uppercase \x014a 6-45-1345 Ŋ
-lowercase \x014b 45-1345 ŋ
-uppercase \x018f 6-456-26 Ə
-lowercase \x0259 456-26 ə
+uplow \x014a\x014b 45-1345 Ŋŋ
+uplow \x018f\x0259 456-26 Əə
 
 sign \x02d8 4-346 ˘ uncombining breve
+sign \x02e6 45-46-14 ˦ high tone
+sign \x02e7 45-46-25 ˧ mid tone
+sign \x02e8 45-46-36 ˨ low tone
 
 space \x2000 0
 space \x2001 0
@@ -331,7 +344,7 @@ punctuation \x2013 6-36 –
 punctuation \x2014 5-6-36 —
 punctuation \x2015 5-6-36 ―
 noback punctuation \x2018 6-236 ‘
-noback punctuation \x2019 356-3 ’
+noback punctuation \x2019 6-356 ’
 punctuation \x201c 236 “
 punctuation \x201d 356 ”
 sign \x2020 4-6-1456 † dagger
@@ -348,6 +361,7 @@ sign \x2191 56-1256-346 ↑
 sign \x2192 56-1256-135 →
 sign \x2193 56-1256-146 ↓
 sign \x21b5 56-1256-256-146 ↵
+sign \x21cc 45-456-2356 ⇌ equilibrium arrow (harpoons)
 
 sign \x25aa 456-256 ▪ 
 
@@ -412,15 +426,16 @@ sign \x221d 456-5-2356 ∝ proportional to
 sign \x221e 3456-123456 ∞ infinity
 sign \x2220 456-246 ∠ angle
 sign \x2221 46-456-246 ∡ measured angle
-sign \x2225 3456-456 ∥ parallel to
+sign \x2225 3456-123 ∥ parallel to
 sign \x2227 4-236 ∧ logical and
 sign \x2228 4-235 ∨ logical or
 sign \x2229 46-236 ∩ set intersection
 sign \x222a 46-235 ∪ set union
 sign \x222b 2346 ∫ integral
 sign \x222e 4-2346 contour integral
-#sign \x2234 6-16 ∴ therefore   conlicts with Child
+noback sign \x2234 6-16 ∴ therefore # using noback to avoid conflict with Child
 sign \x2235 4-34 ∵ because
+noback sign \x2236 25 ∶ ratio # using noback to avoid conflict with :
 sign \x2237 25-25 ∷ proportion
 sign \x2243 456-35 ≃ asymptotically equal to
 sign \x2245 5-456-35 ≅ approximately equal to
@@ -449,6 +464,7 @@ sign \x22b4 456-456-126 ⊴ normal subgroup or equal
 sign \x22b5 456-456-345 ⊵ contains as normal subgroup or equal
 sign \x22be 3456-456-246 ⊾ right angle with arc
 sign \x22c5 5-256 ⋅ dot operator
+sign \x2ae4 46-456-25 ⫤ reverse 'is valid' sign
 
 math \x2329 4-126 〈
 math \x232A 4-345 〉
@@ -462,7 +478,24 @@ math \x3009 4-345 〉
 punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
-noback sign \X25CF 5-35	# 9679 black circle
+
+# Diagonal and Vertical lines
+noback sign \X2502 456 │ tally mark - vertical single solid line segment
+noback sign \X250a 45 ┊ first variant vertical line segment
+noback sign \X2551 6-456 ║ second variant vertical line segment
+noback sign \X2571 345 ╱ right-leaning single solid diagonal line segment # using noback to avoid conflict with "ar" contraction
+noback sign \X2572 126 ╲ left-leaning single solid diagonal line segment # using noback to avoid conflict with "gh" contraction
+
+# Shape Symbols
+sign \x25a0 456-1246-3456-145 ■ filled (solid) square
+sign \x25a1 1246-3456-145 □ square
+sign \x25a7 46-1246-3456-145 ▧ shaded square (upper left to lower right)
+sign \x25b2 456-1246-3456-14 ▲ filled (solid) (equilateral) triangle
+sign \x25b3 1246-3456-14 △ regular (equilateral) triangle
+sign \x25cb 1246-123456 ○ circle
+sign \x25cd 46-1246-123456 ◍ shaded circle
+sign \x29b5 46-245 ⦵ 'normal' (superscript circle crossed by horizontal line)
+noback sign \x25cf 5-35 ● black circle # not representing filled circle shape as it is mostly used in password fields to represent hidden characters
 
 #   Unicode prefers \x2019 for apostrophe instead of \x27
 endword \x2019d 3-145
