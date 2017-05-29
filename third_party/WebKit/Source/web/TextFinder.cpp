@@ -125,10 +125,10 @@ bool TextFinder::Find(int identifier,
   // If the user has selected something since the last Find operation we want
   // to start from there. Otherwise, we start searching from where the last Find
   // operation left off (either a Find or a FindNext operation).
-  VisibleSelection selection(OwnerFrame()
-                                 .GetFrame()
-                                 ->Selection()
-                                 .ComputeVisibleSelectionInDOMTreeDeprecated());
+  // TODO(editing-dev): The use of VisibleSelection should be audited. See
+  // crbug.com/657237 for details.
+  VisibleSelection selection(
+      OwnerFrame().GetFrame()->Selection().ComputeVisibleSelectionInDOMTree());
   bool active_selection = !selection.IsNone();
   if (active_selection) {
     active_match_ = CreateRange(FirstEphemeralRangeOf(selection));
