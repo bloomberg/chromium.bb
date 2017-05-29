@@ -149,20 +149,16 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   ASSERT_TRUE(bookmark_model);
 
   // Run ProfileStatisticsAggregator::WaitOrCountBookmarks.
-  ProfileStatisticsAggregator* aggregator;
   BookmarkStatHelper bookmark_stat_helper;
-  base::RunLoop run_loop_aggregator_destruction;
-  // The following should run inside a scope, so the scoped_refptr gets deleted
-  // immediately.
-  {
-    scoped_refptr<ProfileStatisticsAggregator> aggregator_scoped =
-        new ProfileStatisticsAggregator(
-                profile,
-                base::Bind(&BookmarkStatHelper::StatsCallback,
-                           base::Unretained(&bookmark_stat_helper)),
-                run_loop_aggregator_destruction.QuitClosure());
-    aggregator = aggregator_scoped.get();
-  }
+  base::RunLoop run_loop_aggregator_done;
+
+  scoped_refptr<ProfileStatisticsAggregator> aggregator =
+      new ProfileStatisticsAggregator(profile,
+                                      run_loop_aggregator_done.QuitClosure());
+  aggregator->AddCallbackAndStartAggregator(
+      base::Bind(&BookmarkStatHelper::StatsCallback,
+                 base::Unretained(&bookmark_stat_helper)));
+
   // Wait until ProfileStatisticsAggregator::WaitOrCountBookmarks is run.
   base::RunLoop run_loop1;
   run_loop1.RunUntilIdle();
@@ -180,6 +176,6 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   // observer added by WaitOrCountBookmarks is run.
   LoadBookmarkModel(profile, bookmark_model);
 
-  run_loop_aggregator_destruction.Run();
+  run_loop_aggregator_done.Run();
   EXPECT_EQ(1, bookmark_stat_helper.GetNumOfTimesCalled());
 }

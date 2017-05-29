@@ -27,19 +27,12 @@ void ProfileStatistics::GatherStatistics(
     return;
   DCHECK(!profile_->IsOffTheRecord() && !profile_->IsSystemProfile());
 
-  if (HasAggregator()) {
-    GetAggregator()->AddCallbackAndStartAggregator(callback);
-  } else {
-    // The statistics task may outlive ProfileStatistics in unit tests, so a
-    // weak pointer is used for the callback.
-    scoped_refptr<ProfileStatisticsAggregator> aggregator =
-        new ProfileStatisticsAggregator(
-                profile_,
-                callback,
-                base::Bind(&ProfileStatistics::DeregisterAggregator,
-                           weak_ptr_factory_.GetWeakPtr()));
-    RegisterAggregator(aggregator.get());
+  if (!aggregator_) {
+    aggregator_ = new ProfileStatisticsAggregator(
+        profile_, base::Bind(&ProfileStatistics::DeregisterAggregator,
+                             weak_ptr_factory_.GetWeakPtr()));
   }
+  aggregator_->AddCallbackAndStartAggregator(callback);
 }
 
 bool ProfileStatistics::HasAggregator() const {
@@ -47,12 +40,7 @@ bool ProfileStatistics::HasAggregator() const {
 }
 
 ProfileStatisticsAggregator* ProfileStatistics::GetAggregator() const {
-  return aggregator_;
-}
-
-void ProfileStatistics::RegisterAggregator(
-    ProfileStatisticsAggregator* aggregator) {
-  aggregator_ = aggregator;
+  return aggregator_.get();
 }
 
 void ProfileStatistics::DeregisterAggregator() {
