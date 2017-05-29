@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVTranslationLanguage;
+@class CWVTranslationPolicy;
 @protocol CWVTranslationControllerDelegate;
 
 // The error domain for translation errors.
@@ -63,6 +64,19 @@ CWV_EXPORT
 // |translationController:didFinishLanguageDetectionWithResult:error:|.
 // TODO(crbug.com/706289): Document what happens if you call this out of order.
 - (void)revertTranslation;
+
+// Sets or retrieves translation policies associated with a specified language.
+// |pageLanguage| should be the language code of the language.
+- (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
+             forPageLanguage:(CWVTranslationLanguage*)pageLanguage;
+- (CWVTranslationPolicy*)translationPolicyForPageLanguage:
+    (CWVTranslationLanguage*)pageLanguage;
+
+// Sets or retrieves translation policies associated with a specified page.
+// |pageHost| should be the hostname of the website. Must not be empty.
+- (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
+                 forPageHost:(NSString*)pageHost;
+- (CWVTranslationPolicy*)translationPolicyForPageHost:(NSString*)pageHost;
 
 @end
 
