@@ -486,6 +486,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Get the focused view that should be used for retrieving the text selection.
   RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
 
+  void ScheduleMouseWheelEndDispatching(blink::WebMouseWheelEvent wheel_event,
+                                        bool should_route_event);
+  void DispatchPendingWheelEndEvent();
+  void IgnorePendingWheelEndEvent();
+  bool HasPendingWheelEndEvent();
+
   // Returns the RenderWidgetHostDelegate corresponding to the currently focused
   // RenderWidgetHost. It is different from |render_widget_host_->delegate()|
   // when there are focused inner WebContentses on the page. Also, this method
@@ -514,6 +520,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Adds/Removes frame observer based on state.
   void UpdateNeedsBeginFramesInternal();
+
+  void SendSyntheticWheelEventWithPhaseEnded(
+      blink::WebMouseWheelEvent wheel_event,
+      bool should_route_event);
 
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
@@ -563,6 +573,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // web content is not able to draw in time.
   SkColor background_color_ = SK_ColorTRANSPARENT;
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
+
+  base::OneShotTimer mouse_wheel_end_dispatch_timer_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
