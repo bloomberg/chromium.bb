@@ -281,6 +281,20 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
   return IsElementEditable(element);
 }
 
+// Returns whether the |username_element| is allowed to be autofilled.
+//
+// Note that if the user interacts with the |password_field| and the
+// |username_element| is user-defined (i.e., non-empty and non-autofilled), then
+// this function returns false. This is a precaution, to not override the field
+// if it has been classified as username by accident.
+bool IsUsernameAmendable(const blink::WebInputElement& username_element,
+                         bool is_password_field_selected) {
+  return !username_element.IsNull() &&
+         IsElementAutocompletable(username_element) &&
+         (!is_password_field_selected || username_element.IsAutofilled() ||
+          username_element.Value().IsEmpty());
+}
+
 // Return true if either password_value or new_password_value is not empty and
 // not default.
 bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form) {
@@ -773,8 +787,9 @@ bool PasswordAutofillAgent::FillSuggestion(
   if (element->IsPasswordField()) {
     password_info->password_field_suggestion_was_accepted = true;
     password_info->password_field = password_element;
-  } else if (!username_element.IsNull() &&
-             IsElementAutocompletable(username_element)) {
+  }
+
+  if (IsUsernameAmendable(username_element, element->IsPasswordField())) {
     username_element.SetAutofillValue(blink::WebString::FromUTF16(username));
     username_element.SetAutofilled(true);
     UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
@@ -814,8 +829,7 @@ bool PasswordAutofillAgent::PreviewSuggestion(
     return false;
   }
 
-  if (!element->IsPasswordField() && !username_element.IsNull() &&
-      IsElementAutocompletable(username_element)) {
+  if (IsUsernameAmendable(username_element, element->IsPasswordField())) {
     if (username_query_prefix_.empty())
       username_query_prefix_ = username_element.Value().Utf16();
 
@@ -843,8 +857,9 @@ bool PasswordAutofillAgent::DidClearAutofillSelection(
   PasswordInfo* password_info;
 
   if (!FindPasswordInfoForElement(*element, &username_element,
-                                  &password_element, &password_info))
+                                  &password_element, &password_info)) {
     return false;
+  }
 
   ClearPreview(&username_element, &password_element);
   return true;
