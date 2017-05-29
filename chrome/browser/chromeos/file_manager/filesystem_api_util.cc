@@ -151,9 +151,8 @@ void GetNonNativeLocalPathMimeType(
         drive::util::GetFileSystemByProfile(profile);
     if (!file_system) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(callback, false, std::string()));
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(callback, false, std::string()));
       return;
     }
 
@@ -168,9 +167,8 @@ void GetNonNativeLocalPathMimeType(
     chromeos::file_system_provider::util::LocalPathParser parser(profile, path);
     if (!parser.Parse()) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(callback, false, std::string()));
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(callback, false, std::string()));
       return;
     }
 
@@ -187,9 +185,8 @@ void GetNonNativeLocalPathMimeType(
   // error with empty MIME type, that leads fallback guessing mime type from
   // file extensions.
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, false /* failure */, std::string()));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(callback, false /* failure */, std::string()));
 }
 
 void IsNonNativeLocalPathDirectory(
@@ -216,9 +213,8 @@ void PrepareNonNativeLocalFileForWritableApp(
            profile, path, kFileManagerAppId, &url)) {
     // Posting to the current thread, so that we always call back asynchronously
     // independent from whether or not the operation succeeds.
-    content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                     FROM_HERE,
-                                     base::Bind(callback, false));
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::BindOnce(callback, false));
     return;
   }
 
@@ -233,8 +229,8 @@ void PrepareNonNativeLocalFileForWritableApp(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&PrepareFileOnIOThread, file_system_context, internal_url,
-                 google_apis::CreateRelayCallback(callback)));
+      base::BindOnce(&PrepareFileOnIOThread, file_system_context, internal_url,
+                     google_apis::CreateRelayCallback(callback)));
 }
 
 }  // namespace util

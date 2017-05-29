@@ -75,10 +75,9 @@ void ComputeSpaceNeedToBeFreed(
     const GetNecessaryFreeSpaceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GetMetadataOnIOThread, profile->GetPath(), context, url,
-                 google_apis::CreateRelayCallback(callback)));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GetMetadataOnIOThread, profile->GetPath(), context, url,
+                     google_apis::CreateRelayCallback(callback)));
 }
 
 // Part of CreateManagedSnapshot. Runs CreateSnapshotFile method of fileapi.
@@ -118,9 +117,8 @@ SnapshotManager::SnapshotManager(Profile* profile)
 SnapshotManager::~SnapshotManager() {
   if (!file_refs_.empty()) {
     bool posted = content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&FreeReferenceOnIOThread, file_refs_));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&FreeReferenceOnIOThread, file_refs_));
     DCHECK(posted);
   }
 }
@@ -169,9 +167,8 @@ void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
   }
   if (!to_free.empty()) {
     bool posted = content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&FreeReferenceOnIOThread, to_free));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&FreeReferenceOnIOThread, to_free));
     DCHECK(posted);
   }
 
@@ -183,15 +180,11 @@ void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
 
   // Start creating the snapshot.
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&CreateSnapshotFileOnIOThread,
-                 context,
-                 filesystem_url,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&SnapshotManager::OnCreateSnapshotFile,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                callback))));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CreateSnapshotFileOnIOThread, context, filesystem_url,
+                     google_apis::CreateRelayCallback(base::Bind(
+                         &SnapshotManager::OnCreateSnapshotFile,
+                         weak_ptr_factory_.GetWeakPtr(), callback))));
 }
 
 void SnapshotManager::OnCreateSnapshotFile(
