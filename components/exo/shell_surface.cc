@@ -45,6 +45,11 @@
 namespace exo {
 namespace {
 
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
+
+// Application Id set by the client.
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
+
 // This is a struct for accelerator keys used to close ShellSurfaces.
 const struct Accelerator {
   ui::KeyboardCode keycode;
@@ -269,8 +274,6 @@ ShellSurface::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
-
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
 ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,
@@ -513,14 +516,12 @@ void ShellSurface::UpdateSystemModal() {
 void ShellSurface::SetApplicationId(aura::Window* window,
                                     const std::string& id) {
   TRACE_EVENT1("exo", "ShellSurface::SetApplicationId", "application_id", id);
-  const ash::ShelfID shelf_id(id);
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(kApplicationIdKey, new std::string(id));
 }
 
 // static
-const std::string ShellSurface::GetApplicationId(aura::Window* window) {
-  return ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey))
-      .app_id;
+const std::string* ShellSurface::GetApplicationId(aura::Window* window) {
+  return window->GetProperty(kApplicationIdKey);
 }
 
 void ShellSurface::SetApplicationId(const std::string& application_id) {
@@ -671,10 +672,13 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
   std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
   value->SetString("title", base::UTF16ToUTF8(title_));
-  std::string application_id;
-  if (GetWidget() && GetWidget()->GetNativeWindow())
-    application_id = GetApplicationId(GetWidget()->GetNativeWindow());
-  value->SetString("application_id", application_id);
+  if (GetWidget() && GetWidget()->GetNativeWindow()) {
+    const std::string* application_id =
+        GetApplicationId(GetWidget()->GetNativeWindow());
+
+    if (application_id)
+      value->SetString("application_id", *application_id);
+  }
   return value;
 }
 
