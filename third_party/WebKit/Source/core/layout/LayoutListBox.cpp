@@ -133,7 +133,7 @@ void LayoutListBox::ScrollToRect(const LayoutRect& rect) {
     DCHECK(Layer()->GetScrollableArea());
     Layer()->GetScrollableArea()->ScrollIntoView(
         rect, ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignToEdgeIfNeeded);
+        ScrollAlignment::kAlignToEdgeIfNeeded, false);
   }
 }
 

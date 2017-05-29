@@ -30,7 +30,8 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   virtual ~ProgrammaticScrollAnimator();
 
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&);
-  void AnimateToOffset(const ScrollOffset&);
+  void AnimateToOffset(const ScrollOffset&,
+                       bool sequenced_for_smooth_scroll = false);
 
   // ScrollAnimatorCompositorCoordinator implementation.
   void ResetAnimationState() override;
@@ -52,11 +53,13 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   explicit ProgrammaticScrollAnimator(ScrollableArea*);
 
   void NotifyOffsetChanged(const ScrollOffset&);
+  void AnimationFinished();
 
   Member<ScrollableArea> scrollable_area_;
   std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
   ScrollOffset target_offset_;
   double start_time_;
+  bool sequenced_for_smooth_scroll_;
 };
 
 }  // namespace blink
