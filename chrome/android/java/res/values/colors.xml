@@ -185,7 +185,6 @@
     <color name="webapp_url_bar_separator">#e1e1e1</color>
 
     <!-- Bookmark UI colors -->
-    <color name="bookmark_detail_text">#212121</color>
     <color name="bookmark_detail_section">#7C7B79</color>
 
     <!-- Favicon colors -->
@@ -205,9 +204,6 @@
     <color name="physical_web_diags_success_color">#00933b</color>
     <color name="physical_web_diags_failure_color">#f90101</color>
     <color name="physical_web_diags_indeterminate_color">#f2b50f</color>
-
-    <!-- Bottom bar colors -->
-    <color name="bottom_bar_shadow_color">#1d000000</color>
 
     <!-- Payments UI colors -->
     <color name="payments_section_edit_background">#f5f5f5</color>
