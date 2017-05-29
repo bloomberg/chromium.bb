@@ -6,8 +6,6 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Fix capsnocont opcode. Also mark capital letters with capsletter
   symbol when capsnocont is defined but no begcapsword indicator is
   defined. Thanks to Bue Vester-Andersen.
-- Fix back-translation for contractions followed by punctuation thanks
-  to Victor Montalvao.
 ** Other changes
 - Fix building of Python bindings when cross-compiling. Thanks to
   Chris Brannon
