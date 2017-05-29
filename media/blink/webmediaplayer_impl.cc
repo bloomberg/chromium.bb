@@ -135,6 +135,14 @@ bool IsBackgroundVideoPauseOptimizationEnabled() {
   return base::FeatureList::IsEnabled(kBackgroundVideoPauseOptimization);
 }
 
+#if defined(OS_ANDROID)
+
+bool IsNewRemotePlaybackPipelineEnabled() {
+  return base::FeatureList::IsEnabled(kNewRemotePlaybackPipeline);
+}
+
+#endif
+
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::kNetworkStateFormatError ||
                 state == blink::WebMediaPlayer::kNetworkStateNetworkError ||
@@ -1164,7 +1172,7 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
 #if defined(OS_ANDROID)
-  if (IsRemote()) {
+  if (IsRemote() && !IsNewRemotePlaybackPipelineEnabled()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame)
       compositor_->PaintSingleFrame(frame);
@@ -1645,7 +1653,8 @@ void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
 }
 
 void WebMediaPlayerImpl::SuspendForRemote() {
-  if (pipeline_controller_.IsPipelineSuspended()) {
+  if (pipeline_controller_.IsPipelineSuspended() &&
+      !IsNewRemotePlaybackPipelineEnabled()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame)
       compositor_->PaintSingleFrame(frame);

@@ -143,6 +143,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   }
   void DisableMediaRemoting();
 
+  void MediaRemotingStarted() final;
+  void MediaRemotingStopped() final;
+
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
@@ -167,8 +170,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void UpdateDisplayState() override;
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
-  void MediaRemotingStarted() final;
-  void MediaRemotingStopped() final;
 
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
