@@ -1854,15 +1854,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
             static_cast<unsigned>(position));
   }
 
-  // -webkit-highlight
-  static const AtomicString& InitialHighlight() { return g_null_atom; }
-  const AtomicString& Highlight() const {
-    return rare_inherited_data_->highlight_;
-  }
-  void SetHighlight(const AtomicString& h) {
-    SET_VAR(rare_inherited_data_, highlight_, h);
-  }
-
   // -webkit-line-clamp
   static LineClampValue InitialLineClamp() { return LineClampValue(); }
   const LineClampValue& LineClamp() const {
