@@ -30,12 +30,14 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -1133,6 +1135,48 @@ bool LoginDatabase::GetLogins(
   return false;
 }
 
+bool LoginDatabase::GetLoginsForSameOrganizationName(
+    const std::string& signon_realm,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
+  DCHECK(forms);
+  forms->clear();
+
+  GURL signon_realm_as_url(signon_realm);
+  if (!signon_realm_as_url.SchemeIsHTTPOrHTTPS())
+    return true;
+
+  std::string organization_name =
+      GetOrganizationIdentifyingName(signon_realm_as_url);
+  if (organization_name.empty())
+    return true;
+
+  // SQLite does not provide a function to escape special characters, but
+  // seemingly uses POSIX Extended Regular Expressions (ERE), and so does RE2.
+  // In the worst case the bogus results will be filtered out below.
+  static constexpr char kRESchemeAndSubdomains[] = "^https?://([\\w+%-]+\\.)*";
+  static constexpr char kREDotAndEffectiveTLD[] = "(\\.[\\w+%-]+)+/$";
+  const std::string signon_realms_with_same_organization_name_regexp =
+      kRESchemeAndSubdomains + RE2::QuoteMeta(organization_name) +
+      kREDotAndEffectiveTLD;
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE, get_same_organization_name_logins_statement_.c_str()));
+  s.BindString(0, signon_realms_with_same_organization_name_regexp);
+
+  bool success = StatementToForms(&s, nullptr, forms);
+
+  using PasswordFormPtr = std::unique_ptr<autofill::PasswordForm>;
+  base::EraseIf(*forms, [&organization_name](const PasswordFormPtr& form) {
+    GURL candidate_signon_realm_as_url(form->signon_realm);
+    DCHECK_EQ(form->scheme, PasswordForm::SCHEME_HTML);
+    DCHECK(candidate_signon_realm_as_url.SchemeIsHTTPOrHTTPS());
+    std::string candidate_form_organization_name =
+        GetOrganizationIdentifyingName(candidate_signon_realm_as_url);
+    return candidate_form_organization_name != organization_name;
+  });
+
+  return success;
+}
+
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
@@ -1315,6 +1359,11 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   DCHECK(get_statement_psl_federated_.empty());
   get_statement_psl_federated_ =
       get_statement_ + psl_statement + psl_federated_statement;
+  DCHECK(get_same_organization_name_logins_statement_.empty());
+  get_same_organization_name_logins_statement_ =
+      "SELECT " + all_column_names +
+      " FROM LOGINS"
+      " WHERE scheme == 0 AND signon_realm REGEXP ?";
   DCHECK(created_statement_.empty());
   created_statement_ =
       "SELECT " + all_column_names +

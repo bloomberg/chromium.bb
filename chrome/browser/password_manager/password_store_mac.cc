@@ -1261,6 +1261,13 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStoreMac::FillMatchingLogins(
   return matched_forms;
 }
 
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+PasswordStoreMac::FillLoginsForSameOrganizationName(
+    const std::string& signon_realm) {
+  // Not implemented.
+  return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+}
+
 bool PasswordStoreMac::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());

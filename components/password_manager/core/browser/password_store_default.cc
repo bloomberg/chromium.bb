@@ -182,6 +182,16 @@ PasswordStoreDefault::FillMatchingLogins(const FormDigest& form) {
   return matched_forms;
 }
 
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStoreDefault::FillLoginsForSameOrganizationName(
+    const std::string& signon_realm) {
+  std::vector<std::unique_ptr<PasswordForm>> forms;
+  if (login_db_ &&
+      !login_db_->GetLoginsForSameOrganizationName(signon_realm, &forms))
+    return std::vector<std::unique_ptr<PasswordForm>>();
+  return forms;
+}
+
 bool PasswordStoreDefault::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());

@@ -47,24 +47,32 @@ namespace password_manager {
 
 namespace {
 
-const char kTestWebRealm1[] = "https://one.example.com/";
-const char kTestWebOrigin1[] = "https://one.example.com/origin";
-const char kTestWebRealm2[] = "https://two.example.com/";
-const char kTestWebOrigin2[] = "https://two.example.com/origin";
-const char kTestWebRealm3[] = "https://three.example.com/";
-const char kTestWebOrigin3[] = "https://three.example.com/origin";
-const char kTestWebRealm5[] = "https://five.example.com/";
-const char kTestWebOrigin5[] = "https://five.example.com/origin";
-const char kTestPSLMatchingWebRealm[] = "https://psl.example.com/";
-const char kTestPSLMatchingWebOrigin[] = "https://psl.example.com/origin";
-const char kTestUnrelatedWebRealm[] = "https://notexample.com/";
-const char kTestUnrelatedWebOrigin[] = "https:/notexample.com/origin";
-const char kTestInsecureWebRealm[] = "http://one.example.com/";
-const char kTestInsecureWebOrigin[] = "http://one.example.com/origin";
-const char kTestAndroidRealm1[] = "android://hash@com.example.android/";
-const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
-const char kTestAndroidRealm3[] = "android://hash@com.example.three.android/";
-const char kTestUnrelatedAndroidRealm[] =
+constexpr const char kTestWebRealm1[] = "https://one.example.com/";
+constexpr const char kTestWebOrigin1[] = "https://one.example.com/origin";
+constexpr const char kTestWebRealm2[] = "https://two.example.com/";
+constexpr const char kTestWebOrigin2[] = "https://two.example.com/origin";
+constexpr const char kTestWebRealm3[] = "https://three.example.com/";
+constexpr const char kTestWebOrigin3[] = "https://three.example.com/origin";
+constexpr const char kTestWebRealm5[] = "https://five.example.com/";
+constexpr const char kTestWebOrigin5[] = "https://five.example.com/origin";
+constexpr const char kTestPSLMatchingWebRealm[] = "https://psl.example.com/";
+constexpr const char kTestPSLMatchingWebOrigin[] =
+    "https://psl.example.com/origin";
+constexpr const char kTestUnrelatedWebRealm[] = "https://notexample.com/";
+constexpr const char kTestUnrelatedWebOrigin[] = "https:/notexample.com/origin";
+constexpr const char kTestSameOrganizationNameWebRealm[] =
+    "https://example.appspot.com/";
+constexpr const char kTestSameOrganizationNameWebOrigin[] =
+    "https://example.appspot.com/origin";
+constexpr const char kTestInsecureWebRealm[] = "http://one.example.com/";
+constexpr const char kTestInsecureWebOrigin[] = "http://one.example.com/origin";
+constexpr const char kTestAndroidRealm1[] =
+    "android://hash@com.example.android/";
+constexpr const char kTestAndroidRealm2[] =
+    "android://hash@com.example.two.android/";
+constexpr const char kTestAndroidRealm3[] =
+    "android://hash@com.example.three.android/";
+constexpr const char kTestUnrelatedAndroidRealm[] =
     "android://hash@com.notexample.android/";
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
@@ -849,6 +857,61 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
     store->ShutdownOnUIThread();
     base::RunLoop().RunUntilIdle();
   }
+}
+
+TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
+  static constexpr const PasswordFormData kSameOrganizationCredentials[] = {
+      // Credential that is an exact match of the observed form.
+      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
+       L"", L"username_value_1", L"", true, 1},
+      // Credential that is a PSL match of the observed form.
+      {PasswordForm::SCHEME_HTML, kTestPSLMatchingWebRealm,
+       kTestPSLMatchingWebOrigin, "", L"", L"", L"", L"username_value_2", L"",
+       true, 1},
+      // Credential for the HTTP version of the observed form. (Should not be
+      // filled, but returned as part of same-organization-name matches).
+      {PasswordForm::SCHEME_HTML, kTestInsecureWebRealm, kTestInsecureWebOrigin,
+       "", L"", L"", L"", L"username_value_3", L"", true, 1},
+      // Credential for a signon realm with a different TLD, but same
+      // organization identifying name.
+      {PasswordForm::SCHEME_HTML, kTestSameOrganizationNameWebRealm,
+       kTestSameOrganizationNameWebOrigin, "", L"", L"", L"",
+       L"username_value_4", L"", true, 1},
+  };
+
+  static constexpr const PasswordFormData kNotSameOrganizationCredentials[] = {
+      // Unrelated Web credential.
+      {PasswordForm::SCHEME_HTML, kTestUnrelatedWebRealm,
+       kTestUnrelatedWebOrigin, "", L"", L"", L"", L"username_value_5", L"",
+       true, 1},
+      // Credential for an affiliated Android application.
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+       L"username_value_6", L"", true, 1}};
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  for (const auto& form_data : kSameOrganizationCredentials) {
+    expected_results.push_back(CreatePasswordFormFromDataForTesting(form_data));
+    store->AddLogin(*expected_results.back());
+  }
+
+  for (const auto& form_data : kNotSameOrganizationCredentials) {
+    store->AddLogin(*CreatePasswordFormFromDataForTesting(form_data));
+  }
+
+  const std::string observed_form_realm = kTestWebRealm1;
+  MockPasswordStoreConsumer mock_consumer;
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetLoginsForSameOrganizationName(observed_form_realm, &mock_consumer);
+  base::RunLoop().RunUntilIdle();
+  store->ShutdownOnUIThread();
+  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
