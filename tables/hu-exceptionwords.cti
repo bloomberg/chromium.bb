@@ -1,6 +1,6 @@
 # liblouis: Hungarian Grade 1 table
 #
-#  Copyright (C) 2011-2016 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
+#  Copyright (C) 2011-2017 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
 #
 #  This file is part of liblouis.
 #
@@ -202,7 +202,7 @@ partword meggyv 134-15-1456-1456-1236	For example meggyvörös word
 partword meggyz 134-15-1456-1456-126	For example meggyző word
 partword meggyzs 134-15-1456-1456-345	For example meggyzselé word
 partword meggyíz 134-15-1456-1456-34-126	For example meggyízű word
-partword ország 135-1235-156-4-1245
+partword országgy 135-1235-156-4-1245-1456
 partword oggyak 135-1245-1456-1-13	For example proggyak word
 begword szöveggy 156-12345-1236-15-1245-1456	For example szöveggyűjtemény word part
 begword régiség =	For example régiséggyűjtő word part

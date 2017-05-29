@@ -176,6 +176,8 @@ table_files = \
 	hu-exceptionwords.cti \
 	hu-hu-comp8.ctb \
 	hu-hu-g1.ctb \
+	hu-hu-g2.ctb \
+	hu-hu-g2_exceptions.cti \
 	hu.tbl \
 	hy.ctb \
 	hyph_brl_da_dk.dic \
