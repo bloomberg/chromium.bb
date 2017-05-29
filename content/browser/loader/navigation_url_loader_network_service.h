@@ -60,13 +60,17 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
       const ResourceRequestCompletionStatus& completion_status) override;
 
  private:
+  class URLLoaderRequestController;
+
   NavigationURLLoaderDelegate* delegate_;
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
-  std::unique_ptr<NavigationRequestInfo> request_info_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;
   SSLStatus ssl_status_;
+
+  // Lives on the IO thread.
+  std::unique_ptr<URLLoaderRequestController> request_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };

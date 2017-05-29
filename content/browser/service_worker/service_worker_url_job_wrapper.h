@@ -6,19 +6,18 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_JOB_WRAPPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
 namespace content {
-
-// TODO(scottmg): Not yet implemented. See https://crbug.com/715640.
-class ServiceWorkerControlleeURLLoader;
 
 // This class is a helper to support having
 // ServiceWorkerControlleeRequestHandler work with both URLRequestJobs and
 // mojom::URLLoaderFactorys (that is, both with and without
 // --enable-network-service). It wraps either a ServiceWorkerURLRequestJob or a
-// ServiceWorkerControlleeRequestHandler and forwards to the underlying
-// implementation.
+// callback for URLLoaderFactory and forwards to the underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
   // Non-network service case.
@@ -26,8 +25,9 @@ class ServiceWorkerURLJobWrapper {
       base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job);
 
   // With --enable-network-service.
-  explicit ServiceWorkerURLJobWrapper(
-      ServiceWorkerControlleeURLLoader* url_loader);
+  // TODO(kinuko): Implement this as a separate job class rather
+  // than in a wrapper.
+  ServiceWorkerURLJobWrapper(LoaderFactoryCallback loader_factory_callback);
 
   ~ServiceWorkerURLJobWrapper();
 
@@ -57,8 +57,21 @@ class ServiceWorkerURLJobWrapper {
   bool WasCanceled() const;
 
  private:
+  enum class JobType { kURLRequest, kURLLoader };
+
+  // Used only for URLLoader case.
+  // TODO(kinuko): Implement this in a separate job class rather
+  // than in a wrapper.
+  void StartRequest();
+
+  JobType job_type_;
+
+  ServiceWorkerResponseType response_type_ = NOT_DETERMINED;
+  LoaderFactoryCallback loader_factory_callback_;
+
   base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job_;
-  ServiceWorkerControlleeURLLoader* url_loader_;
+
+  base::WeakPtrFactory<ServiceWorkerURLJobWrapper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLJobWrapper);
 };

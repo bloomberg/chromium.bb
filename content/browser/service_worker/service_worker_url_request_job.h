@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -153,13 +154,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            LostActiveVersion);
 
-  enum ResponseType {
-    NOT_DETERMINED,
-    FAIL_DUE_TO_LOST_CONTROLLER,
-    FALLBACK_TO_NETWORK,
-    FALLBACK_TO_RENDERER,  // Use this when falling back with CORS check
-    FORWARD_TO_SERVICE_WORKER
-  };
+  using ResponseType = ServiceWorkerResponseType;
 
   enum ResponseBodyType {
     UNKNOWN,
