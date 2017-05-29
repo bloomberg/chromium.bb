@@ -1483,11 +1483,12 @@ static LayoutUnit ComputeOverflowAlignmentOffset(OverflowAlignment overflow,
   return LayoutUnit();
 }
 
-// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to
-// LayoutBox.
-LayoutUnit LayoutGrid::MarginLogicalHeightForChild(
+LayoutUnit LayoutGrid::MarginLogicalSizeForChild(
+    GridTrackSizingDirection direction,
     const LayoutBox& child) const {
-  return IsHorizontalWritingMode() ? child.MarginHeight() : child.MarginWidth();
+  return FlowAwareDirectionForChild(child, direction) == kForColumns
+             ? child.MarginLogicalWidth()
+             : child.MarginLogicalHeight();
 }
 
 LayoutUnit LayoutGrid::ComputeMarginLogicalSizeForChild(
@@ -1520,10 +1521,12 @@ LayoutUnit LayoutGrid::AvailableAlignmentSpaceForChildBeforeStretching(
   // performed before children are laid out, so we can't use the child cached
   // values. Hence, we need to compute margins in order to determine the
   // available height before stretching.
+  GridTrackSizingDirection child_block_flow_direction =
+      FlowAwareDirectionForChild(child, kForRows);
   return grid_area_breadth_for_child -
          (child.NeedsLayout()
               ? ComputeMarginLogicalSizeForChild(kBlockDirection, child)
-              : MarginLogicalHeightForChild(child));
+              : MarginLogicalSizeForChild(child_block_flow_direction, child));
 }
 
 StyleSelfAlignmentData LayoutGrid::AlignSelfForChild(
