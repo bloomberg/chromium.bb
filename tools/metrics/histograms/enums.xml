@@ -15076,6 +15076,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2012" label="CredentialManagerPreventSilentAccess"/>
   <int value="2013" label="NetInfoEffectiveType"/>
   <int value="2014" label="V8SpeechRecognition_Start_Method"/>
+  <int value="2015" label="TableRowDirectionDifferentFromTable"/>
+  <int value="2016" label="TableSectionDirectionDifferentFromTable"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
