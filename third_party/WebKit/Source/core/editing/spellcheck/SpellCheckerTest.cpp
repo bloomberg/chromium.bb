@@ -5,8 +5,6 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 
 #include "core/editing/Editor.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellCheckTestBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -82,35 +80,6 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
       old_selection.Start(),
       FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle);
   EXPECT_EQ(start_count, LayoutCount());
-}
-
-TEST_F(SpellCheckerTest, MarkAndReplaceForHandlesMultipleReplacements) {
-  SetBodyContent(
-      "<div contenteditable>"
-      "spllchck"
-      "</div>");
-  Element* div = GetDocument().QuerySelector("div");
-  Node* text = div->firstChild();
-  EphemeralRange range_to_check =
-      EphemeralRange(Position(text, 0), Position(text, 8));
-
-  SpellCheckRequest* request = SpellCheckRequest::Create(range_to_check, 0);
-
-  TextCheckingResult result;
-  result.decoration = TextDecorationType::kTextDecorationTypeSpelling;
-  result.location = 0;
-  result.length = 8;
-  result.replacements = Vector<String>({"spellcheck", "spillchuck"});
-
-  GetDocument().GetFrame()->GetSpellChecker().MarkAndReplaceFor(
-      request, Vector<TextCheckingResult>({result}));
-
-  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
-
-  // The Spelling marker's description should be a newline-separated list of the
-  // suggested replacements
-  EXPECT_EQ("spellcheck\nspillchuck",
-            GetDocument().Markers().Markers()[0]->Description());
 }
 
 }  // namespace blink

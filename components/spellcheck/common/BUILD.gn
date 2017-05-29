@@ -13,7 +13,6 @@ source_set("common") {
     "spellcheck_message_generator.cc",
     "spellcheck_message_generator.h",
     "spellcheck_messages.h",
-    "spellcheck_result.cc",
     "spellcheck_result.h",
     "spellcheck_switches.cc",
     "spellcheck_switches.h",

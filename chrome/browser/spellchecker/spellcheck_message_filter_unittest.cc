@@ -121,7 +121,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   EXPECT_EQ(kDecoration, sent_results[0].decoration);
   EXPECT_EQ(kLocation, sent_results[0].location);
   EXPECT_EQ(kLength, sent_results[0].length);
-  EXPECT_EQ(kReplacement, sent_results[0].replacements[0]);
+  EXPECT_EQ(kReplacement, sent_results[0].replacement);
 }
 
 TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {

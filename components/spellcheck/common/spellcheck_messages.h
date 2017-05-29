@@ -23,7 +23,7 @@ IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
   IPC_STRUCT_TRAITS_MEMBER(decoration)
   IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(length)
-  IPC_STRUCT_TRAITS_MEMBER(replacements)
+  IPC_STRUCT_TRAITS_MEMBER(replacement)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

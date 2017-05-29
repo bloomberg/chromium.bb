@@ -31,10 +31,9 @@
 #ifndef WebTextCheckingResult_h
 #define WebTextCheckingResult_h
 
-#include "WebTextDecorationType.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "WebTextDecorationType.h"
 
 namespace blink {
 
@@ -45,15 +44,14 @@ struct WebTextCheckingResult {
   WebTextCheckingResult()
       : decoration(kWebTextDecorationTypeSpelling), location(0), length(0) {}
 
-  WebTextCheckingResult(
-      WebTextDecorationType decoration,
-      int location,
-      int length,
-      const WebVector<WebString>& replacements = WebVector<WebString>())
+  WebTextCheckingResult(WebTextDecorationType decoration,
+                        int location,
+                        int length,
+                        const WebString& replacement = WebString())
       : decoration(decoration),
         location(location),
         length(length),
-        replacements(replacements) {}
+        replacement(replacement) {}
 
 #if BLINK_IMPLEMENTATION
   operator TextCheckingResult() const;
@@ -62,7 +60,7 @@ struct WebTextCheckingResult {
   WebTextDecorationType decoration;
   int location;
   int length;
-  WebVector<WebString> replacements;
+  WebString replacement;
 };
 
 }  // namespace blink

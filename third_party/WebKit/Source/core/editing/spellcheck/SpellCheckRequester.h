@@ -44,7 +44,7 @@ class SpellCheckRequester;
 class TextCheckerClient;
 
 // TODO(xiaochengh): Move this class to dedicated files.
-class CORE_EXPORT SpellCheckRequest final : public TextCheckingRequest {
+class SpellCheckRequest final : public TextCheckingRequest {
  public:
   static SpellCheckRequest* Create(const EphemeralRange& checking_range,
                                    int request_number);
