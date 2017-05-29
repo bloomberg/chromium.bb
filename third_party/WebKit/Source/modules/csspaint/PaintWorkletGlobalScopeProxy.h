@@ -21,7 +21,8 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
  public:
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
-  explicit PaintWorkletGlobalScopeProxy(LocalFrame*);
+  PaintWorkletGlobalScopeProxy(LocalFrame*,
+                               PaintWorkletPendingGeneratorRegistry*);
   virtual ~PaintWorkletGlobalScopeProxy() = default;
 
   // Implements WorkletGlobalScopeProxy.
@@ -32,7 +33,6 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   void TerminateWorkletGlobalScope() override;
 
   CSSPaintDefinition* FindDefinition(const String& name);
-  void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
   PaintWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 

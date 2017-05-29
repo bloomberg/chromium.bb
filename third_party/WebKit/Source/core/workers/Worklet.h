@@ -16,7 +16,6 @@ namespace blink {
 
 class LocalFrame;
 class ScriptPromiseResolver;
-class WorkletGlobalScopeProxy;
 
 // This is the base implementation of Worklet interface defined in the spec:
 // https://drafts.css-houdini.org/worklets/#worklet
@@ -37,9 +36,6 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   virtual ScriptPromise addModule(ScriptState*,
                                   const String& module_url,
                                   const WorkletOptions&);
-
-  // Returns a proxy to WorkletGlobalScope on the context thread.
-  virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -15,6 +15,7 @@ namespace blink {
 
 class LocalFrame;
 class ScriptPromiseResolver;
+class WorkletGlobalScopeProxy;
 
 // A MainThreadWorklet is a worklet that runs only on the main thread.
 // TODO(nhiroki): This is a temporary class to support module loading for main
@@ -35,11 +36,30 @@ class CORE_EXPORT MainThreadWorklet : public Worklet {
  protected:
   explicit MainThreadWorklet(LocalFrame*);
 
+  // Returns one of available global scopes.
+  WorkletGlobalScopeProxy* FindAvailableGlobalScope() const;
+
+  size_t GetNumberOfGlobalScopes() const { return proxies_.size(); }
+
  private:
   // Worklet.
   void FetchAndInvokeScript(const KURL& module_url_record,
                             const WorkletOptions&,
                             ScriptPromiseResolver*) override;
+
+  // Returns true if there are no global scopes or additional global scopes are
+  // necessary. CreateGlobalScope() will be called in that case. Each worklet
+  // can define how to pool global scopes here.
+  virtual bool NeedsToCreateGlobalScope() = 0;
+  virtual std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() = 0;
+
+  // "A Worklet has a list of the worklet's WorkletGlobalScopes. Initially this
+  // list is empty; it is populated when the user agent chooses to create its
+  // WorkletGlobalScope."
+  // https://drafts.css-houdini.org/worklets/#worklet-section
+  // TODO(nhiroki): Make (Paint)WorkletGlobalScopeProxy GC-managed object to
+  // avoid that GC graphs are disjointed (https://crbug.com/719775).
+  HashSet<std::unique_ptr<WorkletGlobalScopeProxy>> proxies_;
 };
 
 }  // namespace blink
