@@ -5,6 +5,7 @@
 #ifndef WebViewFrameWidget_h
 #define WebViewFrameWidget_h
 
+#include "core/CoreExport.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/heap/Handle.h"
@@ -31,7 +32,7 @@ class WebWidgetClient;
 // into one class.
 // A more detailed writeup of this transition can be read at
 // https://goo.gl/7yVrnb.
-class WebViewFrameWidget : public WebFrameWidgetBase {
+class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WTF_MAKE_NONCOPYABLE(WebViewFrameWidget);
 
  public:

@@ -188,8 +188,6 @@ component("web") {
     "WebUserGestureIndicator.cpp",
     "WebUserGestureToken.cpp",
     "WebUserMediaRequest.cpp",
-    "WebViewFrameWidget.cpp",
-    "WebViewFrameWidget.h",
     "WebViewImpl.cpp",
     "WebViewImpl.h",
     "linux/WebFontRendering.cpp",

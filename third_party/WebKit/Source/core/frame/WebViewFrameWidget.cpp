@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#include "web/WebViewFrameWidget.h"
+#include "core/frame/WebViewFrameWidget.h"
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/WebLocalFrameBase.h"
