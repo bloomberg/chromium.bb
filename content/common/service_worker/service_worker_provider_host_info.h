@@ -9,7 +9,6 @@
 
 namespace content {
 
-// Container object to create a ServiceWorkerProviderHost.
 struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
   ServiceWorkerProviderHostInfo();
   ServiceWorkerProviderHostInfo(ServiceWorkerProviderHostInfo&& other);
@@ -18,9 +17,6 @@ struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
                                 ServiceWorkerProviderType type,
                                 bool is_parent_frame_secure);
   ~ServiceWorkerProviderHostInfo();
-
-  ServiceWorkerProviderHostInfo& operator=(
-      ServiceWorkerProviderHostInfo&& other);
 
   // This is unique within its child process except for PlzNavigate. When
   // PlzNavigate is on, |provider_id| is managed on the browser process and it

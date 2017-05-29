@@ -4,35 +4,16 @@
 
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 
-#include "ipc/ipc_message.h"
-
 namespace content {
 
-namespace {
-
-void SetDefaultValues(ServiceWorkerProviderHostInfo* info) {
-  info->provider_id = kInvalidServiceWorkerProviderId;
-  info->route_id = MSG_ROUTING_NONE;
-  info->type = SERVICE_WORKER_PROVIDER_UNKNOWN;
-  info->is_parent_frame_secure = false;
-}
-
-}  // namespace
-
-ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo()
-    : provider_id(kInvalidServiceWorkerProviderId),
-      route_id(MSG_ROUTING_NONE),
-      type(SERVICE_WORKER_PROVIDER_UNKNOWN),
-      is_parent_frame_secure(false) {}
+ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo() {}
 
 ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
     ServiceWorkerProviderHostInfo&& other)
     : provider_id(other.provider_id),
       route_id(other.route_id),
       type(other.type),
-      is_parent_frame_secure(other.is_parent_frame_secure) {
-  SetDefaultValues(&other);
-}
+      is_parent_frame_secure(other.is_parent_frame_secure) {}
 
 ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
     int provider_id,
@@ -45,16 +26,5 @@ ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
       is_parent_frame_secure(is_parent_frame_secure) {}
 
 ServiceWorkerProviderHostInfo::~ServiceWorkerProviderHostInfo() {}
-
-ServiceWorkerProviderHostInfo& ServiceWorkerProviderHostInfo::operator=(
-    ServiceWorkerProviderHostInfo&& other) {
-  provider_id = other.provider_id;
-  route_id = other.route_id;
-  type = other.type;
-  is_parent_frame_secure = other.is_parent_frame_secure;
-
-  SetDefaultValues(&other);
-  return *this;
-}
 
 }  // namespace content
