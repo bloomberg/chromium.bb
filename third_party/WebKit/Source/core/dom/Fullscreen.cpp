@@ -823,27 +823,26 @@ void Fullscreen::EventQueueTimerFired(TimerBase*) {
   }
 }
 
-void Fullscreen::ElementRemoved(Element& old_node) {
-  // Whenever the removing steps run with an |oldNode| and |oldNode| is in its
-  // node document's fullscreen element stack, run these steps:
+void Fullscreen::ElementRemoved(Element& node) {
+  // |Fullscreen::ElementRemoved| is called for each removed element, so only
+  // the body of the spec "removing steps" loop appears here:
 
-  // 1. If |oldNode| is at the top of its node document's fullscreen element
-  // stack, act as if the exitFullscreen() method was invoked on that document.
-  if (FullscreenElement() == &old_node) {
-    ExitFullscreen(old_node.GetDocument());
+  // 2.1. If |node| is its node document's fullscreen element, exit fullscreen
+  // that document.
+  if (FullscreenElement() == &node) {
+    ExitFullscreen(node.GetDocument());
     return;
   }
 
-  // 2. Otherwise, remove |oldNode| from its node document's fullscreen element
-  // stack.
+  // 2.2. Otherwise, unfullscreen |node| within its node document.
   for (size_t i = 0; i < fullscreen_element_stack_.size(); ++i) {
-    if (fullscreen_element_stack_[i].first.Get() == &old_node) {
+    if (fullscreen_element_stack_[i].first.Get() == &node) {
       fullscreen_element_stack_.erase(i);
       return;
     }
   }
 
-  // NOTE: |oldNode| was not in the fullscreen element stack.
+  // Note: |node| was not in the fullscreen element stack.
 }
 
 void Fullscreen::ClearFullscreenElementStack() {
