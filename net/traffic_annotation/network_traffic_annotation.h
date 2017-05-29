@@ -115,8 +115,10 @@ NetworkTrafficAnnotationTag CompleteNetworkTrafficAnnotation(
     const PartialNetworkTrafficAnnotationTag& partial_annotation,
     const char (&proto)[N2]) {
 #if defined(_DEBUG) || defined(DCHECK_ALWAYS_ON)
-  DCHECK_EQ(COMPUTE_STRING_HASH(unique_id),
-            partial_annotation.completing_id_hash_code);
+  DCHECK(partial_annotation.completing_id_hash_code ==
+             COMPUTE_STRING_HASH(unique_id) ||
+         partial_annotation.unique_id_hash_code ==
+             COMPUTE_STRING_HASH("test_partial"));
 #endif
   return NetworkTrafficAnnotationTag({partial_annotation.unique_id_hash_code});
 }
@@ -132,8 +134,10 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
     const PartialNetworkTrafficAnnotationTag& partial_annotation,
     const char (&proto)[N3]) {
 #if defined(_DEBUG) || defined(DCHECK_ALWAYS_ON)
-  DCHECK_EQ(COMPUTE_STRING_HASH(group_id),
-            partial_annotation.completing_id_hash_code);
+  DCHECK(partial_annotation.completing_id_hash_code ==
+             COMPUTE_STRING_HASH(unique_id) ||
+         partial_annotation.unique_id_hash_code ==
+             COMPUTE_STRING_HASH("test_partial"));
 #endif
   return NetworkTrafficAnnotationTag({COMPUTE_STRING_HASH(unique_id)});
 }
