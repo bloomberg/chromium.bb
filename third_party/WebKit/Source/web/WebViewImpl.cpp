@@ -4025,13 +4025,13 @@ void WebViewImpl::ApplyViewportDeltas(
 void WebViewImpl::RecordWheelAndTouchScrollingCount(
     bool has_scrolled_by_wheel,
     bool has_scrolled_by_touch) {
-  if (!GetPage() || !GetPage()->MainFrame())
+  if (!MainFrameImpl())
     return;
 
   if (has_scrolled_by_wheel)
-    UseCounter::Count(GetPage()->MainFrame(), UseCounter::kScrollByWheel);
+    UseCounter::Count(MainFrameImpl()->GetFrame(), UseCounter::kScrollByWheel);
   if (has_scrolled_by_touch)
-    UseCounter::Count(GetPage()->MainFrame(), UseCounter::kScrollByTouch);
+    UseCounter::Count(MainFrameImpl()->GetFrame(), UseCounter::kScrollByTouch);
 }
 
 void WebViewImpl::UpdateLayerTreeViewport() {

@@ -211,7 +211,7 @@ void V8Window::postMessageMethodCustom(
   LocalDOMWindow* source = CurrentDOMWindow(info.GetIsolate());
 
   DCHECK(window);
-  UseCounter::Count(window->GetFrame(), UseCounter::kWindowPostMessage);
+  UseCounter::Count(source->GetFrame(), UseCounter::kWindowPostMessage);
 
   // If called directly by WebCore we don't have a calling context.
   if (!source) {
@@ -312,7 +312,7 @@ void V8Window::namedPropertyGetterCustom(
   // https://html.spec.whatwg.org/multipage/browsers.html#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
-    UseCounter::Count(window->GetFrame(),
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       UseCounter::kNamedAccessOnWindow_ChildBrowsingContext);
 
     // step 3. Remove each browsing context from childBrowsingContexts whose
@@ -326,7 +326,7 @@ void V8Window::namedPropertyGetterCustom(
     }
 
     UseCounter::Count(
-        window->GetFrame(),
+        CurrentExecutionContext(info.GetIsolate()),
         UseCounter::
             kNamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch);
     // In addition to the above spec'ed case, we return the child window

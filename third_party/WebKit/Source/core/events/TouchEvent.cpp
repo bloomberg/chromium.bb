@@ -266,9 +266,9 @@ void TouchEvent::preventDefault() {
     case PassiveMode::kNotPassive:
     case PassiveMode::kNotPassiveDefault:
       if (!cancelable()) {
-        if (view() && view()->GetFrame()) {
+        if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
           UseCounter::Count(
-              view()->GetFrame(),
+              ToLocalFrame(view()->GetFrame()),
               UseCounter::kUncancelableTouchEventPreventDefaulted);
         }
 
@@ -277,9 +277,9 @@ void TouchEvent::preventDefault() {
                 WebInputEvent::
                     kListenersForcedNonBlockingDueToMainThreadResponsiveness) {
           // Non blocking due to main thread responsiveness.
-          if (view() && view()->GetFrame()) {
+          if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
             UseCounter::Count(
-                view()->GetFrame(),
+                ToLocalFrame(view()->GetFrame()),
                 UseCounter::
                     kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
           }
@@ -323,16 +323,16 @@ void TouchEvent::preventDefault() {
 
   if ((type() == EventTypeNames::touchstart ||
        type() == EventTypeNames::touchmove) &&
-      view() && view()->GetFrame() &&
+      view() && view()->IsLocalDOMWindow() && view()->GetFrame() &&
       current_touch_action_ == TouchAction::kTouchActionAuto) {
     switch (HandlingPassive()) {
       case PassiveMode::kNotPassiveDefault:
-        UseCounter::Count(view()->GetFrame(),
+        UseCounter::Count(ToLocalFrame(view()->GetFrame()),
                           UseCounter::kTouchEventPreventedNoTouchAction);
         break;
       case PassiveMode::kPassiveForcedDocumentLevel:
         UseCounter::Count(
-            view()->GetFrame(),
+            ToLocalFrame(view()->GetFrame()),
             UseCounter::kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
         break;
       default:

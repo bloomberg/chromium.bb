@@ -122,7 +122,8 @@ class CORE_EXPORT MixedContentChecker final {
 
   static Frame* InWhichFrameIsContentMixed(Frame*,
                                            WebURLRequest::FrameType,
-                                           const KURL&);
+                                           const KURL&,
+                                           const LocalFrame*);
 
   static void LogToConsoleAboutFetch(LocalFrame*,
                                      const KURL&,
@@ -134,7 +135,7 @@ class CORE_EXPORT MixedContentChecker final {
                                          const KURL&,
                                          const KURL&,
                                          bool allowed);
-  static void Count(Frame*, WebURLRequest::RequestContext);
+  static void Count(Frame*, WebURLRequest::RequestContext, const LocalFrame*);
 };
 
 }  // namespace blink

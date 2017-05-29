@@ -141,7 +141,8 @@ const char* RequestContextName(WebURLRequest::RequestContext context) {
 }  // namespace
 
 static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
-                                                   const KURL& url) {
+                                                   const KURL& url,
+                                                   const LocalFrame* source) {
   // We're currently only checking for mixed content in `https://*` contexts.
   // What about other "secure" contexts the SchemeRegistry knows about? We'll
   // use this method to measure the occurrence of non-webby mixed content to
@@ -150,13 +151,13 @@ static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
   if (MixedContentChecker::IsMixedContent(origin, url)) {
     if (origin->Protocol() != "https") {
       UseCounter::Count(
-          &frame,
+          source,
           UseCounter::kMixedContentInNonHTTPSFrameThatRestrictsMixedContent);
     }
   } else if (!SecurityOrigin::IsSecure(url) &&
              SchemeRegistry::ShouldTreatURLSchemeAsSecure(origin->Protocol())) {
     UseCounter::Count(
-        &frame,
+        source,
         UseCounter::kMixedContentInSecureFrameThatDoesNotRestrictMixedContent);
   }
 }
@@ -195,7 +196,8 @@ bool MixedContentChecker::IsMixedContent(SecurityOrigin* security_origin,
 Frame* MixedContentChecker::InWhichFrameIsContentMixed(
     Frame* frame,
     WebURLRequest::FrameType frame_type,
-    const KURL& url) {
+    const KURL& url,
+    const LocalFrame* source) {
   // We only care about subresource loads; top-level navigations cannot be mixed
   // content. Neither can frameless requests.
   if (frame_type == WebURLRequest::kFrameTypeTopLevel || !frame)
@@ -203,11 +205,11 @@ Frame* MixedContentChecker::InWhichFrameIsContentMixed(
 
   // Check the top frame first.
   Frame& top = frame->Tree().Top();
-  MeasureStricterVersionOfIsMixedContent(top, url);
+  MeasureStricterVersionOfIsMixedContent(top, url, source);
   if (IsMixedContent(top.GetSecurityContext()->GetSecurityOrigin(), url))
     return &top;
 
-  MeasureStricterVersionOfIsMixedContent(*frame, url);
+  MeasureStricterVersionOfIsMixedContent(*frame, url, source);
   if (IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(), url))
     return frame;
 
@@ -245,8 +247,9 @@ void MixedContentChecker::LogToConsoleAboutFetch(
 
 // static
 void MixedContentChecker::Count(Frame* frame,
-                                WebURLRequest::RequestContext request_context) {
-  UseCounter::Count(frame, UseCounter::kMixedContentPresent);
+                                WebURLRequest::RequestContext request_context,
+                                const LocalFrame* source) {
+  UseCounter::Count(source, UseCounter::kMixedContentPresent);
 
   // Roll blockable content up into a single counter, count unblocked types
   // individually so we can determine when they can be safely moved to the
@@ -256,7 +259,7 @@ void MixedContentChecker::Count(Frame* frame,
           request_context,
           frame->GetSettings()->GetStrictMixedContentCheckingForPlugin());
   if (context_type == WebMixedContentContextType::kBlockable) {
-    UseCounter::Count(frame, UseCounter::kMixedContentBlockable);
+    UseCounter::Count(source, UseCounter::kMixedContentBlockable);
     return;
   }
 
@@ -291,7 +294,7 @@ void MixedContentChecker::Count(Frame* frame,
       NOTREACHED();
       return;
   }
-  UseCounter::Count(frame, feature);
+  UseCounter::Count(source, feature);
 }
 
 // static
@@ -311,11 +314,11 @@ bool MixedContentChecker::ShouldBlockFetch(
 
   Frame* effective_frame = EffectiveFrameForFrameType(frame, frame_type);
   Frame* mixed_frame =
-      InWhichFrameIsContentMixed(effective_frame, frame_type, url);
+      InWhichFrameIsContentMixed(effective_frame, frame_type, url, frame);
   if (!mixed_frame)
     return false;
 
-  MixedContentChecker::Count(mixed_frame, request_context);
+  MixedContentChecker::Count(mixed_frame, request_context, frame);
   if (ContentSecurityPolicy* policy =
           frame->GetSecurityContext()->GetContentSecurityPolicy())
     policy->ReportMixedContent(url, redirect_status);
@@ -375,7 +378,7 @@ bool MixedContentChecker::ShouldBlockFetch(
           RequestIsSubframeSubresource(effective_frame, frame_type) &&
           IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(),
                          url)) {
-        UseCounter::Count(mixed_frame,
+        UseCounter::Count(frame,
                           UseCounter::kBlockableMixedContentInSubframeBlocked);
         allowed = false;
         break;
@@ -391,8 +394,7 @@ bool MixedContentChecker::ShouldBlockFetch(
                     security_origin, url);
       if (allowed) {
         client->DidRunInsecureContent(security_origin, url);
-        UseCounter::Count(mixed_frame,
-                          UseCounter::kMixedContentBlockableAllowed);
+        UseCounter::Count(frame, UseCounter::kMixedContentBlockableAllowed);
       }
       break;
     }
@@ -440,13 +442,13 @@ bool MixedContentChecker::ShouldBlockWebSocket(
     LocalFrame* frame,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) {
-  Frame* mixed_frame =
-      InWhichFrameIsContentMixed(frame, WebURLRequest::kFrameTypeNone, url);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(
+      frame, WebURLRequest::kFrameTypeNone, url, frame);
   if (!mixed_frame)
     return false;
 
-  UseCounter::Count(mixed_frame, UseCounter::kMixedContentPresent);
-  UseCounter::Count(mixed_frame, UseCounter::kMixedContentWebSocket);
+  UseCounter::Count(frame, UseCounter::kMixedContentPresent);
+  UseCounter::Count(frame, UseCounter::kMixedContentWebSocket);
   if (ContentSecurityPolicy* policy =
           frame->GetSecurityContext()->GetContentSecurityPolicy()) {
     policy->ReportMixedContent(url,
@@ -498,12 +500,12 @@ bool MixedContentChecker::IsMixedFormAction(
   if (url.ProtocolIs("javascript"))
     return false;
 
-  Frame* mixed_frame =
-      InWhichFrameIsContentMixed(frame, WebURLRequest::kFrameTypeNone, url);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(
+      frame, WebURLRequest::kFrameTypeNone, url, frame);
   if (!mixed_frame)
     return false;
 
-  UseCounter::Count(mixed_frame, UseCounter::kMixedContentPresent);
+  UseCounter::Count(frame, UseCounter::kMixedContentPresent);
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
@@ -619,7 +621,7 @@ WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
       EffectiveFrameForFrameType(frame, request.GetFrameType());
 
   Frame* mixed_frame = InWhichFrameIsContentMixed(
-      effective_frame, request.GetFrameType(), request.Url());
+      effective_frame, request.GetFrameType(), request.Url(), frame);
   if (!mixed_frame)
     return WebMixedContentContextType::kNotMixedContent;
 
