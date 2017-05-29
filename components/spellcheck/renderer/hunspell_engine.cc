@@ -11,10 +11,12 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/time/time.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
-#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
 using content::RenderThread;
@@ -119,8 +121,12 @@ void HunspellEngine::FillSuggestionList(
 bool HunspellEngine::InitializeIfNeeded() {
   if (!initialized_ && !dictionary_requested_) {
     // RenderThread will not exist in test.
-    if (RenderThread::Get())
-      RenderThread::Get()->Send(new SpellCheckHostMsg_RequestDictionary);
+    if (RenderThread::Get()) {
+      spellcheck::mojom::SpellCheckHostPtr spell_check_host;
+      RenderThread::Get()->GetConnector()->BindInterface(
+          content::mojom::kBrowserServiceName, &spell_check_host);
+      spell_check_host->RequestDictionary();
+    }
     dictionary_requested_ = true;
     return true;
   }

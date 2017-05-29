@@ -5,19 +5,23 @@
 #ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_TEST_H_
 #define COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_TEST_H_
 
-#include <stddef.h>
-
+#include <memory>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace IPC {
-  class Message;
+class Message;
 }
 
 // A fake completion object for verification.
@@ -35,17 +39,20 @@ class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
 };
 
 // Faked test target, which stores sent message for verification.
-class TestingSpellCheckProvider : public SpellCheckProvider {
+class TestingSpellCheckProvider : public SpellCheckProvider,
+                                  public spellcheck::mojom::SpellCheckHost {
  public:
   TestingSpellCheckProvider();
   // Takes ownership of |spellcheck|.
   explicit TestingSpellCheckProvider(SpellCheck* spellcheck);
 
   ~TestingSpellCheckProvider() override;
+
+  void RequestTextChecking(const base::string16& text,
+                           blink::WebTextCheckingCompletion* completion);
+
   bool Send(IPC::Message* message) override;
-  void OnCallSpellingService(int route_id,
-                             int identifier,
-                             const base::string16& text);
+  void OnCallSpellingService(const base::string16& text);
   void ResetResult();
 
   void SetLastResults(
@@ -57,6 +64,19 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   base::string16 text_;
   std::vector<std::unique_ptr<IPC::Message>> messages_;
   size_t spelling_service_call_count_;
+
+ private:
+  // spellcheck::mojom::SpellCheckerHost:
+  void RequestDictionary() override;
+  void NotifyChecked(const base::string16& word, bool misspelled) override;
+  void CallSpellingService(const base::string16& text,
+                           CallSpellingServiceCallback callback) override;
+
+  // Message loop (if needed) to deliver the SpellCheckHost request flow.
+  std::unique_ptr<base::MessageLoop> loop_;
+
+  // Binding to receive the SpellCheckHost request flow.
+  mojo::Binding<spellcheck::mojom::SpellCheckHost> binding_;
 };
 
 // SpellCheckProvider test fixture.

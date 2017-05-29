@@ -203,7 +203,7 @@ void SpellCheck::FillSuggestions(
 void SpellCheck::SpellCheckerRequest(
     const service_manager::BindSourceInfo& source_info,
     spellcheck::mojom::SpellCheckerRequest request) {
-  spellchecker_bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void SpellCheck::Initialize(

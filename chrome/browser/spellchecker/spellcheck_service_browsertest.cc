@@ -4,54 +4,40 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <string>
-#include <tuple>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spell_check_host_impl.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
-#include "url/gurl.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 using content::BrowserContext;
-
-namespace {
-
-// A corrupted BDICT data used in DeleteCorruptedBDICT. Please do not use this
-// BDICT data for other tests.
-const uint8_t kCorruptedBDICT[] = {
-    0x42, 0x44, 0x69, 0x63, 0x02, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00,
-    0x3b, 0x00, 0x00, 0x00, 0x65, 0x72, 0xe0, 0xac, 0x27, 0xc7, 0xda, 0x66,
-    0x6d, 0x1e, 0xa6, 0x35, 0xd1, 0xf6, 0xb7, 0x35, 0x32, 0x00, 0x00, 0x00,
-    0x38, 0x00, 0x00, 0x00, 0x39, 0x00, 0x00, 0x00, 0x3a, 0x00, 0x00, 0x00,
-    0x0a, 0x0a, 0x41, 0x46, 0x20, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe6,
-    0x49, 0x00, 0x68, 0x02, 0x73, 0x06, 0x74, 0x0b, 0x77, 0x11, 0x79, 0x15,
-};
-
-}  // namespace
+using content::RenderProcessHost;
 
 class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
                                      public spellcheck::mojom::SpellChecker {
@@ -69,13 +55,13 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     renderer_.reset();
   }
 
-  BrowserContext* GetContext() {
+  RenderProcessHost* GetRenderer() const { return renderer_.get(); }
+
+  BrowserContext* GetContext() const {
     return static_cast<BrowserContext*>(browser()->profile());
   }
 
-  PrefService* GetPrefs() {
-    return prefs_;
-  }
+  PrefService* GetPrefs() const { return prefs_; }
 
   void InitSpellcheck(bool enable_spellcheck,
                       const std::string& single_dictionary,
@@ -208,6 +194,11 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     EXPECT_EQ(2u, words_added.size());
   }
 
+ protected:
+  // Quits the RunLoop on Mojo request flow completion.
+  base::OnceClosure quit_;
+
+ private:
   // Mocked RenderProcessHost.
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
 
@@ -217,9 +208,6 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   // Binding to receive the SpellChecker request flow.
   mojo::Binding<spellcheck::mojom::SpellChecker> binding_;
 
-  // Quits the RunLoop on SpellChecker request flow completion.
-  base::OnceClosure quit_;
-
   // Used to verify the SpellChecker request flow.
   bool bound_connection_closed_;
   bool custom_dictionary_changed_called_;
@@ -227,6 +215,64 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   bool spellcheck_enabled_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceBrowserTest);
+};
+
+class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
+ public:
+  SpellcheckServiceHostBrowserTest() = default;
+
+  void RequestDictionary() {
+    spellcheck::mojom::SpellCheckHostPtr interface;
+    RequestSpellCheckHost(&interface);
+
+    interface->RequestDictionary();
+  }
+
+  void NotifyChecked() {
+    spellcheck::mojom::SpellCheckHostPtr interface;
+    RequestSpellCheckHost(&interface);
+
+    const bool misspelt = true;
+    base::UTF8ToUTF16("hallo", 5, &word_);
+    interface->NotifyChecked(word_, misspelt);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CallSpellingService() {
+    spellcheck::mojom::SpellCheckHostPtr interface;
+    RequestSpellCheckHost(&interface);
+
+    base::UTF8ToUTF16("hello", 5, &word_);
+    interface->CallSpellingService(
+        word_,
+        base::Bind(&SpellcheckServiceHostBrowserTest::SpellingServiceDone,
+                   base::Unretained(this)));
+
+    base::RunLoop run_loop;
+    quit_ = run_loop.QuitClosure();
+    run_loop.Run();
+
+    EXPECT_TRUE(spelling_service_done_called_);
+  }
+
+ private:
+  void RequestSpellCheckHost(spellcheck::mojom::SpellCheckHostPtr* interface) {
+    SpellCheckHostImpl::Create(GetRenderer()->GetID(),
+                               service_manager::BindSourceInfo(),
+                               mojo::MakeRequest(interface));
+  }
+
+  void SpellingServiceDone(bool success,
+                           const std::vector<::SpellCheckResult>& results) {
+    spelling_service_done_called_ = true;
+    if (quit_)
+      std::move(quit_).Run();
+  }
+
+  bool spelling_service_done_called_ = false;
+  base::string16 word_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceHostBrowserTest);
 };
 
 // Removing a spellcheck language from accept languages should remove it from
@@ -334,9 +380,49 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, CustomDictionaryChanged) {
   EXPECT_TRUE(GetCustomDictionaryChangedState());
 }
 
+// Starting with only a single-language spellcheck setting, the host should
+// initialize the renderer's spellcheck system, and the same if the renderer
+// explicity requests the spellcheck dictionaries.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, RequestDictionary) {
+  InitSpellcheck(true, "en-US", "");
+  EXPECT_TRUE(GetEnableSpellcheckState());
+
+  RequestDictionary();
+  EXPECT_TRUE(GetEnableSpellcheckState());
+}
+
+// When the renderer notifies that it corrected a word, the render process
+// host should record UMA stats about the correction.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, NotifyChecked) {
+  const char kMisspellRatio[] = "SpellCheck.MisspellRatio";
+
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(kMisspellRatio, 0);
+  NotifyChecked();
+  tester.ExpectTotalCount(kMisspellRatio, 1);
+}
+
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+// When the renderer requests the spelling service for correcting text, the
+// render process host should call the remote spelling service.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, CallSpellingService) {
+  CallSpellingService();
+}
+#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
 // Tests that we can delete a corrupted BDICT file used by hunspell. We do not
 // run this test on Mac because Mac does not use hunspell by default.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
+  // Corrupted BDICT data: please do not use this BDICT data for other tests.
+  const uint8_t kCorruptedBDICT[] = {
+      0x42, 0x44, 0x69, 0x63, 0x02, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00,
+      0x3b, 0x00, 0x00, 0x00, 0x65, 0x72, 0xe0, 0xac, 0x27, 0xc7, 0xda, 0x66,
+      0x6d, 0x1e, 0xa6, 0x35, 0xd1, 0xf6, 0xb7, 0x35, 0x32, 0x00, 0x00, 0x00,
+      0x38, 0x00, 0x00, 0x00, 0x39, 0x00, 0x00, 0x00, 0x3a, 0x00, 0x00, 0x00,
+      0x0a, 0x0a, 0x41, 0x46, 0x20, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe6,
+      0x49, 0x00, 0x68, 0x02, 0x73, 0x06, 0x74, 0x0b, 0x77, 0x11, 0x79, 0x15,
+  };
+
   // Write the corrupted BDICT data to create a corrupted BDICT file.
   base::FilePath dict_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir));

@@ -359,7 +359,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#include "chrome/browser/spellchecker/spell_check_host_impl.h"
 #endif
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -1204,9 +1204,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
-#endif
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-  host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
@@ -3071,6 +3068,11 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::Bind(&BudgetServiceImpl::Create, render_process_host->GetID()),
       ui_task_runner);
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  registry->AddInterface(
+      base::Bind(&SpellCheckHostImpl::Create, render_process_host->GetID()),
+      ui_task_runner);
+#endif
   registry->AddInterface(
       base::Bind(&rappor::RapporRecorderImpl::Create,
                  g_browser_process->rappor_service()),
