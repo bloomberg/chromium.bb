@@ -43,7 +43,7 @@ class CSSStyleSheet;
 class Document;
 class EnumerationHistogram;
 class ExecutionContext;
-class Frame;
+class LocalFrame;
 class StyleSheetContents;
 
 // UseCounter is used for counting the number of times features of
@@ -1639,12 +1639,12 @@ class CORE_EXPORT UseCounter {
   };
 
   // "count" sets the bit for this feature to 1. Repeated calls are ignored.
-  static void Count(const Frame*, Feature);
+  static void Count(const LocalFrame*, Feature);
   static void Count(const Document&, Feature);
   static void Count(ExecutionContext*, Feature);
 
   void Count(CSSParserMode, CSSPropertyID);
-  void Count(Feature);
+  void Count(Feature, const LocalFrame*);
 
   static void CountAnimatedCSS(const Document&, CSSPropertyID);
   void CountAnimatedCSS(CSSPropertyID);

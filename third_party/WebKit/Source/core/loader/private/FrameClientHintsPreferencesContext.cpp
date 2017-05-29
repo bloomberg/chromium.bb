@@ -9,7 +9,7 @@
 namespace blink {
 
 FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
-    Frame* frame)
+    LocalFrame* frame)
     : frame_(frame) {}
 
 void FrameClientHintsPreferencesContext::CountClientHintsDPR() {

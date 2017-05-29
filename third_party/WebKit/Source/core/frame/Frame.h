@@ -50,6 +50,7 @@ class FrameOwner;
 class HTMLFrameOwnerElement;
 class LayoutPart;
 class LayoutPartItem;
+class LocalFrame;
 class KURL;
 class Page;
 class SecurityContext;
@@ -107,7 +108,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual SecurityContext* GetSecurityContext() const = 0;
 
-  Frame* FindFrameForNavigation(const AtomicString& name, Frame& active_frame);
+  Frame* FindFrameForNavigation(const AtomicString& name,
+                                LocalFrame& active_frame);
   Frame* FindUnsafeParentScrollPropagationBoundary();
 
   // This prepares the Frame for the next commit. It will detach children,
@@ -117,7 +119,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual bool PrepareForCommit() = 0;
 
   // TODO(japhet): These should all move to LocalFrame.
-  bool CanNavigate(const Frame&);
   virtual void PrintNavigationErrorMessage(const Frame&,
                                            const char* reason) = 0;
   virtual void PrintNavigationWarning(const String&) = 0;
@@ -169,8 +170,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   FrameLifecycle lifecycle_;
 
  private:
-  bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
-
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.

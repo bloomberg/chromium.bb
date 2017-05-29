@@ -51,8 +51,14 @@ FrameTree::~FrameTree() {}
 const AtomicString& FrameTree::GetName() const {
   // TODO(andypaicu): remove this once we have gathered the data
   if (experimental_set_nulled_name_) {
-    UseCounter::Count(this_frame_.Get(),
-                      UseCounter::kCrossOriginMainFrameNulledNameAccessed);
+    const LocalFrame* frame =
+        this_frame_->IsLocalFrame()
+            ? ToLocalFrame(this_frame_)
+            : (Top().IsLocalFrame() ? ToLocalFrame(&Top()) : nullptr);
+    if (frame) {
+      UseCounter::Count(frame,
+                        UseCounter::kCrossOriginMainFrameNulledNameAccessed);
+    }
   }
   return name_;
 }

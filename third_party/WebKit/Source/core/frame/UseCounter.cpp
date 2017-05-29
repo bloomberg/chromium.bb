@@ -1181,14 +1181,14 @@ void UseCounter::DidCommitLoad(KURL url) {
   }
 }
 
-void UseCounter::Count(const Frame* frame, Feature feature) {
+void UseCounter::Count(const LocalFrame* frame, Feature feature) {
   if (!frame)
     return;
   Page* page = frame->GetPage();
   if (!page)
     return;
 
-  page->GetUseCounter().Count(feature);
+  page->GetUseCounter().Count(feature, frame);
 }
 
 void UseCounter::Count(const Document& document, Feature feature) {
@@ -1260,7 +1260,9 @@ void UseCounter::Count(CSSParserMode css_parser_mode, CSSPropertyID property) {
   legacy_counter_.CountCSS(property);
 }
 
-void UseCounter::Count(Feature feature) {
+void UseCounter::Count(Feature feature, const LocalFrame* source_frame) {
+  // TODO(rbyers): Report UseCounter to browser process along with page
+  // load metrics for sourceFrame  crbug.com/716565
   RecordMeasurement(feature);
 }
 

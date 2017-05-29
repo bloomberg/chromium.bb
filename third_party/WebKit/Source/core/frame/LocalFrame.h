@@ -220,6 +220,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool IsNavigationAllowed() const { return navigation_disable_count_ == 0; }
 
+  bool CanNavigate(const Frame&);
+
   InterfaceProvider* GetInterfaceProvider() { return interface_provider_; }
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
@@ -269,6 +271,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
+
+  bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
 
   std::unique_ptr<WebFrameScheduler> frame_scheduler_;
 
