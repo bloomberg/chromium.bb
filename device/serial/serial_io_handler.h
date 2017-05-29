@@ -13,8 +13,8 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/serial/buffer.h"
@@ -26,8 +26,7 @@ namespace device {
 // devices by hiding platform-specific MessageLoop interfaces. Pending I/O
 // operations hold a reference to this object until completion so that memory
 // doesn't disappear out from under the OS.
-class SerialIoHandler : public base::NonThreadSafe,
-                        public base::RefCounted<SerialIoHandler> {
+class SerialIoHandler : public base::RefCounted<SerialIoHandler> {
  public:
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create(
@@ -205,6 +204,8 @@ class SerialIoHandler : public base::NonThreadSafe,
   }
 
   const std::string& port() const { return port_; }
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   friend class base::RefCounted<SerialIoHandler>;

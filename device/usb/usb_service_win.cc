@@ -296,7 +296,7 @@ UsbServiceWin::~UsbServiceWin() {
 }
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (enumeration_ready())
     UsbService::GetDevices(callback);
   else
@@ -312,7 +312,7 @@ void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,
                                     const std::string& device_path) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto by_path_it = devices_by_path_.find(device_path);
   if (by_path_it == devices_by_path_.end())
     return;
@@ -332,7 +332,7 @@ void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,
 }
 
 void UsbServiceWin::HelperStarted() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   helper_started_ = true;
   if (enumeration_ready()) {
     std::vector<scoped_refptr<UsbDevice>> result;
@@ -364,7 +364,7 @@ void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
 
 void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,
                                 bool success) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool enumeration_became_ready = false;
   if (!enumeration_ready()) {

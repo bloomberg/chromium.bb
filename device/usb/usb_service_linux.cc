@@ -193,7 +193,7 @@ UsbServiceLinux::~UsbServiceLinux() {
 }
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (enumeration_ready())
     UsbService::GetDevices(callback);
   else
@@ -206,7 +206,7 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                                     const std::string& product,
                                     const std::string& serial_number,
                                     uint8_t active_configuration) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (ContainsKey(devices_by_path_, device_path)) {
     USB_LOG(ERROR) << "Got duplicate add event for path: " << device_path;
@@ -234,7 +234,7 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
 
 void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
                                   bool success) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool enumeration_became_ready = false;
   if (!enumeration_ready()) {
@@ -277,7 +277,7 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
 }
 
 void UsbServiceLinux::OnDeviceRemoved(const std::string& path) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto by_path_it = devices_by_path_.find(path);
   if (by_path_it == devices_by_path_.end())
     return;
@@ -297,7 +297,7 @@ void UsbServiceLinux::OnDeviceRemoved(const std::string& path) {
 }
 
 void UsbServiceLinux::HelperStarted() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   helper_started_ = true;
   if (enumeration_ready()) {
     std::vector<scoped_refptr<UsbDevice>> result;

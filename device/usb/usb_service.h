@@ -16,10 +16,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/non_thread_safe.h"
 
 namespace device {
 
@@ -29,7 +29,7 @@ class UsbDevice;
 // used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-class UsbService : public base::NonThreadSafe {
+class UsbService {
  public:
   using GetDevicesCallback =
       base::Callback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
@@ -95,6 +95,8 @@ class UsbService : public base::NonThreadSafe {
   std::unordered_map<std::string, scoped_refptr<UsbDevice>>& devices() {
     return devices_;
   }
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
