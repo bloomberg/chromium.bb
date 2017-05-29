@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -44,7 +44,8 @@ class WebContents;
 // Abstract base class for routing network requests to ServiceWorkers.
 // Created one per URLRequest and attached to each request.
 class CONTENT_EXPORT ServiceWorkerRequestHandler
-    : public base::SupportsUserData::Data {
+    : public base::SupportsUserData::Data,
+      public URLLoaderRequestHandler {
  public:
   // PlzNavigate
   // Attaches a newly created handler if the given |request| needs to be handled
@@ -63,8 +64,9 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
 
   // PlzNavigate and --enable-network-service.
   // Same as InitializeForNavigation() but instead of attaching to a URLRequest,
-  // returns a URLLoaderFactoryPtrInfo if the request needs to be handled.
-  static mojom::URLLoaderFactoryPtr InitializeForNavigationNetworkService(
+  // just creates a URLLoaderRequestHandler and returns it.
+  static std::unique_ptr<URLLoaderRequestHandler>
+  InitializeForNavigationNetworkService(
       const ResourceRequest& resource_request,
       ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
@@ -125,6 +127,11 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       ResourceContext* context) = 0;
+
+  // URLLoaderRequestHandler overrides.
+  void MaybeCreateLoaderFactory(const ResourceRequest& request,
+                                ResourceContext* resource_context,
+                                LoaderFactoryCallback callback) override;
 
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);

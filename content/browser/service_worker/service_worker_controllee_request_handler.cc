@@ -159,6 +159,45 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   return job.release();
 }
 
+void ServiceWorkerControlleeRequestHandler::MaybeCreateLoaderFactory(
+    const ResourceRequest& resource_request,
+    ResourceContext* resource_context,
+    base::OnceCallback<void(mojom::URLLoaderFactory*)> factory_callback) {
+  DCHECK(is_main_resource_load_);
+  ClearJob();
+
+  // TODO(kinuko): Keep ServiceWorkerResponseInfo somewhere around
+  // and reset the data every time we restart.
+
+  if (!context_ || !provider_host_) {
+    // We can't do anything other than to fall back to network.
+    std::move(factory_callback).Run(nullptr);
+    return;
+  }
+
+  // In fallback cases we basically 'forward' the request, so we should
+  // never see use_network_ gets true.
+  DCHECK(!use_network_);
+
+  url_job_ =
+      base::MakeUnique<ServiceWorkerURLJobWrapper>(std::move(factory_callback));
+
+  resource_context_ = resource_context;
+
+  PrepareForMainResource(resource_request.url,
+                         resource_request.first_party_for_cookies);
+
+  if (url_job_->ShouldFallbackToNetwork()) {
+    // We're falling back to the next URLLoaderRequestHandler, forward
+    // the request and clear job now.
+    url_job_->FallbackToNetwork();
+    ClearJob();
+    return;
+  }
+
+  // We will asynchronously continue on DidLookupRegistrationForMainResource.
+}
+
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url,
     const GURL& first_party_for_cookies) {
