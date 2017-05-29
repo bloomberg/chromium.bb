@@ -61,6 +61,7 @@ class CORE_EXPORT RootFrameViewport final
   LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
                             const ScrollAlignment& align_x,
                             const ScrollAlignment& align_y,
+                            bool is_smooth,
                             ScrollType = kProgrammaticScroll) override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
@@ -95,6 +96,7 @@ class CORE_EXPORT RootFrameViewport final
   ScrollResult UserScroll(ScrollGranularity, const FloatSize&) override;
   bool ScrollAnimatorEnabled() const override;
   PlatformChromeClient* GetChromeClient() const override;
+  SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
   void ServiceScrollAnimations(double) override;
   void UpdateCompositorScrollAnimations() override;
   void CancelProgrammaticScrollAnimation() override;

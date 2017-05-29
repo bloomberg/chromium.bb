@@ -10,6 +10,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/SmoothScrollSequencer.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -39,12 +40,15 @@ void ProgrammaticScrollAnimator::ScrollToOffsetWithoutAnimation(
   NotifyOffsetChanged(offset);
 }
 
-void ProgrammaticScrollAnimator::AnimateToOffset(const ScrollOffset& offset) {
+void ProgrammaticScrollAnimator::AnimateToOffset(
+    const ScrollOffset& offset,
+    bool sequenced_for_smooth_scroll) {
   if (run_state_ == RunState::kPostAnimationCleanup)
     ResetAnimationState();
 
   start_time_ = 0.0;
   target_offset_ = offset;
+  sequenced_for_smooth_scroll_ = sequenced_for_smooth_scroll;
   animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
       CompositorOffsetFromBlinkOffset(target_offset_),
       CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased);
@@ -76,6 +80,7 @@ void ProgrammaticScrollAnimator::TickAnimation(double monotonic_time) {
 
   if (is_finished) {
     run_state_ = RunState::kPostAnimationCleanup;
+    AnimationFinished();
   } else if (!scrollable_area_->ScheduleAnimation()) {
     NotifyOffsetChanged(offset);
     ResetAnimationState();
@@ -169,6 +174,16 @@ void ProgrammaticScrollAnimator::NotifyCompositorAnimationFinished(
     int group_id) {
   DCHECK_NE(run_state_, RunState::kRunningOnCompositorButNeedsUpdate);
   ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(group_id);
+  AnimationFinished();
+}
+
+void ProgrammaticScrollAnimator::AnimationFinished() {
+  if (sequenced_for_smooth_scroll_) {
+    sequenced_for_smooth_scroll_ = false;
+    if (SmoothScrollSequencer* sequencer =
+            GetScrollableArea()->GetSmoothScrollSequencer())
+      sequencer->RunQueuedAnimations();
+  }
 }
 
 DEFINE_TRACE(ProgrammaticScrollAnimator) {
