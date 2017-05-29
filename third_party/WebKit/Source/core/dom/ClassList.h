@@ -39,19 +39,11 @@ class Element;
 class ClassList final : public DOMTokenList {
  public:
   static ClassList* Create(Element* element) { return new ClassList(element); }
-
-  unsigned length() const override;
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit ClassList(Element*);
 
-  bool ContainsInternal(const AtomicString&) const override;
-
-  const AtomicString& value() const override {
-    return element_->getAttribute(HTMLNames::classAttr);
-  }
   void setValue(const AtomicString& value) override {
     element_->setAttribute(HTMLNames::classAttr, value);
   }

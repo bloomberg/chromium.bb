@@ -57,19 +57,19 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
 
   virtual ~DOMTokenList() {}
 
-  virtual unsigned length() const { return tokens_.size(); }
+  unsigned length() const { return tokens_.size(); }
   const AtomicString item(unsigned index) const;
 
   bool contains(const AtomicString&) const;
-  virtual void add(const Vector<String>&, ExceptionState&);
+  void add(const Vector<String>&, ExceptionState&);
   void add(const AtomicString&, ExceptionState&);
-  virtual void remove(const Vector<String>&, ExceptionState&);
+  void remove(const Vector<String>&, ExceptionState&);
   void remove(const AtomicString&, ExceptionState&);
   bool toggle(const AtomicString&, ExceptionState&);
   bool toggle(const AtomicString&, bool force, ExceptionState&);
   bool supports(const AtomicString&, ExceptionState&);
 
-  virtual const AtomicString& value() const { return value_; }
+  const AtomicString& value() const { return value_; }
   // DOMTokenListObserver::ValueWasSet or setValue override should update the
   // associated attribute value.
   virtual void setValue(const AtomicString&);
@@ -89,9 +89,8 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
  protected:
   DOMTokenList(DOMTokenListObserver* observer) : observer_(observer) {}
 
-  virtual void AddInternal(const AtomicString&);
-  virtual bool ContainsInternal(const AtomicString&) const;
-  virtual void RemoveInternal(const AtomicString&);
+  void AddInternal(const AtomicString&);
+  void RemoveInternal(const AtomicString&);
 
   bool ValidateToken(const String&, ExceptionState&) const;
   bool ValidateTokens(const Vector<String>&, ExceptionState&) const;

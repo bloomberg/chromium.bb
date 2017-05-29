@@ -15,15 +15,6 @@ using namespace HTMLNames;
 
 RelList::RelList(Element* element) : DOMTokenList(nullptr), element_(element) {}
 
-unsigned RelList::length() const {
-  return !element_->FastGetAttribute(relAttr).IsEmpty() ? Tokens().size() : 0;
-}
-
-bool RelList::ContainsInternal(const AtomicString& token) const {
-  return !element_->FastGetAttribute(relAttr).IsEmpty() &&
-         Tokens().Contains(token);
-}
-
 static HashSet<AtomicString>& SupportedTokens() {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tokens, ());
 

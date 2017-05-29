@@ -30,14 +30,6 @@ namespace blink {
 ClassList::ClassList(Element* element)
     : DOMTokenList(nullptr), element_(element) {}
 
-unsigned ClassList::length() const {
-  return element_->HasClass() ? Tokens().size() : 0;
-}
-
-bool ClassList::ContainsInternal(const AtomicString& token) const {
-  return element_->HasClass() && Tokens().Contains(token);
-}
-
 DEFINE_TRACE(ClassList) {
   visitor->Trace(element_);
   DOMTokenList::Trace(visitor);

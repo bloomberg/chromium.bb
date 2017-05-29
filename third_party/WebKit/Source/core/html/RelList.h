@@ -15,19 +15,11 @@ namespace blink {
 class RelList final : public DOMTokenList {
  public:
   static RelList* Create(Element* element) { return new RelList(element); }
-
-  unsigned length() const override;
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit RelList(Element*);
 
-  bool ContainsInternal(const AtomicString&) const override;
-
-  const AtomicString& value() const override {
-    return element_->getAttribute(HTMLNames::relAttr);
-  }
   void setValue(const AtomicString& value) override {
     element_->setAttribute(HTMLNames::relAttr, value);
   }
