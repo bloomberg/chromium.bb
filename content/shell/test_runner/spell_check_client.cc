@@ -114,7 +114,8 @@ void SpellCheckClient::FinishLastTextCheck() {
           &suggestions);
       results.push_back(blink::WebTextCheckingResult(
           blink::kWebTextDecorationTypeSpelling, offset + misspelled_position,
-          misspelled_length, suggestions));
+          misspelled_length,
+          suggestions.IsEmpty() ? blink::WebString() : suggestions[0]));
       text = text.substr(misspelled_position + misspelled_length);
       offset += misspelled_position + misspelled_length;
     }
