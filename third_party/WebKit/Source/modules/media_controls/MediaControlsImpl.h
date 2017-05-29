@@ -140,7 +140,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Need to be members of MediaControls for private member access.
   class BatchedControlUpdate;
-  class MediaControlsResizeObserverCallback;
+  class MediaControlsResizeObserverDelegate;
   class MediaElementMutationCallback;
 
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
