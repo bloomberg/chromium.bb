@@ -2232,7 +2232,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
       case WebInputEvent::kMouseUp:
         event_type = EventTypeNames::mouseup;
         gesture_indicator = WTF::WrapUnique(
-            new UserGestureIndicator(mouse_capture_gesture_token_.Release()));
+            new UserGestureIndicator(std::move(mouse_capture_gesture_token_)));
         break;
       default:
         NOTREACHED();
