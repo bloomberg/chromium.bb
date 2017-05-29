@@ -2413,7 +2413,7 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertString<CSSValueNone>",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "AtomicString",
       include_paths: ["platform/wtf/text/AtomicString.h"],
       default_value: "g_null_atom",
