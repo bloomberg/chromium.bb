@@ -19,10 +19,13 @@ namespace {
 using autofill::PasswordForm;
 using testing::_;
 
-const char kTestHttpsURL[] = "https://one.example.com/";
-const char kTestPSLMatchingHttpsURL[] = "https://psl.example.com/";
-const char kTestHttpURL[] = "http://one.example.com/";
-const char kTestAndroidRealmURI[] = "android://hash@com.example.one.android/";
+constexpr const char kTestHttpURL[] = "http://one.example.com/";
+constexpr const char kTestHttpsURL[] = "https://one.example.com/";
+constexpr const char kTestPSLMatchingHttpURL[] = "http://psl.example.com/";
+constexpr const char kTestPSLMatchingHttpsURL[] = "https://psl.example.com/";
+constexpr const char kTestHttpSameOrgNameURL[] = "http://login.example.co.uk/";
+constexpr const char kTestHttpsSameOrgNameURL[] =
+    "https://login.example.co.uk/";
 
 class MockConsumer : public SuppressedHTTPSFormFetcher::Consumer {
  public:
@@ -85,62 +88,66 @@ class SuppressedHTTPSFormFetcherTest : public testing::Test {
 };
 
 TEST_F(SuppressedHTTPSFormFetcherTest, EmptyStore) {
-  PasswordStore::FormDigest observed_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, kTestHttpURL, GURL(kTestHttpURL));
-  PasswordStore::FormDigest https_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, kTestHttpsURL, GURL(kTestHttpsURL));
-
-  EXPECT_CALL(*mock_store(), GetLogins(https_form_digest, _));
+  EXPECT_CALL(*mock_store(), GetLoginsForSameOrganizationName(kTestHttpURL, _));
+  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
+      kTestHttpURL, mock_client(), mock_consumer());
   EXPECT_CALL(*mock_consumer(),
               ProcessSuppressedHTTPSFormsConstRef(::testing::IsEmpty()));
-  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
-      observed_form_digest.origin, mock_client(), mock_consumer());
   suppressed_form_fetcher.OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>>());
 }
 
 TEST_F(SuppressedHTTPSFormFetcherTest, FullStore) {
-  static const PasswordFormData kTestCredentials[] = {
+  static constexpr const PasswordFormData kSuppressedHTTPSCredentials[] = {
       // Credential that is for the HTTPS counterpart of the observed form.
       {PasswordForm::SCHEME_HTML, kTestHttpsURL, kTestHttpsURL, "", L"", L"",
        L"", L"username_value_1", L"password_value_1", true, 1},
-      // Another credential for the HTTPS counterpart of the observed form.
+      // Once again, but with a different username/password.
       {PasswordForm::SCHEME_HTML, kTestHttpsURL, kTestHttpsURL, "", L"", L"",
        L"", L"username_value_2", L"password_value_2", true, 1},
-      // A PSL match of the HTTPS counterpart of the observed form.
+  };
+
+  static constexpr const PasswordFormData kOtherCredentials[] = {
+      // Credential exactly matching the observed form.
+      {PasswordForm::SCHEME_HTML, kTestHttpURL, kTestHttpURL, "", L"", L"", L"",
+       L"username_value_1", L"password_value_1", true, 1},
+      // A PSL match to the observed form.
+      {PasswordForm::SCHEME_HTML, kTestPSLMatchingHttpURL,
+       kTestPSLMatchingHttpURL, "", L"", L"", L"", L"username_value_2",
+       L"password_value_2", true, 1},
+      // A PSL match to the HTTPS counterpart of the observed form.
       {PasswordForm::SCHEME_HTML, kTestPSLMatchingHttpsURL,
        kTestPSLMatchingHttpsURL, "", L"", L"", L"", L"username_value_3",
        L"password_value_3", true, 1},
-      // Credential for an affiliated Android application.
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealmURI, kTestAndroidRealmURI,
-       "", L"", L"", L"", L"username_value_4", L"password_value_4", true, 1}};
+      // Credentials for a HTTP origin with the same organization
+      // identifying name.
+      {PasswordForm::SCHEME_HTML, kTestHttpSameOrgNameURL,
+       kTestHttpSameOrgNameURL, "", L"", L"", L"", L"username_value_4",
+       L"password_value_4", true, 1},
+      // Credentials for a HTTPS origin with the same organization
+      // identifying name.
+      {PasswordForm::SCHEME_HTML, kTestHttpsSameOrgNameURL,
+       kTestHttpsSameOrgNameURL, "", L"", L"", L"", L"username_value_5",
+       L"password_value_5", true, 1}};
 
   std::vector<std::unique_ptr<PasswordForm>> simulated_store_results;
-  for (const auto& form_data : kTestCredentials)
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  for (const auto& form_data : kSuppressedHTTPSCredentials) {
+    expected_results.push_back(CreatePasswordFormFromDataForTesting(form_data));
     simulated_store_results.push_back(
         CreatePasswordFormFromDataForTesting(form_data));
-  ASSERT_EQ(4u, simulated_store_results.size());
-  simulated_store_results[2]->is_public_suffix_match = true;
-  simulated_store_results[3]->is_affiliation_based_match = true;
+  }
+  for (const auto& form_data : kOtherCredentials) {
+    simulated_store_results.push_back(
+        CreatePasswordFormFromDataForTesting(form_data));
+  }
 
-  // The PSL and affiliated matches should be filtered out.
-  std::vector<std::unique_ptr<PasswordForm>> expected_results;
-  expected_results.push_back(
-      base::MakeUnique<PasswordForm>(*simulated_store_results[0]));
-  expected_results.push_back(
-      base::MakeUnique<PasswordForm>(*simulated_store_results[1]));
-
-  PasswordStore::FormDigest observed_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, kTestHttpURL, GURL(kTestHttpURL));
-  PasswordStore::FormDigest https_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, kTestHttpsURL, GURL(kTestHttpsURL));
-
-  EXPECT_CALL(*mock_store(), GetLogins(https_form_digest, _));
+  EXPECT_CALL(*mock_store(), GetLoginsForSameOrganizationName(kTestHttpURL, _));
+  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
+      kTestHttpURL, mock_client(), mock_consumer());
   EXPECT_CALL(*mock_consumer(),
               ProcessSuppressedHTTPSFormsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));
-  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
-      observed_form_digest.origin, mock_client(), mock_consumer());
   suppressed_form_fetcher.OnGetPasswordStoreResults(
       std::move(simulated_store_results));
 }

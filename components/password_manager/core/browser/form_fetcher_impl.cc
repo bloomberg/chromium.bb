@@ -141,10 +141,14 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
   // If this is a non-secure Web origin (i.e. HTTP), kick off the discovery of
   // credentials stored for the secure version of this origin (i.e. HTTPS),
   // regardless of whether there are some precisely matching |results|.
+  //
+  // These results are used only for recording metrics at PasswordFormManager
+  // desctruction time, this is why they are requested so late.
   if (should_query_suppressed_https_forms_ &&
+      form_digest_.scheme == PasswordForm::SCHEME_HTML &&
       form_digest_.origin.SchemeIs(url::kHttpScheme)) {
     suppressed_https_form_fetcher_ =
-        base::MakeUnique<SuppressedHTTPSFormFetcher>(form_digest_.origin,
+        base::MakeUnique<SuppressedHTTPSFormFetcher>(form_digest_.signon_realm,
                                                      client_, this);
   }
 
