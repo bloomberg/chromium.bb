@@ -6,34 +6,34 @@
   </message>
   <message name="IDS_DEL_BROWSING_HISTORY_COUNTER" desc="A counter showing how many items of browsing history the user has.">
     {COUNT, plural,
-     =0 {None}
+     =0 {none}
      =1 {1 item}
      other {# items}}
   </message>
   <message name="IDS_DEL_BROWSING_HISTORY_COUNTER_SYNCED" desc="A counter showing the user how many local items of browsing history they have, and informing them that more items might be synced. In the case when COUNT is zero, the counter only mentions existence of synced items.">
     {COUNT, plural,
-     =0 {At least 1 item on synced devices}
+     =0 {at least 1 item on synced devices}
      =1 {1 item (and more on synced devices)}
      other {# items (and more on synced devices)}}
   </message>
   <message name="IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE" desc="A counter showing that the user has less than X megabytes of cache. The value X will be substituted.">
-    Less than <ph name="UPPER_ESTIMATE">$1<ex>328 MB</ex></ph>
+    less than <ph name="UPPER_ESTIMATE">$1<ex>328 MB</ex></ph>
   </message>
   <message name="IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY" desc="A counter showing that the user's cache is almost empty, having less than 1 MB of data.">
-    Less than 1 MB
+    less than 1 MB
   </message>
   <message name="IDS_DEL_CACHE_COUNTER_BASIC" desc="A counter showing the size of the users's cache including either 'x MB' or 'less than x MB' as $1 and explaining that the cache is used to speed up the loading of websites.">
     Frees up <ph name="SIZE">$1<ex>328 MB</ex></ph>. Some sites may load more slowly on your next visit.
   </message>
   <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has.">
     {COUNT, plural,
-     =0 {None}
+     =0 {none}
      =1 {1 password}
      other {# passwords}}
   </message>
   <message name="IDS_DEL_PASSWORDS_COUNTER_SYNCED" desc="A counter showing how many passwords the user has and that they are synced.">
     {COUNT, plural,
-     =0 {None}
+     =0 {none}
      =1 {1 password (synced)}
      other {# passwords (synced)}}
   </message>
@@ -44,7 +44,7 @@
      other {# sites}}
   </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_EMPTY" desc="A counter showing that the user has no form data stored.">
-    None
+    none
   </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_CREDIT_CARDS" desc="A counter showing how many credit cards the user has.">
     {COUNT, plural,
@@ -91,19 +91,19 @@
   </message>
   <message name="IDS_DEL_COOKIES_COUNTER_ADVANCED" desc="A counter showing the number of sites that use cookies.">
     {COUNT, plural,
-      =0 {None}
-      =1 {From 1 site }
-      other {From # sites }}
+      =0 {No cookies}
+      =1 {1 site uses cookies. }
+      other {# sites use cookies. }}
   </message>
   <message name="IDS_DEL_DOWNLOADS_COUNTER" desc="A counter showing how many items of downloads history the user has.">
     {COUNT, plural,
-     =0 {None}
+     =0 {none}
      =1 {1 item}
      other {# items}}
   </message>
   <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders $1 and $2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder $3, will be supplied from another message.">
     {COUNT, plural,
-     =0 {None}
+     =0 {none}
      =1 {1 app ($1)}
      =2 {2 apps ($1, $2)}
      other {# apps ($1, $2, $3)}}
