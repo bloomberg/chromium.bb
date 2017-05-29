@@ -32,6 +32,7 @@ class NET_EXPORT DirectoryLister  {
   struct DirectoryListerData {
     base::FileEnumerator::FileInfo info;
     base::FilePath path;
+    base::FilePath absolute_path;
   };
 
   // Implement this class to receive directory entries.

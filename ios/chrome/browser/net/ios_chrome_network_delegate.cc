@@ -146,7 +146,8 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 
 bool IOSChromeNetworkDelegate::OnCanAccessFile(
     const net::URLRequest& request,
-    const base::FilePath& path) const {
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
   return true;
 }
 

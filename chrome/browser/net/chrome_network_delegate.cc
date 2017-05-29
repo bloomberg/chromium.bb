@@ -447,8 +447,10 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   return allow;
 }
 
-bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
-                                            const base::FilePath& path) const {
+bool ChromeNetworkDelegate::OnCanAccessFile(
+    const net::URLRequest& request,
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
 #if defined(OS_CHROMEOS)
   // browser_tests and interactive_ui_tests rely on the ability to open any
   // files via file: scheme.
@@ -456,7 +458,14 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
     return true;
 #endif
 
-  return IsAccessAllowed(path, profile_path_);
+#if defined(OS_ANDROID)
+  // Android's whitelist relies on symbolic links (ex. /sdcard is whitelisted
+  // and commonly a symbolic link), thus do not check absolute paths.
+  return IsAccessAllowed(original_path, profile_path_);
+#else
+  return (IsAccessAllowed(original_path, profile_path_) &&
+          IsAccessAllowed(absolute_path, profile_path_));
+#endif
 }
 
 // static

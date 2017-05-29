@@ -103,6 +103,10 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
+  // net::URLRequestFileJob overrides:
+  bool CanAccessFile(const base::FilePath& original_path,
+                     const base::FilePath& absolute_path) override;
+
   OfflinePageRequestJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
                         previews::PreviewsDecider* previews_decider);

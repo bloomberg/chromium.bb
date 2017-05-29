@@ -78,7 +78,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                       const std::string& cookie_line,
                       CookieOptions* options) final;
   bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& path) const final;
+                       const base::FilePath& original_path,
+                       const base::FilePath& absolute_path) const final;
   bool OnCanEnablePrivacyMode(const GURL& url,
                               const GURL& first_party_for_cookies) const final;
   bool OnAreExperimentalCookieFeaturesEnabled() const final;
@@ -153,8 +154,10 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                       const AuthCallback& callback,
                                       AuthCredentials* credentials);
 
-  virtual void OnCanAccessFileInternal(const URLRequest& request,
-                                       const base::FilePath& path) const;
+  virtual void OnCanAccessFileInternal(
+      const URLRequest& request,
+      const base::FilePath& original_path,
+      const base::FilePath& absolute_path) const;
 
   virtual void OnCanEnablePrivacyModeInternal(
       const GURL& url,

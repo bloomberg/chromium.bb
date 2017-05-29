@@ -144,6 +144,7 @@ void DirectoryLister::Core::Start() {
     DirectoryListerData data;
     data.info = file_enum.GetInfo();
     data.path = path;
+    data.absolute_path = base::MakeAbsoluteFilePath(path);
     directory_list->push_back(data);
 
     /* TODO(brettw) bug 24107: It would be nice to send incremental updates.

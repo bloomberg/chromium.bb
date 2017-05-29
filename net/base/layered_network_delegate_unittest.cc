@@ -128,7 +128,8 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
   }
 
   bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& path) const override {
+                       const base::FilePath& original_path,
+                       const base::FilePath& absolute_path) const override {
     IncrementAndCompareCounter("on_can_access_file_count");
     return false;
   }
@@ -205,7 +206,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
         OnAuthRequired(request.get(), *auth_challenge, AuthCallback(), NULL));
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList()));
     EXPECT_FALSE(OnCanSetCookie(*request, std::string(), NULL));
-    EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath()));
+    EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
     EXPECT_FALSE(OnCanEnablePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
@@ -310,8 +311,10 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_set_cookie_count"]);
   }
 
-  void OnCanAccessFileInternal(const URLRequest& request,
-                               const base::FilePath& path) const override {
+  void OnCanAccessFileInternal(
+      const URLRequest& request,
+      const base::FilePath& original_path,
+      const base::FilePath& absolute_path) const override {
     ++(*counters_)["on_can_access_file_count"];
     EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
   }

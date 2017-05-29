@@ -92,8 +92,10 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
   return true;
 }
 
-bool NetworkDelegateImpl::OnCanAccessFile(const URLRequest& request,
-                                          const base::FilePath& path) const {
+bool NetworkDelegateImpl::OnCanAccessFile(
+    const URLRequest& request,
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
   return false;
 }
 

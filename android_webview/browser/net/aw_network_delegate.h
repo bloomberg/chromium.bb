@@ -59,7 +59,8 @@ class AwNetworkDelegate : public net::NetworkDelegateImpl {
                       const std::string& cookie_line,
                       net::CookieOptions* options) override;
   bool OnCanAccessFile(const net::URLRequest& request,
-                       const base::FilePath& path) const override;
+                       const base::FilePath& original_path,
+                       const base::FilePath& absolute_path) const override;
 
   // Used to filter URL requests. Owned by AwBrowserContext.
   const policy::URLBlacklistManager* url_blacklist_manager_;

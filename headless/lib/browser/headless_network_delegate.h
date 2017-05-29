@@ -64,7 +64,8 @@ class HeadlessNetworkDelegate : public net::NetworkDelegateImpl {
                       net::CookieOptions* options) override;
 
   bool OnCanAccessFile(const net::URLRequest& request,
-                       const base::FilePath& path) const override;
+                       const base::FilePath& original_path,
+                       const base::FilePath& absolute_path) const override;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessNetworkDelegate);
 };
