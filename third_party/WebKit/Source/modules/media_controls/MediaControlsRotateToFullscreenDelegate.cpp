@@ -4,15 +4,14 @@
 
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
 #include "modules/media_controls/MediaControlsImpl.h"
-#include "platform/UserGestureIndicator.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {
@@ -176,7 +175,7 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
 
   {
     UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&video_element_->GetDocument()));
+        UserGestureToken::Create(&video_element_->GetDocument()));
 
     bool should_be_fullscreen =
         current_screen_orientation_ == video_orientation;

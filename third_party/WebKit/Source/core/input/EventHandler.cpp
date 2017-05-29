@@ -35,9 +35,9 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/TouchList.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
@@ -635,7 +635,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   UserGestureIndicator gesture_indicator(
-      DocumentUserGestureToken::Create(frame_->GetDocument()));
+      UserGestureToken::Create(frame_->GetDocument()));
   frame_->LocalFrameRoot()
       .GetEventHandler()
       .last_mouse_down_user_gesture_token_ =
@@ -988,7 +988,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
                       .last_mouse_down_user_gesture_token_)));
   } else {
     gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
-        DocumentUserGestureToken::Create(frame_->GetDocument())));
+        UserGestureToken::Create(frame_->GetDocument())));
   }
 
   WebInputEventResult event_result = UpdatePointerTargetAndDispatchEvents(

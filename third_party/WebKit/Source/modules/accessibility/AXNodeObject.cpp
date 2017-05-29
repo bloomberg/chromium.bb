@@ -30,11 +30,11 @@
 
 #include "core/InputTypeNames.h"
 #include "core/dom/AccessibleNode.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/Text.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -67,7 +67,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -2393,14 +2392,14 @@ void AXNodeObject::SetFocused(bool on) {
 }
 
 void AXNodeObject::Increment() {
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
-      GetDocument(), UserGestureToken::kNewGesture));
+  UserGestureIndicator gesture_indicator(
+      UserGestureToken::Create(GetDocument(), UserGestureToken::kNewGesture));
   AlterSliderValue(true);
 }
 
 void AXNodeObject::Decrement() {
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
-      GetDocument(), UserGestureToken::kNewGesture));
+  UserGestureIndicator gesture_indicator(
+      UserGestureToken::Create(GetDocument(), UserGestureToken::kNewGesture));
   AlterSliderValue(false);
 }
 

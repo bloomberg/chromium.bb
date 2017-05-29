@@ -101,11 +101,11 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
@@ -165,7 +165,6 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -1952,7 +1951,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
 
   String script = DecodeURLEscapeSequences(
       url.GetString().Substring(strlen("javascript:")));
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
       GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =

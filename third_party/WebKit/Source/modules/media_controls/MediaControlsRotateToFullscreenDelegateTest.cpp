@@ -7,8 +7,8 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
@@ -18,7 +18,6 @@
 #include "core/testing/DummyPageHolder.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -218,8 +217,7 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
 
 void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -305,8 +303,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Should start observing visibility when played.
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -326,8 +323,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Should resume observing visibility when playback resumes.
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -563,8 +559,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();
@@ -594,8 +589,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Start in fullscreen.
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     GetMediaControls().EnterFullscreen();
   }
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
@@ -625,8 +619,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Start in fullscreen.
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     GetMediaControls().EnterFullscreen();
   }
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
@@ -657,8 +650,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
   {
-    UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&GetDocument()));
+    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();

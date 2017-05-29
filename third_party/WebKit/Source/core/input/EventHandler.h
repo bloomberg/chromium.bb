@@ -27,6 +27,7 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/TextEventInputType.h"
 #include "core/input/GestureManager.h"
 #include "core/input/KeyboardEventManager.h"
@@ -38,7 +39,6 @@
 #include "core/page/EventWithHitTestResults.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"

@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/PerformanceMonitor.h"
@@ -37,7 +38,6 @@
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/permissions/PermissionUtils.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/InterfaceProvider.h"

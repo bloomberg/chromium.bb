@@ -28,9 +28,9 @@
 #include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
@@ -53,7 +53,6 @@
 #include "core/loader/FrameLoader.h"
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -136,7 +135,7 @@ class MediaLoadedEventListener final : public EventListener {
     HTMLVideoElement* media =
         static_cast<HTMLVideoElement*>(event->target()->ToNode());
     UserGestureIndicator gesture(
-        DocumentUserGestureToken::Create(&media->GetDocument()));
+        UserGestureToken::Create(&media->GetDocument()));
     // TODO(shaktisahu): Enable fullscreen after https://crbug/698353 is fixed.
     media->Play();
   }

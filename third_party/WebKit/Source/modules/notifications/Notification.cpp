@@ -35,10 +35,10 @@
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/V8NotificationAction.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/PerformanceMonitor.h"
@@ -50,7 +50,6 @@
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
@@ -210,7 +209,7 @@ void Notification::DispatchShowEvent() {
 
 void Notification::DispatchClickEvent() {
   ExecutionContext* context = GetExecutionContext();
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
       context->IsDocument() ? ToDocument(context) : nullptr,
       UserGestureToken::kNewGesture));
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());

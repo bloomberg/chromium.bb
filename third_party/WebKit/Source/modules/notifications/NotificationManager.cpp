@@ -5,10 +5,10 @@
 #include "modules/notifications/NotificationManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
 #include "modules/permissions/PermissionUtils.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"

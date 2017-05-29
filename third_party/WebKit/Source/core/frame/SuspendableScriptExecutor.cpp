@@ -11,10 +11,9 @@
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
@@ -52,8 +51,8 @@ WebScriptExecutor::WebScriptExecutor(
 Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
   std::unique_ptr<UserGestureIndicator> indicator;
   if (user_gesture_) {
-    indicator = WTF::WrapUnique(
-        new UserGestureIndicator(DocumentUserGestureToken::Create(
+    indicator =
+        WTF::WrapUnique(new UserGestureIndicator(UserGestureToken::Create(
             frame->GetDocument(), UserGestureToken::kNewGesture)));
   }
 

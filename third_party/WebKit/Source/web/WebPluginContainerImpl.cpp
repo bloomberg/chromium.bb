@@ -38,9 +38,9 @@
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/DragEvent.h"
 #include "core/events/EventQueue.h"
 #include "core/events/GestureEvent.h"
@@ -75,7 +75,6 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -498,8 +497,8 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   }
 
   UserGestureIndicator gesture_indicator(
-      popups_allowed ? DocumentUserGestureToken::Create(
-                           frame->GetDocument(), UserGestureToken::kNewGesture)
+      popups_allowed ? UserGestureToken::Create(frame->GetDocument(),
+                                                UserGestureToken::kNewGesture)
                      : nullptr);
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =

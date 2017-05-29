@@ -20,6 +20,7 @@
 #include "modules/vibration/NavigatorVibration.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -30,7 +31,6 @@
 #include "core/page/Page.h"
 #include "modules/vibration/VibrationController.h"
 #include "platform/Histogram.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 

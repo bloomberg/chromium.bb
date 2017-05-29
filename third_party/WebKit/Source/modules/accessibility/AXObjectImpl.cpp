@@ -32,7 +32,7 @@
 #include "core/InputTypeNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AccessibleNode.h"
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
@@ -44,7 +44,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -1560,8 +1559,8 @@ bool AXObjectImpl::Press() {
   if (!document)
     return false;
 
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
-      document, UserGestureToken::kNewGesture));
+  UserGestureIndicator gesture_indicator(
+      UserGestureToken::Create(document, UserGestureToken::kNewGesture));
   Element* action_elem = ActionElement();
   if (action_elem) {
     action_elem->AccessKeyAction(true);

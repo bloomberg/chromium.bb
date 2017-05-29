@@ -30,7 +30,7 @@
 
 #include "public/web/WebUserGestureToken.h"
 
-#include "platform/UserGestureIndicator.h"
+#include "core/dom/UserGestureIndicator.h"
 
 namespace blink {
 

@@ -4,6 +4,8 @@
 
 #include "modules/bluetooth/Bluetooth.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -11,17 +13,15 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
-#include "platform/UserGestureIndicator.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 

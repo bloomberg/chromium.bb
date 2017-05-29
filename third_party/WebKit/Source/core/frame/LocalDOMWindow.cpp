@@ -37,11 +37,11 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SinkDocument.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
@@ -648,8 +648,8 @@ void LocalDOMWindow::PostMessageTimerFired(PostMessageTimer* timer) {
 
   MessageEvent* event = timer->Event();
 
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Adopt(
-      document(), timer->GetUserGestureToken()));
+  UserGestureIndicator gesture_indicator(
+      UserGestureToken::Adopt(document(), timer->GetUserGestureToken()));
 
   event->EntangleMessagePorts(document());
 

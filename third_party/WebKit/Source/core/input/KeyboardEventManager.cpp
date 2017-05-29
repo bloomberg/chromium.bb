@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/Editor.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/LocalFrameClient.h"
@@ -23,7 +23,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
@@ -199,7 +198,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!is_modifier) {
     gesture_indicator.reset(new UserGestureIndicator(
-        DocumentUserGestureToken::Create(frame_->GetDocument())));
+        UserGestureToken::Create(frame_->GetDocument())));
   }
 
   // In IE, access keys are special, they are handled after default keydown

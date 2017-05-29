@@ -34,6 +34,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
@@ -49,7 +50,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/ScopedOrientationChangeIndicator.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {

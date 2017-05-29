@@ -27,12 +27,12 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 

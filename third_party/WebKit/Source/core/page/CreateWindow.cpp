@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -38,7 +39,6 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
