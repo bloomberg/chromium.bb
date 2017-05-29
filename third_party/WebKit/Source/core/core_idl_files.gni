@@ -134,7 +134,6 @@ core_idl_files = get_path_info([
                                  "dom/ProcessingInstruction.idl",
                                  "dom/Range.idl",
                                  "dom/ResizeObserver.idl",
-                                 "dom/ResizeObserverCallback.idl",
                                  "dom/ResizeObserverEntry.idl",
                                  "dom/SharedArrayBuffer.idl",
                                  "dom/StaticRange.idl",

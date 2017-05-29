@@ -34,7 +34,6 @@
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/ResizeObserver.h"
-#include "core/dom/ResizeObserverCallback.h"
 #include "core/dom/ResizeObserverEntry.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
@@ -177,17 +176,17 @@ class MediaControlsImpl::BatchedControlUpdate {
 // Count of number open batches for controls visibility.
 int MediaControlsImpl::BatchedControlUpdate::batch_depth_ = 0;
 
-class MediaControlsImpl::MediaControlsResizeObserverCallback final
-    : public ResizeObserverCallback {
+class MediaControlsImpl::MediaControlsResizeObserverDelegate final
+    : public ResizeObserver::Delegate {
  public:
-  explicit MediaControlsResizeObserverCallback(MediaControlsImpl* controls)
+  explicit MediaControlsResizeObserverDelegate(MediaControlsImpl* controls)
       : controls_(controls) {
     DCHECK(controls);
   }
-  ~MediaControlsResizeObserverCallback() override = default;
+  ~MediaControlsResizeObserverDelegate() override = default;
 
-  void handleEvent(const HeapVector<Member<ResizeObserverEntry>>& entries,
-                   ResizeObserver* observer) override {
+  void OnResize(
+      const HeapVector<Member<ResizeObserverEntry>>& entries) override {
     DCHECK_EQ(1u, entries.size());
     DCHECK_EQ(entries[0]->target(), controls_->MediaElement());
     controls_->NotifyElementSizeChanged(entries[0]->contentRect());
@@ -195,7 +194,7 @@ class MediaControlsImpl::MediaControlsResizeObserverCallback final
 
   DEFINE_INLINE_TRACE() {
     visitor->Trace(controls_);
-    ResizeObserverCallback::Trace(visitor);
+    ResizeObserver::Delegate::Trace(visitor);
   }
 
  private:
@@ -296,7 +295,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       is_paused_for_scrubbing_(false),
       resize_observer_(ResizeObserver::Create(
           media_element.GetDocument(),
-          new MediaControlsResizeObserverCallback(this))),
+          new MediaControlsResizeObserverDelegate(this))),
       element_size_changed_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
                                 &media_element.GetDocument()),
@@ -482,7 +481,7 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
   if (!resize_observer_) {
     resize_observer_ =
         ResizeObserver::Create(MediaElement().GetDocument(),
-                               new MediaControlsResizeObserverCallback(this));
+                               new MediaControlsResizeObserverDelegate(this));
     HTMLMediaElement& html_media_element = MediaElement();
     resize_observer_->observe(&html_media_element);
   }
