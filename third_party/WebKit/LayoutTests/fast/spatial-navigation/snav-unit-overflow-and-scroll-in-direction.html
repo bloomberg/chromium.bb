@@ -51,7 +51,7 @@
       // starting the test itself: get to a known place.
       document.getElementById("start").focus();
 
-      setTimeout(step1 , 0);
+      requestAnimationFrame(step1);
     }
 
     function step1()
@@ -76,7 +76,7 @@
 
     function step1Completed()
     {
-      setTimeout(step2 , 0);
+      requestAnimationFrame(step2);
     }
 
     function step2Completed()
