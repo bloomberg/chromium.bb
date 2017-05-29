@@ -97,7 +97,7 @@ TEST(ScopedFileOpenerTest, CloseWhileOpening) {
     const ProvidedFileSystemInterface::OpenFileCallback open_callback =
         file_system.open_callback();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(open_callback, 123, base::File::FILE_OK));
+        FROM_HERE, base::BindOnce(open_callback, 123, base::File::FILE_OK));
   }
 
   // Wait until the open callback is called asynchonously.

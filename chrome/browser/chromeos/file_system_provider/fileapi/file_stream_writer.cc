@@ -40,9 +40,8 @@ class FileStreamWriter::OperationRunner
     util::FileSystemURLParser parser(url);
     if (!parser.Parse()) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(callback, base::File::FILE_ERROR_SECURITY));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(callback, base::File::FILE_ERROR_SECURITY));
       return;
     }
 
@@ -66,9 +65,8 @@ class FileStreamWriter::OperationRunner
     // If the file system got unmounted, then abort the writing operation.
     if (!file_system_.get()) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(callback, base::File::FILE_ERROR_ABORT));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(callback, base::File::FILE_ERROR_ABORT));
       return;
     }
 
@@ -115,8 +113,8 @@ class FileStreamWriter::OperationRunner
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(callback, result));
   }
 
   // Forwards a response of writing to a file to the IO thread.
@@ -126,8 +124,8 @@ class FileStreamWriter::OperationRunner
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     abort_callback_ = AbortCallback();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(callback, result));
   }
 
   AbortCallback abort_callback_;
@@ -151,7 +149,7 @@ FileStreamWriter::~FileStreamWriter() {
   if (state_ != CANCELLING) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&OperationRunner::CloseRunnerOnUIThread, runner_));
+        base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   }
 
   // If a write is in progress, mark it as completed.
@@ -167,15 +165,11 @@ void FileStreamWriter::Initialize(
   state_ = INITIALIZING;
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationRunner::OpenFileOnUIThread,
-                 runner_,
-                 url_,
-                 base::Bind(&FileStreamWriter::OnOpenFileCompleted,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            pending_closure,
-                            error_callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationRunner::OpenFileOnUIThread, runner_, url_,
+                     base::Bind(&FileStreamWriter::OnOpenFileCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), pending_closure,
+                                error_callback)));
 }
 
 void FileStreamWriter::OnOpenFileCompleted(
@@ -262,9 +256,9 @@ int FileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   // files.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OperationRunner::CloseRunnerOnUIThread, runner_));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, net::OK));
+      base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, net::OK));
 
   // If a write is in progress, mark it as completed.
   TRACE_EVENT_ASYNC_END0("file_system_provider", "FileStreamWriter::Write",
@@ -279,7 +273,8 @@ int FileStreamWriter::Flush(const net::CompletionCallback& callback) {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, state_ == INITIALIZED ? net::OK : net::ERR_FAILED));
+      base::BindOnce(callback,
+                     state_ == INITIALIZED ? net::OK : net::ERR_FAILED));
 
   return net::ERR_IO_PENDING;
 }
@@ -327,17 +322,12 @@ void FileStreamWriter::WriteAfterInitialized(
   state_ = EXECUTING;
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationRunner::WriteFileOnUIThread,
-                 runner_,
-                 buffer,
-                 current_offset_,
-                 buffer_length,
-                 base::Bind(&FileStreamWriter::OnWriteFileCompleted,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            buffer_length,
-                            callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &OperationRunner::WriteFileOnUIThread, runner_, buffer,
+          current_offset_, buffer_length,
+          base::Bind(&FileStreamWriter::OnWriteFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), buffer_length, callback)));
 }
 
 }  // namespace file_system_provider

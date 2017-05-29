@@ -25,14 +25,14 @@ void CallStatusCallbackOnIOThread(const StatusCallback& callback,
                                   base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, error));
+                          base::BindOnce(callback, error));
 }
 
 void CallNotificationCallbackOnIOThread(const NotificationCallback& callback,
                                         ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, type));
+                          base::BindOnce(callback, type));
 }
 
 void AddWatcherOnUIThread(const storage::FileSystemURL& url,
@@ -83,10 +83,10 @@ void WatcherManager::AddWatcher(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AddWatcherOnUIThread, url, recursive,
-                 base::Bind(&CallStatusCallbackOnIOThread, callback),
-                 base::Bind(&CallNotificationCallbackOnIOThread,
-                            notification_callback)));
+      base::BindOnce(&AddWatcherOnUIThread, url, recursive,
+                     base::Bind(&CallStatusCallbackOnIOThread, callback),
+                     base::Bind(&CallNotificationCallbackOnIOThread,
+                                notification_callback)));
 }
 
 void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
@@ -95,8 +95,8 @@ void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RemoveWatcherOnUIThread, url, recursive,
-                 base::Bind(&CallStatusCallbackOnIOThread, callback)));
+      base::BindOnce(&RemoveWatcherOnUIThread, url, recursive,
+                     base::Bind(&CallStatusCallbackOnIOThread, callback)));
 }
 
 }  // namespace file_system_provider

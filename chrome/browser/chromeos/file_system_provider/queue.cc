@@ -47,7 +47,8 @@ void Queue::Enqueue(size_t token, const AbortableCallback& callback) {
 #endif
   pending_.push_back(Task(token, callback));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Queue::Complete(size_t token) {
@@ -55,7 +56,8 @@ void Queue::Complete(size_t token) {
   DCHECK(it != executed_.end());
   executed_.erase(it);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Queue::MaybeRun() {
@@ -94,7 +96,7 @@ void Queue::Abort(size_t token) {
       pending_.erase(it);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
       return;
     }
   }
