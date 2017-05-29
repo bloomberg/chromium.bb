@@ -13,6 +13,7 @@
 #include "VoidCallbackFunctionInterfaceArg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8HTMLDivElement.h"

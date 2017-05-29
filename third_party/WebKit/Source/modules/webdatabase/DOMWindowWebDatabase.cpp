@@ -27,15 +27,25 @@
 #include "modules/webdatabase/DOMWindowWebDatabase.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/DatabaseCallback.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
+
+Database* DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window,
+                                             const String& name,
+                                             const String& version,
+                                             const String& display_name,
+                                             unsigned estimated_size,
+                                             ExceptionState& exception_state) {
+  return openDatabase(window, name, version, display_name, estimated_size,
+                      nullptr, exception_state);
+}
 
 Database* DOMWindowWebDatabase::openDatabase(
     LocalDOMWindow& window,
