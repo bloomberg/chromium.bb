@@ -26,4 +26,9 @@
   return self;
 }
 
+- (NSString*)description {
+  return [NSString stringWithFormat:@"%@ name:%@ code:%@", [super description],
+                                    _languageName, _languageCode];
+}
+
 @end
