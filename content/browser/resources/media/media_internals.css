@@ -123,17 +123,14 @@ h3 {
   list-style-type: none;
 }
 
-#clipboard-textarea {
-  position: absolute;
-  width: 50%;
-  height: 50%;
-
-  left: 25%;
-  top: 25%;
+#clipboard-dialog {
+  top: 0;
+  bottom: 0;
 }
 
-.hiddenClipboard {
-  display: none;
+::backdrop {
+  background-color: #000;
+  opacity: 0.5;
 }
 
 .timestamp {

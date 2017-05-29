@@ -17,6 +17,18 @@ var Manager = (function() {
     this.audioComponents_ = [];
     this.clientRenderer_ = clientRenderer;
 
+    var copyAllPlayerButton = document.getElementById('copy-all-player-button');
+    copyAllPlayerButton.onclick = function() {
+      this.clientRenderer_.showClipboard(
+        JSON.stringify(this.players_, null, 2));
+    }.bind(this);
+
+    var copyAllAudioButton = document.getElementById('copy-all-audio-button');
+    copyAllAudioButton.onclick = function() {
+      this.clientRenderer_.showClipboard(
+        JSON.stringify(this.audioComponents_, null, 2));
+    }.bind(this);
+
     this.hidePlayersButton = document.getElementById('hide-players-button');
     // In tests we may not have this button.
     if (this.hidePlayersButton)
