@@ -62,7 +62,8 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
     pending_bytes_ += buf_len;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, write_error_ == net::OK ? buf_len : write_error_));
+        base::BindOnce(callback,
+                       write_error_ == net::OK ? buf_len : write_error_));
     return net::ERR_IO_PENDING;
   }
 
@@ -71,7 +72,7 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
     DCHECK_EQ(net::OK, write_error_);
     ++(*cancel_counter_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, net::OK));
+        FROM_HERE, base::BindOnce(callback, net::OK));
     return net::ERR_IO_PENDING;
   }
 
@@ -80,7 +81,7 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
     flush_log_->push_back(pending_bytes_);
     pending_bytes_ = 0;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, net::OK));
+        FROM_HERE, base::BindOnce(callback, net::OK));
     return net::ERR_IO_PENDING;
   }
 

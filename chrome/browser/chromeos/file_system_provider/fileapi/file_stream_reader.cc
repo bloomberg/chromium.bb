@@ -47,9 +47,8 @@ class FileStreamReader::OperationRunner
     util::FileSystemURLParser parser(url);
     if (!parser.Parse()) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(callback, base::File::FILE_ERROR_SECURITY));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(callback, base::File::FILE_ERROR_SECURITY));
       return;
     }
 
@@ -75,11 +74,9 @@ class FileStreamReader::OperationRunner
 
     // If the file system got unmounted, then abort the reading operation.
     if (!file_system_.get()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(
-              callback, 0, false /* has_more */, base::File::FILE_ERROR_ABORT));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              base::BindOnce(callback, 0, false /* has_more */,
+                                             base::File::FILE_ERROR_ABORT));
       return;
     }
 
@@ -103,9 +100,9 @@ class FileStreamReader::OperationRunner
     if (!file_system_.get()) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(callback,
-                     base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
-                     base::File::FILE_ERROR_ABORT));
+          base::BindOnce(callback,
+                         base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
+                         base::File::FILE_ERROR_ABORT));
       return;
     }
 
@@ -151,8 +148,8 @@ class FileStreamReader::OperationRunner
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(callback, result));
   }
 
   // Forwards a metadata to the IO thread.
@@ -164,9 +161,8 @@ class FileStreamReader::OperationRunner
     abort_callback_ = AbortCallback();
 
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(callback, base::Passed(&metadata), result));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(callback, base::Passed(&metadata), result));
   }
 
   // Forwards a response of reading from a file to the IO thread.
@@ -180,10 +176,9 @@ class FileStreamReader::OperationRunner
     if (!has_more)
       abort_callback_ = AbortCallback();
 
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(chunk_received_callback, chunk_length, has_more, result));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(chunk_received_callback,
+                                           chunk_length, has_more, result));
   }
 
   AbortCallback abort_callback_;
@@ -213,7 +208,7 @@ FileStreamReader::~FileStreamReader() {
   // destructor.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OperationRunner::CloseRunnerOnUIThread, runner_));
+      base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
 
   // If a read is in progress, mark it as completed.
   TRACE_EVENT_ASYNC_END0("file_system_provider", "FileStreamReader::Read",
@@ -227,15 +222,11 @@ void FileStreamReader::Initialize(
   state_ = INITIALIZING;
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationRunner::OpenFileOnUIThread,
-                 runner_,
-                 url_,
-                 base::Bind(&FileStreamReader::OnOpenFileCompleted,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            pending_closure,
-                            error_callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationRunner::OpenFileOnUIThread, runner_, url_,
+                     base::Bind(&FileStreamReader::OnOpenFileCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), pending_closure,
+                                error_callback)));
 }
 
 void FileStreamReader::OnOpenFileCompleted(
@@ -257,14 +248,11 @@ void FileStreamReader::OnOpenFileCompleted(
 
   // Verify the last modification time.
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationRunner::GetMetadataOnUIThread,
-                 runner_,
-                 base::Bind(&FileStreamReader::OnInitializeCompleted,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            pending_closure,
-                            error_callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationRunner::GetMetadataOnUIThread, runner_,
+                     base::Bind(&FileStreamReader::OnInitializeCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), pending_closure,
+                                error_callback)));
 }
 
 void FileStreamReader::OnInitializeCompleted(
@@ -391,16 +379,11 @@ void FileStreamReader::ReadAfterInitialized(
 
   current_length_ = 0;
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationRunner::ReadFileOnUIThread,
-                 runner_,
-                 buffer,
-                 current_offset_,
-                 buffer_length,
-                 base::Bind(&FileStreamReader::OnReadChunkReceived,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OperationRunner::ReadFileOnUIThread, runner_, buffer,
+                     current_offset_, buffer_length,
+                     base::Bind(&FileStreamReader::OnReadChunkReceived,
+                                weak_ptr_factory_.GetWeakPtr(), callback)));
 }
 
 void FileStreamReader::GetLengthAfterInitialized(
@@ -409,14 +392,11 @@ void FileStreamReader::GetLengthAfterInitialized(
   DCHECK_EQ(INITIALIZED, state_);
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &OperationRunner::GetMetadataOnUIThread,
-          runner_,
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &OperationRunner::GetMetadataOnUIThread, runner_,
           base::Bind(&FileStreamReader::OnGetMetadataForGetLengthReceived,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback)));
+                     weak_ptr_factory_.GetWeakPtr(), callback)));
 }
 
 void FileStreamReader::OnReadChunkReceived(
