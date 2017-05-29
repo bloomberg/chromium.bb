@@ -47,6 +47,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebViewFrameWidget.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
@@ -74,7 +75,6 @@
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebPagePopupImpl.h"
 #include "web/WebRemoteFrameImpl.h"
-#include "web/WebViewFrameWidget.h"
 
 namespace blink {
 
