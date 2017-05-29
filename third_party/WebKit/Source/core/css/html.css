@@ -805,6 +805,8 @@ select:-internal-list-box option:checked:disabled {
 
 select:-internal-list-box hr {
     border-style: none;
+    -webkit-margin-before: 0.5em;
+    -webkit-margin-after: 0;
 }
 
 output {

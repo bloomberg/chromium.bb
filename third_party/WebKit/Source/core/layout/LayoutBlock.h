@@ -137,7 +137,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit MinLineHeightForReplacedObject(bool is_first_line,
                                             LayoutUnit replaced_height) const;
 
-  bool CreatesNewFormattingContext() const;
+  virtual bool CreatesNewFormattingContext() const { return true; }
 
   const char* GetName() const override;
 
@@ -470,8 +470,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   // Returns true if the positioned movement-only layout succeeded.
   bool TryLayoutDoingPositionedMovementOnly();
-
-  bool AvoidsFloats() const override { return true; }
 
   bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const final {
     return hit_test_action == kHitTestBlockBackground ||

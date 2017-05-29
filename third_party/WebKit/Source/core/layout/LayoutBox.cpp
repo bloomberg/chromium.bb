@@ -4907,14 +4907,8 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
           isHTMLImageElement(ToElement(node)));
 }
 
-DISABLE_CFI_PERF
 bool LayoutBox::AvoidsFloats() const {
-  // crbug.com/460704: This should be merged with createsNewFormattingContext().
-  return ShouldBeConsideredAsReplaced() || HasOverflowClip() || IsHR() ||
-         IsLegend() || IsWritingModeRoot() || IsFlexItemIncludingDeprecated() ||
-         Style()->GetColumnSpan() == kColumnSpanAll ||
-         Style()->ContainsPaint() || Style()->ContainsLayout() ||
-         Style()->Display() == EDisplay::kFlowRoot;
+  return true;
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {

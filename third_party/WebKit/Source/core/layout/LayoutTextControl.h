@@ -95,7 +95,6 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
                                      LayoutUnit& max_logical_width) const final;
   void ComputePreferredLogicalWidths() final;
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) final {}
-  bool AvoidsFloats() const final { return true; }
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,

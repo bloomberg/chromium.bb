@@ -556,18 +556,6 @@ void LayoutBlock::AddVisualOverflowFromTheme() {
   AddSelfVisualOverflow(LayoutRect(inflated_rect));
 }
 
-DISABLE_CFI_PERF
-bool LayoutBlock::CreatesNewFormattingContext() const {
-  return IsInlineBlockOrInlineTable() || IsFloatingOrOutOfFlowPositioned() ||
-         HasOverflowClip() || IsFlexItemIncludingDeprecated() ||
-         Style()->SpecifiesColumns() || IsLayoutFlowThread() || IsTableCell() ||
-         IsTableCaption() || IsFieldset() || IsWritingModeRoot() ||
-         IsDocumentElement() || IsGridItem() ||
-         Style()->GetColumnSpan() == kColumnSpanAll ||
-         Style()->ContainsPaint() || Style()->ContainsLayout() ||
-         IsSVGForeignObject() || Style()->Display() == EDisplay::kFlowRoot;
-}
-
 static inline bool ChangeInAvailableLogicalHeightAffectsChild(
     LayoutBlock* parent,
     LayoutBox& child) {

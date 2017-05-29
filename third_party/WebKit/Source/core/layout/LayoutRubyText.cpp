@@ -79,8 +79,4 @@ void LayoutRubyText::AdjustInlineDirectionLineBounds(
   logical_width -= inset;
 }
 
-bool LayoutRubyText::AvoidsFloats() const {
-  return true;
-}
-
 }  // namespace blink
