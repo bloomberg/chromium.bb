@@ -48,6 +48,9 @@ mojom("js_to_cpp_bindings") {
   sources = [
     "js_to_cpp.mojom",
   ]
+
+  # TODO(crbug.com/699569): Convert to use the new JS bindings.
+  use_new_js_bindings = false
 }
 
 test("mojo_js_unittests") {
