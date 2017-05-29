@@ -969,7 +969,17 @@ void LayoutTableSection::UpdateLayout() {
         row_logical_top = row->LogicalBottom();
         row_logical_top += LayoutUnit(Table()->VBorderSpacing());
       }
+
+      if (!Table()->HasSameDirectionAs(row)) {
+        UseCounter::Count(GetDocument(),
+                          UseCounter::kTableRowDirectionDifferentFromTable);
+      }
     }
+  }
+
+  if (!Table()->HasSameDirectionAs(this)) {
+    UseCounter::Count(GetDocument(),
+                      UseCounter::kTableSectionDirectionDifferentFromTable);
   }
 
   ClearNeedsLayout();
