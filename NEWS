@@ -24,11 +24,17 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Vastly improved Danish tables thanks to Bue Vester-Andersen.
 - New Braille tables for Sinhala script thanks to Ashoka Bandula
   Weerawardhana.
-** License changes
+- New Hungarian grade 2 Braille table thanks to Attila Hammer.
+- Improvements to UEB in particular to symbols specified mostly on the
+  Appendix 3 (Symbols List) from the Rules of Unified English Braille
+  Second Edition 2013 document thanks to Victor Montalvão.
 ** Backwards incompatible changes
+None
+
 ** New, renamed or removed tables
 - sin.cti (new)
 - sin.utb (new)
+- hu-hu-g2.ctb (new)
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 An influx of new contributors have made sure that liblouis continues
