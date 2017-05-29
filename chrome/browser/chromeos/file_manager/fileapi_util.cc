@@ -305,13 +305,12 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     // file), move to IO thread to obtian metadata for the non-native file.
     if (need_fill_metadata) {
       BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
-                         FillMetadataOnIOThread,
-                     base::Unretained(this),
-                     base::Passed(&lifetime),
-                     chooser_info_list_->begin()));
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(
+              &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
+                  FillMetadataOnIOThread,
+              base::Unretained(this), base::Passed(&lifetime),
+              chooser_info_list_->begin()));
       return;
     }
 
@@ -338,12 +337,11 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
 
     if (it == chooser_info_list_->end()) {
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
-                         NotifyComplete,
-                     base::Unretained(this),
-                     base::Passed(&lifetime)));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
+                  NotifyComplete,
+              base::Unretained(this), base::Passed(&lifetime)));
       return;
     }
 
@@ -371,12 +369,11 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
 
     if (result != base::File::FILE_OK) {
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
-                         NotifyError,
-                     base::Unretained(this),
-                     base::Passed(&lifetime)));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
+                  NotifyError,
+              base::Unretained(this), base::Passed(&lifetime)));
       return;
     }
 
@@ -553,10 +550,10 @@ void CheckIfDirectoryExists(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(base::IgnoreResult(
-                     &storage::FileSystemOperationRunner::DirectoryExists),
-                 file_system_context->operation_runner()->AsWeakPtr(),
-                 internal_url, google_apis::CreateRelayCallback(callback)));
+      base::BindOnce(base::IgnoreResult(
+                         &storage::FileSystemOperationRunner::DirectoryExists),
+                     file_system_context->operation_runner()->AsWeakPtr(),
+                     internal_url, google_apis::CreateRelayCallback(callback)));
 }
 
 void GetMetadataForPath(
@@ -574,7 +571,7 @@ void GetMetadataForPath(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           base::IgnoreResult(&storage::FileSystemOperationRunner::GetMetadata),
           file_system_context->operation_runner()->AsWeakPtr(), internal_url,
           fields, google_apis::CreateRelayCallback(callback)));
