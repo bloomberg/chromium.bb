@@ -4246,6 +4246,8 @@ void Element::AddPropertyToPresentationAttributeStyle(
 }
 
 bool Element::SupportsStyleSharing() const {
+  if (!RuntimeEnabledFeatures::styleSharingEnabled())
+    return false;
   if (!IsStyledElement() || !ParentOrShadowHostElement())
     return false;
   // If the element has inline style it is probably unique.

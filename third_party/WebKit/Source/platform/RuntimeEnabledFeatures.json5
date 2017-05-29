@@ -950,7 +950,7 @@
     },
     {
       name: "StyleSharing",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "Suborigins",
