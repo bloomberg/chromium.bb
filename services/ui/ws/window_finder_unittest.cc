@@ -174,5 +174,35 @@ TEST(WindowFinderTest, NonClientPreferredOverChild) {
             FindDeepestVisibleWindowForEvents(&root, gfx::Point(1, 1)).window);
 }
 
+TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  root.set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+  child.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
+  gfx::Transform transform;
+  transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
+  child.SetTransform(transform);
+
+  EXPECT_EQ(
+      &child,
+      FindDeepestVisibleWindowForEvents(&root, gfx::Point(49, 49)).window);
+  EXPECT_EQ(nullptr,
+            FindDeepestVisibleWindowForEvents(&root, gfx::Point(9, 9)).window);
+
+  // Verify extended hit test with transform is picked up.
+  child.set_extended_hit_test_region(gfx::Insets(2, 2, 2, 2));
+  EXPECT_EQ(&child,
+            FindDeepestVisibleWindowForEvents(&root, gfx::Point(7, 7)).window);
+  EXPECT_EQ(nullptr,
+            FindDeepestVisibleWindowForEvents(&root, gfx::Point(4, 4)).window);
+}
+
 }  // namespace ws
 }  // namespace ui
