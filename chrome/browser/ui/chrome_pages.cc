@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,11 +29,14 @@
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -67,15 +71,12 @@ namespace {
 
 const char kHashMark[] = "#";
 
-void OpenBookmarkManagerWithHash(Browser* browser,
-                                 const std::string& action,
-                                 int64_t node_id) {
-  base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  base::RecordAction(UserMetricsAction("ShowBookmarks"));
-  NavigateParams params(GetSingletonTabNavigateParams(
-      browser,
-      GURL(kChromeUIBookmarksURL).Resolve(base::StringPrintf(
-          "/#%s%s", action.c_str(), base::Int64ToString(node_id).c_str()))));
+void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
+  GURL url = GURL(kChromeUIBookmarksURL)
+                 .Resolve(base::StringPrintf(
+                     MdBookmarksUI::IsEnabled() ? "/?id=%s" : "/#%s",
+                     base::Int64ToString(node_id).c_str()));
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
@@ -185,14 +186,22 @@ std::string GenerateContentSettingsSearchQueryPath(int query_message_id) {
 
 void ShowBookmarkManager(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  base::RecordAction(UserMetricsAction("ShowBookmarks"));
+  if (MdBookmarksUI::IsEnabled()) {
+    const bookmarks::BookmarkNode* bookmark_bar_node =
+        BookmarkModelFactory::GetForBrowserContext(browser->profile())
+            ->bookmark_bar_node();
+    OpenBookmarkManagerForNode(browser, bookmark_bar_node->id());
+    return;
+  }
+
   ShowSingletonTabOverwritingNTP(
       browser,
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIBookmarksURL)));
 }
 
 void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id) {
-  OpenBookmarkManagerWithHash(browser, std::string(), node_id);
+  base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  OpenBookmarkManagerForNode(browser, node_id);
 }
 
 void ShowHistory(Browser* browser) {
