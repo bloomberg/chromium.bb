@@ -38,10 +38,10 @@ tests:
 
   # Contractions followed by punctuation
   # 1-letter contractions
-  - [⠃⠂, "but,"]
-  - [⠉⠂, "can,"]
-  - [⠙⠂, "do,"]
+  - [⠃⠂, "but,", {xfail: true}]
+  - [⠉⠂, "can,", {xfail: true}]
+  - [⠙⠂, "do,", {xfail: true}]
   # multi-letter contractions
-  - [⠁⠃⠂, "about,"]
-  - [⠁⠃⠧⠂, "above,"]
+  - [⠁⠃⠂, "about,", {xfail: true}]
+  - [⠁⠃⠧⠂, "above,", {xfail: true}]
 
