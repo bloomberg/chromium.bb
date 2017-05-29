@@ -42,7 +42,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // No address is selected.
   // Verify the expected amounts are shown ('Total', 'Pending Shipping Price'
   // and 'Subtotal', respectively).
-  EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
+  EXPECT_EQ(base::ASCIIToUTF16("USD"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL));
+  EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$0.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
@@ -84,7 +86,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
 
   // Verify the expected amounts are shown ('Total', 'Standard shipping in US'
   // and 'Subtotal', respectively).
-  EXPECT_EQ(base::ASCIIToUTF16("USD $10.00"),
+  EXPECT_EQ(base::ASCIIToUTF16("USD"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL));
+  EXPECT_EQ(base::ASCIIToUTF16("$10.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
@@ -125,7 +129,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
 
   // Verify the expected amounts are shown ('Total',
   // 'Free shipping in California' and 'Subtotal', respectively).
-  EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
+  EXPECT_EQ(base::ASCIIToUTF16("USD"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL));
+  EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$0.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
