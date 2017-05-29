@@ -184,8 +184,8 @@ void FileSelectorImpl::SelectFile(
     // function.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&FileSelectorImpl::FileSelectionCanceled,
-                   base::Unretained(this), static_cast<void*>(NULL)));
+        base::BindOnce(&FileSelectorImpl::FileSelectionCanceled,
+                       base::Unretained(this), static_cast<void*>(NULL)));
   }
 }
 

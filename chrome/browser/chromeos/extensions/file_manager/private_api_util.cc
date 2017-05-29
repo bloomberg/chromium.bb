@@ -357,8 +357,8 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&GetSelectedFileInfoInternal, profile, base::Passed(&params)));
+      FROM_HERE, base::BindOnce(&GetSelectedFileInfoInternal, profile,
+                                base::Passed(&params)));
 }
 
 void SetupProfileFileAccessPermissions(int render_view_process_id,

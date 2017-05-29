@@ -102,11 +102,11 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
       // readable from avfs/fuse if needed.
       base::PostTaskWithTraits(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-          base::Bind(&EnsureReadableFilePermissionAsync, path,
-                     google_apis::CreateRelayCallback(
-                         base::Bind(&FileManagerPrivateAddMountFunction::
-                                        RunAfterMarkCacheFileAsMounted,
-                                    this, path.BaseName()))));
+          base::BindOnce(&EnsureReadableFilePermissionAsync, path,
+                         google_apis::CreateRelayCallback(
+                             base::Bind(&FileManagerPrivateAddMountFunction::
+                                            RunAfterMarkCacheFileAsMounted,
+                                        this, path.BaseName()))));
     } else {
       RunAfterMarkCacheFileAsMounted(
           path.BaseName(), drive::FILE_ERROR_OK, path);
