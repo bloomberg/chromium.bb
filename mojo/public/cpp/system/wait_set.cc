@@ -32,6 +32,8 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
   void ShutDown() {
     // NOTE: This may immediately invoke Notify for every context.
     watcher_handle_.reset();
+
+    cancelled_contexts_.clear();
   }
 
   MojoResult AddEvent(base::WaitableEvent* event) {
@@ -93,6 +95,11 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
     scoped_refptr<Context> context;
     {
       base::AutoLock lock(lock_);
+
+      // Always clear |cancelled_contexts_| in case it's accumulated any more
+      // entries since the last time we ran.
+      cancelled_contexts_.clear();
+
       auto it = handle_to_context_.find(handle);
       if (it == handle_to_context_.end())
         return MOJO_RESULT_NOT_FOUND;
@@ -115,13 +122,6 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
     // context was or will imminently be cancelled and moved from |contexts_|
     // to |cancelled_contexts_|.
     DCHECK(rv == MOJO_RESULT_OK || rv == MOJO_RESULT_NOT_FOUND);
-
-    {
-      // Always clear |cancelled_contexts_| in case it's accumulated any more
-      // entries since the last time we ran.
-      base::AutoLock lock(lock_);
-      cancelled_contexts_.clear();
-    }
 
     return rv;
   }
