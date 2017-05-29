@@ -32,12 +32,12 @@ exo::Surface* GetArcSurface(const aura::Window* window) {
 }
 
 int32_t GetTaskId(aura::Window* window) {
-  const std::string arc_app_id = exo::ShellSurface::GetApplicationId(window);
-  if (arc_app_id.empty())
+  const std::string* arc_app_id = exo::ShellSurface::GetApplicationId(window);
+  if (!arc_app_id)
     return kNoTaskId;
 
   int32_t task_id = kNoTaskId;
-  if (sscanf(arc_app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+  if (sscanf(arc_app_id->c_str(), "org.chromium.arc.%d", &task_id) != 1)
     return kNoTaskId;
 
   return task_id;

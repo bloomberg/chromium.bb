@@ -250,9 +250,9 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   surface->Attach(buffer.get());
   surface->Commit();
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ("pre-widget-id", ShellSurface::GetApplicationId(window));
+  EXPECT_EQ("pre-widget-id", *ShellSurface::GetApplicationId(window));
   shell_surface->SetApplicationId("test");
-  EXPECT_EQ("test", ShellSurface::GetApplicationId(window));
+  EXPECT_EQ("test", *ShellSurface::GetApplicationId(window));
 }
 
 TEST_F(ShellSurfaceTest, Move) {
