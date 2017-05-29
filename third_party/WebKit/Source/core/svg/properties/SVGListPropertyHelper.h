@@ -91,11 +91,6 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   };
 
   ConstIterator begin() const { return ConstIterator(values_.begin()); }
-
-  ConstIterator LastAppended() const {
-    return ConstIterator(values_.begin() + values_.size() - 1);
-  }
-
   ConstIterator end() const { return ConstIterator(values_.end()); }
 
   void Append(ItemPropertyType* new_item) {

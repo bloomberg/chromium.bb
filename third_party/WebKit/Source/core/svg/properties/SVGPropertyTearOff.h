@@ -69,8 +69,6 @@ class SVGPropertyTearOffBase
     attribute_name_ = attribute_name;
   }
 
-  virtual AnimatedPropertyType GetType() const = 0;
-
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   static void ThrowReadOnly(ExceptionState&);
@@ -105,10 +103,6 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
   }
 
   void SetTarget(Property* target) { target_ = target; }
-
-  AnimatedPropertyType GetType() const override {
-    return Property::ClassType();
-  }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(target_);
