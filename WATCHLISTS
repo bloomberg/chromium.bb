@@ -596,25 +596,25 @@
                   'chrome/common/search_types.*',
     },
     'ios': {
-      'filepath': 'ios',
+      'filepath': 'ios/',
     },
     'ios_chrome': {
-      'filepath': 'ios/chrome',
+      'filepath': 'ios/chrome/',
     },
     'ios_clean': {
-      'filepath': 'ios/clean',
+      'filepath': 'ios/clean/',
     },
     'ios_showcase': {
-      'filepath': 'ios/showcase',
+      'filepath': 'ios/showcase/',
     },
     'ios_test': {
-      'filepath': 'ios/chrome/test|'\
-                  'ios/testing|'\
-                  'ios/web/public/test|'\
-                  'ios/web/test',
+      'filepath': 'ios/chrome/test/|'\
+                  'ios/testing/|'\
+                  'ios/web/public/test/|'\
+                  'ios/web/test/',
     },
     'ios_web': {
-      'filepath': 'ios/web',
+      'filepath': 'ios/web(_view)?/',
     },
     'ipc': {
       'filepath': 'ipc/ipc',
