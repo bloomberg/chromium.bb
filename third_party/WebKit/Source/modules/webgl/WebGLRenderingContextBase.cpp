@@ -1053,9 +1053,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   }
 
   drawing_buffer_ = std::move(buffer);
-  drawing_buffer_->AddNewMailboxCallback(
-      WTF::Bind(&WebGLRenderingContextBase::NotifyCanvasContextChanged,
-                WrapWeakPersistent(this)));
   GetDrawingBuffer()->Bind(GL_FRAMEBUFFER);
   SetupFlags();
 
@@ -1316,7 +1313,6 @@ void WebGLRenderingContextBase::DestroyContext() {
       ConvertToBaseCallback(std::move(null_closure)));
   GetDrawingBuffer()->ContextProvider()->SetErrorMessageCallback(
       ConvertToBaseCallback(std::move(null_function)));
-  GetDrawingBuffer()->AddNewMailboxCallback(nullptr);
 
   DCHECK(GetDrawingBuffer());
   drawing_buffer_->BeginDestruction();
@@ -1357,13 +1353,6 @@ void WebGLRenderingContextBase::OnErrorMessage(const char* message,
   if (synthesized_errors_to_console_)
     PrintGLErrorToConsole(message);
   probe::didFireWebGLErrorOrWarning(canvas(), message);
-}
-
-void WebGLRenderingContextBase::NotifyCanvasContextChanged() {
-  if (!canvas())
-    return;
-
-  canvas()->NotifyListenersCanvasChanged();
 }
 
 WebGLRenderingContextBase::HowToClear
@@ -7533,10 +7522,6 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   }
 
   drawing_buffer_ = std::move(buffer);
-  drawing_buffer_->AddNewMailboxCallback(
-      WTF::Bind(&WebGLRenderingContextBase::NotifyCanvasContextChanged,
-                WrapWeakPersistent(this)));
-
   GetDrawingBuffer()->Bind(GL_FRAMEBUFFER);
   lost_context_errors_.clear();
   context_lost_mode_ = kNotLostContext;

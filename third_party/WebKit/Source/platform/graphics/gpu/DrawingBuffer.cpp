@@ -282,9 +282,6 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
 
   TRACE_EVENT0("blink,rail", "DrawingBuffer::prepareMailbox");
 
-  if (new_mailbox_callback_)
-    (*new_mailbox_callback_)();
-
   // Resolve the multisampled buffer into m_backColorBuffer texture.
   ResolveIfNeeded();
 

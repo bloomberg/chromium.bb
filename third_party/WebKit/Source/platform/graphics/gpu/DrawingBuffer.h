@@ -228,10 +228,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // Restore all state that may have been dirtied by any call.
   void RestoreAllState();
 
-  void AddNewMailboxCallback(std::unique_ptr<WTF::Closure> closure) {
-    new_mailbox_callback_ = std::move(closure);
-  }
-
   // This class helps implement correct semantics for BlitFramebuffer
   // when the DrawingBuffer is using a CHROMIUM image for its backing
   // store and RGB emulation is in use (basically, macOS only).
@@ -474,8 +470,6 @@ class PLATFORM_EXPORT DrawingBuffer
   const bool software_rendering_;
   bool has_implicit_stencil_buffer_ = false;
   bool storage_texture_supported_ = false;
-
-  std::unique_ptr<WTF::Closure> new_mailbox_callback_;
 
   // The current state restorer, which is used to track state dirtying. It is an
   // error to dirty state shared with WebGL while there is no existing state
