@@ -13,6 +13,7 @@
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/midi_permission_context.h"
+#include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_context_base.h"
@@ -111,14 +112,6 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
   return CONTENT_SETTINGS_TYPE_DEFAULT;
 }
 
-// Returns whether the permission has a constant ContentSetting value (i.e.
-// always approved or always denied)
-// The ContentSettingsTypes for which true is returned will also return nullptr
-// in PermissionManager::GetPermissionContext since they don't have a context.
-bool IsConstantPermission(ContentSettingsType type) {
-  return type == CONTENT_SETTINGS_TYPE_MIDI;
-}
-
 void SubscriptionCallbackWrapper(
     const base::Callback<void(PermissionStatus)>& callback,
     ContentSetting content_setting) {
@@ -147,22 +140,6 @@ void ContentSettingCallbackWraper(
     const std::vector<ContentSetting>& vector) {
   DCHECK_EQ(1ul, vector.size());
   callback.Run(vector[0]);
-}
-
-// Function used for handling permission types which do not change their
-// value i.e. they are always approved or always denied etc.
-// CONTENT_SETTING_DEFAULT is returned if the permission needs further handling.
-// This function should only be called when IsConstantPermission has returned
-// true for the PermissionType.
-ContentSetting GetContentSettingForConstantPermission(
-    ContentSettingsType type) {
-  DCHECK(IsConstantPermission(type));
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_MIDI:
-      return CONTENT_SETTING_ALLOW;
-    default:
-      return CONTENT_SETTING_BLOCK;
-  }
 }
 
 }  // anonymous namespace
@@ -231,6 +208,8 @@ PermissionManager::PermissionManager(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
   permission_contexts_[CONTENT_SETTINGS_TYPE_MIDI_SYSEX] =
+      base::MakeUnique<MidiSysexPermissionContext>(profile);
+  permission_contexts_[CONTENT_SETTINGS_TYPE_MIDI] =
       base::MakeUnique<MidiPermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_PUSH_MESSAGING] =
       base::MakeUnique<NotificationPermissionContext>(
@@ -313,16 +292,8 @@ int PermissionManager::RequestPermissions(
   for (size_t i = 0; i < permissions.size(); ++i) {
     const ContentSettingsType permission = permissions[i];
 
-    if (IsConstantPermission(permission) || !GetPermissionContext(permission)) {
-      // Track permission request usages even for constant permissions.
-      PermissionUmaUtil::PermissionRequested(permission, requesting_origin,
-                                             embedding_origin, profile_);
-      OnPermissionsRequestResponseStatus(
-          request_id, i, GetContentSettingForConstantPermission(permission));
-      continue;
-    }
-
     PermissionContextBase* context = GetPermissionContext(permission);
+    DCHECK(context);
     context->RequestPermission(
         web_contents, request, requesting_origin, user_gesture,
         base::Bind(&PermissionManager::OnPermissionsRequestResponseStatus,
@@ -515,8 +486,6 @@ void PermissionManager::OnContentSettingChanged(
   for (SubscriptionsMap::iterator iter(&subscriptions_);
        !iter.IsAtEnd(); iter.Advance()) {
     Subscription* subscription = iter.GetCurrentValue();
-    if (IsConstantPermission(subscription->permission))
-      continue;
     if (subscription->permission != content_type)
       continue;
 
@@ -551,13 +520,9 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  if (IsConstantPermission(permission)) {
-    return PermissionResult(GetContentSettingForConstantPermission(permission),
-                            PermissionStatusSource::UNSPECIFIED);
-  }
   PermissionContextBase* context = GetPermissionContext(permission);
   PermissionResult result = context->GetPermissionStatus(
-      nullptr /* render_frame_host */, requesting_origin.GetOrigin(),
+      render_frame_host, requesting_origin.GetOrigin(),
       embedding_origin.GetOrigin());
   DCHECK(result.content_setting == CONTENT_SETTING_ALLOW ||
          result.content_setting == CONTENT_SETTING_ASK ||

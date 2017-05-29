@@ -4,35 +4,17 @@
 
 #include "chrome/browser/media/midi_permission_context.h"
 
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
-#include "content/public/browser/child_process_security_policy.h"
-#include "url/gurl.h"
-
 MidiPermissionContext::MidiPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
+    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_MIDI) {}
 
 MidiPermissionContext::~MidiPermissionContext() {
 }
 
-void MidiPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                             const GURL& requesting_frame,
-                                             bool allowed) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
-                                              id.render_frame_id());
-  if (!content_settings)
-    return;
-
-  if (allowed) {
-    content_settings->OnMidiSysExAccessed(requesting_frame);
-
-    content::ChildProcessSecurityPolicy::GetInstance()->
-        GrantSendMidiSysExMessage(id.render_process_id());
-  } else {
-    content_settings->OnMidiSysExAccessBlocked(requesting_frame);
-  }
+ContentSetting MidiPermissionContext::GetPermissionStatusInternal(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  return CONTENT_SETTING_ALLOW;
 }
 
 bool MidiPermissionContext::IsRestrictedToSecureOrigins() const {
