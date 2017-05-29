@@ -5,6 +5,7 @@
 #ifndef RemoteFrameView_h
 #define RemoteFrameView_h
 
+#include "core/dom/DocumentLifecycle.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrameView.h"
 #include "platform/geometry/IntRect.h"
@@ -45,7 +46,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void Show() override;
   void SetParentVisible(bool) override;
 
-  void UpdateRemoteViewportIntersection();
+  void UpdateViewportIntersectionsForSubtree(
+      DocumentLifecycle::LifecycleState) override;
 
   DECLARE_VIRTUAL_TRACE();
 
