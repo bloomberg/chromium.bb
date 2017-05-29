@@ -1647,24 +1647,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static Color InitialColor() { return Color::kBlack; }
   void SetColor(const Color&);
 
-  // hyphens
-  static Hyphens InitialHyphens() { return Hyphens::kManual; }
-  Hyphens GetHyphens() const {
-    return static_cast<Hyphens>(rare_inherited_data_->hyphens_);
-  }
-  void SetHyphens(Hyphens h) {
-    SET_VAR(rare_inherited_data_, hyphens_, static_cast<unsigned>(h));
-  }
-
-  // -webkit-hyphenate-character
-  static const AtomicString& InitialHyphenationString() { return g_null_atom; }
-  const AtomicString& HyphenationString() const {
-    return rare_inherited_data_->hyphenation_string_;
-  }
-  void SetHyphenationString(const AtomicString& h) {
-    SET_VAR(rare_inherited_data_, hyphenation_string_, h);
-  }
-
   // line-height
   static Length InitialLineHeight() { return Length(-100.0, kPercent); }
   Length LineHeight() const;
