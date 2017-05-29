@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PermissionDialogController_jni.h"
 #include "jni/PermissionDialogDelegate_jni.h"
@@ -102,14 +103,12 @@ bool PermissionDialogDelegate::RegisterPermissionDialogDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ScopedJavaLocalRef<jobject> PermissionDialogDelegate::CreateJavaDelegate(
-    JNIEnv* env) {
+void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
   std::vector<int> content_settings_types{
       infobar_delegate_->content_settings_types()};
 
-  return Java_PermissionDialogDelegate_create(
-      env, reinterpret_cast<uintptr_t>(this),
-      tab_->GetJavaObject(),
+  j_delegate_.Reset(Java_PermissionDialogDelegate_create(
+      env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types).obj(),
       ResourceMapper::MapFromChromiumId(infobar_delegate_->GetIconId()),
       ConvertUTF16ToJavaString(env, infobar_delegate_->GetMessageText()),
@@ -119,7 +118,7 @@ ScopedJavaLocalRef<jobject> PermissionDialogDelegate::CreateJavaDelegate(
       ConvertUTF16ToJavaString(env,
                                infobar_delegate_->GetButtonLabel(
                                    PermissionInfoBarDelegate::BUTTON_CANCEL)),
-      infobar_delegate_->ShouldShowPersistenceToggle());
+      infobar_delegate_->ShouldShowPersistenceToggle()));
 }
 
 void PermissionDialogDelegate::Accept(JNIEnv* env,
@@ -164,19 +163,40 @@ void PermissionDialogDelegate::Destroy(JNIEnv* env,
 PermissionDialogDelegate::PermissionDialogDelegate(
     TabAndroid* tab,
     std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate)
-    : tab_(tab), infobar_delegate_(std::move(infobar_delegate)) {
+    : content::WebContentsObserver(tab->web_contents()),
+      tab_(tab),
+      infobar_delegate_(std::move(infobar_delegate)) {
   DCHECK(tab_);
   DCHECK(infobar_delegate_);
 
   // Create our Java counterpart, which manages our lifetime.
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> j_delegate =
-      CreateJavaDelegate(env);
+  CreateJavaDelegate(env);
 
   // Send the Java delegate to the Java PermissionDialogController for display.
   // The controller takes over lifetime management; when the Java delegate is no
   // longer needed it will in turn free the native delegate.
-  Java_PermissionDialogController_createDialog(env, j_delegate.obj());
+  Java_PermissionDialogController_createDialog(env, j_delegate_.obj());
 }
 
 PermissionDialogDelegate::~PermissionDialogDelegate() {}
+
+void PermissionDialogDelegate::DismissDialog() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PermissionDialogDelegate_dismissFromNative(env, j_delegate_.obj());
+}
+
+void PermissionDialogDelegate::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  DismissDialog();
+}
+
+void PermissionDialogDelegate::WebContentsDestroyed() {
+  DismissDialog();
+}

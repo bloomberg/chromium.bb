@@ -13,9 +13,9 @@
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/web_contents_observer.h"
 
 using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
 
 namespace content {
 class WebContents;
@@ -34,7 +34,7 @@ class TabAndroid;
 // GroupedPermissionInfoBarDelegate, which will then source all of its data from
 // an underlying PermissionPromptAndroid object. At that time, this class will
 // also change to wrap a PermissionPromptAndroid.
-class PermissionDialogDelegate {
+class PermissionDialogDelegate : public content::WebContentsObserver {
  public:
   using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
 
@@ -73,9 +73,19 @@ class PermissionDialogDelegate {
   PermissionDialogDelegate(
       TabAndroid* tab,
       std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate_);
-  ~PermissionDialogDelegate();
+  ~PermissionDialogDelegate() override;
 
-  ScopedJavaLocalRef<jobject> CreateJavaDelegate(JNIEnv* env);
+  void CreateJavaDelegate(JNIEnv* env);
+
+  // On navigation or page destruction, hide the dialog.
+  void DismissDialog();
+
+  // WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
+
+  base::android::ScopedJavaGlobalRef<jobject> j_delegate_;
 
   TabAndroid* tab_;
 

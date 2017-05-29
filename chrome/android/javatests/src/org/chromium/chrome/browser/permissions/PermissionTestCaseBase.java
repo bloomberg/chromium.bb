@@ -88,11 +88,13 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
     /**
      * Criteria class to detect whether the permission dialog is shown.
      */
-    private static class DialogShownCriteria extends Criteria {
+    protected static class DialogShownCriteria extends Criteria {
         private AlertDialog mDialog;
+        private boolean mExpectDialog;
 
-        public DialogShownCriteria(String error) {
+        public DialogShownCriteria(String error, boolean expectDialog) {
             super(error);
+            mExpectDialog = expectDialog;
         }
 
         public AlertDialog getDialog() {
@@ -107,7 +109,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
                     public Boolean call() {
                         mDialog = PermissionDialogController.getInstance()
                                           .getCurrentDialogForTesting();
-                        return mDialog != null;
+                        return (mDialog != null) == mExpectDialog;
                     }
                 });
             } catch (ExecutionException e) {
@@ -134,6 +136,10 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         super.tearDown();
+    }
+
+    protected void setUpUrl(final String url) throws InterruptedException {
+        loadUrl(mTestServer.getURL(url));
     }
 
     /**
@@ -165,8 +171,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
     protected void runAllowTest(PermissionUpdateWaiter updateWaiter, final String url,
             String javascript, int nUpdates, boolean withGesture, boolean isDialog,
             boolean hasSwitch, boolean toggleSwitch) throws Exception {
-        final String test_url = mTestServer.getURL(url);
-        loadUrl(test_url);
+        setUpUrl(url);
 
         if (withGesture) {
             runJavaScriptCodeInCurrentTab("functionToRun = '" + javascript + "'");
@@ -176,7 +181,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         }
 
         if (isDialog) {
-            DialogShownCriteria criteria = new DialogShownCriteria("Dialog not shown");
+            DialogShownCriteria criteria = new DialogShownCriteria("Dialog not shown", true);
             CriteriaHelper.pollUiThread(criteria);
             replyToDialogAndWaitForUpdates(
                     updateWaiter, criteria.getDialog(), nUpdates, true, hasSwitch, toggleSwitch);
