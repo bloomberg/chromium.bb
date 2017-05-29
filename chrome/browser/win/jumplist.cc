@@ -60,7 +60,7 @@ namespace {
 // https://msdn.microsoft.com/library/windows/desktop/dd378398.aspx
 // The "Most visited" and "Recently closed" category titles always take 2 slots.
 // For the remaining 8 slots, we allocate 5 slots to "most-visited" items and 3
-// slots to"recently-closed" items, respectively.
+// slots to "recently-closed" items, respectively.
 constexpr size_t kMostVisitedItems = 5;
 constexpr size_t kRecentlyClosedItems = 3;
 
@@ -686,8 +686,11 @@ int JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
                               JumpListCategory category) {
   int icons_created = 0;
 
-  // Maximum number of icon files that each JumpList icon folder may hold.
-  size_t icon_limit = (category == JumpListCategory::kMostVisited) ? 10 : 6;
+  // Maximum number of icon files that each JumpList icon folder may hold, which
+  // is set to 2 times the normal amount.
+  size_t icon_limit =
+      2 * ((category == JumpListCategory::kMostVisited) ? kMostVisitedItems
+                                                        : kRecentlyClosedItems);
 
   // Clear the JumpList icon folder at |icon_dir| and the cache when
   // 1) "Most visited" category updates for the 1st time after Chrome is
