@@ -120,7 +120,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     public void testCantSelectShippingAddressWithoutPhone()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // The first suggestion should be the address with a phone.

@@ -166,16 +166,6 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.clickAndWait(resourceId, helper);
     }
 
-    /**
-     * Clicks on an element in the "Shipping summary" section of the payments UI. This section
-     * combines both shipping address and shipping option. It is replaced by "Shipping address" and
-     * "Shipping option" sections upon expanding the payments UI.
-     */
-    protected void clickInShippingSummaryAndWait(final int resourceId, CallbackHelper helper)
-            throws InterruptedException, TimeoutException {
-        mTestCommon.clickInShippingSummaryAndWait(resourceId, helper);
-    }
-
     /** Clicks on an element in the "Shipping address" section of the payments UI. */
     protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
@@ -218,8 +208,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /** Gets the button state for the shipping summary section. */
-    protected int getSummarySectionButtonState() throws ExecutionException {
-        return mTestCommon.getSummarySectionButtonState();
+    protected int getShippingAddressSectionButtonState() throws ExecutionException {
+        return mTestCommon.getShippingAddressSectionButtonState();
     }
 
     /** Gets the button state for the contact details section. */
@@ -270,6 +260,20 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mTestCommon.getShippingAddressSuggestionLabel(suggestionIndex);
     }
 
+    /**
+     *  Returns the summary text of the shipping address section.
+     */
+    protected String getShippingAddressSummaryLabel() throws ExecutionException {
+        return mTestCommon.getShippingAddressSummary();
+    }
+
+    /**
+     *  Returns the summary text of the shipping option section.
+     */
+    protected String getShippingOptionSummaryLabel() throws ExecutionException {
+        return mTestCommon.getShippingOptionSummary();
+    }
+
     /** Returns the focused view in the card editor view. */
     protected View getCardEditorFocusedView() {
         return mTestCommon.getCardEditorFocusedView();
@@ -308,7 +312,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Returns the the number of shipping address suggestions.
+     *  Returns the number of shipping address suggestions.
      */
     protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {
         return mTestCommon.getNumberOfShippingAddressSuggestions();

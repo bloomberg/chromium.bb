@@ -61,7 +61,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
             throws InterruptedException, ExecutionException, TimeoutException {
         // Select a shipping address and cancel out.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickOnShippingAddressSuggestionOptionAndWait(
                 0, mPaymentRequestTestRule.getReadyForInput());

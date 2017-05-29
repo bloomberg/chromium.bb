@@ -209,18 +209,6 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         helper.waitForCallback(callCount);
     }
 
-    protected void clickInShippingSummaryAndWait(final int resourceId, CallbackHelper helper)
-            throws InterruptedException, TimeoutException {
-        int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getShippingSummarySectionForTest().findViewById(resourceId).performClick();
-            }
-        });
-        helper.waitForCallback(callCount);
-    }
-
     protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
@@ -308,11 +296,11 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         helper.waitForCallback(callCount);
     }
 
-    protected int getSummarySectionButtonState() throws ExecutionException {
+    protected int getShippingAddressSectionButtonState() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
             public Integer call() {
-                return mUI.getShippingSummarySectionForTest().getEditButtonState();
+                return mUI.getShippingAddressSectionForTest().getEditButtonState();
             }
         });
     }
@@ -403,8 +391,32 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
-                return ((OptionSection) mUI.getShippingAddressSectionForTest())
+                return mUI.getShippingAddressSectionForTest()
                         .getOptionLabelsForTest(suggestionIndex)
+                        .getText()
+                        .toString();
+            }
+        });
+    }
+
+    protected String getShippingAddressSummary() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return mUI.getShippingAddressSectionForTest()
+                        .getSummaryLabelForTest()
+                        .getText()
+                        .toString();
+            }
+        });
+    }
+
+    protected String getShippingOptionSummary() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return mUI.getShippingOptionSectionForTest()
+                        .getSummaryLabelForTest()
                         .getText()
                         .toString();
             }

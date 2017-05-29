@@ -111,7 +111,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     public void testAbortMetrics_AbortedByUser_CancelButton()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Cancel the Payment Request.
@@ -142,7 +142,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     public void testAbortMetrics_AbortedByUser_XButton()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Press the [X] button.
@@ -164,7 +164,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     public void testAbortMetrics_AbortedByUser_BackButton()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Press the back button.
@@ -192,7 +192,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     public void testAbortMetrics_AbortedByUser_TabClosed()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Press the back button.
@@ -385,7 +385,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
 
         // Add a shipping address, which triggers a second "Show".
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());

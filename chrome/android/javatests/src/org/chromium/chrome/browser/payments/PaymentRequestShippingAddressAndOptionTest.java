@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
 })
-public class PaymentRequestShippingAddressTest implements MainActivityStartCallback {
+public class PaymentRequestShippingAddressAndOptionTest implements MainActivityStartCallback {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
@@ -69,9 +69,13 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that the shipping label on the bottomsheet does not include the country.
-        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)
-                .getLabelText().toString().equals(
-                        "Jon Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555"));
+        Assert.assertEquals("Jon Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555",
+                mPaymentRequestTestRule.getShippingAddressSummaryLabel());
+
+        // Make sure shipping option summary on bottom sheet is displayed in a single line
+        // as expected.
+        Assert.assertEquals("Free global shipping, $0.00",
+                mPaymentRequestTestRule.getShippingOptionSummaryLabel());
     }
 
     /** Verifies that the shipping address format in fullsheet mode is as expected. */
@@ -83,13 +87,19 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Focus on a section other that shipping addresses to enter fullsheet mode.
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Make sure that the shipping label on the fullsheet does not include the country.
-        Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)
-                .getLabelText().toString().equals(
-                            "Jon Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555"));
+        Assert.assertEquals("Jon Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555",
+                mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)
+                        .getLabelText()
+                        .toString());
+
+        // Make sure shipping option summary on the full sheet is displayed on multiple lines
+        // as expected.
+        Assert.assertEquals("Free global shipping\n$0.00",
+                mPaymentRequestTestRule.getShippingOptionSummaryLabel());
     }
 
     /** Verifies that the shipping address format in fullsheet mode is as expected. */
@@ -132,7 +142,7 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Add a shipping address.
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
@@ -145,8 +155,10 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
 
         // Make sure that the shipping label does not include the country.
         Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)
-                .getLabelText().toString().equals(
-                        "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n+1 650-253-0000"));
+                                  .getLabelText()
+                                  .toString()
+                                  .equals("Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n"
+                                          + "+1 650-253-0000"));
     }
 
     /**
@@ -159,7 +171,7 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
     public void testEditShippingAddressAndCancelEditorShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.expectShippingAddressRowIsSelected(0);
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
@@ -183,7 +195,7 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
     public void testEditShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.expectShippingAddressRowIsSelected(0);
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
@@ -207,7 +219,7 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
     public void testAddShippingAddressAndCancelEditorShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.expectShippingAddressRowIsSelected(0);
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
@@ -231,7 +243,7 @@ public class PaymentRequestShippingAddressTest implements MainActivityStartCallb
     public void testAddShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
-        mPaymentRequestTestRule.clickInShippingSummaryAndWait(
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.expectShippingAddressRowIsSelected(0);
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
