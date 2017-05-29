@@ -91,7 +91,7 @@ WorkerFetchContext::WorkerFetchContext(
 ResourceFetcher* WorkerFetchContext::GetResourceFetcher() {
   if (resource_fetcher_)
     return resource_fetcher_;
-  resource_fetcher_ = ResourceFetcher::Create(this);
+  resource_fetcher_ = ResourceFetcher::Create(this, loading_task_runner_);
   return resource_fetcher_;
 }
 
@@ -194,8 +194,11 @@ SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
   return worker_global_scope_->GetSecurityOrigin();
 }
 
-std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader() {
-  return web_context_->CreateURLLoader();
+std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
+    const ResourceRequest&) {
+  auto loader = web_context_->CreateURLLoader();
+  loader->SetLoadingTaskRunner(loading_task_runner_.Get());
+  return loader;
 }
 
 bool WorkerFetchContext::IsControlledByServiceWorker() const {
@@ -207,10 +210,6 @@ void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
   request.OverrideLoadingIPCType(WebURLRequest::LoadingIPCType::kMojo);
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
-}
-
-RefPtr<WebTaskRunner> WorkerFetchContext::LoadingTaskRunner() const {
-  return loading_task_runner_;
 }
 
 void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,

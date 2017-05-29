@@ -112,8 +112,9 @@ void ModuleScriptLoaderTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
   GetDocument().SetURL(KURL(KURL(), "https://example.test"));
-  fetcher_ = ResourceFetcher::Create(
-      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
+  auto* context =
+      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+  fetcher_ = ResourceFetcher::Create(context, context->GetTaskRunner().Get());
   modulator_ = new ModuleScriptLoaderTestModulator(
       ToScriptStateForMainWorld(&GetFrame()),
       GetDocument().GetSecurityOrigin());

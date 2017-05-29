@@ -114,7 +114,7 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
 
   RefPtr<WebTaskRunner> GetTaskRunner(TaskType type) override {
     DCHECK(IsContextThread());
-    return fetch_context_->LoadingTaskRunner();
+    return fetch_context_->GetTaskRunner();
   }
 
   void RecordUseCount(UseCounter::Feature feature) override {

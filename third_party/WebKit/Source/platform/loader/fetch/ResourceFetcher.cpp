@@ -263,14 +263,12 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
   return WebURLRequest::kRequestContextSubresource;
 }
 
-ResourceFetcher::ResourceFetcher(FetchContext* new_context)
+ResourceFetcher::ResourceFetcher(FetchContext* new_context,
+                                 RefPtr<WebTaskRunner> task_runner)
     : context_(new_context),
       archive_(Context().IsMainFrame() ? nullptr : Context().Archive()),
-      // loadingTaskRunner() is null in tests that use the null fetch context.
       resource_timing_report_timer_(
-          Context().LoadingTaskRunner()
-              ? Context().LoadingTaskRunner()
-              : Platform::Current()->CurrentThread()->GetWebTaskRunner(),
+          std::move(task_runner),
           this,
           &ResourceFetcher::ResourceTimingReportTimerFired),
       auto_load_images_(true),
