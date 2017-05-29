@@ -647,6 +647,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewAccountItem* item =
       base::mac::ObjCCastStrict<CollectionViewAccountItem>(
           [_identityMap objectForKey:identity.gaiaID]);
+  if (!item) {
+    return;
+  }
   [self updateAccountItem:item withIdentity:identity];
   NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
