@@ -66,8 +66,9 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
         CrashDumpManager.tryToUploadMinidump(null);
     }
 
-    @SmallTest
-    @Feature({"Android-AppBase"})
+    // @SmallTest
+    // @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/726976.
     public void testUploadMinidump_FileDoesntExist() {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
