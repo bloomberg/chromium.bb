@@ -317,7 +317,6 @@ modules_idl_files =
                     "webauth/WebAuthentication.idl",
                     "webauth/AuthenticationAssertion.idl",
                     "webdatabase/Database.idl",
-                    "webdatabase/DatabaseCallback.idl",
                     "webdatabase/SQLError.idl",
                     "webdatabase/SQLResultSet.idl",
                     "webdatabase/SQLResultSetRowList.idl",

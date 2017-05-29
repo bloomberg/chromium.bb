@@ -73,6 +73,8 @@ bindings_modules_generated_union_type_files = [
 ]
 
 generated_modules_callback_function_files = [
+  "$bindings_modules_v8_output_dir/DatabaseCallback.cpp",
+  "$bindings_modules_v8_output_dir/DatabaseCallback.h",
   "$bindings_modules_v8_output_dir/IDBObserverCallback.cpp",
   "$bindings_modules_v8_output_dir/IDBObserverCallback.h",
   "$bindings_modules_v8_output_dir/MediaSessionActionHandler.cpp",

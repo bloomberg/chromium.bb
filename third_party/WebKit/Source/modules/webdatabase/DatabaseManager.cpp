@@ -31,9 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTask.h"
@@ -59,13 +57,6 @@ DatabaseManager::DatabaseManager()
 }
 
 DatabaseManager::~DatabaseManager() {}
-
-// This is just for ignoring DatabaseCallback::handleEvent()'s return value.
-static void DatabaseCallbackHandleEvent(DatabaseCallback* callback,
-                                        Database* database) {
-  probe::AsyncTask async_task(database->GetExecutionContext(), callback);
-  callback->handleEvent(database);
-}
 
 DatabaseContext* DatabaseManager::ExistingDatabaseContextFor(
     ExecutionContext* context) {
@@ -147,6 +138,7 @@ Database* DatabaseManager::OpenDatabaseInternal(
     const String& expected_version,
     const String& display_name,
     unsigned estimated_size,
+    DatabaseCallback* creation_callback,
     bool set_version_in_new_database,
     DatabaseError& error,
     String& error_message) {
@@ -155,8 +147,9 @@ Database* DatabaseManager::OpenDatabaseInternal(
   DatabaseContext* backend_context = DatabaseContextFor(context)->Backend();
   if (DatabaseTracker::Tracker().CanEstablishDatabase(
           backend_context, name, display_name, estimated_size, error)) {
-    Database* backend = new Database(backend_context, name, expected_version,
-                                     display_name, estimated_size);
+    Database* backend =
+        new Database(backend_context, name, expected_version, display_name,
+                     estimated_size, creation_callback);
     if (backend->OpenAndVerifyVersion(set_version_in_new_database, error,
                                       error_message))
       return backend;
@@ -191,26 +184,13 @@ Database* DatabaseManager::OpenDatabase(ExecutionContext* context,
   bool set_version_in_new_database = !creation_callback;
   Database* database = OpenDatabaseInternal(
       context, name, expected_version, display_name, estimated_size,
-      set_version_in_new_database, error, error_message);
+      creation_callback, set_version_in_new_database, error, error_message);
   if (!database)
     return nullptr;
 
   DatabaseContextFor(context)->SetHasOpenDatabases();
   DatabaseClient::From(context)->DidOpenDatabase(
       database, context->GetSecurityOrigin()->Host(), name, expected_version);
-
-  if (database->IsNew() && creation_callback) {
-    STORAGE_DVLOG(1) << "Scheduling DatabaseCreationCallbackTask for database "
-                     << database;
-    probe::AsyncTaskScheduled(database->GetExecutionContext(), "openDatabase",
-                              creation_callback);
-    TaskRunnerHelper::Get(TaskType::kDatabaseAccess,
-                          database->GetExecutionContext())
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&DatabaseCallbackHandleEvent,
-                                              WrapPersistent(creation_callback),
-                                              WrapPersistent(database)));
-  }
-
   DCHECK(database);
   return database;
 }

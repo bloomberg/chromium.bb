@@ -26,11 +26,13 @@
 #include "modules/webdatabase/Database.h"
 
 #include <memory>
+#include "bindings/modules/v8/DatabaseCallback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
@@ -224,7 +226,8 @@ Database::Database(DatabaseContext* database_context,
                    const String& name,
                    const String& expected_version,
                    const String& display_name,
-                   unsigned estimated_size)
+                   unsigned estimated_size,
+                   DatabaseCallback* creation_callback)
     : database_context_(database_context),
       name_(name.IsolatedCopy()),
       expected_version_(expected_version.IsolatedCopy()),
@@ -233,6 +236,7 @@ Database::Database(DatabaseContext* database_context,
       guid_(0),
       opened_(0),
       new_(false),
+      creation_callback_(this, creation_callback),
       transaction_in_progress_(false),
       is_transaction_queue_enabled_(true) {
   DCHECK(IsMainThread());
@@ -279,6 +283,11 @@ DEFINE_TRACE(Database) {
   visitor->Trace(database_context_);
   visitor->Trace(sqlite_database_);
   visitor->Trace(database_authorizer_);
+  visitor->Trace(creation_callback_);
+}
+
+DEFINE_TRACE_WRAPPERS(Database) {
+  visitor->TraceWrappers(creation_callback_);
 }
 
 bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
@@ -294,8 +303,28 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
       this, set_version_in_new_database, &event, error, error_message, success);
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
   event.Wait();
+  if (creation_callback_) {
+    if (success && IsNew()) {
+      STORAGE_DVLOG(1)
+          << "Scheduling DatabaseCreationCallbackTask for database " << this;
+      probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
+                                creation_callback_);
+      TaskRunnerHelper::Get(TaskType::kDatabaseAccess, GetExecutionContext())
+          ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
+                                                WrapPersistent(this)));
+    } else {
+      creation_callback_ = nullptr;
+    }
+  }
 
   return success;
+}
+
+void Database::RunCreationCallback() {
+  probe::AsyncTask async_task(GetExecutionContext(), creation_callback_);
+  bool return_value;
+  creation_callback_->call(nullptr, this, return_value);
+  creation_callback_ = nullptr;
 }
 
 void Database::Close() {
