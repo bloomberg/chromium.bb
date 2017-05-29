@@ -105,7 +105,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                     const std::string& cookie_line,
                     CookieOptions* options);
   bool CanAccessFile(const URLRequest& request,
-                     const base::FilePath& path) const;
+                     const base::FilePath& original_path,
+                     const base::FilePath& absolute_path) const;
   bool CanEnablePrivacyMode(const GURL& url,
                             const GURL& first_party_for_cookies) const;
 
@@ -278,10 +279,13 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                               CookieOptions* options) = 0;
 
   // Called when a file access is attempted to allow the network delegate to
-  // allow or block access to the given file path.  Returns true if access is
-  // allowed.
+  // allow or block access to the given file path, provided in the original
+  // and absolute forms (i.e. symbolic link is resolved). It's up to
+  // subclasses of NetworkDelegate to decide which path to use for
+  // checking. Returns true if access is allowed.
   virtual bool OnCanAccessFile(const URLRequest& request,
-                               const base::FilePath& path) const = 0;
+                               const base::FilePath& original_path,
+                               const base::FilePath& absolute_path) const = 0;
 
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy

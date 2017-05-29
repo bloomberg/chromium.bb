@@ -159,9 +159,10 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
 }
 
 bool NetworkDelegate::CanAccessFile(const URLRequest& request,
-                                    const base::FilePath& path) const {
+                                    const base::FilePath& original_path,
+                                    const base::FilePath& absolute_path) const {
   DCHECK(CalledOnValidThread());
-  return OnCanAccessFile(request, path);
+  return OnCanAccessFile(request, original_path, absolute_path);
 }
 
 bool NetworkDelegate::CanEnablePrivacyMode(

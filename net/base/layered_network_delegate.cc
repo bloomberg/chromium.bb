@@ -203,16 +203,19 @@ void LayeredNetworkDelegate::OnCanSetCookieInternal(
     CookieOptions* options) {
 }
 
-bool LayeredNetworkDelegate::OnCanAccessFile(const URLRequest& request,
-                                             const base::FilePath& path) const {
-  OnCanAccessFileInternal(request, path);
-  return nested_network_delegate_->CanAccessFile(request, path);
+bool LayeredNetworkDelegate::OnCanAccessFile(
+    const URLRequest& request,
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
+  OnCanAccessFileInternal(request, original_path, absolute_path);
+  return nested_network_delegate_->CanAccessFile(request, original_path,
+                                                 absolute_path);
 }
 
 void LayeredNetworkDelegate::OnCanAccessFileInternal(
     const URLRequest& request,
-    const base::FilePath& path) const {
-}
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {}
 
 bool LayeredNetworkDelegate::OnCanEnablePrivacyMode(
     const GURL& url,

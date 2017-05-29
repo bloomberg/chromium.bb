@@ -284,6 +284,13 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                           request_timer_->Elapsed());
   }
 
+  bool CanAccessFile(const base::FilePath& original_path,
+                     const base::FilePath& absolute_path) override {
+    // The access checks for the file are performed before the job is
+    // created, so we should know that this is safe.
+    return true;
+  }
+
   void OnFilePathAndLastModifiedTimeRead(base::FilePath* read_file_path,
                                          base::Time* last_modified_time) {
     file_path_ = *read_file_path;

@@ -648,8 +648,10 @@ bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
   return allow;
 }
 
-bool TestNetworkDelegate::OnCanAccessFile(const URLRequest& request,
-                                          const base::FilePath& path) const {
+bool TestNetworkDelegate::OnCanAccessFile(
+    const URLRequest& request,
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
   return can_access_files_;
 }
 

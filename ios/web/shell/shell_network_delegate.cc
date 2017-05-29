@@ -78,8 +78,10 @@ bool ShellNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   return true;
 }
 
-bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
-                                           const base::FilePath& path) const {
+bool ShellNetworkDelegate::OnCanAccessFile(
+    const net::URLRequest& request,
+    const base::FilePath& original_path,
+    const base::FilePath& absolute_path) const {
   return true;
 }
 

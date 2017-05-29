@@ -356,7 +356,8 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       const std::string& cookie_line,
                       CookieOptions* options) override;
   bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& path) const override;
+                       const base::FilePath& original_path,
+                       const base::FilePath& absolute_path) const override;
   bool OnAreExperimentalCookieFeaturesEnabled() const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,

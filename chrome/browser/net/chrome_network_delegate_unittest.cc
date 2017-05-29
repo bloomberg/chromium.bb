@@ -601,6 +601,8 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   // Chrome OS and Android don't have access to random files.
   EXPECT_FALSE(IsAccessAllowed("/", ""));
   EXPECT_FALSE(IsAccessAllowed("/foo.txt", ""));
+  // Empty path should not be allowed.
+  EXPECT_FALSE(IsAccessAllowed("", ""));
 #endif
 
 #if defined(OS_CHROMEOS)
