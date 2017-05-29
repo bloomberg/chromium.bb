@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Time.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ namespace blink {
 // function/scope.
 class PLATFORM_EXPORT RuntimeCallCounter {
  public:
-  RuntimeCallCounter(const char* name) : count_(0), name_(name) {}
+  explicit RuntimeCallCounter(const char* name) : count_(0), name_(name) {}
 
   void IncrementAndAddTime(TimeDelta time) {
     count_++;
@@ -26,10 +27,19 @@ class PLATFORM_EXPORT RuntimeCallCounter {
   TimeDelta GetTime() const { return time_; }
   const char* GetName() const { return name_; }
 
+  void Reset() {
+    time_ = TimeDelta();
+    count_ = 0;
+  }
+
  private:
+  RuntimeCallCounter() {}
+
   uint64_t count_;
   TimeDelta time_;
   const char* name_;
+
+  friend class RuntimeCallStats;
 };
 
 // Used to track elapsed time for a counter.
@@ -79,10 +89,24 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 // scope.
 class PLATFORM_EXPORT RuntimeCallStats {
  public:
+  RuntimeCallStats();
+
+// Counters
+#define FOR_EACH_COUNTER(V) \
+  V(TestCounter1)           \
+  V(TestCounter2)
+
+  enum class CounterId : uint16_t {
+#define ADD_ENUM_VALUE(counter) k##counter,
+    FOR_EACH_COUNTER(ADD_ENUM_VALUE)
+#undef ADD_ENUM_VALUE
+        kNumberOfCounters
+  };
+
   // Enters a new recording scope by pausing the currently running timer that
   // was started by the current instance, and starting <timer>.
-  void Enter(RuntimeCallTimer* timer, RuntimeCallCounter* counter) {
-    timer->Start(counter, current_timer_);
+  void Enter(RuntimeCallTimer* timer, CounterId id) {
+    timer->Start(GetCounter(id), current_timer_);
     current_timer_ = timer;
   }
 
@@ -94,8 +118,20 @@ class PLATFORM_EXPORT RuntimeCallStats {
     current_timer_ = timer->Stop();
   }
 
+  // Reset all the counters.
+  void Reset();
+
+  RuntimeCallCounter* GetCounter(CounterId id) {
+    return &(counters_[static_cast<uint16_t>(id)]);
+  }
+
+  String ToString() const;
+
  private:
   RuntimeCallTimer* current_timer_ = nullptr;
+  RuntimeCallCounter counters_[static_cast<int>(CounterId::kNumberOfCounters)];
+  static const int number_of_counters_ =
+      static_cast<int>(CounterId::kNumberOfCounters);
 };
 
 // A utility class that creates a RuntimeCallTimer and uses it with
@@ -104,7 +140,8 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
   STATIC_ONLY(RuntimeCallTimerScope);
 
  public:
-  RuntimeCallTimerScope(RuntimeCallStats* stats, RuntimeCallCounter* counter)
+  RuntimeCallTimerScope(RuntimeCallStats* stats,
+                        RuntimeCallStats::CounterId counter)
       : call_stats_(stats) {
     call_stats_->Enter(&timer_, counter);
   }
