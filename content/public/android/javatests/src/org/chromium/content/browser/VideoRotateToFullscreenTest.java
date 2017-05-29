@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.pm.ActivityInfo;
-import android.support.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -16,7 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -89,8 +88,9 @@ public class VideoRotateToFullscreenTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"VideoRotateToFullscreen"})
+    // @MediumTest
+    // @Feature({"VideoRotateToFullscreen"})
+    @DisabledTest(message = "crbug.com/726977")
     public void testPortraitToLandscapeAndBack() throws Exception {
         // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
         if (DeviceFormFactor.isTablet()) {
