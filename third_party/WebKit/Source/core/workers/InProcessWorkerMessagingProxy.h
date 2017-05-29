@@ -32,7 +32,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"

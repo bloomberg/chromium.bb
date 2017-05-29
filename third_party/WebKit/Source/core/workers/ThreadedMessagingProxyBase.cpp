@@ -36,8 +36,6 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
 
 ThreadedMessagingProxyBase::~ThreadedMessagingProxyBase() {
   DCHECK(IsParentContextThread());
-  if (loader_proxy_)
-    loader_proxy_->DetachProvider(this);
   g_live_messaging_proxy_count--;
 }
 
@@ -61,7 +59,6 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
           ? document->Loader()->GetTiming().ReferenceMonotonicTime()
           : MonotonicallyIncreasingTime();
 
-  loader_proxy_ = WorkerLoaderProxy::Create(this);
   worker_thread_ = CreateWorkerThread(origin_time);
   worker_thread_->Start(std::move(startup_data), GetParentFrameTaskRunners());
   WorkerThreadCreated();
@@ -70,11 +67,7 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
 ThreadableLoadingContext*
 ThreadedMessagingProxyBase::GetThreadableLoadingContext() {
   DCHECK(IsParentContextThread());
-  if (!loading_context_) {
-    loading_context_ =
-        ThreadableLoadingContext::Create(*ToDocument(execution_context_));
-  }
-  return loading_context_;
+  return ThreadableLoadingContext::Create(*ToDocument(execution_context_));
 }
 
 void ThreadedMessagingProxyBase::CountFeature(UseCounter::Feature feature) {

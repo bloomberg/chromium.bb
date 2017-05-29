@@ -67,20 +67,16 @@ class WorkerThreadTest : public ::testing::Test {
   WorkerThreadTest() {}
 
   void SetUp() override {
-    loader_proxy_provider_ = WTF::MakeUnique<WorkerLoaderProxyProvider>();
     reporting_proxy_ = WTF::MakeUnique<MockWorkerReportingProxy>();
     security_origin_ =
         SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
-    worker_thread_ = WTF::WrapUnique(new WorkerThreadForTest(
-        loader_proxy_provider_.get(), *reporting_proxy_));
+    worker_thread_ =
+        WTF::WrapUnique(new WorkerThreadForTest(nullptr, *reporting_proxy_));
     lifecycle_observer_ = new MockWorkerThreadLifecycleObserver(
         worker_thread_->GetWorkerThreadLifecycleContext());
   }
 
-  void TearDown() override {
-    worker_thread_->GetWorkerLoaderProxy()->DetachProvider(
-        loader_proxy_provider_.get());
-  }
+  void TearDown() override {}
 
   void Start() {
     worker_thread_->StartWithSourceCode(
@@ -143,7 +139,6 @@ class WorkerThreadTest : public ::testing::Test {
   ExitCode GetExitCode() { return worker_thread_->GetExitCodeForTesting(); }
 
   RefPtr<SecurityOrigin> security_origin_;
-  std::unique_ptr<WorkerLoaderProxyProvider> loader_proxy_provider_;
   std::unique_ptr<MockWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThreadForTest> worker_thread_;
   Persistent<MockWorkerThreadLifecycleObserver> lifecycle_observer_;

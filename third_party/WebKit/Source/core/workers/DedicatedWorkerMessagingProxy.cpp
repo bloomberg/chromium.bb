@@ -19,8 +19,8 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() {}
 
 std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::CreateWorkerThread(
     double origin_time) {
-  return DedicatedWorkerThread::Create(LoaderProxy(), WorkerObjectProxy(),
-                                       origin_time);
+  return DedicatedWorkerThread::Create(GetThreadableLoadingContext(),
+                                       WorkerObjectProxy(), origin_time);
 }
 
 bool DedicatedWorkerMessagingProxy::IsAtomicsWaitAllowed() {

@@ -11,7 +11,6 @@
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/testing/DummyPageHolder.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
@@ -170,8 +169,7 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   Persistent<DocumentThreadableLoader> loader_;
 };
 
-class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
-                                         public WorkerLoaderProxyProvider {
+class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
  public:
   WorkerThreadableLoaderTestHelper()
       : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
@@ -244,9 +242,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     security_origin_ = GetDocument().GetSecurityOrigin();
     parent_frame_task_runners_ =
         ParentFrameTaskRunners::Create(&dummy_page_holder_->GetFrame());
-    worker_thread_ =
-        WTF::WrapUnique(new WorkerThreadForTest(this, *reporting_proxy_));
-    loading_context_ = ThreadableLoadingContext::Create(GetDocument());
+    worker_thread_ = WTF::MakeUnique<WorkerThreadForTest>(
+        ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
 
     worker_thread_->StartWithSourceCode(security_origin_.Get(),
                                         "//fake source code",
@@ -273,8 +270,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     // Needed to clean up the things on the main thread side and
     // avoid Resource leaks.
     testing::RunPendingTasks();
-
-    worker_thread_->GetWorkerLoaderProxy()->DetachProvider(this);
   }
 
  private:
@@ -321,11 +316,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     event->Signal();
   }
 
-  // WorkerLoaderProxyProvider methods.
-  ThreadableLoadingContext* GetThreadableLoadingContext() override {
-    return loading_context_.Get();
-  }
-
   RefPtr<SecurityOrigin> security_origin_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThreadForTest> worker_thread_;
@@ -337,8 +327,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   Checkpoint checkpoint_;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> loader_;
-
-  Persistent<ThreadableLoadingContext> loading_context_;
 };
 
 class ThreadableLoaderTest

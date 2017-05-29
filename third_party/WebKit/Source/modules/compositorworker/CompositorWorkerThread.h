@@ -17,7 +17,7 @@ class MODULES_EXPORT CompositorWorkerThread final
     : public AbstractAnimationWorkletThread {
  public:
   static std::unique_ptr<CompositorWorkerThread> Create(
-      PassRefPtr<WorkerLoaderProxy>,
+      ThreadableLoadingContext*,
       InProcessWorkerObjectProxy&,
       double time_origin);
   ~CompositorWorkerThread() override;
@@ -31,7 +31,7 @@ class MODULES_EXPORT CompositorWorkerThread final
       std::unique_ptr<WorkerThreadStartupData>) override;
 
  private:
-  CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>,
+  CompositorWorkerThread(ThreadableLoadingContext*,
                          InProcessWorkerObjectProxy&,
                          double time_origin);
 

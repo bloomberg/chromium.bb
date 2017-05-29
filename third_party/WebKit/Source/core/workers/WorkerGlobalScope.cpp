@@ -46,7 +46,6 @@
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerReportingProxy.h"
