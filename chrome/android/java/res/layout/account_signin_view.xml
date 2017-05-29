@@ -87,8 +87,8 @@
 
                     <ImageView
                         android:id="@+id/signin_account_image"
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
+                        android:layout_width="@dimen/signin_account_image_size"
+                        android:layout_height="@dimen/signin_account_image_size"
                         android:layout_marginBottom="24dp"
                         android:scaleType="fitCenter"
                         android:contentDescription="@null"/>
