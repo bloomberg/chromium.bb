@@ -194,6 +194,10 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
   return frame;
 }
 
+RefPtr<WebTaskRunner> FrameFetchContext::GetTaskRunner() const {
+  return GetFrame()->FrameScheduler()->LoadingTaskRunner();
+}
+
 Document* FrameFetchContext::GetDocument() const {
   return document_;
 }
@@ -711,10 +715,6 @@ MHTMLArchive* FrameFetchContext::Archive() const {
       ->Archive();
 }
 
-RefPtr<WebTaskRunner> FrameFetchContext::LoadingTaskRunner() const {
-  return GetFrame()->FrameScheduler()->LoadingTaskRunner();
-}
-
 ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
   return GetFrame()->GetContentSettingsClient();
 }
@@ -802,8 +802,11 @@ void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
   return document_->AddConsoleMessage(message);
 }
 
-std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader() {
-  return GetFrame()->CreateURLLoader();
+std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
+    const ResourceRequest& request) {
+  auto loader = GetFrame()->CreateURLLoader();
+  loader->SetLoadingTaskRunner(GetTaskRunner().Get());
+  return loader;
 }
 
 DEFINE_TRACE(FrameFetchContext) {

@@ -34,6 +34,7 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   ResourceFetcher* GetResourceFetcher();
   KURL FirstPartyForCookies() const;
+  RefPtr<WebTaskRunner> GetTaskRunner() { return loading_task_runner_; }
 
   // BaseFetchContext implementation:
   ContentSettingsClient* GetContentSettingsClient() const override;
@@ -62,10 +63,10 @@ class WorkerFetchContext final : public BaseFetchContext {
   // FetchContext implementation:
   // TODO(horo): Implement more methods.
   SecurityOrigin* GetSecurityOrigin() const override;
-  std::unique_ptr<WebURLLoader> CreateURLLoader() override;
+  std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const ResourceRequest&) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
-  RefPtr<WebTaskRunner> LoadingTaskRunner() const override;
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;

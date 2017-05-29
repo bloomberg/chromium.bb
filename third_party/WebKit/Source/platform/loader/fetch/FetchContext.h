@@ -53,7 +53,6 @@ class PlatformProbeSink;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
-class WebTaskRunner;
 enum class WebCachePolicy;
 
 enum FetchResourceType { kFetchMainResource, kFetchSubresource };
@@ -204,13 +203,12 @@ class PLATFORM_EXPORT FetchContext
 
   virtual MHTMLArchive* Archive() const { return nullptr; }
 
-  virtual RefPtr<WebTaskRunner> LoadingTaskRunner() const { return nullptr; }
-
   PlatformProbeSink* GetPlatformProbeSink() const {
     return platform_probe_sink_;
   }
 
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() {
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const ResourceRequest&) {
     NOTREACHED();
     return nullptr;
   }
