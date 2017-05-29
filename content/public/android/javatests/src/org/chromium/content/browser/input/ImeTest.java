@@ -460,9 +460,9 @@ public class ImeTest {
         mRule.waitForKeyboardStates(3, 1, 4,
                 new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER, TextInputType.TEXT});
 
-        mRule.resetUpdateSelectionList();
         mRule.setComposingText("a", 1);
-        mRule.waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
+        mRule.waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(1, 1, 1, 0, 1);
         mRule.resetUpdateSelectionList();
 
         // JavaScript changes focus.
