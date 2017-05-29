@@ -3676,6 +3676,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_PALETTE
   pmi->palette_size[0] = 0;
+  pmi->palette_size[1] = 0;
   if (above_mi)
     palette_y_mode_ctx +=
         (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
