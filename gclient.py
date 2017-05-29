@@ -651,6 +651,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         ent = self.recursedeps.get(name)
         if ent is not None:
           deps_file = ent['deps_file']
+      if dep_value is None:
+        continue
       if isinstance(dep_value, basestring):
         url = dep_value
       else:

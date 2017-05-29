@@ -451,6 +451,17 @@ deps = {
     'url': '%(git_base)srepo_2@%(hash)s',
   },
 }
+deps_os ={
+  'mac': {
+    'src/none_repo': None,
+  },
+  'unix': {
+    'src/none_repo': None,
+  },
+  'win': {
+    'src/none_repo': None,
+  },
+}
 hooks = [
   {
     'pattern': '.',
