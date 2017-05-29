@@ -35,7 +35,14 @@ _GCLIENT_SCHEMA = schema.Schema({
     #
     #   Var(): allows variable substitution (either from 'vars' dict below,
     #          or command-line override)
-    schema.Optional('deps'): {schema.Optional(basestring): basestring},
+    schema.Optional('deps'): {
+        schema.Optional(basestring): schema.Or(
+            basestring,
+            {
+                'url': basestring,
+            },
+        ),
+    },
 
     # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
     # Also see 'target_os'.

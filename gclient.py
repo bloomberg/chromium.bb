@@ -644,13 +644,19 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # Convert the deps into real Dependency.
     deps_to_add = []
-    for name, url in deps.iteritems():
+    for name, dep_value in deps.iteritems():
       should_process = self.recursion_limit and self.should_process
       deps_file = self.deps_file
       if self.recursedeps is not None:
         ent = self.recursedeps.get(name)
         if ent is not None:
           deps_file = ent['deps_file']
+      if isinstance(dep_value, basestring):
+        url = dep_value
+      else:
+        # This should be guaranteed by schema checking in gclient_eval.
+        assert isinstance(dep_value, dict)
+        url = dep_value['url']
       deps_to_add.append(Dependency(
           self, name, url, None, None, self.custom_vars, None,
           deps_file, should_process, use_relative_paths))

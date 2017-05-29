@@ -447,7 +447,9 @@ pre_deps_hooks = [
     self._commit_git('repo_6', {
       'DEPS': """
 deps = {
-  'src/repo2': '%(git_base)srepo_2@%(hash)s',
+  'src/repo2': {
+    'url': '%(git_base)srepo_2@%(hash)s',
+  },
 }
 hooks = [
   {
