@@ -63,6 +63,7 @@
 #include "extensions/common/test_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -642,7 +643,9 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
   EXPECT_TRUE(info->id.empty());
 }
 
-class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
+class GetAuthTokenFunctionTest
+    : public IdentityTestWithSignin,
+      public OAuth2TokenService::DiagnosticsObserver {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IdentityTestWithSignin::SetUpCommandLine(command_line);
@@ -672,6 +675,16 @@ class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
     SCOPES = 2,
     AS_COMPONENT = 4
   };
+
+  void SetUpOnMainThread() override {
+    IdentityTestWithSignin::SetUpOnMainThread();
+    token_service_->AddDiagnosticsObserver(this);
+  }
+
+  void TearDownOnMainThread() override {
+    token_service_->RemoveDiagnosticsObserver(this);
+    IdentityTestWithSignin::TearDownOnMainThread();
+  }
 
   ~GetAuthTokenFunctionTest() override {}
 
@@ -736,7 +749,26 @@ class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
     id_api()->mint_queue()->RequestComplete(type, key, request);
   }
 
+  base::OnceClosure on_access_token_requested_;
+
  private:
+  // OAuth2TokenService::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override {
+    if (on_access_token_requested_.is_null())
+      return;
+    base::ResetAndReturn(&on_access_token_requested_).Run();
+  }
+  void OnFetchAccessTokenComplete(const std::string& account_id,
+                                  const std::string& consumer_id,
+                                  const OAuth2TokenService::ScopeSet& scopes,
+                                  GoogleServiceAuthError error,
+                                  base::Time expiration_time) override {}
+  void OnTokenRemoved(const std::string& account_id,
+                      const OAuth2TokenService::ScopeSet& scopes) override {}
+
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;
 };
@@ -883,8 +915,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
             GetCachedToken(std::string()).status());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveLoginCanceled) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_login_ui_result(false);
@@ -1372,18 +1403,21 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithNormalClientId) {
   EXPECT_EQ("client1", func->GetOAuth2ClientId());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiDefaultUser) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueToken) {
   SignIn("primary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
-  func->set_auto_login_access_token(false);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
 
+  // Have GetAuthTokenFunction actually make the request for the access token.
+  func->set_auto_login_access_token(false);
+
+  base::RunLoop run_loop;
+  on_access_token_requested_ = run_loop.QuitClosure();
   RunFunctionAsync(func.get(), "[{}]");
+  run_loop.Run();
 
   IssueLoginAccessTokenForAccount("primary@example.com");
 
@@ -1396,7 +1430,63 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiDefaultUser) {
   EXPECT_EQ("access_token-primary@example.com", func->login_access_token());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiPrimaryUser) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
+  SignIn("primary@example.com");
+
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+
+  // Have GetAuthTokenFunction actually make the request for the access token.
+  func->set_auto_login_access_token(false);
+
+  base::RunLoop run_loop;
+  on_access_token_requested_ = run_loop.QuitClosure();
+  RunFunctionAsync(func.get(), "[{}]");
+  run_loop.Run();
+
+  token_service_->IssueErrorForAllPendingRequestsForAccount(
+      "primary@example.com",
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+
+  EXPECT_EQ(
+      std::string(errors::kAuthFailure) +
+          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE)
+              .ToString(),
+      WaitForError(func.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       MultiDefaultUserManuallyIssueToken) {
+  SignIn("primary@example.com");
+  SetAccountState(CreateIds("primary@example.com", "1"), true);
+  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  func->set_auto_login_access_token(false);
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+
+  base::RunLoop run_loop;
+  on_access_token_requested_ = run_loop.QuitClosure();
+  RunFunctionAsync(func.get(), "[{}]");
+  run_loop.Run();
+
+  IssueLoginAccessTokenForAccount("primary@example.com");
+
+  std::unique_ptr<base::Value> value(WaitForSingleResult(func.get()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            GetCachedToken(std::string()).status());
+  EXPECT_EQ("access_token-primary@example.com", func->login_access_token());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       MultiPrimaryUserManuallyIssueToken) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
   SetAccountState(CreateIds("primary@example.com", "1"), true);
@@ -1408,7 +1498,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiPrimaryUser) {
   func->set_auto_login_access_token(false);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
 
+  base::RunLoop run_loop;
+  on_access_token_requested_ = run_loop.QuitClosure();
   RunFunctionAsync(func.get(), "[{\"account\": { \"id\": \"1\" } }]");
+  run_loop.Run();
 
   IssueLoginAccessTokenForAccount("primary@example.com");
 
@@ -1421,7 +1514,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiPrimaryUser) {
   EXPECT_EQ("access_token-primary@example.com", func->login_access_token());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiSecondaryUser) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       MultiSecondaryUserManuallyIssueToken) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
   SetAccountState(CreateIds("primary@example.com", "1"), true);
@@ -1433,7 +1527,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiSecondaryUser) {
   func->set_auto_login_access_token(false);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
 
+  base::RunLoop run_loop;
+  on_access_token_requested_ = run_loop.QuitClosure();
   RunFunctionAsync(func.get(), "[{\"account\": { \"id\": \"2\" } }]");
+  run_loop.Run();
 
   IssueLoginAccessTokenForAccount("secondary@example.com");
 
@@ -1446,7 +1543,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiSecondaryUser) {
   EXPECT_EQ("access_token-secondary@example.com", func->login_access_token());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiUnknownUser) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       MultiUnknownUserGetTokenFromTokenServiceFailure) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
   SetAccountState(CreateIds("primary@example.com", "1"), true);
