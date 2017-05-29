@@ -37,8 +37,7 @@
     {
       // starting the test itself: get to a known place.
       document.getElementById("start").focus();
-
-      initTest(resultMap, testCompleted);
+      requestAnimationFrame(() => initTest(resultMap, testCompleted));
     }
 
     function testCompleted()
