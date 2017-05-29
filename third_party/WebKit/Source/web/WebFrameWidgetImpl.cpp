@@ -72,7 +72,6 @@
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
-#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebPagePopupImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
@@ -459,9 +458,11 @@ void WebFrameWidgetImpl::UpdateBaseBackgroundColor() {
   local_root_->GetFrameView()->SetBaseBackgroundColor(BaseBackgroundColor());
 }
 
-WebInputMethodControllerImpl*
+WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
-  return WebInputMethodControllerImpl::FromFrame(FocusedLocalFrameInWidget());
+  WebLocalFrameBase* local_frame =
+      WebLocalFrameBase::FromFrame(FocusedLocalFrameInWidget());
+  return local_frame ? local_frame->GetInputMethodController() : nullptr;
 }
 
 void WebFrameWidgetImpl::ScheduleAnimation() {

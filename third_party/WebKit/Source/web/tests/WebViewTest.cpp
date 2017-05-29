@@ -108,7 +108,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "web/DevToolsEmulator.h"
-#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 

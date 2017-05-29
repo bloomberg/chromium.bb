@@ -147,8 +147,6 @@ component("web") {
     "WebIDBKeyRange.cpp",
     "WebInputElement.cpp",
     "WebInputEvent.cpp",
-    "WebInputMethodControllerImpl.cpp",
-    "WebInputMethodControllerImpl.h",
     "WebKit.cpp",
     "WebLabelElement.cpp",
     "WebLanguageDetectionDetails.cpp",

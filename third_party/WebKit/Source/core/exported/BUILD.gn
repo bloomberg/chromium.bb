@@ -27,6 +27,8 @@ blink_core_sources("exported") {
     "WebHistoryItem.cpp",
     "WebImageCache.cpp",
     "WebImageDecoder.cpp",
+    "WebInputMethodControllerImpl.cpp",
+    "WebInputMethodControllerImpl.h",
     "WebMemoryStatistics.cpp",
     "WebPerformance.cpp",
     "WebPluginContainerBase.cpp",

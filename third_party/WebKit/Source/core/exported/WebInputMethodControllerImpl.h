@@ -5,6 +5,7 @@
 #ifndef WebInputMethodControllerImpl_h
 #define WebInputMethodControllerImpl_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "public/web/WebCompositionUnderline.h"
@@ -14,20 +15,19 @@ namespace blink {
 
 class InputMethodController;
 class LocalFrame;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebPlugin;
 class WebRange;
 class WebString;
 
-class WebInputMethodControllerImpl : public WebInputMethodController {
+class CORE_EXPORT WebInputMethodControllerImpl
+    : public NON_EXPORTED_BASE(WebInputMethodController) {
   WTF_MAKE_NONCOPYABLE(WebInputMethodControllerImpl);
   DISALLOW_NEW();
 
  public:
-  explicit WebInputMethodControllerImpl(WebLocalFrameImpl& web_frame);
+  explicit WebInputMethodControllerImpl(WebLocalFrameBase& web_frame);
   ~WebInputMethodControllerImpl() override;
-
-  static WebInputMethodControllerImpl* FromFrame(LocalFrame*);
 
   // WebInputMethodController overrides.
   bool SetComposition(const WebString& text,
@@ -51,7 +51,7 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
   InputMethodController& GetInputMethodController() const;
   WebPlugin* FocusedPluginIfInputMethodSupported() const;
 
-  const Member<WebLocalFrameImpl> web_frame_;
+  const Member<WebLocalFrameBase> web_frame_;
 };
 }  // namespace blink
 

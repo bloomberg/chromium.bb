@@ -10,7 +10,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
-#include "web/WebInputMethodControllerImpl.h"
 
 namespace blink {
 
@@ -92,8 +91,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
   WebLocalFrameBase* LocalRoot() const override;
-  WebInputMethodControllerImpl* GetActiveWebInputMethodController()
-      const override;
+  WebInputMethodController* GetActiveWebInputMethodController() const override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }

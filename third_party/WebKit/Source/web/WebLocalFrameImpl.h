@@ -32,6 +32,7 @@
 #define WebLocalFrameImpl_h
 
 #include "core/editing/VisiblePosition.h"
+#include "core/exported/WebInputMethodControllerImpl.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebFrameWidgetBase.h"
@@ -45,7 +46,6 @@
 #include "web/LocalFrameClientImpl.h"
 #include "web/UserMediaClientImpl.h"
 #include "web/WebExport.h"
-#include "web/WebInputMethodControllerImpl.h"
 
 #include <memory>
 
@@ -312,7 +312,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   base::SingleThreadTaskRunner* TimerTaskRunner() override;
   base::SingleThreadTaskRunner* LoadingTaskRunner() override;
   base::SingleThreadTaskRunner* UnthrottledTaskRunner() override;
-  WebInputMethodControllerImpl* GetInputMethodController() override;
+  WebInputMethodController* GetInputMethodController() override;
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
                             WebString& clip_text,

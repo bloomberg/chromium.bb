@@ -7,7 +7,6 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/HitTestResult.h"
-#include "web/WebInputMethodControllerImpl.h"
 
 namespace blink {
 
@@ -211,7 +210,7 @@ WebLocalFrameBase* WebViewFrameWidget::LocalRoot() const {
   return web_view_->MainFrameImpl();
 }
 
-WebInputMethodControllerImpl*
+WebInputMethodController*
 WebViewFrameWidget::GetActiveWebInputMethodController() const {
   return web_view_->GetActiveWebInputMethodController();
 }
