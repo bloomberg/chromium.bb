@@ -46904,7 +46904,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Omnibox.ProgressBarBreakPointUpdateCount"
     units="break point updates">
   <obsolete>
-    Obselete 05/16/2017. Data is unused (crbug.com/719801).
+    Obsolete 05/16/2017. Data is unused (crbug.com/719801).
   </obsolete>
   <owner>kkimlabs@chromium.org</owner>
   <summary>
@@ -46915,7 +46915,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Omnibox.ProgressBarUpdateCount" units="frame updates">
   <obsolete>
-    Obselete 05/16/2017. Data is unused (crbug.com/719801).
+    Obsolete 05/16/2017. Data is unused (crbug.com/719801).
   </obsolete>
   <owner>kkimlabs@chromium.org</owner>
   <summary>
@@ -47520,7 +47520,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="OSX.CatSixtyFour" enum="CatSixtyFour">
   <obsolete>
-    Obselete as of Chrome 43. See OmahaProxy for more relevant statistics.
+    Obsolete as of Chrome 43. See OmahaProxy for more relevant statistics.
   </obsolete>
   <owner>mark@chromium.org</owner>
   <summary>The cat's flavor and how many bits there are in it.</summary>
@@ -84805,7 +84805,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DetailedFolderResultsDeleteUpdated"
     enum="JumplistIconsDetailedFolderOperationDeleteUpdatedCategory">
   <obsolete>
-    Obselete 03/20/2016. New metrics named WinJumplist.DeleteStatusJumpListIcons
+    Obsolete 03/20/2016. New metrics named WinJumplist.DeleteStatusJumpListIcons
     and WinJumplist.DeleteStatusJumpListIconsOld are used instead.
   </obsolete>
   <owner>chengx@chromium.org</owner>
@@ -84850,7 +84850,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.FolderMoveResults"
     enum="JumplistIconsFolderMoveCategory">
   <obsolete>
-    Obselete 12/08/2016. DetailedFolderMoveResults is used for more detailed
+    Obsolete 12/08/2016. DetailedFolderMoveResults is used for more detailed
     analysis.
   </obsolete>
   <owner>chengx@chromium.org</owner>
@@ -84868,7 +84868,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WinJumplist.FolderResults" enum="JumplisticonsfolderCategory">
   <obsolete>
-    Obselete 12/13/2016, as we are now recording DetailedFolderResults.
+    Obsolete 12/13/2016, as we are now recording DetailedFolderResults.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
