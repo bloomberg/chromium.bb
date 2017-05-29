@@ -193,7 +193,8 @@ void PrepareWritableFileAndRun(Profile* profile,
   FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system || !IsUnderDriveMountPoint(path)) {
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(callback, FILE_ERROR_FAILED, base::FilePath()));
+        FROM_HERE,
+        base::BindOnce(callback, FILE_ERROR_FAILED, base::FilePath()));
     return;
   }
 
@@ -215,7 +216,7 @@ void EnsureDirectoryExists(Profile* profile,
                                  true /* is_recursive */, callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
+        FROM_HERE, base::BindOnce(callback, FILE_ERROR_OK));
   }
 }
 

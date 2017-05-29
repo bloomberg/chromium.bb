@@ -41,8 +41,9 @@ void WriteOnCacheFileAfterOpenFile(
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(file_io_task_callback, error, local_cache_path),
-      base::Bind(&RunCloseCallbackAndReplyTask, close_callback, reply, error));
+      base::BindOnce(file_io_task_callback, error, local_cache_path),
+      base::BindOnce(&RunCloseCallbackAndReplyTask, close_callback, reply,
+                     error));
 }
 
 }  // namespace

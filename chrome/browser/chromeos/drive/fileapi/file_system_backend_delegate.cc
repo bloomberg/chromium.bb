@@ -38,8 +38,8 @@ void GetRedirectURLForContentsOnUIThreadWithResourceEntry(
       entry->file_specific_info().is_hosted_document()) {
     url = GURL(entry->file_specific_info().alternate_url());
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, url));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, url));
 }
 
 // Called on the UI thread after
@@ -52,14 +52,14 @@ void GetRedirectURLForContentsOnUIThread(
   FileSystemInterface* const file_system =
       fileapi_internal::GetFileSystemFromUrl(url);
   if (!file_system) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, GURL()));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(callback, GURL()));
     return;
   }
   const base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, GURL()));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(callback, GURL()));
     return;
   }
 
@@ -136,9 +136,8 @@ void FileSystemBackendDelegate::GetRedirectURLForContents(
     const storage::URLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetRedirectURLForContentsOnUIThread, url, callback));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GetRedirectURLForContentsOnUIThread, url, callback));
 }
 
 }  // namespace drive
