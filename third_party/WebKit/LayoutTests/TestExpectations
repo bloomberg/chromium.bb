@@ -3038,3 +3038,4 @@ crbug.com/725585 payments/payment-request-interface.html [ Failure Pass ]
 
 # Sheriff failure 2017-05-29
 crbug.com/727014 [ Linux ] external/wpt/IndexedDB/large-nested-cloning.html [ Pass Timeout ]
+crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
