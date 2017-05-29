@@ -32,6 +32,7 @@ void InitializeColorSchemes() {
   normal_scheme.secure = gfx::kGoogleGreen700;
   normal_scheme.insecure = gfx::kGoogleRed700;
   normal_scheme.warning = normal_scheme.deemphasized;
+  normal_scheme.disabled = 0x33333333;
 
   kColorSchemes[ColorScheme::kModeFullscreen] =
       kColorSchemes[ColorScheme::kModeNormal];
@@ -57,6 +58,7 @@ void InitializeColorSchemes() {
   incognito_scheme.secure = incognito_scheme.foreground;
   incognito_scheme.insecure = incognito_scheme.foreground;
   incognito_scheme.warning = incognito_scheme.foreground;
+  incognito_scheme.disabled = 0x33E6E6E6;
 
   initialized = true;
 }

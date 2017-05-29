@@ -83,6 +83,10 @@ void UrlBar::SetURL(const GURL& gurl) {
   texture_->SetURL(gurl);
 }
 
+void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
+  texture_->SetHistoryButtonsEnabled(can_go_back);
+}
+
 void UrlBar::SetSecurityLevel(security_state::SecurityLevel level) {
   texture_->SetSecurityLevel(level);
 }
