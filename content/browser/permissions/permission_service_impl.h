@@ -67,8 +67,6 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
       blink::mojom::PermissionStatus last_known_status,
       blink::mojom::PermissionObserverPtr observer) override;
 
-  void OnRequestPermissionResponse(int pending_request_id,
-                                   blink::mojom::PermissionStatus status);
   void OnRequestPermissionsResponse(
       int pending_request_id,
       const std::vector<blink::mojom::PermissionStatus>& result);

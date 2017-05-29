@@ -106,44 +106,11 @@ void PermissionServiceImpl::RequestPermission(
     const url::Origin& origin,
     bool user_gesture,
     const PermissionStatusCallback& callback) {
-  // This condition is valid if the call is coming from a ChildThread instead of
-  // a RenderFrame. Some consumers of the service run in Workers and some in
-  // Frames. In the context of a Worker, it is not possible to show a
-  // permission prompt because there is no tab. In the context of a Frame, we
-  // can. Even if the call comes from a context where it is not possible to show
-  // any UI, we want to still return something relevant so the current
-  // permission status is returned.
-  BrowserContext* browser_context = context_->GetBrowserContext();
-  DCHECK(browser_context);
-  if (!context_->render_frame_host() ||
-      !browser_context->GetPermissionManager()) {
-    callback.Run(GetPermissionStatus(permission, origin));
-    return;
-  }
-
-  int pending_request_id =
-      pending_requests_.Add(base::MakeUnique<PendingRequest>(
-          base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
-  int id = browser_context->GetPermissionManager()->RequestPermission(
-      PermissionDescriptorToPermissionType(permission),
-      context_->render_frame_host(), origin.GetURL(), user_gesture,
-      base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
-                 weak_factory_.GetWeakPtr(), pending_request_id));
-
-  // Check if the request still exists. It might have been removed by the
-  // callback if it was run synchronously.
-  PendingRequest* pending_request = pending_requests_.Lookup(
-      pending_request_id);
-  if (!pending_request)
-      return;
-  pending_request->id = id;
-}
-
-void PermissionServiceImpl::OnRequestPermissionResponse(
-    int pending_request_id,
-    PermissionStatus status) {
-  OnRequestPermissionsResponse(pending_request_id,
-                               std::vector<PermissionStatus>(1, status));
+  std::vector<PermissionDescriptorPtr> permissions;
+  permissions.push_back(std::move(permission));
+  RequestPermissions(
+      std::move(permissions), origin, user_gesture,
+      base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
 }
 
 void PermissionServiceImpl::RequestPermissions(
