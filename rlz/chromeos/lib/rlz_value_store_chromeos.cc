@@ -89,37 +89,38 @@ RlzValueStoreChromeOS::RlzValueStoreChromeOS(const base::FilePath& store_path)
 }
 
 RlzValueStoreChromeOS::~RlzValueStoreChromeOS() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteStore();
 }
 
 bool RlzValueStoreChromeOS::HasAccess(AccessType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return type == kReadAccess || !read_only_;
 }
 
 bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(GetKeyName(kPingTimeKey, product),
                         base::Int64ToString(time));
   return true;
 }
 
 bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string ping_time;
   return rlz_store_->GetString(GetKeyName(kPingTimeKey, product), &ping_time) &&
       base::StringToInt64(ping_time, time);
 }
 
 bool RlzValueStoreChromeOS::ClearPingTime(Product product) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->Remove(GetKeyName(kPingTimeKey, product), NULL);
   return true;
 }
 
 bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
                                                 const char* new_rlz) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(
       GetKeyName(kAccessPointKey, access_point), new_rlz);
   return true;
@@ -128,7 +129,7 @@ bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
 bool RlzValueStoreChromeOS::ReadAccessPointRlz(AccessPoint access_point,
                                                char* rlz,
                                                size_t rlz_size) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string rlz_value;
   rlz_store_->GetString(GetKeyName(kAccessPointKey, access_point), &rlz_value);
   if (rlz_value.size() < rlz_size) {
@@ -141,14 +142,14 @@ bool RlzValueStoreChromeOS::ReadAccessPointRlz(AccessPoint access_point,
 }
 
 bool RlzValueStoreChromeOS::ClearAccessPointRlz(AccessPoint access_point) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->Remove(GetKeyName(kAccessPointKey, access_point), NULL);
   return true;
 }
 
 bool RlzValueStoreChromeOS::AddProductEvent(Product product,
                                             const char* event_rlz) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return AddValueToList(GetKeyName(kProductEventKey, product),
                         base::MakeUnique<base::Value>(event_rlz));
 }
@@ -156,7 +157,7 @@ bool RlzValueStoreChromeOS::AddProductEvent(Product product,
 bool RlzValueStoreChromeOS::ReadProductEvents(
     Product product,
     std::vector<std::string>* events) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ListValue* events_list = nullptr;
   if (!rlz_store_->GetList(GetKeyName(kProductEventKey, product), &events_list))
     return false;
@@ -171,28 +172,28 @@ bool RlzValueStoreChromeOS::ReadProductEvents(
 
 bool RlzValueStoreChromeOS::ClearProductEvent(Product product,
                                               const char* event_rlz) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value event_value(event_rlz);
   return RemoveValueFromList(GetKeyName(kProductEventKey, product),
                              event_value);
 }
 
 bool RlzValueStoreChromeOS::ClearAllProductEvents(Product product) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->Remove(GetKeyName(kProductEventKey, product), NULL);
   return true;
 }
 
 bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
                         base::MakeUnique<base::Value>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
                                             const char* event_rlz) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value event_value(event_rlz);
   base::ListValue* events_list = NULL;
   return rlz_store_->GetList(GetKeyName(kStatefulEventKey, product),
@@ -201,13 +202,13 @@ bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
 }
 
 bool RlzValueStoreChromeOS::ClearAllStatefulEvents(Product product) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->Remove(GetKeyName(kStatefulEventKey, product), NULL);
   return true;
 }
 
 void RlzValueStoreChromeOS::CollectGarbage() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }
 

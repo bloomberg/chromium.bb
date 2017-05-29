@@ -12,7 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "rlz/lib/rlz_value_store.h"
 
 namespace base {
@@ -23,8 +23,7 @@ class Value;
 namespace rlz_lib {
 
 // An implementation of RlzValueStore for ChromeOS.
-class RlzValueStoreChromeOS : public RlzValueStore,
-                              public base::NonThreadSafe {
+class RlzValueStoreChromeOS : public RlzValueStore {
  public:
   // Creates new instance and synchronously reads data from file.
   explicit RlzValueStoreChromeOS(const base::FilePath& store_path);
@@ -76,6 +75,8 @@ class RlzValueStoreChromeOS : public RlzValueStore,
   base::FilePath store_path_;
 
   bool read_only_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RlzValueStoreChromeOS);
 };
