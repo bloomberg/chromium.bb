@@ -28,16 +28,14 @@ void CreateWritableSnapshotFile(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &fileapi_internal::RunFileSystemCallback,
-          file_system_getter,
-          base::Bind(&fileapi_internal::CreateWritableSnapshotFile,
-                     drive_path, google_apis::CreateRelayCallback(callback)),
-          google_apis::CreateRelayCallback(base::Bind(
-              callback, base::File::FILE_ERROR_FAILED, base::FilePath(),
-              base::Closure()))));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &fileapi_internal::RunFileSystemCallback, file_system_getter,
+          base::Bind(&fileapi_internal::CreateWritableSnapshotFile, drive_path,
+                     google_apis::CreateRelayCallback(callback)),
+          google_apis::CreateRelayCallback(
+              base::Bind(callback, base::File::FILE_ERROR_FAILED,
+                         base::FilePath(), base::Closure()))));
 }
 
 }  // namespace

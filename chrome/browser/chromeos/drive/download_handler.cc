@@ -287,8 +287,9 @@ void DownloadHandler::FreeDiskSpaceIfNeeded() {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&DownloadHandler::FreeDiskSpaceIfNeededImmediately,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&DownloadHandler::FreeDiskSpaceIfNeededImmediately,
+                     weak_ptr_factory_.GetWeakPtr()),
       free_disk_space_delay_);
 
   has_pending_free_disk_space_ = true;
@@ -322,12 +323,11 @@ void DownloadHandler::OnDownloadCreated(DownloadManager* manager,
   // Remove any persisted Drive DownloadItem. crbug.com/171384
   if (IsPersistedDriveDownload(drive_tmp_download_path_, download)) {
     // Remove download later, since doing it here results in a crash.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&DownloadHandler::RemoveDownload,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       static_cast<void*>(manager),
-                                       download->GetId()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&DownloadHandler::RemoveDownload,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       static_cast<void*>(manager), download->GetId()));
   }
 }
 

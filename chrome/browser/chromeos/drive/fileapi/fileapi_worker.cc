@@ -341,9 +341,9 @@ void OpenFile(const base::FilePath& file_path,
                      base::File::FLAG_APPEND)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   Passed(base::File(base::File::FILE_ERROR_FAILED)),
-                   base::Closure()));
+        base::BindOnce(callback,
+                       Passed(base::File(base::File::FILE_ERROR_FAILED)),
+                       base::Closure()));
     return;
   }
 
