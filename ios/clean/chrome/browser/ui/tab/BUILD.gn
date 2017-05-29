@@ -22,6 +22,7 @@ source_set("tab") {
     "//ios/clean/chrome/browser/ui/tab_strip",
     "//ios/clean/chrome/browser/ui/toolbar",
     "//ios/clean/chrome/browser/ui/web_contents",
+    "//ios/shared/chrome/browser/ui/broadcaster",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",

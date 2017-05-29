@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 
@@ -16,7 +17,8 @@
 #endif
 
 Browser::Browser(ios::ChromeBrowserState* browser_state)
-    : dispatcher_([[CommandDispatcher alloc] init]),
+    : broadcaster_([[ChromeBroadcaster alloc] init]),
+      dispatcher_([[CommandDispatcher alloc] init]),
       browser_state_(browser_state) {
   DCHECK(browser_state_);
   web_state_list_delegate_ =

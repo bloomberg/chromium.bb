@@ -136,4 +136,15 @@ TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   [[consumer_ verify] setLoadingProgress:0.42];
 }
 
+// Test that the mediator's observation of -broadcastTabStripVisible: triggers
+// the correct consumer calls.
+TEST_F(ToolbarMediatorTest, TestTabStripVisible) {
+  mediator_.consumer = consumer_;
+
+  [mediator_ broadcastTabStripVisible:YES];
+  [[consumer_ verify] setTabStripVisible:YES];
+  [mediator_ broadcastTabStripVisible:NO];
+  [[consumer_ verify] setTabStripVisible:NO];
+}
+
 }  // namespace

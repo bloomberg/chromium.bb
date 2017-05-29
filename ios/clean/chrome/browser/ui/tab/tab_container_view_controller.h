@@ -31,6 +31,9 @@
 // width of the tab.
 @property(nonatomic, strong) UIViewController* tabStripViewController;
 
+// YES if |tabStripViewController| is currently visible.
+@property(nonatomic, getter=isTabStripVisible) BOOL tabStripVisible;
+
 // View controller showing the find bar.  The location of this controller's view
 // is determined by size class and device type.  May be nil if the find bar is
 // currently closed.

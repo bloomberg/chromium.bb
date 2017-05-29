@@ -52,6 +52,12 @@
   [self.consumer setLoadingProgress:progress];
 }
 
+#pragma mark - ChromeBroadcastObserver
+
+- (void)broadcastTabStripVisible:(BOOL)visible {
+  [self.consumer setTabStripVisible:visible];
+}
+
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {

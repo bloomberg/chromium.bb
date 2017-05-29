@@ -323,6 +323,12 @@
   [self.progressBar setProgress:progress animated:YES completion:nil];
 }
 
+- (void)setTabStripVisible:(BOOL)visible {
+  self.tabSwitchStripButton.hiddenInCurrentState = visible;
+  self.tabSwitchGridButton.hiddenInCurrentState = !visible;
+  [self updateAllButtonsVisibility];
+}
+
 #pragma mark - ZoomTransitionDelegate
 
 - (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
@@ -362,20 +368,6 @@
 
 - (void)showTabGrid:(id)sender {
   [self.dispatcher showTabGrid];
-}
-
-#pragma mark - TabStripEvents
-
-- (void)tabStripDidShow:(id)sender {
-  self.tabSwitchStripButton.hiddenInCurrentState = YES;
-  self.tabSwitchGridButton.hiddenInCurrentState = NO;
-  [self updateAllButtonsVisibility];
-}
-
-- (void)tabStripDidHide:(id)sender {
-  self.tabSwitchStripButton.hiddenInCurrentState = NO;
-  self.tabSwitchGridButton.hiddenInCurrentState = YES;
-  [self updateAllButtonsVisibility];
 }
 
 #pragma mark - Helper Methods

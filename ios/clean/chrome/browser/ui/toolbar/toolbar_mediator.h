@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
+
 @protocol ToolbarConsumer;
 
 namespace web {
@@ -15,7 +17,7 @@ class WebState;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
-@interface ToolbarMediator : NSObject
+@interface ToolbarMediator : NSObject<ChromeBroadcastObserver>
 
 // The WebState whose properties this object mediates. This can change during
 // the lifetime of this object and may be null.

@@ -9,6 +9,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
+#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -63,6 +64,9 @@
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator.consumer = self.viewController;
 
+  [self.browser->broadcaster()
+      addObserver:self.mediator
+      forSelector:@selector(broadcastTabStripVisible:)];
   LocationBarCoordinator* locationBarCoordinator =
       [[LocationBarCoordinator alloc] init];
   self.locationBarCoordinator = locationBarCoordinator;
@@ -74,6 +78,9 @@
 
 - (void)stop {
   [super stop];
+  [self.browser->broadcaster()
+      removeObserver:self.mediator
+         forSelector:@selector(broadcastTabStripVisible:)];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 
