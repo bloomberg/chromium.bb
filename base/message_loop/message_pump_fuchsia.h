@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace base {
 
@@ -64,6 +65,16 @@ class MessagePumpFuchsia : public MessagePump {
   void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+
+ private:
+  // This flag is set to false when Run should return.
+  bool keep_running_;
+
+  // Used to sleep until there is more work to do.
+  WaitableEvent event_;
+
+  // The time at which we should call DoDelayedWork.
+  TimeTicks delayed_work_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpFuchsia);
 };
