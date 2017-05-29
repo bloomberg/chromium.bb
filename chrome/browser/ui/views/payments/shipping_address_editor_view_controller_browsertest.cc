@@ -599,4 +599,35 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_NE(textfield->GetFocusManager()->GetFocusedView(), nullptr);
 }
 
+// Tests that the editor accepts an international phone from another country.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       InternationalPhoneNumberFromOtherCountry) {
+  InvokePaymentRequestUI();
+  OpenShippingAddressEditorScreen();
+
+  SetCommonFields();
+
+  // Set an Australian phone number in international format.
+  SetEditorTextfieldValue(base::UTF8ToUTF16("+61 2 9374 4000"),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
+}
+
+// Tests that the editor doesn't accept a local phone from another country.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       LocalPhoneNumberFromOtherCountry) {
+  InvokePaymentRequestUI();
+  OpenShippingAddressEditorScreen();
+
+  SetCommonFields();
+
+  // Set an Australian phone number in international format.
+  SetEditorTextfieldValue(base::UTF8ToUTF16("02 9374 4000"),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+
+  EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::PHONE_HOME_WHOLE_NUMBER));
+}
+
 }  // namespace payments
