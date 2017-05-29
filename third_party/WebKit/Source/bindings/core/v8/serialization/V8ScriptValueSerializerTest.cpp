@@ -11,6 +11,14 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMException.h"
+#include "bindings/core/v8/V8DOMMatrix.h"
+#include "bindings/core/v8/V8DOMMatrixReadOnly.h"
+#include "bindings/core/v8/V8DOMPoint.h"
+#include "bindings/core/v8/V8DOMPointInit.h"
+#include "bindings/core/v8/V8DOMPointReadOnly.h"
+#include "bindings/core/v8/V8DOMQuad.h"
+#include "bindings/core/v8/V8DOMRect.h"
+#include "bindings/core/v8/V8DOMRectReadOnly.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
@@ -25,6 +33,13 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
+#include "core/geometry/DOMMatrix.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
+#include "core/geometry/DOMPoint.h"
+#include "core/geometry/DOMPointReadOnly.h"
+#include "core/geometry/DOMQuad.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectReadOnly.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -82,7 +97,6 @@ v8::Local<v8::Value> RoundTrip(
   DCHECK_EQ(!serialized_script_value, exception_state.HadException());
   if (!serialized_script_value)
     return v8::Local<v8::Value>();
-
   // If there are message ports, make new ones and entangle them.
   MessagePortArray* transferred_message_ports = MessagePort::EntanglePorts(
       *scope.GetExecutionContext(), std::move(channels));
@@ -206,6 +220,531 @@ TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization) {
   EXPECT_FALSE(HadDOMException("DataCloneError", scope.GetScriptState(),
                                exception_state));
   EXPECT_FALSE(array_buffer->IsNeutered());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMPoint) {
+  // DOMPoint objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMPoint* point = DOMPoint::Create(1, 2, 3, 4);
+  v8::Local<v8::Value> wrapper =
+      ToV8(point, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMPoint::hasInstance(result, scope.GetIsolate()));
+  DOMPoint* new_point = V8DOMPoint::toImpl(result.As<v8::Object>());
+  EXPECT_NE(point, new_point);
+  EXPECT_EQ(point->x(), new_point->x());
+  EXPECT_EQ(point->y(), new_point->y());
+  EXPECT_EQ(point->z(), new_point->z());
+  EXPECT_EQ(point->w(), new_point->w());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMPoint) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x11, 0xff, 0x0d, 0x5c, 'Q',  0x00, 0x00, 0x00, 0x00,
+       0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMPoint::hasInstance(result, scope.GetIsolate()));
+  DOMPoint* point = V8DOMPoint::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1, point->x());
+  EXPECT_EQ(2, point->y());
+  EXPECT_EQ(3, point->z());
+  EXPECT_EQ(4, point->w());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMPointReadOnly) {
+  // DOMPointReadOnly objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMPointReadOnly* point = DOMPointReadOnly::Create(1, 2, 3, 4);
+  v8::Local<v8::Value> wrapper =
+      ToV8(point, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMPointReadOnly::hasInstance(result, scope.GetIsolate()));
+  EXPECT_FALSE(V8DOMPoint::hasInstance(result, scope.GetIsolate()));
+  DOMPointReadOnly* new_point =
+      V8DOMPointReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_NE(point, new_point);
+  EXPECT_EQ(point->x(), new_point->x());
+  EXPECT_EQ(point->y(), new_point->y());
+  EXPECT_EQ(point->z(), new_point->z());
+  EXPECT_EQ(point->w(), new_point->w());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMPointReadOnly) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x11, 0xff, 0x0d, 0x5c, 'W',  0x00, 0x00, 0x00, 0x00,
+       0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMPointReadOnly::hasInstance(result, scope.GetIsolate()));
+  DOMPointReadOnly* point = V8DOMPointReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1, point->x());
+  EXPECT_EQ(2, point->y());
+  EXPECT_EQ(3, point->z());
+  EXPECT_EQ(4, point->w());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMRect) {
+  // DOMRect objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMRect* rect = DOMRect::Create(1, 2, 3, 4);
+  v8::Local<v8::Value> wrapper =
+      ToV8(rect, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMRect::hasInstance(result, scope.GetIsolate()));
+  DOMRect* new_rect = V8DOMRect::toImpl(result.As<v8::Object>());
+  EXPECT_NE(rect, new_rect);
+  EXPECT_EQ(rect->x(), new_rect->x());
+  EXPECT_EQ(rect->y(), new_rect->y());
+  EXPECT_EQ(rect->width(), new_rect->width());
+  EXPECT_EQ(rect->height(), new_rect->height());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMRect) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x11, 0xff, 0x0d, 0x5c, 'E',  0x00, 0x00, 0x00, 0x00,
+       0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMRect::hasInstance(result, scope.GetIsolate()));
+  DOMRect* rect = V8DOMRect::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1, rect->x());
+  EXPECT_EQ(2, rect->y());
+  EXPECT_EQ(3, rect->width());
+  EXPECT_EQ(4, rect->height());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMRectReadOnly) {
+  // DOMRectReadOnly objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMRectReadOnly* rect = DOMRectReadOnly::Create(1, 2, 3, 4);
+  v8::Local<v8::Value> wrapper =
+      ToV8(rect, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMRectReadOnly::hasInstance(result, scope.GetIsolate()));
+  EXPECT_FALSE(V8DOMRect::hasInstance(result, scope.GetIsolate()));
+  DOMRectReadOnly* new_rect =
+      V8DOMRectReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_NE(rect, new_rect);
+  EXPECT_EQ(rect->x(), new_rect->x());
+  EXPECT_EQ(rect->y(), new_rect->y());
+  EXPECT_EQ(rect->width(), new_rect->width());
+  EXPECT_EQ(rect->height(), new_rect->height());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMRectReadOnly) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x11, 0xff, 0x0d, 0x5c, 'R',  0x00, 0x00, 0x00, 0x00,
+       0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMRectReadOnly::hasInstance(result, scope.GetIsolate()));
+  DOMRectReadOnly* rect = V8DOMRectReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1, rect->x());
+  EXPECT_EQ(2, rect->y());
+  EXPECT_EQ(3, rect->width());
+  EXPECT_EQ(4, rect->height());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMQuad) {
+  // DOMQuad objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMPointInit pi1;
+  pi1.setX(1);
+  pi1.setY(5);
+  pi1.setZ(9);
+  pi1.setW(13);
+  DOMPointInit pi2;
+  pi2.setX(2);
+  pi2.setY(6);
+  pi2.setZ(10);
+  pi2.setW(14);
+  DOMPointInit pi3;
+  pi3.setX(3);
+  pi3.setY(7);
+  pi3.setZ(11);
+  pi3.setW(15);
+  DOMPointInit pi4;
+  pi4.setX(4);
+  pi4.setY(8);
+  pi4.setZ(12);
+  pi4.setW(16);
+  DOMQuad* quad = DOMQuad::Create(pi1, pi2, pi3, pi4);
+  v8::Local<v8::Value> wrapper =
+      ToV8(quad, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMQuad::hasInstance(result, scope.GetIsolate()));
+  DOMQuad* new_quad = V8DOMQuad::toImpl(result.As<v8::Object>());
+  EXPECT_NE(quad, new_quad);
+  EXPECT_NE(quad->p1(), new_quad->p1());
+  EXPECT_NE(quad->p2(), new_quad->p2());
+  EXPECT_NE(quad->p3(), new_quad->p3());
+  EXPECT_NE(quad->p4(), new_quad->p4());
+  EXPECT_EQ(quad->p1()->x(), new_quad->p1()->x());
+  EXPECT_EQ(quad->p1()->y(), new_quad->p1()->y());
+  EXPECT_EQ(quad->p1()->z(), new_quad->p1()->z());
+  EXPECT_EQ(quad->p1()->w(), new_quad->p1()->w());
+  EXPECT_EQ(quad->p2()->x(), new_quad->p2()->x());
+  EXPECT_EQ(quad->p2()->y(), new_quad->p2()->y());
+  EXPECT_EQ(quad->p2()->z(), new_quad->p2()->z());
+  EXPECT_EQ(quad->p2()->w(), new_quad->p2()->w());
+  EXPECT_EQ(quad->p3()->x(), new_quad->p3()->x());
+  EXPECT_EQ(quad->p3()->y(), new_quad->p3()->y());
+  EXPECT_EQ(quad->p3()->z(), new_quad->p3()->z());
+  EXPECT_EQ(quad->p3()->w(), new_quad->p3()->w());
+  EXPECT_EQ(quad->p4()->x(), new_quad->p4()->x());
+  EXPECT_EQ(quad->p4()->y(), new_quad->p4()->y());
+  EXPECT_EQ(quad->p4()->z(), new_quad->p4()->z());
+  EXPECT_EQ(quad->p4()->w(), new_quad->p4()->w());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMQuad) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue(
+      {0xff, 0x11, 0xff, 0x0d, 0x5c, 0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0x22, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x2a, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0x18, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x24, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x40, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0x08, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x1c, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x26, 0x40, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x40, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0x28, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+       0x30, 0x40});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMQuad::hasInstance(result, scope.GetIsolate()));
+  DOMQuad* quad = V8DOMQuad::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1, quad->p1()->x());
+  EXPECT_EQ(5, quad->p1()->y());
+  EXPECT_EQ(9, quad->p1()->z());
+  EXPECT_EQ(13, quad->p1()->w());
+  EXPECT_EQ(2, quad->p2()->x());
+  EXPECT_EQ(6, quad->p2()->y());
+  EXPECT_EQ(10, quad->p2()->z());
+  EXPECT_EQ(14, quad->p2()->w());
+  EXPECT_EQ(3, quad->p3()->x());
+  EXPECT_EQ(7, quad->p3()->y());
+  EXPECT_EQ(11, quad->p3()->z());
+  EXPECT_EQ(15, quad->p3()->w());
+  EXPECT_EQ(4, quad->p4()->x());
+  EXPECT_EQ(8, quad->p4()->y());
+  EXPECT_EQ(12, quad->p4()->z());
+  EXPECT_EQ(16, quad->p4()->w());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrix2D) {
+  // DOMMatrix objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMMatrixInit init;
+  init.setIs2D(true);
+  init.setA(1.0);
+  init.setB(2.0);
+  init.setC(3.0);
+  init.setD(4.0);
+  init.setE(5.0);
+  init.setF(6.0);
+  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+  EXPECT_TRUE(matrix->is2D());
+  v8::Local<v8::Value> wrapper =
+      ToV8(matrix, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrix* new_matrix = V8DOMMatrix::toImpl(result.As<v8::Object>());
+  EXPECT_NE(matrix, new_matrix);
+  EXPECT_TRUE(new_matrix->is2D());
+  EXPECT_EQ(matrix->a(), new_matrix->a());
+  EXPECT_EQ(matrix->b(), new_matrix->b());
+  EXPECT_EQ(matrix->c(), new_matrix->c());
+  EXPECT_EQ(matrix->d(), new_matrix->d());
+  EXPECT_EQ(matrix->e(), new_matrix->e());
+  EXPECT_EQ(matrix->f(), new_matrix->f());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMMatrix2D) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue({
+      0xff, 0x11, 0xff, 0x0d, 0x5c, 0x49, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x08, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x18, 0x40, 0xff, 0x11, 0xff, 0x0d, 0x5c, 0x49,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x14, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x40,
+  });
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrix* matrix = V8DOMMatrix::toImpl(result.As<v8::Object>());
+  EXPECT_TRUE(matrix->is2D());
+  EXPECT_EQ(1.0, matrix->a());
+  EXPECT_EQ(2.0, matrix->b());
+  EXPECT_EQ(3.0, matrix->c());
+  EXPECT_EQ(4.0, matrix->d());
+  EXPECT_EQ(5.0, matrix->e());
+  EXPECT_EQ(6.0, matrix->f());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrixReadOnly2D) {
+  // DOMMatrix objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMMatrixInit init;
+  init.setIs2D(true);
+  init.setA(1.0);
+  init.setB(2.0);
+  init.setC(3.0);
+  init.setD(4.0);
+  init.setE(5.0);
+  init.setF(6.0);
+  DOMMatrixReadOnly* matrix =
+      DOMMatrixReadOnly::fromMatrix(init, scope.GetExceptionState());
+  EXPECT_TRUE(matrix->is2D());
+  v8::Local<v8::Value> wrapper =
+      ToV8(matrix, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMMatrixReadOnly::hasInstance(result, scope.GetIsolate()));
+  EXPECT_FALSE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrixReadOnly* new_matrix =
+      V8DOMMatrixReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_NE(matrix, new_matrix);
+  EXPECT_TRUE(new_matrix->is2D());
+  EXPECT_EQ(matrix->a(), new_matrix->a());
+  EXPECT_EQ(matrix->b(), new_matrix->b());
+  EXPECT_EQ(matrix->c(), new_matrix->c());
+  EXPECT_EQ(matrix->d(), new_matrix->d());
+  EXPECT_EQ(matrix->e(), new_matrix->e());
+  EXPECT_EQ(matrix->f(), new_matrix->f());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMMatrixReadOnly2D) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue({
+      0xff, 0x11, 0xff, 0x0d, 0x5c, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x08, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x18, 0x40, 0xff, 0x11, 0xff, 0x0d, 0x5c, 0x49,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x14, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x40,
+  });
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMMatrixReadOnly::hasInstance(result, scope.GetIsolate()));
+  DOMMatrixReadOnly* matrix =
+      V8DOMMatrixReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_TRUE(matrix->is2D());
+  EXPECT_EQ(1.0, matrix->a());
+  EXPECT_EQ(2.0, matrix->b());
+  EXPECT_EQ(3.0, matrix->c());
+  EXPECT_EQ(4.0, matrix->d());
+  EXPECT_EQ(5.0, matrix->e());
+  EXPECT_EQ(6.0, matrix->f());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrix) {
+  // DOMMatrix objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMMatrixInit init;
+  init.setIs2D(false);
+  init.setM11(1.1);
+  init.setM12(1.2);
+  init.setM13(1.3);
+  init.setM14(1.4);
+  init.setM21(2.1);
+  init.setM22(2.2);
+  init.setM23(2.3);
+  init.setM24(2.4);
+  init.setM31(3.1);
+  init.setM32(3.2);
+  init.setM33(3.3);
+  init.setM34(3.4);
+  init.setM41(4.1);
+  init.setM42(4.2);
+  init.setM43(4.3);
+  init.setM44(4.4);
+  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+  EXPECT_FALSE(matrix->is2D());
+  v8::Local<v8::Value> wrapper =
+      ToV8(matrix, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrix* new_matrix = V8DOMMatrix::toImpl(result.As<v8::Object>());
+  EXPECT_NE(matrix, new_matrix);
+  EXPECT_FALSE(new_matrix->is2D());
+  EXPECT_EQ(matrix->m11(), new_matrix->m11());
+  EXPECT_EQ(matrix->m12(), new_matrix->m12());
+  EXPECT_EQ(matrix->m13(), new_matrix->m13());
+  EXPECT_EQ(matrix->m14(), new_matrix->m14());
+  EXPECT_EQ(matrix->m21(), new_matrix->m21());
+  EXPECT_EQ(matrix->m22(), new_matrix->m22());
+  EXPECT_EQ(matrix->m23(), new_matrix->m23());
+  EXPECT_EQ(matrix->m24(), new_matrix->m24());
+  EXPECT_EQ(matrix->m31(), new_matrix->m31());
+  EXPECT_EQ(matrix->m32(), new_matrix->m32());
+  EXPECT_EQ(matrix->m33(), new_matrix->m33());
+  EXPECT_EQ(matrix->m34(), new_matrix->m34());
+  EXPECT_EQ(matrix->m41(), new_matrix->m41());
+  EXPECT_EQ(matrix->m42(), new_matrix->m42());
+  EXPECT_EQ(matrix->m43(), new_matrix->m43());
+  EXPECT_EQ(matrix->m44(), new_matrix->m44());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMMatrix) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue({
+      0xff, 0x11, 0xff, 0x0d, 0x5c, 0x59, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0xf1, 0x3f, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0xf3, 0x3f, 0xcd, 0xcc,
+      0xcc, 0xcc, 0xcc, 0xcc, 0xf4, 0x3f, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0xf6, 0x3f, 0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x00, 0x40, 0x9a, 0x99,
+      0x99, 0x99, 0x99, 0x99, 0x01, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0x02, 0x40, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x03, 0x40, 0xcd, 0xcc,
+      0xcc, 0xcc, 0xcc, 0xcc, 0x08, 0x40, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0x09, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0a, 0x40, 0x33, 0x33,
+      0x33, 0x33, 0x33, 0x33, 0x0b, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0x10, 0x40, 0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x10, 0x40, 0x33, 0x33,
+      0x33, 0x33, 0x33, 0x33, 0x11, 0x40, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0x11, 0x40,
+  });
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrix* matrix = V8DOMMatrix::toImpl(result.As<v8::Object>());
+  EXPECT_FALSE(matrix->is2D());
+  EXPECT_EQ(1.1, matrix->m11());
+  EXPECT_EQ(1.2, matrix->m12());
+  EXPECT_EQ(1.3, matrix->m13());
+  EXPECT_EQ(1.4, matrix->m14());
+  EXPECT_EQ(2.1, matrix->m21());
+  EXPECT_EQ(2.2, matrix->m22());
+  EXPECT_EQ(2.3, matrix->m23());
+  EXPECT_EQ(2.4, matrix->m24());
+  EXPECT_EQ(3.1, matrix->m31());
+  EXPECT_EQ(3.2, matrix->m32());
+  EXPECT_EQ(3.3, matrix->m33());
+  EXPECT_EQ(3.4, matrix->m34());
+  EXPECT_EQ(4.1, matrix->m41());
+  EXPECT_EQ(4.2, matrix->m42());
+  EXPECT_EQ(4.3, matrix->m43());
+  EXPECT_EQ(4.4, matrix->m44());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripDOMMatrixReadOnly) {
+  // DOMMatrixReadOnly objects should serialize and deserialize correctly.
+  V8TestingScope scope;
+  DOMMatrixInit init;
+  init.setIs2D(false);
+  init.setM11(1.1);
+  init.setM12(1.2);
+  init.setM13(1.3);
+  init.setM14(1.4);
+  init.setM21(2.1);
+  init.setM22(2.2);
+  init.setM23(2.3);
+  init.setM24(2.4);
+  init.setM31(3.1);
+  init.setM32(3.2);
+  init.setM33(3.3);
+  init.setM34(3.4);
+  init.setM41(4.1);
+  init.setM42(4.2);
+  init.setM43(4.3);
+  init.setM44(4.4);
+  DOMMatrixReadOnly* matrix =
+      DOMMatrixReadOnly::fromMatrix(init, scope.GetExceptionState());
+  EXPECT_FALSE(matrix->is2D());
+  v8::Local<v8::Value> wrapper =
+      ToV8(matrix, scope.GetContext()->Global(), scope.GetIsolate());
+  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  ASSERT_TRUE(V8DOMMatrixReadOnly::hasInstance(result, scope.GetIsolate()));
+  EXPECT_FALSE(V8DOMMatrix::hasInstance(result, scope.GetIsolate()));
+  DOMMatrixReadOnly* new_matrix =
+      V8DOMMatrixReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_NE(matrix, new_matrix);
+  EXPECT_FALSE(new_matrix->is2D());
+  EXPECT_EQ(matrix->m11(), new_matrix->m11());
+  EXPECT_EQ(matrix->m12(), new_matrix->m12());
+  EXPECT_EQ(matrix->m13(), new_matrix->m13());
+  EXPECT_EQ(matrix->m14(), new_matrix->m14());
+  EXPECT_EQ(matrix->m21(), new_matrix->m21());
+  EXPECT_EQ(matrix->m22(), new_matrix->m22());
+  EXPECT_EQ(matrix->m23(), new_matrix->m23());
+  EXPECT_EQ(matrix->m24(), new_matrix->m24());
+  EXPECT_EQ(matrix->m31(), new_matrix->m31());
+  EXPECT_EQ(matrix->m32(), new_matrix->m32());
+  EXPECT_EQ(matrix->m33(), new_matrix->m33());
+  EXPECT_EQ(matrix->m34(), new_matrix->m34());
+  EXPECT_EQ(matrix->m41(), new_matrix->m41());
+  EXPECT_EQ(matrix->m42(), new_matrix->m42());
+  EXPECT_EQ(matrix->m43(), new_matrix->m43());
+  EXPECT_EQ(matrix->m44(), new_matrix->m44());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeDOMMatrixReadOnly) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  RefPtr<SerializedScriptValue> input = SerializedValue({
+      0xff, 0x11, 0xff, 0x0d, 0x5c, 0x55, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0xf1, 0x3f, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0xf3, 0x3f, 0xcd, 0xcc,
+      0xcc, 0xcc, 0xcc, 0xcc, 0xf4, 0x3f, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0xf6, 0x3f, 0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x00, 0x40, 0x9a, 0x99,
+      0x99, 0x99, 0x99, 0x99, 0x01, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0x02, 0x40, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x03, 0x40, 0xcd, 0xcc,
+      0xcc, 0xcc, 0xcc, 0xcc, 0x08, 0x40, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0x09, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0a, 0x40, 0x33, 0x33,
+      0x33, 0x33, 0x33, 0x33, 0x0b, 0x40, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+      0x10, 0x40, 0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x10, 0x40, 0x33, 0x33,
+      0x33, 0x33, 0x33, 0x33, 0x11, 0x40, 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99,
+      0x11, 0x40,
+
+  });
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(script_state, input).Deserialize();
+  ASSERT_TRUE(V8DOMMatrixReadOnly::hasInstance(result, scope.GetIsolate()));
+  DOMMatrixReadOnly* matrix =
+      V8DOMMatrixReadOnly::toImpl(result.As<v8::Object>());
+  EXPECT_FALSE(matrix->is2D());
+  EXPECT_EQ(1.1, matrix->m11());
+  EXPECT_EQ(1.2, matrix->m12());
+  EXPECT_EQ(1.3, matrix->m13());
+  EXPECT_EQ(1.4, matrix->m14());
+  EXPECT_EQ(2.1, matrix->m21());
+  EXPECT_EQ(2.2, matrix->m22());
+  EXPECT_EQ(2.3, matrix->m23());
+  EXPECT_EQ(2.4, matrix->m24());
+  EXPECT_EQ(3.1, matrix->m31());
+  EXPECT_EQ(3.2, matrix->m32());
+  EXPECT_EQ(3.3, matrix->m33());
+  EXPECT_EQ(3.4, matrix->m34());
+  EXPECT_EQ(4.1, matrix->m41());
+  EXPECT_EQ(4.2, matrix->m42());
+  EXPECT_EQ(4.3, matrix->m43());
+  EXPECT_EQ(4.4, matrix->m44());
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripImageData) {

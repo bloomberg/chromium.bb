@@ -7,6 +7,13 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8CompositorProxy.h"
+#include "bindings/core/v8/V8DOMMatrix.h"
+#include "bindings/core/v8/V8DOMMatrixReadOnly.h"
+#include "bindings/core/v8/V8DOMPoint.h"
+#include "bindings/core/v8/V8DOMPointReadOnly.h"
+#include "bindings/core/v8/V8DOMQuad.h"
+#include "bindings/core/v8/V8DOMRect.h"
+#include "bindings/core/v8/V8DOMRectReadOnly.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
@@ -16,6 +23,13 @@
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMArrayBufferBase.h"
+#include "core/geometry/DOMMatrix.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
+#include "core/geometry/DOMPoint.h"
+#include "core/geometry/DOMPointReadOnly.h"
+#include "core/geometry/DOMQuad.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectReadOnly.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/AutoReset.h"
@@ -266,6 +280,116 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(image_data->height());
     WriteUint32(pixels->length());
     WriteRawBytes(pixels->Data(), pixels->length());
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMPoint::wrapperTypeInfo) {
+    DOMPoint* point = wrappable->ToImpl<DOMPoint>();
+    WriteTag(kDOMPointTag);
+    WriteDouble(point->x());
+    WriteDouble(point->y());
+    WriteDouble(point->z());
+    WriteDouble(point->w());
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMPointReadOnly::wrapperTypeInfo) {
+    DOMPointReadOnly* point = wrappable->ToImpl<DOMPointReadOnly>();
+    WriteTag(kDOMPointReadOnlyTag);
+    WriteDouble(point->x());
+    WriteDouble(point->y());
+    WriteDouble(point->z());
+    WriteDouble(point->w());
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMRect::wrapperTypeInfo) {
+    DOMRect* rect = wrappable->ToImpl<DOMRect>();
+    WriteTag(kDOMRectTag);
+    WriteDouble(rect->x());
+    WriteDouble(rect->y());
+    WriteDouble(rect->width());
+    WriteDouble(rect->height());
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMRectReadOnly::wrapperTypeInfo) {
+    DOMRectReadOnly* rect = wrappable->ToImpl<DOMRectReadOnly>();
+    WriteTag(kDOMRectReadOnlyTag);
+    WriteDouble(rect->x());
+    WriteDouble(rect->y());
+    WriteDouble(rect->width());
+    WriteDouble(rect->height());
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMQuad::wrapperTypeInfo) {
+    DOMQuad* quad = wrappable->ToImpl<DOMQuad>();
+    WriteTag(kDOMQuadTag);
+    for (const DOMPoint* point :
+         {quad->p1(), quad->p2(), quad->p3(), quad->p4()}) {
+      WriteDouble(point->x());
+      WriteDouble(point->y());
+      WriteDouble(point->z());
+      WriteDouble(point->w());
+    }
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMMatrix::wrapperTypeInfo) {
+    DOMMatrix* matrix = wrappable->ToImpl<DOMMatrix>();
+    if (matrix->is2D()) {
+      WriteTag(kDOMMatrix2DTag);
+      WriteDouble(matrix->a());
+      WriteDouble(matrix->b());
+      WriteDouble(matrix->c());
+      WriteDouble(matrix->d());
+      WriteDouble(matrix->e());
+      WriteDouble(matrix->f());
+    } else {
+      WriteTag(kDOMMatrixTag);
+      WriteDouble(matrix->m11());
+      WriteDouble(matrix->m12());
+      WriteDouble(matrix->m13());
+      WriteDouble(matrix->m14());
+      WriteDouble(matrix->m21());
+      WriteDouble(matrix->m22());
+      WriteDouble(matrix->m23());
+      WriteDouble(matrix->m24());
+      WriteDouble(matrix->m31());
+      WriteDouble(matrix->m32());
+      WriteDouble(matrix->m33());
+      WriteDouble(matrix->m34());
+      WriteDouble(matrix->m41());
+      WriteDouble(matrix->m42());
+      WriteDouble(matrix->m43());
+      WriteDouble(matrix->m44());
+    }
+    return true;
+  }
+  if (wrapper_type_info == &V8DOMMatrixReadOnly::wrapperTypeInfo) {
+    DOMMatrixReadOnly* matrix = wrappable->ToImpl<DOMMatrixReadOnly>();
+    if (matrix->is2D()) {
+      WriteTag(kDOMMatrix2DReadOnlyTag);
+      WriteDouble(matrix->a());
+      WriteDouble(matrix->b());
+      WriteDouble(matrix->c());
+      WriteDouble(matrix->d());
+      WriteDouble(matrix->e());
+      WriteDouble(matrix->f());
+    } else {
+      WriteTag(kDOMMatrixReadOnlyTag);
+      WriteDouble(matrix->m11());
+      WriteDouble(matrix->m12());
+      WriteDouble(matrix->m13());
+      WriteDouble(matrix->m14());
+      WriteDouble(matrix->m21());
+      WriteDouble(matrix->m22());
+      WriteDouble(matrix->m23());
+      WriteDouble(matrix->m24());
+      WriteDouble(matrix->m31());
+      WriteDouble(matrix->m32());
+      WriteDouble(matrix->m33());
+      WriteDouble(matrix->m34());
+      WriteDouble(matrix->m41());
+      WriteDouble(matrix->m42());
+      WriteDouble(matrix->m43());
+      WriteDouble(matrix->m44());
+    }
     return true;
   }
   if (wrapper_type_info == &V8MessagePort::wrapperTypeInfo) {

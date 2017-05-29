@@ -30,6 +30,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   static DOMMatrix* fromFloat64Array(NotShared<DOMFloat64Array>,
                                      ExceptionState&);
   static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
+  static DOMMatrix* CreateForSerialization(double[], int size);
 
   void setA(double value) { matrix_->SetM11(value); }
   void setB(double value) { matrix_->SetM12(value); }

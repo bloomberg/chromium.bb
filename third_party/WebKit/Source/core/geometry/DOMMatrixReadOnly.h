@@ -36,6 +36,7 @@ class CORE_EXPORT DOMMatrixReadOnly
   static DOMMatrixReadOnly* fromFloat64Array(NotShared<DOMFloat64Array>,
                                              ExceptionState&);
   static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
+  static DOMMatrixReadOnly* CreateForSerialization(double[], int size);
   virtual ~DOMMatrixReadOnly();
 
   double a() const { return matrix_->M11(); }

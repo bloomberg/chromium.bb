@@ -59,7 +59,16 @@ enum SerializationTag {
   kOffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
                                       // OffscreenCanvas. For OffscreenCanvas
                                       // transfer
-  kCryptoKeyTag = 'K',                // subtag:byte, props, usages:uint32_t,
+  kDOMPointTag = 'Q',                 // x:Double, y:Double, z:Double, w:Double
+  kDOMPointReadOnlyTag = 'W',         // x:Double, y:Double, z:Double, w:Double
+  kDOMRectTag = 'E',          // x:Double, y:Double, width:Double, height:Double
+  kDOMRectReadOnlyTag = 'R',  // x:Double, y:Double, width:Double, height:Double
+  kDOMQuadTag = 'T',          // p1:Double, p2:Double, p3:Double, p4:Double
+  kDOMMatrixTag = 'Y',        // m11..m44: 16 Double
+  kDOMMatrixReadOnlyTag = 'U',    // m11..m44: 16 Double
+  kDOMMatrix2DTag = 'I',          // a..f: 6 Double
+  kDOMMatrix2DReadOnlyTag = 'O',  // a..f: 6 Double
+  kCryptoKeyTag = 'K',            // subtag:byte, props, usages:uint32_t,
                         // keyDataLength:uint32_t, keyData:byte[keyDataLength]
   //                 If subtag=AesKeyTag:
   //                     props = keyLengthBytes:uint32_t, algorithmId:uint32_t

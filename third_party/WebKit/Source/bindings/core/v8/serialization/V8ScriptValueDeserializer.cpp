@@ -14,6 +14,14 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/ImageBitmap.h"
+#include "core/geometry/DOMMatrix.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
+#include "core/geometry/DOMPoint.h"
+#include "core/geometry/DOMPointInit.h"
+#include "core/geometry/DOMPointReadOnly.h"
+#include "core/geometry/DOMQuad.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectReadOnly.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -285,6 +293,85 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       DCHECK_EQ(pixel_array->length(), pixel_length);
       memcpy(pixel_array->Data(), pixels, pixel_length);
       return image_data;
+    }
+    case kDOMPointTag: {
+      double x = 0, y = 0, z = 0, w = 1;
+      if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&z) ||
+          !ReadDouble(&w))
+        return nullptr;
+      return DOMPoint::Create(x, y, z, w);
+    }
+    case kDOMPointReadOnlyTag: {
+      double x = 0, y = 0, z = 0, w = 1;
+      if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&z) ||
+          !ReadDouble(&w))
+        return nullptr;
+      return DOMPointReadOnly::Create(x, y, z, w);
+    }
+    case kDOMRectTag: {
+      double x = 0, y = 0, width = 0, height = 0;
+      if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&width) ||
+          !ReadDouble(&height))
+        return nullptr;
+      return DOMRect::Create(x, y, width, height);
+    }
+    case kDOMRectReadOnlyTag: {
+      double x = 0, y = 0, width = 0, height = 0;
+      if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&width) ||
+          !ReadDouble(&height))
+        return nullptr;
+      return DOMRectReadOnly::Create(x, y, width, height);
+    }
+    case kDOMQuadTag: {
+      DOMPointInit pointInits[4];
+      for (DOMPointInit& init : pointInits) {
+        double x = 0, y = 0, z = 0, w = 0;
+        if (!ReadDouble(&x) || !ReadDouble(&y) || !ReadDouble(&z) ||
+            !ReadDouble(&w))
+          return nullptr;
+        init.setX(x);
+        init.setY(y);
+        init.setZ(z);
+        init.setW(w);
+      }
+      return DOMQuad::Create(pointInits[0], pointInits[1], pointInits[2],
+                             pointInits[3]);
+    }
+    case kDOMMatrix2DTag: {
+      double values[6];
+      for (double& d : values) {
+        if (!ReadDouble(&d))
+          return nullptr;
+      }
+      return DOMMatrix::CreateForSerialization(values,
+                                               WTF_ARRAY_LENGTH(values));
+    }
+    case kDOMMatrix2DReadOnlyTag: {
+      double values[6];
+      for (double& d : values) {
+        if (!ReadDouble(&d))
+          return nullptr;
+      }
+      return DOMMatrixReadOnly::CreateForSerialization(
+          values, WTF_ARRAY_LENGTH(values));
+    }
+    case kDOMMatrixTag: {
+      double values[16];
+      for (double& d : values) {
+        if (!ReadDouble(&d))
+          return nullptr;
+      }
+      return DOMMatrix::CreateForSerialization(values,
+                                               WTF_ARRAY_LENGTH(values));
+    }
+    case kDOMMatrixReadOnlyTag: {
+      double values[16];
+      for (double& d : values) {
+        if (!ReadDouble(&d))
+          return nullptr;
+      }
+      return DOMMatrixReadOnly::CreateForSerialization(
+          values, WTF_ARRAY_LENGTH(values));
     }
     case kMessagePortTag: {
       uint32_t index = 0;
