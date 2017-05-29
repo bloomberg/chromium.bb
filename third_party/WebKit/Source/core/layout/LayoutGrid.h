@@ -205,7 +205,8 @@ class LayoutGrid final : public LayoutBlock {
 
   void PaintChildren(const PaintInfo&, const LayoutPoint&) const override;
 
-  LayoutUnit MarginLogicalHeightForChild(const LayoutBox&) const;
+  LayoutUnit MarginLogicalSizeForChild(GridTrackSizingDirection,
+                                       const LayoutBox&) const;
   LayoutUnit ComputeMarginLogicalSizeForChild(MarginDirection,
                                               const LayoutBox&) const;
   LayoutUnit AvailableAlignmentSpaceForChildBeforeStretching(
