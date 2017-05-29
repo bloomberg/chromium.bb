@@ -774,10 +774,11 @@ void GpuProcessHost::OnChannelEstablished(
   DCHECK(channel_requests_.front().Equals(callback));
   channel_requests_.pop();
 
+  auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
   if (channel_handle.is_valid() &&
-      !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr)) {
+      !gpu_data_manager->GpuAccessAllowed(nullptr)) {
     gpu_service_ptr_->CloseChannel(client_id);
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo(),
                  EstablishChannelStatus::GPU_ACCESS_DENIED);
@@ -786,8 +787,8 @@ void GpuProcessHost::OnChannelEstablished(
     return;
   }
 
-  callback.Run(IPC::ChannelHandle(channel_handle.release()), gpu_info_,
-               EstablishChannelStatus::SUCCESS);
+  callback.Run(IPC::ChannelHandle(channel_handle.release()),
+               gpu_data_manager->GetGPUInfo(), EstablishChannelStatus::SUCCESS);
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(
@@ -846,11 +847,8 @@ void GpuProcessHost::DidInitialize(
   initialized_ = true;
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   if (!gpu_data_manager->ShouldUseSwiftShader()) {
-    gpu_info_ = gpu_info;
     gpu_data_manager->UpdateGpuInfo(gpu_info);
     gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
-  } else {
-    gpu_info_ = gpu_data_manager->GetGPUInfo();
   }
 }
 
