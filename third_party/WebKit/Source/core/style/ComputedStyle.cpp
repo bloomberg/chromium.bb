@@ -340,10 +340,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   // bunch of stuff other than real style data.
   // See comments for each skipped flag below.
 
-  // These are not generated in ComputedStyleBase
-  SetHasViewportUnits(other.HasViewportUnits());
-  SetHasRemUnitsInternal(other.HasRemUnits());
-
   // Correctly set during selector matching:
   // m_styleType
   // m_pseudoBits

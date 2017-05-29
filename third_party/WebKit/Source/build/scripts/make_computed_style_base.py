@@ -120,7 +120,7 @@ class Field(object):
     """
 
     def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
-                 field_template, field_group, size, default_value, has_custom_compare_and_copy,
+                 field_template, field_group, size, default_value, custom_copy, custom_compare,
                  getter_method_name, setter_method_name, initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
@@ -133,7 +133,8 @@ class Field(object):
         self.group_member_name = class_member_name(join_name(field_group, 'data')) if field_group else None
         self.size = size
         self.default_value = default_value
-        self.has_custom_compare_and_copy = has_custom_compare_and_copy
+        self.custom_copy = custom_copy
+        self.custom_compare = custom_compare
 
         # Field role: one of these must be true
         self.is_property = field_role == 'property'
@@ -298,7 +299,8 @@ def _create_property_field(property_):
         field_group=property_['field_group'],
         size=size,
         default_value=default_value,
-        has_custom_compare_and_copy=property_['has_custom_compare_and_copy'],
+        custom_copy=property_['custom_copy'],
+        custom_compare=property_['custom_compare'],
         getter_method_name=property_['getter'],
         setter_method_name=property_['setter'],
         initial_method_name=property_['initial'],
@@ -321,7 +323,8 @@ def _create_inherited_flag_field(property_):
         field_group=property_['field_group'],
         size=1,
         default_value='true',
-        has_custom_compare_and_copy=False,
+        custom_copy=False,
+        custom_compare=False,
         getter_method_name=method_name(name_for_methods),
         setter_method_name=method_name(join_name('set', name_for_methods)),
         initial_method_name=method_name(join_name('initial', name_for_methods)),
@@ -410,8 +413,9 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         css_properties = [value for value in self._properties.values() if not value['longhands']]
 
         for property_ in css_properties:
-            # All CSS properties that are generated do not have custom comparison and copy logic.
-            property_['has_custom_compare_and_copy'] = False
+            # All CSS properties from CSSProperties.json5 do not have custom comparison and copy logic.
+            property_['custom_copy'] = False
+            property_['custom_compare'] = False
 
         # Read extra fields using the parameter specification from the CSS properties file.
         extra_fields = json5_generator.Json5File.load_from_files(

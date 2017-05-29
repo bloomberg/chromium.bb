@@ -121,7 +121,6 @@ class CORE_EXPORT ComputedStyleBase {
     return (
         {{fieldwise_compare(computed_style, computed_style.all_fields
             |selectattr("is_property")
-            |rejectattr("has_custom_compare_and_copy")
             |rejectattr("is_inherited")
             |list
           )|indent(8)}}
