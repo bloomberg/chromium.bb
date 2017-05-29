@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -142,6 +143,26 @@ constexpr int AvatarButtonThemedBorder::kStrokeWidth;
 constexpr gfx::Insets AvatarButtonThemedBorder::kBorderStrokeInsets;
 constexpr float AvatarButtonThemedBorder::kCornerRadius;
 
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "AvatarButtonShutdownNotifierFactory") {
+    DependsOn(SigninManagerFactory::GetInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
+
 }  // namespace
 
 AvatarButton::AvatarButton(views::ButtonListener* listener,
@@ -218,6 +239,10 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
     SetBorder(
         CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
   }
+
+  profile_shutdown_notifier_ =
+      ShutdownNotifierFactory::GetInstance()->Get(profile_)->Subscribe(
+          base::Bind(&AvatarButton::OnProfileShutdown, base::Unretained(this)));
 
   Update();
   SchedulePaint();
@@ -339,7 +364,23 @@ void AvatarButton::OnWidgetClosing(views::Widget* widget) {
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
+void AvatarButton::OnProfileShutdown() {
+  // It looks like in some mysterious cases, the AvatarButton outlives the
+  // profile (see http://crbug.com/id=579690). The avatar button is owned by
+  // the browser frame (which is owned by the BrowserWindow), and there is an
+  // expectation for the UI to be destroyed before the profile is destroyed.
+  CHECK(false) << "Avatar button must not outlive the profile.";
+}
+
 void AvatarButton::Update() {
+  // It looks like in some mysterious cases, the AvatarButton outlives the
+  // profile manager (see http://crbug.com/id=579690). The avatar button is
+  // owned by the browser frame (which is owned by the BrowserWindow), and
+  // there is an expectation for the UI to be destroyed before the profile
+  // manager is destroyed.
+  CHECK(g_browser_process->profile_manager())
+      << "Avatar button must not outlive the profile manager";
+
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
 

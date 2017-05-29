@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_style.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -60,6 +61,9 @@ class AvatarButton : public views::LabelButton,
   // views::WidgetObserver
   void OnWidgetClosing(views::Widget* widget) override;
 
+  // Called when |profile_| is shutting down.
+  void OnProfileShutdown();
+
   // Called when the profile info cache or signin/sync error has changed, which
   // means we might have to update the icon/text of the button.
   void Update();
@@ -73,6 +77,12 @@ class AvatarButton : public views::LabelButton,
 
   AvatarButtonErrorController error_controller_;
   Profile* profile_;
+
+  // TODO(msarda): Remove |profile_shutdown_notifier_| when
+  // http://crbug.com/579690 is fixed (it was added to track down the crash in
+  // that bug).
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      profile_shutdown_notifier_;
   ScopedObserver<ProfileAttributesStorage, AvatarButton> profile_observer_;
 
   // The icon displayed instead of the profile name in the local profile case.
