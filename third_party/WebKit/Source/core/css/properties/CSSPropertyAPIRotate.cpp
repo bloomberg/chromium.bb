@@ -9,12 +9,13 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIRotate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
   CSSValueID id = range.Peek().Id();

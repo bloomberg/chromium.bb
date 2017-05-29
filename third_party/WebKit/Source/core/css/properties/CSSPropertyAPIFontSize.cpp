@@ -8,12 +8,13 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontSize::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   return CSSPropertyFontUtils::ConsumeFontSize(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }

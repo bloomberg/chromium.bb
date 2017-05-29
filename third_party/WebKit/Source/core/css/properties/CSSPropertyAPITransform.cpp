@@ -7,6 +7,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/Length.h"
 
@@ -190,15 +191,14 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
 const CSSValue* CSSPropertyAPITransform::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID unresolved_property) {
+    const CSSParserLocalContext& local_context) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
     CSSValue* parsed_transform_value = ConsumeTransformValue(
-        range, &context,
-        unresolved_property == CSSPropertyAliasWebkitTransform);
+        range, &context, local_context.GetUseAliasParsing());
     if (!parsed_transform_value)
       return nullptr;
     list->Append(*parsed_transform_value);

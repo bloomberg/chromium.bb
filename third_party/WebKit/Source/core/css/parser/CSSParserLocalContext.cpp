@@ -11,7 +11,7 @@ CSSParserLocalContext::CSSParserLocalContext() : use_alias_parsing_(false) {}
 CSSParserLocalContext::CSSParserLocalContext(bool use_alias_parsing)
     : use_alias_parsing_(use_alias_parsing) {}
 
-bool CSSParserLocalContext::GetUseAliasParsing() {
+bool CSSParserLocalContext::GetUseAliasParsing() const {
   return use_alias_parsing_;
 }
 

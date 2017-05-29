@@ -8,12 +8,13 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitPadding::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);

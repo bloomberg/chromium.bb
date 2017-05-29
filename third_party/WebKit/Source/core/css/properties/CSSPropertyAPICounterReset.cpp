@@ -6,12 +6,13 @@
 
 #include "core/css/properties/CSSPropertyCounterUtils.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPICounterReset::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   return CSSPropertyCounterUtils::ConsumeCounter(
       range, CSSPropertyCounterUtils::kResetDefaultValue);
 }

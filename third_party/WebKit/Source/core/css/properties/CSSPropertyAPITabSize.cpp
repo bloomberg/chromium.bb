@@ -7,12 +7,13 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPITabSize::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   CSSPrimitiveValue* parsed_value =
       CSSPropertyParserHelpers::ConsumeInteger(range, 0);
   if (parsed_value)

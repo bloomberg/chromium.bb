@@ -8,12 +8,13 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {

@@ -29,7 +29,7 @@
     {
       name: "parseSingleValue",
       return_type: "const CSSValue*",
-      parameters: "(CSSParserTokenRange&, const CSSParserContext&, CSSPropertyID)",
+      parameters: "(CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&)",
       description: "Parses a single CSS property and returns the corresponding CSSValue. If the input is invalid it returns nullptr.",
     },
     {

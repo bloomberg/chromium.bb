@@ -6,12 +6,13 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIStrokeMiterlimit::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
 }
 

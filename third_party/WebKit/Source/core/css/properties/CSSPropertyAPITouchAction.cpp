@@ -8,6 +8,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
+class CSSParserLocalContext;
 namespace blink {
 
 namespace {
@@ -37,7 +38,7 @@ static bool ConsumePan(CSSParserTokenRange& range,
 const CSSValue* CSSPropertyAPITouchAction::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    CSSPropertyID) {
+    const CSSParserLocalContext&) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
