@@ -19,7 +19,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +29,6 @@ import java.util.List;
  * should be provided by calling {@link #update(List)}
  */
 public class ProfileDataCache implements ProfileDownloader.Observer {
-    private static final int PROFILE_IMAGE_SIZE_DP = 136;  // Max size of the user picture.
-    private static final int PROFILE_IMAGE_STROKE_DP = 3;
-
     private static class CacheEntry {
         public CacheEntry(Bitmap picture, String fullName, String givenName) {
             this.picture = picture;
@@ -48,9 +44,6 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
 
     private final Bitmap mPlaceholderImage;
-    private final int mImageSizePx;
-    private final int mImageStrokePx;
-    private final int mImageStrokeColor;
     private final ObserverList<ProfileDownloader.Observer> mObservers = new ObserverList<>();
 
     private final Context mContext;
@@ -59,12 +52,6 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     public ProfileDataCache(Context context, Profile profile) {
         mContext = context;
         mProfile = profile;
-
-        // There's no WindowAndroid present at this time, so get the default display.
-        final DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(context);
-        mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * displayAndroid.getDipScale());
-        mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * displayAndroid.getDipScale());
-        mImageStrokeColor = Color.WHITE;
 
         Bitmap placeHolder = BitmapFactory.decodeResource(mContext.getResources(),
                 R.drawable.fre_placeholder);
@@ -78,10 +65,12 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
      * Fetched data will be sent to observers of ProfileDownloader.
      */
     public void update(List<String> accounts) {
+        int imageSizePx =
+                mContext.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         for (int i = 0; i < accounts.size(); i++) {
             if (mCacheEntries.get(accounts.get(i)) == null) {
                 ProfileDownloader.startFetchingAccountInfoFor(
-                        mContext, mProfile, accounts.get(i), mImageSizePx, true);
+                        mContext, mProfile, accounts.get(i), imageSizePx, true);
             }
         }
     }
@@ -160,16 +149,10 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         canvas.drawARGB(0, 0, 0, 0);
         paint.setColor(Color.WHITE);
 
-        final float radius =  (bitmap.getWidth() - mImageStrokePx) / 2f;
-        canvas.drawCircle(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f, radius, paint);
+        canvas.drawCircle(
+                bitmap.getWidth() / 2f, bitmap.getHeight() / 2f, bitmap.getWidth() / 2f, paint);
         paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
-
-        paint.setColor(mImageStrokeColor);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setXfermode(new PorterDuffXfermode(Mode.SRC));
-        paint.setStrokeWidth(mImageStrokePx);
-        canvas.drawCircle(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f, radius, paint);
 
         return output;
     }
