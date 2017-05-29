@@ -8,9 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 
-class GURL;
-class PermissionRequestID;
-
 class MidiPermissionContext : public PermissionContextBase {
  public:
   explicit MidiPermissionContext(Profile* profile);
@@ -18,9 +15,10 @@ class MidiPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-  void UpdateTabContext(const PermissionRequestID& id,
-                        const GURL& requesting_frame,
-                        bool allowed) override;
+  ContentSetting GetPermissionStatusInternal(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionContext);

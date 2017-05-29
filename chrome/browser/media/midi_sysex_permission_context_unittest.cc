@@ -1,13 +1,12 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "chrome/browser/media/midi_permission_context.h"
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -30,24 +29,18 @@ namespace {
 class TestPermissionContext : public MidiPermissionContext {
  public:
   explicit TestPermissionContext(Profile* profile)
-   : MidiPermissionContext(profile),
-     permission_set_(false),
-     permission_granted_(false),
-     tab_context_updated_(false) {}
+      : MidiPermissionContext(profile),
+        permission_set_(false),
+        permission_granted_(false),
+        tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}
 
-  bool permission_granted() {
-    return permission_granted_;
-  }
+  bool permission_granted() { return permission_granted_; }
 
-  bool permission_set() {
-    return permission_set_;
-  }
+  bool permission_set() { return permission_set_; }
 
-  bool tab_context_updated() {
-    return tab_context_updated_;
-  }
+  bool tab_context_updated() { return tab_context_updated_; }
 
   void TrackPermissionDecision(ContentSetting content_setting) {
     permission_set_ = true;
@@ -62,9 +55,9 @@ class TestPermissionContext : public MidiPermissionContext {
   }
 
  private:
-   bool permission_set_;
-   bool permission_granted_;
-   bool tab_context_updated_;
+  bool permission_set_;
+  bool permission_granted_;
+  bool tab_context_updated_;
 };
 
 }  // anonymous namespace
@@ -93,13 +86,11 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
   GURL url("http://www.example.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
-  const PermissionRequestID id(
-      web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(),
-      -1);
+  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
+                               web_contents()->GetMainFrame()->GetRoutingID(),
+                               -1);
   permission_context.RequestPermission(
-      web_contents(),
-      id, url, true,
+      web_contents(), id, url, true,
       base::Bind(&TestPermissionContext::TrackPermissionDecision,
                  base::Unretained(&permission_context)));
 
@@ -109,10 +100,8 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
 
   ContentSetting setting =
       HostContentSettingsMapFactory::GetForProfile(profile())
-          ->GetContentSetting(url.GetOrigin(),
-                              url.GetOrigin(),
-                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                              std::string());
+          ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
   EXPECT_EQ(CONTENT_SETTING_ASK, setting);
 }
 
@@ -124,23 +113,20 @@ TEST_F(MidiPermissionContextTests, TestInsecureQueryingUrl) {
 
   // Check that there is no saved content settings.
   EXPECT_EQ(CONTENT_SETTING_ASK,
+            HostContentSettingsMapFactory::GetForProfile(profile())
+                ->GetContentSetting(
+                    insecure_url.GetOrigin(), insecure_url.GetOrigin(),
+                    CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
       HostContentSettingsMapFactory::GetForProfile(profile())
-          ->GetContentSetting(insecure_url.GetOrigin(),
-                              insecure_url.GetOrigin(),
-                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                              std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+          ->GetContentSetting(secure_url.GetOrigin(), insecure_url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
       HostContentSettingsMapFactory::GetForProfile(profile())
-          ->GetContentSetting(secure_url.GetOrigin(),
-                              insecure_url.GetOrigin(),
-                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                              std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-      HostContentSettingsMapFactory::GetForProfile(profile())
-          ->GetContentSetting(insecure_url.GetOrigin(),
-                              secure_url.GetOrigin(),
-                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                              std::string()));
+          ->GetContentSetting(insecure_url.GetOrigin(), secure_url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context

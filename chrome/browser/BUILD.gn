@@ -577,6 +577,8 @@ split_static_library("browser") {
     "media/media_url_constants.h",
     "media/midi_permission_context.cc",
     "media/midi_permission_context.h",
+    "media/midi_sysex_permission_context.cc",
+    "media/midi_sysex_permission_context.h",
     "media/output_protection_proxy.cc",
     "media/output_protection_proxy.h",
     "media/router/media_router_feature.cc",
