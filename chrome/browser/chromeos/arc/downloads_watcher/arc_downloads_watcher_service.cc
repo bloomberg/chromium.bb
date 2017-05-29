@@ -266,8 +266,8 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
     outstanding_task_ = true;
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadsWatcher::DelayBuildTimestampMap,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&DownloadsWatcher::DelayBuildTimestampMap,
+                       weak_ptr_factory_.GetWeakPtr()),
         kBuildTimestampMapDelay);
   } else {
     last_notify_time_ = base::TimeTicks::Now();
@@ -301,7 +301,7 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, base::Passed(std::move(string_paths))));
+      base::BindOnce(callback_, base::Passed(std::move(string_paths))));
   if (last_notify_time_ > snapshot_time)
     DelayBuildTimestampMap();
   else
@@ -339,9 +339,9 @@ void ArcDownloadsWatcherService::StartWatchingDownloads() {
   watcher_ = base::MakeUnique<DownloadsWatcher>(
       base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadsWatcher::Start, base::Unretained(watcher_.get())));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::BindOnce(&DownloadsWatcher::Start,
+                                         base::Unretained(watcher_.get())));
 }
 
 void ArcDownloadsWatcherService::StopWatchingDownloads() {

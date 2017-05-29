@@ -134,8 +134,9 @@ void ArcAndroidManagementChecker::ScheduleRetry() {
   VLOG(2) << "Schedule next android management check in " << retry_delay_;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ArcAndroidManagementChecker::StartCheckInternal,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&ArcAndroidManagementChecker::StartCheckInternal,
+                     weak_ptr_factory_.GetWeakPtr()),
       retry_delay_);
   retry_delay_ = std::min(retry_delay_ * 2, kRetryDelayMax);
 }
