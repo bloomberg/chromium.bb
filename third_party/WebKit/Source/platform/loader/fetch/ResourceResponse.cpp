@@ -154,7 +154,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   SetHTTPStatusText(AtomicString(data->http_status_text_));
 
   http_header_fields_.Adopt(std::move(data->http_headers_));
-  SetResourceLoadTiming(data->resource_load_timing_.Release());
+  SetResourceLoadTiming(std::move(data->resource_load_timing_));
   has_major_certificate_errors_ = data->has_major_certificate_errors_;
   security_style_ = data->security_style_;
   security_details_.protocol = data->security_details_.protocol;

@@ -94,7 +94,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     RefPtr<FontDataForRangeSet> fallback_priority_font_range =
         AdoptRef(new FontDataForRangeSet(FallbackPriorityFont(hint_list[0])));
     if (fallback_priority_font_range->HasFontData())
-      return UniqueOrNext(fallback_priority_font_range.Release(), hint_list);
+      return UniqueOrNext(std::move(fallback_priority_font_range), hint_list);
     return Next(hint_list);
   }
 

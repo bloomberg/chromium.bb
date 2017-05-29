@@ -110,7 +110,7 @@ void String::append(const StringView& string) {
     memcpy(data, impl_->Characters8(), impl_->length() * sizeof(LChar));
     memcpy(data + impl_->length(), string.Characters8(),
            string.length() * sizeof(LChar));
-    impl_ = new_impl.Release();
+    impl_ = std::move(new_impl);
     return;
   }
 
@@ -132,7 +132,7 @@ void String::append(const StringView& string) {
     StringImpl::CopyChars(data + impl_->length(), string.Characters16(),
                           string.length());
 
-  impl_ = new_impl.Release();
+  impl_ = std::move(new_impl);
 }
 
 template <typename CharacterType>
@@ -156,7 +156,7 @@ inline void String::AppendInternal(CharacterType c) {
   else
     StringImpl::CopyChars(data, impl_->Characters16(), impl_->length());
   data[impl_->length()] = c;
-  impl_ = new_impl.Release();
+  impl_ = std::move(new_impl);
 }
 
 void String::append(LChar c) {
@@ -230,10 +230,10 @@ void String::insert(const StringView& string, unsigned position) {
 
   DCHECK(impl_);
   if (string.Is8Bit())
-    impl_ = InsertInternal(impl_.Release(), string.Characters8(),
+    impl_ = InsertInternal(std::move(impl_), string.Characters8(),
                            string.length(), position);
   else
-    impl_ = InsertInternal(impl_.Release(), string.Characters16(),
+    impl_ = InsertInternal(std::move(impl_), string.Characters16(),
                            string.length(), position);
 }
 

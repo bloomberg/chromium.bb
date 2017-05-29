@@ -167,7 +167,7 @@ struct BidiStatus final {
 
     // This copies BidiStatus and may churn the ref on BidiContext.
     // I doubt it matters.
-    return BidiStatus(direction, direction, direction, context.Release());
+    return BidiStatus(direction, direction, direction, std::move(context));
   }
 
   WTF::Unicode::CharDirection eor;
