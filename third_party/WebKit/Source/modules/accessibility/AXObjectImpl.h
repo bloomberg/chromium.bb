@@ -810,7 +810,6 @@ class MODULES_EXPORT AXObjectImpl
   static AccessibilityRole AriaRoleToWebCoreRole(const String&);
   static const AtomicString& RoleName(AccessibilityRole);
   static const AtomicString& InternalRoleName(AccessibilityRole);
-  static bool IsInsideFocusableElementOrARIAWidget(const Node&);
 
  protected:
   AXID id_;
@@ -886,8 +885,6 @@ class MODULES_EXPORT AXObjectImpl
 
  private:
   static bool IsNativeInputInMixedState(const Node*);
-  static bool IncludesARIAWidgetRole(const String&);
-  static bool HasInteractiveARIAAttribute(const Element&);
 
   static unsigned number_of_live_ax_objects_;
 };

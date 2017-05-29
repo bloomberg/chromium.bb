@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class Node;
+
 enum AccessibilityRole {
   kUnknownRole = 0,  // Not mapped in platform APIs, generally indicates a bug
   kAbbrRole,         // No mapping to ARIA role.
@@ -284,7 +286,11 @@ enum AXDescriptionFrom {
 
 // TODO(sashab): Add pure virtual methods to this class to remove dependencies
 // on AXObjectImpl from outside of modules/.
-class CORE_EXPORT AXObject {};
+class CORE_EXPORT AXObject {
+ public:
+  // Static helper functions.
+  static bool IsInsideFocusableElementOrARIAWidget(const Node&);
+};
 
 }  // namespace blink
 

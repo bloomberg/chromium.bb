@@ -31,6 +31,7 @@
 #include "public/web/WebNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/AXObject.h"
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -47,7 +48,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebAXObject.h"
@@ -127,7 +127,7 @@ bool WebNode::IsContentEditable() const {
 }
 
 bool WebNode::IsInsideFocusableElementOrARIAWidget() const {
-  return AXObjectImpl::IsInsideFocusableElementOrARIAWidget(
+  return AXObject::IsInsideFocusableElementOrARIAWidget(
       *this->ConstUnwrap<Node>());
 }
 
