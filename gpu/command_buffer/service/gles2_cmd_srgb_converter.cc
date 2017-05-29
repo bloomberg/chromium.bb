@@ -478,20 +478,31 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
 
   base::CheckedNumeric<GLint> level = base_level;
   level += 1;
-  for (; level.IsValid() && level.ValueOrDie() <= max_mipmap_available_level;
-       ++level) {
+
+  if (!tex->IsImmutable()) {
+    glBindTexture(GL_TEXTURE_2D, tex->service_id());
+    GLsizei level_width = width;
+    GLsizei level_height = height;
+    for (base::CheckedNumeric<GLint> i = level;
+         i.IsValid() && i.ValueOrDie() <= max_mipmap_available_level; ++i) {
+      glTexImage2D(GL_TEXTURE_2D, i.ValueOrDie(), internal_format, level_width,
+                   level_height, 0, format, type, nullptr);
+      level_width = (level_width == 1) ? 1 : level_width >> 1;
+      level_height = (level_height == 1) ? 1 : level_height >> 1;
+    }
+  }
+
+  glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
+  for (base::CheckedNumeric<GLint> i = level;
+       i.IsValid() && i.ValueOrDie() <= max_mipmap_available_level; ++i) {
     // copy mipmaps level by level from srgb_converter_textures_[1] to tex
     // generate mipmap for tex manually
-    glBindTexture(GL_TEXTURE_2D, tex->service_id());
-    if (!tex->IsImmutable()) {
-      glTexImage2D(GL_TEXTURE_2D, level.ValueOrDie(), internal_format, width,
-                   height, 0, format, type, nullptr);
-    }
     glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, tex->service_id(),
-                              level.ValueOrDie());
+                              GL_TEXTURE_2D, tex->service_id(), i.ValueOrDie());
 
-    glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
+    DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+              glCheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER));
+
     glViewport(0, 0, width, height);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     width = (width == 1) ? 1 : width >> 1;
