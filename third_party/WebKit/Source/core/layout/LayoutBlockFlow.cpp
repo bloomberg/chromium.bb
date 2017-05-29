@@ -4246,13 +4246,72 @@ void LayoutBlockFlow::PositionSpannerDescendant(
   DetermineLogicalLeftPositionForChild(spanner);
 }
 
+DISABLE_CFI_PERF
+bool LayoutBlockFlow::CreatesNewFormattingContext() const {
+  if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
+      IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
+      IsFieldset() || IsDocumentElement() || IsGridItem() ||
+      IsWritingModeRoot() || Style()->Display() == EDisplay::kFlowRoot ||
+      Style()->ContainsPaint() || Style()->ContainsLayout() ||
+      Style()->SpecifiesColumns() ||
+      Style()->GetColumnSpan() == kColumnSpanAll) {
+    // The specs require this object to establish a new formatting context.
+    return true;
+  }
+
+  // The remaining checks here are not covered by any spec, but we still need to
+  // establish new formatting contexts in some cases, for various reasons.
+
+  if (IsRubyText()) {
+    // Ruby text objects are pushed around after layout, to become flush with
+    // the associated ruby base. As such, we cannot let floats leak out from
+    // ruby text objects.
+    return true;
+  }
+
+  if (IsLayoutFlowThread()) {
+    // The spec requires multicol containers to establish new formatting
+    // contexts. Blink uses an anonymous flow thread child of the multicol
+    // container to actually perform layout inside. Therefore we need to
+    // propagate the BFCness down to the flow thread, so that floats are fully
+    // contained by the flow thread, and thereby the multicol container.
+    return true;
+  }
+
+  if (IsHR()) {
+    // Not mentioned in the spec, but we want HR elements to be pushed to the
+    // side by floats (and all engines seem to do that), since we use borders to
+    // render HR (and it would just ugly to let those borders be painted under
+    // the float).
+    return true;
+  }
+
+  if (IsLegend()) {
+    // This is wrong; see crbug.com/727378 . It may be that our current
+    // implementation requires the rendered legend inside a FIELDSET to create a
+    // new formatting context. That should probably be fixed too, but more
+    // importantly: We should never create a new formatting context for LEGEND
+    // elements that aren't associated with a FIELDSET.
+    return true;
+  }
+
+  if (IsTextControl()) {
+    // INPUT and other replaced elements rendered by Blink itself should be
+    // completely contained.
+    return true;
+  }
+
+  if (IsSVGForeignObject()) {
+    // This is the root of a foreign object. Don't let anything inside it escape
+    // to our ancestors.
+    return true;
+  }
+
+  return false;
+}
+
 bool LayoutBlockFlow::AvoidsFloats() const {
-  // Floats can't intrude into our box if we have a non-auto column count or
-  // width.
-  // Note: we need to use LayoutBox::avoidsFloats here since
-  // LayoutBlock::avoidsFloats is always true.
-  return LayoutBox::AvoidsFloats() || !Style()->HasAutoColumnCount() ||
-         !Style()->HasAutoColumnWidth();
+  return ShouldBeConsideredAsReplaced() || CreatesNewFormattingContext();
 }
 
 void LayoutBlockFlow::MoveChildrenTo(LayoutBoxModelObject* to_box_model_object,

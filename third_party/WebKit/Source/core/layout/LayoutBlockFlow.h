@@ -321,7 +321,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void PositionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child);
 
-  bool AvoidsFloats() const override;
+  bool CreatesNewFormattingContext() const override;
+  bool AvoidsFloats() const final;
 
   using LayoutBoxModelObject::MoveChildrenTo;
   void MoveChildrenTo(LayoutBoxModelObject* to_box_model_object,

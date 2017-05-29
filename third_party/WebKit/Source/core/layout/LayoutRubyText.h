@@ -49,8 +49,6 @@ class LayoutRubyText final : public LayoutBlockFlow {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
  private:
-  bool AvoidsFloats() const override;
-
   ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
   void AdjustInlineDirectionLineBounds(
       unsigned expansion_opportunity_count,

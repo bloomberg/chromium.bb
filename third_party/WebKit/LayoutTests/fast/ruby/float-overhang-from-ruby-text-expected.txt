@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x75
         LayoutRuby (inline) {RUBY} at (0,0) size 100x50
           LayoutRubyRun (anonymous) at (0,25) size 100x50
-            LayoutRubyText {RT} at (0,-25) size 100x25
+            LayoutRubyText {RT} at (0,-25) size 100x50
               LayoutText {#text} at (50,0) size 25x25
                 text run at (50,0) width 25: "a"
               LayoutBlockFlow (floating) {DIV} at (0,0) size 50x50 [bgcolor=#ADD8E6]
