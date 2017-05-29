@@ -170,6 +170,28 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DuplicateVisits) {
   EXPECT_EQ(7u, GetLocalResult());
 }
 
+// Tests that the counter works without |web_history_service_callback| and
+// |sync_service|.
+IN_PROC_BROWSER_TEST_F(HistoryCounterTest, WithoutSyncService) {
+  AddVisit("https://www.google.com");
+  AddVisit("https://www.chrome.com");
+
+  Profile* profile = browser()->profile();
+
+  browsing_data::HistoryCounter counter(
+      GetHistoryService(),
+      browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
+      nullptr /* sync_service */);
+
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&HistoryCounterTest::Callback, base::Unretained(this)));
+  counter.Restart();
+
+  WaitForCounting();
+  EXPECT_EQ(2u, GetLocalResult());
+}
+
 // Tests that the counter starts counting automatically when the deletion
 // pref changes to true.
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefChanged) {
