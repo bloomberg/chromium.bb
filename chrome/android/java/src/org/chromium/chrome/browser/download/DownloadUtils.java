@@ -834,7 +834,7 @@ public class DownloadUtils {
                                                    : R.drawable.ic_drive_text_white_36dp;
             default:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_file_white_24dp
-                                                   : R.drawable.ic_drive_text_white_36dp;
+                                                   : R.drawable.ic_drive_file_white_36dp;
         }
     }
 
