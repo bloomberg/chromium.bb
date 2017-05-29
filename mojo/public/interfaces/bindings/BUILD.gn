@@ -19,6 +19,8 @@ mojom("bindings") {
   export_class_attribute_shared = "MOJO_CPP_BINDINGS_EXPORT"
   export_define_shared = "MOJO_CPP_BINDINGS_IMPLEMENTATION"
   export_header_shared = "mojo/public/cpp/bindings/bindings_export.h"
+
+  use_new_js_bindings = false
 }
 
 # TODO(yzshen): Remove this target and use the one above once
@@ -29,6 +31,4 @@ mojom("new_bindings") {
     "new_bindings/interface_control_messages.mojom",
     "new_bindings/pipe_control_messages.mojom",
   ]
-
-  use_new_js_bindings = true
 }

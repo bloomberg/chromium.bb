@@ -149,9 +149,9 @@ if (enable_mojom_typemapping) {
 #   use_new_js_bindings (optional)
 #       If set to true, the generated JS code will use the new module loading
 #       approach and the core API exposed by Web IDL.
-#
-#       TODO(yzshen): Switch all existing users to use_new_js_bindings=true and
-#       remove the old mode.
+#       Default value is true.
+#       TODO(yzshen): Convert all users to use new JS bindings and remove the
+#       old mode.
 #
 #   component_output_prefix (optional)
 #       The prefix to use for the output_name of any component library emitted
@@ -625,7 +625,7 @@ template("mojom") {
           args += [ "--use_once_callback" ]
         }
 
-        if (defined(invoker.use_new_js_bindings) &&
+        if (!defined(invoker.use_new_js_bindings) ||
             invoker.use_new_js_bindings) {
           args += [ "--use_new_js_bindings" ]
         }
