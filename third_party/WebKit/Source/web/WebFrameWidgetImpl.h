@@ -44,7 +44,6 @@
 #include "public/web/WebInputMethodController.h"
 #include "web/CompositorMutatorImpl.h"
 #include "web/PageWidgetDelegate.h"
-#include "web/WebInputMethodControllerImpl.h"
 
 namespace blink {
 
@@ -119,8 +118,7 @@ class WebFrameWidgetImpl final
   void SetBaseBackgroundColorOverride(WebColor) override;
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
-  WebInputMethodControllerImpl* GetActiveWebInputMethodController()
-      const override;
+  WebInputMethodController* GetActiveWebInputMethodController() const override;
 
   Frame* FocusedCoreFrame() const;
 

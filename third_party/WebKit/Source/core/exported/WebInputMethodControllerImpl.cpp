@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/WebInputMethodControllerImpl.h"
+#include "core/exported/WebInputMethodControllerImpl.h"
 
 #include "core/InputTypeNames.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -15,28 +15,21 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
 WebInputMethodControllerImpl::WebInputMethodControllerImpl(
-    WebLocalFrameImpl& web_frame)
+    WebLocalFrameBase& web_frame)
     : web_frame_(&web_frame) {}
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}
-
-// static
-WebInputMethodControllerImpl* WebInputMethodControllerImpl::FromFrame(
-    LocalFrame* frame) {
-  WebLocalFrameImpl* web_frame_impl = WebLocalFrameImpl::FromFrame(frame);
-  return web_frame_impl ? web_frame_impl->GetInputMethodController() : nullptr;
-}
 
 DEFINE_TRACE(WebInputMethodControllerImpl) {
   visitor->Trace(web_frame_);

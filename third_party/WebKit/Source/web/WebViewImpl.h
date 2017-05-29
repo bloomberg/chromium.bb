@@ -85,7 +85,7 @@ class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
 class WebElement;
-class WebInputMethodControllerImpl;
+class WebInputMethodController;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameBase;
@@ -504,7 +504,7 @@ class WEB_EXPORT WebViewImpl final
   // corresponding to the focused frame. It will return nullptr if there is no
   // focused frame, or if the there is one but it belongs to a different local
   // root.
-  WebInputMethodControllerImpl* GetActiveWebInputMethodController() const;
+  WebInputMethodController* GetActiveWebInputMethodController() const;
 
   void SetLastHiddenPagePopup(WebPagePopupImpl* page_popup) override {
     last_hidden_page_popup_ = page_popup;

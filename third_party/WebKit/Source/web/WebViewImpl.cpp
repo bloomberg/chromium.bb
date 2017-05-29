@@ -172,7 +172,6 @@
 #include "web/PrerendererClientImpl.h"
 #include "web/StorageQuotaClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
-#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 
@@ -3514,9 +3513,11 @@ void WebViewImpl::HidePopups() {
   CancelPagePopup();
 }
 
-WebInputMethodControllerImpl* WebViewImpl::GetActiveWebInputMethodController()
+WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
     const {
-  return WebInputMethodControllerImpl::FromFrame(FocusedLocalFrameInWidget());
+  WebLocalFrameBase* local_frame =
+      WebLocalFrameBase::FromFrame(FocusedLocalFrameInWidget());
+  return local_frame ? local_frame->GetInputMethodController() : nullptr;
 }
 
 Color WebViewImpl::BaseBackgroundColor() const {

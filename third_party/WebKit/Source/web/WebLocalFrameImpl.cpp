@@ -2543,7 +2543,7 @@ base::SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
       ->ToSingleThreadTaskRunner();
 }
 
-WebInputMethodControllerImpl* WebLocalFrameImpl::GetInputMethodController() {
+WebInputMethodController* WebLocalFrameImpl::GetInputMethodController() {
   return &input_method_controller_;
 }
 

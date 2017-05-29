@@ -33,7 +33,7 @@ class PagePopup;
 class PagePopupClient;
 class PageScaleConstraintsSet;
 class WebInputEvent;
-class WebInputMethodControllerImpl;
+class WebInputMethodController;
 class WebKeyboardEvent;
 class WebLayer;
 class WebLocalFrameBase;
@@ -171,7 +171,7 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   // corresponding to the focused frame. It will return nullptr if there is no
   // focused frame, or if there is one but it belongs to a different local
   // root.
-  virtual WebInputMethodControllerImpl* GetActiveWebInputMethodController()
+  virtual WebInputMethodController* GetActiveWebInputMethodController()
       const = 0;
   virtual void ScheduleAnimationForWidget() = 0;
   virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() = 0;
