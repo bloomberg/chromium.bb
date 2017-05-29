@@ -40,8 +40,8 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
   void Create(mojom::VideoAcceleratorServiceRequest request) override {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ConnectToVideoAcceleratorServiceOnIOThread,
-                   base::Passed(&request)));
+        base::BindOnce(&ConnectToVideoAcceleratorServiceOnIOThread,
+                       base::Passed(&request)));
   }
 
  private:

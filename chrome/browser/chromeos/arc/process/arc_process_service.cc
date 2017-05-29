@@ -273,7 +273,7 @@ void ArcProcessService::OnReceiveProcessList(
 
 void ArcProcessService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  task_runner_->PostTask(FROM_HERE, base::Bind(&Reset, nspid_to_pid_));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&Reset, nspid_to_pid_));
   instance_ready_ = true;
 }
 

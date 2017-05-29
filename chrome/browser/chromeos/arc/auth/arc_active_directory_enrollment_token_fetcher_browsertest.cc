@@ -213,8 +213,8 @@ net::URLRequestJob* CloseTabJob(Browser* browser,
                                 net::NetworkDelegate* network_delegate) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabStripModel::CloseSelectedTabs,
-                 base::Unretained(browser->tab_strip_model())));
+      base::BindOnce(&TabStripModel::CloseSelectedTabs,
+                     base::Unretained(browser->tab_strip_model())));
 
   return nullptr;
 }
@@ -291,7 +291,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
     auto dm_token_storage = base::MakeUnique<policy::DMTokenStorage>(
         g_browser_process->local_state());
     dm_token_storage->StoreDMToken(
-        kFakeDmToken, base::Bind(
+        kFakeDmToken, base::BindOnce(
                           [](base::RunLoop* run_loop, bool success) {
                             EXPECT_TRUE(success);
                             run_loop->Quit();

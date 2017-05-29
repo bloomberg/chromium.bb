@@ -62,9 +62,9 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::Fetch(
   callback_ = callback;
   dm_token_storage_ = base::MakeUnique<policy::DMTokenStorage>(
       g_browser_process->local_state());
-  dm_token_storage_->RetrieveDMToken(
-      base::Bind(&ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+  dm_token_storage_->RetrieveDMToken(base::BindOnce(
+      &ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
@@ -220,8 +220,8 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::FinalizeSamlPage(
   if (close_saml_page) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&chrome::CloseWebContents, browser_, web_contents,
-                   false /* add_to_history */));
+        base::BindOnce(&chrome::CloseWebContents, browser_, web_contents,
+                       false /* add_to_history */));
   }
   browser_ = nullptr;
 }

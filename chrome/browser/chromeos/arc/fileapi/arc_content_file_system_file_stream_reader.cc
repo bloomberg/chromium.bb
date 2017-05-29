@@ -51,7 +51,8 @@ ArcContentFileSystemFileStreamReader::~ArcContentFileSystemFileStreamReader() {
   // Use the task runner to destruct |file_| after the completion of all
   // in-flight operations.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&base::DeletePointer<base::File>, file_.release()));
+      FROM_HERE,
+      base::BindOnce(&base::DeletePointer<base::File>, file_.release()));
 }
 
 int ArcContentFileSystemFileStreamReader::Read(
