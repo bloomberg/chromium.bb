@@ -52,6 +52,10 @@ DOMMatrix* DOMMatrix::Create(const SkMatrix44& matrix,
   return new DOMMatrix(transformation_matrix, transformation_matrix.IsAffine());
 }
 
+DOMMatrix* DOMMatrix::CreateForSerialization(double sequence[], int size) {
+  return new DOMMatrix(sequence, size);
+}
+
 DOMMatrix* DOMMatrix::fromFloat32Array(NotShared<DOMFloat32Array> float32_array,
                                        ExceptionState& exception_state) {
   if (float32_array.View()->length() != 6 &&
