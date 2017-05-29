@@ -113,6 +113,19 @@ suite('<bookmarks-command-manager>', function() {
     commandManager.assertLastCommand('edit', ['11']);
   });
 
+  test('undo and redo commands trigger', function() {
+    var undoModifier = cr.isMac ? 'meta' : 'ctrl';
+    var undoKey = 'z';
+    var redoModifier = cr.isMac ? ['meta', 'shift'] : 'ctrl'
+    var redoKey = cr.isMac ? 'z' : 'y';
+
+    MockInteractions.pressAndReleaseKeyOn(document, '', undoModifier, undoKey);
+    commandManager.assertLastCommand('undo');
+
+    MockInteractions.pressAndReleaseKeyOn(document, '', redoModifier, redoKey);
+    commandManager.assertLastCommand('redo');
+  });
+
   test('does not delete children at same time as ancestor', function() {
     var lastDelete = null;
     chrome.bookmarkManagerPrivate.removeTrees = function(idArray) {

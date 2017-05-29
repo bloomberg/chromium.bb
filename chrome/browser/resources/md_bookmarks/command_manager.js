@@ -58,6 +58,9 @@ cr.define('bookmarks', function() {
           cr.isMac ? 'meta+enter' : 'ctrl+enter';
       this.shortcuts_[Command.OPEN_NEW_WINDOW] = 'shift+enter';
       this.shortcuts_[Command.OPEN] = cr.isMac ? 'meta+down' : 'enter';
+      this.shortcuts_[Command.UNDO] = cr.isMac ? 'meta+z' : 'ctrl+z';
+      this.shortcuts_[Command.REDO] =
+          cr.isMac ? 'meta+shift+z' : 'ctrl+y ctrl+shift+z';
     },
 
     detached: function() {
@@ -107,6 +110,9 @@ cr.define('bookmarks', function() {
       switch (command) {
         case Command.OPEN:
           return itemIds.size > 0;
+        case Command.UNDO:
+        case Command.REDO:
+          return true;
         default:
           return this.isCommandVisible_(command, itemIds) &&
               this.isCommandEnabled_(command, itemIds);
@@ -177,6 +183,12 @@ cr.define('bookmarks', function() {
               Array.from(this.minimizeDeletionSet_(itemIds)), function() {
                 // TODO(jiaxi): Add toast later.
               });
+          break;
+        case Command.UNDO:
+          chrome.bookmarkManagerPrivate.undo();
+          break;
+        case Command.REDO:
+          chrome.bookmarkManagerPrivate.redo();
           break;
         case Command.OPEN_NEW_TAB:
         case Command.OPEN_NEW_WINDOW:
