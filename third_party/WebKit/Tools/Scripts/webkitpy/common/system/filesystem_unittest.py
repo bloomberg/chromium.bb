@@ -119,6 +119,15 @@ class GenericFileSystemTests(object):
         self.assertFalse(self.fs.exists('foodir'))
         self.assertFalse(self.fs.exists(self.fs.join('foodir', 'baz')))
 
+    def test_remove_contents(self):
+        self.fs.chdir(self.generic_test_dir)
+
+        self.assertTrue(self.fs.exists('foodir'))
+        self.assertTrue(self.fs.exists(self.fs.join('foodir', 'baz')))
+        self.assertTrue(self.fs.remove_contents('foodir'))
+        self.assertTrue(self.fs.exists('foodir'))
+        self.assertFalse(self.fs.exists(self.fs.join('foodir', 'baz')))
+
     def test_copytree(self):
         self.fs.chdir(self.generic_test_dir)
         self.fs.copytree('foodir/', 'bardir/')

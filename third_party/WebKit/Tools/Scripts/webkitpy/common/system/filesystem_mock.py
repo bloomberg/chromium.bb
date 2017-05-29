@@ -33,8 +33,12 @@ import re
 import StringIO
 import unittest
 
+from webkitpy.common.system.filesystem import _remove_contents
+
 
 class MockFileSystem(object):
+    # pylint: disable=unused-argument
+
     sep = '/'
     pardir = '..'
 
@@ -386,13 +390,13 @@ class MockFileSystem(object):
 
         return dot_dot + rel_path
 
-    def remove(self, path):
+    def remove(self, path, retry=True):
         if self.files[path] is None:
             self._raise_not_found(path)
         self.files[path] = None
         self.written_files[path] = None
 
-    def rmtree(self, path_to_remove):
+    def rmtree(self, path_to_remove, ignore_errors=True, onerror=None):
         path_to_remove = self.normpath(path_to_remove)
 
         for file_path in self.files:
@@ -405,6 +409,9 @@ class MockFileSystem(object):
             return directory == path_to_remove or directory.startswith(path_to_remove + self.sep)
 
         self.dirs = {d for d in self.dirs if not should_remove(d)}
+
+    def remove_contents(self, dirname):
+        return _remove_contents(self, dirname, sleep=lambda *args, **kw: None)
 
     def copytree(self, source, destination):
         source = self.normpath(source)
