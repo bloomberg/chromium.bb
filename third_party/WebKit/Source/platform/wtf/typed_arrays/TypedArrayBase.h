@@ -71,7 +71,7 @@ class TypedArrayBase : public ArrayBufferView {
   template <class Subclass>
   static PassRefPtr<Subclass> Create(unsigned length) {
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::Create(length, sizeof(T));
-    return Create<Subclass>(buffer.Release(), 0, length);
+    return Create<Subclass>(std::move(buffer), 0, length);
   }
 
   template <class Subclass>
@@ -89,7 +89,7 @@ class TypedArrayBase : public ArrayBufferView {
                                      unsigned length) {
     RefPtr<ArrayBuffer> buf(std::move(buffer));
     CHECK(VerifySubRange<T>(buf, byte_offset, length));
-    return AdoptRef(new Subclass(buf.Release(), byte_offset, length));
+    return AdoptRef(new Subclass(std::move(buf), byte_offset, length));
   }
 
   template <class Subclass>
@@ -97,7 +97,7 @@ class TypedArrayBase : public ArrayBufferView {
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::CreateOrNull(length, sizeof(T));
     if (!buffer)
       return nullptr;
-    return Create<Subclass>(buffer.Release(), 0, length);
+    return Create<Subclass>(std::move(buffer), 0, length);
   }
 
   void Neuter() final {

@@ -211,8 +211,8 @@ SkImageGenerator* DecodingImageGenerator::Create(SkData* data) {
   if (!frame)
     return nullptr;
 
-  return new DecodingImageGenerator(frame, info, segment_reader.Release(), true,
-                                    0);
+  return new DecodingImageGenerator(frame, info, std::move(segment_reader),
+                                    true, 0);
 }
 
 }  // namespace blink

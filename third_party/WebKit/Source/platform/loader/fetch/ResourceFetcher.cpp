@@ -331,7 +331,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     PopulateTimingInfo(info.Get(), resource);
     info->ClearLoadTimings();
     info->SetLoadFinishTime(info->InitialTime());
-    scheduled_resource_timing_reports_.push_back(info.Release());
+    scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
@@ -840,7 +840,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
 
   if (!is_main_resource ||
       Context().UpdateTimingInfoForIFrameNavigation(info.Get())) {
-    resource_timing_info_map_.insert(resource, info.Release());
+    resource_timing_info_map_.insert(resource, std::move(info));
   }
 }
 
