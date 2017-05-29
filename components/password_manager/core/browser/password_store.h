@@ -193,8 +193,9 @@ class PasswordStore : protected PasswordStoreSync,
   // For example, the organization-identifying name of "https://foo.example.org"
   // is `example`, and logins will be returned for "http://bar.example.co.uk",
   // but not for "http://notexample.com" or "https://example.foo.com".
-  void GetLoginsForSameOrganizationName(const std::string& signon_realm,
-                                        PasswordStoreConsumer* consumer);
+  virtual void GetLoginsForSameOrganizationName(
+      const std::string& signon_realm,
+      PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.

@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace password_manager {
 
 class PasswordManagerClient;
 
-// Fetches credentials saved for the HTTPS counterpart of the given HTTP origin.
+// Fetches credentials saved for the HTTPS counterpart of the given HTTP realm.
 //
 // Filling these HTTPS credentials into forms served over HTTP is obviously
 // suppressed, the purpose of doing such a query is to collect metrics on how
@@ -36,7 +35,7 @@ class SuppressedHTTPSFormFetcher : public PasswordStoreConsumer {
         std::vector<std::unique_ptr<autofill::PasswordForm>> forms) = 0;
   };
 
-  SuppressedHTTPSFormFetcher(const GURL& http_origin,
+  SuppressedHTTPSFormFetcher(const std::string& observed_signon_realm,
                              const PasswordManagerClient* client,
                              Consumer* consumer);
   ~SuppressedHTTPSFormFetcher() override;
@@ -53,6 +52,8 @@ class SuppressedHTTPSFormFetcher : public PasswordStoreConsumer {
   // The client and the consumer should outlive |this|.
   const PasswordManagerClient* client_;
   Consumer* consumer_;
+
+  const GURL observed_signon_realm_as_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SuppressedHTTPSFormFetcher);
 };

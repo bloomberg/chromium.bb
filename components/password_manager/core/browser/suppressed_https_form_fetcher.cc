@@ -13,23 +13,17 @@
 namespace password_manager {
 
 SuppressedHTTPSFormFetcher::SuppressedHTTPSFormFetcher(
-    const GURL& http_origin,
+    const std::string& observed_signon_realm,
     const PasswordManagerClient* client,
     Consumer* consumer)
-    : client_(client), consumer_(consumer) {
+    : client_(client),
+      consumer_(consumer),
+      observed_signon_realm_as_url_(observed_signon_realm) {
   DCHECK(client_);
   DCHECK(consumer_);
-  DCHECK(http_origin.is_valid());
-  DCHECK(http_origin.SchemeIs(url::kHttpScheme));
-
-  GURL::Replacements scheme_to_https;
-  scheme_to_https.SetSchemeStr(url::kHttpsScheme);
-  GURL https_origin = http_origin.ReplaceComponents(scheme_to_https);
-  PasswordStore::FormDigest synthetic_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, https_origin.GetOrigin().spec(),
-      https_origin);
-
-  client_->GetPasswordStore()->GetLogins(synthetic_form_digest, this);
+  DCHECK(observed_signon_realm_as_url_.SchemeIs(url::kHttpScheme));
+  client_->GetPasswordStore()->GetLoginsForSameOrganizationName(
+      observed_signon_realm, this);
 }
 
 SuppressedHTTPSFormFetcher::~SuppressedHTTPSFormFetcher() = default;
@@ -37,8 +31,11 @@ SuppressedHTTPSFormFetcher::~SuppressedHTTPSFormFetcher() = default;
 void SuppressedHTTPSFormFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   base::EraseIf(
-      results, [](const std::unique_ptr<autofill::PasswordForm>& form) {
-        return form->is_public_suffix_match || form->is_affiliation_based_match;
+      results, [this](const std::unique_ptr<autofill::PasswordForm>& form) {
+        GURL candidate_signon_realm_as_url(form->signon_realm);
+        return !candidate_signon_realm_as_url.SchemeIs(url::kHttpsScheme) ||
+               candidate_signon_realm_as_url.host() !=
+                   observed_signon_realm_as_url_.host();
       });
 
   consumer_->ProcessSuppressedHTTPSForms(std::move(results));
