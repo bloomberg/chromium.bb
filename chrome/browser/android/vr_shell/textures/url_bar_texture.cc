@@ -106,6 +106,12 @@ void UrlBarTexture::SetURL(const GURL& gurl) {
   gurl_ = gurl;
 }
 
+void UrlBarTexture::SetHistoryButtonsEnabled(bool can_go_back) {
+  if (can_go_back != can_go_back_)
+    set_dirty();
+  can_go_back_ = can_go_back;
+}
+
 void UrlBarTexture::SetSecurityLevel(SecurityLevel level) {
   if (security_level_ != level)
     set_dirty();
@@ -176,9 +182,13 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
   SkVector left_corners[4] = {rounded_corner, {0, 0}, {0, 0}, rounded_corner};
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
-  SkColor color =
-      hovered_ ? color_scheme().background_hover : color_scheme().background;
-  color = pressed_ ? color_scheme().background_down : color;
+  SkColor color = color_scheme().background;
+  if (can_go_back_) {
+    if (pressed_)
+      color = color_scheme().background_down;
+    else if (hovered_)
+      color = color_scheme().background_hover;
+  }
   SkPaint paint;
   paint.setColor(color);
   canvas->drawRRect(round_rect, paint);
@@ -201,7 +211,9 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   int icon_default_height = GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
   float icon_scale = kBackIconHeight / icon_default_height;
   canvas->scale(icon_scale, icon_scale);
-  PaintVectorIcon(&gfx_canvas, ui::kBackArrowIcon, color_scheme().foreground);
+  PaintVectorIcon(
+      &gfx_canvas, ui::kBackArrowIcon,
+      can_go_back_ ? color_scheme().foreground : color_scheme().disabled);
   canvas->restore();
 
   // Site security state icon.

@@ -458,7 +458,9 @@ void UiSceneManager::SetIsExiting() {
 }
 
 void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
-                                              bool can_go_forward) {}
+                                              bool can_go_forward) {
+  url_bar_->SetHistoryButtonsEnabled(can_go_back);
+}
 
 void UiSceneManager::OnCloseButtonClicked() {
   browser_->ExitCct();

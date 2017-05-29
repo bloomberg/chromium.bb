@@ -39,6 +39,7 @@ class UrlBarTexture : public UiTexture {
   gfx::SizeF GetDrawnSize() const override;
 
   void SetURL(const GURL& gurl);
+  void SetHistoryButtonsEnabled(bool can_go_back);
   void SetSecurityLevel(security_state::SecurityLevel level);
 
   bool HitsBackButton(const gfx::PointF& position) const;
@@ -65,6 +66,7 @@ class UrlBarTexture : public UiTexture {
   gfx::SizeF size_;
   bool hovered_ = false;
   bool pressed_ = false;
+  bool can_go_back_ = false;
 
   GURL gurl_;
   security_state::SecurityLevel security_level_;

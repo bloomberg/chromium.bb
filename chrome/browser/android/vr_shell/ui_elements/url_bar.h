@@ -35,6 +35,7 @@ class UrlBar : public TexturedElement {
   void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
   void SetEnabled(bool enabled) override;
 
+  void SetHistoryButtonsEnabled(bool can_go_back);
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(security_state::SecurityLevel level);
   void SetBackButtonCallback(const base::Callback<void()>& callback);

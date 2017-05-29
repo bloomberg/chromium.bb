@@ -45,6 +45,9 @@ struct ColorScheme {
   SkColor secure;
   SkColor insecure;
   SkColor warning;
+
+  // The color used for disabled icons.
+  SkColor disabled;
 };
 
 }  // namespace vr_shell
