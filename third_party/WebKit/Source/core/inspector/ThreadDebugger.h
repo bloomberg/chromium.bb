@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"

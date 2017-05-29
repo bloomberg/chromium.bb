@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/LocalFrameView.h"
@@ -16,7 +16,6 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/AudioContextOptions.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
@@ -186,7 +185,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
   ChildDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kUserGestureRequired);
 
-  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
@@ -209,7 +208,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
 
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
@@ -246,7 +245,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
   audio_context->MaybeRecordStartAttempt();
   RecordAutoplayStatus(audio_context);
@@ -268,7 +267,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
   audio_context->MaybeRecordStartAttempt();
 
-  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
@@ -290,7 +289,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGestureThenSucces) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
       &ChildDocument(), UserGestureToken::kNewGesture));
   audio_context->MaybeRecordStartAttempt();
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));

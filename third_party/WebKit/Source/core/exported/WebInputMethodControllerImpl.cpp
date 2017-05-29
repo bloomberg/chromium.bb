@@ -5,7 +5,7 @@
 #include "core/exported/WebInputMethodControllerImpl.h"
 
 #include "core/InputTypeNames.h"
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -18,7 +18,6 @@
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "platform/UserGestureIndicator.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
@@ -69,7 +68,7 @@ bool WebInputMethodControllerImpl::SetComposition(
       return false;
   }
 
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
       GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
 
   // When the range of composition underlines overlap with the range between
@@ -110,7 +109,7 @@ bool WebInputMethodControllerImpl::CommitText(
     const WebVector<WebCompositionUnderline>& underlines,
     const WebRange& replacement_range,
     int relative_caret_position) {
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
       GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
 
   if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported()) {

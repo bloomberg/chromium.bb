@@ -5,7 +5,7 @@
 #include "core/input/GestureManager.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/SelectionController.h"
 #include "core/events/GestureEvent.h"
 #include "core/frame/LocalFrameView.h"
@@ -189,7 +189,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
       FlooredIntPoint(gesture_event.PositionInRootFrame());
   Node* tapped_node = current_hit_test.InnerNode();
   Element* tapped_element = current_hit_test.InnerElement();
-  UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
       tapped_node ? &tapped_node->GetDocument() : nullptr));
 
   mouse_event_manager_->SetClickElement(tapped_element);

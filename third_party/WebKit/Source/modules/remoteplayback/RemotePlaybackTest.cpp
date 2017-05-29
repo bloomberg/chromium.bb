@@ -7,12 +7,11 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -74,7 +73,7 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator indicator(UserGestureToken::Create(
       &page_holder->GetDocument(), UserGestureToken::kNewGesture));
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
@@ -107,7 +106,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
-  UserGestureIndicator indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator indicator(UserGestureToken::Create(
       &page_holder->GetDocument(), UserGestureToken::kNewGesture));
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
@@ -140,7 +139,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
-  UserGestureIndicator indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator indicator(UserGestureToken::Create(
       &page_holder->GetDocument(), UserGestureToken::kNewGesture));
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
@@ -214,7 +213,7 @@ TEST_F(RemotePlaybackTest,
   EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(DocumentUserGestureToken::Create(
+  UserGestureIndicator indicator(UserGestureToken::Create(
       &page_holder->GetDocument(), UserGestureToken::kNewGesture));
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());

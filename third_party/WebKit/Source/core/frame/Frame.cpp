@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
@@ -46,7 +47,6 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/InstanceCounters.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/ResourceError.h"
 

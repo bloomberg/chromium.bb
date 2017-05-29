@@ -4,8 +4,8 @@
 
 #include "core/input/PointerEventManager.h"
 
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrameView.h"
@@ -311,8 +311,8 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
   if (event.GetType() == WebInputEvent::kTouchEnd &&
       !in_canceled_state_for_pointer_type_touch_ && !touch_infos.IsEmpty() &&
       touch_infos[0].target_frame) {
-    possible_gesture_token = DocumentUserGestureToken::Create(
-        touch_infos[0].target_frame->GetDocument());
+    possible_gesture_token =
+        UserGestureToken::Create(touch_infos[0].target_frame->GetDocument());
   }
   UserGestureIndicator holder(possible_gesture_token);
 

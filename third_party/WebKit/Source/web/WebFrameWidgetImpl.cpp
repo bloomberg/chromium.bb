@@ -32,7 +32,7 @@
 
 #include <memory>
 
-#include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -404,8 +404,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseDown:
         event_type = EventTypeNames::mousedown;
-        gesture_indicator = WTF::WrapUnique(
-            new UserGestureIndicator(DocumentUserGestureToken::Create(
+        gesture_indicator =
+            WTF::WrapUnique(new UserGestureIndicator(UserGestureToken::Create(
                 &node->GetDocument(), UserGestureToken::kNewGesture)));
         mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
         break;

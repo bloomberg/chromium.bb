@@ -10,10 +10,10 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 

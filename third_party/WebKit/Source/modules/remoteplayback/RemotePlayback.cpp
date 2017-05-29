@@ -10,13 +10,13 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/EventTargetModules.h"
 #include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
 #include "platform/MemoryCoordinator.h"
-#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 

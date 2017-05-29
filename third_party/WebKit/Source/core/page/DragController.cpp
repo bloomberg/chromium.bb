@@ -35,10 +35,10 @@
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/DragCaret.h"
 #include "core/editing/EditingUtilities.h"
@@ -242,7 +242,7 @@ bool DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ =
       local_root.DocumentAtPoint(drag_data->ClientPosition());
-  UserGestureIndicator gesture(DocumentUserGestureToken::Create(
+  UserGestureIndicator gesture(UserGestureToken::Create(
       document_under_mouse_, UserGestureToken::kNewGesture));
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {

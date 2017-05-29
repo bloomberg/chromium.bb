@@ -30,6 +30,7 @@
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
@@ -39,7 +40,6 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/api/LayoutTextControlItem.h"
-#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 

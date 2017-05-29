@@ -30,8 +30,7 @@
 
 #include "public/web/WebUserGestureToken.h"
 
-#include "core/dom/DocumentUserGestureToken.h"
-#include "platform/UserGestureIndicator.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "public/web/WebScopedUserGesture.h"
 #include "public/web/WebUserGestureIndicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,8 +47,8 @@ TEST(WebUserGestureTokenTest, Basic) {
   }
 
   {
-    UserGestureIndicator indicator(DocumentUserGestureToken::Create(
-        nullptr, UserGestureToken::kNewGesture));
+    UserGestureIndicator indicator(
+        UserGestureToken::Create(nullptr, UserGestureToken::kNewGesture));
     EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
     token = WebUserGestureIndicator::CurrentUserGestureToken();
   }
