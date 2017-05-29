@@ -35,9 +35,9 @@
 #include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/CSSInterpolationTypesMap.h"
 #include "core/animation/ElementAnimations.h"
-#include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -1234,7 +1234,7 @@ void StyleResolver::ApplyAnimatedProperties(
     const Interpolation& interpolation = *entry.value.front();
     if (interpolation.IsInvalidatableInterpolation()) {
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
-      InterpolationEnvironment environment(map, state);
+      CSSInterpolationEnvironment environment(map, state);
       InvalidatableInterpolation::ApplyStack(entry.value, environment);
     } else if (interpolation.IsTransitionInterpolation()) {
       ToTransitionInterpolation(interpolation).Apply(state);

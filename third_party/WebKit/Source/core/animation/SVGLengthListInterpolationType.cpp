@@ -4,11 +4,11 @@
 
 #include "core/animation/SVGLengthListInterpolationType.h"
 
-#include "core/animation/InterpolationEnvironment.h"
+#include <memory>
+#include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/SVGLengthInterpolationType.h"
 #include "core/animation/UnderlyingLengthChecker.h"
 #include "core/svg/SVGLengthList.h"
-#include <memory>
 
 namespace blink {
 
@@ -85,7 +85,7 @@ void SVGLengthListInterpolationType::Apply(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  SVGElement& element = environment.SvgElement();
+  SVGElement& element = ToSVGInterpolationEnvironment(environment).SvgElement();
   SVGLengthContext length_context(&element);
 
   SVGLengthList* result = SVGLengthList::Create(unit_mode_);

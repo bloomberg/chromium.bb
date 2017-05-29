@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/StylePropertyShorthand.h"
+#include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSValue.h"
@@ -128,7 +129,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   const CSSValue* value = ToCSSPropertySpecificKeyframe(keyframe).Value();
-  const StyleResolverState& state = environment.GetState();
+  const StyleResolverState& state =
+      ToCSSInterpolationEnvironment(environment).GetState();
 
   if (!value)
     return MaybeConvertNeutral(underlying, conversion_checkers);
@@ -243,7 +245,8 @@ CSSInterpolationType::MaybeConvertCustomPropertyDeclarationInternal(
 
 InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = environment.Style();
+  const ComputedStyle& style =
+      ToCSSInterpolationEnvironment(environment).Style();
   if (!GetProperty().IsCSSCustomProperty()) {
     return MaybeConvertStandardPropertyUnderlyingValue(style);
   }
@@ -271,7 +274,8 @@ void CSSInterpolationType::Apply(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  StyleResolverState& state = environment.GetState();
+  StyleResolverState& state =
+      ToCSSInterpolationEnvironment(environment).GetState();
 
   if (GetProperty().IsCSSCustomProperty()) {
     ApplyCustomPropertyValue(interpolable_value, non_interpolable_value, state);

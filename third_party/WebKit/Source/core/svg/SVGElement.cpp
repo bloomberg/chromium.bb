@@ -31,8 +31,8 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/EffectStack.h"
 #include "core/animation/ElementAnimations.h"
-#include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/SVGInterpolationTypesMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -214,7 +214,7 @@ void SVGElement::ApplyActiveWebAnimations() {
   for (auto& entry : active_interpolations_map) {
     const QualifiedName& attribute = entry.key.SvgAttribute();
     SVGInterpolationTypesMap map;
-    InterpolationEnvironment environment(
+    SVGInterpolationEnvironment environment(
         map, *this, PropertyFromAttribute(attribute)->BaseValueBase());
     InvalidatableInterpolation::ApplyStack(entry.value, environment);
   }

@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "core/animation/InterpolableValue.h"
-#include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/NonInterpolableValue.h"
+#include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
@@ -252,8 +252,10 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSingle(
   }
 
   if (!keyframe.IsNeutral()) {
-    SVGPropertyBase* svg_value = environment.SvgBaseValue().CloneForAnimation(
-        ToSVGPropertySpecificKeyframe(keyframe).Value());
+    SVGPropertyBase* svg_value =
+        ToSVGInterpolationEnvironment(environment)
+            .SvgBaseValue()
+            .CloneForAnimation(ToSVGPropertySpecificKeyframe(keyframe).Value());
     InterpolationValue value = MaybeConvertSVGValue(*svg_value);
     if (!value)
       return nullptr;
