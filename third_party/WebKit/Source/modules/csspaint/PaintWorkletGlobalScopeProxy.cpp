@@ -18,12 +18,15 @@ PaintWorkletGlobalScopeProxy* PaintWorkletGlobalScopeProxy::From(
   return static_cast<PaintWorkletGlobalScopeProxy*>(proxy);
 }
 
-PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(LocalFrame* frame) {
+PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
+    LocalFrame* frame,
+    PaintWorkletPendingGeneratorRegistry* pending_generator_registry) {
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
   global_scope_ = PaintWorkletGlobalScope::Create(
       frame, document->Url(), document->UserAgent(),
-      document->GetSecurityOrigin(), ToIsolate(document));
+      document->GetSecurityOrigin(), ToIsolate(document),
+      pending_generator_registry);
 }
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
@@ -53,13 +56,6 @@ CSSPaintDefinition* PaintWorkletGlobalScopeProxy::FindDefinition(
     const String& name) {
   DCHECK(IsMainThread());
   return global_scope_->FindDefinition(name);
-}
-
-void PaintWorkletGlobalScopeProxy::AddPendingGenerator(
-    const String& name,
-    CSSPaintImageGeneratorImpl* generator) {
-  DCHECK(IsMainThread());
-  global_scope_->AddPendingGenerator(name, generator);
 }
 
 }  // namespace blink

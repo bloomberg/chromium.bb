@@ -8,6 +8,7 @@
 #include "core/workers/MainThreadWorklet.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
+#include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -24,17 +25,25 @@ class MODULES_EXPORT PaintWorklet final : public MainThreadWorklet {
   static PaintWorklet* Create(LocalFrame*);
   ~PaintWorklet() override;
 
-  WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const final;
   CSSPaintDefinition* FindDefinition(const String& name);
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class PaintWorkletTest;
+
   explicit PaintWorklet(LocalFrame*);
 
-  // TODO(nhiroki): Make (Paint)WorkletGlobalScopeProxy GC-managed object.
-  std::unique_ptr<PaintWorkletGlobalScopeProxy> global_scope_proxy_;
+  // Implements MainThreadWorklet.
+  bool NeedsToCreateGlobalScope() final;
+  std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() final;
+
+  Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;
+
+  // TODO(style-dev): Implement the "document paint definition" concept:
+  // https://drafts.css-houdini.org/css-paint-api/#document-paint-definition
+  // (https://crbug.com/578252)
 };
 
 }  // namespace blink

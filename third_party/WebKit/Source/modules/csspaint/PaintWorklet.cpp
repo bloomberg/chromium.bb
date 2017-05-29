@@ -18,26 +18,43 @@ PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
     : MainThreadWorklet(frame),
-      global_scope_proxy_(
-          WTF::MakeUnique<PaintWorkletGlobalScopeProxy>(frame)) {}
+      pending_generator_registry_(new PaintWorkletPendingGeneratorRegistry) {}
 
 PaintWorklet::~PaintWorklet() = default;
 
-WorkletGlobalScopeProxy* PaintWorklet::GetWorkletGlobalScopeProxy() const {
-  return global_scope_proxy_.get();
-}
-
 CSSPaintDefinition* PaintWorklet::FindDefinition(const String& name) {
-  return global_scope_proxy_->FindDefinition(name);
+  if (GetNumberOfGlobalScopes() == 0)
+    return nullptr;
+
+  PaintWorkletGlobalScopeProxy* proxy =
+      PaintWorkletGlobalScopeProxy::From(FindAvailableGlobalScope());
+  return proxy->FindDefinition(name);
 }
 
 void PaintWorklet::AddPendingGenerator(const String& name,
                                        CSSPaintImageGeneratorImpl* generator) {
-  return global_scope_proxy_->AddPendingGenerator(name, generator);
+  pending_generator_registry_->AddPendingGenerator(name, generator);
 }
 
 DEFINE_TRACE(PaintWorklet) {
+  visitor->Trace(pending_generator_registry_);
   MainThreadWorklet::Trace(visitor);
+}
+
+bool PaintWorklet::NeedsToCreateGlobalScope() {
+  // "The user agent must have, and select from at least two
+  // PaintWorkletGlobalScopes in the worklet's WorkletGlobalScopes list, unless
+  // the user agent is under memory constraints."
+  // https://drafts.css-houdini.org/css-paint-api-1/#drawing-an-image
+  // TODO(nhiroki): In the current impl, we create only one global scope. We
+  // should create at least two global scopes as the spec.
+  return !GetNumberOfGlobalScopes();
+}
+
+std::unique_ptr<WorkletGlobalScopeProxy> PaintWorklet::CreateGlobalScope() {
+  return WTF::MakeUnique<PaintWorkletGlobalScopeProxy>(
+      ToDocument(GetExecutionContext())->GetFrame(),
+      pending_generator_registry_);
 }
 
 }  // namespace blink

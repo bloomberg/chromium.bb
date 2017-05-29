@@ -15,6 +15,7 @@
 namespace blink {
 
 class LocalFrame;
+class WorkletGlobalScopeProxy;
 
 // A ThreadedWorklet is a worklet that runs off the main thread.
 // TODO(nhiroki): This is a temporary class to keep classic script loading for
@@ -35,6 +36,9 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) final;
+
+  // Returns a proxy to WorkletGlobalScope on the context thread.
+  virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
