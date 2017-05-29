@@ -21,11 +21,13 @@ if (window.testRunner)
 document.querySelector('svg').setCurrentTime(5 - 0.001);
 onload = function() {
   setTimeout(function() {
-    requestAnimationFrame(function() {
+    setTimeout(function() {
       requestAnimationFrame(function() {
-        testRunner.notifyDone();
+        requestAnimationFrame(function() {
+          testRunner.notifyDone();
+        });
       });
-    });
-  }, 25);
+    }, 25);
+  });
 };
 </script>
