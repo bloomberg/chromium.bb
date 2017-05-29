@@ -1,5 +1,6 @@
 include_rules = [
   "+components/autofill/core/browser",
+  "+components/bookmarks/browser",
   "+components/browser_sync",
   "+components/content_settings",
   "+components/history/core/browser",

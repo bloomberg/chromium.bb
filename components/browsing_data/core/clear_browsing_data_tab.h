@@ -11,6 +11,8 @@ namespace browsing_data {
 // advanced tab and manage their state separately. It is important that all
 // preferences and the timeperiod selection have the same type. The default
 // value for dialogs without separate tabs is advanced.
+// TODO(dullweber): Maybe rename "ADVANCED" to "DEFAULT" because it is used in
+//   multiple places without a differentiation between advanced and basic.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browsing_data

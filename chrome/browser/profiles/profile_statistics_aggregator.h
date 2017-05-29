@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "chrome/browser/profiles/profile_statistics_common.h"
-#include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -32,13 +32,11 @@ class ProfileStatisticsAggregator
   // logins and preferences are counted.
   //
   // The class is RefCounted because this is needed for CancelableTaskTracker
-  // to function properly. Once all tasks are run (or cancelled) the instance is
-  // automatically destructed.
+  // to function properly.
 
  public:
   ProfileStatisticsAggregator(Profile* profile,
-      const profiles::ProfileStatisticsCallback& stats_callback,
-      const base::Closure& destruct_callback);
+                              const base::Closure& done_callback);
 
   void AddCallbackAndStartAggregator(
       const profiles::ProfileStatisticsCallback& stats_callback);
@@ -69,50 +67,12 @@ class ProfileStatisticsAggregator
   void StatisticsCallbackFailure(const char* category);
   // Callback for history.
   void StatisticsCallbackHistory(history::HistoryCountResult result);
+  // Callback for counters.
+  void OnCounterResult(
+      std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);
 
-  // Bookmark counting.
-  void WaitOrCountBookmarks();
-  void CountBookmarks(bookmarks::BookmarkModel* bookmark_model);
-
-  class BookmarkModelHelper
-      : public bookmarks::BookmarkModelObserver {
-   public:
-    explicit BookmarkModelHelper(ProfileStatisticsAggregator* parent)
-        : parent_(parent) {}
-
-    void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
-                             bool ids_reassigned) override;
-
-    void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* old_parent,
-                           int old_index,
-                           const bookmarks::BookmarkNode* new_parent,
-                           int new_index) override {}
-
-    void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* parent,
-                           int index) override {}
-
-    void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-        const bookmarks::BookmarkNode* parent,
-        int old_index, const bookmarks::BookmarkNode* node,
-        const std::set<GURL>& no_longer_bookmarked) override {}
-
-    void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-        const bookmarks::BookmarkNode* node) override {}
-
-    void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-        const bookmarks::BookmarkNode* node) override {}
-
-    void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-        const bookmarks::BookmarkNode* node) override {}
-
-    void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
-        const std::set<GURL>& removed_urls) override {}
-
-   private:
-    ProfileStatisticsAggregator* parent_ = nullptr;
-  };
+  // Registers and starts a BrowsingDataCounter.
+  void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter);
 
   // Password counting
   class PasswordStoreConsumerHelper
@@ -141,14 +101,12 @@ class ProfileStatisticsAggregator
   // multiple times (once for each statistics).
   std::vector<profiles::ProfileStatisticsCallback> stats_callbacks_;
 
-  // Callback function to be called when the aggregator destructs. Used for
-  // removing expiring references to this aggregator.
-  base::Closure destruct_callback_;
+  // Callback function to be called when all statistics are calculated.
+  base::Closure done_callback_;
 
   base::CancelableTaskTracker tracker_;
 
-  // Bookmark counting
-  std::unique_ptr<BookmarkModelHelper> bookmark_model_helper_;
+  std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
 
   // Password counting.
   PasswordStoreConsumerHelper password_store_consumer_helper_;
