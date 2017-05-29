@@ -275,8 +275,6 @@ enum EBackfaceVisibility {
 
 enum ELineClampType { kLineClampLineCount, kLineClampPercentage };
 
-enum class Hyphens { kNone, kManual, kAuto };
-
 enum class TextEmphasisFill { kFilled, kOpen };
 
 enum class TextEmphasisMark {

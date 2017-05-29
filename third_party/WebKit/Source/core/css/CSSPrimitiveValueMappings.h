@@ -874,39 +874,6 @@ inline EFloat CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(Hyphens e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case Hyphens::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case Hyphens::kManual:
-      value_id_ = CSSValueManual;
-      break;
-    case Hyphens::kNone:
-      value_id_ = CSSValueNone;
-      break;
-  }
-}
-
-template <>
-inline Hyphens CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return Hyphens::kAuto;
-    case CSSValueManual:
-      return Hyphens::kManual;
-    case CSSValueNone:
-      return Hyphens::kNone;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return Hyphens::kManual;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(LineBreak e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
