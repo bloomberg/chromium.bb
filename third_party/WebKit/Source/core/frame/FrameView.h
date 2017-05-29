@@ -5,6 +5,7 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include "core/dom/DocumentLifecycle.h"
 #include "core/frame/FrameOrPlugin.h"
 
 namespace blink {
@@ -12,6 +13,8 @@ namespace blink {
 class CORE_EXPORT FrameView : public FrameOrPlugin {
  public:
   virtual ~FrameView() {}
+  virtual void UpdateViewportIntersectionsForSubtree(
+      DocumentLifecycle::LifecycleState) = 0;
 };
 
 }  // namespace blink

@@ -1033,7 +1033,7 @@ class CORE_EXPORT LocalFrameView final
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
   void UpdateViewportIntersectionsForSubtree(
-      DocumentLifecycle::LifecycleState target_state);
+      DocumentLifecycle::LifecycleState) override;
 
   enum ForceThrottlingInvalidationBehavior {
     kDontForceThrottlingInvalidation,
