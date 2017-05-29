@@ -659,7 +659,7 @@ int ResourceDispatcher::StartAsync(
         loading_task_runner ? loading_task_runner : thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(
         new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
-    mojom::URLLoaderAssociatedPtr url_loader;
+    mojom::URLLoaderPtr url_loader;
     mojom::URLLoaderClientPtr client_ptr;
     client->Bind(&client_ptr);
     url_loader_factory->CreateLoaderAndStart(

@@ -65,7 +65,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   NavigationURLLoaderDelegate* delegate_;
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
-  mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
+  mojom::URLLoaderPtr url_loader_ptr_;
   scoped_refptr<ResourceResponse> response_;
   SSLStatus ssl_status_;
 

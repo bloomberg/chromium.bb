@@ -85,7 +85,7 @@ base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
 }
 
 void ResourceMessageFilter::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest request,
+    mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

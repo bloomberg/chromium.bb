@@ -72,13 +72,13 @@ class URLLoaderImplTest : public testing::Test {
   void Load(const GURL& url,
             TestURLLoaderClient* client,
             uint32_t options = 0) {
-    mojom::URLLoaderAssociatedPtr loader;
+    mojom::URLLoaderPtr loader;
 
     ResourceRequest request =
         CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
-    URLLoaderImpl loader_impl(context(), mojo::MakeIsolatedRequest(&loader),
-                              options, request, client->CreateInterfacePtr());
+    URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), options,
+                              request, client->CreateInterfacePtr());
 
     client->RunUntilComplete();
   }
