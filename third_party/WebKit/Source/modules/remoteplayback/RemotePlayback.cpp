@@ -13,6 +13,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/EventTargetModules.h"
 #include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
@@ -269,12 +270,20 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
   switch (state_) {
     case WebRemotePlaybackState::kConnecting:
       DispatchEvent(Event::Create(EventTypeNames::connecting));
+      if (RuntimeEnabledFeatures::newRemotePlaybackPipelineEnabled() &&
+          media_element_->IsHTMLVideoElement()) {
+        toHTMLVideoElement(media_element_)->MediaRemotingStarted();
+      }
       break;
     case WebRemotePlaybackState::kConnected:
       DispatchEvent(Event::Create(EventTypeNames::connect));
       break;
     case WebRemotePlaybackState::kDisconnected:
       DispatchEvent(Event::Create(EventTypeNames::disconnect));
+      if (RuntimeEnabledFeatures::newRemotePlaybackPipelineEnabled() &&
+          media_element_->IsHTMLVideoElement()) {
+        toHTMLVideoElement(media_element_)->MediaRemotingStopped();
+      }
       break;
   }
 }
