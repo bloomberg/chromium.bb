@@ -67,6 +67,9 @@ public class WebappDataStorage {
     // The shell Apk version requested in the last update.
     static final String KEY_LAST_REQUESTED_SHELL_APK_VERSION = "last_requested_shell_apk_version";
 
+    // Whether the user has dismissed the disclosure UI.
+    static final String KEY_DISMISSED_DISCLOSURE = "dismissed_dislosure";
+
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
     public static final long UPDATE_INTERVAL = TimeUnit.DAYS.toMillis(3L);
 
@@ -328,6 +331,7 @@ public class WebappDataStorage {
         editor.remove(KEY_DID_LAST_UPDATE_REQUEST_SUCCEED);
         editor.remove(KEY_UPDATE_REQUESTED);
         editor.remove(KEY_RELAX_UPDATES);
+        editor.remove(KEY_DISMISSED_DISCLOSURE);
         editor.apply();
     }
 
@@ -433,6 +437,14 @@ public class WebappDataStorage {
      */
     boolean getDidLastWebApkUpdateRequestSucceed() {
         return mPreferences.getBoolean(KEY_DID_LAST_UPDATE_REQUEST_SUCCEED, false);
+    }
+
+    void setDismissedDisclosure() {
+        mPreferences.edit().putBoolean(KEY_DISMISSED_DISCLOSURE, true).apply();
+    }
+
+    boolean hasDismissedDisclosure() {
+        return mPreferences.getBoolean(KEY_DISMISSED_DISCLOSURE, false);
     }
 
     /**
