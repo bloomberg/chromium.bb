@@ -174,7 +174,7 @@ void ServiceWorkerRegistrationNotifications::PrepareShow(
   RefPtr<SecurityOrigin> origin = GetExecutionContext()->GetSecurityOrigin();
   NotificationResourcesLoader* loader = new NotificationResourcesLoader(
       WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
-                WrapWeakPersistent(this), origin.Release(), data,
+                WrapWeakPersistent(this), std::move(origin), data,
                 WTF::Passed(std::move(callbacks))));
   loaders_.insert(loader);
   loader->Start(GetExecutionContext(), data);

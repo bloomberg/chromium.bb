@@ -88,7 +88,7 @@ WorkerOrWorkletGlobalScope* AudioWorkletThread::CreateWorkerGlobalScope(
 
   return AudioWorkletGlobalScope::Create(
       startup_data->script_url_, startup_data->user_agent_,
-      security_origin.Release(), this->GetIsolate(), this);
+      std::move(security_origin), this->GetIsolate(), this);
 }
 
 }  // namespace blink

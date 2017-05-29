@@ -552,10 +552,11 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
   IDBCursor* cursor_to_notify = nullptr;
   if (event->type() == EventTypeNames::success) {
     cursor_to_notify = GetResultCursor();
-    if (cursor_to_notify)
+    if (cursor_to_notify) {
       cursor_to_notify->SetValueReady(cursor_key_.Release(),
                                       cursor_primary_key_.Release(),
-                                      cursor_value_.Release());
+                                      std::move(cursor_value_));
+    }
   }
 
   if (event->type() == EventTypeNames::upgradeneeded) {

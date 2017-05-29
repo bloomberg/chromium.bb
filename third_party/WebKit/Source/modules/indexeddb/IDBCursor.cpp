@@ -386,7 +386,7 @@ ScriptValue IDBCursor::value(ScriptState* script_state) {
 #if DCHECK_IS_ON()
     AssertPrimaryKeyValidOrInjectable(script_state, idb_value.Get());
 #endif  // DCHECK_IS_ON()
-    value = IDBAny::Create(idb_value.Release());
+    value = IDBAny::Create(std::move(idb_value));
   } else {
     value = IDBAny::Create(value_);
   }
