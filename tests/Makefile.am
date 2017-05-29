@@ -132,6 +132,7 @@ dist_yaml_TESTS =				\
 	yaml/capsnocont.yaml			\
 	yaml/chr-us-g1_harness.yaml		\
 	yaml/da-dk-g08.yaml			\
+	yaml/da-dk-g16.yaml	\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\

@@ -5,6 +5,7 @@ EXTRA_DIST =					\
 	capsnocont.yaml				\
 	chr-us-g1_harness.yaml			\
 	da-dk-g08.yaml				\
+	da-dk-g16.yaml	\
 	da-dk-g16-dictionary_harness.yaml	\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g18.yaml				\

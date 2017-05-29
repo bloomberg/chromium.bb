@@ -44,6 +44,7 @@ table_files = \
 	cy.tbl \
 	Cz-Cz-g1.utb \
 	da-chardefs6.cti \
+		da-dk-6miscChars.cti \
 	da-dk-common6.uti \
 	da-dk.dis \
 	da-dk-g08.ctb \
