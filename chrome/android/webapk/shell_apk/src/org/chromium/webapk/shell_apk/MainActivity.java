@@ -7,9 +7,6 @@ package org.chromium.webapk.shell_apk;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -68,7 +65,10 @@ public class MainActivity extends Activity {
      */
     private void launch() {
         String overrideUrl = getOverrideUrl();
-        String startUrl = (overrideUrl != null) ? overrideUrl : getStartUrl();
+        String startUrl = (overrideUrl != null)
+                ? overrideUrl
+                : WebApkUtils.readMetaDataFromManifest(this, WebApkMetaDataKeys.START_URL);
+
         if (startUrl == null) {
             return;
         }
@@ -177,17 +177,5 @@ public class MainActivity extends Activity {
             return overrideUrl;
         }
         return null;
-    }
-
-    /** Returns the start URL from the Android Manifest. */
-    private String getStartUrl() {
-        ApplicationInfo appInfo;
-        try {
-            appInfo = getPackageManager().getApplicationInfo(
-                    getPackageName(), PackageManager.GET_META_DATA);
-        } catch (NameNotFoundException e) {
-            return null;
-        }
-        return appInfo.metaData.getString(WebApkMetaDataKeys.START_URL);
     }
 }

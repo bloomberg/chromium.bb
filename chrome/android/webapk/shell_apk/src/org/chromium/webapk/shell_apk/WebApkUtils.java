@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Bundle;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
@@ -47,18 +46,22 @@ public class WebApkUtils {
      */
     public static String getHostBrowserPackageName(Context context) {
         if (sHostPackage != null) return sHostPackage;
-        String hostPackage = null;
-        try {
-            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
-                    context.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            hostPackage = bundle.getString(WebApkMetaDataKeys.RUNTIME_HOST);
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        }
+        String hostPackage = readMetaDataFromManifest(context, WebApkMetaDataKeys.RUNTIME_HOST);
         // Set {@link sHostPackage} to a non-null value so that the value is computed only once.
         sHostPackage = hostPackage != null ? hostPackage : "";
         return sHostPackage;
+    }
+
+    /** Returns the <meta-data> value in the Android Manifest for {@link key}. */
+    public static String readMetaDataFromManifest(Context context, String key) {
+        ApplicationInfo ai = null;
+        try {
+            ai = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
+        } catch (NameNotFoundException e) {
+            return null;
+        }
+        return ai.metaData.getString(key);
     }
 
     /**
