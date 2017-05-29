@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"

@@ -55,7 +55,7 @@ class InspectorTraceEvents;
 class LocalFrame;
 class WebDevToolsAgentClient;
 class WebLayerTreeView;
-class WebLocalFrameImpl;
+class WebLocalFrameBase;
 class WebString;
 
 class WebDevToolsAgentImpl final
@@ -67,7 +67,7 @@ class WebDevToolsAgentImpl final
       public InspectorSession::Client,
       private WebThread::TaskObserver {
  public:
-  static WebDevToolsAgentImpl* Create(WebLocalFrameImpl*,
+  static WebDevToolsAgentImpl* Create(WebLocalFrameBase*,
                                       WebDevToolsAgentClient*);
   ~WebDevToolsAgentImpl() override;
   DECLARE_VIRTUAL_TRACE();
@@ -105,7 +105,7 @@ class WebDevToolsAgentImpl final
   WebString EvaluateInWebInspectorOverlay(const WebString& script) override;
 
  private:
-  WebDevToolsAgentImpl(WebLocalFrameImpl*,
+  WebDevToolsAgentImpl(WebLocalFrameBase*,
                        WebDevToolsAgentClient*,
                        bool include_view_agents);
 
@@ -146,7 +146,7 @@ class WebDevToolsAgentImpl final
   bool Attached() const { return session_.Get(); }
 
   WebDevToolsAgentClient* client_;
-  Member<WebLocalFrameImpl> web_local_frame_impl_;
+  Member<WebLocalFrameBase> web_local_frame_impl_;
 
   Member<CoreProbeSink> probe_sink_;
   Member<InspectorResourceContentLoader> resource_content_loader_;

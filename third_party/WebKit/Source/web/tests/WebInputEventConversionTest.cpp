@@ -41,6 +41,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
@@ -49,7 +50,6 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {

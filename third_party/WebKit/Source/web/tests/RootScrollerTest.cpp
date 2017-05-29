@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -30,7 +31,6 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 

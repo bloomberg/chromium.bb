@@ -32,6 +32,7 @@
 #include <list>
 #include <memory>
 #include "core/dom/NodeTraversal.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -47,7 +48,6 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {

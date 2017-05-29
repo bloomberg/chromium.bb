@@ -31,6 +31,7 @@
 #include "core/layout/LayoutGeometryMap.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
@@ -41,7 +42,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebFrameClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ class LayoutGeometryMapTest
   static LayoutBox* GetFrameElement(const char* iframe_name,
                                     WebView* web_view,
                                     const WTF::AtomicString& element_id) {
-    WebLocalFrameImpl* iframe = ToWebLocalFrameImpl(
+    WebLocalFrameBase* iframe = ToWebLocalFrameBase(
         web_view->FindFrameByName(WebString::FromUTF8(iframe_name)));
     if (!iframe)
       return nullptr;

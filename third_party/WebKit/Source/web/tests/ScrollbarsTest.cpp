@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -11,7 +12,6 @@
 #include "public/platform/WebThemeEngine.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
