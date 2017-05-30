@@ -52,9 +52,6 @@ bool IsIncludedInAndroidOnePromoFieldTrial(base::StringPiece build_fingerprint);
 // Returns the name of the Lo-Fi field trial.
 const char* GetLoFiFieldTrialName();
 
-// Returns the name of the Lite Page fallback to Lo-Fi field trial.
-const char* GetLitePageFallbackFieldTrialName();
-
 // Returns the name of the Lo-Fi field trial that configures LoFi flags when it
 // is force enabled through flags.
 const char* GetLoFiFlagFieldTrialName();
@@ -70,11 +67,6 @@ bool IsIncludedInLoFiControlFieldTrial();
 // Returns true if this client is part of the "Preview" group of the Lo-Fi field
 // trial.
 bool IsIncludedInLitePageFieldTrial();
-
-// Returns true if this client is part of the Lite Page fallback to Lo-Fi field
-// trial or if this client has the command line switch to enable lite pages,
-// which should always fallback.
-bool IsLitePageFallbackEnabled();
 
 // Returns true if this client is part of the field trial that should enable
 // server experiments for the data reduction proxy.
@@ -106,8 +98,7 @@ bool IsLoFiDisabledViaFlags();
 
 // Returns true if this client has the command line switch to enable lite pages.
 // This means a preview should be requested instead of placeholders whenever
-// Lo-Fi mode is on. If Lite Pages are enabled via flags, they will always
-// fallback to Lo-Fi placeholders.
+// Lo-Fi mode is on.
 bool AreLitePagesEnabledViaFlags();
 
 // Returns true if this client has the command line switch to enable forced

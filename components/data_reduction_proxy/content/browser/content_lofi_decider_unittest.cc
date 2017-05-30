@@ -310,10 +310,6 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                          "Enabled");
-  // Add the Lite Page fallback field trial. Having this enabled when not in the
-  // Enabled_Previews group should not affect how Lo-Fi works.
-  base::FieldTrialList::CreateFieldTrial(
-      params::GetLitePageFallbackFieldTrialName(), "Enabled");
 
   // Enable Lo-Fi.
   const struct {
@@ -426,51 +422,6 @@ TEST_F(ContentLoFiDeciderTest, LitePageFieldTrial) {
                          headers);
     DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     EXPECT_EQ(tests[i].is_using_lite_page, data->lofi_requested()) << i;
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, LitePageFieldTrialFallbackEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled_Preview");
-  base::FieldTrialList::CreateFieldTrial(
-      params::GetLitePageFallbackFieldTrialName(), "Enabled");
-
-  // Enable Lo-Fi.
-  const struct {
-    bool is_using_lofi;
-    bool is_using_lite_page;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false, false}, {false, false, true}, {true, false, true},
-      {true, false, false},  {false, true, false}, {false, true, true},
-      {true, true, true},    {true, true, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
-    if (tests[i].is_using_lofi)
-      previews_state |= content::SERVER_LOFI_ON;
-    if (tests[i].is_using_lite_page)
-      previews_state |= content::SERVER_LITE_PAGE_ON;
-    if (previews_state == content::PREVIEWS_UNSPECIFIED)
-      previews_state = content::PREVIEWS_OFF;
-
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequest(tests[i].is_main_frame, previews_state);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(!tests[i].is_main_frame && !tests[i].is_using_lite_page,
-                     !tests[i].is_main_frame && !tests[i].is_using_lofi &&
-                         !tests[i].is_using_lite_page,
-                     headers);
-    VerifyLitePageHeader(tests[i].is_main_frame,
-                         tests[i].is_main_frame && !tests[i].is_using_lite_page,
-                         headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    EXPECT_EQ(tests[i].is_using_lofi || tests[i].is_using_lite_page,
-              data->lofi_requested())
-        << i;
   }
 }
 
