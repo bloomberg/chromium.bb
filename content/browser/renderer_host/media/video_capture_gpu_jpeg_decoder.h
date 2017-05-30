@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -37,7 +38,6 @@ namespace content {
 class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
     : public media::VideoCaptureJpegDecoder,
       public media::JpegDecodeAccelerator::Client,
-      public base::NonThreadSafe,
       public base::SupportsWeakPtr<VideoCaptureGpuJpegDecoder> {
  public:
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
@@ -113,6 +113,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   std::unique_ptr<base::SharedMemory> in_shared_memory_;
 
   STATUS decoder_status_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureGpuJpegDecoder);
 };
