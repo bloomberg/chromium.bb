@@ -170,19 +170,6 @@ void HardwareRenderer::AllocateSurface() {
 void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
-  // Submit an empty frame to force any existing resources to be returned.
-  gfx::Rect rect(surface_size_);
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetNew(1, rect, rect, gfx::Transform());
-  cc::CompositorFrame frame;
-  frame.render_pass_list.push_back(std::move(render_pass));
-  // We submit without a prior BeginFrame, so acknowledge a manual BeginFrame.
-  frame.metadata.begin_frame_ack =
-      cc::BeginFrameAck::CreateManualAckWithDamage();
-  frame.metadata.device_scale_factor = device_scale_factor_;
-  bool result = support_->SubmitCompositorFrame(child_id_, std::move(frame));
-  DCHECK(result);
-
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   support_->EvictCurrentSurface();
   child_id_ = cc::LocalSurfaceId();
