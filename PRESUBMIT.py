@@ -2151,6 +2151,54 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#Arr
 """ % "\n".join("  %s:%d\n" % line for line in arrow_lines))]
 
 
+def _CheckForRelativeIncludes(input_api, output_api):
+  # Need to set the sys.path so PRESUBMIT_test.py runs properly
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
+    from cpp_checker import CppChecker
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  bad_files = {}
+  for f in input_api.AffectedFiles(include_deletes=False):
+    if (f.LocalPath().startswith('third_party') and
+      not f.LocalPath().startswith('third_party/WebKit') and
+      not f.LocalPath().startswith('third_party\\WebKit')):
+      continue
+
+    if not CppChecker.IsCppFile(f.LocalPath()):
+      continue
+
+    relative_includes = [line for line_num, line in f.ChangedContents()
+                         if "#include" in line and "../" in line]
+    if not relative_includes:
+      continue
+    bad_files[f.LocalPath()] = relative_includes
+
+  if not bad_files:
+    return []
+
+  error_descriptions = []
+  for file_path, bad_lines in bad_files.iteritems():
+    error_description = file_path
+    for line in bad_lines:
+      error_description += '\n    ' + line
+    error_descriptions.append(error_description)
+
+  results = []
+  results.append(output_api.PresubmitError(
+        'You added one or more relative #include paths (including "../").\n'
+        'These shouldn\'t be used because they can be used to include headers\n'
+        'from code that\'s not correctly specified as a dependency in the\n'
+        'relevant BUILD.gn file(s).',
+        error_descriptions))
+
+  return results
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
@@ -2212,6 +2260,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRiskyJsFeatures(input_api, output_api))
+  results.extend(_CheckForRelativeIncludes(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
