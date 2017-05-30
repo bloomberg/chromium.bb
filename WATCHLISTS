@@ -1504,6 +1504,20 @@
       'filepath': 'third_party/WebKit/Source/modules/screen_orientation/' \
                   '|third_party/WebKit/public/platform/modules/screen_orientation',
     },
+    'blink_script': {
+      'filepath': '|third_party/WebKit/Source/bindings/core/v8/.*Module.*' \
+                  '|third_party/WebKit/Source/bindings/core/v8/ScriptController.*' \
+                  '|third_party/WebKit/Source/bindings/core/v8/ScriptSourceCode.*' \
+                  '|third_party/WebKit/Source/bindings/core/v8/V8ScriptRunner.*'
+                  '|third_party/WebKit/Source/core/dom/.*Modul.*' \
+                  '!third_party/WebKit/Source/core/dom/.*Script.*' \
+                  '|third_party/WebKit/Source/core/html/HTMLScriptElement.*' \
+                  '|third_party/WebKit/Source/core/html/parser/HTMLParserScriptRunner.*' \
+                  '|third_party/WebKit/Source/core/loader/modulescript/' \
+                  '|third_party/WebKit/Source/core/loader/resource/ScriptResource.*' \
+                  '|third_party/WebKit/Source/core/svg/SVGScriptElement.*' \
+                  '|third_party/WebKit/Source/core/xml/parser/XMLDocumentParser.*'
+    },
     'blink_scheduler': {
       'filepath': 'third_party/WebKit/Source/platform/scheduler' \
                   '|third_party/WebKit/Source/core/html/parser/.*Scheduler'
@@ -1820,6 +1834,9 @@
                     'tzik@chromium.org'],
     'blink_scheduler': ['scheduler-bugs@chromium.org'],
     'blink_screen_orientation': ['mlamouri+watch-blink@chromium.org'],
+    'blink_script': ['kouhei+script@chromium.org',
+                     'hiroshige+script@chromium.org',
+                     'kochi+script@chromium.org'],
     'blink_serviceworkers': ['falken+watch@chromium.org',
                              'horo+watch@chromium.org',
                              'jsbell+serviceworker@chromium.org',
