@@ -5,14 +5,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -168,51 +165,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
   chrome::CloseTab(browser2);
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(NULL, dialog->GetWidget());
-}
-
-// Tests that the web contents navigates when backspace is pressed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, NavigationOnBackspace) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-  const GURL original_url = web_contents->GetURL();
-  EXPECT_NE(GURL(chrome::kChromeUIVersionURL), original_url);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(GURL(chrome::kChromeUIVersionURL), web_contents->GetURL());
-
-  std::unique_ptr<TestDialog> dialog = ShowModalDialog(web_contents);
-
-  views::Widget* widget = dialog->GetWidget();
-
-  EXPECT_TRUE(widget->IsVisible());
-  EXPECT_EQ(dialog->GetContentsView(),
-            widget->GetFocusManager()->GetFocusedView());
-
-  // Pressing backspace should not navigate back and close the dialog
-  // with the Finch flag disabled.
-  EXPECT_TRUE(chrome::CanGoBack(browser()));
-  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,
-                                              false, false, false, false));
-  content::RunAllPendingInMessageLoop();
-  content::WaitForLoadStop(web_contents);
-
-  EXPECT_EQ(widget, dialog->GetWidget());
-  EXPECT_EQ(GURL(chrome::kChromeUIVersionURL), web_contents->GetURL());
-
-  // Pressing backspace should navigate back and close the dialog with the
-  // Finch flag enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kBackspaceGoesBackFeature);
-
-  EXPECT_TRUE(chrome::CanGoBack(browser()));
-  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,
-                                              false, false, false, false));
-  content::RunAllPendingInMessageLoop();
-  content::WaitForLoadStop(web_contents);
-
-  EXPECT_EQ(nullptr, dialog->GetWidget());
-  EXPECT_EQ(original_url, web_contents->GetURL());
 }
 
 // Tests that the dialog closes when the escape key is pressed.

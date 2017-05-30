@@ -227,14 +227,6 @@ function getShortcutData() {
     delete shortcutDataCache['0<>CTRL<>SHIFT'];
   }
 
-  if (!loadTimeData.getBoolean('backspaceGoesBackFeatureEnabled')) {
-    // If the "backspace key goes back" experiment is not enabled, then we
-    // clear the shortcuts for Backspace and Shift+Backspace to go back or
-    // forward respectively.
-    delete shortcutDataCache['backspace'];
-    delete shortcutDataCache['backspace<>SHIFT'];
-  }
-
   return shortcutDataCache;
 }
 

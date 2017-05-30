@@ -60,12 +60,6 @@ const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// Enables the Backspace key to navigate back in the browser, as well as
-// Shift+Backspace to navigate forward.
-const base::Feature kBackspaceGoesBackFeature {
-  "BackspaceGoesBack", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 // Enables or disables whether permission prompts are automatically blocked
 // after the user has explicitly dismissed them too many times.
 const base::Feature kBlockPromptsIfDismissedOften{
