@@ -216,8 +216,8 @@ class TestExporter(object):
             response_data = self.wpt_github.create_pr(branch_name, cl.subject, message)
             _log.debug('Create PR response: %s', response_data)
 
-            data, status_code = self.wpt_github.add_label(response_data['number'])
-            _log.info('Add label response (status %s): %s', status_code, data)
+            self.wpt_github.add_label(response_data['number'])
+            self.wpt_github.add_label(response_data['number'], 'do not merge yet')
 
             cl.post_comment((
                 'Exportable changes to web-platform-tests were detected in this CL '

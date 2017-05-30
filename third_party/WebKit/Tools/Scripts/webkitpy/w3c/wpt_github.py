@@ -102,13 +102,13 @@ class WPTGitHub(object):
 
         return data
 
-    def add_label(self, number):
+    def add_label(self, number, label=EXPORT_LABEL):
         path = '/repos/%s/%s/issues/%d/labels' % (
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
             number
         )
-        body = [EXPORT_LABEL]
+        body = [label]
         return self.request(path, method='POST', body=body)
 
     def in_flight_pull_requests(self):
