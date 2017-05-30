@@ -93,21 +93,21 @@ cr.define('media_router_container_route', function() {
         document.body.appendChild(container);
 
         // Get common functions and variables.
-        var test_base = media_router_container_test_base.init(container);
+        var testBase = media_router_container_test_base.init(container);
 
-        checkCurrentView = test_base.checkCurrentView;
-        checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
-        checkElementVisible = test_base.checkElementVisible;
-        checkElementText = test_base.checkElementText;
-        fakeBlockingIssue = test_base.fakeBlockingIssue;
-        fakeCastModeList = test_base.fakeCastModeList;
-        fakeNonBlockingIssue = test_base.fakeNonBlockingIssue;
-        fakeRouteList = test_base.fakeRouteList;
+        checkCurrentView = testBase.checkCurrentView;
+        checkElementsVisibleWithId = testBase.checkElementsVisibleWithId;
+        checkElementVisible = testBase.checkElementVisible;
+        checkElementText = testBase.checkElementText;
+        fakeBlockingIssue = testBase.fakeBlockingIssue;
+        fakeCastModeList = testBase.fakeCastModeList;
+        fakeNonBlockingIssue = testBase.fakeNonBlockingIssue;
+        fakeRouteList = testBase.fakeRouteList;
         fakeRouteListWithLocalRoutesOnly =
-            test_base.fakeRouteListWithLocalRoutesOnly;
-        fakeSinkList = test_base.fakeSinkList;
+            testBase.fakeRouteListWithLocalRoutesOnly;
+        fakeSinkList = testBase.fakeSinkList;
 
-        container.castModeList = test_base.fakeCastModeList;
+        container.castModeList = testBase.fakeCastModeList;
 
         // Allow for the media router container to be created, attached, and
         // listeners registered in an afterNextRender() call.
@@ -254,7 +254,8 @@ cr.define('media_router_container_route', function() {
 
       // Tests for expected visible UI when the view is ROUTE_DETAILS.
       test('route details visibility', function(done) {
-        container.showRouteDetails_();
+        container.showRouteDetails_(
+            new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true));
         setTimeout(function() {
           checkElementsVisibleWithId(['container-header',
                                       'device-missing',
@@ -294,7 +295,8 @@ cr.define('media_router_container_route', function() {
       // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
       // is a non-blocking issue.
       test('route details visibility non blocking issue', function(done) {
-        container.showRouteDetails_();
+        container.showRouteDetails_(
+            new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true));
 
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
@@ -309,7 +311,8 @@ cr.define('media_router_container_route', function() {
       // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
       // is a blocking issue.
       test('route details visibility with blocking issue', function(done) {
-        container.showRouteDetails_();
+        container.showRouteDetails_(
+            new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true));
 
         // Set a blocking issue. The issue should be shown, and everything
         // else, hidden.
@@ -324,8 +327,8 @@ cr.define('media_router_container_route', function() {
 
       test('creating route with selected cast mode', function(done) {
         container.allSinks = fakeSinkList;
-        MockInteractions.tap(container.$['container-header'].
-            $['arrow-drop-icon']);
+        MockInteractions.tap(
+            container.$$('#container-header').$['arrow-drop-icon']);
         setTimeout(function() {
           // Select cast mode 2.
           var castModeList =
@@ -416,7 +419,7 @@ cr.define('media_router_container_route', function() {
           fakeRouteList[i].currentCastMode = 2;
         }
         MockInteractions.tap(
-            container.$['container-header'].$['arrow-drop-icon']);
+            container.$$('#container-header').$$('#arrow-drop-icon'));
         setTimeout(function() {
           MockInteractions.tap(container.$$('#cast-mode-list')
                                    .querySelectorAll('paper-item')[2]);
@@ -445,7 +448,7 @@ cr.define('media_router_container_route', function() {
           fakeRouteList[i].currentCastMode = 2;
         }
         MockInteractions.tap(
-            container.$['container-header'].$['arrow-drop-icon']);
+            container.$$('#container-header').$$('#arrow-drop-icon'));
         setTimeout(function() {
           MockInteractions.tap(container.$$('#cast-mode-list')
                                    .querySelectorAll('paper-item')[1]);

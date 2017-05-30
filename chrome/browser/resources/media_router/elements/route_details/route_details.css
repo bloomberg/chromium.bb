@@ -2,12 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#custom-controller {
-  display: inline-block;
-  height: 142px;
-  width: 100%;
-}
-
 #route-action-buttons {
   @apply(--layout-horizontal);
   @apply(--layout-end-justified);

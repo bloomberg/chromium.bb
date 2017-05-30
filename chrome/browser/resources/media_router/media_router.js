@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <include src="media_router_browser_api.js">
 // <include src="media_router_data.js">
 // <include src="media_router_ui_interface.js">
 
@@ -216,7 +217,7 @@ cr.define('media_router', function() {
    *   selectedCastModeValue - cast mode selected by the user.
    */
   function onCreateRoute(event) {
-    /** @type {{sinkId: string, selectedCastModeValue, number}} */
+    /** @type {{sinkId: string, selectedCastModeValue: number}} */
     var detail = event.detail;
     media_router.browserApi.requestRoute(detail.sinkId,
                                          detail.selectedCastModeValue);

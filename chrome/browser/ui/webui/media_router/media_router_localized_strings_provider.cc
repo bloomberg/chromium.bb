@@ -36,6 +36,18 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
       IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
   html_source->AddLocalizedString("startCastingButtonText",
                                   IDS_MEDIA_ROUTER_START_CASTING_BUTTON);
+  html_source->AddLocalizedString("playTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_PLAY_TITLE);
+  html_source->AddLocalizedString("pauseTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_PAUSE_TITLE);
+  html_source->AddLocalizedString("muteTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_MUTE_TITLE);
+  html_source->AddLocalizedString("unmuteTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_UNMUTE_TITLE);
+  html_source->AddLocalizedString("seekTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_SEEK_TITLE);
+  html_source->AddLocalizedString("volumeTitle",
+                                  IDS_MEDIA_ROUTER_ROUTE_DETAILS_VOLUME_TITLE);
 }
 
 void AddIssuesStrings(content::WebUIDataSource* html_source) {

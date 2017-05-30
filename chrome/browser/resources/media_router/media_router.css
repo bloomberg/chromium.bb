@@ -16,5 +16,5 @@ body {
   display: flex;
   flex-direction: column;
   margin-bottom: 1px;
-  width: calc(100% - 1px);
+  width: calc(var(--dialog-width) - 1px);
 }
