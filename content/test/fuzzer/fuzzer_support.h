@@ -17,6 +17,7 @@ namespace content {
 class RenderViewTestAdapter : public RenderViewTest {
  public:
   RenderViewTestAdapter() : RenderViewTest() {}
+
   void TestBody() override {}
   // make SetUp visible.
   void SetUp() override;
@@ -33,6 +34,7 @@ class RenderViewTestAdapter : public RenderViewTest {
 struct Env {
   Env();
   ~Env();
+
   base::AtExitManager at_exit;
   std::unique_ptr<RenderViewTestAdapter> adapter;
 };
