@@ -992,7 +992,7 @@ EUserSelect UsedValueOfUserSelect(const Node& node) {
 }
 
 template <typename Strategy>
-TextDirection DirectionOfEnclosingBlockAlgorithm(
+TextDirection DirectionOfEnclosingBlockOfAlgorithm(
     const PositionTemplate<Strategy>& position) {
   Element* enclosing_block_element =
       EnclosingBlock(PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(
@@ -1005,12 +1005,12 @@ TextDirection DirectionOfEnclosingBlockAlgorithm(
                        : TextDirection::kLtr;
 }
 
-TextDirection DirectionOfEnclosingBlock(const Position& position) {
-  return DirectionOfEnclosingBlockAlgorithm<EditingStrategy>(position);
+TextDirection DirectionOfEnclosingBlockOf(const Position& position) {
+  return DirectionOfEnclosingBlockOfAlgorithm<EditingStrategy>(position);
 }
 
-TextDirection DirectionOfEnclosingBlock(const PositionInFlatTree& position) {
-  return DirectionOfEnclosingBlockAlgorithm<EditingInFlatTreeStrategy>(
+TextDirection DirectionOfEnclosingBlockOf(const PositionInFlatTree& position) {
+  return DirectionOfEnclosingBlockOfAlgorithm<EditingInFlatTreeStrategy>(
       position);
 }
 

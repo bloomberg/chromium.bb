@@ -298,7 +298,7 @@ VisiblePosition VisualWordPosition(const VisiblePosition& visible_position,
     return VisiblePosition();
 
   TextDirection block_direction =
-      DirectionOfEnclosingBlock(visible_position.DeepEquivalent());
+      DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
   InlineBox* previously_visited_box = nullptr;
   VisiblePosition current = visible_position;
   TextBreakIterator* iter = nullptr;
@@ -401,7 +401,7 @@ VisiblePosition LeftWordPosition(const VisiblePosition& visible_position,
   if (left_word_break.IsNull() &&
       IsEditablePosition(visible_position.DeepEquivalent())) {
     TextDirection block_direction =
-        DirectionOfEnclosingBlock(visible_position.DeepEquivalent());
+        DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
     left_word_break = block_direction == TextDirection::kLtr
                           ? StartOfEditableContent(visible_position)
                           : EndOfEditableContent(visible_position);
@@ -423,7 +423,7 @@ VisiblePosition RightWordPosition(const VisiblePosition& visible_position,
   if (right_word_break.IsNull() &&
       IsEditablePosition(visible_position.DeepEquivalent())) {
     TextDirection block_direction =
-        DirectionOfEnclosingBlock(visible_position.DeepEquivalent());
+        DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
     right_word_break = block_direction == TextDirection::kLtr
                            ? EndOfEditableContent(visible_position)
                            : StartOfEditableContent(visible_position);
