@@ -930,13 +930,10 @@ void Internals::setMarker(Document* document,
   }
 
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (type == DocumentMarker::kSpelling) {
-    document->Markers().AddSpellingMarker(range->StartPosition(),
-                                          range->EndPosition());
-  } else {
-    document->Markers().AddGrammarMarker(range->StartPosition(),
-                                         range->EndPosition());
-  }
+  if (type == DocumentMarker::kSpelling)
+    document->Markers().AddSpellingMarker(EphemeralRange(range));
+  else
+    document->Markers().AddGrammarMarker(EphemeralRange(range));
 }
 
 unsigned Internals::markerCountForNode(Node* node,

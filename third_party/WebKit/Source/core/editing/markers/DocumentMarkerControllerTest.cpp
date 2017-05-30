@@ -72,8 +72,7 @@ void DocumentMarkerControllerTest::MarkNodeContents(Node* node) {
   // DocumentMarkerControllerTest::addMarker(), needs them.
   GetDocument().UpdateStyleAndLayout();
   auto range = EphemeralRange::RangeOfContents(*node);
-  MarkerController().AddSpellingMarker(range.StartPosition(),
-                                       range.EndPosition());
+  MarkerController().AddSpellingMarker(range);
 }
 
 void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
@@ -316,8 +315,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
 
   // Add a spelling marker and a text match marker to "foo".
   const EphemeralRange marker_range(Position(text, 0), Position(text, 3));
-  MarkerController().AddSpellingMarker(marker_range.StartPosition(),
-                                       marker_range.EndPosition());
+  MarkerController().AddSpellingMarker(marker_range);
   MarkerController().AddTextMatchMarker(marker_range,
                                         DocumentMarker::MatchStatus::kInactive);
 
