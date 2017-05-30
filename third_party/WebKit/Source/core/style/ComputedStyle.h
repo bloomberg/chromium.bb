@@ -1751,15 +1751,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_inherited_data_, text_size_adjust_, size_adjust);
   }
 
-  // word-break inherited (aka -epub-word-break)
-  static EWordBreak InitialWordBreak() { return EWordBreak::kNormal; }
-  EWordBreak WordBreak() const {
-    return static_cast<EWordBreak>(rare_inherited_data_->word_break_);
-  }
-  void SetWordBreak(EWordBreak b) {
-    SET_VAR(rare_inherited_data_, word_break_, static_cast<unsigned>(b));
-  }
-
   // -webkit-line-break
   static LineBreak InitialLineBreak() { return LineBreak::kAuto; }
   LineBreak GetLineBreak() const {
