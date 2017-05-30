@@ -34,11 +34,7 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
                  base::Unretained(this)));
 }
 
-GpuCompositorFrameSink::~GpuCompositorFrameSink() {}
-
-void GpuCompositorFrameSink::EvictCurrentSurface() {
-  support_->EvictCurrentSurface();
-}
+GpuCompositorFrameSink::~GpuCompositorFrameSink() = default;
 
 void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);

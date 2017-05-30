@@ -42,9 +42,5 @@ void CompositorFrameSinkClientBinding::DidNotProduceFrame(
   compositor_frame_sink_->DidNotProduceFrame(ack);
 }
 
-void CompositorFrameSinkClientBinding::EvictCurrentSurface() {
-  compositor_frame_sink_->EvictCurrentSurface();
-}
-
 }  // namespace ws
 }  // namespace ui

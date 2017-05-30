@@ -34,7 +34,6 @@ class CompositorFrameSinkClientBinding
                              cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
-  void EvictCurrentSurface() override;
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
   cc::mojom::DisplayPrivateAssociatedPtr display_private_;
