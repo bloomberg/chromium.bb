@@ -1560,8 +1560,9 @@ inline IndentTextOrNot RequiresIndent(bool is_first_line,
                                       bool is_after_hard_line_break,
                                       const ComputedStyle& style) {
   IndentTextOrNot indent_text = kDoNotIndentText;
-  if (is_first_line || (is_after_hard_line_break &&
-                        style.GetTextIndentLine()) == TextIndentLine::kEachLine)
+  if (is_first_line ||
+      (is_after_hard_line_break &&
+       style.GetTextIndentLine() != TextIndentLine::kFirstLine))
     indent_text = kIndentText;
 
   if (style.GetTextIndentType() == TextIndentType::kHanging)
