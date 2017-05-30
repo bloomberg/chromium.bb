@@ -117,7 +117,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   void SetAlgorithmEnabledForTesting(bool algorithm_enabled);
 
-  // Used for DCHECKs to ensure method calls executed in the correct thread.
+  // Used for DCHECKs to ensure method calls executed in the correct thread,
+  // which is renderer main thread in this class.
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
