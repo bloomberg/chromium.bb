@@ -61,13 +61,16 @@ void AshTestSuite::Initialize() {
   }
 
   const bool is_mus = base::CommandLine::ForCurrentProcess()->HasSwitch("mus");
-  ash::test::AshTestHelper::config_ = is_mus ? Config::MUS : Config::CLASSIC;
+  const bool is_mash =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("mash");
+  ash::test::AshTestHelper::config_ =
+      is_mus ? Config::MUS : is_mash ? Config::MASH : Config::CLASSIC;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  env_ = aura::Env::CreateInstance(is_mus ? aura::Env::Mode::MUS
-                                          : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance(is_mus || is_mash ? aura::Env::Mode::MUS
+                                                     : aura::Env::Mode::LOCAL);
 
-  if (is_mus) {
+  if (is_mus || is_mash) {
     context_factory_ = base::MakeUnique<ui::FakeContextFactory>();
     env_->set_context_factory(context_factory_.get());
     env_->set_context_factory_private(nullptr);
