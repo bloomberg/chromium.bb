@@ -77,7 +77,6 @@ DocumentType* DOMImplementation::createDocumentType(
 }
 
 XMLDocument* DOMImplementation::createDocument(
-    const LocalDOMWindow* window,
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
     DocumentType* doctype,
@@ -99,8 +98,8 @@ XMLDocument* DOMImplementation::createDocument(
 
   Node* document_element = nullptr;
   if (!qualified_name.IsEmpty()) {
-    document_element = doc->createElementNS(window, namespace_uri,
-                                            qualified_name, exception_state);
+    document_element =
+        doc->createElementNS(namespace_uri, qualified_name, exception_state);
     if (exception_state.HadException())
       return nullptr;
   }

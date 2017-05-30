@@ -410,12 +410,14 @@ static bool IsValidElementNamePerHTMLParser(const String& name) {
 // Tests whether |name| is a valid name per DOM spec. Also checks
 // whether the HTML parser would accept this element name and counts
 // cases of mismatches.
-static bool IsValidElementName(const LocalDOMWindow* window,
-                               const String& name) {
+static bool IsValidElementName(Document* document, const String& name) {
   bool is_valid_dom_name = Document::IsValidName(name);
   bool is_valid_html_name = IsValidElementNamePerHTMLParser(name);
-  if (UNLIKELY(is_valid_html_name != is_valid_dom_name && window)) {
-    UseCounter::Count(window->GetFrame(),
+  if (UNLIKELY(is_valid_html_name != is_valid_dom_name)) {
+    // This is inaccurate because it will not report activity in
+    // detached documents. However retrieving the frame from the
+    // bindings is too slow.
+    UseCounter::Count(document,
                       is_valid_dom_name
                           ? UseCounter::kElementNameDOMValidHTMLParserInvalid
                           : UseCounter::kElementNameDOMInvalidHTMLParserValid);
@@ -751,10 +753,9 @@ AtomicString Document::ConvertLocalName(const AtomicString& name) {
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
-Element* Document::createElement(const LocalDOMWindow* window,
-                                 const AtomicString& name,
+Element* Document::createElement(const AtomicString& name,
                                  ExceptionState& exception_state) {
-  if (!IsValidElementName(window, name)) {
+  if (!IsValidElementName(this, name)) {
     exception_state.ThrowDOMException(
         kInvalidCharacterError,
         "The tag name provided ('" + name + "') is not a valid name.");
@@ -804,12 +805,11 @@ String GetTypeExtension(Document* document,
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
-Element* Document::createElement(const LocalDOMWindow* window,
-                                 const AtomicString& local_name,
+Element* Document::createElement(const AtomicString& local_name,
                                  const StringOrDictionary& string_or_options,
                                  ExceptionState& exception_state) {
   // 1. If localName does not match Name production, throw InvalidCharacterError
-  if (!IsValidElementName(window, local_name)) {
+  if (!IsValidElementName(this, local_name)) {
     exception_state.ThrowDOMException(
         kInvalidCharacterError,
         "The tag name provided ('" + local_name + "') is not a valid name.");
@@ -865,7 +865,7 @@ Element* Document::createElement(const LocalDOMWindow* window,
         *this,
         QualifiedName(g_null_atom, converted_local_name, xhtmlNamespaceURI));
   } else {
-    element = createElement(window, local_name, exception_state);
+    element = createElement(local_name, exception_state);
     if (exception_state.HadException())
       return nullptr;
   }
@@ -905,8 +905,7 @@ static inline QualifiedName CreateQualifiedName(
   return q_name;
 }
 
-Element* Document::createElementNS(const LocalDOMWindow* window,
-                                   const AtomicString& namespace_uri,
+Element* Document::createElementNS(const AtomicString& namespace_uri,
                                    const AtomicString& qualified_name,
                                    ExceptionState& exception_state) {
   QualifiedName q_name(
@@ -920,8 +919,7 @@ Element* Document::createElementNS(const LocalDOMWindow* window,
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
-Element* Document::createElementNS(const LocalDOMWindow* window,
-                                   const AtomicString& namespace_uri,
+Element* Document::createElementNS(const AtomicString& namespace_uri,
                                    const AtomicString& qualified_name,
                                    const StringOrDictionary& string_or_options,
                                    ExceptionState& exception_state) {
@@ -943,7 +941,7 @@ Element* Document::createElementNS(const LocalDOMWindow* window,
       AtomicString(GetTypeExtension(this, string_or_options, exception_state));
   const AtomicString& name = should_create_builtin ? is : qualified_name;
 
-  if (!IsValidElementName(window, qualified_name)) {
+  if (!IsValidElementName(this, qualified_name)) {
     exception_state.ThrowDOMException(
         kInvalidCharacterError, "The tag name provided ('" + qualified_name +
                                     "') is not a valid name.");

@@ -34,7 +34,6 @@ class DocumentInit;
 class DocumentType;
 class ExceptionState;
 class HTMLDocument;
-class LocalDOMWindow;
 class XMLDocument;
 
 class CORE_EXPORT DOMImplementation final
@@ -55,8 +54,7 @@ class CORE_EXPORT DOMImplementation final
                                    const String& public_id,
                                    const String& system_id,
                                    ExceptionState&);
-  XMLDocument* createDocument(const LocalDOMWindow*,
-                              const AtomicString& namespace_uri,
+  XMLDocument* createDocument(const AtomicString& namespace_uri,
                               const AtomicString& qualified_name,
                               DocumentType*,
                               ExceptionState&);
