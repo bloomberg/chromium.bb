@@ -27,7 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
+#include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -284,29 +284,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessProxyResolverBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
 
-// Waits for the one connection. It's fine if there are more.
-class WaitForConnectionsListener
-    : public net::test_server::EmbeddedTestServerConnectionListener {
- public:
-  WaitForConnectionsListener() {}
-
-  void AcceptedSocket(const net::StreamSocket& socket) override {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     run_loop_.QuitClosure());
-  }
-
-  void ReadFromSocket(const net::StreamSocket& socket, int rv) override {}
-
-  void Wait() { run_loop_.Run(); }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForConnectionsListener);
-};
-
 // Fetch PAC script via a hanging http:// URL.
 class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
@@ -320,9 +297,19 @@ class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  void TearDown() override {
+    // Need to stop this before |connection_listener_| is destroyed.
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    InProcessBrowserTest::TearDown();
+  }
+
   void SetUpOnMainThread() override {
     // This must be created after the main message loop has been set up.
-    connection_listener_ = base::MakeUnique<WaitForConnectionsListener>();
+    // Waits for one connection.  Additional connections are fine.
+    connection_listener_ =
+        base::MakeUnique<net::test_server::SimpleConnectionListener>(
+            1, net::test_server::SimpleConnectionListener::
+                   ALLOW_ADDITIONAL_CONNECTIONS);
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
     embedded_test_server()->StartAcceptingConnections();
 
@@ -335,7 +322,8 @@ class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  std::unique_ptr<WaitForConnectionsListener> connection_listener_;
+  std::unique_ptr<net::test_server::SimpleConnectionListener>
+      connection_listener_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HangingPacRequestProxyScriptBrowserTest);
@@ -369,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(HangingPacRequestProxyScriptBrowserTest, Shutdown) {
   hanging_fetcher->SetRequestContext(browser()->profile()->GetRequestContext());
   hanging_fetcher->Start();
 
-  connection_listener_->Wait();
+  connection_listener_->WaitForConnections();
 }
 
 }  // namespace
