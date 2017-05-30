@@ -9,7 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/test/histogram_tester.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
+#include "components/feature_engagement_tracker/internal/stats.h"
 #include "components/feature_engagement_tracker/internal/test/event_util.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
@@ -84,8 +86,9 @@ TEST_F(PersistentStoreTest, StorageDirectory) {
 TEST_F(PersistentStoreTest, SuccessfulInitAndLoadEmptyStore) {
   SetUpDB();
 
-  store_->Load(load_callback_);
+  base::HistogramTester histogram_tester;
 
+  store_->Load(load_callback_);
   // The initialize should not trigger a response to the callback.
   db_->InitCallback(true);
   EXPECT_FALSE(load_successful_.has_value());
@@ -97,6 +100,13 @@ TEST_F(PersistentStoreTest, SuccessfulInitAndLoadEmptyStore) {
   // Validate that we have no entries.
   EXPECT_NE(nullptr, load_results_);
   EXPECT_TRUE(load_results_->empty());
+
+  // Verify histograms.
+  std::string suffix =
+      stats::ToDbHistogramSuffix(stats::StoreType::EVENTS_STORE);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Init." + suffix, 1, 1);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Load." + suffix, 1, 1);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.TotalEvents", 0, 1);
 }
 
 TEST_F(PersistentStoreTest, SuccessfulInitAndLoadWithEvents) {
@@ -115,6 +125,8 @@ TEST_F(PersistentStoreTest, SuccessfulInitAndLoadWithEvents) {
 
   SetUpDB();
 
+  base::HistogramTester histogram_tester;
+
   // The initialize should not trigger a response to the callback.
   store_->Load(load_callback_);
   db_->InitCallback(true);
@@ -127,9 +139,17 @@ TEST_F(PersistentStoreTest, SuccessfulInitAndLoadWithEvents) {
 
   // Validate that we have the two events that we expect.
   VerifyEventsInListAndMap(db_events_, *load_results_);
+
+  // Verify histograms.
+  std::string suffix =
+      stats::ToDbHistogramSuffix(stats::StoreType::EVENTS_STORE);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Init." + suffix, 1, 1);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Load." + suffix, 1, 1);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.TotalEvents", 3, 1);
 }
 
 TEST_F(PersistentStoreTest, SuccessfulInitBadLoad) {
+  base::HistogramTester histogram_tester;
   SetUpDB();
 
   store_->Load(load_callback_);
@@ -142,9 +162,17 @@ TEST_F(PersistentStoreTest, SuccessfulInitBadLoad) {
   db_->LoadCallback(false);
   EXPECT_FALSE(load_successful_.value());
   EXPECT_FALSE(store_->IsReady());
+
+  // Histograms.
+  std::string suffix =
+      stats::ToDbHistogramSuffix(stats::StoreType::EVENTS_STORE);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Init." + suffix, 1, 1);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Load." + suffix, 0, 1);
+  histogram_tester.ExpectTotalCount("InProductHelp.Db.TotalEvents", 0);
 }
 
 TEST_F(PersistentStoreTest, BadInit) {
+  base::HistogramTester histogram_tester;
   SetUpDB();
 
   store_->Load(load_callback_);
@@ -153,6 +181,13 @@ TEST_F(PersistentStoreTest, BadInit) {
   db_->InitCallback(false);
   EXPECT_FALSE(load_successful_.value());
   EXPECT_FALSE(store_->IsReady());
+
+  // Histograms.
+  std::string suffix =
+      stats::ToDbHistogramSuffix(stats::StoreType::EVENTS_STORE);
+  histogram_tester.ExpectBucketCount("InProductHelp.Db.Init." + suffix, 0, 1);
+  histogram_tester.ExpectTotalCount("InProductHelp.Db.Load." + suffix, 0);
+  histogram_tester.ExpectTotalCount("InProductHelp.Db.TotalEvents", 0);
 }
 
 TEST_F(PersistentStoreTest, IsReady) {

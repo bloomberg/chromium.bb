@@ -12,8 +12,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
+#include "components/feature_engagement_tracker/internal/stats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
@@ -31,6 +33,7 @@ const char kFooTrialName[] = "FooTrial";
 const char kBarTrialName[] = "BarTrial";
 const char kQuxTrialName[] = "QuxTrial";
 const char kGroupName[] = "Group1";
+const char kConfigParseEventName[] = "InProductHelp.Config.ParsingEvent";
 
 class ChromeVariationsConfigurationTest : public ::testing::Test {
  public:
@@ -112,11 +115,16 @@ TEST_F(ChromeVariationsConfigurationTest,
 
   FeatureVector features;
   features.push_back(&kTestFeatureFoo);
+  base::HistogramTester histogram_tester;
 
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo_config = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo_config.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, ParseSingleFeature) {
@@ -133,11 +141,16 @@ TEST_F(ChromeVariationsConfigurationTest, ParseSingleFeature) {
       "name:user_opened_downloads_home;comparator:any;window:0;storage:360";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
 
   FeatureConfig expected_foo;
   expected_foo.valid = true;
@@ -159,11 +172,20 @@ TEST_F(ChromeVariationsConfigurationTest, MissingUsedIsInvalid) {
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_USED_EVENT_MISSING),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, MissingTriggerIsInvalid) {
@@ -171,11 +193,21 @@ TEST_F(ChromeVariationsConfigurationTest, MissingTriggerIsInvalid) {
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(
+          stats::ConfigParsingEvent::FAILURE_TRIGGER_EVENT_MISSING),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, OnlyTriggerAndUsedIsValid) {
@@ -184,6 +216,7 @@ TEST_F(ChromeVariationsConfigurationTest, OnlyTriggerAndUsedIsValid) {
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
@@ -195,6 +228,10 @@ TEST_F(ChromeVariationsConfigurationTest, OnlyTriggerAndUsedIsValid) {
   expected_foo.used = EventConfig("eu", Comparator(ANY, 0), 0, 360);
   expected_foo.trigger = EventConfig("et", Comparator(ANY, 0), 0, 360);
   EXPECT_EQ(expected_foo, foo);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
@@ -336,11 +373,20 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["session_rate"] = "bogus value";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_SESSION_RATE_PARSE),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
 }
 
 TEST_F(ChromeVariationsConfigurationTest,
@@ -351,11 +397,20 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["availability"] = "bogus value";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_AVAILABILITY_PARSE),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, InvalidUsedCausesInvalidConfig) {
@@ -364,11 +419,23 @@ TEST_F(ChromeVariationsConfigurationTest, InvalidUsedCausesInvalidConfig) {
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_USED_EVENT_PARSE), 1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_USED_EVENT_MISSING),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 3);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, InvalidTriggerCausesInvalidConfig) {
@@ -377,11 +444,25 @@ TEST_F(ChromeVariationsConfigurationTest, InvalidTriggerCausesInvalidConfig) {
   foo_params["event_trigger"] = "bogus value";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
+  base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_TRIGGER_EVENT_PARSE),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(
+          stats::ConfigParsingEvent::FAILURE_TRIGGER_EVENT_MISSING),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 3);
 }
 
 TEST_F(ChromeVariationsConfigurationTest,

@@ -25,7 +25,7 @@ ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
     const AvailabilityModel& availability_model,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
-  result.model_ready_ok = model.IsReady();
+  result.event_model_ready_ok = model.IsReady();
   result.currently_showing_ok = !currently_showing_;
   result.feature_enabled_ok = base::FeatureList::IsEnabled(feature);
   result.config_ok = config.valid;

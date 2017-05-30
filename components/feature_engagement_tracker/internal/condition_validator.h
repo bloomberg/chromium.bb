@@ -33,8 +33,8 @@ class ConditionValidator {
     explicit Result(bool initial_values);
     Result(const Result& other);
 
-    // Whether the Model was ready.
-    bool model_ready_ok;
+    // Whether the event model was ready.
+    bool event_model_ready_ok;
 
     // Whether no other in-product helps were shown at the time.
     bool currently_showing_ok;
@@ -65,7 +65,7 @@ class ConditionValidator {
 
     // Returns true if this result object has no errors, i.e. no values that
     // are false.
-    bool NoErrors();
+    bool NoErrors() const;
   };
 
   virtual ~ConditionValidator() = default;

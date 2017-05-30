@@ -20,4 +20,9 @@ const FeatureConfig& SingleInvalidConfiguration::GetFeatureConfig(
   return invalid_feature_config_;
 }
 
+const Configuration::ConfigMap&
+SingleInvalidConfiguration::GetRegisteredFeatures() const {
+  return configs_;
+}
+
 }  // namespace feature_engagement_tracker

@@ -26,6 +26,7 @@ class ChromeVariationsConfiguration : public Configuration {
   // Configuration implementation.
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
+  const Configuration::ConfigMap& GetRegisteredFeatures() const override;
 
   // Parses the variations configuration for all of the given |features| and
   // stores the result. It is only valid to call ParseFeatureConfig once.

@@ -22,9 +22,10 @@ class EditableConfiguration : public Configuration {
   EditableConfiguration();
   ~EditableConfiguration() override;
 
-  // Configuration implementaiton.
+  // Configuration implementation.
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
+  const Configuration::ConfigMap& GetRegisteredFeatures() const override;
 
   // Adds a new FeatureConfig to the current configurations. If it already
   // exists, the contents are replaced.

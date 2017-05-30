@@ -150,7 +150,7 @@ TEST_F(FeatureConfigConditionValidatorTest, ModelNotReadyShouldFail) {
   ConditionValidator::Result result =
       GetResultForDayZero(GetValidFeatureConfig());
   EXPECT_FALSE(result.NoErrors());
-  EXPECT_FALSE(result.model_ready_ok);
+  EXPECT_FALSE(result.event_model_ready_ok);
 }
 
 TEST_F(FeatureConfigConditionValidatorTest, ConfigInvalidShouldFail) {
@@ -170,7 +170,7 @@ TEST_F(FeatureConfigConditionValidatorTest, MultipleErrorsShouldBeSet) {
 
   ConditionValidator::Result result = GetResultForDayZero(FeatureConfig());
   EXPECT_FALSE(result.NoErrors());
-  EXPECT_FALSE(result.model_ready_ok);
+  EXPECT_FALSE(result.event_model_ready_ok);
   EXPECT_FALSE(result.config_ok);
 }
 

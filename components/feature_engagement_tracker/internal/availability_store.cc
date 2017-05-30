@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "components/feature_engagement_tracker/internal/proto/availability.pb.h"
+#include "components/feature_engagement_tracker/internal/stats.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
 #include "components/leveldb_proto/proto_database.h"
 
@@ -34,6 +35,7 @@ void OnDBUpdateComplete(
     std::unique_ptr<std::map<const base::Feature*, uint32_t>>
         feature_availabilities,
     bool success) {
+  stats::RecordDbUpdate(success, stats::StoreType::AVAILABILITY_STORE);
   std::move(on_loaded_callback).Run(success, std::move(feature_availabilities));
 }
 
@@ -44,6 +46,7 @@ void OnDBLoadComplete(
     uint32_t current_day,
     bool success,
     std::unique_ptr<std::vector<Availability>> availabilities) {
+  stats::RecordAvailabilityDbLoadEvent(success);
   if (!success) {
     std::move(on_loaded_callback)
         .Run(false,
@@ -116,6 +119,8 @@ void OnDBInitComplete(
     AvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day,
     bool success) {
+  stats::RecordDbInitEvent(success, stats::StoreType::AVAILABILITY_STORE);
+
   if (!success) {
     std::move(on_loaded_callback)
         .Run(false,

@@ -124,6 +124,9 @@ class Configuration {
   virtual const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const = 0;
 
+  // Returns the immutable ConfigMap that contains all registered features.
+  virtual const ConfigMap& GetRegisteredFeatures() const = 0;
+
  protected:
   Configuration() = default;
 

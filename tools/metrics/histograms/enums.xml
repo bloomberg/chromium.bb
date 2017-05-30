@@ -4957,6 +4957,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="Try to override the status when its valus is error."/>
 </enum>
 
+<enum name="ConfigParsingEvent" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="FAILURE"/>
+  <int value="2" label="FAILURE_NO_FIELD_TRIAL"/>
+  <int value="3" label="FAILURE_USED_EVENT_PARSE"/>
+  <int value="4" label="FAILURE_USED_EVENT_MISSING"/>
+  <int value="5" label="FAILURE_TRIGGER_EVENT_PARSE"/>
+  <int value="6" label="FAILURE_TRIGGER_EVENT_MISSING"/>
+  <int value="7" label="FAILURE_OTHER_EVENT_PARSE"/>
+  <int value="8" label="FAILURE_SESSION_RATE_PARSE"/>
+  <int value="9" label="FAILURE_AVAILABILITY_PARSE"/>
+  <int value="10" label="FAILURE_UNKNOWN_KEY"/>
+</enum>
+
 <enum name="ConnectionDiagnosticsIssue" type="int">
   <int value="0" label="IP collision detected."/>
   <int value="1" label="Routing problem detected."/>
@@ -35721,6 +35735,21 @@ from previous Chrome versions.
   <int value="0" label="http"/>
   <int value="1" label="https"/>
   <int value="2" label="unexpected other schemes"/>
+</enum>
+
+<enum name="TriggerHelpUIResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="FAILURE"/>
+  <int value="2" label="FAILURE_MODEL_NOT_READY"/>
+  <int value="3" label="FAILURE_CURRENTLY_SHOWING"/>
+  <int value="4" label="FAILURE_FEATURE_DISABLED"/>
+  <int value="5" label="FAILURE_CONFIG_INVALID"/>
+  <int value="6" label="FAILURE_USED_PRECONDITION_UNMET"/>
+  <int value="7" label="FAILURE_TRIGGER_PRECONDITION_UNMET"/>
+  <int value="8" label="FAILURE_OTHER_PRECONDITION_UNMET"/>
+  <int value="9" label="FAILURE_SESSION_RATE"/>
+  <int value="10" label="FAILURE_AVAILABILITY_MODEL_NOT_READY"/>
+  <int value="11" label="FAILURE_AVAILABILITY_PRECONDITION_UNMET"/>
 </enum>
 
 <enum name="TrimMemoryLevel" type="int">

@@ -7,7 +7,7 @@
 namespace feature_engagement_tracker {
 
 ConditionValidator::Result::Result(bool initial_values)
-    : model_ready_ok(initial_values),
+    : event_model_ready_ok(initial_values),
       currently_showing_ok(initial_values),
       feature_enabled_ok(initial_values),
       config_ok(initial_values),
@@ -19,7 +19,7 @@ ConditionValidator::Result::Result(bool initial_values)
       availability_ok(initial_values) {}
 
 ConditionValidator::Result::Result(const Result& other) {
-  model_ready_ok = other.model_ready_ok;
+  event_model_ready_ok = other.event_model_ready_ok;
   currently_showing_ok = other.currently_showing_ok;
   feature_enabled_ok = other.feature_enabled_ok;
   config_ok = other.config_ok;
@@ -31,8 +31,8 @@ ConditionValidator::Result::Result(const Result& other) {
   availability_ok = other.availability_ok;
 }
 
-bool ConditionValidator::Result::NoErrors() {
-  return model_ready_ok && currently_showing_ok && feature_enabled_ok &&
+bool ConditionValidator::Result::NoErrors() const {
+  return event_model_ready_ok && currently_showing_ok && feature_enabled_ok &&
          config_ok && used_ok && trigger_ok && preconditions_ok &&
          session_rate_ok && availability_model_ready_ok && availability_ok;
 }

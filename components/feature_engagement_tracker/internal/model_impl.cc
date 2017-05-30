@@ -50,7 +50,6 @@ const Event* ModelImpl::GetEvent(const std::string& event_name) const {
 
 void ModelImpl::IncrementEvent(const std::string& event_name,
                                uint32_t current_day) {
-  // TODO(nyquist): Track this event in UMA.
   DCHECK(ready_);
 
   if (!storage_validator_->ShouldStore(event_name))
