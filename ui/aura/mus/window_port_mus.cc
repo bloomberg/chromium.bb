@@ -105,9 +105,10 @@ WindowPortMus::RequestCompositorFrameSink(
       mojo::MakeRequest(&client);
   constexpr bool enable_surface_synchronization = true;
   auto compositor_frame_sink = base::MakeUnique<viz::ClientCompositorFrameSink>(
-      std::move(context_provider), gpu_memory_buffer_manager,
-      std::move(sink_info), std::move(client_request),
-      enable_surface_synchronization);
+      std::move(context_provider), nullptr /* worker_context_provider */,
+      gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
+      nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
+      std::move(client_request), enable_surface_synchronization);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
   return std::move(compositor_frame_sink);

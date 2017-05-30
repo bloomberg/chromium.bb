@@ -84,9 +84,10 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
       mojo::MakeRequest(&client);
   constexpr bool enable_surface_synchronization = true;
   auto frame_sink = base::MakeUnique<viz::ClientCompositorFrameSink>(
-      std::move(context_provider), gpu_memory_buffer_manager,
-      std::move(sink_info), std::move(client_request),
-      enable_surface_synchronization);
+      std::move(context_provider), nullptr /* worker_context_provider */,
+      gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
+      nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
+      std::move(client_request), enable_surface_synchronization);
   tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),
                                    std::move(client));
   callback.Run(std::move(frame_sink));
