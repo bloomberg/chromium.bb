@@ -28,11 +28,11 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
   friend class MimeHandlerServiceImplTest;
 
   // mime_handler::MimeHandlerService overrides.
-  void GetStreamInfo(const GetStreamInfoCallback& callback) override;
-  void AbortStream(const AbortStreamCallback& callback) override;
+  void GetStreamInfo(GetStreamInfoCallback callback) override;
+  void AbortStream(AbortStreamCallback callback) override;
 
   // Invoked by the callback used to abort |stream_|.
-  void OnStreamClosed(const AbortStreamCallback& callback);
+  void OnStreamClosed(AbortStreamCallback callback);
 
   // A handle to the stream being handled by the MimeHandlerViewGuest.
   base::WeakPtr<StreamContainer> stream_;

@@ -65,27 +65,27 @@ void MimeHandlerServiceImpl::Create(
       std::move(request));
 }
 
-void MimeHandlerServiceImpl::GetStreamInfo(
-    const GetStreamInfoCallback& callback) {
+void MimeHandlerServiceImpl::GetStreamInfo(GetStreamInfoCallback callback) {
   if (!stream_) {
-    callback.Run(mime_handler::StreamInfoPtr());
+    std::move(callback).Run(mime_handler::StreamInfoPtr());
     return;
   }
-  callback.Run(mojo::ConvertTo<mime_handler::StreamInfoPtr>(*stream_));
+  std::move(callback).Run(
+      mojo::ConvertTo<mime_handler::StreamInfoPtr>(*stream_));
 }
 
-void MimeHandlerServiceImpl::AbortStream(const AbortStreamCallback& callback) {
+void MimeHandlerServiceImpl::AbortStream(AbortStreamCallback callback) {
   if (!stream_) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
   stream_->Abort(base::Bind(&MimeHandlerServiceImpl::OnStreamClosed,
-                            weak_factory_.GetWeakPtr(), callback));
+                            weak_factory_.GetWeakPtr(),
+                            base::Passed(&callback)));
 }
 
-void MimeHandlerServiceImpl::OnStreamClosed(
-    const AbortStreamCallback& callback) {
-  callback.Run();
+void MimeHandlerServiceImpl::OnStreamClosed(AbortStreamCallback callback) {
+  std::move(callback).Run();
 }
 
 }  // namespace extensions
