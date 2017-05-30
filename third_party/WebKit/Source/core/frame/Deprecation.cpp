@@ -396,14 +396,13 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
                                    M60, "5922594955984896");
 
     case UseCounter::kCanRequestURLHTTPContainingNewline:
-      return String::Format(
-          "Resource requests whose URLs contain raw newline characters are "
-          "deprecated, and may be blocked in %s. Please remove newlines from "
-          "places like element attribute values in order to continue loading "
-          "those resources. See "
-          "https://www.chromestatus.com/features/5735596811091968 for more "
-          "details.",
-          milestoneString(M60));
+      return "Resource requests whose URLs contained both removed whitespace "
+             "(`\\n`, `\\r`, `\\t`) characters and less-than characters (`<`) "
+             "are blocked. Please remove newlines and encode less-than "
+             "characters from places like element attribute values in order to "
+             "load these resources. See "
+             "https://www.chromestatus.com/feature/5735596811091968 for more "
+             "details.";
 
     case UseCounter::kV8RTCPeerConnection_GetStreamById_Method:
       return willBeRemoved("RTCPeerConnection.getStreamById()", M62,
