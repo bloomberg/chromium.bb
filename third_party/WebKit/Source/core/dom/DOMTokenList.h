@@ -78,8 +78,6 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   DOMTokenList(Element& element, const QualifiedName& attr)
       : element_(element), attribute_name_(attr) {}
   Element& GetElement() const { return *element_; }
-  void AddInternal(const AtomicString&);
-  void RemoveInternal(const AtomicString&);
 
   bool ValidateToken(const String&, ExceptionState&) const;
   bool ValidateTokens(const Vector<String>&, ExceptionState&) const;

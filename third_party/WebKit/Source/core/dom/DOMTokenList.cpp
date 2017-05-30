@@ -126,29 +126,44 @@ void DOMTokenList::remove(const Vector<String>& tokens,
   RemoveTokens(tokens);
 }
 
+// https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
 bool DOMTokenList::toggle(const AtomicString& token,
                           ExceptionState& exception_state) {
   if (!ValidateToken(token, exception_state))
     return false;
 
+  // 4. If context object’s token set[token] exists, then:
   if (contains(token)) {
-    RemoveInternal(token);
+    // 1. If force is either not given or is false, then remove token from
+    // context object’s token set.
+    RemoveTokens(Vector<String>({token}));
     return false;
   }
-  AddInternal(token);
+  // 5. Otherwise, if force not given or is true, append token to context
+  // object’s token set and set result to true.
+  AddTokens(Vector<String>({token}));
   return true;
 }
 
+// https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
 bool DOMTokenList::toggle(const AtomicString& token,
                           bool force,
                           ExceptionState& exception_state) {
   if (!ValidateToken(token, exception_state))
     return false;
 
-  if (force)
-    AddInternal(token);
-  else
-    RemoveInternal(token);
+  // 4. If context object’s token set[token] exists, then:
+  if (contains(token)) {
+    // 1. If force is either not given or is false, then remove token from
+    // context object’s token set.
+    if (!force)
+      RemoveTokens(Vector<String>({token}));
+  } else {
+    // 5. Otherwise, if force not given or is true, append token to context
+    // object’s token set and set result to true.
+    if (force)
+      AddTokens(Vector<String>({token}));
+  }
 
   return force;
 }
@@ -156,23 +171,6 @@ bool DOMTokenList::toggle(const AtomicString& token,
 bool DOMTokenList::supports(const AtomicString& token,
                             ExceptionState& exception_state) {
   return ValidateTokenValue(token, exception_state);
-}
-
-void DOMTokenList::AddInternal(const AtomicString& token) {
-  if (contains(token))
-    return;
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  AddTokens(tokens);
-}
-
-void DOMTokenList::RemoveInternal(const AtomicString& token) {
-  // Check using contains first to skip unnecessary reserialization.
-  if (!contains(token))
-    return;
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  RemoveTokens(tokens);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
