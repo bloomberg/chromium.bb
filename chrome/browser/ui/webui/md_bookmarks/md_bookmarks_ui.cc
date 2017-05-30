@@ -86,6 +86,11 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
 
   // Resources.
+#if BUILDFLAG(USE_VULCANIZE)
+  source->AddResourcePath("crisper.js", IDR_MD_BOOKMARKS_CRISPER_JS);
+  source->SetDefaultResource(IDR_MD_BOOKMARKS_VULCANIZED_HTML);
+  source->UseGzip(std::unordered_set<std::string>());
+#else
   source->AddResourcePath("actions.html", IDR_MD_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_MD_BOOKMARKS_ACTIONS_JS);
   source->AddResourcePath("api_listener.html",
@@ -131,7 +136,10 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("toolbar.js", IDR_MD_BOOKMARKS_TOOLBAR_JS);
   source->AddResourcePath("util.html", IDR_MD_BOOKMARKS_UTIL_HTML);
   source->AddResourcePath("util.js", IDR_MD_BOOKMARKS_UTIL_JS);
+
   source->SetDefaultResource(IDR_MD_BOOKMARKS_BOOKMARKS_HTML);
+#endif
+
   source->SetJsonPath("strings.js");
 
   return source;
