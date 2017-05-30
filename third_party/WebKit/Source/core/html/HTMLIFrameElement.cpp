@@ -27,6 +27,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutIFrame.h"
@@ -167,12 +168,11 @@ void HTMLIFrameElement::ParseAttribute(
     }
   } else if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
              name == cspAttr) {
-    // TODO(amalika): add more robust validation of the value
-    if (!value.GetString().ContainsOnlyASCII()) {
+    if (!ContentSecurityPolicy::IsValidCSPAttr(value.GetString())) {
       csp_ = g_null_atom;
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kOtherMessageSource, kErrorMessageLevel,
-          "'csp' attribute contains non-ASCII characters: " + value));
+          "'csp' attribute is not a valid policy: " + value));
       return;
     }
     AtomicString old_csp = csp_;

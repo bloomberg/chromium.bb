@@ -1225,9 +1225,7 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
     policy_->UsesScriptHashAlgorithms(script_src_->HashAlgorithmsUsed());
   } else if (type == ContentSecurityPolicy::DirectiveType::kObjectSrc) {
     SetCSPDirective<SourceListDirective>(name, value, object_src_);
-  } else if (type ==
-
-             ContentSecurityPolicy::DirectiveType::kFrameAncestors) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::kFrameAncestors) {
     SetCSPDirective<SourceListDirective>(name, value, frame_ancestors_);
   } else if (type == ContentSecurityPolicy::DirectiveType::kFrameSrc) {
     SetCSPDirective<SourceListDirective>(name, value, frame_src_);
