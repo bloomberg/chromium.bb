@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/mac/scoped_nsobject.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -21,18 +20,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const char kExpectedLanguage[] = "Foo";
 
 // Returns an NSString filled with the char 'a' of length |length|.
 NSString* GetLongString(NSUInteger length) {
-  base::scoped_nsobject<NSMutableData> data(
-      [[NSMutableData alloc] initWithLength:length]);
+  NSMutableData* data = [[NSMutableData alloc] initWithLength:length];
   memset([data mutableBytes], 'a', length);
   NSString* long_string =
       [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
-  return [long_string autorelease];
+  return long_string;
 }
 
 }  // namespace
@@ -42,9 +44,9 @@ class JsLanguageDetectionManagerTest : public ChromeWebTest {
  protected:
   void SetUp() override {
     ChromeWebTest::SetUp();
-    manager_.reset(static_cast<JsLanguageDetectionManager*>(
-        [[web_state()->GetJSInjectionReceiver()
-            instanceOfClass:[JsLanguageDetectionManager class]] retain]));
+    manager_ = static_cast<JsLanguageDetectionManager*>(
+        [web_state()->GetJSInjectionReceiver()
+            instanceOfClass:[JsLanguageDetectionManager class]]);
     ASSERT_TRUE(manager_);
   }
 
@@ -92,14 +94,14 @@ class JsLanguageDetectionManagerTest : public ChromeWebTest {
   // Verifies if |__gCrWeb.languageDetection.getTextContent| correctly extracts
   // the text content from an HTML page.
   void ExpectTextContent(NSString* expected_text_content) {
-    base::scoped_nsobject<NSString> script([[NSString alloc]
+    NSString* script = [[NSString alloc]
         initWithFormat:
             @"__gCrWeb.languageDetection.getTextContent(document.body, %lu);",
-            language_detection::kMaxIndexChars]);
+            language_detection::kMaxIndexChars];
     InjectJsAndVerify(script, expected_text_content);
   }
 
-  base::scoped_nsobject<JsLanguageDetectionManager> manager_;
+  JsLanguageDetectionManager* manager_;
 };
 
 // Tests that |hasBeenInjected| returns YES after |inject| call.
@@ -125,10 +127,10 @@ TEST_F(JsLanguageDetectionManagerTest, IsTranslationAllowed) {
 
 // Tests correctness of |document.documentElement.lang| attribute.
 TEST_F(JsLanguageDetectionManagerTest, HtmlLang) {
-  base::scoped_nsobject<NSString> html;
+  NSString* html;
   // Non-empty attribute.
-  html.reset([[NSString alloc]
-      initWithFormat:@"<html lang='%s'></html>", kExpectedLanguage]);
+  html = [[NSString alloc]
+      initWithFormat:@"<html lang='%s'></html>", kExpectedLanguage];
   LoadHtmlAndInject(html);
   ExpectHtmlLang(@(kExpectedLanguage));
 
@@ -137,8 +139,8 @@ TEST_F(JsLanguageDetectionManagerTest, HtmlLang) {
   ExpectHtmlLang(@"");
 
   // Test with mixed case.
-  html.reset([[NSString alloc]
-      initWithFormat:@"<html lAnG='%s'></html>", kExpectedLanguage]);
+  html = [[NSString alloc]
+      initWithFormat:@"<html lAnG='%s'></html>", kExpectedLanguage];
   LoadHtmlAndInject(html);
   ExpectHtmlLang(@(kExpectedLanguage));
 }
@@ -148,23 +150,23 @@ TEST_F(JsLanguageDetectionManagerTest, HttpContentLanguage) {
   // No content language.
   LoadHtmlAndInject(@"<html></html>");
   ExpectHttpContentLanguage(@"");
-  base::scoped_nsobject<NSString> html;
+  NSString* html;
 
   // Some content language.
-  html.reset(([[NSString alloc]
+  html = ([[NSString alloc]
       initWithFormat:@"<html><head>"
                       "<meta http-equiv='content-language' content='%s'>"
                       "</head></html>",
-                     kExpectedLanguage]));
+                     kExpectedLanguage]);
   LoadHtmlAndInject(html);
   ExpectHttpContentLanguage(@(kExpectedLanguage));
 
   // Test with mixed case.
-  html.reset(([[NSString alloc]
+  html = ([[NSString alloc]
       initWithFormat:@"<html><head>"
                       "<meta http-equiv='cOnTenT-lAngUAge' content='%s'>"
                       "</head></html>",
-                     kExpectedLanguage]));
+                     kExpectedLanguage]);
   LoadHtmlAndInject(html);
   ExpectHttpContentLanguage(@(kExpectedLanguage));
 }
@@ -218,19 +220,18 @@ TEST_F(JsLanguageDetectionManagerTest, ExtractWhitespace) {
 TEST_F(JsLanguageDetectionManagerTest, LongTextContent) {
   // Very long string.
   NSUInteger kLongStringLength = language_detection::kMaxIndexChars - 5;
-  base::scoped_nsobject<NSMutableString> long_string(
-      [GetLongString(kLongStringLength) mutableCopy]);
+  NSMutableString* long_string = [GetLongString(kLongStringLength) mutableCopy];
   [long_string appendString:@" b cdefghijklmnopqrstuvwxyz"];
 
   // The string should be cut at the last whitespace, after the 'b' character.
-  base::scoped_nsobject<NSString> html([[NSString alloc]
-      initWithFormat:@"<html><body>%@</html></body>", long_string.get()]);
+  NSString* html = [[NSString alloc]
+      initWithFormat:@"<html><body>%@</html></body>", long_string];
   LoadHtmlAndInject(html);
 
-  base::scoped_nsobject<NSString> script([[NSString alloc]
+  NSString* script = [[NSString alloc]
       initWithFormat:
           @"__gCrWeb.languageDetection.getTextContent(document.body, %lu);",
-          language_detection::kMaxIndexChars]);
+          language_detection::kMaxIndexChars];
   NSString* result = web::ExecuteJavaScript(manager_, script);
   EXPECT_EQ(language_detection::kMaxIndexChars, [result length]);
 }

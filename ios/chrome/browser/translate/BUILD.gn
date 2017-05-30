@@ -52,6 +52,7 @@ source_set("translate") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "js_language_detection_manager_unittest.mm",
