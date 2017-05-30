@@ -243,7 +243,7 @@ if (CONFIG_AV1_DECODER)
                    "${AOM_ROOT}/examples/inspect.c"
                    $<TARGET_OBJECTS:aom_common_app_util>
                    $<TARGET_OBJECTS:aom_decoder_app_util>)
-    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} inspect)
+    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} inspect)
 
     if (EMSCRIPTEN)
       add_preproc_definition(_POSIX_SOURCE)
@@ -259,9 +259,10 @@ if (CONFIG_AV1_DECODER)
     endif ()
   endif ()
 
-  # Add decoder apps to app target list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomdec decode_to_md5 decode_with_drops
-      simple_decoder)
+  # Maintain lists of example and app targets.
+  set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS}
+      decode_to_md5 decode_with_drops simple_decoder)
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomdec ${AOM_DECODER_EXAMPLE_TARGETS})
 endif ()
 
 
@@ -289,16 +290,24 @@ if (CONFIG_AV1_ENCODER)
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_encoder_app_util>)
 
-  # Add encoder apps to app target list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomenc lossless_encoder set_maps
-      simple_encoder twopass_encoder)
+  # Add encoder apps and examples to target lists.
+  set(AOM_ENCODER_EXAMPLE_TARGETS
+      lossless_encoder set_maps simple_encoder twopass_encoder)
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomenc ${AOM_ENCODER_EXAMPLE_TARGETS})
 endif ()
+
+# Maintain a separate variable listing only the examples to facilitate
+# installation of example programs into an examples sub directory of
+# $AOM_DIST_DIR/bin when building the dist target.
+set(AOM_EXAMPLE_TARGETS
+    ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
 
 if (CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
   add_executable(aom_cx_set_ref
                  "${AOM_ROOT}/examples/aom_cx_set_ref.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_encoder_app_util>)
+  set(AOM_EXAMPLE_TARGETS ${AOM_EXAMPLE_TARGETS} aom_cx_set_ref)
   set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aom_cx_set_ref)
 endif ()
 
@@ -374,6 +383,14 @@ if (XCODE)
   endif ()
 endif ()
 
+if ("${CMAKE_GENERATOR}" MATCHES "Makefiles$" )
+  # Users of the configure build expect the example targets to be built in the
+  # examples sub directory of the configured build directory after running make.
+  file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/examples")
+  set_target_properties(${AOM_EXAMPLE_TARGETS} PROPERTIES
+                        RUNTIME_OUTPUT_DIRECTORY "${AOM_CONFIG_DIR}/examples")
+endif ()
+
 # Aomedia documentation rule.
 if (ENABLE_DOCS)
   include(FindDoxygen)
@@ -420,7 +437,36 @@ install(FILES "${AOM_CONFIG_DIR}/aom.pc"
 install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
 
+# Aomedia dist rule.
+if (CONFIG_AV1_DECODER)
+  set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomdec>)
+endif ()
+if (CONFIG_AV1_ENCODER)
+  set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomenc>)
+endif ()
+
+foreach (example ${AOM_EXAMPLE_TARGETS})
+  list(APPEND AOM_DIST_EXAMPLES $<TARGET_FILE:${example}>)
+endforeach ()
+
+if (NOT AOM_DIST_DIR)
+  set(AOM_DIST_DIR "${AOM_CONFIG_DIR}/dist")
+endif ()
+
+add_custom_target(dist
+                  COMMAND ${CMAKE_COMMAND}
+                  -DAOM_ROOT=${AOM_ROOT}
+                  -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+                  -DAOM_DIST_DIR=${AOM_DIST_DIR}
+                  -DAOM_DIST_APPS="${AOM_DIST_APPS}"
+                  -DAOM_DIST_EXAMPLES="${AOM_DIST_EXAMPLES}"
+                  -DAOM_DIST_INCLUDES="${AOM_INSTALL_INCS}"
+                  -DAOM_DIST_LIBS=$<TARGET_FILE:aom>
+                  -DENABLE_DOCS=${ENABLE_DOCS}
+                  -P "${AOM_ROOT}/build/cmake/dist.cmake"
+                  DEPENDS ${AOM_INSTALL_BINS} ${AOM_INSTALL_LIBS}
+                  ${AOM_INSTALL_INCS} ${AOM_EXAMPLE_TARGETS})
+
 if (ENABLE_DOCS)
-  install(DIRECTORY "${AOM_CONFIG_DIR}/docs/html"
-          DESTINATION "${CMAKE_INSTALL_PREFIX}/docs/aom")
+  add_dependencies(dist docs)
 endif ()
