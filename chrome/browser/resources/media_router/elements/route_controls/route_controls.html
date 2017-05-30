@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<dom-module id="route-controls">
+  <link rel="import" type="css" href="../../media_router_common.css">
+  <link rel="import" type="css" href="route_controls.css">
+  <template>
+    <div id="media-controls">
+      <div class="ellipsis" id="route-description"
+           title="[[displayedDescription_]]">
+        [[displayedDescription_]]
+      </div>
+      <div class="ellipsis" id="route-title" title="[[routeStatus.title]]">
+        [[routeStatus.title]]
+      </div>
+      <div>
+        <div id="route-time-controls" hidden="[[!routeStatus.canSeek]]">
+          <paper-slider
+              id="route-time-slider"
+              on-change="onSeekComplete_"
+              on-immediate-value-change="onSeekStart_"
+              min="0" max="[[routeStatus.duration]]" step="1"
+              title="[[i18n('seekTitle')]]"
+              value="[[displayedCurrentTime_]]"></paper-slider>
+          <div id="timeline">
+            <span id="current-time">
+              [[getFormattedTime_(displayedCurrentTime_)]]
+            </span>
+            <span id="duration">
+              [[getFormattedTime_(routeStatus.duration)]]
+            </span>
+          </div>
+        </div>
+        <div id="play-pause-volume-controls">
+          <span id="button-holder">
+            <paper-icon-button
+                id="route-play-pause-button"
+                hidden="[[!routeStatus.canPlayPause]]"
+                disabled="[[!routeStatus.canPlayPause]]"
+                icon="[[getPlayPauseIcon_(routeStatus)]]"
+                title="[[getPlayPauseTitle_(routeStatus)]]"
+                on-click="onPlayPause_"></paper-icon-button>
+            <paper-icon-button
+                id="route-volume-button"
+                hidden="[[!routeStatus.canMute]]"
+                disabled="[[!routeStatus.canMute]]"
+                icon="[[getMuteUnmuteIcon_(routeStatus)]]"
+                title="[[getMuteUnmuteTitle_(routeStatus)]]"
+                on-click="onMuteUnmute_"></paper-icon-button>
+          </span>
+          <span id="volume-holder">
+            <paper-slider
+                id="route-volume-slider"
+                hidden="[[!routeStatus.canSetVolume]]"
+                disabled="[[!routeStatus.canSetVolume]]"
+                on-change="onVolumeChangeComplete_"
+                on-immediate-value-change="onVolumeChangeStart_"
+                title="[[i18n('volumeTitle')]]"
+                value="[[displayedVolume_]]"
+                min="0" max="1" step="0.01"></paper-slider>
+          </span>
+        </div>
+      </div>
+    </div>
+  </template>
+<script src="route_controls.js"></script>
+</dom-module>

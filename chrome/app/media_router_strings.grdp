@@ -136,6 +136,24 @@
   <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Stop casting button, which, on click, will stop the current route.">
     Stop
   </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_PLAY_TITLE" desc="The title label for a button to play media contents.">
+    Play
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_PAUSE_TITLE" desc="The title label for a button to pause media contents.">
+    Pause
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_MUTE_TITLE" desc="The title label for a button to mute media contents.">
+    Mute
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_UNMUTE_TITLE" desc="The title label for a button to unmute media contents.">
+    Unmute
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_SEEK_TITLE" desc="The title label for a seek bar for media contents.">
+    Seek
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_VOLUME_TITLE" desc="The title label for a volume control bar for media contents.">
+    Volume
+  </message>
 
   <!-- Sink List -->
   <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">

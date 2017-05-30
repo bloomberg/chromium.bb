@@ -24,6 +24,16 @@ media_router.CastModeType = {
 };
 
 /**
+ * Route controller types that can be shown in the route details view.
+ * @enum {number}
+ */
+media_router.ControllerType = {
+  NONE: 0,
+  WEBUI: 1,
+  EXTENSION: 2,
+};
+
+/**
  * The ESC key maps to KeyboardEvent.key value 'Escape'.
  * @const {string}
  */
@@ -212,6 +222,61 @@ cr.define('media_router', function() {
     this.customControllerPath = customControllerPath;
   };
 
+  /**
+   * @param {string} title The title of the route.
+   * @param {string} description A description for the route.
+   * @param {boolean} canPlayPause Whether the route can be played/paused.
+   * @param {boolean} canMute Whether the route can be muted/unmuted.
+   * @param {boolean} canSetVolume Whether the route volume can be changed.
+   * @param {boolean} canSeek Whether the route's playback position can be
+   *     changed.
+   * @param {boolean} isPaused Whether the route is paused.
+   * @param {boolean} isMuted Whether the route is muted.
+   * @param {number} volume The route's volume, between 0 and 1.
+   * @param {number} duration The route's duration in seconds.
+   * @param {number} currentTime The route's current position in seconds.
+   *     Must not be greater than |duration|.
+   * @constructor
+   * @struct
+   */
+  var RouteStatus = function(
+      title, description, canPlayPause, canMute, canSetVolume, canSeek,
+      isPaused, isMuted, volume, duration, currentTime) {
+
+    /** @type {string} */
+    this.title = title;
+
+    /** @type {string} */
+    this.description = description;
+
+    /** @type {boolean} */
+    this.canPlayPause = canPlayPause;
+
+    /** @type {boolean} */
+    this.canMute = canMute;
+
+    /** @type {boolean} */
+    this.canSetVolume = canSetVolume;
+
+    /** @type {boolean} */
+    this.canSeek = canSeek;
+
+    /** @type {boolean} */
+    this.isPaused = isPaused;
+
+    /** @type {boolean} */
+    this.isMuted = isMuted;
+
+    /** @type {number} */
+    this.volume = volume;
+
+    /** @type {number} */
+    this.duration = duration;
+
+    /** @type {number} */
+    this.currentTime = currentTime;
+  };
+
 
   /**
    * @param {string} id The ID of the media sink.
@@ -271,6 +336,7 @@ cr.define('media_router', function() {
     CastMode: CastMode,
     Issue: Issue,
     Route: Route,
+    RouteStatus: RouteStatus,
     Sink: Sink,
     TabInfo: TabInfo,
   };

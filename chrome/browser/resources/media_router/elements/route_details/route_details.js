@@ -24,7 +24,17 @@ Polymer({
     changeRouteSourceAvailable_: {
       type: Boolean,
       computed: 'computeChangeRouteSourceAvailable_(route, sink,' +
-                    'isAnySinkCurrentlyLaunching, shownCastModeValue)',
+          'isAnySinkCurrentlyLaunching, shownCastModeValue)',
+    },
+
+    /**
+     * An enum value to represent the controller to show.
+     * @private {number}
+     */
+    controllerType_: {
+      type: Number,
+      computed: 'computeControllerType_(useWebUiRouteControls,' +
+          'isExtensionViewReady)',
     },
 
     /**
@@ -37,12 +47,21 @@ Polymer({
     },
 
     /**
+     * Whether the custom controller extensionview is ready to be shown.
+     * @type {boolean}
+     */
+    isExtensionViewReady: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The route to show.
      * @type {?media_router.Route|undefined}
      */
     route: {
       type: Object,
-      observer: 'maybeLoadCustomController_',
+      observer: 'onRouteChange_',
     },
 
     /**
@@ -65,14 +84,13 @@ Polymer({
     },
 
     /**
-     * Whether the custom controller should be hidden.
-     * A custom controller is shown iff |route| specifies customControllerPath
-     * and the view can be loaded.
-     * @private {boolean}
+     * Whether we should use the WebUI route controls. This value is used for
+     * updating |controllerType_|,
+     * @type {boolean}
      */
-    isCustomControllerHidden_: {
+    useWebUiRouteControls: {
       type: Boolean,
-      value: true,
+      value: false,
     },
   },
 
@@ -130,6 +148,23 @@ Polymer({
   },
 
   /**
+   * @param {boolean} useWebUiRouteControls
+   * @param {boolean} isExtensionViewReady
+   * @return {number} An enum value to represent the controller to show.
+   * @private
+   */
+  computeControllerType_: function(
+      useWebUiRouteControls, isExtensionViewReady) {
+    if (useWebUiRouteControls) {
+      return media_router.ControllerType.WEBUI;
+    }
+    if (isExtensionViewReady) {
+      return media_router.ControllerType.EXTENSION;
+    }
+    return media_router.ControllerType.NONE;
+  },
+
+  /**
    * @param {number} castMode User selected cast mode or AUTO.
    * @param {?media_router.Sink} sink Sink to which we will cast.
    * @return {number} The selected cast mode when |castMode| is selected in the
@@ -155,6 +190,85 @@ Polymer({
   },
 
   /**
+   * Updates |activityStatus_| for the default view.
+   *
+   * @private
+   */
+  updateActivityStatus_: function() {
+    this.activityStatus_ = this.route ?
+        loadTimeData.getStringF(
+            'castingActivityStatus', this.route.description) :
+        '';
+  },
+
+  /**
+   * Called when the route details view is closed. Resets route-controls.
+   */
+  onClosed: function() {
+    if (this.controllerType_ === media_router.ControllerType.WEBUI &&
+        this.$$('route-controls')) {
+      this.$$('route-controls').reset();
+    }
+  },
+
+  /**
+   * Called when the route details view is opened.
+   */
+  onOpened: function() {
+    if (this.controllerType_ === media_router.ControllerType.WEBUI &&
+        this.$$('route-controls')) {
+      media_router.ui.setRouteControls(
+          /** @type {RouteControlsInterface} */ (this.$$('route-controls')));
+    }
+  },
+
+  /**
+   * Updates either the extensionview or the WebUI route controller, depending
+   * on which should be shown.
+   * @private
+   */
+  onRouteChange_: function(newRoute) {
+    if (this.controllerType_ !== media_router.ControllerType.WEBUI) {
+      this.updateActivityStatus_();
+    }
+    if (newRoute &&
+        this.controllerType_ === media_router.ControllerType.WEBUI &&
+        this.$$('route-controls')) {
+      this.$$('route-controls').onRouteUpdated(newRoute);
+    }
+  },
+
+  /**
+   * @param {number} controllerType
+   * @return {boolean} Whether the extensionview should be shown instead of the
+   *     default route info element or the WebUI route controller.
+   * @private
+   */
+  shouldShowExtensionView_: function(controllerType) {
+    return controllerType === media_router.ControllerType.EXTENSION;
+  },
+
+  /**
+   * @param {number} controllerType
+   * @return {boolean} Whether the route info element should be shown instead of
+   *     the extensionview or the WebUI route controller.
+   * @private
+   */
+  shouldShowRouteInfoOnly_: function(controllerType) {
+    return controllerType === media_router.ControllerType.NONE;
+  },
+
+  /**
+   * @param {number} controllerType
+   * @return {boolean} Whether the WebUI route controller should be shown
+   *     instead of the default route info element or the extensionview.
+   * @private
+   */
+  shouldShowWebUiControls_: function(controllerType) {
+    return controllerType === media_router.ControllerType.WEBUI;
+  },
+
+  /**
    * Fires a join-route-click event if the current route is joinable, otherwise
    * it fires a change-route-source-click event, which changes the source of the
    * current route. This may cause the current route to be closed and a new
@@ -173,42 +287,5 @@ Polymer({
             this.computeSelectedCastMode_(this.shownCastModeValue, this.sink)
       });
     }
-  },
-
-  /**
-   * Loads the custom controller if |route.customControllerPath| exists.
-   * Falls back to the default route details view otherwise, or if load fails.
-   * Updates |activityStatus_| for the default view.
-   *
-   * @private
-   */
-  maybeLoadCustomController_: function() {
-    this.activityStatus_ = this.route ?
-        loadTimeData.getStringF('castingActivityStatus',
-                                this.route.description) :
-        '';
-
-    if (!this.route || !this.route.customControllerPath) {
-      this.isCustomControllerHidden_ = true;
-      return;
-    }
-
-    // Show custom controller
-    var extensionview = this.$['custom-controller'];
-
-    // Do nothing if the url is the same and the view is not hidden.
-    if (this.route.customControllerPath == extensionview.src &&
-        !this.isCustomControllerHidden_)
-      return;
-
-    var that = this;
-    extensionview.load(this.route.customControllerPath)
-    .then(function() {
-      // Load was successful; show the custom controller.
-      that.isCustomControllerHidden_ = false;
-    }, function() {
-      // Load was unsuccessful; fall back to default view.
-      that.isCustomControllerHidden_ = true;
-    });
   },
 });

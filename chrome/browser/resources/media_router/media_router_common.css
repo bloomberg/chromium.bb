@@ -5,6 +5,7 @@
 :root {
   --dialog-padding-end: 26px;
   --dialog-padding-start: 16px;
+  --dialog-width: 340px;
   --navigation-icon-button-size: 36px;
   --non-navigation-icon-size: 16px;
 }

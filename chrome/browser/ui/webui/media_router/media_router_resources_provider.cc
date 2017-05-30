@@ -64,9 +64,14 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
       "elements/media_router_search_highlighter/"
       "media_router_search_highlighter.js",
       IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_JS);
-  html_source->AddResourcePath(
-      "elements/route_details/route_details.css",
-      IDR_ROUTE_DETAILS_CSS);
+  html_source->AddResourcePath("elements/route_controls/route_controls.css",
+                               IDR_ROUTE_CONTROLS_CSS);
+  html_source->AddResourcePath("elements/route_controls/route_controls.html",
+                               IDR_ROUTE_CONTROLS_HTML);
+  html_source->AddResourcePath("elements/route_controls/route_controls.js",
+                               IDR_ROUTE_CONTROLS_JS);
+  html_source->AddResourcePath("elements/route_details/route_details.css",
+                               IDR_ROUTE_DETAILS_CSS);
   html_source->AddResourcePath(
       "elements/route_details/route_details.html",
       IDR_ROUTE_DETAILS_HTML);
@@ -76,6 +81,17 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/media_router_container/pseudo_sink_search_state.js",
       IDR_PSEUDO_SINK_SEARCH_STATE_JS);
+  html_source->AddResourcePath(
+      "elements/route_details/extension_view_wrapper/"
+      "extension_view_wrapper.html",
+      IDR_EXTENSION_VIEW_WRAPPER_HTML);
+  html_source->AddResourcePath(
+      "elements/route_details/extension_view_wrapper/extension_view_wrapper.js",
+      IDR_EXTENSION_VIEW_WRAPPER_JS);
+  html_source->AddResourcePath(
+      "elements/route_details/extension_view_wrapper/"
+      "extension_view_wrapper.css",
+      IDR_EXTENSION_VIEW_WRAPPER_CSS);
 }
 
 }  // namespace

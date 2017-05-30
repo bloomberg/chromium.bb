@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This Polymer element contains the entire media router interface. It handles
-// hiding and showing specific components.
+/**
+ * This Polymer element contains the entire media router interface. It handles
+ * hiding and showing specific components.
+ * @implements {MediaRouterContainerInterface}
+ */
 Polymer({
   is: 'media-router-container',
 
@@ -384,6 +387,16 @@ Polymer({
     sinksToShow_: {
       type: Array,
       observer: 'updateElementPositioning_',
+    },
+
+    /**
+     * Whether the WebUI route controls should be shown instead of the
+     * extensionview in the route details view.
+     * @type {boolean}
+     */
+    useWebUiRouteControls: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -864,8 +877,8 @@ Polymer({
    * @return {boolean} Whether the search results list should be hidden.
    * @private
    */
-  computeSearchResultsHidden_: function(searchResultsToShow,
-                                        isSearchListHidden) {
+  computeSearchResultsHidden_: function(
+      searchResultsToShow, isSearchListHidden) {
     return isSearchListHidden || searchResultsToShow.length == 0;
   },
 
@@ -1081,14 +1094,22 @@ Polymer({
    * filter action here.
    * @param {?media_router.MediaRouterView} currentView The current view of the
    *     dialog.
+   * @param {?media_router.MediaRouterView} previousView The previous
+   *     |currentView|.
    * @private
    */
-  currentViewChanged_: function(currentView) {
+  currentViewChanged_: function(currentView, previousView) {
     if (currentView == media_router.MediaRouterView.FILTER) {
       this.reportFilterOnInput_ = true;
       this.maybeReportFilter_();
     }
     this.updateElementPositioning_();
+
+    if (previousView == media_router.MediaRouterView.ROUTE_DETAILS) {
+      media_router.browserApi.onMediaControllerClosed();
+      if (this.$$('route-details'))
+        this.$$('route-details').onClosed();
+    }
   },
 
   /**
@@ -1768,6 +1789,18 @@ Polymer({
   },
 
   /**
+   * Called when the connection to the route controller is invalidated. Switches
+   * from route details view to the sink list view.
+   */
+  onRouteControllerInvalidated: function() {
+    if (this.useWebUiRouteControls &&
+        this.currentView_ == media_router.MediaRouterView.ROUTE_DETAILS) {
+      this.currentRoute_ = null;
+      this.showSinkList_();
+    }
+  },
+
+  /**
    * Called when a sink is clicked.
    *
    * @param {!Event} event The event object.
@@ -2279,6 +2312,12 @@ Polymer({
   showRouteDetails_: function(route) {
     this.currentRoute_ = route;
     this.currentView_ = media_router.MediaRouterView.ROUTE_DETAILS;
+    if (this.useWebUiRouteControls) {
+      media_router.browserApi.onMediaControllerAvailable(route.id);
+    }
+    if (this.$$('route-details')) {
+      this.$$('route-details').onOpened();
+    }
   },
 
   /**
