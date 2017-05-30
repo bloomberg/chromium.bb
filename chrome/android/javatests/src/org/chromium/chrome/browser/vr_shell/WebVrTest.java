@@ -22,10 +22,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -147,9 +147,7 @@ public class WebVrTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
-    @DisableIf.Build(message = "Flaky on L crbug.com/713781",
-            sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
-            sdk_is_less_than = Build.VERSION_CODES.M)
+    @RetryOnFailure(message = "Flaky on L crbug.com/713781")
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         mActivityTestRule.loadUrl(
                 VrTestRule.getHtmlTestFile("test_screen_taps_registered"), PAGE_LOAD_TIMEOUT_S);
@@ -301,9 +299,7 @@ public class WebVrTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(message = "Flaky on L crbug.com/713781",
-            sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
-            sdk_is_less_than = Build.VERSION_CODES.M)
+    @RetryOnFailure(message = "Flaky on L crbug.com/713781")
     public void testPresentationLocksFocus() throws InterruptedException {
         mActivityTestRule.loadUrl(
                 VrTestRule.getHtmlTestFile("test_presentation_locks_focus"), PAGE_LOAD_TIMEOUT_S);
