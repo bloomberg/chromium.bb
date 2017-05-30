@@ -59,6 +59,7 @@ import owners_finder
 import presubmit_support
 import rietveld
 import scm
+import split_cl
 import subcommand
 import subprocess2
 import watchlists
@@ -4817,6 +4818,31 @@ def CMDupload(parser, args):
 
   cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
   return cl.CMDUpload(options, args, orig_args)
+
+
+@subcommand.usage('--description=<description file>')
+def CMDsplit(parser, args):
+  """Splits a branch into smaller branches and uploads CLs.
+
+  Creates a branch and uploads a CL for each group of files modified in the
+  current branch that share a common OWNERS file. In the CL description and
+  commment, the string '$directory', is replaced with the directory containing
+  the shared OWNERS file.
+  """
+  parser.add_option("-d", "--description", dest="description_file",
+                    help="A text file containing a CL description. ")
+  parser.add_option("-c", "--comment", dest="comment_file",
+                    help="A text file containing a CL comment.")
+  options, _ = parser.parse_args(args)
+
+  if not options.description_file:
+    parser.error('No --description flag specified.')
+
+  def WrappedCMDupload(args):
+    return CMDupload(OptionParser(), args)
+
+  return split_cl.SplitCl(options.description_file, options.comment_file,
+                          Changelist, WrappedCMDupload)
 
 
 @subcommand.usage('DEPRECATED')

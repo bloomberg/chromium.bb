@@ -328,7 +328,7 @@ def branch_config_map(option):
     return {}
 
 
-def branches(*args):
+def branches(use_limit=True, *args):
   NO_BRANCH = ('* (no branch', '* (detached', '* (HEAD detached')
 
   key = 'depot-tools.branch-limit'
@@ -338,7 +338,7 @@ def branches(*args):
 
   num = len(raw_branches)
 
-  if num > limit:
+  if use_limit and num > limit:
     die("""\
       Your git repo has too many branches (%d/%d) for this tool to work well.
 

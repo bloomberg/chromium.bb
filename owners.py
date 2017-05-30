@@ -199,7 +199,7 @@ class Database(object):
       objname = self.os_path.dirname(objname)
     return False
 
-  def _enclosing_dir_with_owners(self, objname):
+  def enclosing_dir_with_owners(self, objname):
     """Returns the innermost enclosing directory that has an OWNERS file."""
     dirpath = objname
     while not self._owners_for(dirpath):
@@ -415,7 +415,7 @@ class Database(object):
     return owners
 
   def _covering_set_of_owners_for(self, files, author):
-    dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
+    dirs_remaining = set(self.enclosing_dir_with_owners(f) for f in files)
     all_possible_owners = self.all_possible_owners(dirs_remaining, author)
     suggested_owners = set()
     while dirs_remaining and all_possible_owners:

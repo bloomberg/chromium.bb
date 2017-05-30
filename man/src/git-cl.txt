@@ -76,6 +76,9 @@ set-close::
 set-commit::
   sets the commit bit to trigger the Commit Queue
 
+split::
+  splits a branch into smaller branches and uploads CLs
+
 status::
   show status of changelists
 
