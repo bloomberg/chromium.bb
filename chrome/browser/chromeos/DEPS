@@ -1,4 +1,8 @@
 include_rules = [
+  # TODO(crbug.com/678705): Convert to using mojo interfaces in
+  # //ash/public/interfaces and eliminate this.
+  "+ash",
+
   "+components/constrained_window",
   "+components/drive/drive_pref_names.h",
   "+components/pairing",
