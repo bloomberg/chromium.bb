@@ -56,7 +56,7 @@ CastTransportImpl::CastTransportImpl(net::Socket* socket,
 }
 
 CastTransportImpl::~CastTransportImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   FlushWriteQueue();
 }
 
@@ -146,7 +146,7 @@ proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
 }
 
 void CastTransportImpl::SetReadDelegate(std::unique_ptr<Delegate> delegate) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate);
   delegate_ = std::move(delegate);
   if (started_) {
@@ -165,7 +165,7 @@ void CastTransportImpl::FlushWriteQueue() {
 
 void CastTransportImpl::SendMessage(const CastMessage& message,
                                     const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -214,7 +214,7 @@ void CastTransportImpl::SetErrorState(ChannelError error_state) {
 }
 
 void CastTransportImpl::OnWriteResult(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(WRITE_STATE_IDLE, write_state_);
   if (write_queue_.empty()) {
     SetWriteState(WRITE_STATE_IDLE);
@@ -330,7 +330,7 @@ int CastTransportImpl::DoWriteHandleError(int result) {
 }
 
 void CastTransportImpl::Start() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!started_);
   DCHECK_EQ(READ_STATE_READ, read_state_);
   DCHECK(delegate_) << "Read delegate must be set prior to calling Start()";
@@ -343,7 +343,7 @@ void CastTransportImpl::Start() {
 }
 
 void CastTransportImpl::OnReadResult(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Network operations can either finish synchronously or asynchronously.
   // This method executes the state machine transitions in a loop so that
   // write state transitions happen even when network operations finish
