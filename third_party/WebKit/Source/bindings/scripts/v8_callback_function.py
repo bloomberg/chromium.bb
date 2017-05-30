@@ -66,16 +66,16 @@ def callback_function_context(callback_function):
 
 
 def forward_declarations(callback_function):
-    def find_interface_name(idl_type):
-        if idl_type.is_interface_type:
+    def find_forward_declaration(idl_type):
+        if idl_type.is_interface_type or idl_type.is_dictionary:
             return idl_type.implemented_as
         elif idl_type.is_array_or_sequence_type:
-            return find_interface_name(idl_type.element_type)
+            return find_forward_declaration(idl_type.element_type)
         return None
 
     declarations = []
     for argument in callback_function.arguments:
-        name = find_interface_name(argument.idl_type)
+        name = find_forward_declaration(argument.idl_type)
         if name:
             declarations.append(name)
     return declarations
