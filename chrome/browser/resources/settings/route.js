@@ -308,7 +308,7 @@ cr.define('settings', function() {
   var currentQueryParameters = new URLSearchParams();
 
   /** @private {boolean} */
-  var lastRouteChangeWasPopstate_ = false;
+  var wasLastRouteChangePopstate = false;
 
   /** @private */
   var initializeRouteFromUrlCalled = false;
@@ -332,7 +332,7 @@ cr.define('settings', function() {
 
   function resetRouteForTesting() {
     initializeRouteFromUrlCalled = false;
-    lastRouteChangeWasPopstate_ = false;
+    wasLastRouteChangePopstate = false;
     currentRoute = Route.BASIC;
     currentQueryParameters = new URLSearchParams();
   }
@@ -347,7 +347,7 @@ cr.define('settings', function() {
     var oldRoute = currentRoute;
     currentRoute = route;
     currentQueryParameters = queryParameters;
-    lastRouteChangeWasPopstate_ = isPopstate;
+    wasLastRouteChangePopstate = isPopstate;
     routeObservers.forEach(function(observer) {
       observer.currentRouteChanged(currentRoute, oldRoute);
     });
@@ -363,7 +363,7 @@ cr.define('settings', function() {
 
   /** @return {boolean} */
   var lastRouteChangeWasPopstate = function() {
-    return lastRouteChangeWasPopstate_;
+    return wasLastRouteChangePopstate;
   };
 
   /**
