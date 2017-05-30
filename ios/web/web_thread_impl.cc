@@ -330,6 +330,31 @@ bool WebThreadImpl::PostTaskHelper(WebThread::ID identifier,
 }
 
 // static
+bool WebThread::PostBlockingPoolTask(const tracked_objects::Location& from_here,
+                                     base::OnceClosure task) {
+  return g_globals.Get().blocking_pool->PostWorkerTask(from_here,
+                                                       std::move(task));
+}
+
+// static
+bool WebThread::PostBlockingPoolTaskAndReply(
+    const tracked_objects::Location& from_here,
+    base::OnceClosure task,
+    base::OnceClosure reply) {
+  return g_globals.Get().blocking_pool->PostTaskAndReply(
+      from_here, std::move(task), std::move(reply));
+}
+
+// static
+bool WebThread::PostBlockingPoolSequencedTask(
+    const std::string& sequence_token_name,
+    const tracked_objects::Location& from_here,
+    base::OnceClosure task) {
+  return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
+      sequence_token_name, from_here, std::move(task));
+}
+
+// static
 base::SequencedWorkerPool* WebThread::GetBlockingPool() {
   return g_globals.Get().blocking_pool.get();
 }
