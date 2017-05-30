@@ -102,12 +102,14 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
     auto* resource_prefetch_predictor =
         loading_predictor_->resource_prefetch_predictor();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor->url_table_cache_, db.get());
+        *resource_prefetch_predictor->url_resource_data_->data_cache_,
+        db.get());
     dict.Set("url_db", std::move(db));
 
     db = base::MakeUnique<base::ListValue>();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor->host_table_cache_, db.get());
+        *resource_prefetch_predictor->host_resource_data_->data_cache_,
+        db.get());
     dict.Set("host_db", std::move(db));
   }
 
@@ -116,7 +118,7 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
 }
 
 void PredictorsHandler::AddPrefetchDataMapToListValue(
-    const ResourcePrefetchPredictor::PrefetchDataMap& data_map,
+    const std::map<std::string, predictors::PrefetchData>& data_map,
     base::ListValue* db) const {
   for (const auto& p : data_map) {
     std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
