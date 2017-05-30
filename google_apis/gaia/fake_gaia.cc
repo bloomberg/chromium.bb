@@ -525,6 +525,7 @@ void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
   http_response->set_code(net::HTTP_UNAUTHORIZED);
   if (merge_session_params_.gaia_uber_token.empty()) {
     http_response->set_code(net::HTTP_FORBIDDEN);
+    http_response->set_content("Error=BadAuthentication");
     return;
   }
 
