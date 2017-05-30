@@ -5,6 +5,7 @@
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/root_window_controller.h"
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
@@ -18,6 +19,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/chromeos/touch_exploration_controller.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -28,7 +30,9 @@ AshTouchExplorationManager::AshTouchExplorationManager(
       audio_handler_(chromeos::CrasAudioHandler::Get()),
       enable_chromevox_arc_support_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kEnableChromeVoxArcSupport)) {
+              chromeos::switches::kEnableChromeVoxArcSupport)),
+      keyboard_observer_(this) {
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
@@ -42,6 +46,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
     system_tray_notifier->RemoveAccessibilityObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void AshTouchExplorationManager::OnAccessibilityModeChanged(
@@ -142,6 +147,24 @@ void AshTouchExplorationManager::SetTouchAccessibilityAnchorPoint(
   }
 }
 
+void AshTouchExplorationManager::OnKeyboardBoundsChanging(
+    const gfx::Rect& new_bounds) {
+  UpdateTouchExplorationState();
+}
+
+void AshTouchExplorationManager::OnKeyboardClosed() {
+  keyboard_observer_.RemoveAll();
+  UpdateTouchExplorationState();
+}
+
+void AshTouchExplorationManager::OnVirtualKeyboardStateChanged(
+    bool activated,
+    aura::Window* root_window) {
+  UpdateKeyboardObserverFromStateChanged(
+      activated, root_window, root_window_controller_->GetRootWindow(),
+      &keyboard_observer_);
+}
+
 void AshTouchExplorationManager::UpdateTouchExplorationState() {
   // See crbug.com/603745 for more details.
   const bool pass_through_surface =
@@ -175,6 +198,14 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
       Shell::Get()->accessibility_delegate()->ClearFocusHighlight();
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
+    }
+
+    // Virtual keyboard.
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller) {
+      touch_exploration_controller_->SetLiftActivationBounds(
+          keyboard_controller->current_keyboard_bounds());
     }
   } else {
     touch_exploration_controller_.reset();
