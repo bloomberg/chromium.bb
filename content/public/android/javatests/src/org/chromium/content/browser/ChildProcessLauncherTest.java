@@ -408,10 +408,11 @@ public class ChildProcessLauncherTest {
         });
     }
 
-    @Test
-    @MediumTest
-    @Feature({"ProcessManagement"})
-    public void testWarmUp() {
+    private void testWarmUpWithCreationParams(ChildProcessCreationParams creationParams) {
+        if (creationParams != null) {
+            ChildProcessCreationParams.registerDefault(creationParams);
+        }
+
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         warmUpOnUiThreadBlocking(context);
 
@@ -419,7 +420,7 @@ public class ChildProcessLauncherTest {
 
         ChildProcessLauncherHelper launcherHelper = ChildProcessLauncherTestUtils.startForTesting(
                 context, true /* sandboxed */, false /* alwaysInForeground */, new String[0],
-                new FileDescriptorInfo[0], null);
+                new FileDescriptorInfo[0], creationParams /* creationParams */);
 
         final ChildProcessConnection conn = retrieveConnection(launcherHelper);
 
@@ -440,6 +441,25 @@ public class ChildProcessLauncherTest {
                         return allocatedChromeSandboxedConnectionsCount() == 0;
                     }
                 });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testWarmUp() {
+        // Use the default creation parameters.
+        testWarmUpWithCreationParams(null /* creationParams */);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testWarmUpWithBindToCaller() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
+                context.getPackageName(), false /* isExternalService */,
+                LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
+        testWarmUpWithCreationParams(creationParams);
     }
 
     // Tests that the warm-up connection is freed from its allocator if it crashes.
