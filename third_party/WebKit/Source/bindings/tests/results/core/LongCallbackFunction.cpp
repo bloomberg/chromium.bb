@@ -47,14 +47,15 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   if (!script_state_->ContextIsValid())
     return false;
 
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
+  // crbug.com/653769
+  DummyExceptionStateForTesting exceptionState;
+
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(script_state_.Get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 
@@ -63,9 +64,9 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> num1Argument = v8::Integer::New(script_state_->GetIsolate(), num1);
-  v8::Local<v8::Value> num2Argument = v8::Integer::New(script_state_->GetIsolate(), num2);
-  v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
+  v8::Local<v8::Value> v8_num1 = v8::Integer::New(script_state_->GetIsolate(), num1);
+  v8::Local<v8::Value> v8_num2 = v8::Integer::New(script_state_->GetIsolate(), num2);
+  v8::Local<v8::Value> argv[] = { v8_num1, v8_num2 };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 

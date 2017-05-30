@@ -47,14 +47,15 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
   if (!script_state_->ContextIsValid())
     return false;
 
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
+  // crbug.com/653769
+  DummyExceptionStateForTesting exceptionState;
+
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(script_state_.Get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 
@@ -63,8 +64,8 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> argArgument = V8String(script_state_->GetIsolate(), arg);
-  v8::Local<v8::Value> argv[] = { argArgument };
+  v8::Local<v8::Value> v8_arg = V8String(script_state_->GetIsolate(), arg);
+  v8::Local<v8::Value> argv[] = { v8_arg };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 

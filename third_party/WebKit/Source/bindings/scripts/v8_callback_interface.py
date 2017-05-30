@@ -64,7 +64,7 @@ def cpp_type(idl_type):
     # FIXME: remove this function by making callback types consistent
     # (always use usual v8_types.cpp_type)
     idl_type_name = idl_type.name
-    if idl_type_name == 'String':
+    if idl_type_name == 'String' or idl_type.is_enum:
         return 'const String&'
     if idl_type_name == 'void':
         return 'void'

@@ -83,11 +83,15 @@ def forward_declarations(callback_function):
 
 def arguments_context(arguments, return_cpp_type):
     def argument_context(argument):
+        idl_type = argument.idl_type
         return {
-            'argument_name': '%sArgument' % argument.name,
-            'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
+            'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
                 argument.name, isolate='script_state_->GetIsolate()',
                 creation_context='script_state_->GetContext()->Global()'),
+            'enum_type': idl_type.enum_type,
+            'enum_values': idl_type.enum_values,
+            'name': argument.name,
+            'v8_name': 'v8_%s' % argument.name,
         }
 
     argument_declarations = [

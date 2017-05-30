@@ -47,14 +47,15 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
   if (!script_state_->ContextIsValid())
     return false;
 
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
+  // crbug.com/653769
+  DummyExceptionStateForTesting exceptionState;
+
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(script_state_.Get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 
@@ -63,8 +64,8 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> optionalAnyArgArgument = optionalAnyArg.V8Value();
-  v8::Local<v8::Value> argv[] = { optionalAnyArgArgument };
+  v8::Local<v8::Value> v8_optionalAnyArg = optionalAnyArg.V8Value();
+  v8::Local<v8::Value> argv[] = { v8_optionalAnyArg };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 

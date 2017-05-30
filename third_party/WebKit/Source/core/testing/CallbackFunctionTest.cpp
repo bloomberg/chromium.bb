@@ -5,6 +5,7 @@
 #include "core/testing/CallbackFunctionTest.h"
 
 #include "bindings/core/v8/TestCallback.h"
+#include "bindings/core/v8/TestEnumCallback.h"
 #include "bindings/core/v8/TestInterfaceCallback.h"
 #include "bindings/core/v8/TestReceiverObjectCallback.h"
 #include "bindings/core/v8/TestSequenceCallback.h"
@@ -65,6 +66,12 @@ Vector<String> CallbackFunctionTest::testSequenceCallback(
     return return_value;
   }
   return Vector<String>();
+}
+
+void CallbackFunctionTest::testEnumCallback(TestEnumCallback* callback,
+                                            const String& enum_value,
+                                            ExceptionState& exception_state) {
+  callback->call(nullptr, enum_value);
 }
 
 }  // namespace blink

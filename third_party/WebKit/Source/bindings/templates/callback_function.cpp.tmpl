@@ -1,4 +1,4 @@
-{% from 'utilities.cpp.tmpl' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
@@ -35,14 +35,24 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
   if (!script_state_->ContextIsValid())
     return false;
 
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
+  // crbug.com/653769
+  DummyExceptionStateForTesting exceptionState;
+
+  {% for argument in arguments if argument.enum_values %}
+  {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
+  {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | indent(2)}}
+  if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exceptionState)) {
+    NOTREACHED();
+    return false;
+  }
+  {% endfor %}
+
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(script_state_.Get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 
@@ -52,10 +62,10 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
       isolate);
 
   {% for argument in arguments %}
-  v8::Local<v8::Value> {{argument.argument_name}} = {{argument.cpp_value_to_v8_value}};
+  v8::Local<v8::Value> {{argument.v8_name}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
   {% if arguments %}
-  v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'argument_name')}} };
+  v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'v8_name')}} };
   {% else %}
   {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
   v8::Local<v8::Value> *argv = nullptr;

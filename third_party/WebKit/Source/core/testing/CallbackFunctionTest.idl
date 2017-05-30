@@ -6,6 +6,7 @@ callback TestCallback = DOMString (DOMString message1, DOMString message2);
 callback TestInterfaceCallback = void (HTMLDivElement divElement);
 callback TestReceiverObjectCallback = void ();
 callback TestSequenceCallback = sequence<DOMString> (sequence<long> numbers);
+callback TestEnumCallback = void (InternalEnum arg);
 
 interface CallbackFunctionTest {
     [RaisesException] DOMString testCallback(TestCallback callback, DOMString message1, DOMString message2);
@@ -13,4 +14,5 @@ interface CallbackFunctionTest {
     [RaisesException] void testInterfaceCallback(TestInterfaceCallback callback, HTMLDivElement divElement);
     [RaisesException] void testReceiverObjectCallback(TestReceiverObjectCallback callback);
     [RaisesException] sequence<DOMString> testSequenceCallback(TestSequenceCallback callback, sequence<long> numbers);
+    [RaisesException] void testEnumCallback(TestEnumCallback callback, InternalEnum enum_value);
 };
