@@ -36793,6 +36793,7 @@ from previous Chrome versions.
 
 <enum name="VRUnsupportedMode" type="int">
   <int value="0" label="Unhandled code point in URL"/>
+  <int value="1" label="Could not elide URL"/>
 </enum>
 
 <enum name="VRViewerType" type="int">
