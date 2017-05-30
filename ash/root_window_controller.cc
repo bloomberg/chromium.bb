@@ -560,8 +560,7 @@ void RootWindowController::CloseChildWindows() {
     panel_layout_manager_ = nullptr;
   }
 
-  Shelf* shelf = GetShelf();
-  shelf->ShutdownShelfWidget();
+  shelf_->ShutdownShelfWidget();
 
   workspace_controller_.reset();
 
@@ -593,7 +592,7 @@ void RootWindowController::CloseChildWindows() {
       root->RemoveChild(child);
   }
 
-  shelf->DestroyShelfWidget();
+  shelf_->DestroyShelfWidget();
 
   aura::client::SetDragDropClient(GetRootWindow(), nullptr);
   aura::client::SetTooltipClient(GetRootWindow(), nullptr);
@@ -776,7 +775,7 @@ void RootWindowController::InitLayoutManagers() {
   // Create the shelf and status area widgets.
   DCHECK(!shelf_->shelf_widget());
   aura::Window* root = GetRootWindow();
-  GetShelf()->CreateShelfWidget(root);
+  shelf_->CreateShelfWidget(root);
 
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(root_window_layout_manager_);

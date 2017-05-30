@@ -212,7 +212,7 @@ void AshTestBase::TearDown() {
 
 // static
 Shelf* AshTestBase::GetPrimaryShelf() {
-  return Shell::GetPrimaryRootWindowController()->GetShelf();
+  return Shell::GetPrimaryRootWindowController()->shelf();
 }
 
 // static

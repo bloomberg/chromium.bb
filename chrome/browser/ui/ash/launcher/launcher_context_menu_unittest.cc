@@ -83,7 +83,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::RootWindowController* root_window_controller =
         ash::Shell::GetRootWindowControllerWithDisplayId(display_id);
     EXPECT_NE(nullptr, root_window_controller);
-    return root_window_controller->GetShelf();
+    return root_window_controller->shelf();
   }
 
   LauncherContextMenu* CreateLauncherContextMenu(

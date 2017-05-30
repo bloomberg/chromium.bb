@@ -527,7 +527,7 @@ void HandleLock() {
 void HandleShowStylusTools() {
   base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
   GetRootWindowController(Shell::GetRootWindowForNewWindows())
-      ->GetShelf()
+      ->shelf()
       ->GetStatusAreaWidget()
       ->palette_tray()
       ->ShowPalette();

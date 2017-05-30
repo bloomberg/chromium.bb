@@ -139,8 +139,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
   Shelf* shelf() const { return shelf_.get(); }
-  // TODO(jamescook): Eliminate in favor of shelf().
-  Shelf* GetShelf() const { return shelf_.get(); }
 
   // Initializes the shelf for this root window and notifies observers.
   void InitializeShelf();

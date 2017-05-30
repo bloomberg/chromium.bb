@@ -211,8 +211,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 
   display::Display second_display = GetSecondaryDisplay();
   Shelf* second_shelf =
-      Shell::GetRootWindowControllerWithDisplayId(second_display.id())
-          ->GetShelf();
+      Shell::GetRootWindowControllerWithDisplayId(second_display.id())->shelf();
   AshPopupAlignmentDelegate for_2nd_display(second_shelf);
   UpdateWorkArea(&for_2nd_display, second_display);
   // Make sure that the toast position on the secondary display is

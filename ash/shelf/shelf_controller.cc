@@ -25,7 +25,7 @@ Shelf* GetShelfForDisplay(int64_t display_id) {
   // The controller may be null for invalid ids or for displays being removed.
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display_id);
-  return root_window_controller ? root_window_controller->GetShelf() : nullptr;
+  return root_window_controller ? root_window_controller->shelf() : nullptr;
 }
 
 }  // namespace
