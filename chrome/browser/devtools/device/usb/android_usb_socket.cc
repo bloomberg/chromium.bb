@@ -32,7 +32,7 @@ AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
       weak_factory_(this) {}
 
 AndroidUsbSocket::~AndroidUsbSocket() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_connected_)
     Disconnect();
   if (!delete_callback_.is_null())
@@ -162,7 +162,7 @@ int AndroidUsbSocket::SetSendBufferSize(int32_t size) {
 }
 
 int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
   if (!device_.get())
     return net::ERR_FAILED;
@@ -182,7 +182,7 @@ void AndroidUsbSocket::Disconnect() {
 }
 
 bool AndroidUsbSocket::IsConnected() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_connected_;
 }
 

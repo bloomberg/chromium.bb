@@ -12,12 +12,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
@@ -181,7 +181,7 @@ static const uint16_t kAdbPort = 5037;
 
 static const int kAdbMessageHeaderSize = 4;
 
-class SimpleHttpServer : base::NonThreadSafe {
+class SimpleHttpServer {
  public:
   class Parser {
    public:
@@ -196,7 +196,7 @@ class SimpleHttpServer : base::NonThreadSafe {
   virtual ~SimpleHttpServer();
 
  private:
-  class Connection : base::NonThreadSafe {
+  class Connection {
    public:
     Connection(net::StreamSocket* socket, const ParserFactory& factory);
     virtual ~Connection();
@@ -214,6 +214,9 @@ class SimpleHttpServer : base::NonThreadSafe {
     scoped_refptr<net::GrowableIOBuffer> output_buffer_;
     int bytes_to_write_;
     bool read_closed_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
+
     base::WeakPtrFactory<Connection> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Connection);
@@ -225,6 +228,9 @@ class SimpleHttpServer : base::NonThreadSafe {
   ParserFactory factory_;
   std::unique_ptr<net::TCPServerSocket> socket_;
   std::unique_ptr<net::StreamSocket> client_socket_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<SimpleHttpServer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleHttpServer);
@@ -240,6 +246,7 @@ SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
 }
 
 SimpleHttpServer::~SimpleHttpServer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
@@ -257,10 +264,11 @@ SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
 }
 
 SimpleHttpServer::Connection::~Connection() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void SimpleHttpServer::Connection::Send(const std::string& message) {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const char* data = message.c_str();
   int size = message.size();
 
@@ -287,7 +295,7 @@ void SimpleHttpServer::Connection::Send(const std::string& message) {
 }
 
 void SimpleHttpServer::Connection::ReadData() {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (input_buffer_->RemainingCapacity() == 0)
     input_buffer_->SetCapacity(input_buffer_->capacity() * 2);
@@ -302,7 +310,7 @@ void SimpleHttpServer::Connection::ReadData() {
 }
 
 void SimpleHttpServer::Connection::OnDataRead(int count) {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (count <= 0) {
     if (bytes_to_write_ == 0)
       delete this;
@@ -330,7 +338,7 @@ void SimpleHttpServer::Connection::OnDataRead(int count) {
 }
 
 void SimpleHttpServer::Connection::WriteData() {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_GE(output_buffer_->capacity(),
            output_buffer_->offset() + bytes_to_write_) << "Overflow";
 
@@ -344,7 +352,7 @@ void SimpleHttpServer::Connection::WriteData() {
 }
 
 void SimpleHttpServer::Connection::OnDataWritten(int count) {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (count < 0) {
     delete this;
     return;
@@ -366,7 +374,7 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
 }
 
 void SimpleHttpServer::OnConnect() {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int accept_result = socket_->Accept(&client_socket_,
       base::Bind(&SimpleHttpServer::OnAccepted, base::Unretained(this)));
@@ -378,14 +386,13 @@ void SimpleHttpServer::OnConnect() {
 }
 
 void SimpleHttpServer::OnAccepted(int result) {
-  CHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ASSERT_EQ(result, 0);  // Fails if the socket is already in use.
   new Connection(client_socket_.release(), factory_);
   OnConnect();
 }
 
 class AdbParser : public SimpleHttpServer::Parser,
-                  public base::NonThreadSafe,
                   public MockAndroidConnection::Delegate {
  public:
   static Parser* Create(FlushMode flush_mode,
@@ -393,7 +400,8 @@ class AdbParser : public SimpleHttpServer::Parser,
     return new AdbParser(flush_mode, callback);
   }
 
-  ~AdbParser() override {}
+  ~AdbParser() override { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+
  private:
   explicit AdbParser(FlushMode flush_mode,
                      const SimpleHttpServer::SendCallback& callback)
@@ -402,7 +410,7 @@ class AdbParser : public SimpleHttpServer::Parser,
   }
 
   int Consume(const char* data, int size) override {
-    CHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (mock_connection_) {
       mock_connection_->Receive(std::string(data, size));
       return size;
@@ -423,7 +431,7 @@ class AdbParser : public SimpleHttpServer::Parser,
   }
 
   void ProcessCommand(const std::string& command) {
-    CHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (command == "host:devices") {
       SendSuccess(base::StringPrintf("%s\tdevice\n%s\toffline",
                                      kSerialOnline,
@@ -449,7 +457,7 @@ class AdbParser : public SimpleHttpServer::Parser,
   }
 
   void Send(const std::string& status, const std::string& response) {
-    CHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK_EQ(4U, status.size());
     std::string buffer = status;
     if (flush_mode_ == FlushWithoutSize) {
@@ -477,6 +485,8 @@ class AdbParser : public SimpleHttpServer::Parser,
   SimpleHttpServer::SendCallback callback_;
   std::string serial_;
   std::unique_ptr<MockAndroidConnection> mock_connection_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 static SimpleHttpServer* mock_adb_server_ = NULL;
@@ -622,4 +632,3 @@ void StopMockAdbServer() {
                                   base::MessageLoop::QuitWhenIdleClosure());
   content::RunMessageLoop();
 }
-
