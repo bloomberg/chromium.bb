@@ -111,6 +111,12 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // crbug.com/713359.
   virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
 
+  // Called after a new InkDrop instance is created.
+  virtual void OnInkDropCreated() {}
+
+  // Returns true if an ink drop instance has been created.
+  bool HasInkDrop() const;
+
   // Provides access to |ink_drop_|. Implements lazy initialization of
   // |ink_drop_| so as to avoid virtual method calls during construction since
   // subclasses should be able to call SetInkDropMode() during construction.

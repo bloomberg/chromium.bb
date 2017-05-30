@@ -116,6 +116,7 @@ class DownloadItemView : public views::InkDropHostView,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  void OnInkDropCreated() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -191,6 +192,11 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Sets the state and triggers a repaint.
   void SetDropdownState(State new_state);
+
+  // Configures the InkDrop. e.g. disables highlight when in dangerous mode.
+  void ConfigureInkDrop();
+
+  void SetMode(Mode mode);
 
   // Whether we are in the dangerous mode.
   bool IsShowingWarningDialog() const {

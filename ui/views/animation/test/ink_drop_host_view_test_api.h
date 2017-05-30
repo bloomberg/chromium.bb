@@ -32,6 +32,9 @@ class InkDropHostViewTestApi {
 
   InkDrop* ink_drop() { return host_view_->ink_drop_.get(); }
 
+  // Wrapper for InkDropHostView::HasInkDrop().
+  bool HasInkDrop() const;
+
   // Wrapper for InkDropHostView::GetInkDrop() which lazily creates the ink drop
   // instance if it doesn't already exist. If you need direct access to
   // InkDropHostView::ink_drop_ use ink_drop() instead.

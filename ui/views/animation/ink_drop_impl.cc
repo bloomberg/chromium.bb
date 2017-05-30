@@ -703,10 +703,8 @@ void InkDropImpl::CreateInkDropHighlight() {
   DestroyInkDropHighlight();
 
   highlight_ = ink_drop_host_->CreateInkDropHighlight();
-  // TODO(bruthig): Remove check for null since all CreateInkDropHighlight()
-  // methods should return a valid instance.
-  if (!highlight_)
-    return;
+  DCHECK(highlight_);
+
   highlight_->set_observer(this);
   root_layer_->Add(highlight_->layer());
   AddRootLayerToHostIfNeeded();
@@ -787,10 +785,7 @@ void InkDropImpl::SetHighlight(bool should_highlight,
 
   if (should_highlight) {
     CreateInkDropHighlight();
-    // TODO(bruthig): Remove check for null since all CreateInkDropHighlight()
-    // methods should return a valid instance.
-    if (highlight_)
-      highlight_->FadeIn(animation_duration);
+    highlight_->FadeIn(animation_duration);
   } else {
     highlight_->FadeOut(animation_duration, explode);
   }
