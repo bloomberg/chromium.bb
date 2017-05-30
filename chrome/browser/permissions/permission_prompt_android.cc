@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
 
 PermissionPromptAndroid::PermissionPromptAndroid(
@@ -22,6 +23,17 @@ void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {
 }
 
 void PermissionPromptAndroid::Show() {
+  // Grouped permission requests are not yet supported in dialogs.
+  // TODO(timloh): Handle grouped media permissions (camera + microphone).
+  if (delegate_->Requests().size() == 1) {
+    bool has_gesture = delegate_->Requests()[0]->GetGestureType() ==
+                       PermissionRequestGestureType::GESTURE;
+    if (PermissionDialogDelegate::ShouldShowDialog(has_gesture)) {
+      PermissionDialogDelegate::Create(web_contents_, this);
+      return;
+    }
+  }
+
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
   if (!infobar_service)
