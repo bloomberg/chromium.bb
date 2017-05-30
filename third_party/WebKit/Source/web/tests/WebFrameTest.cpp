@@ -169,6 +169,12 @@ using testing::_;
 
 namespace blink {
 
+#if defined(THREAD_SANITIZER)
+#define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
+#else
+#define DISABLE_ON_TSAN(test_name) test_name
+#endif  // defined(THREAD_SANITIZER)
+
 ::std::ostream& operator<<(::std::ostream& os, const WebFloatSize& size) {
   return os << "WebFloatSize: [" << size.width << ", " << size.height << "]";
 }
@@ -10455,7 +10461,7 @@ TEST_F(WebFrameTest, OrientationFrameDetach) {
   web_view_impl->MainFrameImpl()->SendOrientationChangeEvent();
 }
 
-TEST_F(WebFrameTest, MaxFramesDetach) {
+TEST_F(WebFrameTest, DISABLE_ON_TSAN(MaxFramesDetach)) {
   RegisterMockedHttpURLLoad("max-frames-detach.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
@@ -11678,7 +11684,7 @@ static void DisableCompositing(WebSettings* settings) {
 
 // Make sure overlay scrollbars on non-composited scrollers fade out and set
 // the hidden bit as needed.
-TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
+TEST_F(WebFrameTest, DISABLE_ON_TSAN(TestNonCompositedOverlayScrollbarsFade)) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
       true, nullptr, nullptr, nullptr, &DisableCompositing);
