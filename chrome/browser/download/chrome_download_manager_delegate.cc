@@ -207,8 +207,6 @@ const DownloadPathReservationTracker::FilenameConflictAction
     kDefaultPlatformConflictAction = DownloadPathReservationTracker::UNIQUIFY;
 #endif
 
-constexpr char kPDFMimeType[] = "application/pdf";
-
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
