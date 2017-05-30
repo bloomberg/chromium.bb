@@ -35,7 +35,7 @@ typedef unsigned long long Milliseconds;
     [RuntimeEnabled=NetInfoDownlinkMax, MeasureAs=NetInfoDownlinkMax] readonly attribute Megabit downlinkMax;
     [RuntimeEnabled=NetInfoDownlinkMax, MeasureAs=NetInfoOnChange] attribute EventHandler onchange;
     [MeasureAs=NetInfoOnTypeChange] attribute EventHandler ontypechange;
-    [MeasureAs=NetInfoEffectiveType] readonly attribute EffectiveConnectionType effectiveType;
+    [RuntimeEnabled=NetInfoEffectiveType, MeasureAs=NetInfoEffectiveType] readonly attribute EffectiveConnectionType effectiveType;
     [RuntimeEnabled=NetInfoRtt, MeasureAs=NetInfoRtt] readonly attribute Milliseconds rtt;  
     [RuntimeEnabled=NetInfoDownlink, MeasureAs=NetInfoDownlink] readonly attribute Megabit downlink;
 };
