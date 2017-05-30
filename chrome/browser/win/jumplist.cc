@@ -244,7 +244,7 @@ JumpList::JumpList(Profile* profile)
 }
 
 JumpList::~JumpList() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Terminate();
 }
 
@@ -254,7 +254,7 @@ bool JumpList::Enabled() {
 }
 
 void JumpList::CancelPendingUpdate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (task_id_ != base::CancelableTaskTracker::kBadTaskId) {
     cancelable_task_tracker_.TryCancel(task_id_);
     task_id_ = base::CancelableTaskTracker::kBadTaskId;
@@ -262,7 +262,7 @@ void JumpList::CancelPendingUpdate() {
 }
 
 void JumpList::Terminate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   timer_most_visited_.Stop();
   timer_recently_closed_.Stop();
   CancelPendingUpdate();
@@ -281,13 +281,13 @@ void JumpList::Terminate() {
 }
 
 void JumpList::ShutdownOnUIThread() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Terminate();
 }
 
 void JumpList::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& urls) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   {
     JumpListData* data = &jumplist_data_->data;
@@ -315,7 +315,7 @@ void JumpList::OnMostVisitedURLsAvailable(
 }
 
 void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // if we have a pending favicon request, cancel it here (it is out of date).
   CancelPendingUpdate();
@@ -341,7 +341,7 @@ void JumpList::TabRestoreServiceDestroyed(
 bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
                       size_t max_items,
                       JumpListData* data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data->list_lock_.AssertAcquired();
 
   // This code adds the URL and the title strings of the given tab to |data|.
@@ -366,7 +366,7 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
 void JumpList::AddWindow(const sessions::TabRestoreService::Window& window,
                          size_t max_items,
                          JumpListData* data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data->list_lock_.AssertAcquired();
 
   // This code enumerates all the tabs in the given window object and add their
@@ -380,7 +380,7 @@ void JumpList::AddWindow(const sessions::TabRestoreService::Window& window,
 }
 
 void JumpList::StartLoadingFavicon() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::ElapsedTimer timer;
 
@@ -419,7 +419,7 @@ void JumpList::StartLoadingFavicon() {
 
 void JumpList::OnFaviconDataAvailable(
     const favicon_base::FaviconImageResult& image_result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::ElapsedTimer timer;
 
@@ -454,7 +454,7 @@ void JumpList::OnFaviconDataAvailable(
 }
 
 void JumpList::OnIncognitoAvailabilityChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool waiting_for_icons = true;
   {
@@ -471,7 +471,7 @@ void JumpList::OnIncognitoAvailabilityChanged() {
 }
 
 void JumpList::PostRunUpdate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   TRACE_EVENT0("browser", "JumpList::PostRunUpdate");
   if (!profile_)
@@ -532,7 +532,7 @@ void JumpList::TopSitesChanged(history::TopSites* top_sites,
 }
 
 void JumpList::DeferredTopSitesChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
@@ -556,7 +556,7 @@ void JumpList::DeferredTopSitesChanged() {
 }
 
 void JumpList::DeferredTabRestoreServiceChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
