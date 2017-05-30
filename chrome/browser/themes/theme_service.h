@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -59,9 +59,7 @@ class ResourceBundle;
 extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
-class ThemeService : public base::NonThreadSafe,
-                     public content::NotificationObserver,
-                     public KeyedService {
+class ThemeService : public content::NotificationObserver, public KeyedService {
  public:
   // Public constants used in ThemeService and its subclasses:
   static const char kDefaultThemeID[];
@@ -327,6 +325,8 @@ class ThemeService : public base::NonThreadSafe,
 
   BrowserThemeProvider original_theme_provider_;
   BrowserThemeProvider incognito_theme_provider_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 
