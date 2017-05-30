@@ -109,20 +109,6 @@ void ContentSetting::Get(gin::Arguments* arguments) {
 }
 
 void ContentSetting::Set(gin::Arguments* arguments) {
-  v8::Isolate* isolate = arguments->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
-
-  v8::Local<v8::Value> value = arguments->PeekNext();
-  // The set schema included in the Schema object is generic, since it varies
-  // per-setting. However, this is only ever for a single setting, so we can
-  // enforce the types more thoroughly.
-  std::string error;
-  if (!value.IsEmpty() && !argument_spec_.ParseArgument(
-                              context, value, *type_refs_, nullptr, &error)) {
-    arguments->ThrowTypeError("Invalid invocation");
-    return;
-  }
   HandleFunction("set", arguments);
 }
 
@@ -149,7 +135,7 @@ void ContentSetting::HandleFunction(const std::string& method_name,
   if (!type_refs_->GetTypeMethodSignature(full_name)->ParseArgumentsToJSON(
           context, argument_list, *type_refs_, &converted_arguments, &callback,
           &error)) {
-    arguments->ThrowTypeError("Invalid invocation");
+    arguments->ThrowTypeError("Invalid invocation: " + error);
     return;
   }
 
@@ -176,6 +162,21 @@ void ContentSetting::HandleFunction(const std::string& method_name,
       run_js_.Run(callback, context, args.size(), args.data());
     }
     return;
+  }
+
+  if (method_name == "set") {
+    v8::Local<v8::Value> value = argument_list[0];
+    // The set schema included in the Schema object is generic, since it varies
+    // per-setting. However, this is only ever for a single setting, so we can
+    // enforce the types more thoroughly.
+    // Note: we do this *after* checking if the setting is deprecated, since
+    // this validation will fail for deprecated settings.
+    std::string error;
+    if (!value.IsEmpty() && !argument_spec_.ParseArgument(
+                                context, value, *type_refs_, nullptr, &error)) {
+      arguments->ThrowTypeError("Invalid invocation: " + error);
+      return;
+    }
   }
 
   converted_arguments->Insert(0u, base::MakeUnique<base::Value>(pref_name_));
