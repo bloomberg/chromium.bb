@@ -20,7 +20,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -43,19 +42,17 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
+#include "content/renderer/media/media_factory.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
-#include "media/blink/webmediaplayer_delegate.h"
-#include "media/blink/webmediaplayer_params.h"
-#include "media/mojo/features.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -88,10 +85,6 @@
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/renderer/media/android/renderer_media_player_manager.h"
-#endif
-
 struct FrameMsg_CommitDataNetworkService_Params;
 struct FrameMsg_MixedContentFound_Params;
 struct FrameMsg_PostMessage_Params;
@@ -117,19 +110,8 @@ class Range;
 }
 
 namespace media {
-class CdmFactory;
-class DecoderFactory;
 class MediaPermission;
-class RendererWebMediaPlayerDelegate;
-class SurfaceManager;
-class UrlIndex;
-class WebEncryptedMediaClientImpl;
-
-namespace remoting {
-class SinkAvailabilityObserver;
-}  // namespace remoting
-
-}  // namespace media
+}
 
 namespace service_manager {
 class BinderRegistry;
@@ -151,17 +133,14 @@ class DocumentState;
 class ExternalPopupMenu;
 class HistoryEntry;
 class ManifestManager;
-class MediaInterfaceProvider;
-class MediaStreamDispatcher;
-class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
+class MediaStreamDispatcher;
 class NavigationState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
 class PushMessagingClient;
 class RelatedAppsFetcher;
 class RenderAccessibilityImpl;
-class RendererMediaPlayerManager;
 class RendererPpapiHost;
 class RenderFrameObserver;
 class RenderViewImpl;
@@ -769,6 +748,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
 
+  const RendererPreferences& GetRendererPreferences() const;
+
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif
@@ -1050,14 +1031,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // |web_user_media_client_| will remain NULL.
   void InitializeUserMediaClient();
 
-  blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
-      blink::WebMediaPlayerClient* client,
-      const blink::WebString& sink_id,
-      const blink::WebSecurityOrigin& security_origin);
-
-  // Creates a factory object used for creating audio and video renderers.
-  std::unique_ptr<MediaStreamRendererFactory> CreateRendererFactory();
-
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
       const GURL& url,
@@ -1102,22 +1075,7 @@ class CONTENT_EXPORT RenderFrameImpl
                              bool was_within_same_page,
                              bool content_initiated);
 
-#if defined(OS_ANDROID)
-  RendererMediaPlayerManager* GetMediaPlayerManager();
-#endif
-
   bool AreSecureCodecsSupported();
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
-  service_manager::mojom::InterfaceProvider* GetMediaInterfaceProvider();
-#endif
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  media::mojom::RemoterFactory* GetRemoterFactory();
-#endif
-
-  media::CdmFactory* GetCdmFactory();
-  media::DecoderFactory* GetDecoderFactory();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void HandlePepperImeCommit(const base::string16& text);
@@ -1130,10 +1088,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void GetInterface(mojo::InterfaceRequest<Interface> request);
 
   void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
-
-  // Returns the media delegate for WebMediaPlayer usage.  If
-  // |media_player_delegate_| is NULL, one is created.
-  media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
 
   // Called to get the WebPlugin to handle find requests in the document.
   // Returns nullptr if there is no such WebPlugin.
@@ -1301,48 +1255,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;
 
-  // EncryptedMediaClient attached to this frame; lazily initialized.
-  std::unique_ptr<media::WebEncryptedMediaClientImpl>
-      web_encrypted_media_client_;
-
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
-  // The media interface provider attached to this frame, lazily initialized.
-  std::unique_ptr<MediaInterfaceProvider> media_interface_provider_;
-#endif
-
-#if defined(OS_ANDROID)
-  // Manages all media players and sessions in this render frame for
-  // communicating with the real media player and sessions in the
-  // browser process. It's okay to use raw pointers since they're both
-  // RenderFrameObservers.
-  RendererMediaPlayerManager* media_player_manager_;
-#endif
-
-  media::SurfaceManager* media_surface_manager_;
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  // Lazy-bound pointer to the RemoterFactory service in the browser
-  // process. Always use the GetRemoterFactory() accessor instead of this.
-  media::mojom::RemoterFactoryPtr remoter_factory_;
-
-  // An observer for the remoting sink availability that is used by
-  // media::RemotingCdmFactory to initialize media::RemotingSourceImpl. Created
-  // in the constructor of RenderFrameImpl to make sure
-  // media::RemotingSourceImpl be intialized with correct availability info.
-  // Own by media::RemotingCdmFactory after it is created.
-  std::unique_ptr<media::remoting::SinkAvailabilityObserver>
-      remoting_sink_observer_;
-#endif
-
-  // The CDM and decoder factory attached to this frame, lazily initialized.
-  std::unique_ptr<media::CdmFactory> cdm_factory_;
-  std::unique_ptr<media::DecoderFactory> decoder_factory_;
-
-  // Media resource cache, lazily initialized.
-  linked_ptr<media::UrlIndex> url_index_;
 
   // The devtools agent for this frame; only created for main frame and
   // local roots.
@@ -1384,10 +1298,6 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderAccessibilityImpl* render_accessibility_;
 
   std::unique_ptr<RelatedAppsFetcher> related_apps_fetcher_;
-
-  // Manages play, pause notifications for WebMediaPlayer implementations; its
-  // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
-  media::RendererWebMediaPlayerDelegate* media_player_delegate_;
 
   // The PreviewsState of this RenderFrame that indicates which Previews can
   // be used. The PreviewsState is a bitmask of potentially several Previews
@@ -1451,6 +1361,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Indicates whether |didAccessInitialDocument| was called.
   bool has_accessed_initial_document_;
+
+  // Creates various media clients.
+  MediaFactory media_factory_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;
   std::unique_ptr<AssociatedInterfaceProviderImpl>
