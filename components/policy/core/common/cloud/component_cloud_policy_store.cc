@@ -82,11 +82,11 @@ ComponentCloudPolicyStore::ComponentCloudPolicyStore(Delegate* delegate,
     : delegate_(delegate), cache_(cache) {
   // Allow the store to be created on a different thread than the thread that
   // will end up using it.
-  DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
@@ -114,7 +114,7 @@ bool ComponentCloudPolicyStore::GetPolicyDomain(const std::string& policy_type,
 
 const std::string& ComponentCloudPolicyStore::GetCachedHash(
     const PolicyNamespace& ns) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<PolicyNamespace, std::string>::const_iterator it =
       cached_hashes_.find(ns);
   return it == cached_hashes_.end() ? base::EmptyString() : it->second;
@@ -125,7 +125,7 @@ void ComponentCloudPolicyStore::SetCredentials(const std::string& username,
                                                const std::string& device_id,
                                                const std::string& public_key,
                                                int public_key_version) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(username_.empty() || username == username_);
   DCHECK(dm_token_.empty() || dm_token == dm_token_);
   DCHECK(device_id_.empty() || device_id == device_id_);
@@ -137,7 +137,7 @@ void ComponentCloudPolicyStore::SetCredentials(const std::string& username,
 }
 
 void ComponentCloudPolicyStore::Load() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   typedef std::map<std::string, std::string> ContentMap;
 
   // Load all cached policy protobufs for each domain.
@@ -183,7 +183,7 @@ bool ComponentCloudPolicyStore::Store(
     std::unique_ptr<em::PolicyData> policy_data,
     const std::string& secure_hash,
     const std::string& data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const DomainConstants* constants = GetDomainConstants(ns.domain);
   PolicyMap policy;
   // |serialized_policy| has already been validated; validate the data now.
@@ -204,7 +204,7 @@ bool ComponentCloudPolicyStore::Store(
 }
 
 void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const DomainConstants* constants = GetDomainConstants(ns.domain);
   if (!constants)
     return;
@@ -221,7 +221,7 @@ void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
 void ComponentCloudPolicyStore::Purge(
     PolicyDomain domain,
     const ResourceCache::SubkeyFilter& filter) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const DomainConstants* constants = GetDomainConstants(domain);
   if (!constants)
     return;

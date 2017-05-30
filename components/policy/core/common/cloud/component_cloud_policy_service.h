@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -52,8 +52,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
     : public CloudPolicyClient::Observer,
       public CloudPolicyCore::Observer,
       public CloudPolicyStore::Observer,
-      public SchemaRegistry::Observer,
-      public base::NonThreadSafe {
+      public SchemaRegistry::Observer {
  public:
   class POLICY_EXPORT Delegate {
    public:
@@ -187,6 +186,8 @@ class POLICY_EXPORT ComponentCloudPolicyService
 
   // Whether policies are being served.
   bool policy_installed_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Must be the last member.
   base::WeakPtrFactory<ComponentCloudPolicyService> weak_ptr_factory_;

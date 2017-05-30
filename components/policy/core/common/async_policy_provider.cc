@@ -27,11 +27,11 @@ AsyncPolicyProvider::AsyncPolicyProvider(
 }
 
 AsyncPolicyProvider::~AsyncPolicyProvider() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ConfigurationPolicyProvider::Init(registry);
 
   if (!loader_)
@@ -50,7 +50,7 @@ void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
 }
 
 void AsyncPolicyProvider::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Note on the lifetime of |loader_|:
   // The |loader_| lives on the background thread, and is deleted from here.
   // This means that posting tasks on the |loader_| to the background thread
@@ -67,7 +67,7 @@ void AsyncPolicyProvider::Shutdown() {
 }
 
 void AsyncPolicyProvider::RefreshPolicies() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Subtle: RefreshPolicies() has a contract that requires the next policy
   // update notification (triggered from UpdatePolicy()) to reflect any changes
@@ -91,7 +91,7 @@ void AsyncPolicyProvider::RefreshPolicies() {
 }
 
 void AsyncPolicyProvider::ReloadAfterRefreshSync() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This task can only enter if it was posted from RefreshPolicies(), and it
   // hasn't been cancelled meanwhile by another call to RefreshPolicies().
   DCHECK(!refresh_callback_.IsCancelled());
@@ -113,7 +113,7 @@ void AsyncPolicyProvider::ReloadAfterRefreshSync() {
 
 void AsyncPolicyProvider::OnLoaderReloaded(
     std::unique_ptr<PolicyBundle> bundle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Only propagate policy updates if there are no pending refreshes, and if
   // Shutdown() hasn't been called yet.
   if (refresh_callback_.IsCancelled() && loader_)

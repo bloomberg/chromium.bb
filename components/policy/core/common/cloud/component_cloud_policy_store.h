@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -32,7 +32,7 @@ namespace policy {
 // beforehand using |SetCredentials|. The expectation is that these credentials
 // should be the same as used for validating the superior policy (e.g. the user
 // policy, the device-local account policy, etc.).
-class POLICY_EXPORT ComponentCloudPolicyStore : public base::NonThreadSafe {
+class POLICY_EXPORT ComponentCloudPolicyStore {
  public:
   class POLICY_EXPORT Delegate {
    public:
@@ -150,6 +150,8 @@ class POLICY_EXPORT ComponentCloudPolicyStore : public base::NonThreadSafe {
   // Mapping from policy namespace to policy timestamp for each currently
   // exposed component.
   std::map<PolicyNamespace, base::Time> stored_policy_times_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ComponentCloudPolicyStore);
 };
