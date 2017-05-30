@@ -7,10 +7,12 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -84,6 +86,48 @@ TEST_F(PasswordReuseDetectionManagerTest, CheckReuseCalled) {
       testing::Mock::VerifyAndClearExpectations(store_.get());
     }
   }
+}
+
+// Verify that the keystroke buffer is cleared after 10 seconds of user
+// inactivity.
+TEST_F(PasswordReuseDetectionManagerTest,
+       CheckThatBufferClearedAfterInactivity) {
+  EXPECT_CALL(client_, GetPasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  PasswordReuseDetectionManager manager(&client_);
+
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  base::Time now = base::Time::Now();
+  clock->SetNow(now);
+  base::SimpleTestClock* clock_weak = clock.get();
+  manager.SetClockForTesting(std::move(clock));
+
+  EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("1"), _, _));
+  manager.OnKeyPressed(base::ASCIIToUTF16("1"));
+
+  // Simulate 10 seconds of inactivity.
+  clock_weak->SetNow(now + base::TimeDelta::FromSeconds(10));
+  // Expect that a keystroke typed before inactivity is cleared.
+  EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("2"), _, _));
+  manager.OnKeyPressed(base::ASCIIToUTF16("2"));
+}
+
+// Verify that the keystroke buffer is cleared after user presses enter.
+TEST_F(PasswordReuseDetectionManagerTest, CheckThatBufferClearedAfterEnter) {
+  EXPECT_CALL(client_, GetPasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  PasswordReuseDetectionManager manager(&client_);
+
+  EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("1"), _, _));
+  manager.OnKeyPressed(base::ASCIIToUTF16("1"));
+
+  base::string16 enter_text(1, ui::VKEY_RETURN);
+  EXPECT_CALL(*store_, CheckReuse(_, _, _)).Times(0);
+  manager.OnKeyPressed(enter_text);
+
+  // Expect only a keystroke typed after enter.
+  EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("2"), _, _));
+  manager.OnKeyPressed(base::ASCIIToUTF16("2"));
 }
 
 }  // namespace
