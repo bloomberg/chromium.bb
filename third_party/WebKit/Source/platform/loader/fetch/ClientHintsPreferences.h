@@ -17,6 +17,7 @@ class PLATFORM_EXPORT ClientHintsPreferences {
  public:
   class Context {
    public:
+    virtual void CountClientHintsDeviceRAM() = 0;
     virtual void CountClientHintsDPR() = 0;
     virtual void CountClientHintsResourceWidth() = 0;
     virtual void CountClientHintsViewportWidth() = 0;
@@ -29,6 +30,9 @@ class PLATFORM_EXPORT ClientHintsPreferences {
 
   void UpdateFrom(const ClientHintsPreferences&);
   void UpdateFromAcceptClientHintsHeader(const String& header_value, Context*);
+
+  bool ShouldSendDeviceRAM() const { return should_send_device_ram_; }
+  void SetShouldSendDeviceRAM(bool should) { should_send_device_ram_ = should; }
 
   bool ShouldSendDPR() const { return should_send_dpr_; }
   void SetShouldSendDPR(bool should) { should_send_dpr_ = should; }
@@ -44,6 +48,7 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   }
 
  private:
+  bool should_send_device_ram_;
   bool should_send_dpr_;
   bool should_send_resource_width_;
   bool should_send_viewport_width_;

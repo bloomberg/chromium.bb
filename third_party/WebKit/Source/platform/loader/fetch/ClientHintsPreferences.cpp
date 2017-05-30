@@ -10,12 +10,14 @@
 namespace blink {
 
 ClientHintsPreferences::ClientHintsPreferences()
-    : should_send_dpr_(false),
+    : should_send_device_ram_(false),
+      should_send_dpr_(false),
       should_send_resource_width_(false),
       should_send_viewport_width_(false) {}
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
+  should_send_device_ram_ = preferences.should_send_device_ram_;
   should_send_dpr_ = preferences.should_send_dpr_;
   should_send_resource_width_ = preferences.should_send_resource_width_;
   should_send_viewport_width_ = preferences.should_send_viewport_width_;
@@ -29,6 +31,13 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
 
   CommaDelimitedHeaderSet accept_client_hints_header;
   ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
+  if (RuntimeEnabledFeatures::deviceRAMHeaderEnabled() &&
+      accept_client_hints_header.Contains("device-ram")) {
+    if (context)
+      context->CountClientHintsDeviceRAM();
+    should_send_device_ram_ = true;
+  }
+
   if (accept_client_hints_header.Contains("dpr")) {
     if (context)
       context->CountClientHintsDPR();

@@ -614,6 +614,22 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   GetFrame()->Loader().ModifyRequestForCSP(resource_request, GetDocument());
 }
 
+float FrameFetchContext::ClientHintsDeviceRAM(int64_t physical_memory_mb) {
+  // TODO(fmeawad): The calculations in this method are still evolving as the
+  // spec gets updated: https://github.com/WICG/device-ram. The reported
+  // device-ram is rounded down to next power of 2 in GB. Ex. 3072MB will return
+  // 2, and 768MB will return 0.5.
+  DCHECK_GT(physical_memory_mb, 0);
+  int power = 0;
+  // Extract the MSB location.
+  while (physical_memory_mb > 1) {
+    physical_memory_mb >>= 1;
+    power++;
+  }
+  // Restore to the power of 2, and convert to GB.
+  return static_cast<float>(1 << power) / 1024.0;
+}
+
 void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
@@ -621,6 +637,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!RuntimeEnabledFeatures::clientHintsEnabled() || !GetDocument())
     return;
 
+  bool should_send_device_ram =
+      GetDocument()->GetClientHintsPreferences().ShouldSendDeviceRAM() ||
+      hints_preferences.ShouldSendDeviceRAM();
   bool should_send_dpr =
       GetDocument()->GetClientHintsPreferences().ShouldSendDPR() ||
       hints_preferences.ShouldSendDPR();
@@ -630,6 +649,13 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   bool should_send_viewport_width =
       GetDocument()->GetClientHintsPreferences().ShouldSendViewportWidth() ||
       hints_preferences.ShouldSendViewportWidth();
+
+  if (should_send_device_ram) {
+    int64_t physical_memory = MemoryCoordinator::GetPhysicalMemoryMB();
+    request.AddHTTPHeaderField(
+        "device-ram",
+        AtomicString(String::Number(ClientHintsDeviceRAM(physical_memory))));
+  }
 
   if (should_send_dpr) {
     request.AddHTTPHeaderField(

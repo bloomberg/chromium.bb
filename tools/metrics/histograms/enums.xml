@@ -15092,6 +15092,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2014" label="V8SpeechRecognition_Start_Method"/>
   <int value="2015" label="TableRowDirectionDifferentFromTable"/>
   <int value="2016" label="TableSectionDirectionDifferentFromTable"/>
+  <int value="2017" label="ClientHintsDeviceRAM"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">

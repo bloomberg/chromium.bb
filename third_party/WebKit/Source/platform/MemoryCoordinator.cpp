@@ -14,6 +14,7 @@ namespace blink {
 
 // static
 bool MemoryCoordinator::is_low_end_device_ = false;
+int64_t MemoryCoordinator::physical_memory_mb_ = 0;
 
 // static
 bool MemoryCoordinator::IsLowEndDevice() {
@@ -21,8 +22,20 @@ bool MemoryCoordinator::IsLowEndDevice() {
 }
 
 // static
+int64_t MemoryCoordinator::GetPhysicalMemoryMB() {
+  return physical_memory_mb_;
+}
+
+// static
+void MemoryCoordinator::SetPhysicalMemoryMBForTesting(
+    int64_t physical_memory_mb) {
+  physical_memory_mb_ = physical_memory_mb;
+}
+
+// static
 void MemoryCoordinator::Initialize() {
   is_low_end_device_ = ::base::SysInfo::IsLowEndDevice();
+  physical_memory_mb_ = ::base::SysInfo::AmountOfPhysicalMemoryMB();
 }
 
 // static
