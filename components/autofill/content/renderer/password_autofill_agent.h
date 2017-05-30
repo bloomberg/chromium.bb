@@ -229,12 +229,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                            bool show_all,
                            bool show_on_password_field);
 
-  // Finds the PasswordInfo, username and password fields that corresponds to
-  // the passed in |element|. |element| can refer either to a username element
-  // or a password element. If a PasswordInfo was found, returns |true| and also
-  // assigns the corresponding username, password elements and PasswordInfo into
+  // Finds the PasswordInfo, username and password fields corresponding to the
+  // passed in |element|, which can refer to either a username or a password
+  // element. If a PasswordInfo was found, returns |true| and assigns the
+  // corresponding username, password elements and PasswordInfo into
   // |username_element|, |password_element| and |pasword_info|, respectively.
-  // Note, that |username_element->isNull()| can be true if |element| is a
+  // Note, that |username_element->IsNull()| can be true if |element| is a
   // password.
   bool FindPasswordInfoForElement(const blink::WebInputElement& element,
                                   blink::WebInputElement* username_element,
@@ -268,7 +268,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
-  // A (sort-of) reverse map to |login_to_password_info_|.
+  // A (sort-of) reverse map to |web_input_to_password_info_|.
   PasswordToLoginMap password_to_username_;
 
   // Set if the user might be submitting a password form on the current page,
