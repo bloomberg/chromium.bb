@@ -30,7 +30,7 @@
         <item name="colorControlActivated">@color/light_active_color</item>
 
         <!-- Default TintedImageButton tint -->
-        <item name="tint">@color/dark_mode_tint</item>
+        <item name="chrometint">@color/dark_mode_tint</item>
 
         <!-- Navigation Transitions, requires API level 21 -->
         <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="21">false</item>
@@ -96,7 +96,7 @@
         <item name="colorPrimary">@color/light_active_color</item>
 
         <!-- Default TintedImageButton tint -->
-        <item name="tint">@color/dark_mode_tint</item>
+        <item name="chrometint">@color/dark_mode_tint</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">

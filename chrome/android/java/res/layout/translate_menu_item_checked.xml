@@ -21,7 +21,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="end"
             android:gravity="center_vertical"
-            chrome:tint="@color/dark_mode_tint" />
+            chrome:chrometint="@color/dark_mode_tint" />
         <TextView
             android:id="@+id/menu_item_text"
             android:textAppearance="?android:attr/textAppearanceLargePopupMenu"
