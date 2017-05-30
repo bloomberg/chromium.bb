@@ -1400,79 +1400,9 @@ void LayerTreeHost::ElementIsAnimatingChanged(
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
-  // TODO(weiliangc): Most of the code is duplicated with LayerTeeHostImpl
-  // version of function. Should try to share code.
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
-
-  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
-       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
-    if (!mask.currently_running[property] &&
-        !mask.potentially_animating[property])
-      continue;
-
-    switch (property) {
-      case TargetProperty::TRANSFORM:
-        if (TransformNode* transform_node =
-                property_trees()->transform_tree.FindNodeFromElementId(
-                    element_id)) {
-          if (mask.currently_running[property])
-            transform_node->is_currently_animating =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            transform_node->has_potential_animation =
-                state.potentially_animating[property];
-            transform_node->has_only_translation_animations =
-                mutator_host()->HasOnlyTranslationTransforms(element_id,
-                                                             list_type);
-            property_trees()->transform_tree.set_needs_update(true);
-          }
-        } else {
-          if (state.currently_running[property] ||
-              state.potentially_animating[property])
-            DCHECK(property_trees()->needs_rebuild)
-                << "Attempting to animate non existent transform node";
-        }
-        break;
-      case TargetProperty::OPACITY:
-        if (EffectNode* effect_node =
-                property_trees()->effect_tree.FindNodeFromElementId(
-                    element_id)) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_opacity =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            effect_node->has_potential_opacity_animation =
-                state.potentially_animating[property];
-            property_trees()->effect_tree.set_needs_update(true);
-          }
-        } else {
-          if (state.currently_running[property] ||
-              state.potentially_animating[property])
-            DCHECK(property_trees()->needs_rebuild)
-                << "Attempting to animate opacity on non existent effect node";
-        }
-        break;
-      case TargetProperty::FILTER:
-        if (EffectNode* effect_node =
-                property_trees()->effect_tree.FindNodeFromElementId(
-                    element_id)) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_filter =
-                state.currently_running[property];
-          if (mask.potentially_animating[property])
-            effect_node->has_potential_filter_animation =
-                state.potentially_animating[property];
-        } else {
-          if (state.currently_running[property] ||
-              state.potentially_animating[property])
-            DCHECK(property_trees()->needs_rebuild)
-                << "Attempting to animate filter on non existent effect node";
-        }
-        break;
-      default:
-        break;
-    }
-  }
+  property_trees()->ElementIsAnimatingChanged(mutator_host(), element_id,
+                                              list_type, mask, state, true);
 }
 
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(

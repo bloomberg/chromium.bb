@@ -42,6 +42,12 @@ PropertyTree<T>::~PropertyTree() {}
 template <typename T>
 PropertyTree<T>& PropertyTree<T>::operator=(const PropertyTree<T>&) = default;
 
+#define DCHECK_NODE_EXISTENCE(check_node_existence, state, property,           \
+                              needs_rebuild)                                   \
+  DCHECK(!check_node_existence || ((!state.currently_running[property] &&      \
+                                    !state.potentially_animating[property]) || \
+                                   needs_rebuild))
+
 TransformTree::TransformTree()
     : source_to_parent_updates_allowed_(true),
       page_scale_factor_(1.f),
@@ -1708,6 +1714,88 @@ void PropertyTrees::SetOuterViewportContainerBoundsDelta(
 
   outer_viewport_container_bounds_delta_ = bounds_delta;
   transform_tree.UpdateOuterViewportContainerBoundsDelta();
+}
+
+bool PropertyTrees::ElementIsAnimatingChanged(
+    const MutatorHost* mutator_host,
+    ElementId element_id,
+    ElementListType list_type,
+    const PropertyAnimationState& mask,
+    const PropertyAnimationState& state,
+    bool check_node_existence) {
+  bool updated_transform = false;
+  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
+       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+    if (!mask.currently_running[property] &&
+        !mask.potentially_animating[property])
+      continue;
+
+    switch (property) {
+      case TargetProperty::TRANSFORM:
+        if (TransformNode* transform_node =
+                transform_tree.FindNodeFromElementId(element_id)) {
+          if (mask.currently_running[property])
+            transform_node->is_currently_animating =
+                state.currently_running[property];
+          if (mask.potentially_animating[property]) {
+            transform_node->has_potential_animation =
+                state.potentially_animating[property];
+            transform_node->has_only_translation_animations =
+                mutator_host->HasOnlyTranslationTransforms(element_id,
+                                                           list_type);
+            transform_tree.set_needs_update(true);
+            // We track transform updates specifically, whereas we
+            // don't do so for opacity/filter, because whether a
+            // transform is animating can change what layer(s) we
+            // draw.
+            updated_transform = true;
+          }
+        } else {
+          DCHECK_NODE_EXISTENCE(check_node_existence, state, property,
+                                needs_rebuild)
+              << "Attempting to animate non existent transform node";
+        }
+        break;
+      case TargetProperty::OPACITY:
+        if (EffectNode* effect_node =
+                effect_tree.FindNodeFromElementId(element_id)) {
+          if (mask.currently_running[property])
+            effect_node->is_currently_animating_opacity =
+                state.currently_running[property];
+          if (mask.potentially_animating[property]) {
+            effect_node->has_potential_opacity_animation =
+                state.potentially_animating[property];
+            // We may need to propagate things like screen space opacity.
+            effect_tree.set_needs_update(true);
+          }
+        } else {
+          DCHECK_NODE_EXISTENCE(check_node_existence, state, property,
+                                needs_rebuild)
+              << "Attempting to animate opacity on non existent effect node";
+        }
+        break;
+      case TargetProperty::FILTER:
+        if (EffectNode* effect_node =
+                effect_tree.FindNodeFromElementId(element_id)) {
+          if (mask.currently_running[property])
+            effect_node->is_currently_animating_filter =
+                state.currently_running[property];
+          if (mask.potentially_animating[property])
+            effect_node->has_potential_filter_animation =
+                state.potentially_animating[property];
+          // Filter animation changes only the node, and the subtree does not
+          // care, thus there is no need to request property tree update.
+        } else {
+          DCHECK_NODE_EXISTENCE(check_node_existence, state, property,
+                                needs_rebuild)
+              << "Attempting to animate filter on non existent effect node";
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  return updated_transform;
 }
 
 void PropertyTrees::SetInnerViewportScrollBoundsDelta(
