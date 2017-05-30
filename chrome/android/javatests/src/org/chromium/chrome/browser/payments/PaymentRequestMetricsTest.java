@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -379,6 +380,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @DisabledTest(message = "Flaky. See crbug.com/727558")
     public void testShownLoggedOnlyOnce()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
