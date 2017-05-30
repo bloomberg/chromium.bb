@@ -50,7 +50,7 @@ ProcessProxyRegistry::ProcessProxyRegistry() {
 ProcessProxyRegistry::~ProcessProxyRegistry() {
   // TODO(tbarzic): Fix issue with ProcessProxyRegistry being destroyed
   // on a different thread (it's a LazyInstance).
-  DetachFromThread();
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ShutDown();
 }
@@ -73,7 +73,7 @@ ProcessProxyRegistry* ProcessProxyRegistry::Get() {
 
 int ProcessProxyRegistry::OpenProcess(const std::string& command,
                                       const OutputCallback& output_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!EnsureWatcherThreadStarted())
     return -1;
@@ -104,7 +104,7 @@ int ProcessProxyRegistry::OpenProcess(const std::string& command,
 }
 
 bool ProcessProxyRegistry::SendInput(int id, const std::string& data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
@@ -113,7 +113,7 @@ bool ProcessProxyRegistry::SendInput(int id, const std::string& data) {
 }
 
 bool ProcessProxyRegistry::CloseProcess(int id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
@@ -125,7 +125,7 @@ bool ProcessProxyRegistry::CloseProcess(int id) {
 }
 
 bool ProcessProxyRegistry::OnTerminalResize(int id, int width, int height) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
@@ -135,7 +135,7 @@ bool ProcessProxyRegistry::OnTerminalResize(int id, int width, int height) {
 }
 
 void ProcessProxyRegistry::AckOutput(int id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
@@ -147,7 +147,7 @@ void ProcessProxyRegistry::AckOutput(int id) {
 void ProcessProxyRegistry::OnProcessOutput(int id,
                                            ProcessOutputType type,
                                            const std::string& data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const char* type_str = ProcessOutputTypeToString(type);
   DCHECK(type_str);
