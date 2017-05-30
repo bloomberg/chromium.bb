@@ -7,7 +7,7 @@ injectedFunction()
 VM:6 Uncaught Error: injectedObj.func
     at Object.func (<anonymous>:6:23)
     at injectedFunction (<anonymous>:9:28)
-    at eval (eval at testFunction (debugger-eval-while-paused-throws.html:18), <anonymous>:1:1)
+    at eval (eval at testFunction (debugger-eval-while-…used-throws.html:18), <anonymous>:1:1)
     at testFunction (test.js:18)
 func @ VM:6
 injectedFunction @ VM:9
@@ -19,7 +19,7 @@ scheduleTestFunction @ debugger-test.js:3
 localObj.func()
 test.js:15 Uncaught Error: localObj.func
     at Object.func (test.js:15)
-    at eval (eval at testFunction (debugger-eval-while-paused-throws.html:18), <anonymous>:1:10)
+    at eval (eval at testFunction (debugger-eval-while-…used-throws.html:18), <anonymous>:1:10)
     at testFunction (test.js:18)
 func @ test.js:15
 (anonymous) @ VM:1
@@ -30,7 +30,7 @@ scheduleTestFunction @ debugger-test.js:3
 globalObj.func()
 test.js:6 Uncaught Error: globalObj.func
     at Object.func (test.js:6)
-    at eval (eval at testFunction (debugger-eval-while-paused-throws.html:18), <anonymous>:1:11)
+    at eval (eval at testFunction (debugger-eval-while-…used-throws.html:18), <anonymous>:1:11)
     at testFunction (test.js:18)
 func @ test.js:6
 (anonymous) @ VM:1
