@@ -30,6 +30,7 @@
 
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/PtrUtil.h"
@@ -62,7 +63,12 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   if (!surface_)
     return;
 
-  canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
+  canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
+      surface_->getCanvas(),
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
+              color_params.UsesOutputSpaceBlending()
+          ? color_params.GetSkColorSpace()
+          : nullptr));
   Clear();
 
   // Always save an initial frame, to support resetting the top level matrix

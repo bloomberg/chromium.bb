@@ -8,6 +8,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
@@ -22,7 +23,22 @@ SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)
     : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
 
+SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
+                                 sk_sp<SkColorSpace> target_color_space)
+    : canvas_(canvas) {
+  WrapCanvasInColorSpaceXformCanvas(target_color_space);
+}
+
 SkiaPaintCanvas::~SkiaPaintCanvas() = default;
+
+void SkiaPaintCanvas::WrapCanvasInColorSpaceXformCanvas(
+    sk_sp<SkColorSpace> target_color_space) {
+  if (target_color_space) {
+    color_space_xform_canvas_ =
+        SkCreateColorSpaceXformCanvas(canvas_, target_color_space);
+    canvas_ = color_space_xform_canvas_.get();
+  }
+}
 
 SkMetaData& SkiaPaintCanvas::getMetaData() {
   return canvas_->getMetaData();
