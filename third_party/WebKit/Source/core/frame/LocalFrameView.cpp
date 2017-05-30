@@ -1060,32 +1060,38 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
   // functions so that a single human could understand what layout() is actually
   // doing.
 
+  // FIXME: ForceLayoutParentViewIfNeeded can cause this document's lifecycle
+  // to change, which should not happen.
   ForceLayoutParentViewIfNeeded();
-  // TODO(szager): Remove this after checking crash reports.
-  CHECK(IsInPerformLayout());
+  CHECK(IsInPerformLayout() ||
+        Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
-  if (in_subtree_layout) {
-    if (analyzer_) {
-      analyzer_->Increment(LayoutAnalyzer::kPerformLayoutRootLayoutObjects,
-                           layout_subtree_root_list_.size());
-    }
-    for (auto& root : layout_subtree_root_list_.Ordered()) {
-      if (!root->NeedsLayout())
-        continue;
-      LayoutFromRootObject(*root);
+  if (IsInPerformLayout()) {
+    if (in_subtree_layout) {
+      if (analyzer_) {
+        analyzer_->Increment(LayoutAnalyzer::kPerformLayoutRootLayoutObjects,
+                             layout_subtree_root_list_.size());
+      }
+      for (auto& root : layout_subtree_root_list_.Ordered()) {
+        if (!root->NeedsLayout())
+          continue;
+        LayoutFromRootObject(*root);
 
-      // We need to ensure that we mark up all layoutObjects up to the
-      // LayoutView for paint invalidation. This simplifies our code as we just
-      // always do a full tree walk.
-      if (LayoutItem container = LayoutItem(root->Container()))
-        container.SetMayNeedPaintInvalidation();
+        // We need to ensure that we mark up all layoutObjects up to the
+        // LayoutView for paint invalidation. This simplifies our code as we
+        // just always do a full tree walk.
+        if (LayoutItem container = LayoutItem(root->Container()))
+          container.SetMayNeedPaintInvalidation();
+      }
+      layout_subtree_root_list_.Clear();
+    } else {
+      if (HasOrthogonalWritingModeRoots() &&
+          !RuntimeEnabledFeatures::layoutNGEnabled())
+        LayoutOrthogonalWritingModeRoots();
+      GetLayoutView()->UpdateLayout();
     }
-    layout_subtree_root_list_.Clear();
   } else {
-    if (HasOrthogonalWritingModeRoots() &&
-        !RuntimeEnabledFeatures::layoutNGEnabled())
-      LayoutOrthogonalWritingModeRoots();
-    GetLayoutView()->UpdateLayout();
+    DCHECK(!NeedsLayout());
   }
 
   frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
