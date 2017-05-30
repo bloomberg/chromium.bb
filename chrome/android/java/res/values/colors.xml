@@ -73,9 +73,15 @@
     <color name="url_emphasis_light_non_emphasized_text">#80ffffff</color>
     <color name="url_emphasis_domain_and_registry">#333333</color>
     <color name="url_emphasis_light_domain_and_registry">#ffffff</color>
-    <color name="url_emphasis_default_text">#333333</color>
+    <color name="url_emphasis_default_text">@color/black_alpha_87</color>
     <!--suppress UnusedResources -->
     <color name="url_emphasis_light_default_text">#ffffff</color>
+
+    <!-- Omnibox Suggestion colors -->
+    <color name="suggestion_url">@color/google_blue_700</color>
+    <color name="answers_description_text_negative">@color/google_red_700</color>
+    <color name="answers_description_text_positive">@color/google_green_700</color>
+    <color name="answers_answer_text">#8a8a8a</color>
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>
@@ -96,7 +102,7 @@
     <color name="data_reduction_breakdown_light_text_color">#737373</color>
 
     <!-- Compositor Tab Title Colors -->
-    <color name="compositor_tab_title_bar_text">#A3000000</color>
+    <color name="compositor_tab_title_bar_text">@color/black_alpha_87</color>
     <color name="compositor_tab_title_bar_text_incognito">#FFFFFFFF</color>
 
     <!-- First Run Experience Colors -->
@@ -133,7 +139,7 @@
     <color name="incognito_header">#ccffffff</color>
 
     <!-- Site suggestion tile colors. -->
-    <color name="tile_view_text">#6f6f6f</color>
+    <color name="tile_view_text">@color/black_alpha_54</color>
     <color name="tile_view_offline_badge_tint">#4285f4</color>
 
     <!-- Contextual Search colors -->
@@ -152,10 +158,10 @@
     <color name="incognito_primary_color">#505050</color>
 
     <!-- LocationBar colors -->
-    <color name="locationbar_dark_hint_text">#969696</color>
+    <color name="locationbar_dark_hint_text">@color/black_alpha_38</color>
     <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
     <color name="locationbar_light_selection_color">#cc5595fe</color>
-    <color name="locationbar_status_color">@color/light_normal_color</color>
+    <color name="locationbar_status_color">@color/black_alpha_54</color>
     <color name="locationbar_status_color_light">#ffffff</color>
     <color name="locationbar_status_separator_color">#3d000000</color>
     <color name="locationbar_status_separator_color_light">#3dffffff</color>
