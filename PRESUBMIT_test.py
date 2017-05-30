@@ -1323,6 +1323,69 @@ class RiskyJsTest(unittest.TestCase):
         mock_input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
 
+class RelativeIncludesTest(unittest.TestCase):
+  def testThirdPartyNotWebKitIgnored(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/test.cpp', '#include "../header.h"'),
+      MockAffectedFile('third_party/test/test.cpp', '#include "../header.h"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForRelativeIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testNonCppFileIgnored(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.py', '#include "../header.h"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForRelativeIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testInnocuousChangesAllowed(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.cpp', '#include "header.h"'),
+      MockAffectedFile('test2.cpp', '../'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForRelativeIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testRelativeIncludeNonWebKitProducesError(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.cpp', ['#include "../header.h"']),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForRelativeIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+
+  def testRelativeIncludeWebKitProducesError(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/WebKit/test.cpp',
+                       ['#include "../header.h']),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForRelativeIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
 
 if __name__ == '__main__':
   unittest.main()
