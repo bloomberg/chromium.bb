@@ -78,13 +78,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   IntRect SelectionBounds();
   void InvalidatePaintForSelection();
-  enum SelectionPaintInvalidationMode {
-    kPaintInvalidationNewXOROld,
-    kPaintInvalidationNewMinusOld
-  };
-  void SetSelection(
-      const SelectionPaintRange&,
-      SelectionPaintInvalidationMode = kPaintInvalidationNewXOROld);
+
   void ClearSelection();
   std::pair<int, int> SelectionStartEnd();
   void OnDocumentShutdown();
