@@ -137,11 +137,10 @@
 
       # if CrWinClang is modified, please update CrWinClangGoma in the same way.
       'CrWinClang': 'clang_official_release_bot_minimal_symbols_x86',
+
       'CrWinClang(dbg)': 'clang_debug_bot_minimal_symbols_x86',
-      'CrWinClang(shared)': 'clang_minimal_symbols_shared_release_bot_x86',
       'CrWinClang64': 'clang_official_release_bot_minimal_symbols',
       'CrWinClang64(dll)': 'clang_shared_release_bot',
-      'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
       'CrWinGoma': 'release_bot_x86',
       'CrWinGoma(dll)': 'shared_release_bot_x86',
@@ -171,6 +170,8 @@
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_full_symbols_release',
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release',
+      'CrWinClang(shared)': 'clang_minimal_symbols_shared_release_bot_x86',
+      'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'CrWinClangLLD': 'clang_tot_official_static_use_lld_x86',
       'CrWinClangLLD64': 'clang_tot_shared_release_use_lld',
       'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_use_lld',
@@ -1039,10 +1040,7 @@
     ],
 
     'clang_debug_bot_minimal_symbols_x86': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'debug_bot', 'minimal_symbols', 'x86',
+      'clang', 'debug_bot', 'minimal_symbols', 'x86',
     ],
 
     'clang_release_bot_minimal_symbols_x86': [
@@ -1050,24 +1048,15 @@
     ],
 
     'clang_minimal_symbols_shared_release_bot_x86': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'minimal_symbols', 'shared_release_bot', 'x86',
+      'clang', 'minimal_symbols', 'shared_release_bot', 'x86',
     ],
 
     'clang_official_release_bot_minimal_symbols': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'official', 'release_bot', 'minimal_symbols',
+      'clang', 'official', 'release_bot', 'minimal_symbols',
     ],
 
     'clang_official_release_bot_minimal_symbols_x86': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
+      'clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
     'clang_official_optimize_release_bot_minimal_symbols_x86': [
@@ -1083,10 +1072,7 @@
     ],
 
     'clang_shared_release_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'shared_release_bot',
+      'clang', 'shared_release_bot',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -1487,10 +1473,7 @@
     ],
 
     'win_clang_debug_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'debug_bot', 'minimal_symbols',
+      'clang', 'debug_bot', 'minimal_symbols',
     ],
 
     'windows_analyze': [
@@ -1580,11 +1563,11 @@
     },
 
     'chrome_pgo_phase_1': {
-      'gn_args': 'chrome_pgo_phase=1 is_clang=false',
+      'gn_args': 'chrome_pgo_phase=1',
     },
 
     'chrome_pgo_phase_2': {
-      'gn_args': 'chrome_pgo_phase=2 is_clang=false',
+      'gn_args': 'chrome_pgo_phase=2',
     },
 
     'chrome_with_codecs': {
@@ -1610,10 +1593,6 @@
 
     'clang': {
       'gn_args': 'is_clang=true',
-    },
-
-    'no_clang': {
-      'gn_args': 'is_clang=false',
     },
 
     'cronet': {
@@ -1860,8 +1839,7 @@
     },
 
     'syzyasan': {
-      # TODO(thakis): Figure out SyzyASan + clang story.
-      'gn_args': 'is_syzyasan=true is_clang=false',
+      'gn_args': 'is_syzyasan=true',
     },
 
     'thin_lto': {
