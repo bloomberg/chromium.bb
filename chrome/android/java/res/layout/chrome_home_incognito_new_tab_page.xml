@@ -20,7 +20,7 @@
         android:src="@drawable/btn_close"
         android:scaleType="center"
         android:background="@android:color/transparent"
-        chrome:tint="@color/light_mode_tint" />
+        chrome:chrometint="@color/light_mode_tint" />
 
     <LinearLayout
         android:layout_width="match_parent"

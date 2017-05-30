@@ -93,7 +93,7 @@
             android:src="@drawable/offline_pin_round"
             android:contentDescription="@string/accessibility_ntp_offline_badge"
             android:visibility="gone"
-            chrome:tint="#000" />
+            chrome:chrometint="#000" />
 
     </LinearLayout>
 
