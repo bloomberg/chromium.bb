@@ -373,17 +373,26 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     WebElement element =
         document.GetElementById(WebString::FromUTF8(kUsernameName));
     ASSERT_FALSE(element.IsNull());
-    username_element_ = element.To<blink::WebInputElement>();
+    username_element_ = element.To<WebInputElement>();
     element = document.GetElementById(WebString::FromUTF8(kPasswordName));
     ASSERT_FALSE(element.IsNull());
-    password_element_ = element.To<blink::WebInputElement>();
+    password_element_ = element.To<WebInputElement>();
   }
 
-  blink::WebInputElement GetInputElementByID(const std::string& id) {
+  void UpdateOnlyPasswordElement() {
+    WebDocument document = GetMainFrame()->GetDocument();
+    WebElement element =
+        document.GetElementById(WebString::FromUTF8(kPasswordName));
+    ASSERT_FALSE(element.IsNull());
+    password_element_ = element.To<WebInputElement>();
+    username_element_.Reset();
+  }
+
+  WebInputElement GetInputElementByID(const std::string& id) {
     WebDocument document = GetMainFrame()->GetDocument();
     WebElement element =
         document.GetElementById(WebString::FromUTF8(id.c_str()));
-    return element.To<blink::WebInputElement>();
+    return element.To<WebInputElement>();
   }
 
   void ClearUsernameAndPasswordFields() {
@@ -669,14 +678,7 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   LoadHTML(kEmptyActionFormHTML);
 
   // Retrieve the input elements so the test can access them.
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kUsernameName));
-  ASSERT_FALSE(element.IsNull());
-  username_element_ = element.To<blink::WebInputElement>();
-  element = document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateUsernameAndPasswordElements();
 
   // Set the expected form origin and action URLs.
   UpdateOriginForHTML(kEmptyActionFormHTML);
@@ -769,14 +771,7 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
   LoadHTML(kTextFieldPasswordFormHTML);
 
   // Retrieve the input elements so the test can access them.
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kUsernameName));
-  ASSERT_FALSE(element.IsNull());
-  username_element_ = element.To<blink::WebInputElement>();
-  element = document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateUsernameAndPasswordElements();
 
   // Set the expected form origin URL.
   UpdateOriginForHTML(kTextFieldPasswordFormHTML);
@@ -797,14 +792,7 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
   LoadHTML(kPasswordFieldUsernameFormHTML);
 
   // Retrieve the input elements so the test can access them.
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kUsernameName));
-  ASSERT_FALSE(element.IsNull());
-  username_element_ = element.To<blink::WebInputElement>();
-  element = document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateUsernameAndPasswordElements();
 
   // Set the expected form origin URL.
   UpdateOriginForHTML(kPasswordFieldUsernameFormHTML);
@@ -1180,6 +1168,35 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestion) {
 
     ClearUsernameAndPasswordFields();
   }
+}
+
+// Tests that |FillSuggestion| properly fills the username and password when the
+// username field is created dynamically in JavaScript.
+TEST_F(PasswordAutofillAgentTest, FillSuggestionWithDynamicUsernameField) {
+  LoadHTML(kVisibleFormWithNoUsernameHTML);
+  UpdateOnlyPasswordElement();
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  constexpr const char* kAddUsernameToFormScript =
+      "var new_input = document.createElement('input');"
+      "new_input.setAttribute('type', 'text');"
+      "new_input.setAttribute('id', 'username');"
+      "password_field = document.getElementById('password');"
+      "password_field.parentNode.insertBefore(new_input, password_field);";
+  ExecuteJavaScriptForTests(kAddUsernameToFormScript);
+  UpdateUsernameAndPasswordElements();
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // After filling with the suggestion, both fields should be autocompleted.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      password_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
+
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
 // Tests that |FillSuggestion| doesn't change non-empty non-autofilled username
@@ -1923,12 +1940,7 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
 
   // Load a form with no username and update test data.
   LoadHTML(kVisibleFormWithNoUsernameHTML);
-  username_element_.Reset();
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateOnlyPasswordElement();
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
@@ -1948,12 +1960,7 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
 TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {
   // Load a form with no username and update test data.
   LoadHTML(kVisibleFormWithNoUsernameHTML);
-  username_element_.Reset();
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateOnlyPasswordElement();
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
@@ -1979,12 +1986,7 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {
 TEST_F(PasswordAutofillAgentTest, ShowPopupOnAutofilledPasswordField) {
   // Load a form with no username and update test data.
   LoadHTML(kVisibleFormWithNoUsernameHTML);
-  username_element_.Reset();
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateOnlyPasswordElement();
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
@@ -2010,12 +2012,7 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnAutofilledPasswordField) {
 TEST_F(PasswordAutofillAgentTest, NotShowPopupPasswordField) {
   // Load a form with no username and update test data.
   LoadHTML(kVisibleFormWithNoUsernameHTML);
-  username_element_.Reset();
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8(kPasswordName));
-  ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  UpdateOnlyPasswordElement();
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
@@ -2057,7 +2054,7 @@ TEST_F(PasswordAutofillAgentTest,
 TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
   LoadHTML(kFormHTMLWithTwoTextFields);
   UpdateUsernameAndPasswordElements();
-  blink::WebInputElement email_element = GetInputElementByID(kEmailName);
+  WebInputElement email_element = GetInputElementByID(kEmailName);
   SimulateUsernameChange("temp");
   SimulateUserInputChangeForElement(&email_element, "temp@google.com");
   SimulatePasswordChange("random");
@@ -2076,7 +2073,7 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
 TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   LoadHTML(kFormHTMLWithTwoTextFields);
   UpdateUsernameAndPasswordElements();
-  blink::WebInputElement email_element = GetInputElementByID(kEmailName);
+  WebInputElement email_element = GetInputElementByID(kEmailName);
   SimulateUsernameChange("temp");
   SimulateUserInputChangeForElement(&email_element, "temp@google.com");
   SimulatePasswordChange("random");
@@ -2184,7 +2181,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   WebElement element =
       document.GetElementById(WebString::FromUTF8("new_password"));
   ASSERT_FALSE(element.IsNull());
-  password_element_ = element.To<blink::WebInputElement>();
+  password_element_ = element.To<WebInputElement>();
 
   // Update fill_data_ for the new form and simulate filling. Pretend as if
   // the password manager didn't detect a username field so it will try to
@@ -2276,11 +2273,11 @@ TEST_F(PasswordAutofillAgentTest,
 // form is submitted.
 TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
   LoadHTML(kCreditCardFormHTML);
-  blink::WebInputElement credit_card_owner_element =
+  WebInputElement credit_card_owner_element =
       GetInputElementByID(kCreditCardOwnerName);
-  blink::WebInputElement credit_card_number_element =
+  WebInputElement credit_card_number_element =
       GetInputElementByID(kCreditCardNumberName);
-  blink::WebInputElement credit_card_verification_element =
+  WebInputElement credit_card_verification_element =
       GetInputElementByID(kCreditCardVerificationName);
   SimulateUserInputChangeForElement(&credit_card_owner_element, "JohnSmith");
   SimulateUserInputChangeForElement(&credit_card_number_element,
@@ -2636,10 +2633,10 @@ TEST_F(PasswordAutofillAgentTest,
     bool has_fillable_username =
         (kEmpty != test_case.fill_data_username_field_name);
     if (has_fillable_username) {
-      username_element_ = control_elements[0].To<blink::WebInputElement>();
-      password_element_ = control_elements[1].To<blink::WebInputElement>();
+      username_element_ = control_elements[0].To<WebInputElement>();
+      password_element_ = control_elements[1].To<WebInputElement>();
     } else {
-      password_element_ = control_elements[0].To<blink::WebInputElement>();
+      password_element_ = control_elements[0].To<WebInputElement>();
     }
 
     UpdateOriginForHTML(test_case.html_form);
