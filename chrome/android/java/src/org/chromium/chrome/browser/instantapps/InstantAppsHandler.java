@@ -299,7 +299,7 @@ public class InstantAppsHandler {
         if (InstantAppsSettings.isInstantAppDefault(tab.getWebContents(), url)) {
             return launchInstantAppForNavigation(context, url, referrer);
         }
-        return startCheckForInstantApps(context, url, referrer, tab.getWebContents());
+        return startCheckForInstantApps(context, url, referrer, tab);
     }
 
     /**
