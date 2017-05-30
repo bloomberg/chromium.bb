@@ -97,6 +97,10 @@ void DirectRenderer::Initialize() {
       allow_empty_swap_ = true;
     if (context_provider->ContextCapabilities().dc_layers)
       supports_dc_layers_ = true;
+    if (context_provider->ContextCapabilities()
+            .disable_non_empty_post_sub_buffers) {
+      use_partial_swap_ = false;
+    }
   }
 
   initialized_ = true;

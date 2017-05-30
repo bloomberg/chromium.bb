@@ -288,11 +288,12 @@ bool ClientBase::Init(const InitParams& params) {
     make_current_.reset(
         new ui::ScopedMakeCurrent(gl_context_.get(), gl_surface_.get()));
 
-    DCHECK(gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_fence_sync"));
+    if (gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external") ||
+        gl::GLSurfaceEGL::HasEGLExtension("EGL_ARM_implicit_external_sync")) {
+      egl_sync_type_ = EGL_SYNC_FENCE_KHR;
+    }
     if (gl::GLSurfaceEGL::HasEGLExtension("EGL_ANDROID_native_fence_sync")) {
       egl_sync_type_ = EGL_SYNC_NATIVE_FENCE_ANDROID;
-    } else {
-      egl_sync_type_ = EGL_SYNC_FENCE_KHR;
     }
 
     native_interface = sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
