@@ -978,7 +978,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
     UnitlessQuirk) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken || token.GetType() == kNumberToken) {
-    return ConsumeAngle(range, context, UseCounter::kUnitlessZeroAngleGradient);
+    return ConsumeAngle(range, context, WTF::Optional<UseCounter::Feature>());
   }
   if (token.GetType() == kPercentageToken)
     return ConsumePercent(range, value_range);
@@ -1222,7 +1222,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   const CSSPrimitiveValue* from_angle = nullptr;
   if (ConsumeIdent<CSSValueFrom>(args)) {
     if (!(from_angle = ConsumeAngle(args, context,
-                                    UseCounter::kUnitlessZeroAngleGradient)))
+                                    WTF::Optional<UseCounter::Feature>())))
       return nullptr;
   }
 
