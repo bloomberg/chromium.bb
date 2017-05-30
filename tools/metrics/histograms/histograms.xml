@@ -92228,37 +92228,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="PurgeAndSuspendExperiment" separator=".">
-  <suffix name="BlinkGCKB">
+  <suffix base="true" name="BlinkGCKB"
+      label="Constrained to the BlinkGC allocator">
     <obsolete>
       Derecated as of 05/2017. Replaced with BlinkGCKB.30min, 60min, and 90min
       to investigate growth of BlinkGC memory usage more deeply.
     </obsolete>
   </suffix>
-  <suffix name="DiscardableKB">
+  <suffix base="true" name="DiscardableKB"
+      label="Constrained to discardable memory usage">
     <obsolete>
       Derecated as of 05/2017. Replaced with DiscardableKB.30min, 60min, and
       90min to investigate growth of discardable memory usage more deeply.
     </obsolete>
   </suffix>
-  <suffix name="PartitionAllocKB">
+  <suffix base="true" name="PartitionAllocKB"
+      label="Constrained to the ParitionAlloc allocator">
     <obsolete>
       Derecated as of 05/2017. Replaced with PartitionAllocKB.30min, 60min, and
       90min to investigate growth of PartitionAlloc memory usage more deeply.
     </obsolete>
   </suffix>
-  <suffix name="MallocKB">
+  <suffix base="true" name="MallocKB" label="Constrained to malloc usage">
     <obsolete>
       Derecated as of 05/2017. Replaced with MallocKB.30min, 60min, and 90min to
       investigate growth of malloc memory usage more deeply.
     </obsolete>
   </suffix>
-  <suffix name="TotalAllocatedKB">
+  <suffix base="true" name="TotalAllocatedKB"
+      label="Summed over the PartitionAlloc, malloc, discardable memory,
+             mainThreadIsolate() and BlinkGC allocators">
     <obsolete>
       Derecated as of 05/2017. Replaced with TotalAllocatedKB.30min, 60min, and
       90min to investigate growth of renderer total memory usage more deeply.
     </obsolete>
   </suffix>
-  <suffix name="V8MainThreadIsolateKB">
+  <suffix base="true" name="V8MainThreadIsolateKB"
+      label="Constrained to memory usage by mainThreadIsolate()">
     <obsolete>
       Derecated as of 05/2017. Replaced with V8MainThreadIsolateKB.30min, 60min,
       and 90min to investigate growth of v8 memory usage more deeply.
@@ -92274,14 +92280,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Constrained to each allocator 60min after purging"/>
   <suffix name="90min"
       label="Constrained to each allocator 90min after purging"/>
-  <affected-histogram name="PurgeAndSuspend.Experimental.MemoryGrowth">
-    <with-suffix name="BlinkGCKB"/>
-    <with-suffix name="DiscardableKB"/>
-    <with-suffix name="MallocKB"/>
-    <with-suffix name="PartitionAllocKB"/>
-    <with-suffix name="TotalAllocatedKB"/>
-    <with-suffix name="V8MainThreadIsolateKB"/>
-  </affected-histogram>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB"/>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB"/>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB"/>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB"/>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB"/>
+  <affected-histogram
+      name="PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="QueryTimeSuffix" separator=".">
