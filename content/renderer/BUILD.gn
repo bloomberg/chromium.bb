@@ -233,6 +233,8 @@ target(link_target_type, "renderer") {
     "media/cdm/ppapi_decryptor.h",
     "media/cdm/render_cdm_factory.cc",
     "media/cdm/render_cdm_factory.h",
+    "media/media_factory.cc",
+    "media/media_factory.h",
     "media/media_permission_dispatcher.cc",
     "media/media_permission_dispatcher.h",
     "media/midi_message_filter.cc",
