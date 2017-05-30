@@ -5,6 +5,8 @@
 
 // NOTE: If you modify this file, you also have to change its hash in
 // local_ntp.html and in LocalNtpSource::GetContentSecurityPolicyScriptSrc.
+// To calculate the sum execute the following command
+// sha256sum local_ntp.js | cut -d " " -f 1 | xxd -r -p | base64
 
 
 /**
@@ -637,7 +639,7 @@ function init() {
     document.body.appendChild(ogScript);
     ogScript.onload = function() {
       injectOneGoogleBar(og.html, og.end_of_body_html);
-    }
+    };
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
@@ -717,9 +719,9 @@ function injectOneGoogleBar(barHtml, endOfBodyHtml) {
         endOfBodyScript.src =
             'chrome-search://local-ntp/one-google/end-of-body.js';
         document.body.appendChild(endOfBodyScript);
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 

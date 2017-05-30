@@ -196,7 +196,7 @@ var showTiles = function(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
   countLoad();
   hideOverflowTiles(info);
-}
+};
 
 
 /**
