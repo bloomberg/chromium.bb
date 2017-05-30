@@ -28,6 +28,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   // Implements WorkletGlobalScopeProxy.
   void FetchAndInvokeScript(const KURL& module_url_record,
                             WebURLRequest::FetchCredentialsMode,
+                            RefPtr<WebTaskRunner> outside_settings_task_runner,
                             WorkletPendingTasks*) override;
   void EvaluateScript(const ScriptSourceCode&) override;
   void TerminateWorkletGlobalScope() override;

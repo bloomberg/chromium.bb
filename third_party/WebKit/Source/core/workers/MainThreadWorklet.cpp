@@ -7,9 +7,11 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -56,9 +58,12 @@ void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
       ParseCredentialsOption(options.credentials());
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
-  // TODO(nhiroki): outsideSettings will be used for posting a task to the
-  // document's responsible event loop. We could use a task runner for the
-  // purpose.
+  // In the specification, outsideSettings is used for posting a task to the
+  // document's responsible event loop. In our implementation, we use the
+  // document's UnspecedLoading task runner as that is what we commonly use for
+  // module loading.
+  RefPtr<WebTaskRunner> outside_settings_task_runner =
+      TaskRunnerHelper::Get(TaskType::kUnspecedLoading, GetExecutionContext());
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."
   // TODO(nhiroki): Implement moduleResponsesMap (https://crbug.com/627945).
@@ -91,7 +96,7 @@ void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
     proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                pending_tasks);
+                                outside_settings_task_runner, pending_tasks);
   }
 }
 

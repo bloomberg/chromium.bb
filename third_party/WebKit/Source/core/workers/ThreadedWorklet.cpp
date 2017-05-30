@@ -15,8 +15,7 @@
 
 namespace blink {
 
-ThreadedWorklet::ThreadedWorklet(LocalFrame* frame)
-    : Worklet(frame), frame_(frame) {}
+ThreadedWorklet::ThreadedWorklet(LocalFrame* frame) : Worklet(frame) {}
 
 void ThreadedWorklet::FetchAndInvokeScript(const KURL& module_url_record,
                                            const WorkletOptions&,
@@ -28,8 +27,8 @@ void ThreadedWorklet::FetchAndInvokeScript(const KURL& module_url_record,
   if (!IsInitialized())
     Initialize();
 
-  WorkletScriptLoader* script_loader =
-      WorkletScriptLoader::Create(frame_->GetDocument()->Fetcher(), this);
+  WorkletScriptLoader* script_loader = WorkletScriptLoader::Create(
+      ToDocument(GetExecutionContext())->Fetcher(), this);
   loader_to_resolver_map_.Set(script_loader, resolver);
   script_loader->FetchScript(module_url_record);
 }
@@ -57,11 +56,9 @@ void ThreadedWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   loader_to_resolver_map_.clear();
   if (IsInitialized())
     GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
-  frame_ = nullptr;
 }
 
 DEFINE_TRACE(ThreadedWorklet) {
-  visitor->Trace(frame_);
   visitor->Trace(loader_to_resolver_map_);
   Worklet::Trace(visitor);
 }
