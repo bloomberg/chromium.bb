@@ -100,7 +100,8 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
     return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
   }
 
-  ObservePolicy OnCommit(content::NavigationHandle* handle) override {
+  ObservePolicy OnCommit(content::NavigationHandle* handle,
+                         ukm::SourceId source_id) override {
     const bool should_ignore =
         handle->GetURL().spec().find("ignore-on-commit") != std::string::npos;
     return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;

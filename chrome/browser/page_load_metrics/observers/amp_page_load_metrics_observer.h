@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/ukm/ukm_source.h"
 
 namespace content {
 class NavigationHandle;
@@ -40,7 +41,8 @@ class AMPPageLoadMetricsObserver
   ~AMPPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
   void OnCommitSameDocumentNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDomContentLoadedEventStart(

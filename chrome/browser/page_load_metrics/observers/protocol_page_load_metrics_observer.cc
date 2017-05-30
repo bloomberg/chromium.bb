@@ -16,7 +16,8 @@ ProtocolPageLoadMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ProtocolPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   connection_info_ = navigation_handle->GetConnectionInfo();
   return CONTINUE_OBSERVING;
 }

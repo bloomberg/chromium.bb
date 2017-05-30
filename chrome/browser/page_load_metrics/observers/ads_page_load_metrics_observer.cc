@@ -81,7 +81,8 @@ AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;

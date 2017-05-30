@@ -63,8 +63,7 @@ UkmPageLoadMetricsObserver::CreateIfNeeded(content::WebContents* web_contents) {
 UkmPageLoadMetricsObserver::UkmPageLoadMetricsObserver(
     net::NetworkQualityEstimator::NetworkQualityProvider*
         network_quality_provider)
-    : network_quality_provider_(network_quality_provider),
-      source_id_(ukm::UkmRecorder::GetNewSourceID()) {}
+    : network_quality_provider_(network_quality_provider) {}
 
 UkmPageLoadMetricsObserver::~UkmPageLoadMetricsObserver() = default;
 
@@ -93,7 +92,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   return CONTINUE_OBSERVING;
@@ -104,7 +104,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
-  RecordTimingMetrics(timing);
+  RecordTimingMetrics(timing, info.source_id);
   return STOP_OBSERVING;
 }
 
@@ -113,7 +113,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing);
+  RecordTimingMetrics(timing, info.source_id);
   return STOP_OBSERVING;
 }
 
@@ -125,7 +125,7 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 
   ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
   std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_recorder->GetEntryBuilder(
-      source_id_, internal::kUkmPageLoadEventName);
+      extra_info.source_id, internal::kUkmPageLoadEventName);
   // Error codes have negative values, however we log net error code enum values
   // for UMA histograms using the equivalent positive value. For consistency in
   // UKM, we convert to a positive value here.
@@ -142,14 +142,15 @@ void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing);
+  RecordTimingMetrics(timing, info.source_id);
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    ukm::SourceId source_id) {
   ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_recorder->GetEntryBuilder(
-      source_id_, internal::kUkmPageLoadEventName);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder->GetEntryBuilder(source_id, internal::kUkmPageLoadEventName);
   if (timing.parse_timing->parse_start) {
     builder->AddMetric(
         internal::kUkmParseStartName,
@@ -187,11 +188,8 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     const page_load_metrics::PageLoadExtraInfo& info,
     base::TimeTicks app_background_time) {
   ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
-  ukm_recorder->UpdateSourceURL(source_id_, info.start_url);
-  ukm_recorder->UpdateSourceURL(source_id_, info.url);
-
   std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_recorder->GetEntryBuilder(
-      source_id_, internal::kUkmPageLoadEventName);
+      info.source_id, internal::kUkmPageLoadEventName);
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(info,
                                                       app_background_time);

@@ -109,13 +109,14 @@ class TestDataReductionProxyMetricsObserver
   ~TestDataReductionProxyMetricsObserver() override {}
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  ObservePolicy OnCommit(
-      content::NavigationHandle* navigation_handle) override {
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override {
     DataReductionProxyData* data =
         DataForNavigationHandle(web_contents_, navigation_handle);
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_lofi_requested(lofi_used_);
-    return DataReductionProxyMetricsObserver::OnCommit(navigation_handle);
+    return DataReductionProxyMetricsObserver::OnCommit(navigation_handle,
+                                                       source_id);
   }
 
   DataReductionProxyPingbackClient* GetPingbackClient() const override {

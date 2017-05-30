@@ -125,7 +125,8 @@ DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
 // Check if the NavigationData indicates anything about the DataReductionProxy.
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and
   // non-nullptr in NavigationControllerImpl, which is a member of WebContents.

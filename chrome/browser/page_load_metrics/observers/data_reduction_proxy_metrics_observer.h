@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/ukm/ukm_source.h"
 
 namespace content {
 class BrowserContext;
@@ -67,7 +68,8 @@ class DataReductionProxyMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;

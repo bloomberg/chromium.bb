@@ -15,6 +15,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/user_input_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
@@ -291,7 +292,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   // committed load.
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
-  void MaybeUpdateURL(content::NavigationHandle* navigation_handle);
+  void RecordUkmSourceInfo();
 
   UserInputTracker input_tracker_;
 
@@ -369,6 +370,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
+
+  const ukm::SourceId source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
