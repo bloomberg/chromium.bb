@@ -362,6 +362,8 @@ void ArcAppListPrefs::ClearIconRequestRecord() {
 
 void ArcAppListPrefs::RequestIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor) {
+  DCHECK_NE(app_id, arc::kPlayStoreAppId);
+
   // ArcSessionManager can be terminated during test tear down, before callback
   // into this function.
   // TODO(victorhsieh): figure out the best way/place to handle this situation.
@@ -1101,10 +1103,13 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
     const std::string app_id = GetAppId(app->package_name, app->activity);
     apps_to_remove.erase(app_id);
 
-    // Mark app icons as invalidated.
-    ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
-    base::DictionaryValue* app_dict = update.Get();
-    app_dict->SetInteger(kInvalidatedIcons, invalidated_icon_mask);
+    // Mark app icons as invalidated. Ignore Play Store app since we provide its
+    // icon in Chrome resources.
+    if (app_id != arc::kPlayStoreAppId) {
+      ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
+      base::DictionaryValue* app_dict = update.Get();
+      app_dict->SetInteger(kInvalidatedIcons, invalidated_icon_mask);
+    }
 
     AddApp(*app);
   }
