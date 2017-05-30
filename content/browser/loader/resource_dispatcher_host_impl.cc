@@ -2663,30 +2663,13 @@ bool ResourceDispatcherHostImpl::ShouldServiceRequest(
   }
 
   // Check if the renderer is permitted to upload the requested files.
-  if (request_data.request_body.get()) {
-    const std::vector<ResourceRequestBodyImpl::Element>* uploads =
-        request_data.request_body->elements();
-    std::vector<ResourceRequestBodyImpl::Element>::const_iterator iter;
-    for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
-          !policy->CanReadFile(child_id, iter->path())) {
-        NOTREACHED() << "Denied unauthorized upload of "
-                     << iter->path().value();
-        return false;
-      }
-      if (iter->type() ==
-          ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
-        storage::FileSystemURL url =
-            requester_info->file_system_context()->CrackURL(
-                iter->filesystem_url());
-        if (!policy->CanReadFileSystemFile(child_id, url)) {
-          NOTREACHED() << "Denied unauthorized upload of "
-                       << iter->filesystem_url().spec();
-          return false;
-        }
-      }
-    }
+  if (!policy->CanReadRequestBody(child_id,
+                                  requester_info->file_system_context(),
+                                  request_data.request_body)) {
+    NOTREACHED() << "Denied unauthorized upload";
+    return false;
   }
+
   return true;
 }
 

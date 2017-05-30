@@ -2208,7 +2208,8 @@ void RenderFrameHostImpl::OnBeginNavigation(
   BeginNavigationParams validated_begin_params = begin_params;
   GetProcess()->FilterURL(true, &validated_begin_params.searchable_form_url);
 
-  if (!ValidateUploadParams(validated_params)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRequestBody(
+          GetSiteInstance(), validated_params.post_data)) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RFH_ILLEGAL_UPLOAD_PARAMS);
     return;
@@ -4005,36 +4006,6 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         GetProcess(), last_committed_site_url_);
   }
-}
-
-bool RenderFrameHostImpl::ValidateUploadParams(
-    const CommonNavigationParams& common_params) {
-  if (!common_params.post_data.get())
-    return true;
-
-  // Check if the renderer is permitted to upload the requested files.
-  const std::vector<ResourceRequestBodyImpl::Element>* uploads =
-      common_params.post_data->elements();
-  std::vector<ResourceRequestBodyImpl::Element>::const_iterator iter;
-  ChildProcessSecurityPolicyImpl* security_policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-    if (iter->type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
-        !security_policy->CanReadFile(GetProcess()->GetID(), iter->path())) {
-      return false;
-    }
-    if (iter->type() ==
-        ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM) {
-      StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
-          GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
-      storage::FileSystemURL url =
-          storage_partition->GetFileSystemContext()->CrackURL(
-              iter->filesystem_url());
-      if (!security_policy->CanReadFileSystemFile(GetProcess()->GetID(), url))
-        return false;
-    }
-  }
-  return true;
 }
 
 #if defined(OS_ANDROID)
