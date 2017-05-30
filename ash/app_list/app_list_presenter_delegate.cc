@@ -77,8 +77,6 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
   if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
-  WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
-  window->GetRootWindowController()->GetShelf()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -111,11 +109,10 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::Get()->AddPreTargetHandler(this);
-  Shelf* shelf = Shelf::ForWindow(root_window);
-  shelf->AddObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
+  Shelf* shelf = Shelf::ForWindow(root_window);
   view->SetDragAndDropHostOfCurrentAppList(
       shelf->shelf_widget()->GetDragAndDropHostForAppList());
 }
@@ -237,13 +234,6 @@ void AppListPresenterDelegate::OnKeyboardClosed() {}
 void AppListPresenterDelegate::OnOverviewModeStarting() {
   if (is_visible_)
     presenter_->Dismiss();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, ShelfObserver implementation:
-
-void AppListPresenterDelegate::OnShelfIconPositionsChanged() {
-  UpdateBounds();
 }
 
 }  // namespace ash

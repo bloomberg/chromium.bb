@@ -388,7 +388,7 @@ aura::client::ActivationClient* Shell::activation_client() {
 
 void Shell::UpdateShelfVisibility() {
   for (WmWindow* root : shell_port_->GetAllRootWindows())
-    root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
+    root->GetRootWindowController()->shelf()->UpdateVisibilityState();
 }
 
 PrefService* Shell::GetActiveUserPrefService() const {
@@ -665,7 +665,7 @@ Shell::~Shell() {
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
   for (WmWindow* root : shell_port_->GetAllRootWindows())
-    root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
+    root->GetRootWindowController()->shelf()->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
   DeleteSystemTrayDelegate();
 
