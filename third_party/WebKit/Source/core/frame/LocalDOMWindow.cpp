@@ -1180,21 +1180,6 @@ double LocalDOMWindow::devicePixelRatio() const {
   return GetFrame()->DevicePixelRatio();
 }
 
-void LocalDOMWindow::scrollViewportTo(ScrollableArea* viewport,
-                                      const ScrollOffset& offset,
-                                      ScrollBehavior scroll_behavior) const {
-  if (SmoothScrollSequencer* sequencer =
-          GetFrame()->GetPage()->GetSmoothScrollSequencer()) {
-    sequencer->AbortAnimations();
-    if (scroll_behavior == kScrollBehaviorSmooth) {
-      sequencer->QueueAnimation(viewport, offset);
-      sequencer->RunQueuedAnimations();
-    } else {
-      viewport->SetScrollOffset(offset, kProgrammaticScroll, scroll_behavior);
-    }
-  }
-}
-
 void LocalDOMWindow::scrollBy(double x,
                               double y,
                               ScrollBehavior scroll_behavior) const {
@@ -1222,7 +1207,8 @@ void LocalDOMWindow::scrollBy(double x,
   ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
                             y * GetFrame()->PageZoomFactor());
 
-  scrollViewportTo(viewport, current_offset + scaled_delta, scroll_behavior);
+  viewport->SetScrollOffset(current_offset + scaled_delta, kProgrammaticScroll,
+                            scroll_behavior);
 }
 
 void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
@@ -1263,7 +1249,8 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   ScrollableArea* viewport = page->GetSettings().GetInertVisualViewport()
                                  ? view->LayoutViewportScrollableArea()
                                  : view->GetScrollableArea();
-  scrollViewportTo(viewport, layout_offset, kScrollBehaviorAuto);
+  viewport->SetScrollOffset(layout_offset, kProgrammaticScroll,
+                            kScrollBehaviorAuto);
 }
 
 void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
@@ -1310,7 +1297,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
 
-  scrollViewportTo(viewport, ScrollOffset(scaled_x, scaled_y), scroll_behavior);
+  viewport->SetScrollOffset(ScrollOffset(scaled_x, scaled_y),
+                            kProgrammaticScroll, scroll_behavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y) const {

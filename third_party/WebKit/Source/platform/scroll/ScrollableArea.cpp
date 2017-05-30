@@ -37,7 +37,6 @@
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/SmoothScrollSequencer.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;
@@ -228,7 +227,7 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
   CancelScrollAnimation();
 
   if (scroll_behavior == kScrollBehaviorSmooth)
-    GetProgrammaticScrollAnimator().AnimateToOffset(offset, true);
+    GetProgrammaticScrollAnimator().AnimateToOffset(offset);
   else
     GetProgrammaticScrollAnimator().ScrollToOffsetWithoutAnimation(offset);
 }
@@ -256,7 +255,6 @@ void ScrollableArea::UserScrollHelper(const ScrollOffset& offset,
 LayoutRect ScrollableArea::ScrollIntoView(const LayoutRect& rect_in_content,
                                           const ScrollAlignment& align_x,
                                           const ScrollAlignment& align_y,
-                                          bool is_smooth,
                                           ScrollType) {
   // TODO(bokan): This should really be implemented here but ScrollAlignment is
   // in Core which is a dependency violation.

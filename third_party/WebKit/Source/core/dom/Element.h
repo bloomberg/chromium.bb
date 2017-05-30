@@ -65,8 +65,6 @@ class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
 class ResizeObserver;
-class ScrollIntoViewOptions;
-class ScrollIntoViewOptionsOrBoolean;
 class ScrollState;
 class ScrollStateCallback;
 class ScrollToOptions;
@@ -229,9 +227,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // attributes.
   AttributeCollection AttributesWithoutUpdate() const;
 
-  void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
   void scrollIntoView(bool align_to_top = true);
-  void scrollIntoViewWithOptions(const ScrollIntoViewOptions&);
   void scrollIntoViewIfNeeded(bool center_if_needed = true);
 
   int OffsetLeft();
