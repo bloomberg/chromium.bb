@@ -53,7 +53,8 @@ OmniboxSuggestionUsedMetricsObserver::OnHidden(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OmniboxSuggestionUsedMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   transition_type_ = navigation_handle->GetPageTransition();
   return (transition_type_ & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0
              ? CONTINUE_OBSERVING

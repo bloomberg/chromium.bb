@@ -84,7 +84,8 @@ AMPPageLoadMetricsObserver::~AMPPageLoadMetricsObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AMPPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   current_url_ = navigation_handle->GetURL();
   view_type_ = GetAMPViewType(current_url_);
   return CONTINUE_OBSERVING;

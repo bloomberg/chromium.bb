@@ -150,7 +150,8 @@ SubresourceFilterMetricsObserver::FlushMetricsOnAppEnterBackground(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SubresourceFilterMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   const auto* subres_filter =
       ContentSubresourceFilterDriverFactory::FromWebContents(
           navigation_handle->GetWebContents());

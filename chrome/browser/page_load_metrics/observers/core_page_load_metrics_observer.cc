@@ -269,7 +269,8 @@ CorePageLoadMetricsObserver::OnRedirect(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
   transition_ = navigation_handle->GetPageTransition();
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();

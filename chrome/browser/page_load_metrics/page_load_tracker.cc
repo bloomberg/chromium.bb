@@ -12,10 +12,12 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -175,7 +177,8 @@ PageLoadTracker::PageLoadTracker(
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface),
-      metrics_update_dispatcher_(this, navigation_handle, embedder_interface) {
+      metrics_update_dispatcher_(this, navigation_handle, embedder_interface),
+      source_id_(ukm::UkmRecorder::GetNewSourceID()) {
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
@@ -326,11 +329,17 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   page_transition_ = navigation_handle->GetPageTransition();
   user_initiated_info_.user_gesture = navigation_handle->HasUserGesture();
 
-  INVOKE_AND_PRUNE_OBSERVERS(
-      observers_, ShouldObserveMimeType,
-      navigation_handle->GetWebContents()->GetContentsMimeType());
+  const std::string& mime_type =
+      navigation_handle->GetWebContents()->GetContentsMimeType();
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, ShouldObserveMimeType, mime_type);
 
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle);
+  // Only record page load UKM data for standard web page mime types, such as
+  // HTML and XHTML.
+  if (PageLoadMetricsObserver::IsStandardWebPageMimeType(mime_type))
+    RecordUkmSourceInfo();
+
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle,
+                             source_id_);
   LogAbortChainHistograms(navigation_handle);
 }
 
@@ -355,6 +364,16 @@ void PageLoadTracker::FailedProvisionalLoad(
   failed_provisional_load_info_.reset(new FailedProvisionalLoadInfo(
       failed_load_time - navigation_handle->NavigationStart(),
       navigation_handle->GetNetErrorCode()));
+  RecordUkmSourceInfo();
+}
+
+void PageLoadTracker::RecordUkmSourceInfo() {
+  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  if (!ukm_recorder)
+    return;
+
+  ukm_recorder->UpdateSourceURL(source_id_, start_url_);
+  ukm_recorder->UpdateSourceURL(source_id_, url_);
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
@@ -481,7 +500,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
       started_in_foreground_, user_initiated_info_, url(), start_url_,
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
       page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
-      metrics_update_dispatcher_.subframe_metadata());
+      metrics_update_dispatcher_.subframe_metadata(), source_id_);
 }
 
 bool PageLoadTracker::HasMatchingNavigationRequestID(

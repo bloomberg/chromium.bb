@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "components/ukm/ukm_service.h"
+#include "components/ukm/ukm_source.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
 
@@ -56,7 +56,8 @@ class UkmPageLoadMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
 
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -77,7 +78,8 @@ class UkmPageLoadMetricsObserver
   // Records page load timing related metrics available in PageLoadTiming, such
   // as first contentful paint.
   void RecordTimingMetrics(
-      const page_load_metrics::mojom::PageLoadTiming& timing);
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      ukm::SourceId source_id);
 
   // Records metrics based on the PageLoadExtraInfo struct, as well as updating
   // the URL. |app_background_time| should be set to a timestamp if the app was
@@ -88,9 +90,6 @@ class UkmPageLoadMetricsObserver
 
   net::NetworkQualityEstimator::NetworkQualityProvider* const
       network_quality_provider_;
-
-  // Unique UKM identifier for the page load we are recording metrics for.
-  const ukm::SourceId source_id_;
 
   // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =
