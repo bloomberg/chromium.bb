@@ -4842,6 +4842,7 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _))
       .WillOnce(SetArgPointee<4>(lost_packets));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  EXPECT_CALL(*listener, OnPacketRetransmitted(3)).Times(1);
   ProcessAckPacket(&frame);
 }
 
@@ -4874,6 +4875,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
   // trigger the callback.
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm_, SpuriousRetransmitDetected(_, _, _, _));
   QuicAckFrame second_ack_frame = InitAckFrame(5);
   ProcessAckPacket(&second_ack_frame);
 }
@@ -4948,6 +4950,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
   // Now we get an ACK for packet 2, which was previously nacked.
   EXPECT_CALL(*listener, OnPacketAcked(3, _));
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm_, SpuriousRetransmitDetected(_, _, _, _));
   QuicAckFrame second_ack_frame = InitAckFrame(4);
   ProcessAckPacket(&second_ack_frame);
 
