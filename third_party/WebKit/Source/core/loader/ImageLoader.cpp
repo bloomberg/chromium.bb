@@ -29,7 +29,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/events/Event.h"
-#include "core/events/EventSender.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -55,18 +54,6 @@
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
-
-static ImageEventSender& LoadEventSender() {
-  DEFINE_STATIC_LOCAL(ImageEventSender, sender,
-                      (ImageEventSender::Create(EventTypeNames::load)));
-  return sender;
-}
-
-static ImageEventSender& ErrorEventSender() {
-  DEFINE_STATIC_LOCAL(ImageEventSender, sender,
-                      (ImageEventSender::Create(EventTypeNames::error)));
-  return sender;
-}
 
 static inline bool PageIsBeingDismissed(Document* document) {
   return document->PageDismissalEventBeingDispatched() !=
@@ -156,8 +143,6 @@ class ImageLoader::Task {
 
 ImageLoader::ImageLoader(Element* element)
     : element_(element),
-      has_pending_load_event_(false),
-      has_pending_error_event_(false),
       image_complete_(true),
       loading_image_document_(false),
       suppress_error_events_(false) {
@@ -169,8 +154,8 @@ ImageLoader::~ImageLoader() {}
 void ImageLoader::Dispose() {
   RESOURCE_LOADING_DVLOG(1)
       << "~ImageLoader " << this
-      << "; has_pending_load_event_=" << has_pending_load_event_
-      << ", has_pending_error_event_=" << has_pending_error_event_;
+      << "; has pending load event=" << pending_load_event_.IsActive()
+      << ", has pending error event=" << pending_error_event_.IsActive();
 
   if (image_) {
     image_->RemoveObserver(this);
@@ -213,14 +198,10 @@ void ImageLoader::SetImageWithoutConsideringPendingLoadEvent(
   DCHECK(failed_load_url_.IsEmpty());
   ImageResourceContent* old_image = image_.Get();
   if (new_image != old_image) {
-    if (has_pending_load_event_) {
-      LoadEventSender().CancelEvent(this);
-      has_pending_load_event_ = false;
-    }
-    if (has_pending_error_event_) {
-      ErrorEventSender().CancelEvent(this);
-      has_pending_error_event_ = false;
-    }
+    if (pending_load_event_.IsActive())
+      pending_load_event_.Cancel();
+    if (pending_error_event_.IsActive())
+      pending_error_event_.Cancel();
     UpdateImageState(new_image);
     if (new_image) {
       new_image->AddObserver(this);
@@ -257,13 +238,18 @@ static void ConfigureRequest(
 inline void ImageLoader::DispatchErrorEvent() {
   // There can be cases where DispatchErrorEvent() is called when there is
   // already a scheduled error event for the previous load attempt.
-  // In such cases we cancel the previous event and then re-schedule a new
-  // error event here. crbug.com/722500
-  if (has_pending_error_event_)
-    ErrorEventSender().CancelEvent(this);
-
-  has_pending_error_event_ = true;
-  ErrorEventSender().DispatchEventSoon(this);
+  // In such cases we cancel the previous event (by overwriting
+  // |pending_error_event_|) and then re-schedule a new error event here.
+  // crbug.com/722500
+  pending_error_event_ =
+      TaskRunnerHelper::Get(TaskType::kDOMManipulation,
+                            &GetElement()->GetDocument())
+          ->PostCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::Bind(&ImageLoader::DispatchPendingErrorEvent,
+                        WrapPersistent(this),
+                        WTF::Passed(IncrementLoadEventDelayCount::Create(
+                            GetElement()->GetDocument()))));
 }
 
 inline void ImageLoader::CrossSiteOrCSPViolationOccurred(
@@ -365,10 +351,8 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       element_->GetLayoutObject()->IsImage() && new_image == old_image) {
     ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
-    if (has_pending_load_event_) {
-      LoadEventSender().CancelEvent(this);
-      has_pending_load_event_ = false;
-    }
+    if (pending_load_event_.IsActive())
+      pending_load_event_.Cancel();
 
     // Cancel error events that belong to the previous load, which is now
     // cancelled by changing the src attribute. If newImage is null and
@@ -376,10 +360,8 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     // posted by this load and we should not cancel the event.
     // FIXME: If both previous load and this one got blocked with an error, we
     // can receive one error event instead of two.
-    if (has_pending_error_event_ && new_image) {
-      ErrorEventSender().CancelEvent(this);
-      has_pending_error_event_ = false;
-    }
+    if (pending_error_event_.IsActive() && new_image)
+      pending_error_event_.Cancel();
 
     UpdateImageState(new_image);
 
@@ -514,7 +496,7 @@ void ImageLoader::ImageChanged(ImageResourceContent* content, const IntRect*) {
 void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
-      << "; has_pending_load_event_=" << has_pending_load_event_;
+      << "; has pending load event=" << pending_load_event_.IsActive();
 
   DCHECK(failed_load_url_.IsEmpty());
   DCHECK_EQ(resource, image_.Get());
@@ -550,12 +532,13 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
         ->UpdateUseCounters(GetElement()->GetDocument());
   }
 
-  if (loading_image_document_)
+  if (loading_image_document_) {
+    CHECK(!pending_load_event_.IsActive());
     return;
+  }
 
   if (resource->ErrorOccurred()) {
-    LoadEventSender().CancelEvent(this);
-    has_pending_load_event_ = false;
+    pending_load_event_.Cancel();
 
     if (resource->GetResourceError().IsAccessCheck()) {
       CrossSiteOrCSPViolationOccurred(
@@ -569,8 +552,17 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
       DispatchErrorEvent();
     return;
   }
-  has_pending_load_event_ = true;
-  LoadEventSender().DispatchEventSoon(this);
+
+  CHECK(!pending_load_event_.IsActive());
+  pending_load_event_ =
+      TaskRunnerHelper::Get(TaskType::kDOMManipulation,
+                            &GetElement()->GetDocument())
+          ->PostCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::Bind(&ImageLoader::DispatchPendingLoadEvent,
+                        WrapPersistent(this),
+                        WTF::Passed(IncrementLoadEventDelayCount::Create(
+                            GetElement()->GetDocument()))));
 }
 
 LayoutImageResource* ImageLoader::GetLayoutImageResource() {
@@ -613,39 +605,33 @@ bool ImageLoader::HasPendingEvent() const {
   if (image_ && !image_complete_ && !loading_image_document_)
     return true;
 
-  if (has_pending_load_event_ || has_pending_error_event_)
+  if (pending_load_event_.IsActive() || pending_error_event_.IsActive())
     return true;
 
   return false;
 }
 
-void ImageLoader::DispatchPendingEvent(ImageEventSender* event_sender) {
-  RESOURCE_LOADING_DVLOG(1) << "ImageLoader::dispatchPendingEvent " << this;
-  DCHECK(event_sender == &LoadEventSender() ||
-         event_sender == &ErrorEventSender());
-  const AtomicString& event_type = event_sender->EventType();
-  if (event_type == EventTypeNames::load)
-    DispatchPendingLoadEvent();
-  if (event_type == EventTypeNames::error)
-    DispatchPendingErrorEvent();
-}
-
-void ImageLoader::DispatchPendingLoadEvent() {
-  CHECK(has_pending_load_event_);
+void ImageLoader::DispatchPendingLoadEvent(
+    std::unique_ptr<IncrementLoadEventDelayCount> count) {
   if (!image_)
     return;
   CHECK(image_complete_);
-  has_pending_load_event_ = false;
   if (GetElement()->GetDocument().GetFrame())
     DispatchLoadEvent();
+
+  // Checks Document's load event synchronously here for performance.
+  // This is safe because DispatchPendingLoadEvent() is called asynchronously.
+  count->ClearAndCheckLoadEvent();
 }
 
-void ImageLoader::DispatchPendingErrorEvent() {
-  CHECK(has_pending_error_event_);
-  has_pending_error_event_ = false;
-
+void ImageLoader::DispatchPendingErrorEvent(
+    std::unique_ptr<IncrementLoadEventDelayCount> count) {
   if (GetElement()->GetDocument().GetFrame())
     GetElement()->DispatchEvent(Event::Create(EventTypeNames::error));
+
+  // Checks Document's load event synchronously here for performance.
+  // This is safe because DispatchPendingErrorEvent() is called asynchronously.
+  count->ClearAndCheckLoadEvent();
 }
 
 bool ImageLoader::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
@@ -654,14 +640,6 @@ bool ImageLoader::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
 
   policy = GetElement()->GetDocument().GetSettings()->GetImageAnimationPolicy();
   return true;
-}
-
-void ImageLoader::DispatchPendingLoadEvents() {
-  LoadEventSender().DispatchPendingEvents();
-}
-
-void ImageLoader::DispatchPendingErrorEvents() {
-  ErrorEventSender().DispatchPendingEvents();
 }
 
 void ImageLoader::ElementDidMoveToNewDocument() {

@@ -193,7 +193,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/ImageLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/PrerendererClient.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -3043,11 +3042,6 @@ void Document::ImplicitClose() {
   // We have to clear the parser, in case someone document.write()s from the
   // onLoad event handler, as in Radar 3206524.
   DetachParser();
-
-  if (GetFrame() && CanExecuteScripts(kNotAboutToExecuteScript)) {
-    ImageLoader::DispatchPendingLoadEvents();
-    ImageLoader::DispatchPendingErrorEvents();
-  }
 
   // JS running below could remove the frame or destroy the LayoutView so we
   // call those two functions repeatedly and don't save them on the stack.
