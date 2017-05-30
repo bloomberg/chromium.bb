@@ -16,6 +16,8 @@ $ for x in Linux_x64 Mac Win ; do \
         gs://chromium-browser-clang/$x/clang-$rev.tgz ; \
     gsutil cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmobjdump-$rev.tgz \
         gs://chromium-browser-clang/$x/llvmobjdump-$rev.tgz ; \
+    gsutil cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \
+        gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
     done
 $ gsutil cp -n -a public-read gs://chromium-browser-clang-staging/Linux_x64/llvmgold-$rev.tgz \
     gs://chromium-browser-clang/Linux_x64/llvmgold-$rev.tgz
