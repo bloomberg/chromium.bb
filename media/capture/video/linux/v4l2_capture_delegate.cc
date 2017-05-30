@@ -192,6 +192,9 @@ static bool IsBlacklistedControl(int control_id) {
     case V4L2_CID_TILT_RESET:
     case V4L2_CID_PAN_ABSOLUTE:
     case V4L2_CID_TILT_ABSOLUTE:
+    case V4L2_CID_ZOOM_ABSOLUTE:
+    case V4L2_CID_ZOOM_RELATIVE:
+    case V4L2_CID_ZOOM_CONTINUOUS:
     case V4L2_CID_PAN_SPEED:
     case V4L2_CID_TILT_SPEED:
     case V4L2_CID_PANTILT_CMD:
