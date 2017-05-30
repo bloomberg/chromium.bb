@@ -80,15 +80,15 @@ class TestExporterTest(unittest.TestCase):
             'pr_with_position',
             'pr_with_change_id',
             'create_pr',
-            'add_label',
+            'add_label "default"',
             'pr_with_position',
             'pr_with_change_id',
             'create_pr',
-            'add_label',
+            'add_label "default"',
             'pr_with_position',
             'pr_with_change_id',
             'create_pr',
-            'add_label',
+            'add_label "default"',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
             ('chromium-export-c881563d73', 'older fake text', 'older fake text'),
@@ -141,7 +141,7 @@ class TestExporterTest(unittest.TestCase):
             'merge_pull_request',
             'pr_with_position',
             'create_pr',
-            'add_label',
+            'add_label "default"',
             'pr_with_position',
             'pr_with_position',
             'get_pr_branch',
@@ -178,7 +178,8 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_with_change_id',
             'create_pr',
-            'add_label',
+            'add_label "default"',
+            'add_label "do not merge yet"',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
             ('chromium-export-cl-1',
