@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
@@ -29,8 +29,7 @@ class WindowedIncognitoObserver;
 // Provides access to ChromeOS perf data. perf aka "perf events" is a
 // performance profiling infrastructure built into the linux kernel. For more
 // information, see: https://perf.wiki.kernel.org/index.php/Main_Page.
-class PerfProvider : public base::NonThreadSafe,
-                     public chromeos::PowerManagerClient::Observer {
+class PerfProvider : public chromeos::PowerManagerClient::Observer {
  public:
   PerfProvider();
   ~PerfProvider() override;
@@ -254,6 +253,8 @@ class PerfProvider : public base::NonThreadSafe,
   // obsolete callbacks.
   SessionRestore::CallbackSubscription
       on_session_restored_callback_subscription_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfProvider> weak_factory_;
