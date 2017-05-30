@@ -28,7 +28,9 @@ class CHROMEOS_EXPORT PrinterDiscoverer {
     // still call OnPrintersFound if the set of available printers
     // changes, but the user can conclude that if a printer is currently
     // available and not in the list, we're not still looking for it.
-    virtual void OnDiscoveryInitialScanDone() = 0;
+    // TODO(justincarlson): Merge with OnPrintersFound when crbug.com/588234 is
+    // complete.
+    virtual void OnDiscoveryInitialScanDone(int printer_count) = 0;
 
     // Called with a collection of printers as they are discovered.  On each
     // call |printers| is the full set of known printers; it is not

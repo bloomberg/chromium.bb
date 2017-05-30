@@ -57085,6 +57085,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.PrintersDiscovered" units="printers">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The number of printers shown in the discovered printers dialog during
+    printer set up.  Only recorded on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Printing.CUPS.PrintJobsQueued" units="count">
   <owner>skau@chromium.org</owner>
   <summary>
