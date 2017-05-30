@@ -1505,12 +1505,12 @@
                   '|third_party/WebKit/public/platform/modules/screen_orientation',
     },
     'blink_script': {
-      'filepath': '|third_party/WebKit/Source/bindings/core/v8/.*Module.*' \
+      'filepath': 'third_party/WebKit/Source/bindings/core/v8/.*Module.*' \
                   '|third_party/WebKit/Source/bindings/core/v8/ScriptController.*' \
                   '|third_party/WebKit/Source/bindings/core/v8/ScriptSourceCode.*' \
                   '|third_party/WebKit/Source/bindings/core/v8/V8ScriptRunner.*'
                   '|third_party/WebKit/Source/core/dom/.*Modul.*' \
-                  '!third_party/WebKit/Source/core/dom/.*Script.*' \
+                  '|third_party/WebKit/Source/core/dom/.*Script.*' \
                   '|third_party/WebKit/Source/core/html/HTMLScriptElement.*' \
                   '|third_party/WebKit/Source/core/html/parser/HTMLParserScriptRunner.*' \
                   '|third_party/WebKit/Source/core/loader/modulescript/' \
