@@ -222,8 +222,12 @@ bool PDFiumFuzzerHelper::RenderPage(const FPDF_DOCUMENT& doc,
 // Initialize the library once for all runs of the fuzzer.
 struct TestCase {
   TestCase() {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
     InitializeV8ForPDFium(ProgramPath(), "", &natives_blob, &snapshot_blob,
                           &platform);
+#else
+    InitializeV8ForPDFium(ProgramPath(), &platform);
+#endif
 
     memset(&config, '\0', sizeof(config));
     config.version = 2;
