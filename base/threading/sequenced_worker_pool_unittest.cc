@@ -322,8 +322,9 @@ class SequencedWorkerPoolTest
     // workers to be created.
     ThreadBlocker blocker;
     for (size_t i = 0; i < kNumWorkerThreads; i++) {
-      pool()->PostTask(FROM_HERE, base::BindOnce(&TestTracker::BlockTask,
-                                                 tracker(), -1, &blocker));
+      pool()->PostWorkerTask(
+          FROM_HERE,
+          base::BindOnce(&TestTracker::BlockTask, tracker(), -1, &blocker));
     }
     tracker()->WaitUntilTasksBlocked(kNumWorkerThreads);
 
@@ -452,13 +453,13 @@ TEST_P(SequencedWorkerPoolTest, NamedTokens) {
 // Tests that posting a bunch of tasks (many more than the number of worker
 // threads) runs them all.
 TEST_P(SequencedWorkerPoolTest, LotsOfTasks) {
-  pool()->PostTask(FROM_HERE,
-                   base::BindOnce(&TestTracker::SlowTask, tracker(), 0));
+  pool()->PostWorkerTask(FROM_HERE,
+                         base::BindOnce(&TestTracker::SlowTask, tracker(), 0));
 
   const size_t kNumTasks = 20;
   for (size_t i = 1; i < kNumTasks; i++) {
-    pool()->PostTask(FROM_HERE,
-                     base::BindOnce(&TestTracker::FastTask, tracker(), i));
+    pool()->PostWorkerTask(
+        FROM_HERE, base::BindOnce(&TestTracker::FastTask, tracker(), i));
   }
 
   std::vector<int> result = tracker()->WaitUntilTasksComplete(kNumTasks);
@@ -474,15 +475,15 @@ TEST_P(SequencedWorkerPoolTest, LotsOfTasksTwoPools) {
   SequencedWorkerPoolOwner pool2(kNumWorkerThreads, "test2");
 
   base::Closure slow_task = base::Bind(&TestTracker::SlowTask, tracker(), 0);
-  pool1.pool()->PostTask(FROM_HERE, slow_task);
-  pool2.pool()->PostTask(FROM_HERE, slow_task);
+  pool1.pool()->PostWorkerTask(FROM_HERE, slow_task);
+  pool2.pool()->PostWorkerTask(FROM_HERE, slow_task);
 
   const size_t kNumTasks = 20;
   for (size_t i = 1; i < kNumTasks; i++) {
     base::Closure fast_task =
         base::Bind(&TestTracker::FastTask, tracker(), i);
-    pool1.pool()->PostTask(FROM_HERE, fast_task);
-    pool2.pool()->PostTask(FROM_HERE, fast_task);
+    pool1.pool()->PostWorkerTask(FROM_HERE, fast_task);
+    pool2.pool()->PostWorkerTask(FROM_HERE, fast_task);
   }
 
   std::vector<int> result =
@@ -497,9 +498,9 @@ TEST_P(SequencedWorkerPoolTest, Sequence) {
   const size_t kNumBackgroundTasks = kNumWorkerThreads - 1;
   ThreadBlocker background_blocker;
   for (size_t i = 0; i < kNumBackgroundTasks; i++) {
-    pool()->PostTask(FROM_HERE,
-                     base::BindOnce(&TestTracker::BlockTask, tracker(), i,
-                                    &background_blocker));
+    pool()->PostWorkerTask(FROM_HERE,
+                           base::BindOnce(&TestTracker::BlockTask, tracker(), i,
+                                          &background_blocker));
   }
   tracker()->WaitUntilTasksBlocked(kNumBackgroundTasks);
 
@@ -558,8 +559,8 @@ TEST_P(SequencedWorkerPoolTest, DISABLED_IgnoresAfterShutdown) {
   EnsureAllWorkersCreated();
   ThreadBlocker blocker;
   for (size_t i = 0; i < kNumWorkerThreads; i++) {
-    pool()->PostTask(FROM_HERE, base::BindOnce(&TestTracker::BlockTask,
-                                               tracker(), i, &blocker));
+    pool()->PostWorkerTask(FROM_HERE, base::BindOnce(&TestTracker::BlockTask,
+                                                     tracker(), i, &blocker));
   }
   tracker()->WaitUntilTasksBlocked(kNumWorkerThreads);
 
@@ -605,7 +606,7 @@ TEST_P(SequencedWorkerPoolTest, AllowsAfterShutdown) {
   // Start tasks to take all the threads and block them.
   const int kNumBlockTasks = static_cast<int>(kNumWorkerThreads);
   for (int i = 0; i < kNumBlockTasks; ++i) {
-    EXPECT_TRUE(pool()->PostTask(
+    EXPECT_TRUE(pool()->PostWorkerTask(
         FROM_HERE,
         base::BindOnce(&TestTracker::BlockTask, tracker(), i, &blocker)));
   }
@@ -669,7 +670,7 @@ TEST_P(SequencedWorkerPoolTest,
   // Start tasks to take all the threads and block them.
   const int kNumBlockTasks = static_cast<int>(kNumWorkerThreads);
   for (int i = 0; i < kNumBlockTasks; ++i) {
-    EXPECT_TRUE(pool()->PostTask(
+    EXPECT_TRUE(pool()->PostWorkerTask(
         FROM_HERE,
         base::BindOnce(&TestTracker::BlockTask, tracker(), i, &blocker)));
   }
@@ -725,8 +726,8 @@ TEST_P(SequencedWorkerPoolTest, DiscardOnShutdown) {
   EnsureAllWorkersCreated();
   ThreadBlocker blocker;
   for (size_t i = 0; i < kNumWorkerThreads; i++) {
-    pool()->PostTask(FROM_HERE, base::BindOnce(&TestTracker::BlockTask,
-                                               tracker(), i, &blocker));
+    pool()->PostWorkerTask(FROM_HERE, base::BindOnce(&TestTracker::BlockTask,
+                                                     tracker(), i, &blocker));
   }
   tracker()->WaitUntilTasksBlocked(kNumWorkerThreads);
 
@@ -993,14 +994,14 @@ TEST_P(SequencedWorkerPoolTest, FlushForTesting) {
   pool()->PostDelayedTask(FROM_HERE,
                           base::BindOnce(&TestTracker::FastTask, tracker(), 0),
                           TimeDelta::FromMinutes(5));
-  pool()->PostTask(FROM_HERE,
-                   base::BindOnce(&TestTracker::SlowTask, tracker(), 0));
+  pool()->PostWorkerTask(FROM_HERE,
+                         base::BindOnce(&TestTracker::SlowTask, tracker(), 0));
   const size_t kNumFastTasks = 20;
   for (size_t i = 0; i < kNumFastTasks; i++) {
-    pool()->PostTask(FROM_HERE,
-                     base::BindOnce(&TestTracker::FastTask, tracker(), 0));
+    pool()->PostWorkerTask(
+        FROM_HERE, base::BindOnce(&TestTracker::FastTask, tracker(), 0));
   }
-  pool()->PostTask(
+  pool()->PostWorkerTask(
       FROM_HERE, base::BindOnce(&TestTracker::PostAdditionalTasks, tracker(), 0,
                                 base::RetainedRef(pool()), true));
 
@@ -1077,9 +1078,9 @@ TEST_P(SequencedWorkerPoolTest, GetWorkerPoolAndSequenceTokenForCurrentThread) {
       token2, FROM_HERE,
       base::BindOnce(&CheckWorkerPoolAndSequenceToken, pool(), token2));
 
-  pool()->PostTask(FROM_HERE,
-                   base::BindOnce(&CheckWorkerPoolAndSequenceToken, pool(),
-                                  SequencedWorkerPool::SequenceToken()));
+  pool()->PostWorkerTask(
+      FROM_HERE, base::BindOnce(&CheckWorkerPoolAndSequenceToken, pool(),
+                                SequencedWorkerPool::SequenceToken()));
 
   pool()->FlushForTesting();
 }
