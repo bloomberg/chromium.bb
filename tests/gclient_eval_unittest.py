@@ -119,6 +119,13 @@ deps_os = {
       gclient_eval.Check(
           'include_rules = {}', '<string>', {}, {'include_rules': {}})
 
+  def test_recursedeps_list(self):
+    gclient_eval.Check(
+        'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]',
+        '<string>',
+        {},
+        {'recursedeps': [['src/third_party/angle', 'DEPS.chromium']]})
+
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL

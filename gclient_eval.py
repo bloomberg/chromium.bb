@@ -71,7 +71,11 @@ _GCLIENT_SCHEMA = schema.Schema({
 
     # Whitelists deps for which recursion should be enabled.
     schema.Optional('recursedeps'): [
-        schema.Optional(schema.Or(basestring, (basestring, basestring)))
+        schema.Optional(schema.Or(
+            basestring,
+            (basestring, basestring),
+            [basestring, basestring]
+        )),
     ],
 
     # Blacklists directories for checking 'include_rules'.
