@@ -307,7 +307,7 @@ else
 fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
-lib32_list="linux-libc-dev:i386"
+lib32_list="linux-libc-dev:i386 libpci3:i386"
 
 # arm cross toolchain packages needed to build chrome on armhf
 EM_REPO="deb http://emdebian.org/tools/debian/ jessie main"
