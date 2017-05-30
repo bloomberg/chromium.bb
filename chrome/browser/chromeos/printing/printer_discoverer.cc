@@ -75,7 +75,7 @@ class PrinterDiscovererImpl : public PrinterDiscoverer,
       // the observer the initial scan is done now.  This will change when we're
       // also doing network discovery -- we'll hold off on issuing this callback
       // until the network discovery is done as well.
-      observer->OnDiscoveryInitialScanDone();
+      observer->OnDiscoveryInitialScanDone(printers.size());
     }
   }
 

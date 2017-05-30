@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -413,7 +414,8 @@ void CupsPrintersHandler::OnPrintersFound(
   FireWebUIListener("on-printer-discovered", *printers_list);
 }
 
-void CupsPrintersHandler::OnDiscoveryInitialScanDone() {
+void CupsPrintersHandler::OnDiscoveryInitialScanDone(int printer_count) {
+  UMA_HISTOGRAM_COUNTS_100("Printing.CUPS.PrintersDiscovered", printer_count);
   FireWebUIListener("on-printer-discovery-done");
 }
 
