@@ -1,4 +1,3 @@
-BrowserTest.*
 # Failing test
 -BrowserTest.FullscreenBookmarkBar
 
