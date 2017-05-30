@@ -5,10 +5,10 @@
 #ifndef CompositorWorkerProxyClientImpl_h
 #define CompositorWorkerProxyClientImpl_h
 
+#include "core/animation/CompositorAnimator.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "web/CompositorAnimator.h"
 #include "web/CompositorProxyClientImpl.h"
 
 namespace blink {

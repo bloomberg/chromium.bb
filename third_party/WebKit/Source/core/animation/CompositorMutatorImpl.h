@@ -25,7 +25,7 @@ class CompositorMutatorClient;
 //
 // Owned by the control thread (unless threaded compositing is disabled).
 // Should be accessed only on the compositor thread.
-class CompositorMutatorImpl final : public CompositorMutator {
+class CORE_EXPORT CompositorMutatorImpl final : public CompositorMutator {
   WTF_MAKE_NONCOPYABLE(CompositorMutatorImpl);
 
  public:

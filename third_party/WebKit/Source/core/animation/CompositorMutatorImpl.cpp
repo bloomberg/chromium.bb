@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/CompositorMutatorImpl.h"
+#include "core/animation/CompositorMutatorImpl.h"
 
+#include "core/animation/CompositorAnimator.h"
 #include "core/animation/CustomCompositorAnimationManager.h"
 #include "core/dom/CompositorProxy.h"
 #include "platform/CrossThreadFunctional.h"
@@ -14,7 +15,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "web/CompositorAnimator.h"
 
 namespace blink {
 

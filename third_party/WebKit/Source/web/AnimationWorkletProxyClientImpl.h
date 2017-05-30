@@ -5,10 +5,10 @@
 #ifndef AnimationWorkletProxyClientImpl_h
 #define AnimationWorkletProxyClientImpl_h
 
+#include "core/animation/CompositorAnimator.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "web/CompositorAnimator.h"
 #include "web/CompositorProxyClientImpl.h"
 
 namespace blink {

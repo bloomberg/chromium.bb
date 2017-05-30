@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
@@ -70,7 +71,6 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/AnimationWorkletProxyClientImpl.h"
-#include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebPagePopupImpl.h"
