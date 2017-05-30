@@ -66,6 +66,8 @@
 #else
 #error Please add support for your platform in build/build_config.h
 #endif
+// NOTE: Adding a new port? Please follow
+// https://chromium.googlesource.com/chromium/src/+/master/docs/new_port_policy.md
 
 #if defined(USE_OPENSSL_CERTS) && defined(USE_NSS_CERTS)
 #error Cannot use both OpenSSL and NSS for certificates
