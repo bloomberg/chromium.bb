@@ -64,8 +64,12 @@ void SVGPointTearOff::setY(float f, ExceptionState& exception_state) {
 
 SVGPointTearOff* SVGPointTearOff::matrixTransform(SVGMatrixTearOff* matrix) {
   FloatPoint point = Target()->MatrixTransform(matrix->Value());
-  return SVGPointTearOff::Create(SVGPoint::Create(point), 0,
-                                 kPropertyIsNotAnimVal);
+  return CreateDetached(point);
+}
+
+SVGPointTearOff* SVGPointTearOff::CreateDetached(const FloatPoint& point) {
+  return Create(SVGPoint::Create(point), nullptr, kPropertyIsNotAnimVal,
+                QualifiedName::Null());
 }
 
 DEFINE_TRACE_WRAPPERS(SVGPointTearOff) {

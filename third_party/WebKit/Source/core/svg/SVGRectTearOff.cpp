@@ -79,6 +79,11 @@ void SVGRectTearOff::setHeight(float f, ExceptionState& exception_state) {
   CommitChange();
 }
 
+SVGRectTearOff* SVGRectTearOff::CreateDetached(const FloatRect& rect) {
+  return Create(SVGRect::Create(rect), nullptr, kPropertyIsNotAnimVal,
+                QualifiedName::Null());
+}
+
 DEFINE_TRACE_WRAPPERS(SVGRectTearOff) {
   visitor->TraceWrappers(contextElement());
 }
