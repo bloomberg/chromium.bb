@@ -11,6 +11,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Tests the implementation of IsLinkNavigation(). The function being tested
 // uses public NavigationManager interfaces and can be tested by using
 // TestNavigationManager that implements the same interface.
