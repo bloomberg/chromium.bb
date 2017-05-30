@@ -18,11 +18,11 @@
 - (instancetype)init NS_UNAVAILABLE;
 
 // The overlay view.
-@property(nonatomic, readonly) UIView* view;
+@property(nonatomic, strong, readonly) UIView* view;
 
 // Y offset for the overlay view. Used to adjust the y position of |_view|
 // within the snapshot.
-@property(nonatomic, readonly) CGFloat yOffset;
+@property(nonatomic, assign, readonly) CGFloat yOffset;
 
 @end
 

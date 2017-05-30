@@ -13,8 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -92,8 +90,7 @@ UIImage* ReadImageFromDisk(const base::FilePath& filePath) {
                           scale:[SnapshotCache snapshotScaleForDevice]];
 }
 
-void WriteImageToDisk(const base::scoped_nsobject<UIImage>& image,
-                      const base::FilePath& filePath) {
+void WriteImageToDisk(UIImage* image, const base::FilePath& filePath) {
   base::ThreadRestrictions::AssertIOAllowed();
   if (!image)
     return;
@@ -115,18 +112,16 @@ void WriteImageToDisk(const base::scoped_nsobject<UIImage>& image,
   }
 }
 
-void ConvertAndSaveGreyImage(
-    const base::FilePath& colorPath,
-    const base::FilePath& greyPath,
-    const base::scoped_nsobject<UIImage>& cachedImage) {
+void ConvertAndSaveGreyImage(const base::FilePath& color_image_path,
+                             const base::FilePath& grey_image_path,
+                             UIImage* color_image) {
   base::ThreadRestrictions::AssertIOAllowed();
-  base::scoped_nsobject<UIImage> colorImage = cachedImage;
-  if (!colorImage)
-    colorImage.reset([ReadImageFromDisk(colorPath) retain]);
-  if (!colorImage)
+  if (!color_image)
+    color_image = ReadImageFromDisk(color_image_path);
+  if (!color_image)
     return;
-  base::scoped_nsobject<UIImage> greyImage([GreyImage(colorImage) retain]);
-  WriteImageToDisk(greyImage, greyPath);
+  UIImage* grey_image = GreyImage(color_image);
+  WriteImageToDisk(grey_image, grey_image_path);
 }
 
 }  // anonymous namespace
@@ -134,25 +129,22 @@ void ConvertAndSaveGreyImage(
 @implementation SnapshotCache {
   // Cache to hold color snapshots in memory. n.b. Color snapshots are not
   // kept in memory on tablets.
-  base::scoped_nsobject<LRUCache> lruCache_;
+  LRUCache* lruCache_;
 
   // Temporary dictionary to hold grey snapshots for tablet side swipe. This
   // will be nil before -createGreyCache is called and after -removeGreyCache
   // is called.
-  base::scoped_nsobject<NSMutableDictionary> greyImageDictionary_;
-  NSSet* pinnedIDs_;
+  NSMutableDictionary<NSString*, UIImage*>* greyImageDictionary_;
 
   // Session ID of most recent pending grey snapshot request.
-  base::scoped_nsobject<NSString> mostRecentGreySessionId_;
+  NSString* mostRecentGreySessionId_;
   // Block used by pending request for a grey snapshot.
-  base::scoped_nsprotocol<GreyBlock> mostRecentGreyBlock_;
+  GreyBlock mostRecentGreyBlock_;
 
-  // Session ID and correspoinding UIImage for the snapshot that will likely
+  // Session ID and corresponding UIImage for the snapshot that will likely
   // be requested to be saved to disk when the application is backgrounded.
-  base::scoped_nsobject<NSString> backgroundingImageSessionId_;
-  base::scoped_nsobject<UIImage> backgroundingColorImage_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_SnapshotCache_;
+  NSString* backgroundingImageSessionId_;
+  UIImage* backgroundingColorImage_;
 }
 
 @synthesize pinnedIDs = pinnedIDs_;
@@ -165,9 +157,7 @@ void ConvertAndSaveGreyImage(
 - (id)init {
   if ((self = [super init])) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    propertyReleaser_SnapshotCache_.Init(self, [SnapshotCache class]);
-
-    lruCache_.reset([[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity]);
+    lruCache_ = [[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(handleLowMemory)
@@ -200,7 +190,6 @@ void ConvertAndSaveGreyImage(
       removeObserver:self
                 name:UIApplicationDidBecomeActiveNotification
               object:nil];
-  [super dealloc];
 }
 
 + (CGFloat)snapshotScaleForDevice {
@@ -230,12 +219,12 @@ void ConvertAndSaveGreyImage(
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
-      FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
+      FROM_HERE, base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
-        return base::scoped_nsobject<UIImage>([ReadImageFromDisk(
-            [SnapshotCache imagePathForSessionID:sessionID]) retain]);
+        return base::scoped_nsobject<UIImage>(
+            ReadImageFromDisk([SnapshotCache imagePathForSessionID:sessionID]));
       }),
-      base::BindBlock(^(base::scoped_nsobject<UIImage> image) {
+      base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
         if (image)
           [lruCache_ setObject:image forKey:sessionID];
         if (callback)
@@ -252,9 +241,8 @@ void ConvertAndSaveGreyImage(
 
   // Save the image to disk.
   web::WebThread::PostBlockingPoolSequencedTask(
-      kSequenceToken, FROM_HERE, base::BindBlock(^{
-        base::scoped_nsobject<UIImage> scoped_image([image retain]);
-        WriteImageToDisk(scoped_image,
+      kSequenceToken, FROM_HERE, base::BindBlockArc(^{
+        WriteImageToDisk(image,
                          [SnapshotCache imagePathForSessionID:sessionID]);
       }));
 }
@@ -264,8 +252,7 @@ void ConvertAndSaveGreyImage(
   [lruCache_ removeObjectForKey:sessionID];
 
   web::WebThread::PostBlockingPoolSequencedTask(
-      kSequenceToken, FROM_HERE,
-      base::BindBlock(^{
+      kSequenceToken, FROM_HERE, base::BindBlockArc(^{
         base::FilePath imagePath =
             [SnapshotCache imagePathForSessionID:sessionID];
         base::DeleteFile(imagePath, false);
@@ -330,8 +317,7 @@ void ConvertAndSaveGreyImage(
   // Copying the date, as the block must copy the value, not the reference.
   const base::Time dateCopy = date;
   web::WebThread::PostBlockingPoolSequencedTask(
-      kSequenceToken, FROM_HERE,
-      base::BindBlock(^{
+      kSequenceToken, FROM_HERE, base::BindBlockArc(^{
         std::set<base::FilePath> filesToKeep;
         for (NSString* sessionID : liveSessionIds) {
           base::FilePath curImagePath =
@@ -362,14 +348,14 @@ void ConvertAndSaveGreyImage(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!sessionID)
     return;
-  backgroundingImageSessionId_.reset([sessionID copy]);
-  backgroundingColorImage_.reset([[lruCache_ objectForKey:sessionID] retain]);
+  backgroundingImageSessionId_ = [sessionID copy];
+  backgroundingColorImage_ = [lruCache_ objectForKey:sessionID];
 }
 
 - (void)handleLowMemory {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  base::scoped_nsobject<NSMutableDictionary> dictionary(
-      [[NSMutableDictionary alloc] initWithCapacity:2]);
+  NSMutableDictionary<NSString*, UIImage*>* dictionary =
+      [NSMutableDictionary dictionaryWithCapacity:2];
   for (NSString* sessionID in pinnedIDs_) {
     UIImage* image = [lruCache_ objectForKey:sessionID];
     if (image)
@@ -396,7 +382,7 @@ void ConvertAndSaveGreyImage(
   if (greyImage)
     [greyImageDictionary_ setObject:greyImage forKey:sessionID];
   if ([sessionID isEqualToString:mostRecentGreySessionId_]) {
-    mostRecentGreyBlock_.get()(greyImage);
+    mostRecentGreyBlock_(greyImage);
     [self clearGreySessionInfo];
   }
 }
@@ -411,39 +397,40 @@ void ConvertAndSaveGreyImage(
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
-      FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
-        base::scoped_nsobject<UIImage> result([image retain]);
+      FROM_HERE, base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
+        base::scoped_nsobject<UIImage> result(image);
         // If the image is not in the cache, load it from disk.
-        if (!result)
-          result.reset([ReadImageFromDisk(
-              [SnapshotCache imagePathForSessionID:sessionID]) retain]);
+        if (!result) {
+          result.reset(ReadImageFromDisk(
+              [SnapshotCache imagePathForSessionID:sessionID]));
+        }
         if (result)
-          result.reset([GreyImage(result) retain]);
+          result.reset(GreyImage(result));
         return result;
       }),
-      base::BindBlock(^(base::scoped_nsobject<UIImage> greyImage) {
+      base::BindBlockArc(^(base::scoped_nsobject<UIImage> greyImage) {
         [self saveGreyImage:greyImage forKey:sessionID];
       }));
 }
 
 - (void)createGreyCache:(NSArray*)sessionIDs {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  greyImageDictionary_.reset(
-      [[NSMutableDictionary alloc] initWithCapacity:kGreyInitialCapacity]);
+  greyImageDictionary_ =
+      [NSMutableDictionary dictionaryWithCapacity:kGreyInitialCapacity];
   for (NSString* sessionID in sessionIDs)
     [self loadGreyImageAsync:sessionID];
 }
 
 - (void)removeGreyCache {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  greyImageDictionary_.reset();
+  greyImageDictionary_ = nil;
   [self clearGreySessionInfo];
 }
 
 - (void)clearGreySessionInfo {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  mostRecentGreySessionId_.reset();
-  mostRecentGreyBlock_.reset();
+  mostRecentGreySessionId_ = nil;
+  mostRecentGreyBlock_ = nil;
 }
 
 - (void)greyImageForSessionID:(NSString*)sessionID
@@ -455,8 +442,8 @@ void ConvertAndSaveGreyImage(
     callback(image);
     [self clearGreySessionInfo];
   } else {
-    mostRecentGreySessionId_.reset([sessionID copy]);
-    mostRecentGreyBlock_.reset([callback copy]);
+    mostRecentGreySessionId_ = [sessionID copy];
+    mostRecentGreyBlock_ = [callback copy];
   }
 }
 
@@ -474,7 +461,7 @@ void ConvertAndSaveGreyImage(
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
-      FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
+      FROM_HERE, base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         // Loading the file into NSData is more reliable.
         // -imageWithContentsOfFile would ocassionally claim the image was not a
@@ -489,9 +476,9 @@ void ConvertAndSaveGreyImage(
           return base::scoped_nsobject<UIImage>();
         DCHECK(callback);
         return base::scoped_nsobject<UIImage>(
-            [[UIImage imageWithData:imageData] retain]);
+            [UIImage imageWithData:imageData]);
       }),
-      base::BindBlock(^(base::scoped_nsobject<UIImage> image) {
+      base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
         if (!image) {
           [self retrieveImageForSessionID:sessionID
                                  callback:^(UIImage* local_image) {
@@ -517,14 +504,18 @@ void ConvertAndSaveGreyImage(
   // The color image may still be in memory.  Verify the sessionID matches.
   if (backgroundingColorImage_) {
     if (![backgroundingImageSessionId_ isEqualToString:sessionID]) {
-      backgroundingColorImage_.reset();
-      backgroundingImageSessionId_.reset();
+      backgroundingImageSessionId_ = nil;
+      backgroundingColorImage_ = nil;
     }
   }
 
-  web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ConvertAndSaveGreyImage, colorImagePath,
-                            greyImagePath, backgroundingColorImage_));
+  // Copy the UIImage* so that the block does not reference |self|.
+  UIImage* backgroundingColorImage = backgroundingColorImage_;
+  web::WebThread::PostBlockingPoolTask(FROM_HERE, base::BindBlockArc(^{
+                                         ConvertAndSaveGreyImage(
+                                             colorImagePath, greyImagePath,
+                                             backgroundingColorImage);
+                                       }));
 }
 
 @end

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-
 // Snapshot manager for contents of a tab. A snapshot is a full-screen image
 // of the contents of the page at the current scroll offset and zoom level,
 // used to stand in for the web view if it has been purged from memory or when
@@ -42,7 +41,7 @@
                              callback:(void (^)(UIImage*))callback;
 
 // Stores the supplied thumbnail for the specified |sessionID|.
-- (void)setImage:(UIImage*)img withSessionID:(NSString*)sessionID;
+- (void)setImage:(UIImage*)image withSessionID:(NSString*)sessionID;
 
 // Removes the cached thumbnail for the specified |sessionID|.
 - (void)removeImageWithSessionID:(NSString*)sessionID;
