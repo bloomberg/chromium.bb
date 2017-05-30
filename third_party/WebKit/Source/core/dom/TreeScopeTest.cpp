@@ -16,8 +16,7 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
   Document* document = Document::Create();
   EXPECT_EQ(document, document->CommonAncestorTreeScope(*document));
 
-  Element* html =
-      document->createElement(nullptr, "html", StringOrDictionary());
+  Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
   ShadowRoot* shadow_root =
       html->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
@@ -30,8 +29,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   // shadowRoot
 
   Document* document = Document::Create();
-  Element* html =
-      document->createElement(nullptr, "html", StringOrDictionary());
+  Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
   ShadowRoot* shadow_root =
       html->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
@@ -46,14 +44,11 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   //  A      B
 
   Document* document = Document::Create();
-  Element* html =
-      document->createElement(nullptr, "html", StringOrDictionary());
+  Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
-  Element* head =
-      document->createElement(nullptr, "head", StringOrDictionary());
+  Element* head = document->createElement("head", StringOrDictionary());
   html->AppendChild(head);
-  Element* body =
-      document->createElement(nullptr, "body", StringOrDictionary());
+  Element* body = document->createElement("body", StringOrDictionary());
   html->AppendChild(body);
 
   ShadowRoot* shadow_root_a =
@@ -73,14 +68,11 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   // A
 
   Document* document = Document::Create();
-  Element* html =
-      document->createElement(nullptr, "html", StringOrDictionary());
+  Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
-  Element* head =
-      document->createElement(nullptr, "head", StringOrDictionary());
+  Element* head = document->createElement("head", StringOrDictionary());
   html->AppendChild(head);
-  Element* body =
-      document->createElement(nullptr, "body", StringOrDictionary());
+  Element* body = document->createElement("body", StringOrDictionary());
   html->AppendChild(body);
 
   ShadowRoot* shadow_root_y =
@@ -88,8 +80,7 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   ShadowRoot* shadow_root_b =
       body->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
-  Element* div_in_y =
-      document->createElement(nullptr, "div", StringOrDictionary());
+  Element* div_in_y = document->createElement("div", StringOrDictionary());
   shadow_root_y->AppendChild(div_in_y);
   ShadowRoot* shadow_root_a = div_in_y->CreateShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);

@@ -322,9 +322,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Location* location() const;
 
-  Element* createElement(const LocalDOMWindow*,
-                         const AtomicString& name,
-                         ExceptionState&);
   DocumentFragment* createDocumentFragment();
   Text* createTextNode(const String& data);
   Comment* createComment(const String& data);
@@ -338,8 +335,7 @@ class CORE_EXPORT Document : public ContainerNode,
                           ExceptionState&,
                           bool should_ignore_namespace_checks = false);
   Node* importNode(Node* imported_node, bool deep, ExceptionState&);
-  Element* createElementNS(const LocalDOMWindow*,
-                           const AtomicString& namespace_uri,
+  Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
                            ExceptionState&);
   Element* createElement(const QualifiedName&, CreateElementFlags);
@@ -1150,17 +1146,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TextAutosizer* GetTextAutosizer();
 
-  Element* createElement(
-      const AtomicString& local_name,
-      ExceptionState& exception_state = ASSERT_NO_EXCEPTION) {
-    return createElement(nullptr, local_name, exception_state);
-  }
-  Element* createElement(const LocalDOMWindow*,
-                         const AtomicString& local_name,
+  Element* createElement(const AtomicString& local_name,
+                         ExceptionState& = ASSERT_NO_EXCEPTION);
+  Element* createElement(const AtomicString& local_name,
                          const StringOrDictionary&,
                          ExceptionState& = ASSERT_NO_EXCEPTION);
-  Element* createElementNS(const LocalDOMWindow*,
-                           const AtomicString& namespace_uri,
+  Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
                            const StringOrDictionary&,
                            ExceptionState&);
