@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/non_thread_safe.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
@@ -41,7 +41,7 @@ PipelineStatusCB NewExpectedStatusCB(PipelineStatus status);
 // testing classes that run on more than a single thread.
 //
 // Events are intended for single use and cannot be reset.
-class WaitableMessageLoopEvent : public base::NonThreadSafe {
+class WaitableMessageLoopEvent {
  public:
   WaitableMessageLoopEvent();
   explicit WaitableMessageLoopEvent(base::TimeDelta timeout);
@@ -72,6 +72,8 @@ class WaitableMessageLoopEvent : public base::NonThreadSafe {
   PipelineStatus status_;
   std::unique_ptr<base::RunLoop> run_loop_;
   const base::TimeDelta timeout_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WaitableMessageLoopEvent);
 };
