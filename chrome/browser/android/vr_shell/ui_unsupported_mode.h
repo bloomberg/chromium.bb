@@ -12,6 +12,7 @@ namespace vr_shell {
 // enums must never be renumbered or deleted and reused.
 enum class UiUnsupportedMode : int {
   kUnhandledCodePoint = 0,
+  kCouldNotElideURL,
 
   // This must be last.
   kCount,
