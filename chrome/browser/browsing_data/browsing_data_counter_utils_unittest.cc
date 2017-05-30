@@ -46,12 +46,12 @@ TEST_F(BrowsingDataCounterUtilsTest, HostedAppsCounterResult) {
     std::string apps_list;
     std::string expected_output;
   } kTestCases[] = {
-      { "", "none" },
-      { "App1", "1 app (App1)" },
-      { "App1, App2", "2 apps (App1, App2)" },
-      { "App1, App2, App3", "3 apps (App1, App2, and 1 more)" },
-      { "App1, App2, App3, App4", "4 apps (App1, App2, and 2 more)" },
-      { "App1, App2, App3, App4, App5", "5 apps (App1, App2, and 3 more)" },
+      {"", "None"},
+      {"App1", "1 app (App1)"},
+      {"App1, App2", "2 apps (App1, App2)"},
+      {"App1, App2, App3", "3 apps (App1, App2, and 1 more)"},
+      {"App1, App2, App3, App4", "4 apps (App1, App2, and 2 more)"},
+      {"App1, App2, App3, App4, App5", "5 apps (App1, App2, and 3 more)"},
   };
 
   for (const TestCase& test_case : kTestCases) {
