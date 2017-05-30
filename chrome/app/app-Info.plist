@@ -350,5 +350,7 @@
 	</array>
         <key>NSUserNotificationAlertStyle</key>
         <string>banner</string>
+	<key>NSSupportsAppNap</key>
+	<true/>
 </dict>
 </plist>
