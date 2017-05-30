@@ -2583,7 +2583,7 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "Color",
       include_paths: ["platform/graphics/Color.h"],
       default_value: "LayoutTheme::TapHighlightColor()",

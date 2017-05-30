@@ -2198,10 +2198,6 @@ TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
   return TextEmphasisMark::kSesame;
 }
 
-Color ComputedStyle::InitialTapHighlightColor() {
-  return LayoutTheme::TapHighlightColor();
-}
-
 const FilterOperations& ComputedStyle::InitialFilter() {
   DEFINE_STATIC_LOCAL(FilterOperationsWrapper, ops,
                       (FilterOperationsWrapper::Create()));

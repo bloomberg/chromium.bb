@@ -1830,15 +1830,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
             static_cast<unsigned>(position));
   }
 
-  // -webkit-tap-highlight-color
-  static Color InitialTapHighlightColor();
-  Color TapHighlightColor() const {
-    return rare_inherited_data_->tap_highlight_color_;
-  }
-  void SetTapHighlightColor(const Color& c) {
-    SET_VAR(rare_inherited_data_, tap_highlight_color_, c);
-  }
-
   // -webkit-text-fill-color
   void SetTextFillColor(const StyleColor& color) {
     SET_VAR(rare_inherited_data_, text_fill_color_, color.Resolve(Color()));
