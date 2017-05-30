@@ -1,5 +1,5 @@
 <!doctype html>
-<title>register</title>
+<title>register, unregister, and report result to opener</title>
 <body>
 <script>
 'use strict';
@@ -8,14 +8,14 @@ navigator.serviceWorker.register('empty-worker.js', {scope: 'scope-register'})
   .then(
     registration => {
         registration.unregister().then(() => {
-            window.parent.postMessage('OK', '*');
+            window.opener.postMessage('OK', '*');
           });
       },
     error => {
-        window.parent.postMessage('FAIL: ' + error.name, '*');
+        window.opener.postMessage('FAIL: ' + error.name, '*');
       })
   .catch(error => {
-      window.parent.postMessage('ERROR: ' + error.name, '*');
+      window.opener.postMessage('ERROR: ' + error.name, '*');
     });
 </script>
 </body>

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- This test's file name is prefixed with `chromium.` because while a roughly
+  equivalent version is available in the Web Platform Tests project, the
+  limitations of the WPT infrastructure precludes the use of iframes for this
+  purpose. This version should be maintained only insofar as the functionality
+  under test concerns iframe contexts specifically; otherwise, modifications
+  should be contributed to the shared version. -->
 <title>register on a secure page after redirect from an non-secure url</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -6,6 +12,7 @@
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
+'use strict';
 
 // Loads a non-secure url in an iframe, which redirects to |target_url|.
 // That page then registers a service worker, and messages back with the result.
