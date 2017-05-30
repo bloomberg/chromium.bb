@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/test_screen.h"
@@ -32,8 +33,8 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
   ui::test::DeviceDataManagerTestAPI device_data_manager_test_api_;
 
  private:
-  // Required by a ChromeBrowserMainExtraPartsMetrics test target.
-  base::MessageLoop message_loop_;
+  // Provides a message loop and allows the use of the task scheduler
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.
   display::test::TestScreen test_screen_;
