@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(mash): Remove. http://crbug.com/723876
+  "application_lifetime_aura\.cc": [
+    "+ash/shell.h",
+  ]
+}

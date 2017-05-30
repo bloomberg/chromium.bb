@@ -1,6 +1,5 @@
 include_rules = [
   "+apps",
-  "+ash",
   "+cc/paint",
   "+chrome/app",
   "+chrome/chrome_watcher",
@@ -61,6 +60,13 @@ include_rules = [
   "+third_party/crashpad",
   "+third_party/cros_system_api",
 
+  # Code under //ash runs out-of-process under mustash (chrome --mash) so it
+  # must be accessed via mojo interfaces in //ash/public/interfaces. See
+  # //ash/README.md.
+  "-ash",
+  "+ash/public",
+  "+ash/ash_switches.h",
+
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
   # is needed these files need to move to base/
@@ -78,11 +84,6 @@ include_rules = [
   "+chrome/browser/ui/views/extensions/request_file_system_dialog_view.h",
   "+chrome/browser/ui/views/try_chrome_dialog_view.h",
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
-
-  # Code in chrome should not use ash::SessionStateDelegate and friends.
-  # Instead, use SessionManager/UserManager/SessionControllerClient directly
-  # since they are part of chrome.
-  "-ash/session",
 
   # Explicitly disallow using SyncMessageFilter to prevent browser from
   # sending synchronous IPC messages on non-UI threads.
@@ -135,3 +136,10 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/window_features.mojom.h",
 ]
+specific_include_rules = {
+  # TODO(mash): Remove. http://crbug.com/678705
+  "fullscreen_chromeos\.cc": [
+    "+ash/root_window_controller.h",
+    "+ash/shell.h",
+  ]
+}
