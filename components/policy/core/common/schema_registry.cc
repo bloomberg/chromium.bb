@@ -22,6 +22,7 @@ SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
 }
 
 SchemaRegistry::~SchemaRegistry() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : internal_observers_)
     observer.OnSchemaRegistryShuttingDown(this);
 }

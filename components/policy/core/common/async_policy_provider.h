@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/policy_export.h"
 
@@ -28,8 +28,7 @@ class SchemaRegistry;
 // A policy provider that loads its policies asynchronously on a background
 // thread. Platform-specific providers are created by passing an implementation
 // of AsyncPolicyLoader to a new AsyncPolicyProvider.
-class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
-                                          public base::NonThreadSafe {
+class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider {
  public:
   // The AsyncPolicyProvider does a synchronous load in its constructor, and
   // therefore it needs the |registry| at construction time. The same |registry|
@@ -66,6 +65,8 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   // Callback used to synchronize RefreshPolicies() calls with the background
   // thread. See the implementation for the details.
   base::CancelableClosure refresh_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to get a WeakPtr to |this| for the update callback given to the
   // loader.
