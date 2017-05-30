@@ -523,7 +523,7 @@ void SetActivityHandlers() {
   activity_monitor::Monitor current_event_monitor =
       activity_monitor::GetApiEventMonitor();
   DCHECK(!current_event_monitor || current_event_monitor == &LogApiEvent);
-  if (!current_function_monitor)
+  if (!current_event_monitor)
     activity_monitor::SetApiEventMonitor(&LogApiEvent);
 
   activity_monitor::WebRequestMonitor current_web_request_monitor =
