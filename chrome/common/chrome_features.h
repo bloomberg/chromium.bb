@@ -46,8 +46,6 @@ extern const base::Feature kAutomaticTabDiscarding;
 extern const base::Feature kBackgroundModeAllowRestart;
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-extern const base::Feature kBackspaceGoesBackFeature;
-
 extern const base::Feature kBlockPromptsIfDismissedOften;
 extern const base::Feature kBlockPromptsIfIgnoredOften;
 
