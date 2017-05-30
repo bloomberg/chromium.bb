@@ -136,6 +136,17 @@ bool AddToSet(std::set<content::WebContents*>* set,
   return false;
 }
 
+std::unique_ptr<net::test_server::HttpResponse> EmptyHtmlResponseHandler(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content_type("text/html");
+  http_response->set_content(
+      "<html><head><link rel=manifest href=/manifest.json></head></html>");
+  return std::move(http_response);
+}
+
 // This class is used to mock out virtual methods with side effects so that
 // tests below can ensure they are called without causing side effects.
 class MockInlineSigninHelper : public InlineSigninHelper {
@@ -809,6 +820,9 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
 
  private:
   void SetUp() override {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&EmptyHtmlResponseHandler));
+
     // Don't spin up the IO thread yet since no threads are allowed while
     // spawning sandbox host process. See crbug.com/322732.
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -869,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
 // http://crbug.com/709117.
 // Flaky on Linux and Mac. http://crbug.com/722164.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-                       DISABLED_LoadSuccessContinueURL) {
+                       LoadSuccessContinueURL) {
   ui_test_utils::NavigateToURL(browser(), GetSigninPromoURL());
   WaitUntilUIReady(browser());
 
@@ -888,13 +902,12 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
       kLoadSuccessPageScript, success_url.c_str(), success_url.c_str());
 
   std::string message;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), script, &message));
   EXPECT_EQ("success_page_loaded", message);
 }
 
 // Make sure that the gaia iframe cannot trigger top-frame navigation.
-// TODO(guohui): flaky on trybot crbug/364759.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
     TopFrameNavigationDisallowed) {
   // Loads into gaia iframe a web page that attempts to deframe on load.
