@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
@@ -47,8 +47,7 @@ class DataUseGroup;
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
 class DataReductionProxyService
-    : public base::NonThreadSafe,
-      public DataReductionProxyEventStorageDelegate {
+    : public DataReductionProxyEventStorageDelegate {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
   // |io_task_runner| remain alive for the lifetime of the
@@ -203,6 +202,8 @@ class DataReductionProxyService
   base::ObserverList<DataReductionProxyServiceObserver> observer_list_;
 
   bool initialized_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<DataReductionProxyService> weak_factory_;
 
