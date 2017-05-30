@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/DevToolsEmulator.h"
+#include "core/inspector/DevToolsEmulator.h"
 
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewBase.h"
@@ -22,7 +22,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayerTreeView.h"
-#include "web/WebSettingsImpl.h"
+#include "public/web/WebSettings.h"
 
 namespace {
 
@@ -59,8 +59,8 @@ static float calculateDeviceScaleAdjustment(int width,
 
 namespace blink {
 
-DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view_impl)
-    : web_view_impl_(web_view_impl),
+DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view)
+    : web_view_(web_view),
       device_metrics_enabled_(false),
       emulate_mobile_enabled_(false),
       is_overlay_scrollbars_enabled_(false),
@@ -69,27 +69,27 @@ DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view_impl)
       original_default_minimum_page_scale_factor_(0),
       original_default_maximum_page_scale_factor_(0),
       embedder_text_autosizing_enabled_(
-          web_view_impl->GetPage()->GetSettings().TextAutosizingEnabled()),
+          web_view->GetPage()->GetSettings().TextAutosizingEnabled()),
       embedder_device_scale_adjustment_(
-          web_view_impl->GetPage()->GetSettings().GetDeviceScaleAdjustment()),
+          web_view->GetPage()->GetSettings().GetDeviceScaleAdjustment()),
       embedder_prefer_compositing_to_lcd_text_enabled_(
-          web_view_impl->GetPage()
+          web_view->GetPage()
               ->GetSettings()
               .GetPreferCompositingToLCDTextEnabled()),
       embedder_viewport_style_(
-          web_view_impl->GetPage()->GetSettings().GetViewportStyle()),
+          web_view->GetPage()->GetSettings().GetViewportStyle()),
       embedder_plugins_enabled_(
-          web_view_impl->GetPage()->GetSettings().GetPluginsEnabled()),
+          web_view->GetPage()->GetSettings().GetPluginsEnabled()),
       embedder_available_pointer_types_(
-          web_view_impl->GetPage()->GetSettings().GetAvailablePointerTypes()),
+          web_view->GetPage()->GetSettings().GetAvailablePointerTypes()),
       embedder_primary_pointer_type_(
-          web_view_impl->GetPage()->GetSettings().GetPrimaryPointerType()),
+          web_view->GetPage()->GetSettings().GetPrimaryPointerType()),
       embedder_available_hover_types_(
-          web_view_impl->GetPage()->GetSettings().GetAvailableHoverTypes()),
+          web_view->GetPage()->GetSettings().GetAvailableHoverTypes()),
       embedder_primary_hover_type_(
-          web_view_impl->GetPage()->GetSettings().GetPrimaryHoverType()),
+          web_view->GetPage()->GetSettings().GetPrimaryHoverType()),
       embedder_main_frame_resizes_are_orientation_changes_(
-          web_view_impl->GetPage()
+          web_view->GetPage()
               ->GetSettings()
               .GetMainFrameResizesAreOrientationChanges()),
       touch_event_emulation_enabled_(false),
@@ -98,7 +98,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view_impl)
       original_device_supports_touch_(false),
       original_max_touch_points_(0),
       embedder_script_enabled_(
-          web_view_impl->GetPage()->GetSettings().GetScriptEnabled()),
+          web_view->GetPage()->GetSettings().GetScriptEnabled()),
       script_execution_disabled_(false) {}
 
 DevToolsEmulator::~DevToolsEmulator() {}
@@ -114,26 +114,27 @@ void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetTextAutosizingEnabled(enabled);
+    web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(enabled);
 }
 
 void DevToolsEmulator::SetDeviceScaleAdjustment(float device_scale_adjustment) {
   embedder_device_scale_adjustment_ = device_scale_adjustment;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
+  if (!emulate_mobile_enabled) {
+    web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
         device_scale_adjustment);
+  }
 }
 
 void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
   embedder_prefer_compositing_to_lcd_text_enabled_ = enabled;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()
-        ->GetSettings()
-        .SetPreferCompositingToLCDTextEnabled(enabled);
+  if (!emulate_mobile_enabled) {
+    web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+        enabled);
+  }
 }
 
 void DevToolsEmulator::SetViewportStyle(WebViewportStyle style) {
@@ -141,7 +142,7 @@ void DevToolsEmulator::SetViewportStyle(WebViewportStyle style) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetViewportStyle(style);
+    web_view_->GetPage()->GetSettings().SetViewportStyle(style);
 }
 
 void DevToolsEmulator::SetPluginsEnabled(bool enabled) {
@@ -149,13 +150,13 @@ void DevToolsEmulator::SetPluginsEnabled(bool enabled) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetPluginsEnabled(enabled);
+    web_view_->GetPage()->GetSettings().SetPluginsEnabled(enabled);
 }
 
 void DevToolsEmulator::SetScriptEnabled(bool enabled) {
   embedder_script_enabled_ = enabled;
   if (!script_execution_disabled_)
-    web_view_impl_->GetPage()->GetSettings().SetScriptEnabled(enabled);
+    web_view_->GetPage()->GetSettings().SetScriptEnabled(enabled);
 }
 
 void DevToolsEmulator::SetDoubleTapToZoomEnabled(bool enabled) {
@@ -170,10 +171,11 @@ void DevToolsEmulator::SetMainFrameResizesAreOrientationChanges(bool value) {
   embedder_main_frame_resizes_are_orientation_changes_ = value;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()
+  if (!emulate_mobile_enabled) {
+    web_view_->GetPage()
         ->GetSettings()
         .SetMainFrameResizesAreOrientationChanges(value);
+  }
 }
 
 void DevToolsEmulator::SetAvailablePointerTypes(int types) {
@@ -181,7 +183,7 @@ void DevToolsEmulator::SetAvailablePointerTypes(int types) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetAvailablePointerTypes(types);
+    web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(types);
 }
 
 void DevToolsEmulator::SetPrimaryPointerType(PointerType pointer_type) {
@@ -189,8 +191,7 @@ void DevToolsEmulator::SetPrimaryPointerType(PointerType pointer_type) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetPrimaryPointerType(
-        pointer_type);
+    web_view_->GetPage()->GetSettings().SetPrimaryPointerType(pointer_type);
 }
 
 void DevToolsEmulator::SetAvailableHoverTypes(int types) {
@@ -198,7 +199,7 @@ void DevToolsEmulator::SetAvailableHoverTypes(int types) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetAvailableHoverTypes(types);
+    web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(types);
 }
 
 void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
@@ -206,7 +207,7 @@ void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
-    web_view_impl_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
+    web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
 void DevToolsEmulator::EnableDeviceEmulation(
@@ -226,7 +227,7 @@ void DevToolsEmulator::EnableDeviceEmulation(
   emulation_params_ = params;
   device_metrics_enabled_ = true;
 
-  web_view_impl_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
+  web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
       calculateDeviceScaleAdjustment(params.view_size.width,
                                      params.view_size.height,
                                      params.device_scale_factor));
@@ -236,14 +237,13 @@ void DevToolsEmulator::EnableDeviceEmulation(
   else
     DisableMobileEmulation();
 
-  web_view_impl_->SetCompositorDeviceScaleFactorOverride(
-      params.device_scale_factor);
+  web_view_->SetCompositorDeviceScaleFactorOverride(params.device_scale_factor);
   UpdateRootLayerTransform();
   // TODO(dgozman): mainFrameImpl() is null when it's remote. Figure out how
   // we end up with enabling emulation in this case.
-  if (web_view_impl_->MainFrameImpl()) {
+  if (web_view_->MainFrameImpl()) {
     if (Document* document =
-            web_view_impl_->MainFrameImpl()->GetFrame()->GetDocument())
+            web_view_->MainFrameImpl()->GetFrame()->GetDocument())
       document->MediaQueryAffectingValueChanged();
   }
 }
@@ -254,16 +254,16 @@ void DevToolsEmulator::DisableDeviceEmulation() {
 
   GetMemoryCache()->EvictResources();
   device_metrics_enabled_ = false;
-  web_view_impl_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
+  web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
       embedder_device_scale_adjustment_);
   DisableMobileEmulation();
-  web_view_impl_->SetCompositorDeviceScaleFactorOverride(0.f);
-  web_view_impl_->SetPageScaleFactor(1.f);
+  web_view_->SetCompositorDeviceScaleFactorOverride(0.f);
+  web_view_->SetPageScaleFactor(1.f);
   UpdateRootLayerTransform();
   // mainFrameImpl() could be null during cleanup or remote <-> local swap.
-  if (web_view_impl_->MainFrameImpl()) {
+  if (web_view_->MainFrameImpl()) {
     if (Document* document =
-            web_view_impl_->MainFrameImpl()->GetFrame()->GetDocument())
+            web_view_->MainFrameImpl()->GetFrame()->GetDocument())
       document->MediaQueryAffectingValueChanged();
   }
 }
@@ -282,37 +282,34 @@ void DevToolsEmulator::EnableMobileEmulation() {
       RuntimeEnabledFeatures::mobileLayoutThemeEnabled();
   RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(true);
   ComputedStyle::InvalidateInitialStyle();
-  web_view_impl_->GetPage()->GetSettings().SetViewportStyle(
+  web_view_->GetPage()->GetSettings().SetViewportStyle(
       WebViewportStyle::kMobile);
-  web_view_impl_->GetPage()->GetSettings().SetViewportEnabled(true);
-  web_view_impl_->GetPage()->GetSettings().SetViewportMetaEnabled(true);
-  web_view_impl_->GetPage()->GetVisualViewport().InitializeScrollbars();
-  web_view_impl_->GetSettings()->SetShrinksViewportContentToFit(true);
-  web_view_impl_->GetPage()->GetSettings().SetTextAutosizingEnabled(true);
-  web_view_impl_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+  web_view_->GetPage()->GetSettings().SetViewportEnabled(true);
+  web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(true);
+  web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
+  web_view_->GetSettings()->SetShrinksViewportContentToFit(true);
+  web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(true);
+  web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
       true);
-  web_view_impl_->GetPage()->GetSettings().SetPluginsEnabled(false);
-  web_view_impl_->GetPage()->GetSettings().SetAvailablePointerTypes(
+  web_view_->GetPage()->GetSettings().SetPluginsEnabled(false);
+  web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
       kPointerTypeCoarse);
-  web_view_impl_->GetPage()->GetSettings().SetPrimaryPointerType(
-      kPointerTypeCoarse);
-  web_view_impl_->GetPage()->GetSettings().SetAvailableHoverTypes(
-      kHoverTypeNone);
-  web_view_impl_->GetPage()->GetSettings().SetPrimaryHoverType(kHoverTypeNone);
-  web_view_impl_->GetPage()
-      ->GetSettings()
-      .SetMainFrameResizesAreOrientationChanges(true);
-  web_view_impl_->SetZoomFactorOverride(1);
+  web_view_->GetPage()->GetSettings().SetPrimaryPointerType(kPointerTypeCoarse);
+  web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(kHoverTypeNone);
+  web_view_->GetPage()->GetSettings().SetPrimaryHoverType(kHoverTypeNone);
+  web_view_->GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
+      true);
+  web_view_->SetZoomFactorOverride(1);
 
   original_default_minimum_page_scale_factor_ =
-      web_view_impl_->DefaultMinimumPageScaleFactor();
+      web_view_->DefaultMinimumPageScaleFactor();
   original_default_maximum_page_scale_factor_ =
-      web_view_impl_->DefaultMaximumPageScaleFactor();
-  web_view_impl_->SetDefaultPageScaleLimits(0.25f, 5);
+      web_view_->DefaultMaximumPageScaleFactor();
+  web_view_->SetDefaultPageScaleLimits(0.25f, 5);
   // TODO(dgozman): mainFrameImpl() is null when it's remote. Figure out how
   // we end up with enabling emulation in this case.
-  if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
+  if (web_view_->MainFrameImpl())
+    web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 void DevToolsEmulator::DisableMobileEmulation() {
@@ -325,50 +322,48 @@ void DevToolsEmulator::DisableMobileEmulation() {
   RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(
       is_mobile_layout_theme_enabled_);
   ComputedStyle::InvalidateInitialStyle();
-  web_view_impl_->GetPage()->GetSettings().SetViewportEnabled(false);
-  web_view_impl_->GetPage()->GetSettings().SetViewportMetaEnabled(false);
-  web_view_impl_->GetPage()->GetVisualViewport().InitializeScrollbars();
-  web_view_impl_->GetSettings()->SetShrinksViewportContentToFit(false);
-  web_view_impl_->GetPage()->GetSettings().SetTextAutosizingEnabled(
+  web_view_->GetPage()->GetSettings().SetViewportEnabled(false);
+  web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(false);
+  web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
+  web_view_->GetSettings()->SetShrinksViewportContentToFit(false);
+  web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(
       embedder_text_autosizing_enabled_);
-  web_view_impl_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+  web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
       embedder_prefer_compositing_to_lcd_text_enabled_);
-  web_view_impl_->GetPage()->GetSettings().SetViewportStyle(
+  web_view_->GetPage()->GetSettings().SetViewportStyle(
       embedder_viewport_style_);
-  web_view_impl_->GetPage()->GetSettings().SetPluginsEnabled(
+  web_view_->GetPage()->GetSettings().SetPluginsEnabled(
       embedder_plugins_enabled_);
-  web_view_impl_->GetPage()->GetSettings().SetAvailablePointerTypes(
+  web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
       embedder_available_pointer_types_);
-  web_view_impl_->GetPage()->GetSettings().SetPrimaryPointerType(
+  web_view_->GetPage()->GetSettings().SetPrimaryPointerType(
       embedder_primary_pointer_type_);
-  web_view_impl_->GetPage()->GetSettings().SetAvailableHoverTypes(
+  web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(
       embedder_available_hover_types_);
-  web_view_impl_->GetPage()->GetSettings().SetPrimaryHoverType(
+  web_view_->GetPage()->GetSettings().SetPrimaryHoverType(
       embedder_primary_hover_type_);
-  web_view_impl_->GetPage()
-      ->GetSettings()
-      .SetMainFrameResizesAreOrientationChanges(
-          embedder_main_frame_resizes_are_orientation_changes_);
-  web_view_impl_->SetZoomFactorOverride(0);
+  web_view_->GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
+      embedder_main_frame_resizes_are_orientation_changes_);
+  web_view_->SetZoomFactorOverride(0);
   emulate_mobile_enabled_ = false;
-  web_view_impl_->SetDefaultPageScaleLimits(
+  web_view_->SetDefaultPageScaleLimits(
       original_default_minimum_page_scale_factor_,
       original_default_maximum_page_scale_factor_);
   // mainFrameImpl() could be null during cleanup or remote <-> local swap.
-  if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
+  if (web_view_->MainFrameImpl())
+    web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 float DevToolsEmulator::CompositorDeviceScaleFactor() const {
   if (device_metrics_enabled_)
     return emulation_params_.device_scale_factor;
-  return web_view_impl_->GetPage()->DeviceScaleFactorDeprecated();
+  return web_view_->GetPage()->DeviceScaleFactorDeprecated();
 }
 
 void DevToolsEmulator::ForceViewport(const WebFloatPoint& position,
                                      float scale) {
   GraphicsLayer* container_layer =
-      web_view_impl_->GetPage()->GetVisualViewport().ContainerLayer();
+      web_view_->GetPage()->GetVisualViewport().ContainerLayer();
   if (!viewport_override_) {
     viewport_override_ = ViewportOverride();
 
@@ -397,7 +392,7 @@ void DevToolsEmulator::ResetViewport() {
   viewport_override_ = WTF::nullopt;
 
   GraphicsLayer* container_layer =
-      web_view_impl_->GetPage()->GetVisualViewport().ContainerLayer();
+      web_view_->GetPage()->GetVisualViewport().ContainerLayer();
   if (container_layer)
     container_layer->SetMasksToBounds(original_masking);
   UpdateRootLayerTransform();
@@ -417,13 +412,15 @@ void DevToolsEmulator::ApplyDeviceEmulationTransform(
     // Scale first, so that translation is unaffected.
     transform->Translate(offset.width, offset.height);
     transform->Scale(emulation_params_.scale);
-    if (web_view_impl_->MainFrameImpl())
-      web_view_impl_->MainFrameImpl()->SetInputEventsTransformForEmulation(
+    if (web_view_->MainFrameImpl()) {
+      web_view_->MainFrameImpl()->SetInputEventsTransformForEmulation(
           offset, emulation_params_.scale);
+    }
   } else {
-    if (web_view_impl_->MainFrameImpl())
-      web_view_impl_->MainFrameImpl()->SetInputEventsTransformForEmulation(
+    if (web_view_->MainFrameImpl()) {
+      web_view_->MainFrameImpl()->SetInputEventsTransformForEmulation(
           WebSize(0, 0), 1.0);
+    }
   }
 }
 
@@ -436,8 +433,8 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
   transform->Scale(viewport_override_->scale);
 
   // Translate while taking into account current scroll offset.
-  WebSize scroll_offset = web_view_impl_->MainFrame()->GetScrollOffset();
-  WebFloatPoint visual_offset = web_view_impl_->VisualViewportOffset();
+  WebSize scroll_offset = web_view_->MainFrame()->GetScrollOffset();
+  WebFloatPoint visual_offset = web_view_->VisualViewportOffset();
   float scroll_x = scroll_offset.width + visual_offset.x;
   float scroll_y = scroll_offset.height + visual_offset.y;
   transform->Translate(-viewport_override_->position.x + scroll_x,
@@ -445,7 +442,7 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
 
   // First, reverse page scale, so we don't have to take it into account for
   // calculation of the translation.
-  transform->Scale(1. / web_view_impl_->PageScaleFactor());
+  transform->Scale(1. / web_view_->PageScaleFactor());
 }
 
 void DevToolsEmulator::UpdateRootLayerTransform() {
@@ -455,13 +452,13 @@ void DevToolsEmulator::UpdateRootLayerTransform() {
   // viewport override.
   ApplyViewportOverride(&transform);
   ApplyDeviceEmulationTransform(&transform);
-  web_view_impl_->SetDeviceEmulationTransform(transform);
+  web_view_->SetDeviceEmulationTransform(transform);
 }
 
 WTF::Optional<IntRect> DevToolsEmulator::VisibleContentRectForPainting() const {
   if (!viewport_override_)
     return WTF::nullopt;
-  FloatSize viewport_size(web_view_impl_->LayerTreeView()->GetViewportSize());
+  FloatSize viewport_size(web_view_->LayerTreeView()->GetViewportSize());
   viewport_size.Scale(1. / CompositorDeviceScaleFactor());
   viewport_size.Scale(1. / viewport_override_->scale);
   return EnclosingIntRect(
@@ -476,23 +473,23 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
     original_touch_event_feature_detection_enabled_ =
         RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled();
     original_device_supports_touch_ =
-        web_view_impl_->GetPage()->GetSettings().GetDeviceSupportsTouch();
+        web_view_->GetPage()->GetSettings().GetDeviceSupportsTouch();
     original_max_touch_points_ =
-        web_view_impl_->GetPage()->GetSettings().GetMaxTouchPoints();
+        web_view_->GetPage()->GetSettings().GetMaxTouchPoints();
   }
   RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(
       enabled ? true : original_touch_event_feature_detection_enabled_);
   if (!original_device_supports_touch_) {
-    if (enabled && web_view_impl_->MainFrameImpl()) {
-      web_view_impl_->MainFrameImpl()
+    if (enabled && web_view_->MainFrameImpl()) {
+      web_view_->MainFrameImpl()
           ->GetFrame()
           ->GetEventHandler()
           .ClearMouseEventManager();
     }
-    web_view_impl_->GetPage()->GetSettings().SetDeviceSupportsTouch(
+    web_view_->GetPage()->GetSettings().SetDeviceSupportsTouch(
         enabled ? true : original_device_supports_touch_);
     // Currently emulation does not provide multiple touch points.
-    web_view_impl_->GetPage()->GetSettings().SetMaxTouchPoints(
+    web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
         enabled ? 1 : original_max_touch_points_);
   }
   touch_event_emulation_enabled_ = enabled;
@@ -502,19 +499,19 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
   // fails during remote -> local main frame transition.
   // We should instead route emulation from browser through the WebViewImpl
   // to the local main frame, and remove InspectorEmulationAgent entirely.
-  if (web_view_impl_->MainFrameImpl())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->UpdateLayout();
+  if (web_view_->MainFrameImpl())
+    web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
 void DevToolsEmulator::SetScriptExecutionDisabled(
     bool script_execution_disabled) {
   script_execution_disabled_ = script_execution_disabled;
-  web_view_impl_->GetPage()->GetSettings().SetScriptEnabled(
+  web_view_->GetPage()->GetSettings().SetScriptEnabled(
       script_execution_disabled_ ? false : embedder_script_enabled_);
 }
 
 bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
-  Page* page = web_view_impl_->GetPage();
+  Page* page = web_view_->GetPage();
   if (!page)
     return false;
 
@@ -542,8 +539,8 @@ bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
     float new_page_scale_factor = page_scale_factor * scaled_event.PinchScale();
     IntPoint anchor_css(*last_pinch_anchor_dip_.get());
     anchor_css.Scale(1.f / new_page_scale_factor, 1.f / new_page_scale_factor);
-    web_view_impl_->SetPageScaleFactor(new_page_scale_factor);
-    web_view_impl_->MainFrame()->SetScrollOffset(
+    web_view_->SetPageScaleFactor(new_page_scale_factor);
+    web_view_->MainFrame()->SetScrollOffset(
         ToIntSize(*last_pinch_anchor_css_.get() - ToIntSize(anchor_css)));
   }
   if (scaled_event.GetType() == WebInputEvent::kGesturePinchEnd) {

@@ -51,6 +51,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -106,7 +107,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "web/DevToolsEmulator.h"
 #include "web/WebSettingsImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
