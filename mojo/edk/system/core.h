@@ -175,9 +175,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                           const MojoHandle* handles,
                           uint32_t num_handles,
                           MojoAllocMessageFlags flags,
-                          MojoMessageHandle* message);
-  MojoResult FreeMessage(MojoMessageHandle message);
-  MojoResult GetMessageBuffer(MojoMessageHandle message, void** buffer);
+                          MojoMessageHandle* message_handle);
+  MojoResult FreeMessage(MojoMessageHandle message_handle);
+  MojoResult GetMessageBuffer(MojoMessageHandle message_handle, void** buffer);
   MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in
@@ -193,7 +193,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                           uint32_t num_handles,
                           MojoWriteMessageFlags flags);
   MojoResult WriteMessageNew(MojoHandle message_pipe_handle,
-                             MojoMessageHandle message,
+                             MojoMessageHandle message_handle,
                              MojoWriteMessageFlags flags);
   MojoResult ReadMessage(MojoHandle message_pipe_handle,
                          void* bytes,
@@ -202,13 +202,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          uint32_t* num_handles,
                          MojoReadMessageFlags flags);
   MojoResult ReadMessageNew(MojoHandle message_pipe_handle,
-                            MojoMessageHandle* message,
+                            MojoMessageHandle* message_handle,
                             uint32_t* num_bytes,
                             MojoHandle* handles,
                             uint32_t* num_handles,
                             MojoReadMessageFlags flags);
   MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
-  MojoResult NotifyBadMessage(MojoMessageHandle message,
+  MojoResult NotifyBadMessage(MojoMessageHandle message_handle,
                               const char* error,
                               size_t error_num_bytes);
 

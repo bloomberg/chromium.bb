@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "mojo/edk/system/ports/message.h"
+#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/port_ref.h"
 
@@ -22,18 +22,12 @@ class NodeDelegate {
   // Port names should be difficult to guess.
   virtual void GenerateRandomPortName(PortName* port_name) = 0;
 
-  // Allocate a message, including a header that can be used by the Node
-  // implementation. |num_header_bytes| will be aligned. The newly allocated
-  // memory need not be zero-filled.
-  virtual void AllocMessage(size_t num_header_bytes,
-                            ScopedMessage* message) = 0;
+  // Forward an event asynchronously to the specified node. This method MUST NOT
+  // synchronously call any methods on Node.
+  virtual void ForwardEvent(const NodeName& node, ScopedEvent event) = 0;
 
-  // Forward a message asynchronously to the specified node. This method MUST
-  // NOT synchronously call any methods on Node.
-  virtual void ForwardMessage(const NodeName& node, ScopedMessage message) = 0;
-
-  // Broadcast a message to all nodes.
-  virtual void BroadcastMessage(ScopedMessage message) = 0;
+  // Broadcast an event to all nodes.
+  virtual void BroadcastEvent(ScopedEvent event) = 0;
 
   // Indicates that the port's status has changed recently. Use Node::GetStatus
   // to query the latest status of the port. Note, this event could be spurious

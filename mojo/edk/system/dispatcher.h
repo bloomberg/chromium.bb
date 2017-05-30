@@ -29,8 +29,11 @@
 namespace mojo {
 namespace edk {
 
+namespace ports {
+class UserMessageEvent;
+}
+
 class Dispatcher;
-class MessageForTransit;
 
 using DispatcherVector = std::vector<scoped_refptr<Dispatcher>>;
 
@@ -78,15 +81,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   ///////////// Message pipe API /////////////
 
-  virtual MojoResult WriteMessage(std::unique_ptr<MessageForTransit> message,
-                                  MojoWriteMessageFlags flags);
+  virtual MojoResult WriteMessage(
+      std::unique_ptr<ports::UserMessageEvent> message,
+      MojoWriteMessageFlags flags);
 
-  virtual MojoResult ReadMessage(std::unique_ptr<MessageForTransit>* message,
-                                 uint32_t* num_bytes,
-                                 MojoHandle* handles,
-                                 uint32_t* num_handles,
-                                 MojoReadMessageFlags flags,
-                                 bool read_any_size);
+  virtual MojoResult ReadMessage(
+      std::unique_ptr<ports::UserMessageEvent>* message,
+      uint32_t* num_bytes,
+      MojoHandle* handles,
+      uint32_t* num_handles,
+      MojoReadMessageFlags flags,
+      bool read_any_size);
 
   ///////////// Shared buffer API /////////////
 
