@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,10 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "testing/gtest_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface NativeAppNavigationController (Testing)
 - (void)recordInfobarDisplayedOfType:(NativeAppControllerType)type
                     onLinkNavigation:(BOOL)isLinkNavigation;
@@ -32,7 +35,7 @@ namespace {
 class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
  public:
   FakeChromeBrowserProvider(FakeNativeAppWhitelistManager* fake_manager) {
-    manager_.reset([fake_manager retain]);
+    manager_ = fake_manager;
   }
   ~FakeChromeBrowserProvider() override {}
 
@@ -41,15 +44,15 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
   }
 
  private:
-  base::scoped_nsprotocol<id<NativeAppWhitelistManager>> manager_;
+  id<NativeAppWhitelistManager> manager_;
 };
 
 class NativeAppNavigationControllerTest : public ChromeWebTest {
  protected:
   void SetUp() override {
     ChromeWebTest::SetUp();
-    controller_.reset(
-        [[NativeAppNavigationController alloc] initWithWebState:web_state()]);
+    controller_ =
+        [[NativeAppNavigationController alloc] initWithWebState:web_state()];
 
     action_callback_ =
         base::Bind(&NativeAppNavigationControllerTest::OnUserAction,
@@ -78,7 +81,7 @@ class NativeAppNavigationControllerTest : public ChromeWebTest {
     handler_called_counter_ = 0;
   }
 
-  base::scoped_nsobject<NativeAppNavigationController> controller_;
+  NativeAppNavigationController* controller_;
 
   // The callback to invoke when an action is recorded.
   base::ActionCallback action_callback_;
@@ -125,11 +128,10 @@ TEST_F(NativeAppNavigationControllerTest, NativeAppInfoBar) {
 
   // Set up fake metadata.
   FakeNativeAppWhitelistManager* fakeManager =
-      [[[FakeNativeAppWhitelistManager alloc] init] autorelease];
+      [[FakeNativeAppWhitelistManager alloc] init];
   IOSChromeScopedTestingChromeBrowserProvider provider(
       base::MakeUnique<FakeChromeBrowserProvider>(fakeManager));
-  FakeNativeAppMetadata* metadata =
-      [[[FakeNativeAppMetadata alloc] init] autorelease];
+  FakeNativeAppMetadata* metadata = [[FakeNativeAppMetadata alloc] init];
   fakeManager.metadata = metadata;
   metadata.appName = @"App";
   metadata.appId = @"App-ID";
@@ -162,30 +164,28 @@ TEST_F(NativeAppNavigationControllerTest,
   NSString* const kYoutubeAppName = @"Youtube";
   NSString* const kYoutubeAppId = @"2";
 
-  base::scoped_nsobject<InstallationNotifier> installationNotifier(
-      [[InstallationNotifier alloc] init]);
+  InstallationNotifier* installationNotifier =
+      [[InstallationNotifier alloc] init];
 
   FakeNativeAppWhitelistManager* fakeManager =
-      [[[FakeNativeAppWhitelistManager alloc] init] autorelease];
+      [[FakeNativeAppWhitelistManager alloc] init];
   IOSChromeScopedTestingChromeBrowserProvider provider(
       base::MakeUnique<FakeChromeBrowserProvider>(fakeManager));
 
-  base::scoped_nsobject<FakeNativeAppMetadata> metadataMaps(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadataMaps = [[FakeNativeAppMetadata alloc] init];
   [metadataMaps setAppName:kMapsAppName];
   [metadataMaps setAppId:kMapsAppId];
-  ASSERT_TRUE(metadataMaps.get());
+  ASSERT_TRUE(metadataMaps);
   NSString* appIdMaps = [metadataMaps appId];
   NSNotification* notificationMaps =
       [NSNotification notificationWithName:kMapsAppName
                                     object:installationNotifier];
 
-  base::scoped_nsobject<FakeNativeAppMetadata> metadataYouTube(
-      [[FakeNativeAppMetadata alloc] init]);
+  FakeNativeAppMetadata* metadataYouTube = [[FakeNativeAppMetadata alloc] init];
   [metadataYouTube setAppName:kYoutubeAppName];
   [metadataYouTube setAppId:kYoutubeAppId];
 
-  ASSERT_TRUE(metadataYouTube.get());
+  ASSERT_TRUE(metadataYouTube);
   NSString* appIdYouTube = [metadataYouTube appId];
   NSNotification* notificationYouTube =
       [NSNotification notificationWithName:kYoutubeAppName

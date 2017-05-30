@@ -82,6 +82,7 @@ source_set("native_app_launcher_internal") {
 }
 
 source_set("unit_tests_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "native_app_navigation_controller_unittest.mm",
