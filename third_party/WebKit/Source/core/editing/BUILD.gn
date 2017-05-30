@@ -66,6 +66,7 @@ blink_core_sources("editing") {
     "SelectionEditor.h",
     "SelectionModifier.cpp",
     "SelectionModifier.h",
+    "SelectionModifierWord.cpp",
     "SelectionStrategy.h",
     "SelectionTemplate.cpp",
     "SelectionTemplate.h",
