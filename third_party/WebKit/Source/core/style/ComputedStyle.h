@@ -1668,15 +1668,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
-  // text-align-last
-  static TextAlignLast InitialTextAlignLast() { return TextAlignLast::kAuto; }
-  TextAlignLast GetTextAlignLast() const {
-    return static_cast<TextAlignLast>(rare_inherited_data_->text_align_last_);
-  }
-  void SetTextAlignLast(TextAlignLast v) {
-    SET_VAR(rare_inherited_data_, text_align_last_, static_cast<unsigned>(v));
-  }
-
   // text-combine-upright (aka -webkit-text-combine, -epub-text-combine)
   static TextCombine InitialTextCombine() { return kTextCombineNone; }
   TextCombine GetTextCombine() const {

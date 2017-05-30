@@ -1063,59 +1063,6 @@ inline ETableLayout CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(TextAlignLast e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case TextAlignLast::kStart:
-      value_id_ = CSSValueStart;
-      break;
-    case TextAlignLast::kEnd:
-      value_id_ = CSSValueEnd;
-      break;
-    case TextAlignLast::kLeft:
-      value_id_ = CSSValueLeft;
-      break;
-    case TextAlignLast::kRight:
-      value_id_ = CSSValueRight;
-      break;
-    case TextAlignLast::kCenter:
-      value_id_ = CSSValueCenter;
-      break;
-    case TextAlignLast::kJustify:
-      value_id_ = CSSValueJustify;
-      break;
-    case TextAlignLast::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-  }
-}
-
-template <>
-inline TextAlignLast CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return TextAlignLast::kAuto;
-    case CSSValueStart:
-      return TextAlignLast::kStart;
-    case CSSValueEnd:
-      return TextAlignLast::kEnd;
-    case CSSValueLeft:
-      return TextAlignLast::kLeft;
-    case CSSValueRight:
-      return TextAlignLast::kRight;
-    case CSSValueCenter:
-      return TextAlignLast::kCenter;
-    case CSSValueJustify:
-      return TextAlignLast::kJustify;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return TextAlignLast::kAuto;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextJustify e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

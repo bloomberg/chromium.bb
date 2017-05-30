@@ -365,21 +365,21 @@ ETextAlign LayoutBlockFlow::TextAlignmentForLine(
   if (ends_with_soft_break)
     return alignment;
 
-  TextAlignLast alignment_last = Style()->GetTextAlignLast();
+  ETextAlignLast alignment_last = Style()->TextAlignLast();
   switch (alignment_last) {
-    case TextAlignLast::kStart:
+    case ETextAlignLast::kStart:
       return ETextAlign::kStart;
-    case TextAlignLast::kEnd:
+    case ETextAlignLast::kEnd:
       return ETextAlign::kEnd;
-    case TextAlignLast::kLeft:
+    case ETextAlignLast::kLeft:
       return ETextAlign::kLeft;
-    case TextAlignLast::kRight:
+    case ETextAlignLast::kRight:
       return ETextAlign::kRight;
-    case TextAlignLast::kCenter:
+    case ETextAlignLast::kCenter:
       return ETextAlign::kCenter;
-    case TextAlignLast::kJustify:
+    case ETextAlignLast::kJustify:
       return ETextAlign::kJustify;
-    case TextAlignLast::kAuto:
+    case ETextAlignLast::kAuto:
       if (alignment == ETextAlign::kJustify)
         return ETextAlign::kStart;
       return alignment;
