@@ -325,13 +325,14 @@ void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
   intrinsic_size_along_main_axis_.erase(child);
 }
 
+// TODO (lajava): Is this function still needed ? Every time the flex
+// container's align-items value changes we propagate the diff to its children
+// (see ComputedStyle::stylePropagationDiff).
 void LayoutFlexibleBox::StyleDidChange(StyleDifference diff,
                                        const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
 
-  if (old_style &&
-      old_style->ResolvedAlignItems(SelfAlignmentNormalBehavior())
-              .GetPosition() == kItemPositionStretch &&
+  if (old_style && old_style->AlignItemsPosition() == kItemPositionStretch &&
       diff.NeedsFullLayout()) {
     // Flex items that were previously stretching need to be relayed out so we
     // can compute new available cross axis space. This is only necessary for
@@ -1705,7 +1706,8 @@ ItemPosition LayoutFlexibleBox::AlignmentForChild(
     const LayoutBox& child) const {
   ItemPosition align =
       child.StyleRef()
-          .ResolvedAlignSelf(SelfAlignmentNormalBehavior(), Style())
+          .ResolvedAlignSelf(SelfAlignmentNormalBehavior(),
+                             child.IsAnonymous() ? Style() : nullptr)
           .GetPosition();
   DCHECK_NE(align, kItemPositionAuto);
   DCHECK_NE(align, kItemPositionNormal);

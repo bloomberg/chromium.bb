@@ -128,14 +128,6 @@ class LayoutGrid final : public LayoutBlock {
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;
 
-  bool SelfAlignmentChangedToStretch(GridAxis,
-                                     const ComputedStyle& old_style,
-                                     const ComputedStyle& new_style,
-                                     const LayoutBox&) const;
-  bool SelfAlignmentChangedFromStretch(GridAxis,
-                                       const ComputedStyle& old_style,
-                                       const ComputedStyle& new_style,
-                                       const LayoutBox&) const;
   void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
   Optional<LayoutUnit> AvailableSpaceForGutters(GridTrackSizingDirection) const;
@@ -220,16 +212,8 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit AvailableAlignmentSpaceForChildBeforeStretching(
       LayoutUnit grid_area_breadth_for_child,
       const LayoutBox&) const;
-  StyleSelfAlignmentData JustifySelfForChild(
-      const LayoutBox&,
-      const ComputedStyle* = nullptr) const;
-  StyleSelfAlignmentData AlignSelfForChild(
-      const LayoutBox&,
-      const ComputedStyle* = nullptr) const;
-  StyleSelfAlignmentData SelfAlignmentForChild(
-      GridAxis,
-      const LayoutBox& child,
-      const ComputedStyle* = nullptr) const;
+  StyleSelfAlignmentData JustifySelfForChild(const LayoutBox&) const;
+  StyleSelfAlignmentData AlignSelfForChild(const LayoutBox&) const;
   void ApplyStretchAlignmentToChildIfNeeded(LayoutBox&);
   bool HasAutoSizeInColumnAxis(const LayoutBox& child) const {
     return IsHorizontalWritingMode() ? child.StyleRef().Height().IsAuto()

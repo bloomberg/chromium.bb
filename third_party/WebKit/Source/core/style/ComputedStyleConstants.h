@@ -343,7 +343,8 @@ inline Containment& operator|=(Containment& a, Containment b) {
 }
 
 enum ItemPosition {
-  kItemPositionAuto,
+  kItemPositionAuto,  // It will mean 'normal' after running the StyleAdjuster
+                      // to avoid resolving the initial values.
   kItemPositionNormal,
   kItemPositionStretch,
   kItemPositionBaseline,

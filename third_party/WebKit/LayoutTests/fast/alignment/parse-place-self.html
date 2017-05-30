@@ -58,9 +58,6 @@
 #placeSelfStartSafe {
   place-self: start safe;
 }
-#placeSelfBaselineSafe {
-  place-self: baseline safe;
-}
 #placeSelfStartEndLeft {
   place-self: start end left;
 }
@@ -116,7 +113,7 @@ function checkPlaceSelfValuesBadJS(value)
 {
   element.style.placeSelf = "";
   element.style.placeSelf = value;
-  checkPlaceSelfValues(element, "", "auto", "auto")
+  checkPlaceSelfValues(element, "", "normal", "normal")
 }
 
 test(function() {
@@ -125,8 +122,8 @@ test(function() {
 }, "Test getting the Computed Value of place-self's longhand properties when setting 'normal' value through CSS.");
 
 test(function() {
-  checkValues(placeSelfCenterAuto, "placeSelf", "place-self", "", "center auto");
-  checkPlaceSelfValues(placeSelfCenterAuto, "", "center", "auto");
+  checkValues(placeSelfCenterAuto, "placeSelf", "place-self", "", "center normal");
+  checkPlaceSelfValues(placeSelfCenterAuto, "", "center", "normal");
 }, "Test getting the Computed Value of place-self's longhand properties when setting 'center auto' value through CSS.");
 
 test(function() {
@@ -185,38 +182,38 @@ test(function() {
 }, "Test getting the Computed Value of place-self's longhand properties when setting 'start baseline' value through CSS.");
 
 test(function() {
-  checkValues(placeSelfEmpty, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfEmpty, "", "auto", "auto");
+  checkValues(placeSelfAuto, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfAuto, "", "normal", "normal");
 }, "Test setting '' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfAuto, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfAuto, "", "auto", "auto");
+  checkValues(placeSelfAuto, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfAuto, "", "normal", "normal");
 }, "Test setting 'auto' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfNone, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfNone, "", "auto", "auto");
+  checkValues(placeSelfNone, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfNone, "", "normal", "normal");
 }, "Test setting 'none' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfSafe, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfSafe, "", "auto", "auto");
+  checkValues(placeSelfSafe, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfSafe, "", "normal", "normal");
 }, "Test setting 'safe' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfStartSafe, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfStartSafe, "", "auto", "auto");
+  checkValues(placeSelfStartSafe, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfStartSafe, "", "normal", "normal");
 }, "Test setting 'start safe' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfBaselineSafe, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfBaselineSafe, "", "auto", "auto");
+  checkValues(placeSelfStartSafe, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfStartSafe, "", "normal", "normal");
 }, "Test setting 'baseline safe' as incorrect value through CSS.");
 
 test(function() {
-  checkValues(placeSelfStartEndLeft, "placeSelf", "place-self", "", "auto auto");
-  checkPlaceSelfValues(placeSelfStartEndLeft, "", "auto", "auto");
+  checkValues(placeSelfStartEndLeft, "placeSelf", "place-self", "", "normal normal");
+  checkPlaceSelfValues(placeSelfStartEndLeft, "", "normal", "normal");
 }, "Test setting 'start end left' as incorrect value through CSS.");
 
 test(function() {
@@ -224,36 +221,35 @@ test(function() {
   checkPlaceSelfValuesJS("center start", "center", "start");
   checkPlaceSelfValuesJS("self-start end", "self-start", "end");
   checkPlaceSelfValuesJS("normal end", "normal", "end");
-  checkPlaceSelfValuesJS("auto right", "auto", "right");
 }, "Test setting values through JS.");
 
 test(function() {
-  checkPlaceSelfValuesBadJS("space-between");
-  checkPlaceSelfValuesBadJS("center safe");
-  checkPlaceSelfValuesBadJS("center self-start center");
-  checkPlaceSelfValuesBadJS("asrt");
-  checkPlaceSelfValuesBadJS("10px");
-  checkPlaceSelfValuesBadJS("stretch safe");
-  checkPlaceSelfValuesBadJS("self-start start end");
-  checkPlaceSelfValuesBadJS("");
+  checkPlaceSelfValuesBadJS("space-between", "normal", "normal");
+  checkPlaceSelfValuesBadJS("center safe", "normal", "normal");
+  checkPlaceSelfValuesBadJS("center self-start center", "normal", "normal");
+  checkPlaceSelfValuesBadJS("asrt", "normal", "normal");
+  checkPlaceSelfValuesBadJS("10px", "normal", "normal");
+  checkPlaceSelfValuesBadJS("stretch safe", "normal", "normal");
+  checkPlaceSelfValuesBadJS("self-start start end", "normal", "normal");
+  checkPlaceSelfValuesBadJS("", "normal", "normal");
 }, "Test setting incorrect values through JS.");
 
 test(function() {
   element = document.createElement("div");
   document.body.appendChild(element);
-  checkValues(element, "placeSelf", "place-self", "", "auto auto");
+  checkValues(element, "placeSelf", "place-self", "", "normal normal");
   element.style.placeSelf = "center";
   checkPlaceSelfValues(element, "center", "center", "center");
   element.style.placeSelf = "initial";
-  checkValues(element, "placeSelf", "place-self", "initial", "auto auto");
-  checkPlaceSelfValues(element, "initial", "auto", "auto");
+  checkValues(element, "placeSelf", "place-self", "initial", "normal normal");
+  checkPlaceSelfValues(element, "initial", "normal", "normal");
 }, "Test the 'initial' value of the place-self shorthand and its longhand properties' Computed value");
 
 test(function() {
   document.body.style.placeSelf = "start";
   var anotherElement = document.createElement("div");
   document.body.appendChild(anotherElement);
-  checkPlaceSelfValues(anotherElement, "", "auto", "auto");
+  checkPlaceSelfValues(anotherElement, "", "normal", "normal");
   anotherElement.style.placeSelf = "inherit";
   checkPlaceSelfValues(anotherElement, "inherit", "start", "start");
 }, "Test the 'inherit' value of the place-self shorthand and its longhand properties' Computed value");
