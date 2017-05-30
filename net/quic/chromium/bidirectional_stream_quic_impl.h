@@ -58,14 +58,14 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
  private:
   // QuicChromiumClientStream::Delegate implementation:
-  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                  size_t frame_len) override;
   void OnClose() override;
   void OnError(int error) override;
 
   void OnStreamReady(int rv);
   void OnSendDataComplete(int rv);
   void OnReadInitialHeadersComplete(int rv);
+  void ReadTrailingHeaders();
+  void OnReadTrailingHeadersComplete(int rv);
   void OnReadDataComplete(int rv);
 
   // Notifies the delegate of an error.
@@ -92,6 +92,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   LoadTimingInfo::ConnectTiming connect_timing_;
 
   SpdyHeaderBlock initial_headers_;
+  SpdyHeaderBlock trailing_headers_;
 
   // User provided read buffer for ReadData() response.
   scoped_refptr<IOBuffer> read_buffer_;

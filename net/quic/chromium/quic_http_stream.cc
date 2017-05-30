@@ -56,6 +56,7 @@ QuicHttpStream::QuicHttpStream(
       has_response_status_(false),
       response_status_(ERR_UNEXPECTED),
       response_headers_received_(false),
+      trailing_headers_received_(false),
       headers_bytes_received_(0),
       headers_bytes_sent_(0),
       closed_stream_received_bytes_(0),
@@ -464,10 +465,23 @@ void QuicHttpStream::OnReadResponseHeadersComplete(int rv) {
   }
 }
 
-void QuicHttpStream::OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                                size_t frame_len) {
+void QuicHttpStream::ReadTrailingHeaders() {
+  if (!stream_)
+    return;
+
+  int rv = stream_->ReadTrailingHeaders(
+      &trailing_header_block_,
+      base::Bind(&QuicHttpStream::OnReadTrailingHeadersComplete,
+                 weak_factory_.GetWeakPtr()));
+
+  if (rv != ERR_IO_PENDING)
+    OnReadTrailingHeadersComplete(rv);
+}
+
+void QuicHttpStream::OnReadTrailingHeadersComplete(int rv) {
   DCHECK(response_headers_received_);
-  headers_bytes_received_ += frame_len;
+  if (rv > 0)
+    headers_bytes_received_ += rv;
 
   // QuicHttpStream ignores trailers.
   if (stream_->IsDoneReading()) {
@@ -751,6 +765,11 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
   // Populate |connect_timing_| when response headers are received. This should
   // take care of 0-RTT where request is sent before handshake is confirmed.
   connect_timing_ = quic_session()->GetConnectTiming();
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&QuicHttpStream::ReadTrailingHeaders,
+                            weak_factory_.GetWeakPtr()));
+
   return OK;
 }
 

@@ -97,21 +97,6 @@ class TestQuicConnection : public QuicConnection {
   }
 };
 
-// Subclass of QuicHttpStream that closes itself when the first piece of data
-// is received.
-class AutoClosingStream : public QuicHttpStream {
- public:
-  explicit AutoClosingStream(
-      std::unique_ptr<QuicChromiumClientSession::Handle> session)
-      : QuicHttpStream(std::move(session)) {}
-
-  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                  size_t frame_len) override {
-    Close(false);
-  }
-
-};
-
 // UploadDataStream that always returns errors on data read.
 class ReadErrorUploadDataStream : public UploadDataStream {
  public:
@@ -197,8 +182,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   };
 
   QuicHttpStreamTest()
-      : use_closing_stream_(false),
-        crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
+      : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
         read_buffer_(new IOBufferWithSize(4096)),
         promise_id_(GetNthServerInitiatedStreamId(0)),
         stream_id_(GetNthClientInitiatedStreamId(0)),
@@ -326,13 +310,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     TestCompletionCallback callback;
 
     session_->CryptoConnect(callback.callback());
-    stream_.reset(use_closing_stream_
-                      ? new AutoClosingStream(session_->CreateHandle())
-                      : new QuicHttpStream(session_->CreateHandle()));
-
-    promised_stream_.reset(use_closing_stream_
-                               ? new AutoClosingStream(session_->CreateHandle())
-                               : new QuicHttpStream(session_->CreateHandle()));
+    stream_.reset(new QuicHttpStream(session_->CreateHandle()));
+    promised_stream_.reset(new QuicHttpStream(session_->CreateHandle()));
 
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.example.org";
@@ -557,7 +536,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   BoundTestNetLog net_log_;
-  bool use_closing_stream_;
   MockSendAlgorithm* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
   std::unique_ptr<MockWrite[]> mock_writes_;
@@ -1010,7 +988,6 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
       &header_stream_offset));
   AddWrite(ConstructAckAndRstStreamPacket(3));
-  use_closing_stream_ = true;
   Initialize();
 
   request_.method = "GET";
@@ -1051,7 +1028,6 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
       1, GetNthClientInitiatedStreamId(0), kIncludeVersion, kFin,
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
       &header_stream_offset));
-  use_closing_stream_ = true;
   Initialize();
 
   request_.method = "GET";
@@ -1405,7 +1381,6 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
       &header_stream_offset));
   AddWrite(ConstructAckAndRstStreamPacket(3));
-  use_closing_stream_ = true;
   Initialize();
 
   request_.method = "GET";
@@ -1451,7 +1426,6 @@ TEST_P(QuicHttpStreamTest, Priority) {
   AddWrite(InnerConstructRequestHeadersPacket(
       2, GetNthClientInitiatedStreamId(0), kIncludeVersion, kFin, MEDIUM,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  use_closing_stream_ = true;
   Initialize();
 
   request_.method = "GET";
@@ -1498,7 +1472,6 @@ TEST_P(QuicHttpStreamTest, Priority) {
 // Regression test for http://crbug.com/294870
 TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   SetRequest("GET", "/", MEDIUM);
-  use_closing_stream_ = true;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(ConstructClientRstStreamPacket(2));

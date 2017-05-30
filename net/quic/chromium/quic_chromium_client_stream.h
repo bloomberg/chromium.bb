@@ -39,10 +39,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
    public:
     Delegate() {}
 
-    // Called when trailing headers are available.
-    virtual void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                            size_t frame_len) = 0;
-
     // Called when the stream is closed by the peer.
     virtual void OnClose() = 0;
 
@@ -81,6 +77,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     int ReadBody(IOBuffer* buffer,
                  int buffer_len,
                  const CompletionCallback& callback);
+
+    // Reads trailing headers into |header_block| and returns the length of
+    // the HEADERS frame which contained them. If headers are not available,
+    // returns ERR_IO_PENDING and will invoke |callback| asynchronously when
+    // the headers arrive.
+    // TODO(rch): Invoke |callback| when there is a stream or connection error
+    // instead of calling OnClose() or OnError().
+    int ReadTrailingHeaders(SpdyHeaderBlock* header_block,
+                            const CompletionCallback& callback);
 
     // Writes |header_block| to the peer. Closes the write side if |fin| is
     // true. If non-null, |ack_notifier_delegate| will be notified when the
@@ -154,8 +159,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
     // Methods invoked by the stream.
     void OnInitialHeadersAvailable();
-    void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                    size_t frame_len);
+    void OnTrailingHeadersAvailable();
     void OnDataAvailable();
     void OnCanWrite();
     void OnClose();
@@ -260,16 +264,16 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
   bool DeliverInitialHeaders(SpdyHeaderBlock* header_block, int* frame_len);
 
+  bool DeliverTrailingHeaders(SpdyHeaderBlock* header_block, int* frame_len);
+
   using QuicSpdyStream::HasBufferedData;
   using QuicStream::sequencer;
 
  private:
   void NotifyHandleOfInitialHeadersAvailableLater();
   void NotifyHandleOfInitialHeadersAvailable();
-  void NotifyHandleOfTrailingHeadersAvailableLater(SpdyHeaderBlock headers,
-                                                   size_t frame_len);
-  void NotifyHandleOfTrailingHeadersAvailable(SpdyHeaderBlock headers,
-                                              size_t frame_len);
+  void NotifyHandleOfTrailingHeadersAvailableLater();
+  void NotifyHandleOfTrailingHeadersAvailable();
   void NotifyHandleOfDataAvailableLater();
   void NotifyHandleOfDataAvailable();
 
@@ -290,6 +294,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   SpdyHeaderBlock initial_headers_;
   // Length of the HEADERS frame containing initial headers.
   size_t initial_headers_frame_len_;
+
+  // Length of the HEADERS frame containing trailing headers.
+  size_t trailing_headers_frame_len_;
 
   base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
 
