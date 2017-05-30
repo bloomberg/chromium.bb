@@ -1067,16 +1067,15 @@ void ContainerNode::FocusStateChanged() {
   if (!GetLayoutObject())
     return;
 
-  if (GetComputedStyle()->AffectedByFocus()) {
-    StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
-            ? kSubtreeStyleChange
-            : kLocalStyleChange;
-    SetNeedsStyleRecalc(
-        change_type,
-        StyleChangeReasonForTracing::CreateWithExtraData(
-            StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
-  }
+  StyleChangeType change_type =
+      GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+          ? kSubtreeStyleChange
+          : kLocalStyleChange;
+  SetNeedsStyleRecalc(
+      change_type,
+      StyleChangeReasonForTracing::CreateWithExtraData(
+          StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
+
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
 
