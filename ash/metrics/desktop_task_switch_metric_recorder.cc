@@ -21,13 +21,13 @@ DesktopTaskSwitchMetricRecorder::~DesktopTaskSwitchMetricRecorder() {
 }
 
 void DesktopTaskSwitchMetricRecorder::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (gained_active && wm::IsWindowUserPositionable(gained_active)) {
     if (last_active_task_window_ != gained_active &&
-        reason == aura::client::ActivationChangeObserver::ActivationReason::
-                      INPUT_EVENT) {
+        reason ==
+            ::wm::ActivationChangeObserver::ActivationReason::INPUT_EVENT) {
       ShellPort::Get()->RecordUserMetricsAction(UMA_DESKTOP_SWITCH_TASK);
     }
     last_active_task_window_ = gained_active;

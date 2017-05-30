@@ -539,10 +539,10 @@ void WindowManager::OnWmPerformMoveLoop(
   }
 
   DCHECK(!handler->IsDragInProgress());
-  aura::client::WindowMoveSource aura_source =
+  ::wm::WindowMoveSource aura_source =
       source == ui::mojom::MoveLoopSource::MOUSE
-          ? aura::client::WINDOW_MOVE_SOURCE_MOUSE
-          : aura::client::WINDOW_MOVE_SOURCE_TOUCH;
+          ? ::wm::WINDOW_MOVE_SOURCE_MOUSE
+          : ::wm::WINDOW_MOVE_SOURCE_TOUCH;
   handler->AttemptToStartDrag(cursor_location, HTCAPTION, aura_source, on_done);
 }
 

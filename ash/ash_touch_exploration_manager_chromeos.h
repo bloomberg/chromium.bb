@@ -38,7 +38,7 @@ class ASH_EXPORT AshTouchExplorationManager
       public ui::TouchExplorationControllerDelegate,
       public ui::TouchAccessibilityEnablerDelegate,
       public display::DisplayObserver,
-      public aura::client::ActivationChangeObserver,
+      public ::wm::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public ShellObserver {
  public:
@@ -69,9 +69,9 @@ class ASH_EXPORT AshTouchExplorationManager
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
   void ToggleSpokenFeedback() override;
 
-  // aura::client::ActivationChangeObserver overrides:
+  // wm::ActivationChangeObserver overrides:
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
+      ::wm::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 

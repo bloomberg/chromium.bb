@@ -50,8 +50,8 @@ Browser* ChromeNewWindowClient::GetActiveBrowser() {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (browser) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    aura::client::ActivationClient* client =
-        aura::client::GetActivationClient(window->GetRootWindow());
+    wm::ActivationClient* client =
+        wm::GetActivationClient(window->GetRootWindow());
     if (client->GetActiveWindow() == window)
       return browser;
   }

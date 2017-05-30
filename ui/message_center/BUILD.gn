@@ -97,7 +97,10 @@ component("message_center") {
     sources += get_target_outputs(":message_center_vector_icons")
 
     if (is_win) {
-      deps += [ "//ui/aura" ]
+      deps += [
+        "//ui/aura",
+        "//ui/wm/public",
+      ]
     }
 
     if (is_mac) {

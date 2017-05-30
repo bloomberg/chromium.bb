@@ -23,19 +23,17 @@ class Widget;
 // and root window destruction, to shutdown the menu.
 //
 // Additionally handles key events to provide accelerator support to menus.
-class VIEWS_EXPORT MenuPreTargetHandler
-    : public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver,
-      public ui::EventHandler {
+class VIEWS_EXPORT MenuPreTargetHandler : public wm::ActivationChangeObserver,
+                                          public aura::WindowObserver,
+                                          public ui::EventHandler {
  public:
   MenuPreTargetHandler(MenuController* controller, Widget* owner);
   ~MenuPreTargetHandler() override;
 
   // aura::client:ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

@@ -5,15 +5,17 @@
 #ifndef UI_WM_PUBLIC_ACTIVATION_DELEGATE_H_
 #define UI_WM_PUBLIC_ACTIVATION_DELEGATE_H_
 
-#include "ui/aura/aura_export.h"
+#include "ui/wm/public/wm_public_export.h"
 
 namespace aura {
 class Window;
-namespace client {
+}
+
+namespace wm {
 
 // An interface implemented by an object that configures and responds to changes
 // to a window's activation state.
-class AURA_EXPORT ActivationDelegate {
+class WM_PUBLIC_EXPORT ActivationDelegate {
  public:
   // Returns true if the window should be activated.
   virtual bool ShouldActivate() const = 0;
@@ -23,11 +25,11 @@ class AURA_EXPORT ActivationDelegate {
 };
 
 // Sets/Gets the ActivationDelegate on the Window. No ownership changes.
-AURA_EXPORT void SetActivationDelegate(Window* window,
-                                       ActivationDelegate* delegate);
-AURA_EXPORT ActivationDelegate* GetActivationDelegate(Window* window);
+WM_PUBLIC_EXPORT void SetActivationDelegate(aura::Window* window,
+                                            ActivationDelegate* delegate);
+WM_PUBLIC_EXPORT ActivationDelegate* GetActivationDelegate(
+    aura::Window* window);
 
-}  // namespace client
-}  // namespace aura
+}  // namespace wm
 
 #endif  // UI_WM_PUBLIC_ACTIVATION_DELEGATE_H_

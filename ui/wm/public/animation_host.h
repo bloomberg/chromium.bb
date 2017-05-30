@@ -6,20 +6,22 @@
 #define UI_WM_PUBLIC_ANIMATION_HOST_H_
 
 #include "base/compiler_specific.h"
-#include "ui/aura/aura_export.h"
+#include "ui/wm/public/wm_public_export.h"
+
+namespace aura {
+class Window;
+}
 
 namespace gfx {
 class Vector2d;
 }
 
-namespace aura {
-class Window;
-namespace client {
+namespace wm {
 
 // Interface for top level window host of animation. Communicates additional
 // bounds required for animation as well as animation completion for deferring
 // window closes on hide.
-class AURA_EXPORT AnimationHost {
+class WM_PUBLIC_EXPORT AnimationHost {
  public:
   // Ensure the host window is at least this large so that transitions have
   // sufficient space.
@@ -38,11 +40,10 @@ class AURA_EXPORT AnimationHost {
   virtual ~AnimationHost() {}
 };
 
-AURA_EXPORT void SetAnimationHost(Window* window,
-                                  AnimationHost* animation_host);
-AURA_EXPORT AnimationHost* GetAnimationHost(Window* window);
+WM_PUBLIC_EXPORT void SetAnimationHost(aura::Window* window,
+                                       AnimationHost* animation_host);
+WM_PUBLIC_EXPORT AnimationHost* GetAnimationHost(aura::Window* window);
 
-}  // namespace client
-}  // namespace aura
+}  // namespace wm
 
 #endif  // UI_WM_PUBLIC_ANIMATION_HOST_H_

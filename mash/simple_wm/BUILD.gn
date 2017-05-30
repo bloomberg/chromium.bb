@@ -48,6 +48,7 @@ source_set("lib") {
     "//ui/views",
     "//ui/views/mus:mus",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   public_deps = [

@@ -17,7 +17,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/public/activation_client.h"
 
-using aura::client::ActivationChangeObserver;
+using wm::ActivationChangeObserver;
 
 namespace ash {
 namespace {

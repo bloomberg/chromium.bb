@@ -87,7 +87,7 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
 
   // Start dragging the window.
   wm::GetWindowState(w1.get())->CreateDragDetails(
-      gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+      gfx::Point(), HTRIGHT, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
 
   // The dragged window should only be in the list once.
   MruWindowTracker::WindowList window_list =

@@ -19,6 +19,4 @@ include_rules = [
                        #             to ui/metro_viewer.
   "+ui/ozone/public",
   "+ui/platform_window",
-  "+ui/wm/public",
 ]
-

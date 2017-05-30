@@ -825,8 +825,7 @@ void RenderWidgetHostViewAura::SetTooltipText(
     const base::string16& tooltip_text) {
   tooltip_ = tooltip_text;
   aura::Window* root_window = window_->GetRootWindow();
-  aura::client::TooltipClient* tooltip_client =
-      aura::client::GetTooltipClient(root_window);
+  wm::TooltipClient* tooltip_client = wm::GetTooltipClient(root_window);
   if (tooltip_client) {
     tooltip_client->UpdateTooltip(window_);
     // Content tooltips should be visible indefinitely.
@@ -1738,7 +1737,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
+// RenderWidgetHostViewAura, wm::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate() const {
   aura::WindowTreeHost* host = window_->GetHost();
@@ -1865,7 +1864,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     if (window_->GetHost())
       window_->GetHost()->RemoveObserver(this);
     UnlockMouse();
-    aura::client::SetTooltipText(window_, NULL);
+    wm::SetTooltipText(window_, NULL);
     display::Screen::GetScreen()->RemoveObserver(this);
 
     // This call is usually no-op since |this| object is already removed from
@@ -1913,8 +1912,8 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   event_handler_->set_window(window_);
   window_observer_.reset(new WindowObserver(this));
 
-  aura::client::SetTooltipText(window_, &tooltip_);
-  aura::client::SetActivationDelegate(window_, this);
+  wm::SetTooltipText(window_, &tooltip_);
+  wm::SetActivationDelegate(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
   display::Screen::GetScreen()->AddObserver(this);
 
@@ -2064,7 +2063,7 @@ void RenderWidgetHostViewAura::SetTooltipsEnabled(bool enable) {
     tooltip_disabler_.reset();
   } else {
     tooltip_disabler_.reset(
-        new aura::client::ScopedTooltipDisabler(window_->GetRootWindow()));
+        new wm::ScopedTooltipDisabler(window_->GetRootWindow()));
   }
 }
 

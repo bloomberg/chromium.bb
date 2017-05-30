@@ -181,7 +181,10 @@ source_set("app_shell_lib") {
       "browser/shell_screen.cc",
       "browser/shell_screen.h",
     ]
-    deps += [ "//ui/wm" ]
+    deps += [
+      "//ui/wm",
+      "//ui/wm/public",
+    ]
   }
 
   if (is_chromeos) {

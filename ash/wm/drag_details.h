@@ -21,7 +21,7 @@ struct ASH_EXPORT DragDetails {
               const gfx::Point& location,
               int window_component,
               // TODO(sky): make wm type.
-              aura::client::WindowMoveSource source);
+              ::wm::WindowMoveSource source);
   ~DragDetails();
 
   ash::wm::WindowStateType initial_state_type;
@@ -55,7 +55,7 @@ struct ASH_EXPORT DragDetails {
   const bool is_resizable;
 
   // Source of the event initiating the drag.
-  const aura::client::WindowMoveSource source;
+  const ::wm::WindowMoveSource source;
 
   // True if the window should attach to the shelf after releasing.
   bool should_attach_to_shelf;

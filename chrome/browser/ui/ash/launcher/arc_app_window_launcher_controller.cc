@@ -492,7 +492,7 @@ ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
 }
 
 void ArcAppWindowLauncherController::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   AppWindowLauncherController::OnWindowActivated(reason, gained_active,

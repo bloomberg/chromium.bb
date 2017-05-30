@@ -1328,7 +1328,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
     }
 
     resizer_ = ash::CreateWindowResizer(window, GetMouseLocation(), component,
-                                        aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+                                        wm::WINDOW_MOVE_SOURCE_MOUSE);
     if (!resizer_)
       return;
 
@@ -1346,7 +1346,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
     DCHECK(!window_state->drag_details());
     DCHECK(component == HTCAPTION);
     window_state->CreateDragDetails(GetMouseLocation(), component,
-                                    aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+                                    wm::WINDOW_MOVE_SOURCE_MOUSE);
 
     // Chained with a CustomWindowResizer, DragWindowResizer does not handle
     // dragging. It only renders phantom windows and moves the window to the

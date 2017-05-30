@@ -243,7 +243,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // Simulate dragging of the window and check its item is not changed.
   std::unique_ptr<WindowResizer> resizer(
       CreateWindowResizer(widget->GetNativeWindow(), gfx::Point(), HTCAPTION,
-                          aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+                          ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(gfx::Point(50, 50), 0);
   resizer->CompleteDrag();

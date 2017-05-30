@@ -16,27 +16,22 @@
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/wm_export.h"
 
-namespace aura {
-namespace client {
-class ActivationChangeObserver;
-}
-}
-
 namespace wm {
+
+class ActivationChangeObserver;
 
 // Simple ActivationClient implementation for use by tests and other targets
 // that just need basic behavior (e.g. activate windows whenever requested,
 // restack windows at the top when they're activated, etc.). This object deletes
 // itself when the root window it is associated with is destroyed.
-class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
+class WM_EXPORT DefaultActivationClient : public ActivationClient,
                                           public aura::WindowObserver {
  public:
   explicit DefaultActivationClient(aura::Window* root_window);
 
-  // Overridden from aura::client::ActivationClient:
-  void AddObserver(aura::client::ActivationChangeObserver* observer) override;
-  void RemoveObserver(
-      aura::client::ActivationChangeObserver* observer) override;
+  // Overridden from ActivationClient:
+  void AddObserver(ActivationChangeObserver* observer) override;
+  void RemoveObserver(ActivationChangeObserver* observer) override;
   void ActivateWindow(aura::Window* window) override;
   void DeactivateWindow(aura::Window* window) override;
   const aura::Window* GetActiveWindow() const override;
@@ -53,9 +48,8 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
   ~DefaultActivationClient() override;
   void RemoveActiveWindow(aura::Window* window);
 
-  void ActivateWindowImpl(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* window);
+  void ActivateWindowImpl(ActivationChangeObserver::ActivationReason reason,
+                          aura::Window* window);
 
   // This class explicitly does NOT store the active window in a window property
   // to make sure that ActivationChangeObserver is not treated as part of the
@@ -66,7 +60,7 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
   // The window which was active before the currently active one.
   aura::Window* last_active_;
 
-  base::ObserverList<aura::client::ActivationChangeObserver> observers_;
+  base::ObserverList<ActivationChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultActivationClient);
 };

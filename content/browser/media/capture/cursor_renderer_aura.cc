@@ -49,8 +49,8 @@ bool CursorRendererAura::IsCapturedViewActive() {
   // render the mouse cursor. For ordinary window, we only render the mouse
   // cursor when the window is active.
   if (!window_->IsRootWindow()) {
-    aura::client::ActivationClient* activation_client =
-        aura::client::GetActivationClient(window_->GetRootWindow());
+    wm::ActivationClient* activation_client =
+        wm::GetActivationClient(window_->GetRootWindow());
     if (!activation_client) {
       DVLOG(2) << "Assume window inactive with invalid activation_client";
       return false;

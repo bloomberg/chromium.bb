@@ -329,8 +329,8 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   focusable_view1->RequestFocus();
 
   EXPECT_TRUE(root_window1 != NULL);
-  aura::client::ActivationClient* activation_client1 =
-      aura::client::GetActivationClient(root_window1);
+  wm::ActivationClient* activation_client1 =
+      wm::GetActivationClient(root_window1);
   EXPECT_TRUE(activation_client1 != NULL);
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1->GetNativeView());
 
@@ -343,8 +343,8 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   focusable_view2->RequestFocus();
   ActivatePlatformWindow(widget2);
 
-  aura::client::ActivationClient* activation_client2 =
-      aura::client::GetActivationClient(root_window2);
+  wm::ActivationClient* activation_client2 =
+      wm::GetActivationClient(root_window2);
   EXPECT_TRUE(activation_client2 != NULL);
   EXPECT_EQ(activation_client2->GetActiveWindow(), widget2->GetNativeView());
   EXPECT_EQ(activation_client1->GetActiveWindow(),

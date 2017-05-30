@@ -153,7 +153,7 @@ void TooltipController::UpdateTooltip(aura::Window* target) {
   // but over a different view, than back to the original.
   if (tooltip_window_at_mouse_press_ &&
       target == tooltip_window_at_mouse_press_ &&
-      aura::client::GetTooltipText(target) != tooltip_text_at_mouse_press_) {
+      wm::GetTooltipText(target) != tooltip_text_at_mouse_press_) {
     tooltip_window_at_mouse_press_ = NULL;
   }
 }
@@ -207,7 +207,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
 
       if (tooltip_->IsVisible() ||
           (tooltip_window_ &&
-           tooltip_text_ != aura::client::GetTooltipText(tooltip_window_)))
+           tooltip_text_ != wm::GetTooltipText(tooltip_window_)))
         UpdateIfRequired();
       break;
     }
@@ -217,7 +217,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
         // We don't get a release for non-client areas.
         tooltip_window_at_mouse_press_ = target;
         if (target)
-          tooltip_text_at_mouse_press_ = aura::client::GetTooltipText(target);
+          tooltip_text_at_mouse_press_ = wm::GetTooltipText(target);
       }
       tooltip_->Hide();
       break;
@@ -258,11 +258,10 @@ void TooltipController::OnWindowDestroyed(aura::Window* window) {
 void TooltipController::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
                                                 intptr_t old) {
-  if ((key == aura::client::kTooltipIdKey ||
-       key == aura::client::kTooltipTextKey) &&
-      aura::client::GetTooltipText(window) != base::string16() &&
-      (tooltip_text_ != aura::client::GetTooltipText(window) ||
-       tooltip_id_ != aura::client::GetTooltipId(window)))
+  if ((key == wm::kTooltipIdKey || key == wm::kTooltipTextKey) &&
+      wm::GetTooltipText(window) != base::string16() &&
+      (tooltip_text_ != wm::GetTooltipText(window) ||
+       tooltip_id_ != wm::GetTooltipId(window)))
     UpdateIfRequired();
 }
 
@@ -282,7 +281,7 @@ void TooltipController::UpdateIfRequired() {
 
   base::string16 tooltip_text;
   if (tooltip_window_)
-    tooltip_text = aura::client::GetTooltipText(tooltip_window_);
+    tooltip_text = wm::GetTooltipText(tooltip_window_);
 
   // If the user pressed a mouse button. We will hide the tooltip and not show
   // it until there is a change in the tooltip.
@@ -297,7 +296,7 @@ void TooltipController::UpdateIfRequired() {
 
   // If the uniqueness indicator is different from the previously encountered
   // one, we should force tooltip update
-  const void* tooltip_id = aura::client::GetTooltipId(tooltip_window_);
+  const void* tooltip_id = wm::GetTooltipId(tooltip_window_);
   bool ids_differ = false;
   ids_differ = tooltip_id_ != tooltip_id;
   tooltip_id_ = tooltip_id;

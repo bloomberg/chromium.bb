@@ -31,8 +31,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   void SetUp() override {
     AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    aura::client::ActivationClient* activation_client =
-        aura::client::GetActivationClient(root_window());
+    ActivationClient* activation_client = GetActivationClient(root_window());
     shadow_controller_.reset(new ShadowController(activation_client));
   }
   void TearDown() override {
@@ -46,8 +45,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   void ActivateWindow(aura::Window* window) {
     DCHECK(window);
     DCHECK(window->GetRootWindow());
-    aura::client::GetActivationClient(window->GetRootWindow())->ActivateWindow(
-        window);
+    GetActivationClient(window->GetRootWindow())->ActivateWindow(window);
   }
 
  private:
@@ -217,7 +215,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   ParentWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
   AddTransientChild(window1.get(), window2.get());
-  aura::client::SetHideOnDeactivate(window2.get(), true);
+  SetHideOnDeactivate(window2.get(), true);
   window2->Show();
   ActivateWindow(window2.get());
 

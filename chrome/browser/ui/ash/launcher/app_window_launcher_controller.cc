@@ -14,8 +14,8 @@ AppWindowLauncherController::AppWindowLauncherController(
     : owner_(owner) {
   if (ash::Shell::HasInstance()) {
     if (ash::Shell::Get()->GetPrimaryRootWindow()) {
-      activation_client_ = aura::client::GetActivationClient(
-          ash::Shell::Get()->GetPrimaryRootWindow());
+      activation_client_ =
+          wm::GetActivationClient(ash::Shell::Get()->GetPrimaryRootWindow());
       if (activation_client_)
         activation_client_->AddObserver(this);
     }
@@ -28,7 +28,7 @@ AppWindowLauncherController::~AppWindowLauncherController() {
 }
 
 void AppWindowLauncherController::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* new_active,
     aura::Window* old_active) {
   // Make the newly active window the active (first) entry in the controller.

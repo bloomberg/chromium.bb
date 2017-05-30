@@ -76,7 +76,7 @@ ShadowElevation GetShadowElevationForActiveState(aura::Window* window) {
 ShadowElevation GetShadowElevationForWindowLosingActive(
     aura::Window* losing_active,
     aura::Window* gaining_active) {
-  if (gaining_active && aura::client::GetHideOnDeactivate(gaining_active)) {
+  if (gaining_active && GetHideOnDeactivate(gaining_active)) {
     aura::Window::Windows::const_iterator it =
         std::find(GetTransientChildren(losing_active).begin(),
                   GetTransientChildren(losing_active).end(),
@@ -266,10 +266,8 @@ Shadow* ShadowController::GetShadowForWindow(aura::Window* window) {
   return window->GetProperty(kShadowLayerKey);
 }
 
-ShadowController::ShadowController(
-    aura::client::ActivationClient* activation_client)
-    : activation_client_(activation_client),
-      impl_(Impl::GetInstance()) {
+ShadowController::ShadowController(ActivationClient* activation_client)
+    : activation_client_(activation_client), impl_(Impl::GetInstance()) {
   // Watch for window activation changes.
   activation_client_->AddObserver(this);
 }

@@ -24,8 +24,7 @@ ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
       native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   wm::SetWindowVisibilityAnimationVerticalPosition(native_view, -3.0f);
 
-  aura::client::GetActivationClient(native_view->GetRootWindow())
-      ->AddObserver(popup);
+  wm::GetActivationClient(native_view->GetRootWindow())->AddObserver(popup);
 
   return popup;
 }
@@ -45,8 +44,8 @@ void ExtensionPopupAura::OnWidgetDestroying(views::Widget* widget) {
   ExtensionPopup::OnWidgetDestroying(widget);
 
   if (widget == GetWidget()) {
-    auto* activation_client = aura::client::GetActivationClient(
-        widget->GetNativeWindow()->GetRootWindow());
+    auto* activation_client =
+        wm::GetActivationClient(widget->GetNativeWindow()->GetRootWindow());
     // If the popup was being inspected with devtools and the browser window
     // was closed, then the root window and activation client are already
     // destroyed.
@@ -56,7 +55,7 @@ void ExtensionPopupAura::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void ExtensionPopupAura::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   // Close on anchor window activation (ie. user clicked the browser window).

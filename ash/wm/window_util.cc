@@ -69,7 +69,7 @@ bool IsActiveWindow(aura::Window* window) {
 }
 
 aura::Window* GetActiveWindow() {
-  return aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
+  return ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())
       ->GetActiveWindow();
 }
 

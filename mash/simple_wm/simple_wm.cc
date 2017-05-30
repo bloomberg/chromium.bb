@@ -526,7 +526,7 @@ void SimpleWM::OnWmNewDisplay(
       std::move(frame_decoration_values));
   focus_controller_ = base::MakeUnique<wm::FocusController>(this);
   aura::client::SetFocusClient(display_root_, focus_controller_.get());
-  aura::client::SetActivationClient(display_root_, focus_controller_.get());
+  wm::SetActivationClient(display_root_, focus_controller_.get());
   display_root_->AddPreTargetHandler(focus_controller_.get());
 }
 
@@ -589,8 +589,8 @@ SimpleWM::FrameView* SimpleWM::GetFrameViewForClientWindow(
 
 void SimpleWM::OnWindowListViewItemActivated(aura::Window* window) {
   window->Show();
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window->GetRootWindow());
+  wm::ActivationClient* activation_client =
+      wm::GetActivationClient(window->GetRootWindow());
   activation_client->ActivateWindow(window);
 }
 

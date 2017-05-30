@@ -474,7 +474,7 @@ void MultiWindowResizeController::StartResize(
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
   wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
   window_state->CreateDragDetails(location_in_parent, component,
-                                  aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+                                  ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
 
   // Do not hide the resize widget while a drag is active.

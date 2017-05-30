@@ -53,7 +53,7 @@ enum class ProcessType {
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
 // renderers' scores up to date in /proc/<pid>/oom_score_adj.
-class TabManagerDelegate : public aura::client::ActivationChangeObserver,
+class TabManagerDelegate : public wm::ActivationChangeObserver,
                            public content::NotificationObserver,
                            public chrome::BrowserListObserver {
  public:
@@ -69,10 +69,9 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   void OnBrowserSetLastActive(Browser* browser) override;
 
   // aura::ActivationChangeObserver overrides.
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Kills a process on memory pressure.
   void LowMemoryKill(const TabStatsList& tab_stats);

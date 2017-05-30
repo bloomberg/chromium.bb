@@ -45,10 +45,8 @@
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/public/activation_delegate.h"
 
-namespace aura {
-namespace client {
+namespace wm {
 class ScopedTooltipDisabler;
-}
 }
 
 namespace gfx {
@@ -86,7 +84,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public display::DisplayObserver,
       public aura::WindowTreeHostObserver,
       public aura::WindowDelegate,
-      public aura::client::ActivationDelegate,
+      public wm::ActivationDelegate,
       public aura::client::FocusChangeObserver,
       public aura::client::CursorClientObserver {
  public:
@@ -261,7 +259,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnTouchEvent(ui::TouchEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // Overridden from aura::client::ActivationDelegate:
+  // Overridden from wm::ActivationDelegate:
   bool ShouldActivate() const override;
 
   // Overridden from aura::client::CursorClientObserver:
@@ -586,7 +584,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::vector<ui::LatencyInfo> software_latency_info_;
 
-  std::unique_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
+  std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.

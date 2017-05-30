@@ -7,14 +7,6 @@ import("//testing/test.gni")
 
 component("aura") {
   public = [
-    "../wm/public/activation_change_observer.h",
-    "../wm/public/activation_client.h",
-    "../wm/public/activation_delegate.h",
-    "../wm/public/animation_host.h",
-    "../wm/public/scoped_drag_drop_disabler.h",
-    "../wm/public/scoped_tooltip_disabler.h",
-    "../wm/public/tooltip_client.h",
-    "../wm/public/window_move_client.h",
     "client/aura_constants.h",
     "client/capture_client.h",
     "client/capture_client_observer.h",
@@ -85,14 +77,6 @@ component("aura") {
     "window_tree_host_platform.h",
   ]
   sources = [
-    "../wm/public/activation_change_observer.cc",
-    "../wm/public/activation_client.cc",
-    "../wm/public/activation_delegate.cc",
-    "../wm/public/animation_host.cc",
-    "../wm/public/scoped_drag_drop_disabler.cc",
-    "../wm/public/scoped_tooltip_disabler.cc",
-    "../wm/public/tooltip_client.cc",
-    "../wm/public/window_move_client.cc",
     "client/aura_constants.cc",
     "client/capture_client.cc",
     "client/cursor_client.cc",

@@ -21,8 +21,8 @@ namespace test {
 
 // A test ActivationDelegate that can be used to track activation changes for
 // an aura::Window.
-class TestActivationDelegate : public aura::client::ActivationDelegate,
-                               public aura::client::ActivationChangeObserver {
+class TestActivationDelegate : public ::wm::ActivationDelegate,
+                               public ::wm::ActivationChangeObserver {
  public:
   TestActivationDelegate();
   explicit TestActivationDelegate(bool activate);
@@ -40,13 +40,13 @@ class TestActivationDelegate : public aura::client::ActivationDelegate,
     window_was_active_ = false;
   }
 
-  // Overridden from aura::client::ActivationDelegate:
+  // Overridden from wm::ActivationDelegate:
   bool ShouldActivate() const override;
 
  private:
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from wm:ActivationChangeObserver:
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
+      ::wm::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 

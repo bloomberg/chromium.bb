@@ -7,10 +7,9 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
 
-namespace aura {
-namespace client {
+namespace wm {
 
-class NopDragDropClient : public DragDropClient {
+class NopDragDropClient : public aura::client::DragDropClient {
  public:
   ~NopDragDropClient() override {}
   int StartDragAndDrop(const ui::OSExchangeData& data,
@@ -27,9 +26,9 @@ class NopDragDropClient : public DragDropClient {
   }
 };
 
-ScopedDragDropDisabler::ScopedDragDropDisabler(Window* window)
+ScopedDragDropDisabler::ScopedDragDropDisabler(aura::Window* window)
     : window_(window),
-      old_client_(GetDragDropClient(window)),
+      old_client_(aura::client::GetDragDropClient(window)),
       new_client_(new NopDragDropClient()) {
   SetDragDropClient(window_, new_client_.get());
   window_->AddObserver(this);
@@ -42,11 +41,10 @@ ScopedDragDropDisabler::~ScopedDragDropDisabler() {
   }
 }
 
-void ScopedDragDropDisabler::OnWindowDestroyed(Window* window) {
+void ScopedDragDropDisabler::OnWindowDestroyed(aura::Window* window) {
   CHECK_EQ(window_, window);
   window_ = NULL;
   new_client_.reset();
 }
 
-}  // namespace client
-}  // namespace aura
+}  // namespace wm

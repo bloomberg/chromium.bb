@@ -483,8 +483,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
 
   // Disable Drag'n'Drop for the login session.
   if (!ash_util::IsRunningInMash()) {
-    scoped_drag_drop_disabler_.reset(new aura::client::ScopedDragDropDisabler(
-        ash::Shell::GetPrimaryRootWindow()));
+    scoped_drag_drop_disabler_.reset(
+        new wm::ScopedDragDropDisabler(ash::Shell::GetPrimaryRootWindow()));
   } else {
     NOTIMPLEMENTED();
   }

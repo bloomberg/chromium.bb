@@ -22,7 +22,7 @@ namespace chromecast {
 
 class CastFocusClientAura : public aura::WindowObserver,
                             public aura::client::FocusClient,
-                            public aura::client::ActivationClient {
+                            public wm::ActivationClient {
  public:
   CastFocusClientAura();
   ~CastFocusClientAura() override;
@@ -34,10 +34,9 @@ class CastFocusClientAura : public aura::WindowObserver,
   void ResetFocusWithinActiveWindow(aura::Window* window) override;
   aura::Window* GetFocusedWindow() override;
 
-  // Overridden from aura::client::ActivationClient:
-  void AddObserver(aura::client::ActivationChangeObserver* observer) override;
-  void RemoveObserver(
-      aura::client::ActivationChangeObserver* observer) override;
+  // Overridden from wm::ActivationClient:
+  void AddObserver(wm::ActivationChangeObserver* observer) override;
+  void RemoveObserver(wm::ActivationChangeObserver* observer) override;
   void ActivateWindow(aura::Window* window) override;
   void DeactivateWindow(aura::Window* window) override;
   const aura::Window* GetActiveWindow() const override;

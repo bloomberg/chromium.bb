@@ -37,9 +37,6 @@ class UserActivityForwarder;
 class Window;
 class WindowManagerClient;
 class WindowTreeClient;
-namespace client {
-class ActivationClient;
-}
 }
 
 namespace base {
@@ -82,6 +79,7 @@ class TooltipController;
 
 namespace wm {
 class AcceleratorFilter;
+class ActivationClient;
 class CompoundEventFilter;
 class FocusController;
 class ShadowController;
@@ -195,7 +193,7 @@ class SmsObserverTest;
 class ASH_EXPORT Shell : public SessionObserver,
                          public SystemModalContainerEventFilterDelegate,
                          public ui::EventTarget,
-                         public aura::client::ActivationChangeObserver {
+                         public ::wm::ActivationChangeObserver {
  public:
   typedef std::vector<RootWindowController*> RootWindowControllerList;
 
@@ -429,7 +427,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   ToastManager* toast_manager() { return toast_manager_.get(); }
 
-  aura::client::ActivationClient* activation_client();
+  ::wm::ActivationClient* activation_client();
 
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
@@ -644,7 +642,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
 
-  // aura::client::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;

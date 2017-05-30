@@ -40,7 +40,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component,
-    aura::client::WindowMoveSource source) {
+    ::wm::WindowMoveSource source) {
   DCHECK(window);
   wm::WindowState* window_state = wm::GetWindowState(window);
   // No need to return a resizer when the window cannot get resized or when a
@@ -328,7 +328,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (event_flags & ui::EF_CONTROL_DOWN) {
     sticky_size = 0;
   } else if ((details().bounds_change & kBoundsChange_Resizes) &&
-             details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+             details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     sticky_size = kScreenEdgeInsetForTouchDrag;
   } else {
     sticky_size = kScreenEdgeInset;
@@ -488,7 +488,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 
   // A mousemove should still show the cursor even if the window is
   // being moved or resized with touch, so do not lock the cursor.
-  if (details().source != aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+  if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     ShellPort::Get()->LockCursor();
     did_lock_cursor_ = true;
   }
@@ -935,7 +935,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   // TODO: this likely only wants total display area, not the area of a single
   // display.
   gfx::Rect area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()));
-  if (details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+  if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     // Increase tolerance for touch-snapping near the screen edges. This is only
     // necessary when the work area left or right edge is same as screen edge.
     gfx::Rect display_bounds(ScreenUtil::GetDisplayBoundsInParent(GetTarget()));

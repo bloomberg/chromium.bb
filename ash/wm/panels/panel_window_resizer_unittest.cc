@@ -71,7 +71,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
   void DragStart(aura::Window* window) {
     resizer_ = CreateWindowResizer(window, window->bounds().origin(), HTCAPTION,
-                                   aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+                                   ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   }
 
   void DragMove(int dx, int dy) {

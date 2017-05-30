@@ -28,7 +28,7 @@
 
 namespace wm {
 
-class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
+class FocusNotificationObserver : public ActivationChangeObserver,
                                   public aura::client::FocusChangeObserver {
  public:
   FocusNotificationObserver()
@@ -58,7 +58,7 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
   }
 
  private:
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {
@@ -100,7 +100,7 @@ class WindowDeleter {
 // it was notified about activation changes or focus changes with a deleted
 // window.
 class RecordingActivationAndFocusChangeObserver
-    : public aura::client::ActivationChangeObserver,
+    : public ActivationChangeObserver,
       public aura::client::FocusChangeObserver {
  public:
   RecordingActivationAndFocusChangeObserver(aura::Window* root,
@@ -108,11 +108,11 @@ class RecordingActivationAndFocusChangeObserver
       : root_(root),
         deleter_(deleter),
         was_notified_with_deleted_window_(false) {
-    aura::client::GetActivationClient(root_)->AddObserver(this);
+    GetActivationClient(root_)->AddObserver(this);
     aura::client::GetFocusClient(root_)->AddObserver(this);
   }
   ~RecordingActivationAndFocusChangeObserver() override {
-    aura::client::GetActivationClient(root_)->RemoveObserver(this);
+    GetActivationClient(root_)->RemoveObserver(this);
     aura::client::GetFocusClient(root_)->RemoveObserver(this);
   }
 
@@ -120,7 +120,7 @@ class RecordingActivationAndFocusChangeObserver
     return was_notified_with_deleted_window_;
   }
 
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {
@@ -150,21 +150,20 @@ class RecordingActivationAndFocusChangeObserver
 };
 
 // ActivationChangeObserver that deletes the window losing activation.
-class DeleteOnLoseActivationChangeObserver :
-    public aura::client::ActivationChangeObserver,
-    public WindowDeleter {
+class DeleteOnLoseActivationChangeObserver : public ActivationChangeObserver,
+                                             public WindowDeleter {
  public:
   explicit DeleteOnLoseActivationChangeObserver(aura::Window* window)
       : root_(window->GetRootWindow()),
         window_(window),
         did_delete_(false) {
-    aura::client::GetActivationClient(root_)->AddObserver(this);
+    GetActivationClient(root_)->AddObserver(this);
   }
   ~DeleteOnLoseActivationChangeObserver() override {
-    aura::client::GetActivationClient(root_)->RemoveObserver(this);
+    GetActivationClient(root_)->RemoveObserver(this);
   }
 
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {
@@ -228,11 +227,11 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
  public:
   ScopedFocusNotificationObserver(aura::Window* root_window)
       : root_window_(root_window) {
-    aura::client::GetActivationClient(root_window_)->AddObserver(this);
+    GetActivationClient(root_window_)->AddObserver(this);
     aura::client::GetFocusClient(root_window_)->AddObserver(this);
   }
   ~ScopedFocusNotificationObserver() override {
-    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+    GetActivationClient(root_window_)->RemoveObserver(this);
     aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
   }
 
@@ -246,13 +245,13 @@ class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
  public:
   ScopedTargetFocusNotificationObserver(aura::Window* root_window, int id)
       : target_(root_window->GetChildById(id)) {
-    aura::client::SetActivationChangeObserver(target_, this);
+    SetActivationChangeObserver(target_, this);
     aura::client::SetFocusChangeObserver(target_, this);
     tracker_.Add(target_);
   }
   ~ScopedTargetFocusNotificationObserver() override {
     if (tracker_.Contains(target_)) {
-      aura::client::SetActivationChangeObserver(target_, NULL);
+      SetActivationChangeObserver(target_, NULL);
       aura::client::SetFocusChangeObserver(target_, NULL);
     }
   }
@@ -278,8 +277,7 @@ class SimpleEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(SimpleEventHandler);
 };
 
-class FocusShiftingActivationObserver
-    : public aura::client::ActivationChangeObserver {
+class FocusShiftingActivationObserver : public ActivationChangeObserver {
  public:
   explicit FocusShiftingActivationObserver(aura::Window* activated_window)
       : activated_window_(activated_window),
@@ -291,7 +289,7 @@ class FocusShiftingActivationObserver
   }
 
  private:
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {
@@ -381,7 +379,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::SetUp();
     root_window()->AddPreTargetHandler(focus_controller_.get());
     aura::client::SetFocusClient(root_window(), focus_controller_.get());
-    aura::client::SetActivationClient(root_window(), focus_controller_.get());
+    SetActivationClient(root_window(), focus_controller_.get());
 
     // Hierarchy used by all tests:
     // root_window
@@ -432,13 +430,13 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     return focused_window ? focused_window->id() : -1;
   }
   void ActivateWindow(aura::Window* window) {
-    aura::client::GetActivationClient(root_window())->ActivateWindow(window);
+    GetActivationClient(root_window())->ActivateWindow(window);
   }
   void DeactivateWindow(aura::Window* window) {
-    aura::client::GetActivationClient(root_window())->DeactivateWindow(window);
+    GetActivationClient(root_window())->DeactivateWindow(window);
   }
   aura::Window* GetActiveWindow() {
-    return aura::client::GetActivationClient(root_window())->GetActiveWindow();
+    return GetActivationClient(root_window())->GetActiveWindow();
   }
   int GetActiveWindowId() {
     aura::Window* active_window = GetActiveWindow();
@@ -490,7 +488,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Returns the expected ActivationReason caused by calling the
   // ActivatedWindowDirect(...) or DeactivateWindowDirect(...) methods.
-  virtual aura::client::ActivationChangeObserver::ActivationReason
+  virtual ActivationChangeObserver::ActivationReason
   GetExpectedActivationReason() const = 0;
 
   void FocusWindowById(int id) {
@@ -688,8 +686,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(2);
 
     aura::Window* target = root_window()->GetChildById(1);
-    aura::client::ActivationClient* client =
-        aura::client::GetActivationClient(root_window());
+    ActivationClient* client = GetActivationClient(root_window());
 
     std::unique_ptr<FocusShiftingActivationObserver> observer(
         new FocusShiftingActivationObserver(target));
@@ -729,8 +726,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetFocusedWindowId());
 
     aura::Window* target = root_window()->GetChildById(2);
-    aura::client::ActivationClient* client =
-        aura::client::GetActivationClient(root_window());
+    ActivationClient* client = GetActivationClient(root_window());
 
     std::unique_ptr<FocusShiftingActivationObserver> observer(
         new FocusShiftingActivationObserver(target));
@@ -772,7 +768,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // transferring the mouse capture and activate the window.
     aura::Window* w1 = root_window()->GetChildById(1);
     aura::client::GetCaptureClient(root_window())->SetCapture(w1);
-    aura::client::GetActivationClient(root_window())->ActivateWindow(w1);
+    GetActivationClient(root_window())->ActivateWindow(w1);
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(1, GetFocusedWindowId());
 
@@ -873,7 +869,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   DISALLOW_COPY_AND_ASSIGN(FocusControllerDirectTestBase);
 };
 
-// Focus and Activation changes via aura::client::ActivationClient API.
+// Focus and Activation changes via ActivationClient API.
 class FocusControllerApiTest : public FocusControllerDirectTestBase {
  public:
   FocusControllerApiTest() {}
@@ -889,10 +885,9 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
   }
   bool IsInputEvent() override { return false; }
   // Overridden from FocusControllerDirectTestBase:
-  aura::client::ActivationChangeObserver::ActivationReason
-  GetExpectedActivationReason() const override {
-    return aura::client::ActivationChangeObserver::ActivationReason::
-        ACTIVATION_CLIENT;
+  ActivationChangeObserver::ActivationReason GetExpectedActivationReason()
+      const override {
+    return ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT;
   }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerApiTest);
@@ -938,10 +933,9 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
   }
   // Overridden from FocusControllerDirectTestBase:
   bool IsInputEvent() override { return true; }
-  aura::client::ActivationChangeObserver::ActivationReason
-  GetExpectedActivationReason() const override {
-    return aura::client::ActivationChangeObserver::ActivationReason::
-        INPUT_EVENT;
+  ActivationChangeObserver::ActivationReason GetExpectedActivationReason()
+      const override {
+    return ActivationChangeObserver::ActivationReason::INPUT_EVENT;
   }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerMouseEventTest);
@@ -968,10 +962,9 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
   bool IsInputEvent() override { return true; }
-  aura::client::ActivationChangeObserver::ActivationReason
-  GetExpectedActivationReason() const override {
-    return aura::client::ActivationChangeObserver::ActivationReason::
-        INPUT_EVENT;
+  ActivationChangeObserver::ActivationReason GetExpectedActivationReason()
+      const override {
+    return ActivationChangeObserver::ActivationReason::INPUT_EVENT;
   }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerGestureEventTest);
@@ -990,9 +983,9 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   // Returns the expected ActivationReason caused by calling the
   // ActivatedWindowDirect(...) or DeactivateWindowDirect(...) methods.
-  aura::client::ActivationChangeObserver::ActivationReason
-  GetExpectedActivationReason() const {
-    return aura::client::ActivationChangeObserver::ActivationReason::
+  ActivationChangeObserver::ActivationReason GetExpectedActivationReason()
+      const {
+    return ActivationChangeObserver::ActivationReason::
         WINDOW_DISPOSITION_CHANGED;
   }
 

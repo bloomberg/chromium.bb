@@ -28,6 +28,7 @@ source_set("graphics") {
       "//ui/base/ime",
       "//ui/views",
       "//ui/wm",
+      "//ui/wm/public",
     ]
   } else {
     sources += [

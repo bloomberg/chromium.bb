@@ -463,11 +463,11 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhileInRunLoop) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(&delegate, bounds));
   delegate.set_window_component(HTCAPTION);
 
-  ASSERT_TRUE(aura::client::GetWindowMoveClient(window->GetRootWindow()));
+  ASSERT_TRUE(::wm::GetWindowMoveClient(window->GetRootWindow()));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window.get());
-  aura::client::GetWindowMoveClient(window->GetRootWindow())
+  ::wm::GetWindowMoveClient(window->GetRootWindow())
       ->RunMoveLoop(window.release(), gfx::Vector2d(),
-                    aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+                    ::wm::WINDOW_MOVE_SOURCE_MOUSE);
 }
 
 // Verifies that double clicking in the header does not maximize if the target

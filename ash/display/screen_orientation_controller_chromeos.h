@@ -30,7 +30,7 @@ class ScreenOrientationControllerTestApi;
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
-    : public aura::client::ActivationChangeObserver,
+    : public ::wm::ActivationChangeObserver,
       public aura::WindowObserver,
       public chromeos::AccelerometerReader::Observer,
       public WmDisplayObserver,
@@ -99,10 +99,11 @@ class ASH_EXPORT ScreenOrientationController
   // Set locked to the given |rotation| and save it.
   void SetLockToRotation(display::Display::Rotation rotation);
 
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(
+      ::wm::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

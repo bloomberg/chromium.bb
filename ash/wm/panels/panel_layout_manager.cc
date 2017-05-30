@@ -501,7 +501,7 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
+// PanelLayoutManager, wm::ActivationChangeObserver implementation:
 
 void PanelLayoutManager::OnWindowActivated(ActivationReason reason,
                                            Window* gained_active,

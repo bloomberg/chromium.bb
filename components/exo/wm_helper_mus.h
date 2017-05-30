@@ -11,10 +11,8 @@
 #include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace aura {
-namespace client {
+namespace wm {
 class ActivationClient;
-}
 }
 
 namespace exo {
@@ -60,7 +58,7 @@ class WMHelperMus : public WMHelper,
   void SetActiveWindow(aura::Window* window);
   void SetFocusedWindow(aura::Window* window);
 
-  aura::client::ActivationClient* GetActivationClient();
+  wm::ActivationClient* GetActivationClient();
 
   // Current FocusClient.
   aura::client::FocusClient* active_focus_client_ = nullptr;
