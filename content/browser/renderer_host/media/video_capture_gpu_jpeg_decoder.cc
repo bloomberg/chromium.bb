@@ -36,7 +36,7 @@ VideoCaptureGpuJpegDecoder::VideoCaptureGpuJpegDecoder(
       decoder_status_(INIT_PENDING) {}
 
 VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |decoder_| guarantees no more JpegDecodeAccelerator::Client callbacks
   // on IO thread after deletion.
@@ -48,7 +48,7 @@ VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
 }
 
 void VideoCaptureGpuJpegDecoder::Initialize() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::AutoLock lock(lock_);
   bool is_platform_supported =
@@ -77,7 +77,7 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
 
 VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
     const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   return decoder_status_;
 }
@@ -89,7 +89,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     media::VideoCaptureDevice::Client::Buffer out_buffer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(decoder_);
 
   TRACE_EVENT_ASYNC_BEGIN0("jpeg", "VideoCaptureGpuJpegDecoder decoding",
@@ -243,7 +243,7 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
 void VideoCaptureGpuJpegDecoder::FinishInitialization(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   TRACE_EVENT0("gpu", "VideoCaptureGpuJpegDecoder::FinishInitialization");
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
