@@ -348,6 +348,10 @@
       status: "experimental",
     },
     {
+      name: "DeviceRAMHeader",
+      status: "test",
+    },
+    {
       name: "DisplayList2dCanvas",
       status: "stable",
     },

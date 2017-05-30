@@ -1,5 +1,5 @@
 <?php
-    header("ACCEPT-CH: DPR, Width, Viewport-Width");
+    header("ACCEPT-CH: DPR, Width, Viewport-Width, Device-RAM");
 ?>
 <!DOCTYPE html>
 <body>
@@ -14,11 +14,18 @@
             parent.postMessage("success", "*");
         };
 
+        var loadDeviceRAMImage = function() {
+            var img = new Image();
+            img.src = 'image-checks-for-device-ram.php';
+            img.onload = success;
+            img.onerror = fail(4);
+            document.body.appendChild(img);
+        };
         var loadRWImage = function() {
             var img = new Image();
             img.src = 'image-checks-for-width.php';
             img.sizes = '500';
-            img.onload = success
+            img.onload = loadDeviceRAMImage;
             img.onerror = fail(3);
             document.body.appendChild(img);
         };

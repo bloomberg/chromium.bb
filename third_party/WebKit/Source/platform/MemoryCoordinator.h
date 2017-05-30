@@ -39,9 +39,16 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // Can be overridden in layout tests via internals.
   static bool IsLowEndDevice();
 
-  // Caches whether this device is a low-end device in a static member.
-  // instance() is not used as it's a heap allocated object - meaning it's not
-  // thread-safe as well as might break tests counting the heap size.
+  // Returns the amount of physical memory in megabytes on the device.
+  static int64_t GetPhysicalMemoryMB();
+
+  // Override the value of the physical memory for testing.
+  static void SetPhysicalMemoryMBForTesting(int64_t);
+
+  // Caches whether this device is a low-end device and the device physical
+  // memory in static members. instance() is not used as it's a heap allocated
+  // object - meaning it's not thread-safe as well as might break tests counting
+  // the heap size.
   static void Initialize();
 
   void RegisterClient(MemoryCoordinatorClient*);
@@ -67,6 +74,7 @@ class PLATFORM_EXPORT MemoryCoordinator final
   void ClearMemory();
 
   static bool is_low_end_device_;
+  static int64_t physical_memory_mb_;
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
 };
