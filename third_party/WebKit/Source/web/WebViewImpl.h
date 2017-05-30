@@ -32,7 +32,6 @@
 #define WebViewImpl_h
 
 #include <memory>
-#include "core/editing/spellcheck/SpellCheckerClientImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
@@ -66,6 +65,7 @@
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/PageWidgetDelegate.h"
+#include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
 #include "web/WebExport.h"
 #include "web/WebPagePopupImpl.h"
