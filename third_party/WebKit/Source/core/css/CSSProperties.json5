@@ -2017,7 +2017,7 @@
       inherited: true,
       field_template: "storage_only",
       type_name: "TextAlignLast",
-      default_value: "kTextAlignLastAuto",
+      default_value: "TextAlignLast::kAuto",
       field_size: 3,
       field_group: "rare-inherited",
     },

@@ -367,19 +367,19 @@ ETextAlign LayoutBlockFlow::TextAlignmentForLine(
 
   TextAlignLast alignment_last = Style()->GetTextAlignLast();
   switch (alignment_last) {
-    case kTextAlignLastStart:
+    case TextAlignLast::kStart:
       return ETextAlign::kStart;
-    case kTextAlignLastEnd:
+    case TextAlignLast::kEnd:
       return ETextAlign::kEnd;
-    case kTextAlignLastLeft:
+    case TextAlignLast::kLeft:
       return ETextAlign::kLeft;
-    case kTextAlignLastRight:
+    case TextAlignLast::kRight:
       return ETextAlign::kRight;
-    case kTextAlignLastCenter:
+    case TextAlignLast::kCenter:
       return ETextAlign::kCenter;
-    case kTextAlignLastJustify:
+    case TextAlignLast::kJustify:
       return ETextAlign::kJustify;
-    case kTextAlignLastAuto:
+    case TextAlignLast::kAuto:
       if (alignment == ETextAlign::kJustify)
         return ETextAlign::kStart;
       return alignment;

@@ -1066,25 +1066,25 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextAlignLast e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTextAlignLastStart:
+    case TextAlignLast::kStart:
       value_id_ = CSSValueStart;
       break;
-    case kTextAlignLastEnd:
+    case TextAlignLast::kEnd:
       value_id_ = CSSValueEnd;
       break;
-    case kTextAlignLastLeft:
+    case TextAlignLast::kLeft:
       value_id_ = CSSValueLeft;
       break;
-    case kTextAlignLastRight:
+    case TextAlignLast::kRight:
       value_id_ = CSSValueRight;
       break;
-    case kTextAlignLastCenter:
+    case TextAlignLast::kCenter:
       value_id_ = CSSValueCenter;
       break;
-    case kTextAlignLastJustify:
+    case TextAlignLast::kJustify:
       value_id_ = CSSValueJustify;
       break;
-    case kTextAlignLastAuto:
+    case TextAlignLast::kAuto:
       value_id_ = CSSValueAuto;
       break;
   }
@@ -1094,25 +1094,25 @@ template <>
 inline TextAlignLast CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kTextAlignLastAuto;
+      return TextAlignLast::kAuto;
     case CSSValueStart:
-      return kTextAlignLastStart;
+      return TextAlignLast::kStart;
     case CSSValueEnd:
-      return kTextAlignLastEnd;
+      return TextAlignLast::kEnd;
     case CSSValueLeft:
-      return kTextAlignLastLeft;
+      return TextAlignLast::kLeft;
     case CSSValueRight:
-      return kTextAlignLastRight;
+      return TextAlignLast::kRight;
     case CSSValueCenter:
-      return kTextAlignLastCenter;
+      return TextAlignLast::kCenter;
     case CSSValueJustify:
-      return kTextAlignLastJustify;
+      return TextAlignLast::kJustify;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextAlignLastAuto;
+  return TextAlignLast::kAuto;
 }
 
 template <>

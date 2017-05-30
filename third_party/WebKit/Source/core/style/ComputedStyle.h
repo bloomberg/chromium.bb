@@ -1684,12 +1684,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // text-align-last
-  static TextAlignLast InitialTextAlignLast() { return kTextAlignLastAuto; }
+  static TextAlignLast InitialTextAlignLast() { return TextAlignLast::kAuto; }
   TextAlignLast GetTextAlignLast() const {
     return static_cast<TextAlignLast>(rare_inherited_data_->text_align_last_);
   }
   void SetTextAlignLast(TextAlignLast v) {
-    SET_VAR(rare_inherited_data_, text_align_last_, v);
+    SET_VAR(rare_inherited_data_, text_align_last_, static_cast<unsigned>(v));
   }
 
   // text-combine-upright (aka -webkit-text-combine, -epub-text-combine)
