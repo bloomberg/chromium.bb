@@ -24,11 +24,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -44,8 +41,6 @@ import java.util.concurrent.TimeoutException;
 
 public class VrFeedbackInfoBarTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-    @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
 
     private static final String TEST_PAGE_2D_URL =
@@ -53,27 +48,13 @@ public class VrFeedbackInfoBarTest {
     private static final String TEST_PAGE_WEBVR_URL =
             VrTestRule.getHtmlTestFile("test_requestPresent_enters_vr");
 
-    private ContentViewCore mFirstTabCvc;
-    private WebContents mFirstTabWebContents;
-
-    public int loadUrlAndWait(String url, long secondsToWait)
-            throws IllegalArgumentException, InterruptedException {
-        int result = mActivityTestRule.loadUrl(url, secondsToWait);
-        mVrTestRule.waitOnJavaScriptStep(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
-        return result;
-    }
-
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mFirstTabWebContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
-        mFirstTabCvc = mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         Assert.assertFalse(VrFeedbackStatus.getFeedbackOptOut());
     }
 
     private void clickInfoBarButton(final boolean primary) {
-        final List<InfoBar> infoBars = mActivityTestRule.getInfoBars();
+        final List<InfoBar> infoBars = mVrTestRule.getInfoBars();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -84,25 +65,24 @@ public class VrFeedbackInfoBarTest {
                 }
             }
         });
-        InfoBarUtil.waitUntilNoInfoBarsExist(mActivityTestRule.getInfoBars());
+        InfoBarUtil.waitUntilNoInfoBarsExist(mVrTestRule.getInfoBars());
     }
 
     private void clickInfobarCloseButton() {
-        final List<InfoBar> infoBars = mActivityTestRule.getInfoBars();
+        final List<InfoBar> infoBars = mVrTestRule.getInfoBars();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 InfoBarUtil.clickCloseButton(infoBars.get(0));
             }
         });
-        InfoBarUtil.waitUntilNoInfoBarsExist(mActivityTestRule.getInfoBars());
+        InfoBarUtil.waitUntilNoInfoBarsExist(mVrTestRule.getInfoBars());
     }
 
     private void assertState(boolean isInVr, boolean isInfobarVisible) {
         Assert.assertEquals("Browser is in VR", isInVr, VrShellDelegate.isInVr());
         Assert.assertEquals("Infobar is visible", isInfobarVisible,
-                VrUtils.isInfoBarPresent(
-                        mActivityTestRule.getActivity().getWindow().getDecorView()));
+                VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
     }
 
     private void enterThenExitVr() {
@@ -118,7 +98,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     public void testFeedbackFrequency() throws InterruptedException, TimeoutException {
-        loadUrlAndWait(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         // Set frequency of infobar to every 2nd time.
         VrUtils.getVrShellDelegateInstance().setFeedbackFrequencyForTesting(2);
@@ -144,7 +124,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     public void testFeedbackOptOut() throws InterruptedException, TimeoutException {
-        loadUrlAndWait(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         // Show infobar every time.
         VrUtils.getVrShellDelegateInstance().setFeedbackFrequencyForTesting(1);
@@ -169,9 +149,11 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     public void testFeedbackOnlyOnVrBrowsing() throws InterruptedException, TimeoutException {
         // Enter VR presentation mode.
-        mActivityTestRule.loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
-        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        Assert.assertTrue("VRDisplay found",
+                mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
+        mVrTestRule.enterPresentationAndWait(
+                mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
@@ -187,20 +169,22 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     public void testExitPresentationInVr() throws InterruptedException, TimeoutException {
         // Enter VR presentation mode.
-        mActivityTestRule.loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("VRDisplay found", mVrTestRule.vrDisplayFound(mFirstTabWebContents));
-        mVrTestRule.enterPresentationAndWait(mFirstTabCvc, mFirstTabWebContents);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        Assert.assertTrue("VRDisplay found",
+                mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
+        mVrTestRule.enterPresentationAndWait(
+                mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
         // Exit presentation mode by navigating to a different url.
         ChromeTabUtils.waitForTabPageLoaded(
-                mActivityTestRule.getActivity().getActivityTab(), new Runnable() {
+                mVrTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
                         mVrTestRule.runJavaScriptOrFail(
                                 "window.location.href = '" + TEST_PAGE_2D_URL + "';",
-                                POLL_TIMEOUT_SHORT_MS, mFirstTabWebContents);
+                                POLL_TIMEOUT_SHORT_MS, mVrTestRule.getFirstTabWebContents());
                     }
                 }, POLL_TIMEOUT_LONG_MS);
 

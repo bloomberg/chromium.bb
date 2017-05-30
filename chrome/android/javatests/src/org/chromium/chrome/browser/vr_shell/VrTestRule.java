@@ -13,13 +13,13 @@ import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
-import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -52,14 +52,33 @@ import java.util.concurrent.TimeoutException;
  * are processed, the JavaScript code will automatically signal the Java code,
  * which can then grab the results and pass/fail the instrumentation test.
  */
-public class VrTestRule implements TestRule {
+public class VrTestRule extends ChromeTabbedActivityTestRule {
     private static final String TAG = "VrTestRule";
     static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";
     static final int PAGE_LOAD_TIMEOUT_S = 10;
 
+    private WebContents mFirstTabWebContents;
+    private ContentViewCore mFirstTabCvc;
+
     @Override
     public Statement apply(final Statement base, Description desc) {
-        return base;
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                startMainActivityOnBlankPage();
+                mFirstTabWebContents = getActivity().getActivityTab().getWebContents();
+                mFirstTabCvc = getActivity().getActivityTab().getContentViewCore();
+                base.evaluate();
+            }
+        }, desc);
+    }
+
+    public WebContents getFirstTabWebContents() {
+        return mFirstTabWebContents;
+    }
+
+    public ContentViewCore getFirstTabCvc() {
+        return mFirstTabCvc;
     }
 
     /**
@@ -73,13 +92,27 @@ public class VrTestRule implements TestRule {
     }
 
     /**
-     * Blocks until the promise returned by nagivator.getVRDisplays() resolves,
-     * then checks whether a VRDisplay was actually found.
+     * Loads the given URL with the given timeout then waits for JavaScript to
+     * signal that it's ready for testing.
+     * @param url The URL of the page to load.
+     * @param timeoutSec The timeout of the page load in seconds.
+     * @param rule The ChromeTabbedActivityTestRule to use for page loading.
+     * @return The return value of ChromeActivityTestRule.loadUrl()
+     */
+    public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
+            throws InterruptedException {
+        int result = loadUrl(url, timeoutSec);
+        pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_SHORT_MS,
+                getActivity().getActivityTab().getWebContents());
+        return result;
+    }
+
+    /**
+     * Checks whether a VRDisplay was actually found.
      * @param webContents The WebContents to run the JavaScript through.
      * @return Whether a VRDisplay was found.
      */
     public boolean vrDisplayFound(WebContents webContents) {
-        pollJavaScriptBoolean("vrDisplayPromiseDone", POLL_TIMEOUT_SHORT_MS, webContents);
         return !runJavaScriptOrFail("vrDisplay", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
     }
 
