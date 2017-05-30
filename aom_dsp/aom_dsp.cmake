@@ -204,7 +204,7 @@ if (CONFIG_ANS)
   set(AOM_DSP_COMMON_SOURCES
       ${AOM_DSP_COMMON_SOURCES}
       "${AOM_ROOT}/aom_dsp/ans.h")
-elseif (CONFIG_DAALA_EC)
+else ()
   set(AOM_DSP_COMMON_SOURCES
       ${AOM_DSP_COMMON_SOURCES}
       "${AOM_ROOT}/aom_dsp/entcode.c"
@@ -239,18 +239,13 @@ if (CONFIG_AV1_DECODER)
     set(AOM_DSP_DECODER_SOURCES
         ${AOM_DSP_DECODER_SOURCES}
         "${AOM_ROOT}/aom_dsp/ansreader.h")
-  elseif (CONFIG_DAALA_EC)
+  else ()
     set(AOM_DSP_DECODER_SOURCES
         ${AOM_DSP_DECODER_SOURCES}
         "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
         "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
         "${AOM_ROOT}/aom_dsp/entdec.c"
         "${AOM_ROOT}/aom_dsp/entdec.h")
-  else ()
-    set(AOM_DSP_DECODER_SOURCES
-        ${AOM_DSP_DECODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/dkboolreader.c"
-        "${AOM_ROOT}/aom_dsp/dkboolreader.h")
   endif ()
 endif ()
 
@@ -370,18 +365,13 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/answriter.h"
         "${AOM_ROOT}/aom_dsp/buf_ans.c"
         "${AOM_ROOT}/aom_dsp/buf_ans.h")
-  elseif (CONFIG_DAALA_EC)
+  else ()
     set(AOM_DSP_ENCODER_SOURCES
         ${AOM_DSP_ENCODER_SOURCES}
         "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
         "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
         "${AOM_ROOT}/aom_dsp/entenc.c"
         "${AOM_ROOT}/aom_dsp/entenc.h")
-  else ()
-    set(AOM_DSP_ENCODER_SOURCES
-        ${AOM_DSP_ENCODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/dkboolwriter.c"
-        "${AOM_ROOT}/aom_dsp/dkboolwriter.h")
   endif ()
 
   if (CONFIG_INTERNAL_STATS)

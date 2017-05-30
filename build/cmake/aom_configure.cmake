@@ -224,11 +224,6 @@ if (CONFIG_ANALYZER)
   endif ()
 endif ()
 
-if (CONFIG_ANS AND CONFIG_DAALA_EC)
-  message(FATAL_ERROR
-          "CONFIG_ANS and CONFIG_DAALA_EC cannot be enabled together.")
-endif ()
-
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"
