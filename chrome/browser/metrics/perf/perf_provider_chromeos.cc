@@ -316,6 +316,7 @@ PerfProvider::PerfProvider()
 }
 
 PerfProvider::~PerfProvider() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
 }
 
@@ -460,7 +461,7 @@ void PerfProvider::SetCollectionParamsFromVariationParams(
 
 bool PerfProvider::GetSampledProfiles(
     std::vector<SampledProfile>* sampled_profiles) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cached_perf_data_.empty()) {
     AddToPerfHistogram(NOT_READY_TO_UPLOAD);
     return false;
@@ -495,7 +496,7 @@ void PerfProvider::ParseOutputProtoIfValid(
     std::unique_ptr<SampledProfile> sampled_profile,
     PerfSubcommand subcommand,
     const std::string& perf_stdout) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |perf_output_call_| called us, and owns |perf_stdout|. We must delete it,
   // but not before parsing |perf_stdout|, and we may return early.
@@ -646,7 +647,7 @@ void PerfProvider::Deactivate() {
 }
 
 void PerfProvider::ScheduleIntervalCollection() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (timer_.IsRunning())
     return;
 
@@ -678,7 +679,7 @@ void PerfProvider::ScheduleIntervalCollection() {
 
 void PerfProvider::CollectIfNecessary(
     std::unique_ptr<SampledProfile> sampled_profile) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Schedule another interval collection. This call makes sense regardless of
   // whether or not the current collection was interval-triggered. If it had
