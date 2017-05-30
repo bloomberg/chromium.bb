@@ -116,8 +116,11 @@ static void OnAcquirePermissionResult(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_id);
 
-  std::string permission_to_update =
-      base::android::ConvertJavaStringToUTF8(env, jpermission_to_update);
+  std::string permission_to_update;
+  if (jpermission_to_update) {
+    permission_to_update =
+        base::android::ConvertJavaStringToUTF8(env, jpermission_to_update);
+  }
   // Convert java long long int to c++ pointer, take ownership.
   std::unique_ptr<DownloadController::AcquirePermissionCallback> cb(
       reinterpret_cast<DownloadController::AcquirePermissionCallback*>(
