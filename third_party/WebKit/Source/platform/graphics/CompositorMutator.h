@@ -5,13 +5,15 @@
 #ifndef CompositorMutator_h
 #define CompositorMutator_h
 
+#include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class CompositorMutableStateProvider;
 
-class CompositorMutator : public GarbageCollectedFinalized<CompositorMutator> {
+class PLATFORM_EXPORT CompositorMutator
+    : public GarbageCollectedFinalized<CompositorMutator> {
  public:
   virtual ~CompositorMutator() {}
 

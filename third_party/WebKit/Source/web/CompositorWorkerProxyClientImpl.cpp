@@ -4,12 +4,12 @@
 
 #include "web/CompositorWorkerProxyClientImpl.h"
 
+#include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/CompositorProxy.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/CurrentTime.h"
-#include "web/CompositorMutatorImpl.h"
 
 namespace blink {
 

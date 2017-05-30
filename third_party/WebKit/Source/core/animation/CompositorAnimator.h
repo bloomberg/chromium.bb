@@ -5,12 +5,13 @@
 #ifndef CompositorAnimator_h
 #define CompositorAnimator_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/CompositorMutableStateProvider.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CompositorAnimator : public GarbageCollectedMixin {
+class CORE_EXPORT CompositorAnimator : public GarbageCollectedMixin {
  public:
   // Runs the animation frame callback for the frame starting at the given time.
   // Returns true if another animation frame was requested (i.e. should be
