@@ -118,7 +118,9 @@ NetworkTrafficAnnotationTag CompleteNetworkTrafficAnnotation(
   DCHECK(partial_annotation.completing_id_hash_code ==
              COMPUTE_STRING_HASH(unique_id) ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("test_partial"));
+             COMPUTE_STRING_HASH("test_partial") ||
+         partial_annotation.unique_id_hash_code ==
+             COMPUTE_STRING_HASH("undefined"));
 #endif
   return NetworkTrafficAnnotationTag({partial_annotation.unique_id_hash_code});
 }
@@ -137,7 +139,9 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
   DCHECK(partial_annotation.completing_id_hash_code ==
              COMPUTE_STRING_HASH(unique_id) ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("test_partial"));
+             COMPUTE_STRING_HASH("test_partial") ||
+         partial_annotation.unique_id_hash_code ==
+             COMPUTE_STRING_HASH("undefined"));
 #endif
   return NetworkTrafficAnnotationTag({COMPUTE_STRING_HASH(unique_id)});
 }
@@ -195,6 +199,10 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
 // Placeholder for unannotated usages.
 #define NO_TRAFFIC_ANNOTATION_YET \
   net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet.")
+
+#define NO_PARTIAL_TRAFFIC_ANNOTATION_YET                              \
+  net::DefinePartialNetworkTrafficAnnotation("undefined", "undefined", \
+                                             "Nothing here yet.")
 
 #define MISSING_TRAFFIC_ANNOTATION     \
   net::DefineNetworkTrafficAnnotation( \
