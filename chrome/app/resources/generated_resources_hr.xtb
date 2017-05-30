@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Uredi naziv mape</translation>
 <translation id="2226449515541314767">Za tu je web-lokaciju blokiran potpuni nadzor nad MIDI uređajima.</translation>
 <translation id="2226720438730111184">Recite nam što se događa</translation>
-<translation id="222903405933288376">Google upotrebljava vašu lokaciju da bi vam pružio lokalni sadržaj. To možete promijeniti na stranici <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Preostalo više od 1 sata</translation>
 <translation id="222931766245975952">Datoteka je skraćena</translation>
 <translation id="222949136907494149"><ph name="URL" /> želi upotrijebiti lokaciju vašeg računala.</translation>
@@ -1087,7 +1086,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2575247648642144396">Ova će ikona biti vidljiva kada proširenje bude moglo djelovati na trenutačnoj stranici. Aktivirajte to proširenje tako što ćete kliknuti ikonu ili pritisnuti <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Već postoji CRX datoteka s takvim nazivom.</translation>
 <translation id="2579575372772932244">Profil se ponovo izrađuje, pričekajte...</translation>
-<translation id="2580168606262715640">Telefon nije moguće pronaći. Neka vam bude nadohvat ruke.</translation>
 <translation id="2580889980133367162">Uvijek dozvoli hostu <ph name="HOST" /> preuzimanje više datoteka</translation>
 <translation id="2580924999637585241">Ukupno: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Dugo</translation>
@@ -2172,7 +2170,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="4130207949184424187">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="413121957363593859">Komponente</translation>
 <translation id="4131410914670010031">Crno-bijelo</translation>
-<translation id="4135054690906486073">Ova se mreža dijeli s drugim korisnicima</translation>
 <translation id="4135450933899346655">Vaši certifikati</translation>
 <translation id="4138267921960073861">Prikaži korisnička imena i fotografije na zaslonu za prijavu</translation>
 <translation id="4140559601186535628">Push poruke</translation>
@@ -2576,9 +2573,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4813345808229079766">Veza</translation>
 <translation id="4813512666221746211">Pogreška mreže</translation>
 <translation id="4816492930507672669">Prilagodi stranici</translation>
-<translation id="4816617200045929931">Opišite što se dogodilo neposredno prije nego što se prikazala poruka pogreške za profil:
-
-****NEMOJTE UNOSITI PROMJENE ISPOD OVOG RETKA****</translation>
 <translation id="4820334425169212497">Ne, ne vidim</translation>
 <translation id="4821086771593057290">Vaša je zaporka promijenjena. Pokušajte ponovno s novom.</translation>
 <translation id="4821935166599369261">&amp;Profiliranje omogućeno</translation>
@@ -2944,7 +2938,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5340217413897845242">Stavka police 6</translation>
 <translation id="5341390997810576190">upotrebljavati mobilne podatke</translation>
 <translation id="5342091991439452114">Broj znamenki u PIN-u mora biti najmanje <ph name="MINIMUM" /></translation>
-<translation id="5342344590724511265">Povratne informacije o srušenoj kartici.</translation>
 <translation id="5342451237681332106">Upotrijebi telefon <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Lijeva zagr.</translation>
 <translation id="5350965906220856151">Uh!</translation>
@@ -3216,6 +3209,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5764483294734785780">Sp&amp;remi zvučni zapis kao...</translation>
 <translation id="57646104491463491">Datum izmjene</translation>
 <translation id="5764797882307050727">Oslobodite dio prostora na uređaju.</translation>
+<translation id="5765425701854290211">Neke su datoteke oštećene, pa ažuriranje nije uspjelo. Vaše su sinkronizirane datoteke sigurne.</translation>
 <translation id="5765491088802881382">Nema dostupnih mreža</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771585441665576801">transliteracija (geia → γεια)</translation>
@@ -4430,6 +4424,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7615910377284548269">Upravljanje blokiranjem dodataka izvan testnog okruženja...</translation>
 <translation id="7617366389578322136">Povezivanje s uređajem "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Nema spremljenih zaporki.</translation>
+<translation id="7622114377921274169">Punjenje.</translation>
 <translation id="7624154074265342755">Bežične mreže</translation>
 <translation id="7624337243375417909">Caps Lock isključen</translation>
 <translation id="7627790789328695202">Ups, stavka <ph name="FILE_NAME" /> već postoji. Preimenujte je i pokušajte ponovo.</translation>
@@ -4869,6 +4864,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8270242299912238708">PDF dokumenti</translation>
 <translation id="827097179112817503">Prikaži gumb početne stranice</translation>
 <translation id="8272443605911821513">Upravljajte proširenjima klikom na Proširenja u izborniku "Više alata".</translation>
+<translation id="8274924778568117936">Ne isključujte i ne zatvarajte uređaj <ph name="DEVICE_TYPE" /> dok ažuriranje ne završi. Uređaj <ph name="DEVICE_TYPE" /> ponovo će se pokrenuti kada instaliranje završi.</translation>
 <translation id="8275038454117074363">Uvezi</translation>
 <translation id="8276560076771292512">Pražnjenje predmemorije i tvrdo ponovno učitavanje</translation>
 <translation id="8279388322240498158">soransko-kurdska tipkovnica temeljena na engleskom</translation>
@@ -5309,7 +5305,6 @@ Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između r
 <translation id="8963572037665351978">Izlaz iz prezentacije</translation>
 <translation id="8965037249707889821">Unesite staru zaporku</translation>
 <translation id="8965697826696209160">Nema dovoljno prostora.</translation>
-<translation id="8968527460726243404">Zapisivanje slike OS-a Chrome</translation>
 <translation id="8970203673128054105">Prikaži popis načina emitiranja</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Obratite se administratoru mreže i provjerite blokira li vatrozid preuzimanja s Googleovih poslužitelja.</translation>
@@ -5484,6 +5479,7 @@ Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između r
 <translation id="93766956588638423">Popravi proširenje</translation>
 <translation id="938470336146445890">Instalirajte korisnički certifikat.</translation>
 <translation id="938582441709398163">Preklapanje tipkovnice</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Unesite zaporku</translation>
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="940425055435005472">Veličina fonta:</translation>

@@ -116,7 +116,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
 <translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
-<translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
 <translation id="3398320232533725830">Mở trình quản lý dấu trang</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
-<translation id="3435896845095436175">Bật</translation>
 <translation id="3443221991560634068">Tải lại trang hiện tại</translation>
 <translation id="3452612588551937789">Đăng nhập bằng Tài khoản Google để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn.</translation>
 <translation id="3487093336331957349">Đề xuất về tìm kiếm và trang web</translation>
@@ -319,7 +317,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Chọn thư mục</translation>
-<translation id="4535858793016067060">Bật “Nguồn không xác định” trong cài đặt bảo mật Android để dùng thử thử nghiệm "Thêm vào Màn hình chính được cải thiện". Hãy nhớ tắt cài đặt này khi bạn hoàn tất dùng thử.</translation>
 <translation id="4558311620361989323">Phím tắt cho trang web</translation>
 <translation id="4572422548854449519">Đăng nhập vào tài khoản được quản lý</translation>
 <translation id="4581964774250883625">Bạn đã chuyển sang chế độ ẩn danh.</translation>
@@ -362,7 +359,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4988526792673242964">Trang</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
-<translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
 <translation id="5004339818306944878">Sử dụng ít dữ liệu hơn tối đa 60% và tăng tốc web. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> muốn kết nối</translation>
@@ -403,7 +399,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="5335288049665977812">Cho phép các trang web chạy JavaScript (được đề xuất)</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Truy cập vị trí cũng đã được <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Thử nghiệm Thêm vào màn hình chính được cải thiện</translation>
 <translation id="5372829067651257087">Đã sao chép URL.</translation>
 <translation id="5384883051496921101">Trang web này sắp chia sẻ thông tin với một ứng dụng bên ngoài chế độ ẩn danh.</translation>
 <translation id="5400569084694353794">Bằng cách sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
@@ -451,7 +446,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5763382633136178763">Tab ẩn danh</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5777170031995031090">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google.</translation>
-<translation id="5804241973901381774">Giấy phép</translation>
+<translation id="5804241973901381774">Quyền</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# giờ trước}other{# giờ trước}}</translation>
 <translation id="5817918615728894473">Ghép nối</translation>
 <translation id="583281660410589416">Không xác định</translation>
@@ -654,7 +649,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7929962904089429003">Mở menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
-<translation id="7949961459945740081">Cập nhật tính năng mới nhất</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
@@ -665,7 +659,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8015452622527143194">Trả lại mọi nội dung trên trang về kích thước mặc định</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
-<translation id="8033827949643255796">đã chọn</translation>
 <translation id="8035133914807600019">Thư mục mới...</translation>
 <translation id="8037750541064988519">Còn <ph name="DAYS" /> ngày</translation>
 <translation id="8051695050440594747">Còn <ph name="MEGABYTES" /> MB</translation>

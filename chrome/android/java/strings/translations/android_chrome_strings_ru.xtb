@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">Добавить на главный экран</translation>
 <translation id="2146738493024040262">Открыть приложение с мгновенным запуском</translation>
 <translation id="2148716181193084225">Сегодня</translation>
-<translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
 <translation id="3398320232533725830">Открыть диспетчер закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
-<translation id="3435896845095436175">Включить</translation>
 <translation id="3443221991560634068">Обновить страницу</translation>
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
 <translation id="3487093336331957349">Подсказки запросов и сайтов</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Выбор папки</translation>
-<translation id="4535858793016067060">Хотите опробовать экспериментальную улучшенную функцию добавления на главный экран? Разрешите установку приложений из неизвестных источников в настройках безопасности устройства Android. Позже этот параметр можно будет отключить.</translation>
 <translation id="4558311620361989323">Работа с веб-страницами</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
 <translation id="4581964774250883625">Вы перешли в режим инкогнито</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
-<translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
 <translation id="5004339818306944878">Экономьте до 60% трафика и сделайте интернет-соединение быстрее. Сервера Google будут оптимизировать загружаемые страницы.</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> запрашивает подключение</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
 <translation id="5345083863238459644">На этом устройстве также <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
-<translation id="5349103022427743704">Улучшенная экспериментальная функция "Добавить на главный экран"</translation>
 <translation id="5372829067651257087">URL скопирован.</translation>
 <translation id="5384883051496921101">Этот сайт передает информацию стороннему приложению, пока вы в режиме инкогнито.</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">Открыть меню</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
-<translation id="7949961459945740081">C новыми функциями</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">Восстановить масштаб страницы по умолчанию</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
-<translation id="8033827949643255796">Выделено.</translation>
 <translation id="8035133914807600019">Создать папку…</translation>
 <translation id="8037750541064988519">Осталось <ph name="DAYS" /> дн.</translation>
 <translation id="8051695050440594747">Доступно <ph name="MEGABYTES" /> МБ</translation>

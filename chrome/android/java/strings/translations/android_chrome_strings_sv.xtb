@@ -116,7 +116,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
 <translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2148716181193084225">Idag</translation>
-<translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
 <translation id="3398320232533725830">Öppna bokmärkeshanteraren</translation>
 <translation id="3414952576877147120">Storlek:</translation>
-<translation id="3435896845095436175">Aktivera</translation>
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
 <translation id="3452612588551937789">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter.</translation>
 <translation id="3487093336331957349">Sök- och webbplatsförslag</translation>
@@ -319,7 +317,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4522570452068850558">Info</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Välj mapp</translation>
-<translation id="4535858793016067060">Aktivera Okända källor i säkerhetsinställningarna för Android när du vill testa Förbättrad experimentversion av Lägg till på startskärmen. Kom ihåg att inaktivera inställningen när du har testat klart.</translation>
 <translation id="4558311620361989323">Kortkommandon på webbsidor</translation>
 <translation id="4572422548854449519">Logga in på hanterat konto</translation>
 <translation id="4581964774250883625">Du surfar inkognito.</translation>
@@ -362,7 +359,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4988526792673242964">Sidor</translation>
 <translation id="4996978546172906250">Dela via</translation>
-<translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
 <translation id="5004339818306944878">Använd upp till 60 procent mindre data och gör webben snabbare. Googles servrar optimerar de sidor du besöker.</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vill ansluta</translation>
@@ -403,7 +399,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
 <translation id="5345083863238459644">Platsåtkomst har också <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Förbättrad experimentversion av Lägg till på startskärmen</translation>
 <translation id="5372829067651257087">Webbadress kopierad.</translation>
 <translation id="5384883051496921101">Data på den här webbplatsen delas med en app utanför inkognitoläget.</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
@@ -654,7 +649,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7929962904089429003">Öppna menyn</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
-<translation id="7949961459945740081">Få de senaste funktionerna</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
@@ -665,7 +659,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8015452622527143194">Återställ allt på sidan till standardstorlek</translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
-<translation id="8033827949643255796">markerat</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tillgängliga</translation>

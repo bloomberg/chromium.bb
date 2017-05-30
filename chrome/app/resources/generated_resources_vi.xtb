@@ -837,7 +837,6 @@
 <translation id="2224551243087462610">Chỉnh sửa tên thư mục</translation>
 <translation id="2226449515541314767">Trang web này đã bị chặn quyền kiểm soát hoàn toàn thiết bị MIDI.</translation>
 <translation id="2226720438730111184">Cho chúng tôi biết điều gì đang xảy ra</translation>
-<translation id="222903405933288376">Google sử dụng vị trí của bạn để cung cấp cho bạn nội dung địa phương. Bạn có thể thay đổi điều này trong <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Còn hơn 1 giờ</translation>
 <translation id="222931766245975952">Tệp bị cắt bớt</translation>
 <translation id="222949136907494149"><ph name="URL" /> muốn sử dụng thông tin vị trí máy tính của bạn.</translation>
@@ -1089,7 +1088,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2575247648642144396">Biểu tượng này sẽ hiển thị khi tiện ích có thể hoạt động trên trang hiện tại. Sử dụng tiện ích này bằng cách nhấp vào biểu tượng hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Hiện có tệp CRX hiển thị với tên này.</translation>
 <translation id="2579575372772932244">Đang tạo lại hồ sơ, vui lòng đợi...</translation>
-<translation id="2580168606262715640">Không thể tìm thấy điện thoại của bạn. Đảm bảo rằng điện thoại nằm trong tầm tay.</translation>
 <translation id="2580889980133367162">Luôn cho phép <ph name="HOST" /> tải xuống nhiều tệp</translation>
 <translation id="2580924999637585241">Tổng số: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lâu</translation>
@@ -2174,7 +2172,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4130207949184424187">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="413121957363593859">Thành phần</translation>
 <translation id="4131410914670010031">Đen và trắng</translation>
-<translation id="4135054690906486073">Mạng này được chia sẻ với những người dùng khác</translation>
 <translation id="4135450933899346655">Chứng chỉ của bạn</translation>
 <translation id="4138267921960073861">Hiển thị tên người dùng và ảnh trên màn hình đăng nhập</translation>
 <translation id="4140559601186535628">Thông báo đẩy</translation>
@@ -2578,9 +2575,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4813345808229079766">Kết nối</translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
-<translation id="4816617200045929931">Hãy cho chúng tôi biết chính xác những gì đã xảy ra trước khi bạn nhận được thông báo lỗi hồ sơ:
-
-****KHÔNG THAY ĐỔI BÊN DƯỚI DÒNG NÀY****</translation>
 <translation id="4820334425169212497">Không, tôi không thấy mã</translation>
 <translation id="4821086771593057290">Mật khẩu của bạn đã thay đổi. Vui lòng thử lại bằng mật khẩu mới của bạn.</translation>
 <translation id="4821935166599369261">&amp;Bật cấu hình</translation>
@@ -2946,7 +2940,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5340217413897845242">Mục giá 6</translation>
 <translation id="5341390997810576190">Sử dụng dữ liệu di động</translation>
 <translation id="5342091991439452114">Mã PIN phải có ít nhất <ph name="MINIMUM" /> chữ số</translation>
-<translation id="5342344590724511265">Phản hồi tab bị lỗi.</translation>
 <translation id="5342451237681332106">Sử dụng <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Dấu ngoặc đơn trái</translation>
 <translation id="5350965906220856151">Rất tiếc!</translation>
@@ -3218,6 +3211,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5764483294734785780">Lư&amp;u âm thanh thành...</translation>
 <translation id="57646104491463491">Ngày Sửa đổi</translation>
 <translation id="5764797882307050727">Hãy giải phóng một số dung lượng trên thiết bị của bạn.</translation>
+<translation id="5765425701854290211">Rất tiếc, một số tệp đã bị hỏng và cập nhật không thành công. Các tệp đã đồng bộ hóa của bạn được an toàn.</translation>
 <translation id="5765491088802881382">Không có mạng nào</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5771585441665576801">Chuyển ngữ (geia → γεια)</translation>
@@ -3244,7 +3238,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5800020978570554460">Tệp đích đã bị cắt bớt hoặc xóa kể từ lần tải xuống cuối cùng.</translation>
 <translation id="5801379388827258083">Đang tải xuống từ điển kiểm tra lỗi chính tả...</translation>
 <translation id="5801568494490449797">Tùy chọn</translation>
-<translation id="5804241973901381774">Giấy phép</translation>
+<translation id="5804241973901381774">Quyền</translation>
 <translation id="580571955903695899">Sắp xếp lại theo Tiêu đề</translation>
 <translation id="580961539202306967">Hỏi tôi khi một trang web muốn gửi thông báo đẩy cho tôi (nên chọn)</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
@@ -4435,6 +4429,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7615910377284548269">Quản lý chặn plugin không có hộp cát...</translation>
 <translation id="7617366389578322136">Đang kết nối với "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Không có mật khẩu nào được lưu.</translation>
+<translation id="7622114377921274169">Đang sạc.</translation>
 <translation id="7624154074265342755">Mạng không dây</translation>
 <translation id="7624337243375417909">caps lock tắt</translation>
 <translation id="7627790789328695202">Rất tiếc, <ph name="FILE_NAME" /> đã tồn tại. Hãy đổi tên tệp và thử lại.</translation>
@@ -4874,6 +4869,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8270242299912238708">Tài liệu PDF</translation>
 <translation id="827097179112817503">Hiển thị nút trang chủ</translation>
 <translation id="8272443605911821513">Quản lý tiện ích của bạn bằng cách nhấp vào Tiện ích trong menu "Công cụ khác".</translation>
+<translation id="8274924778568117936">Không tắt hoặc đóng <ph name="DEVICE_TYPE" /> cho đến khi cập nhật xong. <ph name="DEVICE_TYPE" /> của bạn sẽ khởi động lại sau khi cài đặt xong.</translation>
 <translation id="8275038454117074363">Nhập</translation>
 <translation id="8276560076771292512">Làm trống bộ nhớ cache và tải lại cứng</translation>
 <translation id="8279388322240498158">Bàn phím tiếng Kurd Sorani dựa trên tiếng Anh</translation>
@@ -5314,7 +5310,6 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="8963572037665351978">Thoát bản trình bày</translation>
 <translation id="8965037249707889821">Nhập mật khẩu cũ</translation>
 <translation id="8965697826696209160">Không có đủ dung lượng.</translation>
-<translation id="8968527460726243404">Trình viết hình ảnh hệ thống ChromeOS</translation>
 <translation id="8970203673128054105">Xem danh sách chế độ truyền</translation>
 <translation id="89720367119469899">Thoát</translation>
 <translation id="8972513834460200407">Vui lòng kiểm tra với quản trị viên mạng của bạn để đảm bảo rằng tường lửa không chặn tài nguyên đã tải xuống từ máy chủ của Google.</translation>
@@ -5490,6 +5485,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="93766956588638423">Sửa tiện ích</translation>
 <translation id="938470336146445890">Vui lòng cài đặt chứng chỉ người dùng.</translation>
 <translation id="938582441709398163">Lớp phủ bàn phím</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Nhập cụm mật khẩu</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="940425055435005472">Kích thước phông chữ:</translation>

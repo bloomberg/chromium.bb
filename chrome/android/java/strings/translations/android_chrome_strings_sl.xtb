@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
 <translation id="2146738493024040262">Odpri nenamestljivo aplikacijo</translation>
 <translation id="2148716181193084225">Danes</translation>
-<translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostala spletna mesta (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi napak v datotečnem sistemu.</translation>
 <translation id="3398320232533725830">Odpiranje upravitelja zaznamkov</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3435896845095436175">Omogoči</translation>
 <translation id="3443221991560634068">Vnovično nalaganje trenutne strani</translation>
 <translation id="3452612588551937789">Prijavite se z Google Računom, da boste zaznamke, zgodovino, gesla in druge nastavitve imeli na voljo v vseh napravah.</translation>
 <translation id="3487093336331957349">Predlogi za iskanje in spletna mesta</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4526249700380860531">Ogled in upravljanje shranjenih gesel na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Izbira mape</translation>
-<translation id="4535858793016067060">V varnostnih nastavitvah Androida vklopite »Neznani viri«, če želite zagnati preizkus »Izboljšano dodajanje na začetni zaslon«. Ko končate preizkus, to nastavitev onemogočite.</translation>
 <translation id="4558311620361989323">Bližnjice za spletne strani</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
 <translation id="4581964774250883625">Zdaj se vaše brskanje ne shranjuje v zgodovino.</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4988526792673242964">Strani</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
-<translation id="5000922062037820727">Blokirano (priporočeno)</translation>
 <translation id="5004339818306944878">Prenesite do 60 % manj podatkov in zagotovite hitrejše delovanje spleta. Googlovi strežniki optimizirajo strani, ki jih obiščete.</translation>
 <translation id="5005498671520578047">Kopiranje gesla</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> se želite povezati</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostop do lokacije je prav tako <ph name="BEGIN_LINK" />izklopljen za to napravo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Preizkus »Izboljšano dodajanje na začetni zaslon«</translation>
 <translation id="5372829067651257087">URL je kopiran.</translation>
 <translation id="5384883051496921101">To spletno mesto bo delilo podatke z aplikacijo zunaj načina brez beleženja zgodovine.</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
@@ -654,7 +649,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7929962904089429003">Odpiranje menija</translation>
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
-<translation id="7949961459945740081">Prejmite najnovejše funkcije</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
@@ -665,7 +659,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8015452622527143194">Vrnitev vsebine strani na privzeto velikost</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
-<translation id="8033827949643255796">izbrani</translation>
 <translation id="8035133914807600019">Nova mapa …</translation>
 <translation id="8037750541064988519">Še <ph name="DAYS" /> dni</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB na voljo</translation>

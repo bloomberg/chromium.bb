@@ -88,7 +88,7 @@
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
 <translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
-<translation id="1398889361882383850">Permite-lhe definir se os Websites têm automaticamente permissão para executar plug-ins. Os plug-ins automaticamente em execução podem ser permitidos para todos os Websites ou negados para todos os Websites.
+<translation id="1398889361882383850">Permite-lhe definir se os Sites têm automaticamente permissão para executar plug-ins. Os plug-ins automaticamente em execução podem ser permitidos para todos os Sites ou negados para todos os Sites.
 
           Clicar para reproduzir permite a execução de plug-ins, mas o utilizador deve clicar sobre eles para iniciar a sua execução.
 
@@ -430,7 +430,7 @@
 <translation id="2529880111512635313">Configurar a lista de aplicações e extensões de instalação forçada</translation>
 <translation id="253135976343875019">Atraso do aviso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2552966063069741410">Fuso Horário</translation>
-<translation id="2558917182010914102">Se esta política estiver definida como verdadeira ou não estiver definida, o Google Cast está ativado e os utilizadores podem iniciá-lo a partir do menu da aplicação, dos menus de contexto da página, dos controlos multimédia nos Websites compatíveis com o Google Cast e (se apresentado) do ícone da barra de ferramentas do Google Cast.
+<translation id="2558917182010914102">Se esta política estiver definida como verdadeira ou não estiver definida, o Google Cast está ativado e os utilizadores podem iniciá-lo a partir do menu da aplicação, dos menus de contexto da página, dos controlos multimédia nos Sites compatíveis com o Google Cast e (se apresentado) do ícone da barra de ferramentas do Google Cast.
 
           Se esta política estiver definida como falsa, o Google Cast está desativado.</translation>
 <translation id="2562339630163277285">Especifica o URL do motor de pesquisa utilizado para apresentar resultados instantâneos. O URL deve incluir a string <ph name="SEARCH_TERM_MARKER" />, que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido.
@@ -828,7 +828,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de navegação anónima forçado</translation>
-<translation id="4088983553732356374">Permite-lhe definir se os Websites estão autorizados a definir dados locais. A definição dos dados locais pode ser autorizada para todos os Websites ou negada para todos os Websites.
+<translation id="4088983553732356374">Permite-lhe definir se os Sites estão autorizados a definir dados locais. A definição dos dados locais pode ser autorizada para todos os Sites ou negada para todos os Sites.
 
           Se esta política estiver definida como "Manter cookies durante toda a sessão", os cookies são apagados quando a sessão for fechada. Tenha em atenção que se o <ph name="PRODUCT_NAME" /> estiver em execução no "modo de segundo plano", a sessão pode não ser fechada quando a última janela for fechada. Consulte a política "BackgroundModeEnabled" para obter mais informações acerca da configuração deste comportamento.
 
@@ -1399,7 +1399,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
-<translation id="6628646143828354685">Permite definir se os Websites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
+<translation id="6628646143828354685">Permite definir se os Sites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
 
           Se esta política não for definida, é utilizada a definição "3" e o utilizador pode alterá-la.</translation>
 <translation id="6641981670621198190">Desativar o suporte para APIs de gráficos 3D</translation>
@@ -1889,7 +1889,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> ao utilizar uma rede móvel e a definição de verdadeiro. Nesse caso, os dados só são sincronizados com o Google Drive quando estiver ligado por Wi-Fi ou Ethernet.
 
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
-<translation id="8312129124898414409">Permite definir se os Websites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Websites ou negá-la para todos os Websites.
+<translation id="8312129124898414409">Permite definir se os Sites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Sites ou negá-la para todos os Sites.
           Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
 <translation id="8316806736175990584">Configura o tipo da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem as preferências da página inicial. A página inicial pode ser definida como um URL que especifique ou definida como a página Novo separador.
 
@@ -2021,7 +2021,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8864975621965365890">Suprime o pedido de recusa que aparece quando um site é convertido por <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>
-<translation id="8908294717014659003">Permite-lhe definir se os Websites podem aceder a dispositivos de captura de multimédia. O acesso a dispositivos de captura de multimédia pode ser autorizado por predefinição ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos de captura de multimédia.
+<translation id="8908294717014659003">Permite-lhe definir se os Sites podem aceder a dispositivos de captura de multimédia. O acesso a dispositivos de captura de multimédia pode ser autorizado por predefinição ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos de captura de multimédia.
 
           Se deixar esta política por definir, será utilizado o "PromptOnAccess" e o utilizador poderá alterá-la.</translation>
 <translation id="8909280293285028130">Especifica o período de tempo sem atividade por parte do utilizador após o qual o ecrã é bloqueado quando o dispositivo está ligado à eletricidade.

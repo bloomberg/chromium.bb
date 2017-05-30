@@ -116,7 +116,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
 <translation id="2146738493024040262">Abrir aplicação instantânea</translation>
 <translation id="2148716181193084225">Hoje</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3387650086002190359">A transferência de <ph name="FILE_NAME" /> falhou devido a erros do sistema de ficheiros.</translation>
 <translation id="3398320232533725830">Abrir o gestor de marcadores</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="3435896845095436175">Ativar</translation>
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3452612588551937789">Inicie sessão com a sua Conta Google para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="3487093336331957349">Sugestões de pesquisa e de sites</translation>
@@ -234,14 +232,14 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3583454905526475291">Impossív. iniciar aplicação</translation>
 <translation id="3587482841069643663">Tudo</translation>
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
-<translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
+<translation id="360480449234699036">Saiba mais acerca dos tópicos nos Sites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
-<translation id="363596933471559332">Inicie automaticamente sessão em Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
+<translation id="363596933471559332">Inicie automaticamente sessão em Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
-<translation id="3661699943263275414">Os Websites de terceiros podem guardar e ler dados de cookies</translation>
+<translation id="3661699943263275414">Os Sites de terceiros podem guardar e ler dados de cookies</translation>
 <translation id="3662546969139119822">Sem histórico</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
@@ -308,7 +306,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="4384468725000734951">A utilizar o Sogou para pesquisa</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
-<translation id="4445444302979002552">Utilizar os serviços de previsão para a sugestão de termos de pesquisa e de Websites</translation>
+<translation id="4445444302979002552">Utilizar os serviços de previsão para a sugestão de termos de pesquisa e de Sites</translation>
 <translation id="4452548195519783679">Adicionado aos marcadores em <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> transferido no <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Perguntar antes de permitir que os sites utilizem a câmara (recomendado)</translation>
@@ -319,7 +317,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
-<translation id="4535858793016067060">Ative "Fontes desconhecidas" nas definições de segurança do Android para testar a experiência "Adicionar ao ecrã principal" melhorada. Certifique-se de que desativa esta definição quando terminar de a experimentar.</translation>
 <translation id="4558311620361989323">Atalhos da página Web</translation>
 <translation id="4572422548854449519">Iniciar sessão na conta gerida</translation>
 <translation id="4581964774250883625">Entrou no modo de navegação anónima.</translation>
@@ -362,7 +359,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
-<translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5004339818306944878">Utilize até menos 60% de dados e acelere a Web. Os servidores da Google otimizam as páginas que visita.</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> pretende estabelecer ligação</translation>
@@ -403,7 +399,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
 <translation id="5345083863238459644">O acesso à localização também está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experiência "Adicionar ao ecrã principal" melhorada</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
 <translation id="5384883051496921101">Este site está prestes a partilhar informações com uma aplicação fora do modo de navegação anónima.</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
@@ -441,7 +436,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5684874026226664614">Ups! Não foi possível traduzir esta página.</translation>
 <translation id="5719837394786370183">As páginas que visualizar em separadores de navegação anónima não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
-No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
+No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Sites que visitar.</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="572392919096807438">Memorizar a minha decisão</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
@@ -491,7 +486,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6192792657125177640">Excepções</translation>
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
 
-Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Websites que tenha visitado. Ainda assim, muitos Websites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
+Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Sites que tenha visitado. Ainda assim, muitos Sites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6320088164292336938">Vibrar</translation>
@@ -538,7 +533,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6659594942844771486">Tab</translation>
-<translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Websites populares à medida que escreve na barra de endereço</translation>
+<translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Sites populares à medida que escreve na barra de endereço</translation>
 <translation id="666731172850799929">Abrir no <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
@@ -550,7 +545,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6770414673596662518">O sistema de Navegação segura do Chrome também será utilizado para detetar páginas maliciosas e para o proteger contra phishing, programas maliciosos e transferências prejudiciais.</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="679325081238418596">Obter os marcadores, histórico, palavras-passe e outras definições em todos os dispositivos</translation>
-<translation id="6820607729870073286">Não tem definições de Websites guardadas.</translation>
+<translation id="6820607729870073286">Não tem definições de Sites guardadas.</translation>
 <translation id="6820686453637990663">Código de segurança</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6846298663435243399">A carregar…</translation>
@@ -654,7 +649,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7929962904089429003">Abrir o menu</translation>
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
-<translation id="7949961459945740081">Obter funcionalidades recentes</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
@@ -665,7 +659,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8015452622527143194">Repor tamanho predefinido dos itens na página</translation>
 <translation id="802154636333426148">Falha ao transferir</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
-<translation id="8033827949643255796">selecionado</translation>
 <translation id="8035133914807600019">Nova pasta…</translation>
 <translation id="8037750541064988519">Faltam <ph name="DAYS" /> dias</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
@@ -700,7 +693,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8428213095426709021">Definições</translation>
-<translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
+<translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Sites.</translation>
 <translation id="8441146129660941386">Procurar para trás</translation>
 <translation id="8447861592752582886">Revogar autorização do dispositivo</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
@@ -734,7 +727,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8741995161408053644">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8748850008226585750">Conteúdo ocultado</translation>
 <translation id="8788968922598763114">Reabrir o último separador fechado</translation>
-<translation id="8812260976093120287">Nalguns Websites, é possível pagar com as aplicações de pagamento compatíveis acima no dispositivo.</translation>
+<translation id="8812260976093120287">Nalguns Sites, é possível pagar com as aplicações de pagamento compatíveis acima no dispositivo.</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883635517171802338">Impedir a apresentação de pop-ups por parte dos sites (recomendado)</translation>
 <translation id="8847988622838149491">USB</translation>

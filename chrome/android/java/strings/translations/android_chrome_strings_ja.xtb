@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">ホーム画面に追加</translation>
 <translation id="2146738493024040262">プレビュー アプリを開く</translation>
 <translation id="2148716181193084225">今日</translation>
-<translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
 <translation id="219985413780390209">危険なサイトからユーザーとデバイスを保護する</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">ファイル システムでエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="3398320232533725830">ブックマーク マネージャを開く</translation>
 <translation id="3414952576877147120">サイズ:</translation>
-<translation id="3435896845095436175">有効にする</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3452612588551937789">Google アカウントでログインすると、どの端末からでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
 <translation id="3487093336331957349">検索とサイトの候補を表示</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4532845899244822526">フォルダの選択</translation>
-<translation id="4535858793016067060">「ホーム画面に追加（改訂版）」試験運用機能を使用するには、Android のセキュリティ設定で [提供元不明のアプリ] を有効にしてください。機能の確認が終わったら、設定を無効に戻してください。</translation>
 <translation id="4558311620361989323">ウェブページのショートカット</translation>
 <translation id="4572422548854449519">管理対象アカウントにログイン</translation>
 <translation id="4581964774250883625">シークレット モードです。</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4988526792673242964">ページ</translation>
 <translation id="4996978546172906250">共有方法</translation>
-<translation id="5000922062037820727">ブロック（推奨）</translation>
 <translation id="5004339818306944878">データセーバーを使用すると、データ使用量を最大 60% 節約でき、ウェブを高速にブラウジングできます。Google のサーバーにより、アクセスするページが最適化されます。</translation>
 <translation id="5005498671520578047">パスワードのコピー</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> が接続を要求しています</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
 <translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
-<translation id="5349103022427743704">「ホーム画面に追加（改訂版）」試験運用機能</translation>
 <translation id="5372829067651257087">URL をコピーしました。</translation>
 <translation id="5384883051496921101">このサイトの情報がシークレット モードの外部のアプリに共有されようとしています。</translation>
 <translation id="5400569084694353794">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">メニューを開く</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> は最新ではありません。</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
-<translation id="7949961459945740081">最新機能を取得</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
 <translation id="7987073022710626672">Chrome 利用規約</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
-<translation id="8033827949643255796">選択しました</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>

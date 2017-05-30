@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Modifier le nom du dossier</translation>
 <translation id="2226449515541314767">Le contrôle total des appareils MIDI a été bloqué pour ce site.</translation>
 <translation id="2226720438730111184">Décrivez-nous le problème rencontré</translation>
-<translation id="222903405933288376">Google utilise votre position pour vous proposer du contenu local. Pour modifier ce paramètre, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Plus d'1 heure restante</translation>
 <translation id="222931766245975952">Fichier tronqué.</translation>
 <translation id="222949136907494149"><ph name="URL" /> souhaite avoir accès à la position de votre ordinateur.</translation>
@@ -1087,7 +1086,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2575247648642144396">Cette icône s'affiche lorsque l'extension peut être utilisée au sein de la page qui s'affiche actuellement. Pour utiliser cette extension, cliquez sur l'icône ou appuyez sur <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Un autre fichier CRX portant le même nom existe déjà.</translation>
 <translation id="2579575372772932244">Veuillez patienter pendant la nouvelle création du profil…</translation>
-<translation id="2580168606262715640">Votre téléphone est introuvable. Assurez-vous qu'il se trouve à portée de main.</translation>
 <translation id="2580889980133367162">Toujours autoriser <ph name="HOST" /> à télécharger plusieurs fichiers</translation>
 <translation id="2580924999637585241">Total : <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Longue</translation>
@@ -2172,7 +2170,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4130207949184424187">Cette extension a modifié la page qui s'affiche lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="413121957363593859">Composants</translation>
 <translation id="4131410914670010031">Noir et blanc</translation>
-<translation id="4135054690906486073">Ce réseau est partagé avec d'autres utilisateurs</translation>
 <translation id="4135450933899346655">Vos certificats</translation>
 <translation id="4138267921960073861">Afficher les noms d'utilisateurs et leur photo sur la page de connexion</translation>
 <translation id="4140559601186535628">Messages Push</translation>
@@ -2575,9 +2572,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4813345808229079766">Connexion</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="4816492930507672669">Ajuster à la page</translation>
-<translation id="4816617200045929931">Indiquez-nous ce qui s'est passé exactement lorsque vous avez reçu le message d'erreur concernant le profil :
-
-****NE PAS APPORTER DE MODIFICATION SOUS CETTE LIGNE****</translation>
 <translation id="4820334425169212497">Non, je ne le vois pas</translation>
 <translation id="4821086771593057290">Votre mot de passe a changé. Veuillez réessayer avec votre nouveau mot de passe.</translation>
 <translation id="4821935166599369261">&amp;Profilage activé</translation>
@@ -2943,7 +2937,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5340217413897845242">Élément d'étagère 6</translation>
 <translation id="5341390997810576190">Utilisera les données mobiles</translation>
 <translation id="5342091991439452114">Le code doit comprendre au moins <ph name="MINIMUM" /> chiffres</translation>
-<translation id="5342344590724511265">Commentaires relatifs au plantage de l'onglet</translation>
 <translation id="5342451237681332106">Utiliser <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Parenthèse gche</translation>
 <translation id="5350965906220856151">Petit problème</translation>
@@ -3216,6 +3209,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5764483294734785780">En&amp;registrer le fichier audio sous...</translation>
 <translation id="57646104491463491">Date de modification</translation>
 <translation id="5764797882307050727">Veuillez libérer de l'espace sur votre appareil.</translation>
+<translation id="5765425701854290211">Désolé, certains fichiers ont été endommagés et la mise à jour n'a pas abouti. Vos fichiers synchronisés sont en sécurité.</translation>
 <translation id="5765491088802881382">Aucun réseau disponible</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5771585441665576801">Translittération (geia → γεια)</translation>
@@ -4432,6 +4426,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7615910377284548269">Configurer le blocage de l'exécution hors bac à sable des plug-ins</translation>
 <translation id="7617366389578322136">Connexion à "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="761779991806306006">Aucun mot de passe enregistré.</translation>
+<translation id="7622114377921274169">En charge.</translation>
 <translation id="7624154074265342755">Réseaux sans fil</translation>
 <translation id="7624337243375417909">touche de verrouillage des majuscules désactivée</translation>
 <translation id="7627790789328695202">Le fichier <ph name="FILE_NAME" /> existe déjà. Veuillez le renommer, puis réessayer.</translation>
@@ -4872,6 +4867,7 @@ Calcul de la durée restante</translation>
 <translation id="8270242299912238708">Documents PDF</translation>
 <translation id="827097179112817503">Afficher le bouton Accueil</translation>
 <translation id="8272443605911821513">Cliquer sur "Extensions" dans le menu "Autres outils" pour gérer les extensions</translation>
+<translation id="8274924778568117936">N'éteignez pas et ne fermez pas votre <ph name="DEVICE_TYPE" /> avant la fin de la mise à jour. Votre <ph name="DEVICE_TYPE" /> redémarrera une fois l'installation terminée.</translation>
 <translation id="8275038454117074363">Importer</translation>
 <translation id="8276560076771292512">Vider le cache et effectuer une actualisation forcée</translation>
 <translation id="8279388322240498158">Clavier kurde sorani (anglais)</translation>
@@ -5312,7 +5308,6 @@ Suite à cette opération, les notifications, les fenêtres et les boîtes de di
 <translation id="8963572037665351978">Quitter la présentation</translation>
 <translation id="8965037249707889821">Saisir l'ancien mot de passe</translation>
 <translation id="8965697826696209160">Espace disponible insuffisant.</translation>
-<translation id="8968527460726243404">Écriture des images système Chrome OS</translation>
 <translation id="8970203673128054105">Afficher la liste des modes de diffusion</translation>
 <translation id="89720367119469899">Échap</translation>
 <translation id="8972513834460200407">Vérifiez auprès de votre administrateur réseau que le pare-feu ne bloque pas les téléchargements effectués depuis les serveurs Google.</translation>
@@ -5488,6 +5483,7 @@ Suite à cette opération, les notifications, les fenêtres et les boîtes de di
 <translation id="93766956588638423">Réparer l'extension</translation>
 <translation id="938470336146445890">Veuillez installer un certificat utilisateur.</translation>
 <translation id="938582441709398163">Clavier en superposition</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Saisir la phrase secrète</translation>
 <translation id="939736085109172342">Nouveau dossier</translation>
 <translation id="940425055435005472">Taille de police :</translation>

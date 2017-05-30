@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se bloqueó este sitio para que no tenga el control total de los dispositivos MIDI</translation>
 <translation id="2226720438730111184">Cuéntanos cuál es el problema</translation>
-<translation id="222903405933288376">Google usa tu ubicación para proporcionarte contenido local. Puedes cambiar esta configuración en <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Falta más de una hora.</translation>
 <translation id="222931766245975952">Archivo truncado</translation>
 <translation id="222949136907494149"><ph name="URL" /> quiere utilizar la ubicación de tu computadora.</translation>
@@ -1084,7 +1083,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2575247648642144396">Este ícono estará visible cuando la extensión se pueda utilizar en la página actual. Para usar esta extensión, haz clic en el ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Ya existe una archivo CRX con este nombre.</translation>
 <translation id="2579575372772932244">Recreando el perfil; espera un momento…</translation>
-<translation id="2580168606262715640">No se encuentra el teléfono. Asegúrate de que esté al alcance de tu mano.</translation>
 <translation id="2580889980133367162">Siempre permitir que <ph name="HOST" /> descargue varios archivos</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Larga</translation>
@@ -2169,7 +2167,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4130207949184424187">Esta extensión cambió la página que se muestra al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="413121957363593859">Componentes</translation>
 <translation id="4131410914670010031">Blanco y negro</translation>
-<translation id="4135054690906486073">Esta red se comparte con otros usuarios</translation>
 <translation id="4135450933899346655">Tus certificados</translation>
 <translation id="4138267921960073861">Mostrar nombres de usuarios y fotos en la pantalla de inicio</translation>
 <translation id="4140559601186535628">Mensajes de inserción</translation>
@@ -2573,9 +2570,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="4813345808229079766">Conexión</translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4816492930507672669">Ajustar a la página</translation>
-<translation id="4816617200045929931">Cuéntanos lo que pasó justo antes de recibir el mensaje de error de perfil:
-
-****NO MODIFICAR A PARTIR DE ESTA LÍNEA****</translation>
 <translation id="4820334425169212497">No lo veo</translation>
 <translation id="4821086771593057290">Tu contraseña cambió. Inténtalo nuevamente con tu nueva contraseña.</translation>
 <translation id="4821935166599369261">&amp;Perfiles activados</translation>
@@ -2941,7 +2935,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5340217413897845242">Elemento 6 de la biblioteca</translation>
 <translation id="5341390997810576190">Usa los datos móviles.</translation>
 <translation id="5342091991439452114">El PIN debe tener al menos <ph name="MINIMUM" /> dígitos</translation>
-<translation id="5342344590724511265">La pestaña bloqueó los comentarios.</translation>
 <translation id="5342451237681332106">Usar <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Paréntesis izquierdo</translation>
 <translation id="5350965906220856151">¡Uy!</translation>
@@ -3213,6 +3206,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5764483294734785780">Guardar audio como...</translation>
 <translation id="57646104491463491">Fecha de modificación</translation>
 <translation id="5764797882307050727">Libera espacio en tu dispositivo.</translation>
+<translation id="5765425701854290211">Algunos archivos estaban dañaron y la actualización no pudo completarse. Tus archivos sincronizados están a salvo.</translation>
 <translation id="5765491088802881382">No hay redes disponibles</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5771585441665576801">Transliteración (geia → γεια)</translation>
@@ -4428,6 +4422,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7615910377284548269">Administrar el bloqueo de complementos no incluidos en la zona de pruebas…</translation>
 <translation id="7617366389578322136">Conectando a "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">No hay contraseñas guardadas.</translation>
+<translation id="7622114377921274169">Cargando</translation>
 <translation id="7624154074265342755">Redes inalámbricas</translation>
 <translation id="7624337243375417909">bloqueo de mayúscula desactivado</translation>
 <translation id="7627790789328695202">El archivo <ph name="FILE_NAME" /> ya existe. Cambia el nombre y vuelve a intentarlo.</translation>
@@ -4867,6 +4862,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar el botón de la Página principal</translation>
 <translation id="8272443605911821513">Para administrar tus extensiones, haz clic en Extensiones en el menú "Más herramientas".</translation>
+<translation id="8274924778568117936">No apagues ni cierres el dispositivo <ph name="DEVICE_TYPE" /> hasta que finalice la actualización. Cuando el proceso termine, el dispositivo <ph name="DEVICE_TYPE" /> se reiniciará.</translation>
 <translation id="8275038454117074363">Importar</translation>
 <translation id="8276560076771292512">Vaciar caché y volver a cargar de manera forzada</translation>
 <translation id="8279388322240498158">Teclado kurdo sorani basado en el inglés</translation>
@@ -5307,7 +5303,6 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="8963572037665351978">Salir del modo Presentación</translation>
 <translation id="8965037249707889821">Ingresa la contraseña anterior.</translation>
 <translation id="8965697826696209160">No hay suficiente espacio.</translation>
-<translation id="8968527460726243404">Herramienta de escritura de imagen del SO de Chrome</translation>
 <translation id="8970203673128054105">Ver la lista de modos de transmisión</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Consulta con tu administrador de red para asegurarte de que el firewall no esté bloqueando las descargas de los servidores de Google.</translation>
@@ -5482,6 +5477,7 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="93766956588638423">Reparar extensión</translation>
 <translation id="938470336146445890">Instala un certificado de usuario.</translation>
 <translation id="938582441709398163">Superposición del teclado</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ingresar frase de contraseña</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="940425055435005472">Tamaño de la fuente:</translation>

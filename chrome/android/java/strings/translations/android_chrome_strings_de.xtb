@@ -116,7 +116,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2139186145475833000">Zum Startbildschirm hinzu</translation>
 <translation id="2146738493024040262">Instant-App öffnen</translation>
 <translation id="2148716181193084225">Heute</translation>
-<translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Verbleibende Websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> konnte aufgrund von Dateisystemfehlern nicht heruntergeladen werden.</translation>
 <translation id="3398320232533725830">Lesezeichen-Manager öffnen</translation>
 <translation id="3414952576877147120">Größe:</translation>
-<translation id="3435896845095436175">Aktivieren</translation>
 <translation id="3443221991560634068">Aktuelle Seite neu laden</translation>
 <translation id="3452612588551937789">Melden Sie sich mit Ihrem Google-Konto an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und Ihre anderen Einstellungen auf allen Geräten abrufen zu können.</translation>
 <translation id="3487093336331957349">Vorschläge für Suchbegriffe und für Websites</translation>
@@ -319,7 +317,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4522570452068850558">Details</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="4532845899244822526">Ordner auswählen</translation>
-<translation id="4535858793016067060">Aktivieren Sie in den Sicherheitseinstellungen von Android die Option "Unbekannte Quellen", um den Test für die verbesserte Option "Zum Startbildschirm hinzufügen" auszuprobieren. Sie sollten diese Einstellung jedoch wieder deaktivieren, wenn Sie den Test beenden.</translation>
 <translation id="4558311620361989323">Tastenkombinationen für Webseiten</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
 <translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
@@ -362,7 +359,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="497421865427891073">Weiter</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="4996978546172906250">Teilen über</translation>
-<translation id="5000922062037820727">Blockiert (empfohlen)</translation>
 <translation id="5004339818306944878">Bis zu 60 % weniger Datenverbrauch und schnelleres Internet. Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="5005498671520578047">Passwort kopieren</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> möchte eine Verbindung herstellen</translation>
@@ -403,7 +399,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
 <translation id="5345083863238459644">Der Standortzugriff ist auch <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Test für verbesserte Option "Zum Startbildschirm hinzufügen"</translation>
 <translation id="5372829067651257087">URL kopiert.</translation>
 <translation id="5384883051496921101">Diese Website ist im Begriff, Informationen mit einer App außerhalb des Inkognitomodus zu teilen.</translation>
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
@@ -654,7 +649,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7929962904089429003">Menü öffnen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
-<translation id="7949961459945740081">Neue Funktionen herunterladen</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
@@ -665,7 +659,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8015452622527143194">Gesamten Seiteninhalt auf Standardgröße zurücksetzen</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
-<translation id="8033827949643255796">Ausgewählt</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>

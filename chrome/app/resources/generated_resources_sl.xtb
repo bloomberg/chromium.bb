@@ -837,7 +837,6 @@
 <translation id="2224551243087462610">Uredi ime mape</translation>
 <translation id="2226449515541314767">Temu spletnemu mestu je preprečen popolni nadzor nad napravami MIDI.</translation>
 <translation id="2226720438730111184">Povejte nam, kaj se dogaja</translation>
-<translation id="222903405933288376">Google uporablja lokacijo za zagotavljanje lokalne vsebine. To lahko spremenite tukaj: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Še več kot ena ura</translation>
 <translation id="222931766245975952">Datoteka je okrnjena</translation>
 <translation id="222949136907494149"><ph name="URL" /> želi uporabljati lokacijo vašega računalnika.</translation>
@@ -1089,7 +1088,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2575247648642144396">Ikona bo vidna, če lahko razširitev deluje na trenutni strani. Razširitev uporabite tako, da kliknete ikono ali pritisnete <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Datoteka CRX s tem imenom že obstaja.</translation>
 <translation id="2579575372772932244">Vnovično ustvarjanje profila, počakajte ...</translation>
-<translation id="2580168606262715640">Vašega telefona ni mogoče najti. Poskrbite, da bo v bližini.</translation>
 <translation id="2580889980133367162">Gostitelju <ph name="HOST" /> vedno dovoli prenos več datotek</translation>
 <translation id="2580924999637585241">Skupaj: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Dolga</translation>
@@ -2174,7 +2172,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4130207949184424187">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko iščete v naslovni vrstici.</translation>
 <translation id="413121957363593859">Komponente</translation>
 <translation id="4131410914670010031">Črno-belo</translation>
-<translation id="4135054690906486073">To omrežje je v skupni rabi z drugimi uporabniki</translation>
 <translation id="4135450933899346655">Vaša potrdila</translation>
 <translation id="4138267921960073861">Prikaži uporabniška imena in fotografije na prijavnem zaslonu</translation>
 <translation id="4140559601186535628">Potisna sporočila</translation>
@@ -2578,9 +2575,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4813345808229079766">Povezava</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="4816492930507672669">Prilagodi strani</translation>
-<translation id="4816617200045929931">Opišite, kaj natanko se je zgodilo, preden se je prikazalo sporočilo o napaki profila:
-
-****NE SPREMINJAJTE NIČESAR POD TO ČRTO****</translation>
 <translation id="4820334425169212497">Ne, ne vidim je</translation>
 <translation id="4821086771593057290">Geslo je bilo spremenjeno. Poskusite znova z novim.</translation>
 <translation id="4821935166599369261">&amp;Profiliranje je omogočeno</translation>
@@ -2946,7 +2940,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5340217413897845242">Element na polici 6</translation>
 <translation id="5341390997810576190">Uporaba prenosa podatkov v mobilnih omrežjih</translation>
 <translation id="5342091991439452114">Koda PIN mora imeti vsaj toliko števk: <ph name="MINIMUM" /></translation>
-<translation id="5342344590724511265">Povratne informacije o zrušitvi zavihka.</translation>
 <translation id="5342451237681332106">Uporabi telefon <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Oklepaj</translation>
 <translation id="5350965906220856151">Ojoj.</translation>
@@ -3219,6 +3212,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5764483294734785780">Shr&amp;ani zvočni posnetek kot ...</translation>
 <translation id="57646104491463491">Datum spremembe</translation>
 <translation id="5764797882307050727">Sprostite nekaj prostora v napravi.</translation>
+<translation id="5765425701854290211">Nekatere datoteke so bile poškodovane in posodobitev ni uspela. Sinhronizirane datoteke so varne.</translation>
 <translation id="5765491088802881382">Na voljo ni nobeno omrežje</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771585441665576801">Prečrkovanje (geia → γεια)</translation>
@@ -4433,6 +4427,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7615910377284548269">Upravljanje blokiranja vtičnikov brez varnostnih omejitev ...</translation>
 <translation id="7617366389578322136">Povezovanje z napravo »<ph name="DEVICE_NAME" />«</translation>
 <translation id="761779991806306006">Ni shranjenih gesel.</translation>
+<translation id="7622114377921274169">Polnjenje.</translation>
 <translation id="7624154074265342755">Brezžična omrežja</translation>
 <translation id="7624337243375417909">zaklepanje velikih črk je izklopljeno</translation>
 <translation id="7627790789328695202">Ups, datoteka <ph name="FILE_NAME" /> že obstaja. Preimenujte jo in poskusite znova.</translation>
@@ -4872,6 +4867,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8270242299912238708">Dokumenti PDF</translation>
 <translation id="827097179112817503">Pokaži gumb za domačo stran</translation>
 <translation id="8272443605911821513">Razširitve lahko upravljate tako, da v meniju »Več orodij« kliknete »Razširitve«.</translation>
+<translation id="8274924778568117936">Ne izklopite ali zaprite naprave <ph name="DEVICE_TYPE" />, dokler se posodobitev ne konča. Naprava <ph name="DEVICE_TYPE" /> se bo po končani namestitvi znova zagnala.</translation>
 <translation id="8275038454117074363">Uvozi</translation>
 <translation id="8276560076771292512">Izbriši predpomnilnik in znova naloži brez predpomnilnika</translation>
 <translation id="8279388322240498158">Tipkovnica za soransko kurdščino na angleški osnovi</translation>
@@ -5314,7 +5310,6 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="8963572037665351978">Zapusti predstavitev</translation>
 <translation id="8965037249707889821">Vnesite staro geslo</translation>
 <translation id="8965697826696209160">Na voljo ni dovolj prostora.</translation>
-<translation id="8968527460726243404">Zapisovalnik sistemskih slik za Chrome OS</translation>
 <translation id="8970203673128054105">Ogled seznama načinov predvajanja</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Pri skrbniku omrežja se prepričajte, da požarni zid ne blokira prenosov iz Googlovih strežnikov.</translation>
@@ -5490,6 +5485,7 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="93766956588638423">Popravi razširitev</translation>
 <translation id="938470336146445890">Namestite uporabniško potrdilo.</translation>
 <translation id="938582441709398163">Prekrivna tipkovnica</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Vnesite geslo</translation>
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="940425055435005472">Velikost pisave:</translation>

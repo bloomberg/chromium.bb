@@ -831,7 +831,6 @@
 <translation id="2224551243087462610">ערוך את שם התיקייה</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
 <translation id="2226720438730111184">ספר לנו מה קורה</translation>
-<translation id="222903405933288376">‏Google משתמשת במיקום שלך כדי להציג לך תוכן מקומי. אפשר לשנות את ההגדרה כאן: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">נותרה יותר משעה אחת</translation>
 <translation id="222931766245975952">הקובץ נקטע</translation>
 <translation id="222949136907494149"><ph name="URL" /> רוצה להשתמש במיקום המחשב שלך.</translation>
@@ -1083,7 +1082,6 @@
 <translation id="2575247648642144396">סמל זה יוצג כאשר התוסף יכול לפעול בדף הנוכחי. השתמש בתוסף זה על ידי לחיצה על הסמל או על ידי הקשה על <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">‏כבר קיים קובץ CRX בשם זה.</translation>
 <translation id="2579575372772932244">יוצר מחדש את הפרופיל. המתן...</translation>
-<translation id="2580168606262715640">לא ניתן למצוא את הטלפון שלך. ודא שהוא נמצא בקרבתך.</translation>
 <translation id="2580889980133367162">תמיד אפשר ל-<ph name="HOST" /> להוריד קבצים מרובים</translation>
 <translation id="2580924999637585241">סך הכל: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">ארוכה</translation>
@@ -2167,7 +2165,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4130207949184424187">התוסף הזה שינה את הדף שמוצג כשאתה מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="413121957363593859">רכיבים</translation>
 <translation id="4131410914670010031">שחור ולבן</translation>
-<translation id="4135054690906486073">רשת זו משותפת עם משתמשים אחרים</translation>
 <translation id="4135450933899346655">האישורים שלך</translation>
 <translation id="4138267921960073861">הצג שמות משתמשים ותמונות במסך הכניסה</translation>
 <translation id="4140559601186535628">הודעות בדחיפה</translation>
@@ -2571,9 +2568,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4813345808229079766">התקשרות</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
-<translation id="4816617200045929931">ספר לנו בדיוק מה קרה לפני שקיבלת את הודעת השגיאה בפרופיל:
-
-****אל תשנה את מה שמופיע מתחת לקו הזה****</translation>
 <translation id="4820334425169212497">לא, אני לא רואה אותו</translation>
 <translation id="4821086771593057290">הסיסמה שלך השתנתה. נסה שוב עם הסיסמה החדשה.</translation>
 <translation id="4821935166599369261">&amp;יצירת פרופילים מופעלת</translation>
@@ -2940,7 +2934,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5340217413897845242">פריט מדף 6</translation>
 <translation id="5341390997810576190">השתמש בנתונים סלולריים</translation>
 <translation id="5342091991439452114">‏ה-PIN חייב להיות באורך <ph name="MINIMUM" /> ספרות לפחות</translation>
-<translation id="5342344590724511265">משוב על כרטיסייה שקרסה.</translation>
 <translation id="5342451237681332106">השתמש ב-<ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">צד שמאל של הסוגריים</translation>
 <translation id="5350965906220856151">אוי לא!</translation>
@@ -3212,6 +3205,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5764483294734785780">ש&amp;מור שמע כ...</translation>
 <translation id="57646104491463491">תארך השינוי</translation>
 <translation id="5764797882307050727">פנה שטח אחסון במכשיר.</translation>
+<translation id="5765425701854290211">אנחנו מצטערים, אבל חלק מהקבצים נפגמו והעדכון לא הצליח. הקבצים המסונכרנים שלך לא נפגעו.</translation>
 <translation id="5765491088802881382">אין רשת זמינה</translation>
 <translation id="5765780083710877561">תיאור:</translation>
 <translation id="5771585441665576801">‏תעתוק (geia → γεια)</translation>
@@ -4419,6 +4413,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7615910377284548269">נהל חסימה של יישומי פלאגין ללא ארגז חול...</translation>
 <translation id="7617366389578322136">מתחבר אל <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">לא נשמרו סיסמאות.</translation>
+<translation id="7622114377921274169">בטעינה.</translation>
 <translation id="7624154074265342755">רשתות אלחוטיות</translation>
 <translation id="7624337243375417909">‏caps lock מושבת</translation>
 <translation id="7627790789328695202">אופס, <ph name="FILE_NAME" /> כבר קיים. שנה את השם שלו ונסה שוב.</translation>
@@ -4857,6 +4852,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8270242299912238708">‏מסמכי PDF</translation>
 <translation id="827097179112817503">הצג את לחצן 'דף הבית'</translation>
 <translation id="8272443605911821513">נהל את התוספים שלך על ידי לחיצה על 'תוספים' בתפריט 'כלים נוספים'.</translation>
+<translation id="8274924778568117936">אל תכבה או תסגור את ה-<ph name="DEVICE_TYPE" /> לפני סיום העדכון. ה-<ph name="DEVICE_TYPE" /> יופעל מחדש באופן אוטומטי בסיום ההתקנה.</translation>
 <translation id="8275038454117074363">ייבוא</translation>
 <translation id="8276560076771292512">ריקון המטמון וטעינה מחדש קשיחה</translation>
 <translation id="8279388322240498158">מקלדת כורדית סורנית המבוססת על אנגלית</translation>
@@ -5297,7 +5293,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8963572037665351978">צא ממצב מצגת</translation>
 <translation id="8965037249707889821">הזן את הסיסמה הישנה</translation>
 <translation id="8965697826696209160">אין מספיק שטח.</translation>
-<translation id="8968527460726243404">‏כותב תמונת המערכת של מערכת ההפעלה של Chrome</translation>
 <translation id="8970203673128054105">הצג רשימה של מצבי העברה</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">‏פנה אל מנהל המערכת של הרשת שלך כדי לוודא שחומת האש אינה חוסמת הורדות משרתי Google.</translation>
@@ -5472,6 +5467,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="93766956588638423">תקן את התוסף</translation>
 <translation id="938470336146445890">התקן אישור משתמש.</translation>
 <translation id="938582441709398163">שכבת-על של מקלדת</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">הזן משפט-סיסמה</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
 <translation id="940425055435005472">גודל גופן:</translation>

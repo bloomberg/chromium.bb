@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Editați numele dosarului</translation>
 <translation id="2226449515541314767">Acest site a fost blocat și nu poate avea control complet asupra dispozitivelor MIDI.</translation>
 <translation id="2226720438730111184">Spune-ne ce se întâmplă</translation>
-<translation id="222903405933288376">Google îți folosește locația pentru a-ți oferi conținut local. Poți schimba această setare din <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">A mai rămas mai mult de 1 oră</translation>
 <translation id="222931766245975952">Fișier trunchiat</translation>
 <translation id="222949136907494149"><ph name="URL" /> dorește să utilizeze locația computerului dvs.</translation>
@@ -1087,7 +1086,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2575247648642144396">Această pictogramă va fi vizibilă atunci când extensia poate acționa pe pagina actuală. Utilizați această extensie dând clic pe pictogramă sau apăsând pe <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Există deja un fișier CRX cu acest nume.</translation>
 <translation id="2579575372772932244">Se recreează profilul, așteaptă...</translation>
-<translation id="2580168606262715640">Telefonul nu poate fi găsit. Asigură-te că este în apropiere.</translation>
 <translation id="2580889980133367162">Permiteți întotdeauna <ph name="HOST" /> să descarce mai multe fișiere</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lungă</translation>
@@ -2172,7 +2170,6 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="4130207949184424187">Această extensie a modificat ce pagină se afișează când cauți din caseta polivalentă.</translation>
 <translation id="413121957363593859">Componente</translation>
 <translation id="4131410914670010031">Alb-negru</translation>
-<translation id="4135054690906486073">Această rețea este utilizată în comun cu alți utilizatori</translation>
 <translation id="4135450933899346655">Certificatele tale</translation>
 <translation id="4138267921960073861">Afișează numele de utilizatori și fotografiile pe ecranul de conectare</translation>
 <translation id="4140559601186535628">Mesaje push</translation>
@@ -2576,9 +2573,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4813345808229079766">Conexiune</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
 <translation id="4816492930507672669">Încadrați în pagină</translation>
-<translation id="4816617200045929931">Spune-ne exact ce s-a întâmplat înainte să ți se afișeze mesajul de eroare privind profilul:
-
-****NU MODIFICA NIMIC MAI JOS DE ACEST RÂND****</translation>
 <translation id="4820334425169212497">Nu, nu îl vad</translation>
 <translation id="4821086771593057290">Parola s-a modificat. Încearcă din nou cu noua parolă.</translation>
 <translation id="4821935166599369261">&amp;Analizare activată</translation>
@@ -2944,7 +2938,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5340217413897845242">Elementul 6 din raft</translation>
 <translation id="5341390997810576190">va folosi datele mobile;</translation>
 <translation id="5342091991439452114">Codul PIN trebuie să conțină minimum <ph name="MINIMUM" /> cifre</translation>
-<translation id="5342344590724511265">Feedback despre fila blocată.</translation>
 <translation id="5342451237681332106">Folosește <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Parant. desch.</translation>
 <translation id="5350965906220856151">Hopa!</translation>
@@ -3216,6 +3209,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5764483294734785780">Sal&amp;vează conținutul audio ca...</translation>
 <translation id="57646104491463491">Data modificării</translation>
 <translation id="5764797882307050727">Eliberează spațiu pe dispozitiv.</translation>
+<translation id="5765425701854290211">Ne pare rău, unele fișiere erau deteriorate și actualizarea nu a reușit. Fișierele sincronizate sunt în siguranță.</translation>
 <translation id="5765491088802881382">Nu există rețele disponibile</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5771585441665576801">Transliterație (geia → γεια)</translation>
@@ -4430,6 +4424,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7615910377284548269">Gestionează blocarea pluginurilor scoase din mediul de testare...</translation>
 <translation id="7617366389578322136">Se conectează la „<ph name="DEVICE_NAME" />”</translation>
 <translation id="761779991806306006">Nicio parolă salvată.</translation>
+<translation id="7622114377921274169">Se încarcă.</translation>
 <translation id="7624154074265342755">Rețele wireless</translation>
 <translation id="7624337243375417909">tasta Caps Lock este dezactivată</translation>
 <translation id="7627790789328695202">Hopa, <ph name="FILE_NAME" /> există deja. Redenumiți și încercați din nou.</translation>
@@ -4869,6 +4864,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8270242299912238708">Documente PDF</translation>
 <translation id="827097179112817503">Afișează butonul Pagină de pornire</translation>
 <translation id="8272443605911821513">Gestionați extensiile dând clic pe Extensii în meniul „Mai multe instrumente”.</translation>
+<translation id="8274924778568117936">Nu închide și nu opri dispozitivul <ph name="DEVICE_TYPE" /> înainte să se finalizeze actualizarea. Dispozitivul <ph name="DEVICE_TYPE" /> va reporni după ce se finalizează instalarea.</translation>
 <translation id="8275038454117074363">Importă</translation>
 <translation id="8276560076771292512">Goliți memoria cache și reîncărcați forțat</translation>
 <translation id="8279388322240498158">Tastatură kurdă sorani bazată pe engleză</translation>
@@ -5309,7 +5305,6 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="8963572037665351978">Ieși din prezentare</translation>
 <translation id="8965037249707889821">Introduceți parola veche</translation>
 <translation id="8965697826696209160">Nu există spațiu suficient.</translation>
-<translation id="8968527460726243404">Instrument de scriere a imaginilor de sistem pentru sistemul de operare Chrome</translation>
 <translation id="8970203673128054105">Vezi lista cu moduri de proiecție</translation>
 <translation id="89720367119469899">Tasta Esc</translation>
 <translation id="8972513834460200407">Contactați administratorul de rețea, pentru a vă asigura că firewallul nu blochează descărcările de pe serverele Google.</translation>
@@ -5484,6 +5479,7 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="93766956588638423">Repară extensia</translation>
 <translation id="938470336146445890">Instalează un certificat de utilizator.</translation>
 <translation id="938582441709398163">Suprapunere a tastaturii</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Introdu expresia de acces</translation>
 <translation id="939736085109172342">Dosar nou</translation>
 <translation id="940425055435005472">Dimensiunea fontului:</translation>

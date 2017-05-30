@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">Muuda kausta nime</translation>
 <translation id="2226449515541314767">Saidil pole lubatud MIDI-seadmeid täielikult juhtida.</translation>
 <translation id="2226720438730111184">Andke meile teada, mis toimub</translation>
-<translation id="222903405933288376">Google kasutab teile kohaliku sisu pakkumiseks teie asukohta. Seda saate muuta menüüs <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Jäänud on rohkem kui 1 tund</translation>
 <translation id="222931766245975952">Fail on kärbitud</translation>
 <translation id="222949136907494149"><ph name="URL" /> soovib kasutada teie seadme asukohta.</translation>
@@ -1088,7 +1087,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2575247648642144396">Ikoon on nähtav, kui laiendus saab praegusel lehel toimida. Laienduse kasutamiseks klõpsake ikoonil või vajutage klahvikombinatsiooni <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Selle nimega CRX-fail on juba olemas.</translation>
 <translation id="2579575372772932244">Profiili uuesti loomine, oodake …</translation>
-<translation id="2580168606262715640">Telefoni ei õnnestu leida. Veenduge, et see oleks käeulatuses.</translation>
 <translation id="2580889980133367162">Luba alati hostil <ph name="HOST" /> laadida alla mitu faili</translation>
 <translation id="2580924999637585241">Kokku: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Pikk</translation>
@@ -2173,7 +2171,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4130207949184424187">See laiendus muutis seda, milline leht kuvatakse omnikastikeses otsingu tegemisel.</translation>
 <translation id="413121957363593859">Komponendid</translation>
 <translation id="4131410914670010031">Mustvalge</translation>
-<translation id="4135054690906486073">Võrku jagatakse teiste kasutajatega</translation>
 <translation id="4135450933899346655">Teie sertifikaadid</translation>
 <translation id="4138267921960073861">Kuva sisselogimisekraanil kasutajanimed ja fotod</translation>
 <translation id="4140559601186535628">Tõukesõnumid</translation>
@@ -2576,9 +2573,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="4813345808229079766">Ühendus</translation>
 <translation id="4813512666221746211">Võrgu viga</translation>
 <translation id="4816492930507672669">Sobita lehele</translation>
-<translation id="4816617200045929931">Öelge meile, mis toimus täpselt enne seda, kui nägite profiili veateadet:
-
-****ÄRGE MUUTKE MIDAGI SELLE REA ALL****</translation>
 <translation id="4820334425169212497">Ei, ma ei näe seda</translation>
 <translation id="4821086771593057290">Teie parool on muutunud. Proovige uuesti uue parooliga.</translation>
 <translation id="4821935166599369261">&amp;Profileerimine lubatud</translation>
@@ -2944,7 +2938,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5340217413897845242">Riiuliüksus 6</translation>
 <translation id="5341390997810576190">Mobiilse andmeside kasutamine</translation>
 <translation id="5342091991439452114">PIN-kood peab olema vähemalt <ph name="MINIMUM" /> numbrit</translation>
-<translation id="5342344590724511265">Tagasiside vahelehe kokkujooksmise kohta.</translation>
 <translation id="5342451237681332106">Kasuta telefoni <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Vasaksulg</translation>
 <translation id="5350965906220856151">Vabandust!</translation>
@@ -3216,6 +3209,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5764483294734785780">Sa&amp;lvesta heli nimega ...</translation>
 <translation id="57646104491463491">Muutmise kuupäev</translation>
 <translation id="5764797882307050727">Vabastage seadmes ruumi.</translation>
+<translation id="5765425701854290211">Kahjuks on mõned failid kahjustatud ja värskendus ei õnnestunud. Teie sünkroonitud failid on ohutus kohas.</translation>
 <translation id="5765491088802881382">Ühtki võrku pole saadaval</translation>
 <translation id="5765780083710877561">Kirjeldus:</translation>
 <translation id="5771585441665576801">Transliteratsioon (geia → γεια)</translation>
@@ -4431,6 +4425,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7615910377284548269">Liivakastist eemaldatud pistikprogrammide blokeerimise haldamine ...</translation>
 <translation id="7617366389578322136">Seadmega „<ph name="DEVICE_NAME" />” ühenduse loomine</translation>
 <translation id="761779991806306006">Ühtegi parooli pole salvestatud.</translation>
+<translation id="7622114377921274169">Laadimine.</translation>
 <translation id="7624154074265342755">Raadiovõrgud</translation>
 <translation id="7624337243375417909">suurtähelukk on välja lülitatud</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> on juba olemas. Nimetage see ümber ja proovige uuesti.</translation>
@@ -4870,6 +4865,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8270242299912238708">PDF-dokumendid</translation>
 <translation id="827097179112817503">Kuva nupp Avaleht</translation>
 <translation id="8272443605911821513">Hallake oma laiendusi, klõpsates menüüs „Rohkem tööriistu” valikul Laiendused.</translation>
+<translation id="8274924778568117936">Ärge lülitage välja ega sulgege oma seadet <ph name="DEVICE_TYPE" />, kuni värskendus lõpule viiakse. Seade <ph name="DEVICE_TYPE" /> taaskäivitatakse pärast installimise lõpetamist.</translation>
 <translation id="8275038454117074363">Impordi</translation>
 <translation id="8276560076771292512">Tühjenda vahemälu ja tee põhjalik uuestilaadimine</translation>
 <translation id="8279388322240498158">Sorani kurdi inglise keele põhine klaviatuur</translation>
@@ -5311,7 +5307,6 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="8963572037665351978">Välju esitlusest</translation>
 <translation id="8965037249707889821">Sisestage vana parool</translation>
 <translation id="8965697826696209160">Ruumi ei ole piisavalt.</translation>
-<translation id="8968527460726243404">ChromeOS-i süsteemi pildikirjutaja</translation>
 <translation id="8970203673128054105">Kuva ülekandmise režiimi loend</translation>
 <translation id="89720367119469899">Klahv Escape</translation>
 <translation id="8972513834460200407">Paluge oma võrguadministraatoril tagada, et tulemüür ei blokeeriks allalaaditavaid faile Google'i serveritest.</translation>
@@ -5487,6 +5482,7 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="93766956588638423">Laiendi parandamine</translation>
 <translation id="938470336146445890">Installige kasutaja sertifikaat.</translation>
 <translation id="938582441709398163">Klaviatuuri ülekate</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Sisesta parool</translation>
 <translation id="939736085109172342">Uus kaust</translation>
 <translation id="940425055435005472">Fondi suurus:</translation>

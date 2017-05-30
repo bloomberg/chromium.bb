@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">編輯資料夾名稱</translation>
 <translation id="2226449515541314767">這個網站已遭封鎖，無法完整控制 MIDI 裝置。</translation>
 <translation id="2226720438730111184">將發生的狀況告訴我們</translation>
-<translation id="222903405933288376">Google 會使用你的位置資訊，為你提供當地的相關內容。你可以在<ph name="SETTINGS_LINK" />中變更這項設定。</translation>
 <translation id="2229161054156947610">剩下 1 個多小時</translation>
 <translation id="222931766245975952">檔案已遭截斷</translation>
 <translation id="222949136907494149"><ph name="URL" /> 要求使用電腦的位置資訊。</translation>
@@ -1087,7 +1086,6 @@
 <translation id="2575247648642144396">畫面上顯示這個圖示時，表示擴充功能可在目前網頁上運作。如要啟用這項擴充功能，請按一下圖示或按下 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="2576842806987913196">已有一個 CRX 檔案使用這個名稱。</translation>
 <translation id="2579575372772932244">正在重新建立設定檔，請稍候...</translation>
-<translation id="2580168606262715640">找不到您的手機。請確認手機是否在一個手臂的距離範圍內。</translation>
 <translation id="2580889980133367162">永遠允許 <ph name="HOST" /> 下載多個檔案</translation>
 <translation id="2580924999637585241">總計：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">長</translation>
@@ -2171,7 +2169,6 @@
 <translation id="4130207949184424187">這個擴充功能已變更您使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="413121957363593859">元件</translation>
 <translation id="4131410914670010031">黑白</translation>
-<translation id="4135054690906486073">有其他使用者共用這個網路</translation>
 <translation id="4135450933899346655">你的憑證</translation>
 <translation id="4138267921960073861">在登入畫面中顯示使用者名稱和相片</translation>
 <translation id="4140559601186535628">推送訊息</translation>
@@ -2573,9 +2570,6 @@
 <translation id="4813345808229079766">連線</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
-<translation id="4816617200045929931">請說明你在收到設定檔錯誤訊息前執行的確切動作：
-
-****請勿變更本行以下內容****</translation>
 <translation id="4820334425169212497">否，我沒有看到</translation>
 <translation id="4821086771593057290">你的密碼已變更，請使用你的新密碼再試一次。</translation>
 <translation id="4821935166599369261">分析已啟用(&amp;P)</translation>
@@ -2939,7 +2933,6 @@
 <translation id="5340217413897845242">檔案櫃項目 6</translation>
 <translation id="5341390997810576190">使用行動數據</translation>
 <translation id="5342091991439452114">PIN 至少需有 <ph name="MINIMUM" /> 碼</translation>
-<translation id="5342344590724511265">分頁當機意見回饋。</translation>
 <translation id="5342451237681332106">使用 <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">左括弧</translation>
 <translation id="5350965906220856151">糟糕！</translation>
@@ -3211,6 +3204,7 @@
 <translation id="5764483294734785780">將音訊另存為(&amp;V)...</translation>
 <translation id="57646104491463491">已修改日期</translation>
 <translation id="5764797882307050727">請在裝置上釋出一些空間。</translation>
+<translation id="5765425701854290211">很抱歉，部分檔案已損毀，因此無法更新。已同步的檔案則未受影響。</translation>
 <translation id="5765491088802881382">沒有可用的網路</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5771585441665576801">音譯 (geia → γεια)</translation>
@@ -4423,6 +4417,7 @@
 <translation id="7615910377284548269">管理無沙箱防護的外掛程式封鎖設定...</translation>
 <translation id="7617366389578322136">正在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="761779991806306006">沒有儲存任何密碼。</translation>
+<translation id="7622114377921274169">充電中。</translation>
 <translation id="7624154074265342755">無線網路</translation>
 <translation id="7624337243375417909">大寫鎖定模式已關閉</translation>
 <translation id="7627790789328695202">糟糕！已存在名為 <ph name="FILE_NAME" /> 的檔案。請重新命名檔案並再試一次。</translation>
@@ -4862,6 +4857,7 @@
 <translation id="8270242299912238708">PDF 文件</translation>
 <translation id="827097179112817503">顯示 [首頁] 按鈕</translation>
 <translation id="8272443605911821513">如要管理擴充功能，只需按一下 [其他工具] 選單裡的 [擴充功能] 即可。</translation>
+<translation id="8274924778568117936">完成更新前，請勿將 <ph name="DEVICE_TYPE" /> 關機。<ph name="DEVICE_TYPE" /> 會在安裝完成後重新啟動。</translation>
 <translation id="8275038454117074363">匯入</translation>
 <translation id="8276560076771292512">清除快取並強制重新載入</translation>
 <translation id="8279388322240498158">索拉尼庫爾德式英文鍵盤</translation>
@@ -5302,7 +5298,6 @@
 <translation id="8963572037665351978">結束展示模式</translation>
 <translation id="8965037249707889821">輸入先前的密碼</translation>
 <translation id="8965697826696209160">空間不足。</translation>
-<translation id="8968527460726243404">Chrome 作業系統映像檔寫入工具</translation>
 <translation id="8970203673128054105">查看投放模式清單</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">請與網路管理員聯絡，確認防火牆並未封鎖從 Google 伺服器下載的內容。</translation>
@@ -5477,6 +5472,7 @@
 <translation id="93766956588638423">修復擴充功能</translation>
 <translation id="938470336146445890">請安裝使用者憑證。</translation>
 <translation id="938582441709398163">鍵盤自訂快速鍵</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">請輸入通關密語</translation>
 <translation id="939736085109172342">新增資料夾</translation>
 <translation id="940425055435005472">字型大小：</translation>

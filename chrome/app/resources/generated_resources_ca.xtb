@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
 <translation id="2226449515541314767">S'ha impedit que aquest lloc tingui control total dels dispositius MIDI.</translation>
 <translation id="2226720438730111184">Indica'ns el problema</translation>
-<translation id="222903405933288376">Google utilitza la teva ubicació per oferir-te contingut local. Per canviar-ho, vés a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Queda més d'una hora</translation>
 <translation id="222931766245975952">Fitxer truncat</translation>
 <translation id="222949136907494149"><ph name="URL" /> vol fer servir la ubicació de l'ordinador.</translation>
@@ -1087,7 +1086,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2575247648642144396">Aquesta icona serà visible quan les extensions puguin actuar a la pàgina actual. Per fer servir aquesta extensió, feu clic a la icona o premeu <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Ja hi ha un fitxer CRX amb aquest nom.</translation>
 <translation id="2579575372772932244">S'està tornant a crear el perfil. Espereu…</translation>
-<translation id="2580168606262715640">No trobem el telèfon. Comproveu que el tingueu a mà</translation>
 <translation id="2580889980133367162">Permet sempre que <ph name="HOST" /> baixi diversos fitxers</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Llarg</translation>
@@ -2169,7 +2167,6 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="4130207949184424187">Aquesta extensió ha canviat la pàgina que es mostra quan feu una cerca des de l'omnibox.</translation>
 <translation id="413121957363593859">Components</translation>
 <translation id="4131410914670010031">Blanc i negre</translation>
-<translation id="4135054690906486073">Aquesta xarxa està compartida amb altres usuaris</translation>
 <translation id="4135450933899346655">Els meus certificats</translation>
 <translation id="4138267921960073861">Mostra els noms d'usuari i les fotos a la pantalla d'inici de sessió</translation>
 <translation id="4140559601186535628">Missatges de tramesa automàtica</translation>
@@ -2571,9 +2568,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4813345808229079766">Connexió</translation>
 <translation id="4813512666221746211">Error de xarxa</translation>
 <translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
-<translation id="4816617200045929931">Explica'ns què ha passat exactament abans de rebre el missatge d'error del perfil:
-
-****NO FACIS CAP CANVI PER SOTA D'AQUESTA LÍNIA****</translation>
 <translation id="4820334425169212497">No, no el veig</translation>
 <translation id="4821086771593057290">La contrasenya ha canviat. Torneu-ho a provar amb la contrasenya nova.</translation>
 <translation id="4821935166599369261">Creació de &amp;perfils activada</translation>
@@ -2938,7 +2932,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5340217413897845242">Objecte de prestatge 6</translation>
 <translation id="5341390997810576190">Utilitzarà dades mòbils</translation>
 <translation id="5342091991439452114">El PIN ha de tenir com a mínim <ph name="MINIMUM" /> dígits</translation>
-<translation id="5342344590724511265">Suggeriments sobre el bloqueig de la pestanya</translation>
 <translation id="5342451237681332106">Utilitza <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Parènt. esquerre</translation>
 <translation id="5350965906220856151">Oh, oh...</translation>
@@ -3211,6 +3204,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="5764483294734785780">De&amp;sa l'àudio com a...</translation>
 <translation id="57646104491463491">Data de modificació</translation>
 <translation id="5764797882307050727">Allibera espai al dispositiu.</translation>
+<translation id="5765425701854290211">Alguns fitxers estan malmesos i no s'ha pogut fer l'actualització. Els fitxers sincronitzats estan segurs.</translation>
 <translation id="5765491088802881382">No hi ha cap xarxa disponible</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5771585441665576801">Transliteració (geia → γεια)</translation>
@@ -4418,6 +4412,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7615910377284548269">Gestiona el bloqueig dels connectors de fora de la zona de proves...</translation>
 <translation id="7617366389578322136">S'està connectant al dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">No s'ha desat cap contrasenya.</translation>
+<translation id="7622114377921274169">S'està carregant.</translation>
 <translation id="7624154074265342755">Xarxes sense fils</translation>
 <translation id="7624337243375417909">bloqueig de majúscules desactivat</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> ja existeix. Canvieu-ne el nom i torneu-ho a provar.</translation>
@@ -4857,6 +4852,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8270242299912238708">Documents PDF</translation>
 <translation id="827097179112817503">Mostra el botó Pàgina d'inici</translation>
 <translation id="8272443605911821513">Per gestionar les extensions, feu clic a Extensions al menú Més eines.</translation>
+<translation id="8274924778568117936">No apaguis ni tanquis el dispositiu <ph name="DEVICE_TYPE" /> fins que l'actualització no hagi finalitzat. <ph name="DEVICE_TYPE" /> es reiniciarà un cop finalitzi la instal·lació.</translation>
 <translation id="8275038454117074363">Importa</translation>
 <translation id="8276560076771292512">Buida la memòria cau i torna a carregar de manera forçada</translation>
 <translation id="8279388322240498158">Teclat de kurd sorani basat en l'anglès</translation>
@@ -5297,7 +5293,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8963572037665351978">Surt de la presentació</translation>
 <translation id="8965037249707889821">Introduïu la contrasenya antiga</translation>
 <translation id="8965697826696209160">No hi ha prou espai.</translation>
-<translation id="8968527460726243404">Escriptor d'imatges del sistema ChromeOS</translation>
 <translation id="8970203673128054105">Mostra la llista de modes d'emissió</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulteu amb l'administrador de xarxa per assegurar-vos que el tallafoc no estigui bloquejant les baixades dels servidors de Google.</translation>
@@ -5472,6 +5467,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="93766956588638423">Repara l'extensió</translation>
 <translation id="938470336146445890">Instal·leu un certificat d'usuari.</translation>
 <translation id="938582441709398163">Superposició de teclat</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Introduïu la frase de contrasenya</translation>
 <translation id="939736085109172342">Carpeta nova</translation>
 <translation id="940425055435005472">Mida de la lletra:</translation>

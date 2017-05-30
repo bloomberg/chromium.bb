@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Edytuj nazwę folderu</translation>
 <translation id="2226449515541314767">Pełny dostęp do sterowania urządzeniami MIDI został dla tej witryny zablokowany.</translation>
 <translation id="2226720438730111184">Powiedz nam, co się dzieje</translation>
-<translation id="222903405933288376">Google korzysta z informacji o Twojej lokalizacji, by zapewnić Ci lokalne wyniki. Możesz to zmienić na stronie <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Została ponad 1 godzina</translation>
 <translation id="222931766245975952">Plik obcięty</translation>
 <translation id="222949136907494149"><ph name="URL" /> chce użyć lokalizacji Twojego komputera.</translation>
@@ -1087,7 +1086,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2575247648642144396">Ta ikona będzie widoczna, gdy rozszerzenie będzie mogło działać na bieżącej stronie. Użyj tego rozszerzenia, klikając ikonę lub naciskając <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Plik CRX o tej nazwie już istnieje.</translation>
 <translation id="2579575372772932244">Odtwarzam profil, czekaj...</translation>
-<translation id="2580168606262715640">Nie można znaleźć telefonu. Upewnij się, że jest on w zasięgu ręki.</translation>
 <translation id="2580889980133367162">Zawsze zezwalaj <ph name="HOST" /> na pobieranie wielu plików</translation>
 <translation id="2580924999637585241">Łącznie: <ph name="SHEETS_LABEL" /> – <ph name="NUMBER_OF_SHEETS" /></translation>
 <translation id="258095186877893873">Długie</translation>
@@ -2172,7 +2170,6 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="4130207949184424187">To rozszerzenie ustawiło inną stronę wyświetlaną po wyszukiwaniu w omniboksie.</translation>
 <translation id="413121957363593859">Komponenty</translation>
 <translation id="4131410914670010031">Czarno-biały</translation>
-<translation id="4135054690906486073">Ta sieć jest udostępniana innym użytkownikom</translation>
 <translation id="4135450933899346655">Twoje certyfikaty</translation>
 <translation id="4138267921960073861">Pokaż nazwy użytkowników i zdjęcia na stronie logowania</translation>
 <translation id="4140559601186535628">Wiadomości push</translation>
@@ -2573,9 +2570,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4813345808229079766">Połączenie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4816492930507672669">Dopasuj do strony</translation>
-<translation id="4816617200045929931">Opisz dokładnie, co działo się przed wyświetleniem komunikatu o błędzie profilu:
-
-****NIE ZMIENIAJ NIC PONIŻEJ TEJ LINII****</translation>
 <translation id="4820334425169212497">Nie, nie widzę</translation>
 <translation id="4821086771593057290">Twoje hasło zostało zmienione. Spróbuj ponownie, podając nowe hasło.</translation>
 <translation id="4821935166599369261">&amp;Profilowanie włączone</translation>
@@ -2942,7 +2936,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5340217413897845242">6 element na półce</translation>
 <translation id="5341390997810576190">będzie korzystać z komórkowej transmisji danych</translation>
 <translation id="5342091991439452114">Kod PIN musi się składać co najmniej z <ph name="MINIMUM" /> cyfr</translation>
-<translation id="5342344590724511265">Informacje o awarii karty.</translation>
 <translation id="5342451237681332106">Użyj: <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Lewy nawias</translation>
 <translation id="5350965906220856151">Ups...</translation>
@@ -3214,6 +3207,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5764483294734785780">Za&amp;pisz element audio jako...</translation>
 <translation id="57646104491463491">Data modyfikacji</translation>
 <translation id="5764797882307050727">Zwolnij trochę miejsca na urządzeniu.</translation>
+<translation id="5765425701854290211">Niektóre pliki zostały uszkodzone i aktualizacja nie udała się. Synchronizowane pliki są bezpieczne.</translation>
 <translation id="5765491088802881382">Nie są dostępne żadne sieci</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771585441665576801">Transliteracja (geia → γεια)</translation>
@@ -4422,6 +4416,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7615910377284548269">Zarządzaj blokowaniem wtyczek spoza piaskownicy...</translation>
 <translation id="7617366389578322136">Łączę się z urządzeniem „<ph name="DEVICE_NAME" />”</translation>
 <translation id="761779991806306006">Nie ma zapisanych haseł.</translation>
+<translation id="7622114377921274169">Ładuję.</translation>
 <translation id="7624154074265342755">Sieci bezprzewodowe</translation>
 <translation id="7624337243375417909">caps lock wyłączony</translation>
 <translation id="7627790789328695202">Ups, plik <ph name="FILE_NAME" /> już istnieje. Zmień jego nazwę i spróbuj ponownie.</translation>
@@ -4861,6 +4856,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8270242299912238708">Dokumenty PDF</translation>
 <translation id="827097179112817503">Pokaż przycisk strony startowej</translation>
 <translation id="8272443605911821513">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Więcej narzędzi.</translation>
+<translation id="8274924778568117936">Nie wyłączaj ani nie zamykaj urządzenia <ph name="DEVICE_TYPE" /> do momentu ukończenia aktualizacji. Po zakończeniu instalacji <ph name="DEVICE_TYPE" /> uruchomi się ponownie.</translation>
 <translation id="8275038454117074363">Importuj</translation>
 <translation id="8276560076771292512">Opróżnij pamięć podręczną i wymuś ponowne załadowanie</translation>
 <translation id="8279388322240498158">Klawiatura dla języka sorani oparta na angielskiej</translation>
@@ -5301,7 +5297,6 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="8963572037665351978">Zakończ prezentację</translation>
 <translation id="8965037249707889821">Wpisz stare hasło</translation>
 <translation id="8965697826696209160">Nie ma wystarczającej ilości miejsca.</translation>
-<translation id="8968527460726243404">Program do zapisu obrazu systemu Chrome OS</translation>
 <translation id="8970203673128054105">Pokaż listę trybów przesyłania</translation>
 <translation id="89720367119469899">Ucieczka</translation>
 <translation id="8972513834460200407">Skontaktuj się z administratorem sieci, by dowiedzieć się, czy zapora sieciowa nie blokuje pobrań z serwerów Google.</translation>
@@ -5476,6 +5471,7 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="93766956588638423">Napraw rozszerzenie</translation>
 <translation id="938470336146445890">Zainstaluj certyfikat użytkownika.</translation>
 <translation id="938582441709398163">Nakładka klawiatury</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Wpisz hasło</translation>
 <translation id="939736085109172342">Nowy folder</translation>
 <translation id="940425055435005472">Rozmiar czcionki:</translation>

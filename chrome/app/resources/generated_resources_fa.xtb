@@ -833,7 +833,6 @@
 <translation id="2224551243087462610">ویرایش نام پوشه</translation>
 <translation id="2226449515541314767">‏این سایت از داشتن کنترل کامل دستگاه‌های MIDI ممانعت شده است.</translation>
 <translation id="2226720438730111184">به ما بگویید چه اتفاقی افتاده است</translation>
-<translation id="222903405933288376">‏Google از مکانتان برای ارائه محتوای محلی به شما استفاده می‌کند. می‌توانید این تنظیم را در <ph name="SETTINGS_LINK" /> تغییر دهید.</translation>
 <translation id="2229161054156947610">بیش از ۱ ساعت مانده است</translation>
 <translation id="222931766245975952">فایل ناقص</translation>
 <translation id="222949136907494149"><ph name="URL" /> می‌خواهد از موقعیت مکانی رایانه شما استفاده کند.</translation>
@@ -1085,7 +1084,6 @@
 <translation id="2575247648642144396">وقتی برنامه افزودنی بتواند در صفحه کنونی کار کند این نماد قابل مشاهده خواهد بود. با کلیک کردن روی نماد یا با فشار دادن <ph name="EXTENSION_SHORTCUT" /> از این برنامه افزودنی استفاده کنید.</translation>
 <translation id="2576842806987913196">‏یک فایل CRX در حال حاضر با این نام وجود دارد.</translation>
 <translation id="2579575372772932244">درحال ایجاد مجدد نمایه، لطفاً صبر کنید…</translation>
-<translation id="2580168606262715640">تلفنتان پیدا نمی‌شود. مطمئن شوید در فاصله حدود ۴۰ سانتی‌متری قرار دارد.</translation>
 <translation id="2580889980133367162">همیشه به <ph name="HOST" /> اجازه داده شود چند فایل را بارگیری کند</translation>
 <translation id="2580924999637585241">مجموع: <ph name="SHEETS_LABEL" /><ph name="NUMBER_OF_SHEETS" /></translation>
 <translation id="258095186877893873">طولانی</translation>
@@ -2169,7 +2167,6 @@
 <translation id="4130207949184424187">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام جستجو از Omnibox نشان داده می‌شود.</translation>
 <translation id="413121957363593859">مؤلفه‌ها</translation>
 <translation id="4131410914670010031">سیاه و سفید</translation>
-<translation id="4135054690906486073">این شبکه با دیگر کاربران به اشتراک گذاشته شده است</translation>
 <translation id="4135450933899346655">گواهی‌های شما</translation>
 <translation id="4138267921960073861">نمایش نام‌های کاربری و عکس‌ها در صفحه ورود به سیستم</translation>
 <translation id="4140559601186535628">پیام‌های فشاری</translation>
@@ -2571,9 +2568,6 @@
 <translation id="4813345808229079766">اتصال</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
-<translation id="4816617200045929931">به ما بگویید قبل از دریافت پیام خطای نمایه دقیقاً چه اتفاقی افتاده است:
-
-****زیر این خط تغییری ایجاد نکنید****</translation>
 <translation id="4820334425169212497">نه، آن را نمی‌بینم</translation>
 <translation id="4821086771593057290">گذرواژه شما تغییر کرده است. لطفاً یک بار دیگر با گذرواژه جدید خود را امتحان کنید.</translation>
 <translation id="4821935166599369261">&amp;ایجاد نمایه فعال شد</translation>
@@ -2940,7 +2934,6 @@
 <translation id="5340217413897845242">مورد ۶ قفسه</translation>
 <translation id="5341390997810576190">استفاده از داده شبکه تلفن همراه</translation>
 <translation id="5342091991439452114">پین باید حداقل <ph name="MINIMUM" /> رقم باشد</translation>
-<translation id="5342344590724511265">بازخورد برگه خراب.</translation>
 <translation id="5342451237681332106">استفاده از <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">پرانتز چپ</translation>
 <translation id="5350965906220856151">اوه!</translation>
@@ -3212,6 +3205,7 @@
 <translation id="5764483294734785780">ذ&amp;خیره فایل صوتی به‌عنوان...</translation>
 <translation id="57646104491463491">تاریخ تغییر</translation>
 <translation id="5764797882307050727">لطفاً کمی از فضای دستگاهتان را آزاد کنید.</translation>
+<translation id="5765425701854290211">متأسفیم، بعضی از فایل‌ها آسیب دیده بودند و به‌روزرسانی موفق نبود. فایل‌های همگام‌سازی شده‌تان امن هستند.</translation>
 <translation id="5765491088802881382">شبکه‌ای در دسترس نیست</translation>
 <translation id="5765780083710877561">توضیح:</translation>
 <translation id="5771585441665576801">‏نویسه‌گردانی (geia ← ‏γεια)</translation>
@@ -4429,6 +4423,7 @@
 <translation id="7615910377284548269">مدیریت مسدودکننده افزایه آزمایشی نشده…</translation>
 <translation id="7617366389578322136">اتصال به «<ph name="DEVICE_NAME" />»</translation>
 <translation id="761779991806306006">گذرواژه ذخیره شده‌ای وجود ندارد.</translation>
+<translation id="7622114377921274169">درحال شارژ شدن.</translation>
 <translation id="7624154074265342755">شبکه‌های بی سیم</translation>
 <translation id="7624337243375417909">‏caps lock غیرفعال</translation>
 <translation id="7627790789328695202">اوه، <ph name="FILE_NAME" /> از قبل وجود دارد. نام آن را تغییر دهید و دوباره امتحان کنید.</translation>
@@ -4867,6 +4862,7 @@
 <translation id="8270242299912238708">‏سندهای PDF</translation>
 <translation id="827097179112817503">نمایش دکمه صفحه اصلی</translation>
 <translation id="8272443605911821513">با کلیک کردن روی افزونه‌ها در منوی «ابزارهای بیشتر»، برنامه‌های افزودنی خود را مدیریت کنید.</translation>
+<translation id="8274924778568117936">تا وقتی به‌روزرسانی به پایان نرسیده است، <ph name="DEVICE_TYPE" /> را خاموش نکنید یا نبندید. بعد از کامل شدن نصب، <ph name="DEVICE_TYPE" /> راه‌اندازی مجدد می‌شود.</translation>
 <translation id="8275038454117074363">وارد کردن</translation>
 <translation id="8276560076771292512">خالی کردن حافظه پنهان و تازه‌سازی سخت</translation>
 <translation id="8279388322240498158">صفحه‌کلید کردی سورانی مبتنی بر انگلیسی</translation>
@@ -5307,7 +5303,6 @@
 <translation id="8963572037665351978">خروج از ارائه</translation>
 <translation id="8965037249707889821">گذرواژه قدیمی را وارد کنید</translation>
 <translation id="8965697826696209160">فضای کافی وجود ندارد.</translation>
-<translation id="8968527460726243404">‏ایجادکننده تصویر سیستمی ChromeOS</translation>
 <translation id="8970203673128054105">مشاهده فهرست حالت ارسال محتوا</translation>
 <translation id="89720367119469899">فرار</translation>
 <translation id="8972513834460200407">‏لطفاً با سرپرست شبکه خود بررسی کنید تا مطمئن شوید فایروال از بارگیری از سرورهای Google جلوگیری نمی‌کند.</translation>
@@ -5483,6 +5478,7 @@
 <translation id="93766956588638423">تعمیر افزونه</translation>
 <translation id="938470336146445890">لطفاً یک مجوز کاربر نصب کنید.</translation>
 <translation id="938582441709398163">هم پوشانی صفحه‌کلید</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">عبارت ورود را وارد کنید</translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="940425055435005472">اندازه قلم:</translation>

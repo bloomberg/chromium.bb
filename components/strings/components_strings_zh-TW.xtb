@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表單</translation>
 <translation id="2889159643044928134">不要重新載入</translation>
-<translation id="2900469785430194048">Google Chrome 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2916038427272391327">關閉其他程式</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="3032412215588512954">您要重新載入這個網站嗎？</translation>
 <translation id="3037605927509011580">糟糕！</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{在已同步的裝置上至少有 1 個項目}=1{1 個項目 (在已同步的裝置上還有更多項目)}other{# 個項目 (在已同步的裝置上還有更多項目)}}</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
 <translation id="3063697135517575841">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="3064966200440839136">即將離開無痕模式，改為使用外部應用程式付款，要繼續嗎？</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">憑證資訊</translation>
 <translation id="3690164694835360974">登入行為不安全</translation>
 <translation id="3693415264595406141">密碼：</translation>
-<translation id="3696411085566228381">無</translation>
 <translation id="3704609568417268905"><ph name="TIME" />，<ph name="BOOKMARKED" />，<ph name="TITLE" />，<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="3712624925041724820">授權已用盡</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">驗證簽名無效</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟體設定<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{無}=1{1 個應用程式 ($1)}=2{2 個應用程式 ($1、$2)}other{# 個應用程式 ($1、$2、$3)}}</translation>
 <translation id="4220128509585149162">當機</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />嘗試執行網路診斷<ph name="END_LINK" />。</translation>
 <translation id="4250431568374086873">你與這個網站的連線可能有安全漏洞</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5056549851600133418">為您推薦的文章</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />檢查 Proxy 位址<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{沒有任何 Cookie}=1{1 個網站會使用 Cookie。}other{# 個網站會使用 Cookie。}}</translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
 <translation id="5087580092889165836">新增信用卡</translation>
 <translation id="5089810972385038852">州</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
-<translation id="6389758589412724634">Chromium 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>
 <translation id="6414888972213066896">你已詢問家長是否同意你造訪這個網站</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">到期日：<ph name="EXPIRATION_DATE_ABBR" />，上次使用日期：<ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
 <translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
-<translation id="6593753688552673085">不到 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">加密選項</translation>
 <translation id="662080504995468778">不離開</translation>
 <translation id="6626291197371920147">新增有效的信用卡號碼</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
 <translation id="6727102863431372879">設定</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{無}=1{1 個項目}other{# 個項目}}</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的裝置已進入睡眠模式。</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>
 <translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
 <translation id="7682287625158474539">寄送地址</translation>
+<translation id="7701040980221191251">無</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />繼續前往 <ph name="SITE" /> 網站 (不安全)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">憑證</translation>
 <translation id="7716424297397655342">無法從快取載入這個網站</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">提供意見</translation>
 <translation id="8041940743680923270">使用全域預設值 (要求確認)</translation>
 <translation id="8088680233425245692">無法查看文章。</translation>
-<translation id="8089520772729574115">不到 1 MB</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8131740175452115882">確認</translation>

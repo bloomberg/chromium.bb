@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">이 연결은 <ph name="CIPHER" />을(를) 사용하여 암호화되고 인증되며 <ph name="KX" />을(를) 키 교환 매커니즘으로 사용합니다.</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
 <translation id="2889159643044928134">새로고침 안함</translation>
-<translation id="2900469785430194048">이 웹페이지를 표시하려고 했으나 Chrome 메모리가 부족합니다.</translation>
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2916038427272391327">다른 프로그램 닫기</translation>
 <translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="3032412215588512954">이 사이트를 새로고침하시겠습니까?</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{동기화된 기기에 최소 1개}=1{1개(동기화된 기기에는 그 이상)}other{#개(동기화된 기기에는 그 이상)}}</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
 <translation id="3063697135517575841">현재 Chrome에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3064966200440839136">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">인증서 정보</translation>
 <translation id="3690164694835360974">로그인이 안전하지 않음</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
-<translation id="3696411085566228381">없음</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="3712624925041724820">라이선스 만료됨</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">잘못된 인증 서명입니다.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{없음}=1{앱 1개($1)}=2{앱 2개($1, $2)}other{앱 #개($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">비정상 종료</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="4250431568374086873">이 사이트에 대한 연결은 완벽하게 보안이 되지 않습니다.</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
 <translation id="5056549851600133418">추천 도움말</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />프록시 주소 확인<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{쿠키를 사용하는 사이트 없음}=1{사이트 1개에서 쿠키를 사용합니다. }other{사이트 #개에서 쿠키를 사용합니다. }}</translation>
 <translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
 <translation id="5087580092889165836">카드 추가</translation>
 <translation id="5089810972385038852">주</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{그 외 제안 1건}other{그 외 제안 #건}}</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
-<translation id="6389758589412724634">이 웹페이지를 표시하려고 했으나 Chromium 메모리가 부족합니다.</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" />의 만료일과 CVC를 입력하세요.</translation>
 <translation id="6414888972213066896">이 사이트를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">만료: <ph name="EXPIRATION_DATE_ABBR" />, 마지막 사용일: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
-<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> 미만</translation>
 <translation id="6596325263575161958">암호화 옵션</translation>
 <translation id="662080504995468778">머무르기</translation>
 <translation id="6626291197371920147">유효한 카드 번호 추가</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;검색어 입력&gt;</translation>
 <translation id="6711464428925977395">프록시 서버에 문제가 발생했거나 주소가 잘못되었습니다.</translation>
 <translation id="6727102863431372879">설정</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{없음}=1{항목 1개}other{항목 #개}}</translation>
 <translation id="674375294223700098">알 수 없는 서버 인증서 오류입니다.</translation>
 <translation id="6753269504797312559">정책 값</translation>
 <translation id="6757797048963528358">기기가 절전 모드 상태입니다.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">이 사이트의 공격자가 인터넷 사용 환경에 악영향을 미치는 프로그램을 설치하도록 속임수(예를 들어, 방문하는 사이트의 홈페이지를 변경하거나 추가로 광고를 표시)를 시도할 수 있습니다.</translation>
 <translation id="7674629440242451245">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/dev 페이지에서 개발자 채널에 방문해 보세요.</translation>
 <translation id="7682287625158474539">배송</translation>
+<translation id="7701040980221191251">없음</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" />(안전하지 않음)<ph name="END_LINK" />(으)로 이동</translation>
 <translation id="7714464543167945231">인증서</translation>
 <translation id="7716424297397655342">이 사이트를 캐시에서 로드할 수 없음</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">의견 보내기</translation>
 <translation id="8041940743680923270">전체 기본값 사용(요청)</translation>
 <translation id="8088680233425245692">글을 조회하지 못했습니다.</translation>
-<translation id="8089520772729574115">1MB 미만</translation>
 <translation id="8091372947890762290">활성화 요청이 서버에서 대기 중</translation>
 <translation id="8118489163946903409">결제 수단</translation>
 <translation id="8131740175452115882">확인</translation>

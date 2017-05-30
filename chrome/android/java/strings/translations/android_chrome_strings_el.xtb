@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">Προσθήκη στην αρχική οθόνη</translation>
 <translation id="2146738493024040262">Άνοιγμα Instant Εφαρμογής</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
-<translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Προστατεύει εσάς και τη συσκευή σας από επικίνδυνους ιστότοπους</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, εφαρμογή ιστού. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω σφαλμάτων του συστήματος αρχείων.</translation>
 <translation id="3398320232533725830">Άνοιγμα του διαχειριστή σελιδοδεικτών</translation>
 <translation id="3414952576877147120">Μέγεθος:</translation>
-<translation id="3435896845095436175">Ενεργοποίηση</translation>
 <translation id="3443221991560634068">Επαναφόρτωση της τρέχουσας σελίδας</translation>
 <translation id="3452612588551937789">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης, και άλλες ρυθμίσεις σε όλες τις συσκευές σας</translation>
 <translation id="3487093336331957349">Προτάσεις αναζήτησης και ιστοτόπων</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Επιλογή φακέλου</translation>
-<translation id="4535858793016067060">Ενεργοποιήστε τις "Άγνωστες πηγές" στις ρυθμίσεις ασφαλείας Android για να δοκιμάσετε το πείραμα "Βελτιωμένη προσθήκη στην Αρχική οθόνη". Βεβαιωθείτε ότι έχετε απενεργοποιήσει αυτήν τη ρύθμιση όταν ολοκληρώσετε τη δοκιμή της.</translation>
 <translation id="4558311620361989323">Συντομεύσεις ιστοσελίδας</translation>
 <translation id="4572422548854449519">Συνδεθείτε στον διαχειριζόμενο λογαριασμό</translation>
 <translation id="4581964774250883625">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
 <translation id="4988526792673242964">Σελίδες</translation>
 <translation id="4996978546172906250">Μοιραστείτε μέσω</translation>
-<translation id="5000922062037820727">Αποκλείεται (συνιστάται)</translation>
 <translation id="5004339818306944878">Χρησιμοποιήστε έως 60% λιγότερα δεδομένα και αυξήστε την ταχύτητα του ιστού. Οι διακομιστές της Google θα βελτιστοποιήσουν τις σελίδες που επισκέπτεστε.</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
 <translation id="5011311129201317034">Ο ιστότοπος <ph name="SITE" /> επιθυμεί σύνδεση</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">Να επιτρέπεται στους ιστότοπους να εκτελούν JavaScript (συνιστάται)</translation>
 <translation id="5345040418939504969">Ο σελιδοδείκτης <ph name="BOOKMARK_TITLE" /> διαγράφηκε</translation>
 <translation id="5345083863238459644">Η πρόσβαση τοποθεσίας είναι επίσης <ph name="BEGIN_LINK" />απενεργοποιημένη για αυτήν τη συσκευή<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Πείραμα "Βελτιωμένη προσθήκη στην Αρχική οθόνη"</translation>
 <translation id="5372829067651257087">Έγινε αντιγραφή του URL.</translation>
 <translation id="5384883051496921101">Αυτός ο ιστότοπος πρόκειται να κοινοποιήσει πληροφορίες με μια εφαρμογή εκτός της κατάστασης ανώνυμης περιήγησης.</translation>
 <translation id="5400569084694353794">Χρησιμοποιώντας αυτήν την εφαρμογή, αποδέχεστε τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση Απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">Άνοιγμα μενού</translation>
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
-<translation id="7949961459945740081">Λήψη τελευταίων λειτουργιών</translation>
 <translation id="7963646190083259054">Προμηθευτής:</translation>
 <translation id="7987073022710626672">Όροι Παροχής Υπηρεσιών Chrome</translation>
 <translation id="7998918019931843664">Εκ νέου άνοιγμα κλειστής καρτέλας</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">Επαναφορά στοιχείων σελίδας σε κανονικό μέγεθος</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
-<translation id="8033827949643255796">επιλεγμένο</translation>
 <translation id="8035133914807600019">Νέος φάκελος…</translation>
 <translation id="8037750541064988519">Απομένουν <ph name="DAYS" /> ημέρες</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB διαθέσιμα</translation>

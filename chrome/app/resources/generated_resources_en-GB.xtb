@@ -837,7 +837,6 @@
 <translation id="2224551243087462610">Edit folder name</translation>
 <translation id="2226449515541314767">This site has been blocked from having full control of MIDI devices.</translation>
 <translation id="2226720438730111184">Tell us what's happening</translation>
-<translation id="222903405933288376">Google uses your location to give you local content. You can change this in <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">More than 1 hour left</translation>
 <translation id="222931766245975952">File truncated</translation>
 <translation id="222949136907494149"><ph name="URL" /> wants to use your computer's location.</translation>
@@ -1089,7 +1088,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2575247648642144396">This icon will be visible when the extension can act on the current page. Use this extension by clicking on the icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">There is already a CRX file present with this name.</translation>
 <translation id="2579575372772932244">Re-creating profile, please wait...</translation>
-<translation id="2580168606262715640">Can’t find your phone. Make sure that it’s within arm’s reach.</translation>
 <translation id="2580889980133367162">Always allow <ph name="HOST" /> to download multiple files</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Long</translation>
@@ -2173,7 +2171,6 @@ All users must sign out to continue.</translation>
 <translation id="4130207949184424187">This extension has changed the page that is shown when you search from the Omnibox.</translation>
 <translation id="413121957363593859">Components</translation>
 <translation id="4131410914670010031">Black and white</translation>
-<translation id="4135054690906486073">This network is shared with other users</translation>
 <translation id="4135450933899346655">Your Certificates</translation>
 <translation id="4138267921960073861">Show usernames and photos on the sign-in screen</translation>
 <translation id="4140559601186535628">Push Messages</translation>
@@ -2577,9 +2574,6 @@ Press any key to continue exploring.</translation>
 <translation id="4813345808229079766">Connection</translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
-<translation id="4816617200045929931">Tell us what happened exactly before you got the profile error message:
-
-****DO NOT CHANGE BELOW THIS LINE****</translation>
 <translation id="4820334425169212497">No, I don't see it</translation>
 <translation id="4821086771593057290">Your password has changed. Please try again with your new password.</translation>
 <translation id="4821935166599369261">&amp;Profiling Enabled</translation>
@@ -2945,7 +2939,6 @@ Press any key to continue exploring.</translation>
 <translation id="5340217413897845242">Shelf item 6</translation>
 <translation id="5341390997810576190">Use mobile data</translation>
 <translation id="5342091991439452114">PIN must be at least <ph name="MINIMUM" /> digits</translation>
-<translation id="5342344590724511265">Tab crashed feedback.</translation>
 <translation id="5342451237681332106">Use <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Left paren</translation>
 <translation id="5350965906220856151">Uh-oh!</translation>
@@ -3217,6 +3210,7 @@ Press any key to continue exploring.</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
 <translation id="57646104491463491">Date Modified</translation>
 <translation id="5764797882307050727">Please free up some space on your device.</translation>
+<translation id="5765425701854290211">Sorry, some files were damaged and the update wasn’t successful. Your synced files are safe.</translation>
 <translation id="5765491088802881382">No networks are available</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5771585441665576801">Transliteration (geia → γεια)</translation>
@@ -4433,6 +4427,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7615910377284548269">Manage unsandboxed plug-in blocking...</translation>
 <translation id="7617366389578322136">Connecting to '<ph name="DEVICE_NAME" />'</translation>
 <translation id="761779991806306006">No passwords saved.</translation>
+<translation id="7622114377921274169">Charging.</translation>
 <translation id="7624154074265342755">Wireless networks</translation>
 <translation id="7624337243375417909">caps lock off</translation>
 <translation id="7627790789328695202">Whoops, <ph name="FILE_NAME" /> already exists. Rename it and try again.</translation>
@@ -4873,6 +4868,7 @@ Calculating remaining time</translation>
 <translation id="8270242299912238708">PDF documents</translation>
 <translation id="827097179112817503">Show Home button</translation>
 <translation id="8272443605911821513">Manage your extensions by clicking Extensions in the "More tools" menu.</translation>
+<translation id="8274924778568117936">Don’t turn off or close your <ph name="DEVICE_TYPE" /> until the update finishes. Your <ph name="DEVICE_TYPE" /> will restart after installation completes.</translation>
 <translation id="8275038454117074363">Import</translation>
 <translation id="8276560076771292512">Empty Cache and Hard Reload</translation>
 <translation id="8279388322240498158">Sorani Kurdish English-based keyboard</translation>
@@ -5314,7 +5310,6 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="8963572037665351978">Exit Presentation</translation>
 <translation id="8965037249707889821">Enter old password</translation>
 <translation id="8965697826696209160">There is not enough space.</translation>
-<translation id="8968527460726243404">ChromeOS System Image Writer</translation>
 <translation id="8970203673128054105">View cast mode list</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Please check with your network administrator to make sure that the firewall is not blocking downloads from Google servers.</translation>
@@ -5490,6 +5485,7 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="93766956588638423">Repair extension</translation>
 <translation id="938470336146445890">Please install a user certificate.</translation>
 <translation id="938582441709398163">Keyboard Overlay</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Enter passphrase</translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="940425055435005472">Font size:</translation>

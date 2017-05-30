@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">اتصال با استفاده از <ph name="CIPHER" /> رمزگذاری و راستی‌آزمایی شده است و از <ph name="KX" /> به عنوان مکانیسم تبادل کلید استفاده می‌کند.</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2889159643044928134">تازه‌سازی نشود</translation>
-<translation id="2900469785430194048">‏Google Chrome هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
 <translation id="3032412215588512954">می‌خواهید این سایت را تازه‌سازی کنید؟</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{حداقل ۱ مورد در دستگاه‌های همگام‌سازی‌شده}=1{۱ مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}one{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}other{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}}</translation>
 <translation id="3041612393474885105">اطلاعات گواهی</translation>
 <translation id="3063697135517575841">‏Chrome درحال حاضر نمی‌تواند کارت شما را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="3064966200440839136">درحال خروج از حالت ناشناس، برای پرداخت ازطریق یک برنامه خارجی. ادامه می‌دهید؟</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">اطلاعات گواهی</translation>
 <translation id="3690164694835360974">ورود به سیستم امن نیست</translation>
 <translation id="3693415264595406141">گذرواژه:</translation>
-<translation id="3696411085566228381">هیچ‌کدام</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> ‏<ph name="BOOKMARKED" /> ‏<ph name="TITLE" /> ‏<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">در حال بارکردن…</translation>
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>
@@ -369,7 +366,7 @@
 <translation id="4072486802667267160">هنگام پردازش سفارش شما خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
-<translation id="4098354747657067197">سایت پیش‌رو فریب‌کار است</translation>
+<translation id="4098354747657067197">احتیاط، سایت گول‌زننده</translation>
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />بررسی پیکربندی آنتی‌ویروس و دیوار آتش<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{هیچ‌}=1{۱ برنامه ($1)}=2{۲ برنامه ($1،‏ $2)}one{# برنامه ($1،‏ $2،‏ $3)}other{# برنامه ($1،‏ $2،‏ $3)}}</translation>
 <translation id="4220128509585149162">خرابی ها</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />عیب‌یابی شبکه را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">اتصال شما به این سایت کاملاً امن نیست</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">گذرواژه نادرست</translation>
 <translation id="5056549851600133418">مقالاتی برای شما</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />بررسی آدرس پروکسی<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{بدون کوکی}=1{۱ سایت از کوکی استفاده می‌کند. }one{# سایت از کوکی استفاده می‌کنند. }other{# سایت از کوکی استفاده می‌کنند. }}</translation>
 <translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5087580092889165836">افزودن کارت</translation>
 <translation id="5089810972385038852">ایالت</translation>
@@ -594,14 +589,13 @@
 <translation id="6319915415804115995">آخرین استفاده، بیش از یک سال قبل</translation>
 <translation id="6321917430147971392">‏تنظیمات DNS خودتان را بررسی کنید</translation>
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
-<translation id="6328786501058569169">این سایت گمراه‌کننده است</translation>
+<translation id="6328786501058569169">این سایت گول‌زننده است</translation>
 <translation id="6337534724793800597">فیلتر کردن خط‌مشی‌ها براساس نام</translation>
 <translation id="6342069812937806050">فقط اکنون</translation>
 <translation id="6355080345576803305">لغو جلسه عمومی</translation>
 <translation id="6358450015545214790">معنی این‌ها چیست؟</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
 <translation id="6387478394221739770">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال بتای ما را در chrome.com/beta امتحان کنید.</translation>
-<translation id="6389758589412724634">‏Chromium هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6410264514553301377">‏CVC‏ و تاریخ انقضای <ph name="CREDIT_CARD" /> را وارد کنید</translation>
 <translation id="6414888972213066896">از والدینتان پرسیدید آیا اجازه بازدید از این سایت را دارید</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">تاریخ انقضا: <ph name="EXPIRATION_DATE_ABBR" />، آخرین استفاده: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">مدیرتان هنوز این سایت را تأیید نکرده است</translation>
 <translation id="6569060085658103619">درحال مشاهده یک صفحه افزونه هستید</translation>
-<translation id="6593753688552673085">کمتر از <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
 <translation id="662080504995468778">ماندن</translation>
 <translation id="6626291197371920147">افزودن شماره کارت معتبر</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;عبارت جستجو را تایپ کنید&gt;</translation>
 <translation id="6711464428925977395">مشکلی در سرور پروکسی وجود دارد یا این آدرس درست نیست.</translation>
 <translation id="6727102863431372879">تنظیم</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{هیچ‌}=1{۱ مورد}one{# مورد}other{# مورد}}</translation>
 <translation id="674375294223700098">خطای ناشناس گواهی سرور.</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6757797048963528358">دستگاهتان به خواب رفته است.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">مهاجمان در این سایت ممکن است تلاش کنند شما را با نصب برنامه‌هایی که به تجربه مرور شما آسیب می‌رساند، فریب دهند (مثلاً با تغییر دادن صفحه اصلی شما یا با نشان دادن آگهی‌های بیش از حد در سایت‌هایی که بازدید می‌کنید).</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
 <translation id="7682287625158474539">ارسال</translation>
+<translation id="7701040980221191251">هیچ کدام</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">گواهی</translation>
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">ارسال بازخورد</translation>
 <translation id="8041940743680923270">استفاده از پیش‌فرض جهانی (سؤال شود)</translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
-<translation id="8089520772729574115">کمتر از ۱ مگابایت</translation>
 <translation id="8091372947890762290">فعال‌سازی در سرور در حالت تعلیق است</translation>
 <translation id="8118489163946903409">روش پرداخت</translation>
 <translation id="8131740175452115882">تأیید</translation>

@@ -834,7 +834,6 @@
 <translation id="2224551243087462610">Измена имена директоријума</translation>
 <translation id="2226449515541314767">Спречено је да овај сајт у потпуности контролише MIDI уређаје.</translation>
 <translation id="2226720438730111184">Реците нам шта се дешава</translation>
-<translation id="222903405933288376">Google користи локацију да би вам пружио локални садржај. Ово можете да промените на страници <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Остало је више од сат времена</translation>
 <translation id="222931766245975952">Датотека је скраћена</translation>
 <translation id="222949136907494149"><ph name="URL" /> жели да користи локацију рачунара.</translation>
@@ -1086,7 +1085,6 @@
 <translation id="2575247648642144396">Ова икона ће бити видљива када додатак буде могао да функционише на тренутној страници. Користите овај додатак кликом на икону или притиском на <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Већ постоји CRX датотека са овим називом.</translation>
 <translation id="2579575372772932244">Поново се прави профил. Сачекајте...</translation>
-<translation id="2580168606262715640">Нисмо успели да пронађемо телефон. Проверите да ли је у околини.</translation>
 <translation id="2580889980133367162">Увек дозволи хосту <ph name="HOST" /> да преузима више датотека</translation>
 <translation id="2580924999637585241">Укупно: <ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Дуго</translation>
@@ -2170,7 +2168,6 @@
 <translation id="4130207949184424187">Овај додатак је променио страницу која се приказује када претражујете из омнибокса.</translation>
 <translation id="413121957363593859">Компоненте</translation>
 <translation id="4131410914670010031">Црно-бело</translation>
-<translation id="4135054690906486073">Ова мрежа се дели са другим корисницима</translation>
 <translation id="4135450933899346655">Ваши сертификати</translation>
 <translation id="4138267921960073861">Прикажи корисничка имена и фотографије на екрану за пријављивање</translation>
 <translation id="4140559601186535628">Искачуће поруке</translation>
@@ -2574,9 +2571,6 @@
 <translation id="4813345808229079766">Веза</translation>
 <translation id="4813512666221746211">Грешка на мрежи</translation>
 <translation id="4816492930507672669">Уклопи у страницу</translation>
-<translation id="4816617200045929931">Реците нам шта се тачно догодило пре него што сте добили поруку о грешци на профилу:
-
-****НЕ МЕЊАЈТЕ СТАВКЕ ИСПОД ОВЕ ЛИНИЈЕ****</translation>
 <translation id="4820334425169212497">Не, не видим га</translation>
 <translation id="4821086771593057290">Лозинка је промењена. Пробајте поново са новом лозинком.</translation>
 <translation id="4821935166599369261">&amp;Профилисање је омогућено</translation>
@@ -2942,7 +2936,6 @@
 <translation id="5340217413897845242">6. ставка на полици</translation>
 <translation id="5341390997810576190">користити мобилне податке</translation>
 <translation id="5342091991439452114">PIN мора да има најмање <ph name="MINIMUM" /> цифре(ара)</translation>
-<translation id="5342344590724511265">Повратне информације о отказивању картице.</translation>
 <translation id="5342451237681332106">Користи <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Отв. заграда</translation>
 <translation id="5350965906220856151">О, не!</translation>
@@ -3216,6 +3209,7 @@
 <translation id="5764483294734785780">Са&amp;чувај аудио снимак као...</translation>
 <translation id="57646104491463491">Датум измене</translation>
 <translation id="5764797882307050727">Ослободите мало простора на уређају.</translation>
+<translation id="5765425701854290211">Жао нам је, неке датотеке су оштећене и ажурирање није успело. Синхронизоване датотеке су безбедне.</translation>
 <translation id="5765491088802881382">Ниједна мрежа није доступна</translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5771585441665576801">Транслитерација (geia → γεια)</translation>
@@ -4425,6 +4419,7 @@
 <translation id="7615910377284548269">Управљајте блокирањем додатних компонената које су изван заштићеног окружења...</translation>
 <translation id="7617366389578322136">Повезује се са уређајем „<ph name="DEVICE_NAME" />“</translation>
 <translation id="761779991806306006">Није сачувана ниједна лозинка.</translation>
+<translation id="7622114377921274169">Пуни се.</translation>
 <translation id="7624154074265342755">Бежичне мреже</translation>
 <translation id="7624337243375417909">caps lock је искључен</translation>
 <translation id="7627790789328695202">Упс, <ph name="FILE_NAME" /> већ постоји. Преименујте датотеку и покушајте поново.</translation>
@@ -4865,6 +4860,7 @@
 <translation id="8270242299912238708">PDF документи</translation>
 <translation id="827097179112817503">Прикажи дугме за почетну страницу</translation>
 <translation id="8272443605911821513">Управљајте додацима кликом на Додаци у менију „Још алатки“.</translation>
+<translation id="8274924778568117936">Не искључујте и не затварајте <ph name="DEVICE_TYPE" /> док се ажурирање не заврши. <ph name="DEVICE_TYPE" /> ће се поново покренути када се инсталација заврши.</translation>
 <translation id="8275038454117074363">Увези</translation>
 <translation id="8276560076771292512">Испразни кеш и поново учитај са сервера</translation>
 <translation id="8279388322240498158">Сорани курдска тастатура заснована на енглеском</translation>
@@ -5306,7 +5302,6 @@
 <translation id="8963572037665351978">Затвори презентацију</translation>
 <translation id="8965037249707889821">Унесите стару лозинку</translation>
 <translation id="8965697826696209160">Нема довољно простора.</translation>
-<translation id="8968527460726243404">Уписивање слика Chrome ОС система</translation>
 <translation id="8970203673128054105">Прикажи листу режима пребацивања</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Проверите са администратором мреже да бисте се уверили да заштитни зид не блокира преузимања са Google сервера.</translation>
@@ -5482,6 +5477,7 @@
 <translation id="93766956588638423">Поправи додатак</translation>
 <translation id="938470336146445890">Инсталирајте кориснички сертификат.</translation>
 <translation id="938582441709398163">Постављени елемент тастатуре</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Унесите приступну фразу</translation>
 <translation id="939736085109172342">Нови директоријум</translation>
 <translation id="940425055435005472">Величина фонта:</translation>

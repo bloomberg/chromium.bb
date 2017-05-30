@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Redigera mappnamn</translation>
 <translation id="2226449515541314767">Webbplatsen har blockerats från fullständig kontroll över MIDI-enheter.</translation>
 <translation id="2226720438730111184">Berätta vad som händer</translation>
-<translation id="222903405933288376">Google använder din plats för att ge dig lokalt innehåll. Detta går att ändra i <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Mer än 1 timme kvar</translation>
 <translation id="222931766245975952">Filen är trunkerad</translation>
 <translation id="222949136907494149"><ph name="URL" /> vill använda enhetens platsinfo.</translation>
@@ -1087,7 +1086,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2575247648642144396">Den här ikonen visas när tillägget kan aktiveras för den aktuella sidan. Använd tillägget genom att klicka på ikonen eller genom att trycka på <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Det finns redan en CRX-fil med det här namnet.</translation>
 <translation id="2579575372772932244">Profilen återskapas, vänta …</translation>
-<translation id="2580168606262715640">Mobilen hittades inte. Håll den på armlängds avstånd.</translation>
 <translation id="2580889980133367162">Tillåt alltid att <ph name="HOST" /> laddar flera filer</translation>
 <translation id="2580924999637585241">Totalt: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lång</translation>
@@ -2172,7 +2170,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="4130207949184424187">Det här tillägget har ändrat vilken sida som visas när du söker i adressfältet.</translation>
 <translation id="413121957363593859">Komponenter</translation>
 <translation id="4131410914670010031">Svartvitt</translation>
-<translation id="4135054690906486073">Nätverket delas med andra användare</translation>
 <translation id="4135450933899346655">Dina certifikat</translation>
 <translation id="4138267921960073861">Visa användarnamn och foton på inloggningssidan</translation>
 <translation id="4140559601186535628">Push-meddelanden</translation>
@@ -2576,9 +2573,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4813345808229079766">Anslutning</translation>
 <translation id="4813512666221746211">Nätverksfel</translation>
 <translation id="4816492930507672669">Anpassa till sida</translation>
-<translation id="4816617200045929931">Berätta vad som hände precis innan profilmeddelandet visades:
-
-****ÄNDRA INGENTING NEDANFÖR DEN HÄR RADEN****</translation>
 <translation id="4820334425169212497">Nej, jag ser den inte</translation>
 <translation id="4821086771593057290">Lösenordet har ändrats. Försök igen med ditt nya lösenord.</translation>
 <translation id="4821935166599369261">&amp;Profilering aktiverad</translation>
@@ -2944,7 +2938,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5340217413897845242">Hyllobjekt 6</translation>
 <translation id="5341390997810576190">Använd mobildata</translation>
 <translation id="5342091991439452114">Pinkoden måste bestå av minst <ph name="MINIMUM" /> siffror</translation>
-<translation id="5342344590724511265">Feedback vid kraschad flik.</translation>
 <translation id="5342451237681332106">Använd <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Vänsterparen</translation>
 <translation id="5350965906220856151">Oj!</translation>
@@ -3216,6 +3209,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5764483294734785780">S&amp;para ljud som...</translation>
 <translation id="57646104491463491">Datum ändrad</translation>
 <translation id="5764797882307050727">Frigör utrymme på enheten.</translation>
+<translation id="5765425701854290211">Vissa filer har skadats och uppdateringen slutfördes inte. De synkroniserade filerna är säkra.</translation>
 <translation id="5765491088802881382">Det finns inga nätverk</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5771585441665576801">Translitterera (geia → γεια)</translation>
@@ -4430,6 +4424,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7615910377284548269">Hantera blockering av pluginprogram utanför sandlådan ...</translation>
 <translation id="7617366389578322136">Ansluter till <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">Inget lösenord har sparats.</translation>
+<translation id="7622114377921274169">Laddas.</translation>
 <translation id="7624154074265342755">Trådlösa nätverk</translation>
 <translation id="7624337243375417909">caps lock av</translation>
 <translation id="7627790789328695202">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Byt namn på filen och försök igen.</translation>
@@ -4869,6 +4864,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8270242299912238708">PDF-dokument</translation>
 <translation id="827097179112817503">Visa knappen Startsida</translation>
 <translation id="8272443605911821513">Hantera dina tillägg genom att klicka på Tillägg i menyn Fler verktyg.</translation>
+<translation id="8274924778568117936">Stäng inte av eller stäng <ph name="DEVICE_TYPE" /> förrän uppdateringen har slutförts. <ph name="DEVICE_TYPE" /> startas om när installationen är slutförd.</translation>
 <translation id="8275038454117074363">Importera</translation>
 <translation id="8276560076771292512">Töm cacheminne och gör hård inläsning</translation>
 <translation id="8279388322240498158">Tangentbord på sorani/kurdiska och engelska</translation>
@@ -5309,7 +5305,6 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="8963572037665351978">Avsluta presentationen</translation>
 <translation id="8965037249707889821">Ange det gamla lösenordet</translation>
 <translation id="8965697826696209160">Det finns inte tillräckligt med ledigt utrymme.</translation>
-<translation id="8968527460726243404">Systemavbildningsskrivare för Chrome OS</translation>
 <translation id="8970203673128054105">Visa lista över cast-lägen</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontrollera med nätverksadministratören att brandväggen inte blockerar nedladdning från Googles servrar.</translation>
@@ -5485,6 +5480,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="93766956588638423">Reparera tillägg</translation>
 <translation id="938470336146445890">Installera ett användarcertifikat.</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ange lösenfras</translation>
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="940425055435005472">Teckenstorlek:</translation>

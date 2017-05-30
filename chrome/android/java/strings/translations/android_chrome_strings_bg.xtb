@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">Добавяне към началния екран</translation>
 <translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
-<translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Защита от опасни сайтове за вас и устройството ви</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки във файловата система.</translation>
 <translation id="3398320232533725830">Отваряне на диспечера на отметките</translation>
 <translation id="3414952576877147120">Размер:</translation>
-<translation id="3435896845095436175">Активиране</translation>
 <translation id="3443221991560634068">Презареждане на текущата страница</translation>
 <translation id="3452612588551937789">Влезте с профила си в Google, за да получите своите отметки, история, пароли и други настройки на всичките си устройства.</translation>
 <translation id="3487093336331957349">Предложения за търсене и сайтове</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">Подробности</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Избиране на папка</translation>
-<translation id="4535858793016067060">Включете „Неизвестни източници“ в настройките за сигурност на Android, за да изпробвате експеримента за подобрено добавяне към началния екран. Непременно деактивирайте тази настройка, когато приключите с тестването.</translation>
 <translation id="4558311620361989323">Комбинации за уеб страници</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
 <translation id="4581964774250883625">Преминахте в режим „инкогнито“.</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">Преминаване напред</translation>
 <translation id="4988526792673242964">Страници</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
-<translation id="5000922062037820727">Блокирано (препоръчително)</translation>
 <translation id="5004339818306944878">Използвайте до 60% по-малко данни и сърфирайте по-бързо в мрежата. Сървърите на Google ще оптимизират посещаваните от вас страници.</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
 <translation id="5345040418939504969">Изтрихте „<ph name="BOOKMARK_TITLE" />“</translation>
 <translation id="5345083863238459644">Достъпът до местоположението също е <ph name="BEGIN_LINK" />изключен за това устройство<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Експеримент за подобрено добавяне към началния екран</translation>
 <translation id="5372829067651257087">URL адресът е копиран.</translation>
 <translation id="5384883051496921101">Този сайт е напът да сподели информация с приложение, което не е в режим „инкогнито“.</translation>
 <translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">Отваряне на менюто</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
-<translation id="7949961459945740081">Получете най-новите функции</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
-<translation id="8033827949643255796">откроени</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Остават <ph name="DAYS" /> дни</translation>
 <translation id="8051695050440594747">Налице: <ph name="MEGABYTES" /> МБ</translation>

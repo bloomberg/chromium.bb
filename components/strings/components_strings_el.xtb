@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Η κρυπτογράφηση και ο έλεγχος ταυτότητας της σύνδεσης γίνονται με <ph name="CIPHER" /> και χρησιμοποιεί το <ph name="KX" /> ως μηχανισμό ανταλλαγής κλειδιών.</translation>
 <translation id="2835170189407361413">Διαγραφή φόρμας</translation>
 <translation id="2889159643044928134">Να μην γίνει επανάληψη φόρτωσης</translation>
-<translation id="2900469785430194048">Η διαθέσιμη μνήμη του Google Chrome εξαντλήθηκε, κατά την προσπάθεια προβολής αυτής της ιστοσελίδας.</translation>
 <translation id="2909946352844186028">Εντοπίστηκε μια αλλαγή δικτύου.</translation>
 <translation id="2916038427272391327">Κλείστε τα άλλα προγράμματα</translation>
 <translation id="2922350208395188000">Δεν είναι δυνατός ο έλεγχος του πιστοποιητικού του διακομιστή.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Λανθασμένος τύπος πολιτικής</translation>
 <translation id="3032412215588512954">Θέλετε να φορτώσετε ξανά αυτόν τον ιστότοπο;</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{τουλάχιστον ένα στοιχείο στις συγχρονισμένες συσκευές}=1{1 στοιχείο (και περισσότερα στις συγχρονισμένες συσκευές)}other{# στοιχεία (και περισσότερα στις συγχρονισμένες συσκευές)}}</translation>
 <translation id="3041612393474885105">Πληροφορίες πιστοποιητικού</translation>
 <translation id="3063697135517575841">Δεν ήταν δυνατή η επιβεβαίωση της κάρτας σας από το Chrome αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="3064966200440839136">Αποχώρηση από την κατάσταση ανώνυμης περιήγησης για πληρωμή μέσω εξωτερικής εφαρμογής. Συνέχεια;</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Πληροφορίες πιστοποιητικού</translation>
 <translation id="3690164694835360974">Μη ασφαλής σύνδεση</translation>
 <translation id="3693415264595406141">Κωδικός πρόσβασης:</translation>
-<translation id="3696411085566228381">κανένα</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="3712624925041724820">Οι άδειες έχουν εξαντληθεί</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="4196861286325780578">&amp;Επανάληψη μετακίνησης</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Ελέγξτε τις διαμορφώσεις του τείχους προστασίας και της προστασίας από ιούς<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{καμία}=1{1 εφαρμογή ($1)}=2{2 εφαρμογές ($1, $2)}other{# εφαρμογές ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Απότομες διακοπές λειτουργίας</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Δοκιμάστε να εκτελέσετε τον Διαγνωστικό έλεγχο δικτύου<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι πλήρως ασφαλής</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Λανθασμένος κωδικός πρόσβασης</translation>
 <translation id="5056549851600133418">Άρθρα για εσάς</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Ελέγξτε τη διεύθυνση του διακομιστή μεσολάβησης<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Χωρίς cookie}=1{1 ιστότοπος χρησιμοποιεί cookie. }other{# ιστότοποι χρησιμοποιούν cookie. }}</translation>
 <translation id="5087286274860437796">Το πιστοποιητικό του διακομιστή δεν είναι έγκυρο αυτήν τη στιγμή.</translation>
 <translation id="5087580092889165836">Προσθήκη κάρτας</translation>
 <translation id="5089810972385038852">Πολιτεία</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">Τι σημαίνουν αυτά;</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 πρόταση ακόμα}other{# προτάσεις ακόμα}}</translation>
 <translation id="6387478394221739770">Θέλετε να ενημερώνεστε για τις συναρπαστικές νέες δυνατότητες του Chrome; Επισκεφτείτε το κανάλι beta στη διεύθυνση chrome.com/beta.</translation>
-<translation id="6389758589412724634">Η διαθέσιμη μνήμη του Chromium εξαντλήθηκε, κατά την προσπάθεια προβολής αυτής της ιστοσελίδας.</translation>
 <translation id="6404511346730675251">Επεξεργασία σελιδοδείκτη</translation>
 <translation id="6410264514553301377">Εισαγάγετε την ημερομηνία λήξης και τον κωδικό CVC για την κάρτα <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Ρώτησες τους γονείς σου εάν σου επιτρέπουν να επισκεφτείς αυτόν τον ιστότοπο</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Λήξη: <ph name="EXPIRATION_DATE_ABBR" />, τελευταία χρήση <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Ο διαχειριστής σας δεν τον έχει εγκρίνει ακόμα</translation>
 <translation id="6569060085658103619">Βλέπετε μια σελίδα επέκτασης</translation>
-<translation id="6593753688552673085">λιγότερο από <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Επιλογές κρυπτογράφησης</translation>
 <translation id="662080504995468778">Παραμονή</translation>
 <translation id="6626291197371920147">Προσθήκη έγκυρου αριθμού κάρτας</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Πληκτρολογήστε όρο αναζήτησης&gt;</translation>
 <translation id="6711464428925977395">Υπάρχει κάποιο πρόβλημα με το διακομιστή μεσολάβησης ή η διεύθυνση είναι εσφαλμένη.</translation>
 <translation id="6727102863431372879">Ορισμός</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{καμία}=1{1 στοιχείο}other{# στοιχεία}}</translation>
 <translation id="674375294223700098">Άγνωστο σφάλμα πιστοποιητικού διακομιστή</translation>
 <translation id="6753269504797312559">Τιμή πολιτικής</translation>
 <translation id="6757797048963528358">Η συσκευή σας τέθηκε σε αδράνεια.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">Οι εισβολείς σε αυτόν τον ιστότοπο μπορεί να επιχειρήσουν να σας ξεγελάσουν, έτσι ώστε να εγκαταστήσετε προγράμματα που βλάπτουν την εμπειρία περιήγησής σας (για παράδειγμα, αλλάζοντας την αρχική σελίδα σας ή εμφανίζοντας επιπλέον διαφημίσεις στους ιστότοπους που επισκέπτεστε).</translation>
 <translation id="7674629440242451245">Θέλετε να ενημερώνεστε για τις συναρπαστικές νέες δυνατότητες του Chrome; Επισκεφτείτε το κανάλι προγραμματιστών στη διεύθυνση chrome.com/dev.</translation>
 <translation id="7682287625158474539">Αποστολή</translation>
+<translation id="7701040980221191251">Καμία</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Μετάβαση στον ιστότοπο <ph name="SITE" /> (μη ασφαλής)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Πιστοποιητικό</translation>
 <translation id="7716424297397655342">Δεν είναι δυνατή η φόρτωση αυτού του ιστότοπου από την κρυφή μνήμη</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Αποστολή σχολίων</translation>
 <translation id="8041940743680923270">Χρήση καθολικής προεπιλεγμένης ρύθμισης (Ερώτηση)</translation>
 <translation id="8088680233425245692">Αποτυχία προβολής άρθρου.</translation>
-<translation id="8089520772729574115">λιγότερο από 1 MB</translation>
 <translation id="8091372947890762290">Η ενεργοποίηση στο διακομιστή εκκρεμεί</translation>
 <translation id="8118489163946903409">Τρόπος πληρωμής</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>

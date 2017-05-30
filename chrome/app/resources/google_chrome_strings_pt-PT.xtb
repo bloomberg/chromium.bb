@@ -75,7 +75,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>
 <translation id="3180085900771989961">O seu gestor tem de o remover e adicionar novamente ao Chrome.</translation>
-<translation id="3251381707915721925">Para definir que Websites <ph name="NEW_PROFILE_NAME" /> pode ver, pode configurar restrições e definições ao aceder a <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode procurar tudo na Web.
+<translation id="3251381707915721925">Para definir que Sites <ph name="NEW_PROFILE_NAME" /> pode ver, pode configurar restrições e definições ao aceder a <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode procurar tudo na Web.
 
 Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se de que bloqueia o seu perfil quando não estiver a utilizar o Chrome. Para o fazer, clique no seu nome de perfil no canto superior direito do navegador e selecione "Sair e bloqueio para criança".
 <ph name="BEGIN_LINK_2" />Saber mais<ph name="END_LINK_2" />
@@ -152,7 +152,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
+<translation id="5620765574781326016">Saiba mais acerca de tópicos em Sites sem sair da página.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chrome bloqueou-o.</translation>
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca do SO Chrome</translation>

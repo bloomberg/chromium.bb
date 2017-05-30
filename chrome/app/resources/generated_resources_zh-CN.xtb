@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">修改文件夹名</translation>
 <translation id="2226449515541314767">已禁止该网站完全控制 MIDI 设备。</translation>
 <translation id="2226720438730111184">告诉我们所发生的情况</translation>
-<translation id="222903405933288376">Google 会使用您的位置信息为您提供本地内容。您可以在<ph name="SETTINGS_LINK" />中更改此设置。</translation>
 <translation id="2229161054156947610">剩余时间超过 1 小时</translation>
 <translation id="222931766245975952">文件被截断</translation>
 <translation id="222949136907494149"><ph name="URL" /> 想要使用您的计算机的所在位置信息。</translation>
@@ -1084,7 +1083,6 @@
 <translation id="2575247648642144396">仅当此扩展程序能够对当前网页采取操作时，该图标才会显示。要使用此扩展程序，请点击该图标或按 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="2576842806987913196">已经有其他 CRX 文件使用了此名称。</translation>
 <translation id="2579575372772932244">正在重新创建个人资料，请稍候…</translation>
-<translation id="2580168606262715640">找不到配对手机，请确保它不超过一臂远。</translation>
 <translation id="2580889980133367162">始终允许 <ph name="HOST" /> 下载多个文件</translation>
 <translation id="2580924999637585241">总计：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">长</translation>
@@ -2165,7 +2163,6 @@
 <translation id="4130207949184424187">此扩展程序更改了您通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="413121957363593859">组件</translation>
 <translation id="4131410914670010031">黑白色</translation>
-<translation id="4135054690906486073">有其他用户共享此网络</translation>
 <translation id="4135450933899346655">您的证书</translation>
 <translation id="4138267921960073861">在登录屏幕上显示用户名和照片</translation>
 <translation id="4140559601186535628">推送消息</translation>
@@ -2566,9 +2563,6 @@
 <translation id="4813345808229079766">连接</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
-<translation id="4816617200045929931">请告诉我们在您收到个人资料错误消息之前发生的确切情况：
-
-****请勿更改此行以下的内容****</translation>
 <translation id="4820334425169212497">没看到</translation>
 <translation id="4821086771593057290">您的密码已更改。请使用新密码重试。</translation>
 <translation id="4821935166599369261">分析已启用(&amp;P)</translation>
@@ -2926,7 +2920,6 @@
 <translation id="5340217413897845242">栏中第 6 项</translation>
 <translation id="5341390997810576190">使用移动数据网络</translation>
 <translation id="5342091991439452114">PIN 码必须至少为 <ph name="MINIMUM" /> 位数</translation>
-<translation id="5342344590724511265">标签页崩溃反馈。</translation>
 <translation id="5342451237681332106">使用 <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">左括号</translation>
 <translation id="5350965906220856151">糟糕！</translation>
@@ -3198,6 +3191,7 @@
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
 <translation id="57646104491463491">修改日期</translation>
 <translation id="5764797882307050727">请释放部分设备空间。</translation>
+<translation id="5765425701854290211">抱歉，由于某些文件已损坏，系统未能成功完成更新。但请放心，您的已同步文件不会受到影响。</translation>
 <translation id="5765491088802881382">没有可用网络</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5771585441665576801">音译(geia → γεια)</translation>
@@ -4404,6 +4398,7 @@
 <translation id="7615910377284548269">管理未经过沙盒屏蔽的插件拦截…</translation>
 <translation id="7617366389578322136">正在连接“<ph name="DEVICE_NAME" />”</translation>
 <translation id="761779991806306006">未保存任何密码。</translation>
+<translation id="7622114377921274169">正在充电。</translation>
 <translation id="7624154074265342755">无线网络</translation>
 <translation id="7624337243375417909">已关闭大写锁定模式</translation>
 <translation id="7627790789328695202">糟糕，<ph name="FILE_NAME" />已存在。请改用其他名称并重试。</translation>
@@ -4843,6 +4838,7 @@
 <translation id="8270242299912238708">PDF 文档</translation>
 <translation id="827097179112817503">显示“主页”按钮</translation>
 <translation id="8272443605911821513">点击“更多工具”菜单中的“扩展程序”，可以管理您的扩展程序。</translation>
+<translation id="8274924778568117936">在完成更新之前，请勿关闭您的 <ph name="DEVICE_TYPE" />。您的 <ph name="DEVICE_TYPE" /> 将会于安装完毕后重启。</translation>
 <translation id="8275038454117074363">导入</translation>
 <translation id="8276560076771292512">清空缓存并硬性重新加载</translation>
 <translation id="8279388322240498158">索拉尼库尔德语（英文字母）键盘</translation>
@@ -5283,7 +5279,6 @@
 <translation id="8963572037665351978">退出演示模式</translation>
 <translation id="8965037249707889821">输入旧密码</translation>
 <translation id="8965697826696209160">空间不足。</translation>
-<translation id="8968527460726243404">Chrome 操作系统映像写入工具</translation>
 <translation id="8970203673128054105">查看投射模式列表</translation>
 <translation id="89720367119469899">转义</translation>
 <translation id="8972513834460200407">请与您的网络管理员联系，确保防火墙没有阻止系统从 Google 服务器下载内容。</translation>
@@ -5458,6 +5453,7 @@
 <translation id="93766956588638423">修复扩展程序</translation>
 <translation id="938470336146445890">请安装用户证书。</translation>
 <translation id="938582441709398163">Overlay 键盘</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">请输入密码</translation>
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="940425055435005472">字号：</translation>

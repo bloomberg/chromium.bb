@@ -24,7 +24,7 @@
 
       Si se asigna el valor false a esta política, no se informará sobre las estadísticas.
       Si se asigna el valor true o si la política no se configura, se informará sobre ellas.</translation>
-<translation id="1046484220783400299">Habilita funciones obsoletas de la plataforma web durante un período de tiempo limitado</translation>
+<translation id="1046484220783400299">Habilita funciones obsoletas de la plataforma web durante un periodo de tiempo limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio haga un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="1049138910114524876">Establece la configuración regional que se fuerza a aplicar en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
 
@@ -243,7 +243,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="201557587962247231">Frecuencia de subida de informes de estado del dispositivo</translation>
-<translation id="2018836497795982119">Permite especificar el período en milisegundos en el que se solicita información sobre políticas del usuario al servicio de administración de dispositivos.
+<translation id="2018836497795982119">Permite especificar el periodo en milisegundos en el que se solicita información sobre políticas del usuario al servicio de administración de dispositivos.
 
       Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente. Si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas, ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política.
 
@@ -948,7 +948,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta política no se configura o si la lista está vacía o no coincide con ninguna de las etiquetas de cadena admitidas, todas las funciones obsoletas de la plataforma web permanecerán inhabilitadas.
 
-      Aunque la política en sí es compatible con las plataformas anteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform obsoletas se pueden volver a habilitar. Solo es posible hacerlo con las indicadas específicamente y durante un período de tiempo limitado diferente para cada función. El formato general de la etiqueta de cadena será:[NombreDeFunciónObsoleta]_EffectiveUntil[aaaammdd]. Como referencia, puedes consultar los intentos detrás de los cambios de la función Web Platform en la página https://bit.ly/blinkintents.
+      Aunque la política en sí es compatible con las plataformas anteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform obsoletas se pueden volver a habilitar. Solo es posible hacerlo con las indicadas específicamente y durante un periodo de tiempo limitado diferente para cada función. El formato general de la etiqueta de cadena será:[NombreDeFunciónObsoleta]_EffectiveUntil[aaaammdd]. Como referencia, puedes consultar los intentos detrás de los cambios de la función Web Platform en la página https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
@@ -1207,7 +1207,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5475361623548884387">Habilitar impresión</translation>
 <translation id="5499375345075963939">Esta política solo se encuentra activa en el modo comercial.
 
-      Cuando el valor de esta política se establece en un número distinto de 0, la sesión del usuario que haya iniciado sesión en ese momento en modo de demostración se cerrará automáticamente una vez que haya transcurrido el período de inactividad especificado.
+      Cuando el valor de esta política se establece en un número distinto de 0, la sesión del usuario que haya iniciado sesión en ese momento en modo de demostración se cerrará automáticamente una vez que haya transcurrido el periodo de inactividad especificado.
 
       El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="5511702823008968136">Habilitar barra de marcadores</translation>
@@ -1217,7 +1217,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se establece esta política, se iniciará automáticamente la sesión especificada una vez que haya transcurrido un tiempo sin que el usuario haya realizado ninguna acción en la pantalla de inicio de sesión. La sesión pública tendrá que estar configurada previamente (ver | DeviceLocalAccounts|).
 
       Si no se establece esta política, no se realiza el inicio de sesión automático.</translation>
-<translation id="5529037166721644841">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
+<translation id="5529037166721644841">Permite especificar el periodo en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
 
       Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
 
@@ -1377,7 +1377,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Cuando no se establece el tiempo transcurrido, se utilizará un valor de tiempo predeterminado.
 
-          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
+          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un periodo de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="6111936128861357925">Permitir el juego del huevo de pascua de dinosaurio</translation>
@@ -1400,7 +1400,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6190022522129724693">Configuración de pop-ups predeterminada</translation>
 <translation id="6197453924249895891">Concede acceso a claves corporativas de extensiones.
 
-      Las claves están designadas para un uso corporativo si se generan con la API chrome.enterprise.platformKeys en una cuenta administrada. Las claves importadas o generadas de otra forma no están designadas para este uso.
+      Las claves están designadas para un uso corporativo si se generan con la API chrome.enterprise.platformKeys en una cuenta gestionada. Las claves importadas o generadas de otra forma no están designadas para este uso.
 
       El acceso a las claves designadas para uso corporativo se controla únicamente a través de esta política. El usuario no puede conceder acceso a extensiones mediante claves corporativas ni retirarlo.
 
@@ -1473,7 +1473,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
-          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
+          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un periodo de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="6536600139108165863">Reinicio automático al cerrar el dispositivo</translation>
@@ -1518,7 +1518,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si asignas el valor "always", "never" o "WiFi only" a esta preferencia, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
 
       Si esta política no se configura, la predicción de red se habilitará, pero el usuario no podrá modificarla.</translation>
-<translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
+<translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un periodo de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6693751878507293182">Si habilitas esta opción, se inhabilitará la búsqueda y la instalación automática de los complementos que falten en <ph name="PRODUCT_NAME" />.
 
@@ -1582,7 +1582,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si no se establece esta política, se utilizará la ruta de perfil predeterminada y el usuario podrá anularla con el indicador de línea de comando "--user-data-dir".</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
-Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante un período de tiempo determinado.</translation>
+Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante un periodo de tiempo determinado.</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME" /> envíe documentos a <ph name="CLOUD_PRINT_NAME" /> para imprimirlos. NOTA: Esto solo afecta a la asistencia de <ph name="CLOUD_PRINT_NAME" /> en <ph name="PRODUCT_NAME" />. No evita que otros usuarios envíen trabajos de impresión a través sitios web.
 
@@ -1949,7 +1949,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
           Si estableces esta política, los usuarios no podrán modificarla o anularla.
 
           Si no se establece esta política, el modo de contraste alto se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="815061180603915310">Si se habilita, esta política fuerza el cambio del perfil al modo efímero. Si se especifica como política del sistema operativo (p. ej., GPO en Windows), se aplicará a todos los perfiles del sistema; si se establece como política de la nube, solo se aplicará a un perfil en el que se inicie sesión con una cuenta administrada.
+<translation id="815061180603915310">Si se habilita, esta política fuerza el cambio del perfil al modo efímero. Si se especifica como política del sistema operativo (p. ej., GPO en Windows), se aplicará a todos los perfiles del sistema; si se establece como política de la nube, solo se aplicará a un perfil en el que se inicie sesión con una cuenta gestionada.
 
       En este modo, los datos de perfil solo se mantienen en el disco mientras dura la sesión del usuario. Una vez que se cierra el navegador, no se conservan ciertas funciones, como las extensiones y sus datos o el historial web, datos de Internet como las cookies ni las bases de datos web. Sin embargo, esto no impide que el usuario pueda descargar datos en el disco manualmente, guardar páginas o imprimirlas.
 
@@ -2172,7 +2172,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
-          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
+          El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un periodo de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>

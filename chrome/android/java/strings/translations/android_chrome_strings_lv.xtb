@@ -116,7 +116,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2139186145475833000">Pievienot sākuma ekrānam</translation>
 <translation id="2146738493024040262">Atvērt tūlītējo lietotni</translation>
 <translation id="2148716181193084225">Šodien</translation>
-<translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2156074688469523661">Pārējās vietnes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Aizsargāt jūs un ierīci pret bīstamām vietnēm</translation>
 <translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME" />. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="3387650086002190359">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās failu sistēmas kļūdas.</translation>
 <translation id="3398320232533725830">Atvērt grāmatzīmju pārvaldnieku</translation>
 <translation id="3414952576877147120">Lielums:</translation>
-<translation id="3435896845095436175">Iespējot</translation>
 <translation id="3443221991560634068">Atkārtoti ielādēt pašreizējo lapu</translation>
 <translation id="3452612588551937789">Pierakstieties Google kontā, lai izmantotu savas grāmatzīmes, paroles, vēsturi un citus Chrome datus visās jūsu ierīcēs.</translation>
 <translation id="3487093336331957349">Meklēšanas un vietņu ieteikumi</translation>
@@ -319,7 +317,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4522570452068850558">Informācija</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Mapes izvēlēšanās</translation>
-<translation id="4535858793016067060">Android drošības iestatījumos ieslēdziet opciju “Nezināmi avoti”, lai izmēģinātu eksperimentālu uzlabotu Pievienošanas sākuma ekrānam funkciju. Noteikti atspējojiet šo iestatījumu, kad būsit to izmēģinājis.</translation>
 <translation id="4558311620361989323">Tīmekļa lapu īsinājumtaustiņi</translation>
 <translation id="4572422548854449519">Pierakstīšanās pārvaldītā kontā</translation>
 <translation id="4581964774250883625">Jūs esat atvēris inkognito režīmu.</translation>
@@ -362,7 +359,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="497421865427891073">Doties uz priekšu</translation>
 <translation id="4988526792673242964">Lapas</translation>
 <translation id="4996978546172906250">Kopīgošanas veids:</translation>
-<translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
 <translation id="5004339818306944878">Izmantojiet pat par 60% mazāk datu un paātriniet tīmekļa pārlūkošanu. Google serveri optimizēs jūsu apmeklētās lapas.</translation>
 <translation id="5005498671520578047">Paroles kopēšana</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vēlas izveidot savienojumu</translation>
@@ -403,7 +399,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5335288049665977812">Atļaut vietnēm izmantot JavaScript (ieteicams)</translation>
 <translation id="5345040418939504969">Grāmatzīme <ph name="BOOKMARK_TITLE" /> tika dzēsta</translation>
 <translation id="5345083863238459644">Piekļuve atrašanās vietas datiem ir arī <ph name="BEGIN_LINK" />izslēgta šai ierīcei<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Uzlabota eksperimentāla funkcija “Pievienot sākuma ekrānam”</translation>
 <translation id="5372829067651257087">Vietrādis URL nokopēts</translation>
 <translation id="5384883051496921101">Šī vietne kopīgos informāciju ar lietotni, kas nav inkognito režīmā.</translation>
 <translation id="5400569084694353794">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
@@ -654,7 +649,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="7929962904089429003">Atvērt izvēlni</translation>
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
-<translation id="7949961459945740081">Saņemiet jaunākās funkcijas</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
@@ -665,7 +659,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8015452622527143194">Atjaunot visam lapas saturam noklusējuma lielumu</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8026334261755873520">Notīrīt pārlūkošanas datus</translation>
-<translation id="8033827949643255796">atlasīti</translation>
 <translation id="8035133914807600019">Jauna mape…</translation>
 <translation id="8037750541064988519">Atlikušas <ph name="DAYS" /> dienas</translation>
 <translation id="8051695050440594747">Ir pieejami <ph name="MEGABYTES" /> MB</translation>

@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">Rediger mappenavn</translation>
 <translation id="2226449515541314767">Dette website er blevet blokeret fra at have fuld kontrol over MIDI-enheder.</translation>
 <translation id="2226720438730111184">Fortæl os, hvad der sker</translation>
-<translation id="222903405933288376">Google bruger din placering til at give dig lokalt indhold. Du kan ændre dette i <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Mere end én time tilbage</translation>
 <translation id="222931766245975952">Fil forkortet</translation>
 <translation id="222949136907494149"><ph name="URL" /> vil gerne anvende computerens placering.</translation>
@@ -1084,7 +1083,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2575247648642144396">Dette ikon vil være synligt, når udvidelsen fungerer på den aktuelle side. Brug denne udvidelse ved at klikke på ikonet eller ved at trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Der findes allerede en CRX-fil med dette navn.</translation>
 <translation id="2579575372772932244">Genskaber profilen. Vent et øjeblik...</translation>
-<translation id="2580168606262715640">Kan du ikke finde din telefon. Sørg for, at den er lige ved hånden.</translation>
 <translation id="2580889980133367162">Tillad altid, at <ph name="HOST" /> downloader flere forskellige filer</translation>
 <translation id="2580924999637585241">I alt: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lang</translation>
@@ -1508,7 +1506,7 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="3144135466825225871">Crx-filen kunne ikke erstattes. Tjek, om filen er i brug.</translation>
 <translation id="3144647712221361880">Åbn linket som</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
-<translation id="3150927491400159470">Intensiv genindlæsning</translation>
+<translation id="3150927491400159470">Genindlæs fuldstændig</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151539355209957474">Starttidspunkt</translation>
 <translation id="3151562827395986343">Ryd historik, cookies, cache m.m.</translation>
@@ -2171,7 +2169,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4130207949184424187">Denne udvidelse har ændret, hvilken side der vises, når du søger via omnifeltet.</translation>
 <translation id="413121957363593859">Komponenter</translation>
 <translation id="4131410914670010031">Sort/hvid</translation>
-<translation id="4135054690906486073">Dette netværk deles med andre brugere</translation>
 <translation id="4135450933899346655">Dine certifikater</translation>
 <translation id="4138267921960073861">Vis brugernavne og billeder på loginskærmen</translation>
 <translation id="4140559601186535628">Push-meddelelser</translation>
@@ -2575,9 +2572,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4813345808229079766">Forbindelse</translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
 <translation id="4816492930507672669">Tilpas til siden</translation>
-<translation id="4816617200045929931">Fortæl os, hvad der helt præcist skete, inden du fik fejlmeddelelsen for profilen:
-
-****UNDLAD AT REDIGERE UNDER DENNE LINJE****</translation>
 <translation id="4820334425169212497">Nej, jeg kan ikke se den</translation>
 <translation id="4821086771593057290">Din adgangskode er ændret. Prøv igen med din nye adgangskode.</translation>
 <translation id="4821935166599369261">&amp;Profilering aktiveret</translation>
@@ -2942,7 +2936,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5340217413897845242">Hyldeelement 6</translation>
 <translation id="5341390997810576190">Brug mobildata</translation>
 <translation id="5342091991439452114">Pinkoden skal være på mindst <ph name="MINIMUM" /> cifre</translation>
-<translation id="5342344590724511265">Feedback i tilfælde, hvor fanen er gået ned.</translation>
 <translation id="5342451237681332106">Brug <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Venstre parantes</translation>
 <translation id="5350965906220856151">Åh nej!</translation>
@@ -3214,6 +3207,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5764483294734785780">&amp;Gem lyd som...</translation>
 <translation id="57646104491463491">Dato for ændring</translation>
 <translation id="5764797882307050727">Frigør plads på din enhed.</translation>
+<translation id="5765425701854290211">Nogle filer var desværre beskadiget, og opdateringen lykkedes ikke. Dine synkroniserede filer er sikre.</translation>
 <translation id="5765491088802881382">Der er ingen tilgængelige netværk</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5771585441665576801">Translitteration (geia → γεια)</translation>
@@ -3406,7 +3400,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6054173164583630569">Fransk tastatur</translation>
 <translation id="6055171183283175969">Den indtastede adgangskode er forkert.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 med RSA-kryptering</translation>
-<translation id="6056710589053485679">Almindelig genindlæsning</translation>
+<translation id="6056710589053485679">Genindlæs som normalt</translation>
 <translation id="6059232451013891645">Mappe:</translation>
 <translation id="6059652578941944813">Certifikathierarki</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
@@ -4430,6 +4424,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7615910377284548269">Administrer blokering af plugins uden for sandbox...</translation>
 <translation id="7617366389578322136">Opretter forbindelse til "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Der er ikke gemt nogen adgangskoder.</translation>
+<translation id="7622114377921274169">Oplader.</translation>
 <translation id="7624154074265342755">Trådløst netværk</translation>
 <translation id="7624337243375417909">capslock er slået fra</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> findes allerede. Giv filen et nyt navn, og prøv igen.</translation>
@@ -4869,8 +4864,9 @@ Beregner resterende tid</translation>
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis knappen Startside</translation>
 <translation id="8272443605911821513">Administrer dine udvidelser ved at klikke på Udvidelser i menuen "Flere værktøjer".</translation>
+<translation id="8274924778568117936">Undgå at slukke eller lukke din <ph name="DEVICE_TYPE" />, før opdateringen er færdig. Din <ph name="DEVICE_TYPE" /> genstarter, når installationen er gennemført.</translation>
 <translation id="8275038454117074363">Importer</translation>
-<translation id="8276560076771292512">Tom cache og intensiv genindlæsning</translation>
+<translation id="8276560076771292512">Tøm cache og genindlæs fuldstændig</translation>
 <translation id="8279388322240498158">Sorani-kurdisk tastatur (engelskbaseret)</translation>
 <translation id="8280151743281770066">Armensk (fonetisk)</translation>
 <translation id="8281886186245836920">Spring over</translation>
@@ -5310,7 +5306,6 @@ Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skri
 <translation id="8963572037665351978">Afslut præsentation</translation>
 <translation id="8965037249707889821">Indtast den gamle adgangskode</translation>
 <translation id="8965697826696209160">Der er ikke nok plads.</translation>
-<translation id="8968527460726243404">Værktøj til skrivning af systembillede i Chrome OS</translation>
 <translation id="8970203673128054105">Se listen over cast-tilstande</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontakt din netværksadministrator for at sikre, at firewallen ikke blokerer downloads fra Google-servere.</translation>
@@ -5486,6 +5481,7 @@ Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skri
 <translation id="93766956588638423">Reparer udvidelsen</translation>
 <translation id="938470336146445890">Installer et brugercertifikat.</translation>
 <translation id="938582441709398163">Tastaturoverlejring</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Angiv adgangssætning</translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="940425055435005472">Skriftstørrelse:</translation>

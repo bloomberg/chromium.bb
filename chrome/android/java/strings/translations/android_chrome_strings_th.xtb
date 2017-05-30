@@ -33,7 +33,7 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1303671224831497365">ไม่พบอุปกรณ์บลูทูธ</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
-<translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับคุณลักษณะของ Google Chrome</translation>
+<translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="1339917386316755344">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
@@ -106,7 +106,7 @@
 <translation id="2073732792864401646">รีเซ็ตสถิติ</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
-<translation id="2095887075102408547">เมื่อเปิดคุณลักษณะนี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
+<translation id="2095887075102408547">เมื่อเปิดฟีเจอร์นี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
 <translation id="2096396629993765042">คุณจะไม่ออกจากระบบบัญชี Google บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2111511281910874386">ไปที่หน้า</translation>
@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">เพิ่มไปยังหน้าจอหลัก</translation>
 <translation id="2146738493024040262">เปิด Instant App</translation>
 <translation id="2148716181193084225">วันนี้</translation>
-<translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเกิดข้อผิดพลาดกับระบบไฟล์</translation>
 <translation id="3398320232533725830">เปิดตัวจัดการบุ๊กมาร์ก</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
-<translation id="3435896845095436175">เปิดการใช้งาน</translation>
 <translation id="3443221991560634068">โหลดหน้าปัจจุบันอีกครั้ง</translation>
 <translation id="3452612588551937789">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="3487093336331957349">คำแนะนำการค้นหาและเว็บไซต์</translation>
@@ -239,7 +237,7 @@
 หากต้องการแก้ไขข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับการค้นหา ให้เลื่อนแผงขึ้นและแตะช่องค้นหา</translation>
 <translation id="3616113530831147358">เสียง</translation>
 <translation id="3632295766818638029">เปิดเผยรหัสผ่าน</translation>
-<translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
+<translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="3656115297268584622">เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3661699943263275414">เว็บไซต์ของบุคคลที่สามสามารถบันทึกและอ่านข้อมูลคุกกี้ได้</translation>
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
@@ -283,7 +281,7 @@
 <translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
 <translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="4084836577264234537">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="MEGABYTES" /> MB</translation>
-<translation id="4089831646916293264">คุณลักษณะนี้อาจรบกวนการเข้าถึงบริการข้อมูลพรีเมียมที่ผู้ให้บริการของคุณจัดหาให้</translation>
+<translation id="4089831646916293264">ฟีเจอร์นี้อาจรบกวนการเข้าถึงบริการข้อมูลพรีเมียมที่ผู้ให้บริการของคุณจัดหาให้</translation>
 <translation id="4095146165863963773">ลบข้อมูลแอปไหม</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">รายละเอียด</translation>
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
-<translation id="4535858793016067060">เปิด “แหล่งที่มาที่ไม่รู้จัก” ในการตั้งค่าความปลอดภัยของ Android เพื่อทดลองประสบการณ์ "การเพิ่มหน้าจอหลักที่ปรับปรุงใหม่" อย่าลืมปิดใช้การตั้งค่าหลังจากที่คุณลองใช้เสร็จแล้ว</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
 <translation id="4572422548854449519">ลงชื่อเข้าใช้บัญชีที่มีการจัดการ</translation>
 <translation id="4581964774250883625">คุณเข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">ไปข้างหน้า</translation>
 <translation id="4988526792673242964">หน้า</translation>
 <translation id="4996978546172906250">แชร์ผ่าน</translation>
-<translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
 <translation id="5004339818306944878">ใช้เน็ตมือถือน้อยลงถึง 60% และท่องเว็บได้เร็วขึ้น เซิร์ฟเวอร์ Google จะเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม</translation>
 <translation id="5005498671520578047">คัดลอกรหัสผ่าน</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ต้องการเชื่อมต่อ</translation>
@@ -395,7 +391,7 @@
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
 <translation id="5304593522240415983">ต้องกรอกข้อมูลในช่องนี้</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
-<translation id="5308603654685598744">เมื่อเปิดคุณลักษณะนี้ Chrome จะเสนอที่จะแปลหน้าเว็บที่เขียนในภาษาอื่นๆ โดยใช้ Google แปลภาษา</translation>
+<translation id="5308603654685598744">เมื่อเปิดฟีเจอร์นี้ Chrome จะเสนอที่จะแปลหน้าเว็บที่เขียนในภาษาอื่นๆ โดยใช้ Google แปลภาษา</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5324858694974489420">การตั้งค่าของผู้ปกครอง</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">อนุญาตให้เว็บไซต์เรียกใช้ JavaScript (แนะนำ)</translation>
 <translation id="5345040418939504969">ลบ <ph name="BOOKMARK_TITLE" /> แล้ว</translation>
 <translation id="5345083863238459644">การเข้าถึงตำแหน่งถูก<ph name="BEGIN_LINK" />ปิดสำหรับอุปกรณ์นี้<ph name="END_LINK" />ด้วย</translation>
-<translation id="5349103022427743704">ประสบการณ์การเพิ่มหน้าจอหลักที่ปรับปรุงใหม่</translation>
 <translation id="5372829067651257087">คัดลอก URL แล้ว</translation>
 <translation id="5384883051496921101">ไซต์นี้กำลังจะแชร์ข้อมูลกับแอปนอกโหมดไม่ระบุตัวตน</translation>
 <translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">เปิดเมนู</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
-<translation id="7949961459945740081">รับคุณลักษณะล่าสุด</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">เปลี่ยนทุกอย่างบนหน้ากลับไปเป็นขนาดเริ่มต้น</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
-<translation id="8033827949643255796">เลือกแล้ว</translation>
 <translation id="8035133914807600019">โฟลเดอร์ใหม่…</translation>
 <translation id="8037750541064988519">เหลือ <ph name="DAYS" /> วัน</translation>
 <translation id="8051695050440594747">สามารถใช้งานได้ <ph name="MEGABYTES" /> MB</translation>
@@ -680,7 +673,7 @@
 <translation id="8103578431304235997">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
-<translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดคุณลักษณะนี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
+<translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดฟีเจอร์นี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="8173098127580644436">ตั้งแต่เริ่มต้น</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>

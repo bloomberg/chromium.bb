@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">Adicionar à tela inicial</translation>
 <translation id="2146738493024040262">Abrir Instant App</translation>
 <translation id="2148716181193084225">Hoje</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Proteger você e seu dispositivo de sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">Falha no download de <ph name="FILE_NAME" /> devido a erros do sistema de arquivos.</translation>
 <translation id="3398320232533725830">Abrir o gerenciador de favoritos</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="3435896845095436175">Ativar</translation>
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3452612588551937789">Faça login com sua Conta do Google para ter seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos.</translation>
 <translation id="3487093336331957349">Sugestões de pesquisa e sites</translation>
@@ -318,7 +316,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
-<translation id="4535858793016067060">Ative a opção “Fontes desconhecidas” nas configurações de segurança do Android para testar o experimento "Adição aprimorada à tela inicial". Desative essa configuração quando terminar de testá-la.</translation>
 <translation id="4558311620361989323">Atalhos de páginas da Web</translation>
 <translation id="4572422548854449519">Fazer login em conta gerenciada</translation>
 <translation id="4581964774250883625">Você está navegando sem deixar rastros.</translation>
@@ -361,7 +358,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
-<translation id="5000922062037820727">Bloqueada (recomendado)</translation>
 <translation id="5004339818306944878">Use até 60% a menos de dados e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visitar.</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
@@ -402,7 +398,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
 <translation id="5345083863238459644">O acesso a locais também está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experimento Adição aprimorada à tela inicial</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
 <translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo de navegação anônima.</translation>
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
@@ -652,7 +647,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7929962904089429003">Abrir o menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
-<translation id="7949961459945740081">Atualizar recursos</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
@@ -663,7 +657,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
-<translation id="8033827949643255796">selecionado</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>

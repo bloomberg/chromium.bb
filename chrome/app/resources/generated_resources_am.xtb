@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">የአቃፊ ስም አርትዕ</translation>
 <translation id="2226449515541314767">ይህ ጣቢያ የMIDI መሳሪያዎች ሙሉ ቁጥጥር እንዳይኖረው ታግዷል።</translation>
 <translation id="2226720438730111184">ምን እየተከሰተ እንዳለ ይንገሩን</translation>
-<translation id="222903405933288376">Google አካባቢያዊ ይዘት እንዲያቀርብልዎ አካባቢዎን ይጠቀማል። ይህን በ<ph name="SETTINGS_LINK" /> ውስጥ መቀየር ይችላሉ።</translation>
 <translation id="2229161054156947610">ከ1 ሰዓት በላይ ይቀራል</translation>
 <translation id="222931766245975952">ፋይል ተቋርጧል</translation>
 <translation id="222949136907494149"><ph name="URL" /> የኮምፒውተርዎን አካባቢ ለመጠቀም ይፈልጋል።</translation>
@@ -1088,7 +1087,6 @@
 <translation id="2575247648642144396">ቅጥያው በአሁኑ ገጽ ላይ መስራት ሲችል ይህ አዶ የሚታይ ይሆናል። አዶውን ጠቅ በማድረግ ወይም <ph name="EXTENSION_SHORTCUT" />ን በመጫን ይህንን ቅጥያ ይጠቀሙበት።</translation>
 <translation id="2576842806987913196">ይህን ስም የያዘ የCRX ፋይል አስቀድሞ ነበር።</translation>
 <translation id="2579575372772932244">መገለጫውን ዳግም በመፍጠር ላይ፣ እባክዎ ይጠብቁ...</translation>
-<translation id="2580168606262715640">የእርስዎን ስልክ ማግኘት አልተቻለም። በቅርብ ርቀት መኖሩን ያረጋግጡ።</translation>
 <translation id="2580889980133367162">ሁልጊዜም <ph name="HOST" /> ከአንድ በላይ ፋይሎችን እንዲያወርድ ይፍቀዱ</translation>
 <translation id="2580924999637585241">አጠቃላይ፦ <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">ረጅም</translation>
@@ -2171,7 +2169,6 @@
 <translation id="4130207949184424187">አንድ ቅጥያ ከኦምኒቦክሱ ሆነው ሲፈልጉ የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="413121957363593859">አካላት</translation>
 <translation id="4131410914670010031">ጥቁር እና ነጭ</translation>
-<translation id="4135054690906486073">ይህ አውታረ መረብ ለሌሎች ተጠቃሚዎች የተጋራ ነው</translation>
 <translation id="4135450933899346655">ሰርቲፊኬቶችዎ</translation>
 <translation id="4138267921960073861">በመግቢያ ገጹ ላይ የተጠቃሚ ስሞች እና ፎቶዎችን አሳይ</translation>
 <translation id="4140559601186535628">የግፋ መልዕክቶች</translation>
@@ -2575,9 +2572,6 @@
 <translation id="4813345808229079766">ማገናኘት</translation>
 <translation id="4813512666221746211">የአውታረ መረብ ስህተት</translation>
 <translation id="4816492930507672669">ገጹን አመጣጥን</translation>
-<translation id="4816617200045929931">የመገለጫ ስህተት መልእክቱን ከማግኘትዎ በፊት በትክክል ምን እንደተፈጠረ ይንገሩን፦
-
-****ከዚህ መስመር በታች ምንም ዓይነት ለውጥ አያድርጉ****</translation>
 <translation id="4820334425169212497">አይ፣ አይታየኝም</translation>
 <translation id="4821086771593057290">የይለፍ ቃልዎ ተቀይሯል። እባክዎ በአዲሱ የይለፍ ቃልዎ እንደገና ይሞክሩ።</translation>
 <translation id="4821935166599369261">&amp;መገለጫ መስራት ነቅቷል</translation>
@@ -2943,7 +2937,6 @@
 <translation id="5340217413897845242">የመደርደሪያ ንጥል 6</translation>
 <translation id="5341390997810576190">የተንቀሳቃሽ ስልክ ውሂብ ተጠቀም</translation>
 <translation id="5342091991439452114">ፒን ቢያንስ <ph name="MINIMUM" /> አኃዞች መሆን አለበት</translation>
-<translation id="5342344590724511265">የስንክል ግብረመልስ ትር።</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" />ን ተጠቀም</translation>
 <translation id="534916491091036097">ግራ ቅንፍ</translation>
 <translation id="5350965906220856151">ኧረ ወዮው!</translation>
@@ -3215,6 +3208,7 @@
 <translation id="5764483294734785780">ተሰሚ/ኦዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="57646104491463491">የተቀየረበት ቀን</translation>
 <translation id="5764797882307050727">እባክዎ በመሣሪያዎ ላይ የተወሰነ ቦታ ያስለቅቁ።</translation>
+<translation id="5765425701854290211">ይቅርታ፣ አንዳንድ ፋይሎች የተበላሹ ሲሆኑ ዝማኔው አልተሳካም። የተሰመሩ ፋይሎችዎ በጥንቃቄ ተይዘዋል።</translation>
 <translation id="5765491088802881382">ምንም አውታረ መረብ የለም</translation>
 <translation id="5765780083710877561">መግለጫ</translation>
 <translation id="5771585441665576801">በቋንቋ ፊደል መጻፍ (geia → γεια)</translation>
@@ -4430,6 +4424,7 @@
 <translation id="7615910377284548269">በማጣሪያ ያልተቀመጠ ተሰኪን ማገድን ያስተዳድሩ...</translation>
 <translation id="7617366389578322136">ከ«<ph name="DEVICE_NAME" />» ጋር በመገናኘት ላይ</translation>
 <translation id="761779991806306006">ምንም የይለፍ ቃሎች አልተቀመጡም።</translation>
+<translation id="7622114377921274169">ኃይል በመሙላት ላይ።</translation>
 <translation id="7624154074265342755">የገመድ አልባ አውታረ መረቦች</translation>
 <translation id="7624337243375417909">አቢያት ማድረጊያ ጠፍቷል</translation>
 <translation id="7627790789328695202">ውይ፣ <ph name="FILE_NAME" /> አስቀድሞ አለ። ዳግም ይሰይሙትና እንደገና ይሞክሩ።</translation>
@@ -4875,6 +4870,7 @@ nil</translation>
 <translation id="8270242299912238708">የፒዲኤፍ ሰነዶች</translation>
 <translation id="827097179112817503">መነሻ አዝራር አሳይ</translation>
 <translation id="8272443605911821513">በ«ተጨማሪ መሣሪያዎች» ምናሌው ውስጥ ቅጥያዎች የሚለውን ጠቅ በማድረግ ቅጥያዎችዎን ያቀናብሩ።</translation>
+<translation id="8274924778568117936">ዝማኔው እስኪጨርስ ድረስ የእርስዎን <ph name="DEVICE_TYPE" /> አያጥፉት ወይም አይዝጉት። መጫኑ ከተጠናቀቀ በኋላ የእርስዎ <ph name="DEVICE_TYPE" /> ዳግም ይነሳል።</translation>
 <translation id="8275038454117074363">ከውጭ አስመጣ</translation>
 <translation id="8276560076771292512">ባዶ መሸጎጫ እና ደረቅ ዳግም መጫን</translation>
 <translation id="8279388322240498158">የሶራኒ ኩርድኛ በእንግሊዝኛ ላይ የተመሠረተ ቁልፍ ሰሌዳ</translation>
@@ -5316,7 +5312,6 @@ nil</translation>
 <translation id="8963572037665351978">ከዝግጅት አቀራረብ ውጣ</translation>
 <translation id="8965037249707889821">የድሮ ይለፍ ቃል ያስገቡ</translation>
 <translation id="8965697826696209160">በቂ ቦታ የለም።</translation>
-<translation id="8968527460726243404">ChromeOS ስርዓት ምስል ጸሐፊ</translation>
 <translation id="8970203673128054105">የcast ሁነታ ዝርዝር ይመልከቱ</translation>
 <translation id="89720367119469899">አምልጥ</translation>
 <translation id="8972513834460200407">ኬላው ከGoogle አገልጋዩች የሚመጡ ውርዶችን እያገደ አለመሆኑን ለማረጋገጥ እባክዎ የአውታረ መረብ አስተዳዳሪዎን ያግኙ።</translation>
@@ -5492,6 +5487,7 @@ nil</translation>
 <translation id="93766956588638423">ቅጥያ ይጠግኑ</translation>
 <translation id="938470336146445890">እባክዎ የተጠቃሚ እውቅና ማረጋገጫ ይጫኑ።</translation>
 <translation id="938582441709398163">የቁልፍ ሰሌዳ ተደራቢ</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">የይለፍ ሐረግ ያስገቡ</translation>
 <translation id="939736085109172342">አዲስ ዓቃፊ</translation>
 <translation id="940425055435005472">የቅርጸ-ቁምፊ መጠን፦</translation>

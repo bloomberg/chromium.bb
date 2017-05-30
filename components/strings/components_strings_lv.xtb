@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Savienojums ir šifrēts un autentificēts, izmantojot <ph name="CIPHER" />, un tajā tiek izmantots <ph name="KX" /> kā atslēgu apmaiņas mehānisms.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
 <translation id="2889159643044928134">Neielādēt atkārtoti</translation>
-<translation id="2900469785430194048">Mēģinot parādīt šo tīmekļa lapu, pārlūka Google Chrome atmiņā nepietika vietas.</translation>
 <translation id="2909946352844186028">Konstatētas tīkla izmaiņas.</translation>
 <translation id="2916038427272391327">Aizveriet citas programmas</translation>
 <translation id="2922350208395188000">Servera sertifikātu nevar pārbaudīt.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Politikas tips nav pareizs.</translation>
 <translation id="3032412215588512954">Vai vēlaties atkārtoti ielādēt šo vietni?</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{vismaz 1 vienums sinhronizētās ierīcēs}=1{1 vienums (un vēl citi sinhronizētās ierīcēs)}zero{# vienumi (un vēl citi sinhronizētās ierīcēs)}one{# vienums (un vēl citi sinhronizētās ierīcēs)}other{# vienumi (un vēl citi sinhronizētās ierīcēs)}}</translation>
 <translation id="3041612393474885105">Sertifikāta informācija</translation>
 <translation id="3063697135517575841">Pārlūkā Chrome pašlaik nevar apstiprināt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="3064966200440839136">Ja maksāšanai tiks izmantota ārēja lietojumprogramma, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
@@ -336,7 +334,6 @@
 <translation id="3681007416295224113">Sertifikāta informācija</translation>
 <translation id="3690164694835360974">Pieteikšanās nav droša</translation>
 <translation id="3693415264595406141">Parole:</translation>
-<translation id="3696411085566228381">nav</translation>
 <translation id="3704609568417268905"><ph name="TIME" />, <ph name="BOOKMARKED" />, <ph name="TITLE" />, <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>
@@ -384,7 +381,6 @@
 <translation id="4171400957073367226">Verifikācijas paraksts nav derīgs.</translation>
 <translation id="4196861286325780578">&amp;Atcelt pārvietošanas atsaukšanu</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Pārbaudiet ugunsmūri un pretvīrusu programmu konfigurācijas<ph name="END_LINK" />.</translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{nav}=1{1 lietotne ($1)}=2{2 lietotnes ($1, $2)}zero{# lietotnes ($1, $2, $3)}one{# lietotne ($1, $2, $3)}other{# lietotnes ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Avārijas</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Mēģiniet palaist tīkla diagnostiku<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Jūsu savienojums ar šo vietni nav pavisam drošs.</translation>
@@ -468,7 +464,6 @@
 <translation id="5045550434625856497">Nepareiza parole</translation>
 <translation id="5056549851600133418">Jums piemeklēti raksti</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Pārbaudiet starpniekservera adresi<ph name="END_LINK" />.</translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Nav sīkfailu.}=1{1 vietne izmanto sīkfailus. }zero{# vietnes izmanto sīkfailus. }one{# vietne izmanto sīkfailus. }other{# vietnes izmanto sīkfailus. }}</translation>
 <translation id="5087286274860437796">Servera sertifikāts šobrīd nav derīgs.</translation>
 <translation id="5087580092889165836">Pievienot karti</translation>
 <translation id="5089810972385038852">Štats</translation>
@@ -600,7 +595,6 @@
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
 <translation id="6387478394221739770">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet mūsu Beta versiju, kas pieejama vietnē chrome.com/beta.</translation>
-<translation id="6389758589412724634">Mēģinot parādīt šo tīmekļa lapu, pārlūka Chromium atmiņā nepietika vietas.</translation>
 <translation id="6404511346730675251">Rediģēt grāmatzīmi</translation>
 <translation id="6410264514553301377">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC.</translation>
 <translation id="6414888972213066896">Jūs lūdzāt vienam no vecākiem atļauju apmeklēt šo vietni</translation>
@@ -623,7 +617,6 @@
 <translation id="6556915248009097796">Derīguma termiņš: <ph name="EXPIRATION_DATE_ABBR" />; pēdējoreiz izmantota: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Jūsu vadītājs vēl nav to apstiprinājis</translation>
 <translation id="6569060085658103619">Jūs skatāt paplašinājumu lapu.</translation>
-<translation id="6593753688552673085">mazāk nekā <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Šifrēšanas opcijas</translation>
 <translation id="662080504995468778">Palikt</translation>
 <translation id="6626291197371920147">Derīga kartes numura pievienošana</translation>
@@ -635,7 +628,6 @@
 <translation id="6710594484020273272">&lt;Ierakstiet meklēšanas vienumu&gt;</translation>
 <translation id="6711464428925977395">Starpniekserverī radās kļūda, vai arī adrese nav pareiza.</translation>
 <translation id="6727102863431372879">Iestatīt</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{nav}=1{1 vienums}zero{# vienumi}one{# vienums}other{# vienumi}}</translation>
 <translation id="674375294223700098">Nezināma servera sertifikāta kļūda.</translation>
 <translation id="6753269504797312559">Politikas vērtība</translation>
 <translation id="6757797048963528358">Ierīce tika pārslēgta miega režīmā.</translation>
@@ -741,6 +733,7 @@
 <translation id="7669271284792375604">Uzbrucēji šajā vietnē var mudināt jūs uz tādu programmu instalēšanu, kuras traucē pārlūkošanu (piemēram, mainot sākumlapu vai apmeklētajās vietnēs rādot papildu reklāmas).</translation>
 <translation id="7674629440242451245">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet izstrādātāja versiju vietnē chrome.com/dev.</translation>
 <translation id="7682287625158474539">Piegāde</translation>
+<translation id="7701040980221191251">Neviens</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Apmeklēt vietni <ph name="SITE" /> (nav droša)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikāts</translation>
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
@@ -780,7 +773,6 @@
 <translation id="8041089156583427627">Sūtīt atsauksmes</translation>
 <translation id="8041940743680923270">Izmantot globālo noklusējumu (Vaicāt)</translation>
 <translation id="8088680233425245692">Rakstu neizdevās skatīt.</translation>
-<translation id="8089520772729574115">mazāk nekā 1 MB</translation>
 <translation id="8091372947890762290">Aktivizācija vēl nav apstiprināta serverī.</translation>
 <translation id="8118489163946903409">Maksājuma veids</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>

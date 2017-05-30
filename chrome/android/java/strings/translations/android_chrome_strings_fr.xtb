@@ -116,7 +116,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
 <translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
-<translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Assurer votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, application Web : <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3387650086002190359">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'erreurs liées au système de fichiers.</translation>
 <translation id="3398320232533725830">Ouvrir le gestionnaire de favoris</translation>
 <translation id="3414952576877147120">Taille :</translation>
-<translation id="3435896845095436175">Activer</translation>
 <translation id="3443221991560634068">Actualiser la page active</translation>
 <translation id="3452612588551937789">Connectez-vous à votre compte Google pour synchroniser vos favoris, vos mots de passe, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="3487093336331957349">Suggestions de recherches et de sites</translation>
@@ -319,7 +317,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4522570452068850558">Détails</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
-<translation id="4535858793016067060">Activez l'option "Sources inconnues" dans les paramètres de sécurité d'Android pour tester l'écran "Ajouter sur la page d'accueil" amélioré. N'oubliez pas de désactiver ce paramètre lorsque vous avez terminé le test.</translation>
 <translation id="4558311620361989323">Raccourcis de pages Web</translation>
 <translation id="4572422548854449519">Se connecter à un compte géré</translation>
 <translation id="4581964774250883625">Vous êtes passé en mode navigation privée</translation>
@@ -362,7 +359,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Partager via</translation>
-<translation id="5000922062037820727">Bloquée (recommandé)</translation>
 <translation id="5004339818306944878">Utilisez jusqu'à 60 % de données en moins et naviguez plus rapidement sur le Web. Grâce aux serveurs Google, les pages que vous consultez sont optimisées.</translation>
 <translation id="5005498671520578047">Copier mot de passe</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> tente de se connecter</translation>
@@ -403,7 +399,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5335288049665977812">Autoriser les sites à exécuter JavaScript (recommandé)</translation>
 <translation id="5345040418939504969">Le favori "<ph name="BOOKMARK_TITLE" />" a été supprimé.</translation>
 <translation id="5345083863238459644">L'accès aux données de localisation est également <ph name="BEGIN_LINK" />désactivé pour cet appareil<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Écran "Ajouter à la page d'accueil" amélioré</translation>
 <translation id="5372829067651257087">L'URL a bien été copiée.</translation>
 <translation id="5384883051496921101">Ce site s'apprête à partager des informations avec une application en dehors du mode navigation privée.</translation>
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
@@ -654,7 +649,6 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7929962904089429003">Ouvrir le menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> est obsolète.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
-<translation id="7949961459945740081">Obtenir dernières fonctionnalités</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
@@ -665,7 +659,6 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8015452622527143194">Rétablir taille par défaut des éléments de la page</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
-<translation id="8033827949643255796">sélectionné</translation>
 <translation id="8035133914807600019">Nouveau dossier…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> jours restants</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mo disponibles</translation>

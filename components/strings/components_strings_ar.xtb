@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">تم تشفير الاتصال ومصادقته باستخدام <ph name="CIPHER" />، ويستخدم <ph name="KX" /> كآلية التبادل الرئيسية.</translation>
 <translation id="2835170189407361413">محو النموذج</translation>
 <translation id="2889159643044928134">إلغاء إعادة التحميل</translation>
-<translation id="2900469785430194048">‏نفدت ذاكرة Google Chrome أثناء محاولة عرض صفحة الويب هذه.</translation>
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
 <translation id="2916038427272391327">إغلاق البرامج الأخرى</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
 <translation id="3032412215588512954">هل تريد إعادة تحميل هذا الموقع؟</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">معلومات الشهادة</translation>
 <translation id="3690164694835360974">عملية تسجيل الدخول غير آمنة</translation>
 <translation id="3693415264595406141">كلمة المرور:</translation>
-<translation id="3696411085566228381">بدون</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">جارٍ التحميل...</translation>
 <translation id="3712624925041724820">التراخيص مستنفذة</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />التحقق من عمليات تهيئة الجدار الناري وبرامج مكافحة الفيروسات<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{لا شيء}=1{تطبيق واحد ($1)}=2{تطبيقان (2) ($1، $2)}few{# تطبيقات ($1، $2، $3)}many{# تطبيقًا ($1، $2، $3)}other{# تطبيق ($1، $2، $3)}}</translation>
 <translation id="4220128509585149162">الأعطال</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />تجربة تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">إن اتصالك بهذا الموقع غير آمن تمامًا</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5056549851600133418">مقالات من أجلك</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />التحقق من عنوان الخادم الوكيل<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{لا توجد ملفات تعريف ارتباط}=1{يستخدم موقع ويب واحد ملفات تعريف الارتباط. }two{يستخدم موقعا ويب (#) ملفات تعريف الارتباط. }few{تستخدم # مواقع ويب ملفات تعريف الارتباط. }many{يستخدم # موقعًا من مواقع الويب ملفات تعريف الارتباط. }other{يستخدم # موقع ويب ملفات تعريف الارتباط. }}</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
 <translation id="5089810972385038852">بلد/دولة</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
 <translation id="6387478394221739770">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة القناة التجريبية على chrome.com/beta.</translation>
-<translation id="6389758589412724634">‏نفدت ذاكرة Chromium أثناء محاولة عرض صفحة الويب هذه.</translation>
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
 <translation id="6410264514553301377">‏أدخِل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_DATE_ABBR" />، وتاريخ آخر استخدام: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">لم يوافق عليه مديرك حتى الآن</translation>
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
-<translation id="6593753688552673085">أقل من <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">خيارات التشفير</translation>
 <translation id="662080504995468778">البقاء</translation>
 <translation id="6626291197371920147">إضافة رقم بطاقة صالح</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;إدخال عبارة البحث&gt;</translation>
 <translation id="6711464428925977395">هناك خطأ ما في الخادم الوكيل، أو العنوان غير صحيح.</translation>
 <translation id="6727102863431372879">تعيين</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{لا شيء}=1{عنصر واحد}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>
 <translation id="674375294223700098">حدث خطأ غير معروف في شهادة الخادم.</translation>
 <translation id="6753269504797312559">قيمة السياسة</translation>
 <translation id="6757797048963528358">خضع جهازك إلى وضع السكون.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">قد يحاول المهاجمون في هذا الموقع خداعك من خلال تثبيت برامج تضر بتجربة التصفح (على سبيل المثال، من خلال تغيير صفحتك الرئيسية أو عرض إعلانات إضافية على المواقع التي تزورها).</translation>
 <translation id="7674629440242451245">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة قناة مطوري البرامج على chrome.com/dev.</translation>
 <translation id="7682287625158474539">الشحن</translation>
+<translation id="7701040980221191251">بلا</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />متابعة إلى <ph name="SITE" /> (غير آمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">شهادة</translation>
 <translation id="7716424297397655342">لا يمكن تحميل موقع الويب هذا من ذاكرة التخزين المؤقت</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">إرسال تعليقات</translation>
 <translation id="8041940743680923270">استخدام الإعداد الافتراضي العمومي (طلب)</translation>
 <translation id="8088680233425245692">تعذّر عرض المقالة.</translation>
-<translation id="8089520772729574115">أقل من ميغابايت واحدة</translation>
 <translation id="8091372947890762290">التنشيط قيد الانتظار في الخادم</translation>
 <translation id="8118489163946903409">طريقة الدفع</translation>
 <translation id="8131740175452115882">التأكيد</translation>

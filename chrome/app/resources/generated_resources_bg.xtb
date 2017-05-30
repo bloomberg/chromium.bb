@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">Редактиране на името на папката</translation>
 <translation id="2226449515541314767">Пълният контрол над MIDI устройствата е блокиран за този сайт.</translation>
 <translation id="2226720438730111184">Кажете ни какво се случва</translation>
-<translation id="222903405933288376">Google използва местоположението ви, за да ви предоставя местно съдържание. Можете да промените това от <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Остава повече от 1 час</translation>
 <translation id="222931766245975952">Файлът е скъсен</translation>
 <translation id="222949136907494149"><ph name="URL" /> иска да използва местоположението на компютъра ви.</translation>
@@ -1084,7 +1083,6 @@
 <translation id="2575247648642144396">Тази икона ще бъде видима, когато разширението може да изпълнява действия върху текущата страница. Използвайте го, като кликнете върху иконата или натиснете „<ph name="EXTENSION_SHORTCUT" />“.</translation>
 <translation id="2576842806987913196">Вече присъства CRX файл с това име.</translation>
 <translation id="2579575372772932244">Потребителският профил се създава отново. Моля, изчакайте...</translation>
-<translation id="2580168606262715640">Телефонът ви не може да бъде намерен. Уверете се, че е наблизо.</translation>
 <translation id="2580889980133367162">Винаги да е разрешено на <ph name="HOST" /> да изтегля няколко файла</translation>
 <translation id="2580924999637585241">Общо: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Дълго</translation>
@@ -2169,7 +2167,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4130207949184424187">Това разширение промени страницата, която се показва при търсене от полето за всичко.</translation>
 <translation id="413121957363593859">Компоненти</translation>
 <translation id="4131410914670010031">Черно-бяло</translation>
-<translation id="4135054690906486073">Тази мрежа се споделя с други потребители</translation>
 <translation id="4135450933899346655">Вашите сертификати</translation>
 <translation id="4138267921960073861">Потребителските имена и снимките да се показват на екрана за вход</translation>
 <translation id="4140559601186535628">Насочени съобщения</translation>
@@ -2573,9 +2570,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4813345808229079766">Връзка</translation>
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="4816492930507672669">Да се побере в страницата</translation>
-<translation id="4816617200045929931">Кажете ни какво точно се случи, преди да получите съобщението за грешка в потребителския профил:
-
-****НЕ ПРАВЕТЕ ПРОМЕНИ ПОД ТОЗИ РЕД****</translation>
 <translation id="4820334425169212497">Не, не го виждам</translation>
 <translation id="4821086771593057290">Паролата ви е променена. Моля, опитайте отново с новата си парола.</translation>
 <translation id="4821935166599369261">&amp;Профилирането е активирано</translation>
@@ -2941,7 +2935,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5340217413897845242">Елемент 6 в лавицата</translation>
 <translation id="5341390997810576190">използва мобилни данни</translation>
 <translation id="5342091991439452114">ПИН кодът трябва да съдържа поне <ph name="MINIMUM" /> цифри</translation>
-<translation id="5342344590724511265">Отзиви за раздел, претърпял срив.</translation>
 <translation id="5342451237681332106">Използване на <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Лява скоба</translation>
 <translation id="5350965906220856151">Ами сега!</translation>
@@ -3214,6 +3207,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
 <translation id="57646104491463491">Дата на промяна</translation>
 <translation id="5764797882307050727">Моля, освободете място на устройството си.</translation>
+<translation id="5765425701854290211">За съжаление, някой файлове бяха повредени и актуализирането не бе успешно. Синхронизираните ви данни са в безопасност.</translation>
 <translation id="5765491088802881382">Няма налични мрежи</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771585441665576801">Транслитерация (geia → γεια)</translation>
@@ -4429,6 +4423,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7615910377284548269">Управление на блокирането на приставки извън тестова среда...</translation>
 <translation id="7617366389578322136">Свързване със: <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">Няма запазени пароли.</translation>
+<translation id="7622114377921274169">Зарежда се.</translation>
 <translation id="7624154074265342755">Безжични мрежи</translation>
 <translation id="7624337243375417909">caps lock е изключен</translation>
 <translation id="7627790789328695202">Ами сега! Файлът „<ph name="FILE_NAME" />“ вече съществува. Преименувайте го и опитайте отново.</translation>
@@ -4868,6 +4863,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8270242299912238708">PDF документи</translation>
 <translation id="827097179112817503">Показване на бутона за начална страница</translation>
 <translation id="8272443605911821513">Управлявайте разширенията си, като кликнете върху „Разширения“ в менюто „Още инструменти“.</translation>
+<translation id="8274924778568117936">Не изключвайте, нито затваряйте устройството си <ph name="DEVICE_TYPE" />, докато актуализирането не завърши. <ph name="DEVICE_TYPE" /> ще се рестартира след завършване на инсталирането.</translation>
 <translation id="8275038454117074363">Импортиране</translation>
 <translation id="8276560076771292512">Изпразване на кеша и твърдо презареждане</translation>
 <translation id="8279388322240498158">Кюрдски (сорани), базирана на английски клавиатура</translation>
@@ -5309,7 +5305,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8963572037665351978">Изход от презентацията</translation>
 <translation id="8965037249707889821">Въведете старата парола</translation>
 <translation id="8965697826696209160">Няма достатъчно място.</translation>
-<translation id="8968527460726243404">Запис на системни образи на ChromeOS</translation>
 <translation id="8970203673128054105">Преглед на списъка с режими за предаване</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Моля, обърнете се към системния си администратор, за да се уверите, че защитната стена не блокира изтеглянията от сървърите на Google.</translation>
@@ -5485,6 +5480,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="93766956588638423">Поправяне на разширението</translation>
 <translation id="938470336146445890">Моля, инсталирайте потребителски сертификат.</translation>
 <translation id="938582441709398163">Наслагване върху клавиатурата</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Въведете пропуск</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="940425055435005472">Размер на шрифта:</translation>

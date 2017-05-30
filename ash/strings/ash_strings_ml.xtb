@@ -53,6 +53,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
+<translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
@@ -152,6 +153,7 @@
 <translation id="5571066253365925590">Bluetooth പ്രാപ്‌തമാക്കി</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5648021990716966815">Mic jack</translation>
+<translation id="5744083938413354016">ടാപ്പുചെയ്‌ത് വലിച്ചിടൽ</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
@@ -204,7 +206,6 @@
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
 <translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="7067196344162293536">സ്വയമേവ തിരിക്കുക</translation>
-<translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="7129360219436193655">ലേസർ പോയിന്റർ മോഡ്</translation>
 <translation id="714034171374937760">Chromebase</translation>

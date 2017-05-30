@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">تعديل اسم المجلد</translation>
 <translation id="2226449515541314767">‏تم حظر هذا الموقع من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
 <translation id="2226720438730111184">أخبرنا بما يحدث</translation>
-<translation id="222903405933288376">‏تستخدم Google موقعك لتقديم محتوى محلّي لك. يمكنك تغيير ذلك في <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">يتبقى أكثر من ساعة واحدة</translation>
 <translation id="222931766245975952">تم اقتطاع الملف</translation>
 <translation id="222949136907494149">يريد <ph name="URL" /> استخدام موقع جهاز الكمبيوتر.</translation>
@@ -1088,7 +1087,6 @@
 <translation id="2575247648642144396">سيكون هذا الرمز مرئيًا عندما تتمكن الإضافة من تنفيذ الإجراءات على الصفحة الحالية. يمكنك استخدام هذه الإضافة بالنقر على الرمز أو بالضغط على <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">‏هناك ملف CRX بهذا الاسم فعلاً.</translation>
 <translation id="2579575372772932244">إعادة إنشاء الملف الشخصي، يُرجى الانتظار...</translation>
-<translation id="2580168606262715640">لا يمكن العثور على هاتفك. تأكد من أنه على بعد ذراع.</translation>
 <translation id="2580889980133367162">السماح دائمًا لـ <ph name="HOST" /> بتنزيل عدة ملفات</translation>
 <translation id="2580924999637585241">الإجمالي: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">طويل</translation>
@@ -2167,7 +2165,6 @@
 <translation id="4130207949184424187">غيّرت هذه الإضافة الصفحة التي تظهر عند البحث في المربع متعدد الاستخدامات.</translation>
 <translation id="413121957363593859">المكونات</translation>
 <translation id="4131410914670010031">أبيض وأسود</translation>
-<translation id="4135054690906486073">هذه الشبكة مشتركة مع مستخدمين آخرين</translation>
 <translation id="4135450933899346655">الشهادات</translation>
 <translation id="4138267921960073861">عرض أسماء المستخدمين والصور على شاشة تسجيل الدخول</translation>
 <translation id="4140559601186535628">رسائل الدفع</translation>
@@ -2571,9 +2568,6 @@
 <translation id="4813345808229079766">اتصال</translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
 <translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
-<translation id="4816617200045929931">أخبرنا بما حدث بالضبط قبل ظهور رسالة خطأ الملف الشخصي:
-
-****لا تغيّر ما تحت هذا السطر****</translation>
 <translation id="4820334425169212497">لا، أنا لا أراه.</translation>
 <translation id="4821086771593057290">تم تغيير كلمة المرور. الرجاء المحاولة مرة أخرى باستخدام كلمة مرورك الجديدة.</translation>
 <translation id="4821935166599369261">&amp;التوصيف مفعّل</translation>
@@ -2938,7 +2932,6 @@
 <translation id="5340217413897845242">عنصر الرف 6</translation>
 <translation id="5341390997810576190">استخدام بيانات شبكة الجوّال</translation>
 <translation id="5342091991439452114">يجب أن يتكوَّن رقم التعريف الشخصي من <ph name="MINIMUM" /> من الأرقام على الأقل</translation>
-<translation id="5342344590724511265">التعليقات المرتبطة بعلامة التبويب المعطلة.</translation>
 <translation id="5342451237681332106">استخدام <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">قوس أيسر</translation>
 <translation id="5350965906220856151">عذرًا!</translation>
@@ -3210,6 +3203,7 @@
 <translation id="5764483294734785780">حف&amp;ظ ملف الصوت باسم...</translation>
 <translation id="57646104491463491">تاريخ التعديل</translation>
 <translation id="5764797882307050727">يُرجى إخلاء بعض المساحة على جهازك.</translation>
+<translation id="5765425701854290211">عذرًا، حدث تلف لبعض الملفات ولم يتم التحديث بنجاح. غير أن ملفاتك المتزامنة آمنة.</translation>
 <translation id="5765491088802881382">لا تتوفر أية شبكات</translation>
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5771585441665576801">‏التحويل الصوتي (جيا ← γεια)</translation>
@@ -4427,6 +4421,7 @@
 <translation id="7615910377284548269">جارٍ إدارة حظر المكوّن الإضافي غير المحمي...</translation>
 <translation id="7617366389578322136">جارٍ الاتصال بـ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">لم يتم حفظ أي كلمات مرور.</translation>
+<translation id="7622114377921274169">جارٍ الشحن.</translation>
 <translation id="7624154074265342755">الشبكات اللاسلكية</translation>
 <translation id="7624337243375417909">‏مفتاح caps lock متوقف</translation>
 <translation id="7627790789328695202">عذرًا، <ph name="FILE_NAME" /> موجود من قبل. يمكنك إعادة تسميته وإعادة المحاولة.</translation>
@@ -4867,6 +4862,7 @@
 <translation id="8270242299912238708">‏مستندات PDF</translation>
 <translation id="827097179112817503">عرض زر الصفحة الرئيسية</translation>
 <translation id="8272443605911821513">يمكنك إدارة الإضافات من خلال النقر على "الإضافات" في قائمة "المزيد من الأدوات".</translation>
+<translation id="8274924778568117936">لا توقف تشغيل جهاز <ph name="DEVICE_TYPE" /> أو تُغلقه لحين الانتهاء من التحديث. ستتم إعادة تشغيل جهاز <ph name="DEVICE_TYPE" /> بعد اكتمال التثبيت.</translation>
 <translation id="8275038454117074363">الاستيراد</translation>
 <translation id="8276560076771292512">إفراغ ذاكرة التخزين المؤقت وإعادة التحميل بشكل كامل</translation>
 <translation id="8279388322240498158">لوحة مفاتيح اللغة السورانية الكردية المدعمة بالإنجليزية</translation>
@@ -5307,7 +5303,6 @@
 <translation id="8963572037665351978">الخروج من العرض</translation>
 <translation id="8965037249707889821">إدخال كلمة المرور القديمة</translation>
 <translation id="8965697826696209160">ليست هناك مساحة كافية.</translation>
-<translation id="8968527460726243404">‏كاتب الصور لنظام ChromeOS</translation>
 <translation id="8970203673128054105">عرض قائمة وضع الإرسال</translation>
 <translation id="89720367119469899">خروج</translation>
 <translation id="8972513834460200407">‏الرجاء التحقق مع مشرف الشبكة للتأكد من عدم حظر الجدار الناري للتنزيلات من خوادم Google.</translation>
@@ -5483,6 +5478,7 @@
 <translation id="93766956588638423">إصلاح الإضافة</translation>
 <translation id="938470336146445890">الرجاء تثبيت شهادة مستخدم.</translation>
 <translation id="938582441709398163">تراكب لوحة المفاتيح</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">إدخال عبارة المرور</translation>
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="940425055435005472">حجم الخط:</translation>

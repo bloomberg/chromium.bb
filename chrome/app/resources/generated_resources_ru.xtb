@@ -834,7 +834,6 @@
 <translation id="2224551243087462610">Изменить имя папки</translation>
 <translation id="2226449515541314767">Этому сайту запрещено получать полный контроль над устройствами MIDI.</translation>
 <translation id="2226720438730111184">Описание проблемы</translation>
-<translation id="222903405933288376">Google предлагает результаты поиска в зависимости от вашего местоположения. Изменить настройки этой функции можно здесь: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Осталось больше часа</translation>
 <translation id="222931766245975952">Файл поврежден</translation>
 <translation id="222949136907494149"><ph name="URL" /> запрашивает данные о местоположении вашего компьютера.</translation>
@@ -1086,7 +1085,6 @@
 <translation id="2575247648642144396">Значок будет отображаться, если расширение может работать на загруженной странице. Активируйте его, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Файл CRX с таким именем уже существует.</translation>
 <translation id="2579575372772932244">Профиль восстанавливается...</translation>
-<translation id="2580168606262715640">Телефон не обнаружен. Он должен находиться на расстоянии вытянутой руки.</translation>
 <translation id="2580889980133367162">Всегда разрешать <ph name="HOST" /> скачивать нескольких файлов</translation>
 <translation id="2580924999637585241">Всего: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">долгая</translation>
@@ -2173,7 +2171,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4130207949184424187">Расширение изменило поисковую систему, которая используется по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="413121957363593859">Компоненты</translation>
 <translation id="4131410914670010031">Черно-белая печать</translation>
-<translation id="4135054690906486073">Эта сеть доступна другим пользователям</translation>
 <translation id="4135450933899346655">Ваши сертификаты</translation>
 <translation id="4138267921960073861">Показывать имена и фотографии пользователей на экране входа</translation>
 <translation id="4140559601186535628">Push-сообщения</translation>
@@ -2577,9 +2574,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4813345808229079766">Соединение</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
 <translation id="4816492930507672669">По размеру страницы</translation>
-<translation id="4816617200045929931">Опишите, что произошло перед появлением сообщения об ошибке в профиле:
-
-****НЕ МЕНЯЙТЕ ТЕКСТ ПОД ЭТОЙ ЛИНИЕЙ****</translation>
 <translation id="4820334425169212497">Нет</translation>
 <translation id="4821086771593057290">Ваш пароль изменился. Повторите попытку и введите новый пароль.</translation>
 <translation id="4821935166599369261">&amp;Сбор данных включен</translation>
@@ -2945,7 +2939,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5340217413897845242">6-й объект на панели запуска</translation>
 <translation id="5341390997810576190">Будет использовать мобильные данные</translation>
 <translation id="5342091991439452114">PIN-код должен содержать не менее <ph name="MINIMUM" /> знаков</translation>
-<translation id="5342344590724511265">Сообщение о сбое вкладки.</translation>
 <translation id="5342451237681332106">Использовать <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Левая скобка</translation>
 <translation id="5350965906220856151">Ошибка</translation>
@@ -3217,6 +3210,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
 <translation id="57646104491463491">Последнее изменение</translation>
 <translation id="5764797882307050727">Освободите место в памяти устройства.</translation>
+<translation id="5765425701854290211">Не удалось выполнить обновление, так как некоторые файлы были повреждены. Все синхронизированные файлы в безопасности.</translation>
 <translation id="5765491088802881382">Нет доступных сетей</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771585441665576801">Транслитерация (geia → γεια)</translation>
@@ -4433,6 +4427,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7615910377284548269">Изменить настройки блокирования плагинов вне тестовой среды…</translation>
 <translation id="7617366389578322136">Подключение к устройству "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Нет сохраненных паролей</translation>
+<translation id="7622114377921274169">Зарядка…</translation>
 <translation id="7624154074265342755">Беспроводные сети</translation>
 <translation id="7624337243375417909">клавиша Caps Lock не нажата</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" уже существует. Задайте другое название и повторите попытку.</translation>
@@ -4872,6 +4867,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8270242299912238708">PDF-файлы</translation>
 <translation id="827097179112817503">Показывать кнопку "Главная страница"</translation>
 <translation id="8272443605911821513">Управляйте расширениями в соответствующем разделе в меню дополнительных инструментов.</translation>
+<translation id="8274924778568117936">Не выключайте и не закрывайте <ph name="DEVICE_TYPE" />, выполняется обновление. После завершения установки <ph name="DEVICE_TYPE" /> перезагрузится.</translation>
 <translation id="8275038454117074363">Импорт</translation>
 <translation id="8276560076771292512">Очистка кеша и аппаратная перезагрузка</translation>
 <translation id="8279388322240498158">Раскладка сорани (латиница)</translation>
@@ -5312,7 +5308,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8963572037665351978">Выйти из режима презентации</translation>
 <translation id="8965037249707889821">Введите старый пароль</translation>
 <translation id="8965697826696209160">Недостаточно свободного места.</translation>
-<translation id="8968527460726243404">Системное средство записи изображений в Chrome OS</translation>
 <translation id="8970203673128054105">Просмотреть список режимов трансляции</translation>
 <translation id="89720367119469899">Отключить</translation>
 <translation id="8972513834460200407">Уточните у администратора сети, не блокирует ли брандмауэр скачивание файлов с серверов Google.</translation>
@@ -5487,6 +5482,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="93766956588638423">Восстановить расширение</translation>
 <translation id="938470336146445890">Установите сертификат пользователя.</translation>
 <translation id="938582441709398163">Накладка на клавиатуру</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Введите кодовую фразу</translation>
 <translation id="939736085109172342">Новая папка</translation>
 <translation id="940425055435005472">Размер шрифта:</translation>

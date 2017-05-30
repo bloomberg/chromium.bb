@@ -835,7 +835,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2224551243087462610">Modifica nome cartella</translation>
 <translation id="2226449515541314767">A questo sito è stato impedito il controllo totale dei dispositivi MIDI.</translation>
 <translation id="2226720438730111184">Spiegaci cosa succede</translation>
-<translation id="222903405933288376">Google utilizza la tua posizione per fornirti contenuti locali. Puoi modificare questa impostazione in <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Più di un'ora rimanente</translation>
 <translation id="222931766245975952">File troncato</translation>
 <translation id="222949136907494149">L'<ph name="URL" /> chiede di utilizzare la posizione del tuo computer.</translation>
@@ -1087,7 +1086,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2575247648642144396">Questa icona sarà visibile quando l'estensione potrà agire sulla pagina corrente. Utilizza questa estensione facendo clic sull'icona o premendo <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Esiste già un file CRX con questo nome.</translation>
 <translation id="2579575372772932244">Ricreazione del profilo in corso, attendi...</translation>
-<translation id="2580168606262715640">Impossibile trovare il telefono. Assicurati che sia a portata di mano.</translation>
 <translation id="2580889980133367162">Consenti sempre a <ph name="HOST" /> di scaricare più file</translation>
 <translation id="2580924999637585241">Totale: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lungo</translation>
@@ -2169,7 +2167,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4130207949184424187">Questa estensione ha cambiato la pagina mostrata quando esegui ricerche dalla omnibox.</translation>
 <translation id="413121957363593859">Componenti</translation>
 <translation id="4131410914670010031">In bianco e nero</translation>
-<translation id="4135054690906486073">Questa rete è condivisa con altri utenti</translation>
 <translation id="4135450933899346655">I tuoi certificati</translation>
 <translation id="4138267921960073861">Visualizza nomi e foto dell'utente sulla schermata di accesso</translation>
 <translation id="4140559601186535628">Messaggi push</translation>
@@ -2570,9 +2567,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4813345808229079766">Connessione</translation>
 <translation id="4813512666221746211">Errore di rete</translation>
 <translation id="4816492930507672669">Adatta alla pagina</translation>
-<translation id="4816617200045929931">Descrivi che cosa è accaduto esattamente prima che apparisse il messaggio di errore del profilo:
-
-****NON MODIFICARE DOPO QUESTA RIGA****</translation>
 <translation id="4820334425169212497">No, non lo vedo</translation>
 <translation id="4821086771593057290">La tua password è stata modificata. Riprova con la nuova password.</translation>
 <translation id="4821935166599369261">&amp;Profiling attivato</translation>
@@ -2937,7 +2931,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5340217413897845242">Elemento 6 della shelf</translation>
 <translation id="5341390997810576190">Utilizza la rete dati</translation>
 <translation id="5342091991439452114">Il PIN deve contenere almeno <ph name="MINIMUM" /> cifre</translation>
-<translation id="5342344590724511265">Feedback relativo agli arresti anomali delle schede.</translation>
 <translation id="5342451237681332106">Utilizza <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Parent. sinistra</translation>
 <translation id="5350965906220856151">Spiacenti.</translation>
@@ -3209,6 +3202,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
 <translation id="57646104491463491">Data ultima modifica</translation>
 <translation id="5764797882307050727">Libera spazio sul dispositivo</translation>
+<translation id="5765425701854290211">Spiacenti, alcuni file erano danneggiati, pertanto l'aggiornamento non è andato a buon fine. I file sincronizzati sono al sicuro.</translation>
 <translation id="5765491088802881382">Nessuna rete disponibile</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5771585441665576801">Traslitterazione (geia → γεια)</translation>
@@ -4416,6 +4410,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7615910377284548269">Gestisci il blocco dei plug-in senza sandbox...</translation>
 <translation id="7617366389578322136">Collegamento a "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Nessuna password salvata.</translation>
+<translation id="7622114377921274169">In carica.</translation>
 <translation id="7624154074265342755">Reti wireless</translation>
 <translation id="7624337243375417909">bloc maiusc non attivo</translation>
 <translation id="7627790789328695202">Spiacenti. <ph name="FILE_NAME" /> esiste già. Rinominarlo e riprovare.</translation>
@@ -4855,6 +4850,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8270242299912238708">Documenti PDF</translation>
 <translation id="827097179112817503">Mostra pulsante Pagina iniziale</translation>
 <translation id="8272443605911821513">Gestisci le tue estensioni facendo clic su Estensioni nel menu "Altri strumenti".</translation>
+<translation id="8274924778568117936">Non spegnere o chiudere il tuo dispositivo <ph name="DEVICE_TYPE" /> fino al termine dell'aggiornamento. Il dispositivo <ph name="DEVICE_TYPE" /> si riavvierà al termine dell'installazione.</translation>
 <translation id="8275038454117074363">Importa</translation>
 <translation id="8276560076771292512">Svuota la cache e ricarica manualmente</translation>
 <translation id="8279388322240498158">Tastiera basata su inglese curdo sorani</translation>
@@ -5295,7 +5291,6 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="8963572037665351978">Esci dalla presentazione</translation>
 <translation id="8965037249707889821">Inserisci vecchia password</translation>
 <translation id="8965697826696209160">Spazio insufficiente.</translation>
-<translation id="8968527460726243404">ChromeOS System Image Writer</translation>
 <translation id="8970203673128054105">Visualizza l'elenco della modalità di trasmissione</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Rivolgiti al tuo amministratore di rete per verificare che il firewall non blocchi i download dai server di Google.</translation>
@@ -5470,6 +5465,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="93766956588638423">Ripara estensione</translation>
 <translation id="938470336146445890">Installa un certificato utente.</translation>
 <translation id="938582441709398163">Overlay tastiera</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Inserisci passphrase</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="940425055435005472">Dimensioni dei caratteri:</translation>

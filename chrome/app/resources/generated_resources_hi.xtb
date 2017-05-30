@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">फ़ोल्डर का नाम संपादित करें</translation>
 <translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूर्ण नियंत्रण रखने से अवरोधित कर दिया गया है.</translation>
 <translation id="2226720438730111184">हमें बताएं कि क्या हो रहा है</translation>
-<translation id="222903405933288376">आपको स्थानीय सामग्री देने के लिए, Google आपके स्थान का उपयोग करता है. आप इसे <ph name="SETTINGS_LINK" /> में बदल सकते हैं.</translation>
 <translation id="2229161054156947610">1 घंटा से अधिक शेष है</translation>
 <translation id="222931766245975952">फ़ाइल छोटी हो गई</translation>
 <translation id="222949136907494149"><ph name="URL" /> आपके कंप्यूटर के स्थान का उपयोग करना चाहता है.</translation>
@@ -1087,7 +1086,6 @@
 <translation id="2575247648642144396">जब एक्सटेंशन वर्तमान पेज पर कार्य कर सकेगा, तब यह आइकन दृश्यमान होगा. आइकन पर क्लिक करके या <ph name="EXTENSION_SHORTCUT" /> को दबाकर यह एक्सटेंशन सक्रिय करें.</translation>
 <translation id="2576842806987913196">इस नाम वाली CRX फ़ाइल पहले से ही मौजूद है.</translation>
 <translation id="2579575372772932244">प्रोफ़ाइल फिर से बनाई जा रही है, कृपया प्रतीक्षा करें...</translation>
-<translation id="2580168606262715640">आपका फ़ोन नहीं मिल पा रहा है. सुनिश्‍चित करें कि वह पहुंच में है.</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> को एकाधिक फ़ाइलें हमेशा डाउनलोड करने दें</translation>
 <translation id="2580924999637585241">कुल: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">लंबी</translation>
@@ -2171,7 +2169,6 @@
 <translation id="4130207949184424187">इस एक्सटेंशन ने यह बदल दिया है कि जब आप खोज वाली पट्टी से खोजते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="413121957363593859">घटक</translation>
 <translation id="4131410914670010031">श्याम और श्वेत</translation>
-<translation id="4135054690906486073">यह नेटवर्क दूसरे उपयोगकर्ताओं से साझा कि‍या गया है</translation>
 <translation id="4135450933899346655">आपके प्रमाणपत्र</translation>
 <translation id="4138267921960073861">साइन-इन स्‍क्रीन पर उपयोगकर्ता नाम और फ़ोटो दिखाएं</translation>
 <translation id="4140559601186535628">पुश संदेश</translation>
@@ -2575,9 +2572,6 @@
 <translation id="4813345808229079766">कनेक्शन</translation>
 <translation id="4813512666221746211">नेटवर्क गड़बड़ी</translation>
 <translation id="4816492930507672669">पेज में फ़िट करें</translation>
-<translation id="4816617200045929931">हमें बताएं कि आपको प्रोफ़ाइल संबंधी गड़बड़ी का संदेश मिलने से पहले वास्तव में क्या हुआ था:
-
-****इस पंक्ति के नीचे बदलाव ना करें****</translation>
 <translation id="4820334425169212497">नहीं, मुझे वह दिखाई नहीं दे रहा</translation>
 <translation id="4821086771593057290">आपका पासवर्ड बदल गया है. कृपया अपने नए पासवर्ड के साथ पुन: प्रयास करें.</translation>
 <translation id="4821935166599369261">&amp;प्रोफ़ाइलिंग सक्षम</translation>
@@ -2943,7 +2937,6 @@
 <translation id="5340217413897845242">अलमारी आइटम 6</translation>
 <translation id="5341390997810576190">सेल्युलर डेटा का उपयोग करें</translation>
 <translation id="5342091991439452114">पिन कम से कम <ph name="MINIMUM" /> अंकों का होना चाहिए</translation>
-<translation id="5342344590724511265">टैब क्रैश होने का फ़ीडबैक.</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> का उपयोग करें</translation>
 <translation id="534916491091036097">बायां कोष्टक</translation>
 <translation id="5350965906220856151">उह ओह!</translation>
@@ -3215,6 +3208,7 @@
 <translation id="5764483294734785780">इस रूप में ऑडियो स&amp;हेजें...</translation>
 <translation id="57646104491463491">संशोधन की तिथि</translation>
 <translation id="5764797882307050727">कृपया अपने डिवाइस पर कुछ जगह खाली करें.</translation>
+<translation id="5765425701854290211">माफ़ करें, कुछ फ़ाइलों को नुकसान पहुंचा है और अपडेट सफल नहीं रहा. आपकी सिंक की हुई फ़ाइलें सुरक्षित हैं.</translation>
 <translation id="5765491088802881382">कोई नेटवर्क उपलब्ध नहीं हैं</translation>
 <translation id="5765780083710877561">वर्णन:</translation>
 <translation id="5771585441665576801">लिप्यंतरण (geia → γεια)</translation>
@@ -4431,6 +4425,7 @@
 <translation id="7615910377284548269">सैंडबॉक्स नहीं किए गए प्लग इन अवरोधित करना प्रबंधित करें...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" से कनेक्‍ट हो रहा है</translation>
 <translation id="761779991806306006">कोई पासवर्ड नहीं सहेजा गया.</translation>
+<translation id="7622114377921274169">चार्ज हो रहा है.</translation>
 <translation id="7624154074265342755">वायरलेस नेटवर्क</translation>
 <translation id="7624337243375417909">caps lock बंद है</translation>
 <translation id="7627790789328695202">ओह, <ph name="FILE_NAME" /> पहले से मौजूद है. उसका नाम बदलें और पुन: प्रयास करें.</translation>
@@ -4870,6 +4865,7 @@
 <translation id="8270242299912238708">PDF दस्तावेज़</translation>
 <translation id="827097179112817503">होम बटन दिखाएं</translation>
 <translation id="8272443605911821513">"अधिक टूल" मेनू में एक्सटेंशन पर क्लिक करके अपने एक्सटेंशन प्रबंधित करें.</translation>
+<translation id="8274924778568117936">अपडेट पूरा होने तक अपना <ph name="DEVICE_TYPE" /> बंद न करें. इंस्टॉलेशन पूरा हो जाने के बाद आपका <ph name="DEVICE_TYPE" /> फिर से चालू हो जाएगा.</translation>
 <translation id="8275038454117074363">आयात करें</translation>
 <translation id="8276560076771292512">संचय और कठिन पुन: लोड खाली करें</translation>
 <translation id="8279388322240498158">सोरानी कुर्दिश अंग्रेज़ी-आधारित कीबोर्ड</translation>
@@ -5310,7 +5306,6 @@
 <translation id="8963572037665351978">प्रस्तुतिकरण से बाहर निकलें</translation>
 <translation id="8965037249707889821">पुराना पासवर्ड डालें</translation>
 <translation id="8965697826696209160">पर्याप्त स्थान नहीं है.</translation>
-<translation id="8968527460726243404">ChromeOS सिस्‍टम इमेज राइटर</translation>
 <translation id="8970203673128054105">कास्ट मोड सूची देखें</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">यह सुनिश्चित करने के लिए कृपया अपने नेटवर्क व्यवस्थापक से बात करें कि फ़ायरवॉल Google के सर्वर से होने वाले डाउनलोड अवरुद्ध नहीं कर रहा है.</translation>
@@ -5485,6 +5480,7 @@
 <translation id="93766956588638423">एक्‍सटेंशन को ठीक करें</translation>
 <translation id="938470336146445890">कृपया कोई उपयोगकर्ता प्रमाणपत्र इंस्टॉल करें.</translation>
 <translation id="938582441709398163">कीबोर्ड ओवरले</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">पासफ़्रेज़ दर्ज करें</translation>
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
 <translation id="940425055435005472">अक्षरों का आकार:</translation>
