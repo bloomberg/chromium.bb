@@ -347,19 +347,11 @@ executable("sel_ldr") {
   ]
   deps = [
     ":sel_main",
-
-    # All executables must have the sanitizer deps to properly link in
-    # asan mode (this target will be empty in other cases).
     "//build/config:exe_and_shlib_deps",
-
     "//build/win:default_exe_manifest",
   ]
   if (is_linux) {
-    configs -= [ "//build/config:default_libs" ]
-    libs = [ "rt" ]
     ldflags = [ "-pie" ]
-  }
-  if (is_linux) {
     data_deps = [
       "linux:bootstrap",
     ]
