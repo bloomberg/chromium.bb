@@ -8,6 +8,7 @@ import cStringIO
 import glob
 import logging
 import os
+import platform
 import re
 import sys
 import tempfile
@@ -258,6 +259,9 @@ class GIT(object):
   def GetOldContents(cwd, filename, branch=None):
     if not branch:
       branch = GIT.GetUpstreamBranch(cwd)
+    if platform.system() == 'Windows':
+      # git show <sha>:<path> wants a posix path.
+      filename = filename.replace('\\', '/')
     command = ['show', '%s:%s' % (branch, filename)]
     try:
       return GIT.Capture(command, cwd=cwd, strip_out=False)

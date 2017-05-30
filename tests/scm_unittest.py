@@ -58,6 +58,7 @@ class RootTestCase(BaseSCMTestCase):
         'logging',
         'only_int',
         'os',
+        'platform',
         're',
         'subprocess2',
         'sys',
