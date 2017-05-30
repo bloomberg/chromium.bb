@@ -469,8 +469,6 @@ extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
 extern int av1_intra_mode_ind[INTRA_MODES];
 extern int av1_intra_mode_inv[INTRA_MODES];
-extern int av1_inter_mode_ind[INTER_MODES];
-extern int av1_inter_mode_inv[INTER_MODES];
 #if CONFIG_EXT_TX
 extern int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
 extern int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];

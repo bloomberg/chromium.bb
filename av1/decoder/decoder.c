@@ -65,8 +65,6 @@ static void initialize_dec(void) {
 #else
     av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
 #endif
-    av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv,
-                          av1_inter_mode_tree);
   }
 }
 

@@ -1186,8 +1186,6 @@ static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
 #endif
 int av1_intra_mode_ind[INTRA_MODES];
 int av1_intra_mode_inv[INTRA_MODES];
-int av1_inter_mode_ind[INTER_MODES];
-int av1_inter_mode_inv[INTER_MODES];
 #if CONFIG_EXT_TX
 int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
 int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];

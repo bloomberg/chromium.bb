@@ -197,8 +197,6 @@ void av1_encode_token_init(void) {
 #endif
   av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv,
                         av1_intra_mode_tree);
-  av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv,
-                        av1_inter_mode_tree);
 }
 
 static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
