@@ -52,9 +52,14 @@ DEFINE_TRACE(SVGTransformTearOff) {
   SVGPropertyTearOff<SVGTransform>::Trace(visitor);
 }
 
+SVGTransformTearOff* SVGTransformTearOff::CreateDetached() {
+  return Create(SVGTransform::Create(blink::kSvgTransformMatrix), nullptr,
+                kPropertyIsNotAnimVal, QualifiedName::Null());
+}
+
 SVGTransformTearOff* SVGTransformTearOff::Create(SVGMatrixTearOff* matrix) {
   return Create(SVGTransform::Create(matrix->Value()), nullptr,
-                kPropertyIsNotAnimVal);
+                kPropertyIsNotAnimVal, QualifiedName::Null());
 }
 
 SVGMatrixTearOff* SVGTransformTearOff::matrix() {

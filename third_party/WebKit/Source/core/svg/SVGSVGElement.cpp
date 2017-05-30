@@ -130,7 +130,8 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
   SVGCurrentTranslateTearOff(SVGSVGElement* context_element)
       : SVGPointTearOff(context_element->translation_,
                         context_element,
-                        kPropertyIsNotAnimVal) {}
+                        kPropertyIsNotAnimVal,
+                        QualifiedName::Null()) {}
 };
 
 SVGPointTearOff* SVGSVGElement::currentTranslateFromJavascript() {
@@ -421,21 +422,19 @@ void SVGSVGElement::deselectAll() {
 }
 
 SVGNumberTearOff* SVGSVGElement::createSVGNumber() {
-  return SVGNumberTearOff::Create(SVGNumber::Create(0.0f), 0,
-                                  kPropertyIsNotAnimVal);
+  return SVGNumberTearOff::CreateDetached();
 }
 
 SVGLengthTearOff* SVGSVGElement::createSVGLength() {
-  return SVGLengthTearOff::Create(SVGLength::Create(), 0,
-                                  kPropertyIsNotAnimVal);
+  return SVGLengthTearOff::CreateDetached();
 }
 
 SVGAngleTearOff* SVGSVGElement::createSVGAngle() {
-  return SVGAngleTearOff::Create(SVGAngle::Create(), 0, kPropertyIsNotAnimVal);
+  return SVGAngleTearOff::CreateDetached();
 }
 
 SVGPointTearOff* SVGSVGElement::createSVGPoint() {
-  return SVGPointTearOff::Create(SVGPoint::Create(), 0, kPropertyIsNotAnimVal);
+  return SVGPointTearOff::CreateDetached(FloatPoint(0, 0));
 }
 
 SVGMatrixTearOff* SVGSVGElement::createSVGMatrix() {
@@ -443,12 +442,11 @@ SVGMatrixTearOff* SVGSVGElement::createSVGMatrix() {
 }
 
 SVGRectTearOff* SVGSVGElement::createSVGRect() {
-  return SVGRectTearOff::Create(SVGRect::Create(), 0, kPropertyIsNotAnimVal);
+  return SVGRectTearOff::CreateDetached(FloatRect(0, 0, 0, 0));
 }
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransform() {
-  return SVGTransformTearOff::Create(SVGTransform::Create(kSvgTransformMatrix),
-                                     0, kPropertyIsNotAnimVal);
+  return SVGTransformTearOff::CreateDetached();
 }
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(

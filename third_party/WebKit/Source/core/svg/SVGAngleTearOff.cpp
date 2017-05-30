@@ -129,6 +129,11 @@ void SVGAngleTearOff::setValueAsString(const String& value,
   CommitChange();
 }
 
+SVGAngleTearOff* SVGAngleTearOff::CreateDetached() {
+  return Create(SVGAngle::Create(), nullptr, kPropertyIsNotAnimVal,
+                QualifiedName::Null());
+}
+
 DEFINE_TRACE_WRAPPERS(SVGAngleTearOff) {
   visitor->TraceWrappers(contextElement());
 }

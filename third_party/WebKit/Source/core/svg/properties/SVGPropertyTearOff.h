@@ -74,10 +74,9 @@ class SVGPropertyTearOffBase
   static void ThrowReadOnly(ExceptionState&);
 
  protected:
-  SVGPropertyTearOffBase(
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null())
+  SVGPropertyTearOffBase(SVGElement* context_element,
+                         PropertyIsAnimValType property_is_anim_val,
+                         const QualifiedName& attribute_name)
       : context_element_(context_element),
         property_is_anim_val_(property_is_anim_val),
         attribute_name_(attribute_name) {}
@@ -110,11 +109,10 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
   }
 
  protected:
-  SVGPropertyTearOff(
-      Property* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null())
+  SVGPropertyTearOff(Property* target,
+                     SVGElement* context_element,
+                     PropertyIsAnimValType property_is_anim_val,
+                     const QualifiedName& attribute_name)
       : SVGPropertyTearOffBase(context_element,
                                property_is_anim_val,
                                attribute_name),

@@ -42,14 +42,14 @@ class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGNumberTearOff* Create(
-      SVGNumber* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null()) {
+  static SVGNumberTearOff* Create(SVGNumber* target,
+                                  SVGElement* context_element,
+                                  PropertyIsAnimValType property_is_anim_val,
+                                  const QualifiedName& attribute_name) {
     return new SVGNumberTearOff(target, context_element, property_is_anim_val,
                                 attribute_name);
   }
+  static SVGNumberTearOff* CreateDetached();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
@@ -60,7 +60,7 @@ class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber>,
   SVGNumberTearOff(SVGNumber*,
                    SVGElement* context_element,
                    PropertyIsAnimValType,
-                   const QualifiedName& attribute_name = QualifiedName::Null());
+                   const QualifiedName& attribute_name);
 };
 
 }  // namespace blink

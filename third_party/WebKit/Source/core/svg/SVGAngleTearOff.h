@@ -42,14 +42,14 @@ class SVGAngleTearOff final : public SVGPropertyTearOff<SVGAngle>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAngleTearOff* Create(
-      SVGAngle* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null()) {
+  static SVGAngleTearOff* Create(SVGAngle* target,
+                                 SVGElement* context_element,
+                                 PropertyIsAnimValType property_is_anim_val,
+                                 const QualifiedName& attribute_name) {
     return new SVGAngleTearOff(target, context_element, property_is_anim_val,
                                attribute_name);
   }
+  static SVGAngleTearOff* CreateDetached();
 
   enum {
     kSvgAngletypeUnknown = SVGAngle::kSvgAngletypeUnknown,
