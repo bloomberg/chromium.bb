@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_details.h"
 
@@ -27,8 +27,7 @@ class ExternalPolicyDataFetcherBackend;
 // policies.
 // This is a common base class used by specializations for regular users and
 // device-local accounts.
-class CloudExternalDataManagerBase : public CloudExternalDataManager,
-                                     public base::NonThreadSafe {
+class CloudExternalDataManagerBase : public CloudExternalDataManager {
  public:
   // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
@@ -89,6 +88,8 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
   // |backend_task_runner_|.
   class Backend;
   std::unique_ptr<Backend> backend_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBase);
 };
