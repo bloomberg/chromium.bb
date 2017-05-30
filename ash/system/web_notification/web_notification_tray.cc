@@ -4,7 +4,6 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -84,12 +83,20 @@ class WebNotificationBubbleWrapper {
                                TrayBackgroundView* anchor_tray,
                                message_center::MessageBubbleBase* bubble) {
     bubble_.reset(bubble);
-    views::TrayBubbleView::AnchorAlignment anchor_alignment =
-        tray->GetAnchorAlignment();
-    views::TrayBubbleView::InitParams init_params =
-        bubble->GetInitParams(anchor_alignment);
-    views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
-        anchor_tray->GetBubbleAnchor(), tray, &init_params);
+    views::TrayBubbleView::InitParams init_params;
+    init_params.delegate = tray;
+    init_params.parent_window = anchor_tray->GetBubbleWindowContainer();
+    init_params.anchor_view = anchor_tray->GetBubbleAnchor();
+    init_params.anchor_alignment = tray->GetAnchorAlignment();
+    const int width = message_center::kNotificationWidth +
+                      message_center::kMarginBetweenItems * 2;
+    init_params.min_width = width;
+    init_params.max_width = width;
+    init_params.max_height = bubble->max_height();
+    init_params.can_activate = true;
+    init_params.bg_color = message_center::kBackgroundDarkColor;
+
+    views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble->InitializeContents(bubble_view);
@@ -451,16 +458,6 @@ void WebNotificationTray::OnMouseExitedView() {}
 
 base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-void WebNotificationTray::OnBeforeBubbleWidgetInit(
-    views::Widget* anchor_widget,
-    views::Widget* bubble_widget,
-    views::Widget::InitParams* params) const {
-  // Place the bubble in the same root window as |anchor_widget|.
-  RootWindowController::ForWindow(anchor_widget->GetNativeWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
 
 void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {

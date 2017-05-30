@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/palette_tray.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -180,20 +179,22 @@ bool PaletteTray::ShowPalette() {
 
   DCHECK(tray_container());
 
-  views::TrayBubbleView::InitParams init_params(GetAnchorAlignment(),
-                                                kPaletteWidth, kPaletteWidth);
+  views::TrayBubbleView::InitParams init_params;
+  init_params.delegate = this;
+  init_params.parent_window = GetBubbleWindowContainer();
+  init_params.anchor_view = GetBubbleAnchor();
+  init_params.anchor_alignment = GetAnchorAlignment();
+  init_params.min_width = kPaletteWidth;
+  init_params.max_width = kPaletteWidth;
   init_params.can_activate = true;
   init_params.close_on_deactivate = true;
-
-  DCHECK(tray_container());
 
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
   // rows.
 
   // Create and customize bubble view.
-  views::TrayBubbleView* bubble_view =
-      views::TrayBubbleView::Create(GetBubbleAnchor(), this, &init_params);
+  views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
   bubble_view->set_margins(
       gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
@@ -301,16 +302,6 @@ void PaletteTray::OnMouseExitedView() {}
 
 base::string16 PaletteTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-void PaletteTray::OnBeforeBubbleWidgetInit(
-    views::Widget* anchor_widget,
-    views::Widget* bubble_widget,
-    views::Widget::InitParams* params) const {
-  // Place the bubble in the same root window as |anchor_widget|.
-  RootWindowController::ForWindow(anchor_widget->GetNativeWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
 
 void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {

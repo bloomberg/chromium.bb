@@ -99,7 +99,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual gfx::Rect GetAnchorRect() const;
 
   // Allows delegates to provide custom parameters before widget initialization.
-  // For example, mus needs to set a custom ui::Window* parent.
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                         Widget* widget) const;
 

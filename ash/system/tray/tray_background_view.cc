@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/ash_constants.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -351,6 +352,12 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
     return gfx::Insets(anchor_insets.top(), -tray_bg_insets.left(),
                        anchor_insets.bottom(), -tray_bg_insets.right());
   }
+}
+
+aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
+  return Shell::GetContainer(
+      tray_container()->GetWidget()->GetNativeWindow()->GetRootWindow(),
+      kShellWindowId_SettingBubbleContainer);
 }
 
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()

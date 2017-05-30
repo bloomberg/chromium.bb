@@ -79,17 +79,6 @@ void MessageCenterBubble::SetSettingsVisible() {
     initially_settings_visible_ = true;
 }
 
-views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
-  views::TrayBubbleView::InitParams init_params =
-      GetDefaultInitParams(anchor_alignment);
-  init_params.min_width += kMarginBetweenItems * 2;
-  init_params.max_width += kMarginBetweenItems * 2;
-  init_params.max_height = max_height();
-  init_params.can_activate = true;
-  return init_params;
-}
-
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);

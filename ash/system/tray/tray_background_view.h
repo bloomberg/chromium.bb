@@ -99,6 +99,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // tray_container().
   gfx::Insets GetBubbleAnchorInsets() const;
 
+  // Returns the container window for the bubble (on the proper display).
+  aura::Window* GetBubbleWindowContainer() const;
+
  protected:
   // ActionableView:
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
