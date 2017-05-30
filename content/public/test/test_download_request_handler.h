@@ -14,7 +14,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
@@ -62,7 +62,7 @@ namespace content {
 //
 // At this point, you can initiate a URLRequest for request_handler.url(). The
 // request will fail when offset 100 is reached with the error specified above.
-class TestDownloadRequestHandler : public base::NonThreadSafe {
+class TestDownloadRequestHandler {
  public:
   // OnStartHandler can be used to intercept the Start() event of a new
   // URLRequest. Set it as the |on_start_handler| member of Parameters below.
@@ -319,6 +319,9 @@ class TestDownloadRequestHandler : public base::NonThreadSafe {
 
   GURL url_;
   base::WeakPtr<Interceptor> interceptor_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(TestDownloadRequestHandler);
 };
 

@@ -638,7 +638,7 @@ TestDownloadRequestHandler::TestDownloadRequestHandler(const GURL& url)
 }
 
 void TestDownloadRequestHandler::StartServing(const Parameters& parameters) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Interceptor::JobFactory job_factory =
       base::Bind(&PartialResponseJob::Factory, parameters);
   // Interceptor, if valid, is already registered and serving requests. We just
@@ -651,7 +651,7 @@ void TestDownloadRequestHandler::StartServing(const Parameters& parameters) {
 
 void TestDownloadRequestHandler::StartServingStaticResponse(
     const base::StringPiece& headers) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Parameters parameters;
   parameters.on_start_handler = base::Bind(
       &RespondToOnStartedCallbackWithStaticHeaders, headers.as_string());
@@ -679,14 +679,14 @@ void TestDownloadRequestHandler::GetPatternBytes(int seed,
 }
 
 TestDownloadRequestHandler::~TestDownloadRequestHandler() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&Interceptor::Unregister, interceptor_));
 }
 
 void TestDownloadRequestHandler::GetCompletedRequestInfo(
     TestDownloadRequestHandler::CompletedRequests* requests) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
