@@ -25,12 +25,17 @@
 #include "core/dom/DOMTokenList.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+
+DEFINE_TRACE(DOMTokenList) {
+  visitor->Trace(element_);
+}
 
 // This implements the common part of the following operations:
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
@@ -214,8 +219,7 @@ void DOMTokenList::UpdateWithTokenSet(const SpaceSplitString& token_set) {
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
-  if (observer_)
-    observer_->ValueWasSet(value);
+  element_->setAttribute(attribute_name_, value);
 }
 
 void DOMTokenList::DidUpdateAttributeValue(const AtomicString& old_value,

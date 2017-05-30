@@ -27,8 +27,8 @@
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Attr.h"
-#include "core/dom/ClassList.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
+#include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/NamedNodeMap.h"
@@ -96,8 +96,8 @@ class ElementRareData : public NodeRareData {
   }
   void ClearComputedStyle() { computed_style_ = nullptr; }
 
-  ClassList* GetClassList() const { return class_list_.Get(); }
-  void SetClassList(ClassList* class_list) {
+  DOMTokenList* GetClassList() const { return class_list_.Get(); }
+  void SetClassList(DOMTokenList* class_list) {
     class_list_ = class_list;
     ScriptWrappableVisitor::WriteBarrier(this, class_list_);
   }
@@ -204,7 +204,7 @@ class ElementRareData : public NodeRareData {
 
   Member<DatasetDOMStringMap> dataset_;
   Member<ElementShadow> shadow_;
-  Member<ClassList> class_list_;
+  Member<DOMTokenList> class_list_;
   Member<NamedNodeMap> attribute_map_;
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;

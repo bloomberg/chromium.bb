@@ -21,15 +21,7 @@ const char* const kSupportedTokens[] = {kNoDownload, kNoFullscreen,
 
 HTMLMediaElementControlsList::HTMLMediaElementControlsList(
     HTMLMediaElement* element)
-    : DOMTokenList(this), element_(element) {}
-
-HTMLMediaElementControlsList::~HTMLMediaElementControlsList() = default;
-
-DEFINE_TRACE(HTMLMediaElementControlsList) {
-  visitor->Trace(element_);
-  DOMTokenList::Trace(visitor);
-  DOMTokenListObserver::Trace(visitor);
-}
+    : DOMTokenList(*element, HTMLNames::controlslistAttr) {}
 
 bool HTMLMediaElementControlsList::ValidateTokenValue(
     const AtomicString& token_value,
@@ -39,10 +31,6 @@ bool HTMLMediaElementControlsList::ValidateTokenValue(
       return true;
   }
   return false;
-}
-
-void HTMLMediaElementControlsList::ValueWasSet(const AtomicString& value) {
-  element_->ControlsListValueWasSet(value);
 }
 
 bool HTMLMediaElementControlsList::ShouldHideDownload() const {
