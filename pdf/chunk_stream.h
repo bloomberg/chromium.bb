@@ -41,9 +41,12 @@ class ChunkStream {
   size_t GetLastMissingByteInInterval(size_t offset) const;
 
  private:
+  std::map<size_t, size_t>::const_iterator GetStartChunk(size_t offset) const;
+
   std::vector<unsigned char> data_;
 
-  // Pair, first - begining of the chunk, second - size of the chunk.
+  // Key: offset of the chunk.
+  // Value: size of the chunk.
   std::map<size_t, size_t> chunks_;
 
   size_t stream_size_;

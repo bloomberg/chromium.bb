@@ -52,18 +52,21 @@ bool GetByteRange(const std::string& headers, uint32_t* start, uint32_t* end) {
 std::string GetMultiPartBoundary(const std::string& headers) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
-    if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
-      std::string type = base::ToLowerASCII(it.values());
-      if (base::StartsWith(type, "multipart/", base::CompareCase::SENSITIVE)) {
-        const char* boundary = strstr(type.c_str(), "boundary=");
-        if (!boundary) {
-          NOTREACHED();
-          break;
-        }
+    if (!base::LowerCaseEqualsASCII(it.name(), "content-type"))
+      continue;
 
-        return std::string(boundary + 9);
-      }
+    std::string type = base::ToLowerASCII(it.values());
+    if (!base::StartsWith(type, "multipart/", base::CompareCase::SENSITIVE))
+      continue;
+
+    static constexpr char kBoundary[] = "boundary=";
+    const char* boundary = strstr(type.c_str(), kBoundary);
+    if (!boundary) {
+      NOTREACHED();
+      return std::string();
     }
+
+    return std::string(boundary + strlen(kBoundary));
   }
   return std::string();
 }
@@ -87,6 +90,15 @@ bool IsValidContentType(const std::string& type) {
          base::EndsWith(type, "/acrobat",
                         base::CompareCase::INSENSITIVE_ASCII) ||
          base::EndsWith(type, "/unknown", base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsDoubleNewlines(const char* buffer, int index) {
+  DCHECK_GE(index, 2);
+  static constexpr char kLF2[] = "\n\n";
+  static constexpr char kCRLF2[] = "\r\n\r\n";
+  if (strncmp(&buffer[index - 2], kLF2, strlen(kLF2)) == 0)
+    return true;
+  return index >= 4 && strncmp(&buffer[index - 4], kCRLF2, strlen(kCRLF2)) == 0;
 }
 
 }  // namespace
@@ -220,9 +232,8 @@ bool DocumentLoader::IsDocumentComplete() const {
 }
 
 uint32_t DocumentLoader::GetAvailableData() const {
-  if (document_size_ == 0) {  // If document size is unknown.
+  if (document_size_ == 0)  // Document size unknown.
     return current_pos_;
-  }
 
   std::vector<std::pair<size_t, size_t>> ranges;
   chunk_stream_.GetMissedRanges(0, document_size_, &ranges);
@@ -233,7 +244,7 @@ uint32_t DocumentLoader::GetAvailableData() const {
 }
 
 void DocumentLoader::ClearPendingRequests() {
-  pending_requests_.erase(pending_requests_.begin(), pending_requests_.end());
+  pending_requests_.clear();
 }
 
 bool DocumentLoader::GetBlock(uint32_t position,
@@ -401,7 +412,8 @@ void DocumentLoader::DidOpen(int32_t result) {
     // i.e. sniff response to
     // http://www.act.org/compass/sample/pdf/geometry.pdf
     current_pos_ = 0;
-    uint32_t start_pos, end_pos;
+    uint32_t start_pos;
+    uint32_t end_pos;
     if (GetByteRange(headers, &start_pos, &end_pos)) {
       current_pos_ = start_pos;
       if (end_pos && end_pos > start_pos)
@@ -436,10 +448,9 @@ void DocumentLoader::DidRead(int32_t result) {
   size_t length = result;
   if (is_multipart_ && result > 2) {
     for (int i = 2; i < result; ++i) {
-      if ((buffer_[i - 1] == '\n' && buffer_[i - 2] == '\n') ||
-          (i >= 4 && buffer_[i - 1] == '\n' && buffer_[i - 2] == '\r' &&
-           buffer_[i - 3] == '\n' && buffer_[i - 4] == '\r')) {
-        uint32_t start_pos, end_pos;
+      if (IsDoubleNewlines(buffer_, i)) {
+        uint32_t start_pos;
+        uint32_t end_pos;
         if (GetByteRange(std::string(buffer_, i), &start_pos, &end_pos)) {
           current_pos_ = start_pos;
           start += i;

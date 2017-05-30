@@ -110,7 +110,7 @@ class DocumentLoader {
   ChunkStream chunk_stream_;
   bool partial_document_;
   bool request_pending_;
-  typedef std::list<std::pair<size_t, size_t>> PendingRequests;
+  using PendingRequests = std::list<std::pair<size_t, size_t>>;
   PendingRequests pending_requests_;
   // The starting position of the HTTP request currently being processed.
   size_t current_request_offset_;
