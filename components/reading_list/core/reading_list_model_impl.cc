@@ -27,7 +27,7 @@ ReadingListModelImpl::ReadingListModelImpl(
       has_unseen_(false),
       loaded_(false),
       weak_ptr_factory_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(clock_);
   if (storage) {
     storage_layer_ = std::move(storage);
@@ -42,7 +42,7 @@ ReadingListModelImpl::~ReadingListModelImpl() {}
 
 void ReadingListModelImpl::StoreLoaded(
     std::unique_ptr<ReadingListEntries> entries) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entries);
   entries_ = std::move(entries);
   for (auto& iterator : *entries_) {
@@ -55,19 +55,19 @@ void ReadingListModelImpl::StoreLoaded(
 }
 
 void ReadingListModelImpl::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
     observer.ReadingListModelBeingShutdown(this);
   loaded_ = false;
 }
 
 bool ReadingListModelImpl::loaded() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return loaded_;
 }
 
 size_t ReadingListModelImpl::size() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(read_entry_count_ + unread_entry_count_ == entries_->size());
   if (!loaded())
     return 0;
@@ -75,7 +75,7 @@ size_t ReadingListModelImpl::size() const {
 }
 
 size_t ReadingListModelImpl::unread_size() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(read_entry_count_ + unread_entry_count_ == entries_->size());
   if (!loaded())
     return 0;
@@ -83,7 +83,7 @@ size_t ReadingListModelImpl::unread_size() const {
 }
 
 size_t ReadingListModelImpl::unseen_size() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!loaded())
     return 0;
   return unseen_entry_count_;
@@ -99,7 +99,7 @@ void ReadingListModelImpl::SetUnseenFlag() {
 }
 
 bool ReadingListModelImpl::GetLocalUnseenFlag() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!loaded())
     return false;
   // If there are currently no unseen entries, return false even if has_unseen_
@@ -109,7 +109,7 @@ bool ReadingListModelImpl::GetLocalUnseenFlag() const {
 }
 
 void ReadingListModelImpl::ResetLocalUnseenFlag() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!loaded()) {
     return;
   }
@@ -119,7 +119,7 @@ void ReadingListModelImpl::ResetLocalUnseenFlag() {
 }
 
 void ReadingListModelImpl::MarkAllSeen() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   if (unseen_entry_count_ == 0) {
     return;
@@ -148,7 +148,7 @@ void ReadingListModelImpl::MarkAllSeen() {
 }
 
 bool ReadingListModelImpl::DeleteAllEntries() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!loaded()) {
     return false;
   }
@@ -193,14 +193,14 @@ const std::vector<GURL> ReadingListModelImpl::Keys() const {
 
 const ReadingListEntry* ReadingListModelImpl::GetEntryByURL(
     const GURL& gurl) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   return GetMutableEntryFromURL(gurl);
 }
 
 const ReadingListEntry* ReadingListModelImpl::GetFirstUnreadEntry(
     bool distilled) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   if (unread_entry_count_ == 0) {
     return nullptr;
@@ -234,7 +234,7 @@ const ReadingListEntry* ReadingListModelImpl::GetFirstUnreadEntry(
 
 ReadingListEntry* ReadingListModelImpl::GetMutableEntryFromURL(
     const GURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   auto iterator = entries_->find(url);
   if (iterator == entries_->end()) {
@@ -245,7 +245,7 @@ ReadingListEntry* ReadingListModelImpl::GetMutableEntryFromURL(
 
 void ReadingListModelImpl::SyncAddEntry(
     std::unique_ptr<ReadingListEntry> entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   // entry must not already exist.
   DCHECK(GetMutableEntryFromURL(entry->URL()) == nullptr);
@@ -265,7 +265,7 @@ void ReadingListModelImpl::SyncAddEntry(
 
 ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
     std::unique_ptr<ReadingListEntry> entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   ReadingListEntry* existing_entry = GetMutableEntryFromURL(entry->URL());
   DCHECK(existing_entry);
@@ -301,7 +301,7 @@ void ReadingListModelImpl::RemoveEntryByURL(const GURL& url) {
 
 void ReadingListModelImpl::RemoveEntryByURLImpl(const GURL& url,
                                                 bool from_sync) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   const ReadingListEntry* entry = GetEntryByURL(url);
   if (!entry)
@@ -324,7 +324,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const GURL& url,
     const std::string& title,
     reading_list::EntrySource source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   RemoveEntryByURL(url);
@@ -351,7 +351,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
 }
 
 void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   auto iterator = entries_->find(url);
   if (iterator == entries_->end()) {
@@ -380,7 +380,7 @@ void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
 
 void ReadingListModelImpl::SetEntryTitle(const GURL& url,
                                          const std::string& title) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   auto iterator = entries_->find(url);
   if (iterator == entries_->end()) {
@@ -410,7 +410,7 @@ void ReadingListModelImpl::SetEntryDistilledInfo(
     const GURL& distilled_url,
     int64_t distillation_size,
     const base::Time& distillation_date) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   auto iterator = entries_->find(url);
   if (iterator == entries_->end()) {
@@ -438,7 +438,7 @@ void ReadingListModelImpl::SetEntryDistilledInfo(
 void ReadingListModelImpl::SetEntryDistilledState(
     const GURL& url,
     ReadingListEntry::DistillationState state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   auto iterator = entries_->find(url);
   if (iterator == entries_->end()) {
@@ -464,7 +464,7 @@ void ReadingListModelImpl::SetEntryDistilledState(
 void ReadingListModelImpl::SetContentSuggestionsExtra(
     const GURL& url,
     const reading_list::ContentSuggestionsExtra& extra) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded());
   ReadingListEntry* entry = GetMutableEntryFromURL(url);
   if (!entry) {
@@ -504,7 +504,7 @@ ReadingListModelImpl::ScopedReadingListBatchUpdate::
 }
 
 void ReadingListModelImpl::LeavingBatchUpdates() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (storage_layer_) {
     SetPersistentHasUnseen(has_unseen_);
   }
@@ -512,12 +512,12 @@ void ReadingListModelImpl::LeavingBatchUpdates() {
 }
 
 void ReadingListModelImpl::EnteringBatchUpdates() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ReadingListModel::EnteringBatchUpdates();
 }
 
 void ReadingListModelImpl::SetPersistentHasUnseen(bool has_unseen) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pref_service_) {
     return;
   }
@@ -526,7 +526,7 @@ void ReadingListModelImpl::SetPersistentHasUnseen(bool has_unseen) {
 }
 
 bool ReadingListModelImpl::GetPersistentHasUnseen() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pref_service_) {
     return false;
   }

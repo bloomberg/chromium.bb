@@ -29,13 +29,14 @@ ReadingListStore::ReadingListStore(
       pending_transaction_count_(0) {}
 
 ReadingListStore::~ReadingListStore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(0, pending_transaction_count_);
 }
 
 void ReadingListStore::SetReadingListModel(ReadingListModel* model,
                                            ReadingListStoreDelegate* delegate,
                                            base::Clock* clock) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   model_ = model;
   delegate_ = delegate;
   clock_ = clock;
@@ -59,7 +60,7 @@ ReadingListStore::ScopedBatchUpdate::~ScopedBatchUpdate() {
 }
 
 void ReadingListStore::BeginTransaction() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pending_transaction_count_++;
   if (pending_transaction_count_ == 1) {
     batch_ = store_->CreateWriteBatch();
@@ -67,7 +68,7 @@ void ReadingListStore::BeginTransaction() {
 }
 
 void ReadingListStore::CommitTransaction() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pending_transaction_count_--;
   if (pending_transaction_count_ == 0) {
     store_->CommitWriteBatch(
@@ -78,7 +79,7 @@ void ReadingListStore::CommitTransaction() {
 }
 
 void ReadingListStore::SaveEntry(const ReadingListEntry& entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto token = EnsureBatchCreated();
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry =
@@ -105,7 +106,7 @@ void ReadingListStore::SaveEntry(const ReadingListEntry& entry) {
 }
 
 void ReadingListStore::RemoveEntry(const ReadingListEntry& entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto token = EnsureBatchCreated();
 
   batch_->DeleteData(entry.URL().spec());
@@ -122,7 +123,7 @@ void ReadingListStore::RemoveEntry(const ReadingListEntry& entry) {
 void ReadingListStore::OnDatabaseLoad(
     syncer::ModelTypeStore::Result result,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> entries) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != syncer::ModelTypeStore::Result::SUCCESS) {
     change_processor()->ReportError(FROM_HERE,
                                     "Cannot load Reading List Database.");
@@ -158,7 +159,7 @@ void ReadingListStore::OnDatabaseLoad(
 void ReadingListStore::OnReadAllMetadata(
     base::Optional<syncer::ModelError> error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
     change_processor()->ReportError(FROM_HERE, "Failed to read metadata.");
   } else {
@@ -173,7 +174,7 @@ void ReadingListStore::OnDatabaseSave(syncer::ModelTypeStore::Result result) {
 void ReadingListStore::OnStoreCreated(
     syncer::ModelTypeStore::Result result,
     std::unique_ptr<syncer::ModelTypeStore> store) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != syncer::ModelTypeStore::Result::SUCCESS) {
     // TODO(crbug.com/664926): handle store creation error.
     return;
@@ -207,7 +208,7 @@ ReadingListStore::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityDataMap entity_data_map) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto token = EnsureBatchCreated();
   // Keep track of the last update of each item.
   std::set<std::string> synced_entries;
@@ -293,7 +294,7 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
 base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate> batch =
       model_->BeginBatchUpdates();
   auto token = EnsureBatchCreated();
@@ -356,7 +357,7 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
 
 void ReadingListStore::GetData(StorageKeyList storage_keys,
                                DataCallback callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
   for (const std::string& url_string : storage_keys) {
     const ReadingListEntry* entry = model_->GetEntryByURL(GURL(url_string));
@@ -369,7 +370,7 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
 }
 
 void ReadingListStore::GetAllData(DataCallback callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
 
   for (const auto& url : model_->Keys()) {
@@ -382,7 +383,7 @@ void ReadingListStore::GetAllData(DataCallback callback) {
 
 void ReadingListStore::AddEntryToBatch(syncer::MutableDataBatch* batch,
                                        const ReadingListEntry& entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
       entry.AsReadingListSpecifics();
 
@@ -402,7 +403,7 @@ void ReadingListStore::AddEntryToBatch(syncer::MutableDataBatch* batch,
 // GetStorageKey().
 std::string ReadingListStore::GetClientTag(
     const syncer::EntityData& entity_data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetStorageKey(entity_data);
 }
 
@@ -414,7 +415,7 @@ std::string ReadingListStore::GetClientTag(
 // should be.
 std::string ReadingListStore::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return entity_data.specifics.reading_list().entry_id();
 }
 
