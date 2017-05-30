@@ -1450,7 +1450,7 @@ bool WebLocalFrameImpl::HasCustomPageSizeStyle(int page_index) {
   return GetFrame()
              ->GetDocument()
              ->StyleForPage(page_index)
-             ->GetPageSizeType() != PAGE_SIZE_AUTO;
+             ->GetPageSizeType() != PageSizeType::kAuto;
 }
 
 bool WebLocalFrameImpl::IsPageBoxVisible(int page_index) {

@@ -1442,7 +1442,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_non_inherited_data_, page_size_, s);
   }
   void SetPageSizeType(PageSizeType t) {
-    SET_VAR(rare_non_inherited_data_, page_size_type_, t);
+    SET_VAR(rare_non_inherited_data_, page_size_type_,
+            static_cast<unsigned>(t));
   }
 
   // Text decoration properties.
@@ -2972,7 +2973,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Page size utility functions.
   void ResetPageSizeType() {
-    SET_VAR(rare_non_inherited_data_, page_size_type_, PAGE_SIZE_AUTO);
+    SET_VAR(rare_non_inherited_data_, page_size_type_,
+            static_cast<unsigned>(PageSizeType::kAuto));
   }
 
   // Outline utility functions.

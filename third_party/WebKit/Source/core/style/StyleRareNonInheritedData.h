@@ -66,12 +66,12 @@ class StyleWillChangeData;
 
 // Page size type.
 // StyleRareNonInheritedData::page_size_ is meaningful only when
-// StyleRareNonInheritedData::page_size_type_ is PAGE_SIZE_RESOLVED.
-enum PageSizeType {
-  PAGE_SIZE_AUTO,            // size: auto
-  PAGE_SIZE_AUTO_LANDSCAPE,  // size: landscape
-  PAGE_SIZE_AUTO_PORTRAIT,   // size: portrait
-  PAGE_SIZE_RESOLVED         // Size is fully resolved.
+// StyleRareNonInheritedData::page_size_type_ is kResolved.
+enum class PageSizeType {
+  kAuto,       // size: auto
+  kLandscape,  // size: landscape
+  kPortrait,   // size: portrait
+  kResolved    // Size is fully resolved.
 };
 
 // This struct is for rarely used non-inherited CSS3, CSS2, and WebKit-specific

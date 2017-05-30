@@ -100,7 +100,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       justify_content_(ComputedStyle::InitialContentAlignment()),
       justify_items_(ComputedStyle::InitialSelfAlignment()),
       justify_self_(ComputedStyle::InitialSelfAlignment()),
-      page_size_type_(PAGE_SIZE_AUTO),
+      page_size_type_(static_cast<unsigned>(PageSizeType::kAuto)),
       transform_style3d_(ComputedStyle::InitialTransformStyle3D()),
       backface_visibility_(ComputedStyle::InitialBackfaceVisibility()),
       user_drag(ComputedStyle::InitialUserDrag()),
