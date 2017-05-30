@@ -19,6 +19,10 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
 #include "components/precache/core/proto/precache.pb.h"
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace predictors {
 
 // Interface for database tables used by the ResourcePrefetchPredictor.
@@ -35,63 +39,19 @@ namespace predictors {
 //  - OriginTable - key: host, value: OriginData
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  typedef std::map<std::string, PrefetchData> PrefetchDataMap;
-  typedef std::map<std::string, RedirectData> RedirectDataMap;
-  typedef std::map<std::string, precache::PrecacheManifest> ManifestDataMap;
-  typedef std::map<std::string, OriginData> OriginDataMap;
+  typedef base::OnceCallback<void(sql::Connection*)> DBTask;
 
-  // Returns data for all Urls and Hosts.
-  virtual void GetAllData(PrefetchDataMap* url_data_map,
-                          PrefetchDataMap* host_data_map,
-                          RedirectDataMap* url_redirect_data_map,
-                          RedirectDataMap* host_redirect_data_map,
-                          ManifestDataMap* manifest_map,
-                          OriginDataMap* origin_data_map);
+  virtual void ScheduleDBTask(const tracked_objects::Location& from_here,
+                              DBTask task);
 
-  // Updates resource data for the input |data|.
-  // Note that the primary key in |data| should be less than |kMaxStringLength|
-  // in length.
-  virtual void UpdateResourceData(const PrefetchData& data,
-                                  PrefetchKeyType key_type);
+  virtual void ExecuteDBTaskOnDBThread(DBTask task);
 
-  // Updates redirect data for the input |data|.
-  // Note that the primary key in |data| should be less than |kMaxStringLength|
-  // in length.
-  virtual void UpdateRedirectData(const RedirectData& data,
-                                  PrefetchKeyType key_type);
-
-  // Updates manifest data for the input |host|.
-  virtual void UpdateManifestData(
-      const std::string& host,
-      const precache::PrecacheManifest& manifest_data);
-
-  // Updates a given origin data point.
-  virtual void UpdateOriginData(const OriginData& origin_data);
-
-  // Delete data for the input |urls| and |hosts|.
-  virtual void DeleteResourceData(const std::vector<std::string>& urls,
-                                  const std::vector<std::string>& hosts);
-
-  // Wrapper over DeleteResourceData for convenience.
-  virtual void DeleteSingleResourceDataPoint(const std::string& key,
-                                             PrefetchKeyType key_type);
-
-  // Delete data for the input |urls| and |hosts|.
-  virtual void DeleteRedirectData(const std::vector<std::string>& urls,
-                                  const std::vector<std::string>& hosts);
-
-  // Wrapper over DeleteRedirectData for convenience.
-  virtual void DeleteSingleRedirectDataPoint(const std::string& key,
-                                             PrefetchKeyType key_type);
-
-  // Delete data for the input |hosts|.
-  virtual void DeleteManifestData(const std::vector<std::string>& hosts);
-
-  // Deletes the origin data for a list of |hosts|.
-  virtual void DeleteOriginData(const std::vector<std::string>& hosts);
-
-  // Deletes all data in all the tables.
-  virtual void DeleteAllData();
+  virtual GlowplugKeyValueTable<PrefetchData>* url_resource_table();
+  virtual GlowplugKeyValueTable<RedirectData>* url_redirect_table();
+  virtual GlowplugKeyValueTable<PrefetchData>* host_resource_table();
+  virtual GlowplugKeyValueTable<RedirectData>* host_redirect_table();
+  virtual GlowplugKeyValueTable<precache::PrecacheManifest>* manifest_table();
+  virtual GlowplugKeyValueTable<OriginData>* origin_table();
 
   // Removes the resources with more than |max_consecutive_misses| consecutive
   // misses from |data|.

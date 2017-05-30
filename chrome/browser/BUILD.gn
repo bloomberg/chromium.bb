@@ -974,6 +974,7 @@ split_static_library("browser") {
     "predictors/autocomplete_action_predictor_factory.h",
     "predictors/autocomplete_action_predictor_table.cc",
     "predictors/autocomplete_action_predictor_table.h",
+    "predictors/glowplug_key_value_data.h",
     "predictors/glowplug_key_value_table.cc",
     "predictors/glowplug_key_value_table.h",
     "predictors/loading_predictor.cc",

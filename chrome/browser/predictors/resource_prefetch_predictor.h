@@ -19,6 +19,7 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "chrome/browser/predictors/glowplug_key_value_data.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
@@ -67,6 +68,19 @@ constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
 const uint32_t kVersionedRemovedExperiment = 0x03ff25e3;
 const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
 const uint32_t kNoStoreRemovedExperiment = 0xd90a199a;
+
+struct ManifestCompare {
+  bool operator()(const precache::PrecacheManifest& lhs,
+                  const precache::PrecacheManifest& rhs) const;
+};
+
+struct LastVisitTimeCompare {
+  template <typename T>
+  bool operator()(const T& lhs, const T& rhs) const {
+    return lhs.last_visit_time() < rhs.last_visit_time();
+  }
+};
+
 }  // namespace internal
 
 class TestObserver;
@@ -279,7 +293,7 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            LazilyInitializeWithData);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
-                           NavigationNotRecorded);
+                           NavigationLowHistoryCount);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, NavigationUrlInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, NavigationUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -315,11 +329,15 @@ class ResourcePrefetchPredictor
     INITIALIZING = 1,
     INITIALIZED = 2
   };
-  typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
-  typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
-  typedef ResourcePrefetchPredictorTables::ManifestDataMap ManifestDataMap;
-  typedef ResourcePrefetchPredictorTables::OriginDataMap OriginDataMap;
-
+  typedef GlowplugKeyValueData<PrefetchData, internal::LastVisitTimeCompare>
+      PrefetchDataMap;
+  typedef GlowplugKeyValueData<RedirectData, internal::LastVisitTimeCompare>
+      RedirectDataMap;
+  typedef GlowplugKeyValueData<precache::PrecacheManifest,
+                               internal::ManifestCompare>
+      ManifestDataMap;
+  typedef GlowplugKeyValueData<OriginData, internal::LastVisitTimeCompare>
+      OriginDataMap;
   typedef std::map<NavigationID, std::unique_ptr<PageRequestSummary>>
       NavigationMap;
 
@@ -353,27 +371,26 @@ class ResourcePrefetchPredictor
   void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
   // Returns true iff one of the following conditions is true
-  // * |redirect_data_map| contains confident redirect endpoint for
-  //   |entry_point| and assigns it to the |redirect_endpoint|
+  // * |redirect_data| contains confident redirect endpoint for |entry_point|
+  //   and assigns it to the |redirect_endpoint|
   //
-  // * |redirect_data_map| doens't contain an entry for |entry_point| and
-  //   assings |entry_point| to the |redirect_endpoint|.
+  // * |redirect_data| doens't contain an entry for |entry_point| and assigns
+  //   |entry_point| to the |redirect_endpoint|.
   bool GetRedirectEndpoint(const std::string& entry_point,
-                           const RedirectDataMap& redirect_data_map,
+                           const RedirectDataMap& redirect_data,
                            std::string* redirect_endpoint) const;
 
   // Returns true iff there is PrefetchData that can be used for a
   // |main_frame_url| and fills |prediction| with resources that need to be
-  // prefetched. |prediction| pointer may be equal nullptr to get return value
-  // only.
+  // prefetched. |prediction| pointer may be nullptr to get return value only.
   bool GetPrefetchData(const GURL& main_frame_url,
                        Prediction* prediction) const;
 
-  // Returns true iff the |data_map| contains PrefetchData that can be used
+  // Returns true iff the |resource_data| contains PrefetchData that can be used
   // for a |main_frame_key| and fills |urls| with resources that need to be
   // prefetched. |urls| may be nullptr to get the return value only.
   bool PopulatePrefetcherRequest(const std::string& main_frame_key,
-                                 const PrefetchDataMap& data_map,
+                                 const PrefetchDataMap& resource_data,
                                  std::vector<GURL>* urls) const;
 
   // Returns true iff the manifest table contains PrecacheManifest that can be
@@ -382,14 +399,7 @@ class ResourcePrefetchPredictor
   bool PopulateFromManifest(const std::string& manifest_host,
                             std::vector<GURL>* urls) const;
 
-  // Callback for task to read predictor database. Takes ownership of
-  // all arguments.
-  void CreateCaches(std::unique_ptr<PrefetchDataMap> url_data_map,
-                    std::unique_ptr<PrefetchDataMap> host_data_map,
-                    std::unique_ptr<RedirectDataMap> url_redirect_data_map,
-                    std::unique_ptr<RedirectDataMap> host_redirect_data_map,
-                    std::unique_ptr<ManifestDataMap> manifest_data_map,
-                    std::unique_ptr<OriginDataMap> origin_data_map);
+  void InitializeOnDBThread();
 
   // Called during initialization when history is read and the predictor
   // database has been read.
@@ -410,39 +420,20 @@ class ResourcePrefetchPredictor
   void OnVisitCountLookup(size_t url_visit_count,
                           const PageRequestSummary& summary);
 
-  // Removes the oldest entry in the input |data_map|, also deleting it from the
-  // predictor database.
-  void RemoveOldestEntryInPrefetchDataMap(PrefetchKeyType key_type,
-                                          PrefetchDataMap* data_map);
-
-  void RemoveOldestEntryInRedirectDataMap(PrefetchKeyType key_type,
-                                          RedirectDataMap* data_map);
-
-  void RemoveOldestEntryInManifestDataMap(ManifestDataMap* data_map);
-  void RemoveOldestEntryInOriginDataMap(OriginDataMap* data_map);
-
-  // Merges resources in |new_resources| into the |data_map| and correspondingly
-  // updates the predictor database. Also calls LearnRedirect if relevant.
+  // Merges resources in |new_resources| into the |resource_data| and
+  // correspondingly updates the predictor database.
   void LearnNavigation(const std::string& key,
-                       PrefetchKeyType key_type,
                        const std::vector<URLRequestSummary>& new_resources,
-                       size_t max_data_map_size,
-                       PrefetchDataMap* data_map,
-                       const std::string& key_before_redirects,
-                       RedirectDataMap* redirect_map);
+                       PrefetchDataMap* resource_data);
 
-  // Updates information about final redirect destination for |key| in
-  // |redirect_map| and correspondingly updates the predictor database.
+  // Updates information about final redirect destination for the |key| in
+  // |redirect_data| and correspondingly updates the predictor database.
   void LearnRedirect(const std::string& key,
-                     PrefetchKeyType key_type,
                      const std::string& final_redirect,
-                     size_t max_redirect_map_size,
-                     RedirectDataMap* redirect_map);
+                     RedirectDataMap* redirect_data);
 
   void LearnOrigins(const std::string& host,
-                    const std::map<GURL, OriginRequestSummary>& summaries,
-                    size_t max_data_map_size,
-                    OriginDataMap* data_map);
+                    const std::map<GURL, OriginRequestSummary>& summaries);
 
   // Reports database readiness metric defined as percentage of navigated hosts
   // found in DB for last X entries in history.
@@ -457,11 +448,10 @@ class ResourcePrefetchPredictor
   void OnHistoryServiceLoaded(
       history::HistoryService* history_service) override;
 
-  // Updates list of resources in the |data_map| for the |key| according to the
-  // |manifest|.
+  // Updates list of resources in the |resource_data| for the |key| according to
+  // the |manifest|.
   void UpdatePrefetchDataByManifest(const std::string& key,
-                                    PrefetchKeyType key_type,
-                                    PrefetchDataMap* data_map,
+                                    PrefetchDataMap* resource_data,
                                     const precache::PrecacheManifest& manifest);
 
   // Used to connect to HistoryService or register for service loaded
@@ -481,13 +471,12 @@ class ResourcePrefetchPredictor
   scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;
   base::CancelableTaskTracker history_lookup_consumer_;
 
-  // Copy of the data in the predictor tables.
-  std::unique_ptr<PrefetchDataMap> url_table_cache_;
-  std::unique_ptr<PrefetchDataMap> host_table_cache_;
-  std::unique_ptr<RedirectDataMap> url_redirect_table_cache_;
-  std::unique_ptr<RedirectDataMap> host_redirect_table_cache_;
-  std::unique_ptr<ManifestDataMap> manifest_table_cache_;
-  std::unique_ptr<OriginDataMap> origin_table_cache_;
+  std::unique_ptr<PrefetchDataMap> url_resource_data_;
+  std::unique_ptr<PrefetchDataMap> host_resource_data_;
+  std::unique_ptr<RedirectDataMap> url_redirect_data_;
+  std::unique_ptr<RedirectDataMap> host_redirect_data_;
+  std::unique_ptr<ManifestDataMap> manifest_data_;
+  std::unique_ptr<OriginDataMap> origin_data_;
 
   std::map<GURL, base::TimeTicks> inflight_prefetches_;
   NavigationMap inflight_navigations_;
