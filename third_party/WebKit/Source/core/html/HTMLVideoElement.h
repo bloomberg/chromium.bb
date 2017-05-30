@@ -54,6 +54,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   static HTMLVideoElement* Create(Document&);
   DECLARE_VIRTUAL_TRACE();
 
+  bool HasPendingActivity() const final;
+
   enum class MediaRemotingStatus { kNotStarted, kStarted, kDisabled };
 
   // Node override.

@@ -289,7 +289,7 @@ class CORE_EXPORT HTMLMediaElement
   void SourceWasAdded(HTMLSourceElement*);
 
   // ScriptWrappable functions.
-  bool HasPendingActivity() const final;
+  bool HasPendingActivity() const override;
 
   AudioSourceProviderClient* AudioSourceNode() { return audio_source_node_; }
   void SetAudioSourceNode(AudioSourceProviderClient*);

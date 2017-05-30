@@ -96,6 +96,10 @@ DEFINE_TRACE(HTMLPlugInElement) {
   HTMLFrameOwnerElement::Trace(visitor);
 }
 
+bool HTMLPlugInElement::HasPendingActivity() const {
+  return image_loader_ && image_loader_->HasPendingActivity();
+}
+
 void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
   if (persisted_plugin_ == plugin)
     return;
