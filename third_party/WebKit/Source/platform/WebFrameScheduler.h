@@ -43,13 +43,30 @@ class WebFrameScheduler {
   // frames.
   virtual void SetCrossOrigin(bool) {}
 
-  // Returns the WebTaskRunner for loading tasks.
-  // WebFrameScheduler owns the returned WebTaskRunner.
-  virtual RefPtr<WebTaskRunner> LoadingTaskRunner() = 0;
+  // The tasks runners below are listed in increasing QoS order.
+  // - timer task queue. Designed for custom user-provided javascript tasks.
+  //   Lowest guarantees. Can be suspended, blocked during user gesture or
+  //   throttled when backgrounded.
+  // - loading task queue. Can be suspended or blocked during user gesture.
+  //   Throttling might be considered in the future.
+  // - suspendable task queue. Can be suspended and blocked during user gesture,
+  //   can't be throttled.
+  // - unthrottled-but-blockable task queue. Can't be throttled, can't
+  //   be suspended but can be blocked during user gesture.
+  //   NOTE: existence of this queue is a temporary fix for scroll latency
+  //   regression. All tasks should be moved from this queue to suspendable
+  //   or unthrottled queues and it should be deleted.
+  // - unthrottled task queue. Highest guarantees. Can't be throttled,
+  //   suspended or blocked. Should be used only when necessary after
+  //   consulting scheduler-dev@.
 
   // Returns the WebTaskRunner for timer tasks.
   // WebFrameScheduler owns the returned WebTaskRunner.
   virtual RefPtr<WebTaskRunner> TimerTaskRunner() = 0;
+
+  // Returns the WebTaskRunner for loading tasks.
+  // WebFrameScheduler owns the returned WebTaskRunner.
+  virtual RefPtr<WebTaskRunner> LoadingTaskRunner() = 0;
 
   // Returns the WebTaskRunner for tasks which shouldn't get throttled,
   // but can be suspended.
@@ -57,6 +74,13 @@ class WebFrameScheduler {
   // would become suspendable in the nearest future and a new unsuspended
   // task runner will be added.
   virtual RefPtr<WebTaskRunner> SuspendableTaskRunner() = 0;
+
+  // Retuns the WebTaskRunner for tasks which should not be suspended or
+  // throttled, but should be blocked during user gesture.
+  // This is a temporary task runner needed for a fix for touch latency
+  // regression. All tasks from it should be moved to suspendable or
+  // unthrottled task runner.
+  virtual RefPtr<WebTaskRunner> UnthrottledButBlockableTaskRunner() = 0;
 
   // Returns the WebTaskRunner for tasks which should never get throttled.
   // This is generally used for executing internal browser tasks which should

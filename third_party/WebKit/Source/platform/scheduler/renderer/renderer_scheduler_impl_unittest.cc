@@ -3837,8 +3837,10 @@ void RecordingTimeTestTask(std::vector<base::TimeTicks>* run_times,
 
 }  // namespace
 
+// TODO(altimin@): Re-enable after splitting the timer policy into separate
+// policies.
 TEST_F(RendererSchedulerImplTest,
-       DefaultTimerTasksAreThrottledWhenBackgrounded) {
+       DISABLED_DefaultTimerTasksAreThrottledWhenBackgrounded) {
   ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
 
   scheduler_->OnRendererBackgrounded();

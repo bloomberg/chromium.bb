@@ -68,7 +68,8 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
 class BackgroundRendererThrottlingTest : public SimTest {};
 
-TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
+TEST_F(BackgroundRendererThrottlingTest,
+       DISABLED_BackgroundRenderersAreThrottled) {
   SimRequest main_resource("https://example.com/", "text/html");
 
   LoadURL("https://example.com/");
