@@ -16,10 +16,11 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -83,7 +84,7 @@ class SnapshotCacheTest : public PlatformTest {
   // Flushes all the runloops internally used by the snapshot cache.
   void FlushRunLoops() {
     base::RunLoop().RunUntilIdle();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    web::WebThread::GetBlockingPool()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
