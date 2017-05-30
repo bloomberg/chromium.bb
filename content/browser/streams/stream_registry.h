@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/browser/streams/stream_register_observer.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -22,7 +22,7 @@ namespace content {
 class Stream;
 
 // Maintains a mapping of blob: URLs to active streams.
-class CONTENT_EXPORT StreamRegistry : public base::NonThreadSafe {
+class CONTENT_EXPORT StreamRegistry {
  public:
   StreamRegistry();
   virtual ~StreamRegistry();
@@ -73,6 +73,8 @@ class CONTENT_EXPORT StreamRegistry : public base::NonThreadSafe {
   // Maximum amount of memory allowed to use for Stream instances registered
   // with this registry.
   size_t max_memory_usage_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(StreamRegistry);
 };
