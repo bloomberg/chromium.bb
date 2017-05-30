@@ -199,6 +199,7 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
   }
 
   if (!old_style->LoadingCustomFontsEqual(*new_style) ||
+      old_style->AlignItems() != new_style->AlignItems() ||
       old_style->JustifyItems() != new_style->JustifyItems())
     return kInherit;
 
@@ -219,6 +220,9 @@ void ComputedStyle::PropagateIndependentInheritedProperties(
 StyleSelfAlignmentData ResolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
     ItemPosition normal_value_behavior) {
+  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
+  // flag to not just mean 'auto' prior to running the StyleAdjuster but also
+  // mean 'normal' after running it.
   if (value.GetPosition() == kItemPositionNormal ||
       value.GetPosition() == kItemPositionAuto)
     return {normal_value_behavior, kOverflowAlignmentDefault};
@@ -240,6 +244,9 @@ StyleSelfAlignmentData ComputedStyle::ResolvedAlignSelf(
   if (!parent_style || AlignSelfPosition() != kItemPositionAuto)
     return ResolvedSelfAlignment(AlignSelf(), normal_value_behaviour);
 
+  // We shouldn't need to resolve any 'auto' value in post-adjusment
+  // ComputedStyle, but some layout models can generate anonymous boxes that may
+  // need 'auto' value resolution during layout.
   // The 'auto' keyword computes to the parent's align-items computed value.
   return parent_style->ResolvedAlignItems(normal_value_behaviour);
 }
@@ -259,6 +266,9 @@ StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
   if (!parent_style || JustifySelfPosition() != kItemPositionAuto)
     return ResolvedSelfAlignment(JustifySelf(), normal_value_behaviour);
 
+  // We shouldn't need to resolve any 'auto' value in post-adjusment
+  // ComputedStyle, but some layout models can generate anonymous boxes that may
+  // need 'auto' value resolution during layout.
   // The auto keyword computes to the parent's justify-items computed value.
   return parent_style->ResolvedJustifyItems(normal_value_behaviour);
 }

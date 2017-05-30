@@ -89,6 +89,9 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::CustomStyleForLayoutObject() {
   style->SetUserModify(EUserModify::kReadOnly);
   style->SetUnique();
 
+  if (const ComputedStyle* parent_style = ParentComputedStyle())
+    StyleAdjuster::AdjustStyleForAlignment(*style, *parent_style);
+
   return style.Release();
 }
 
@@ -146,6 +149,8 @@ TextControlInnerEditorElement::CustomStyleForLayoutObject() {
   // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
   // to apply only editing-related and alignment-related.
   StyleAdjuster::AdjustStyleForEditing(*inner_editor_style);
+  if (const ComputedStyle* parent_style = ParentComputedStyle())
+    StyleAdjuster::AdjustStyleForAlignment(*inner_editor_style, *parent_style);
   return inner_editor_style.Release();
 }
 
