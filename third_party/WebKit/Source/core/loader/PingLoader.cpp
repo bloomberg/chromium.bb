@@ -61,7 +61,6 @@
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/ParsedContentType.h"
-#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Compiler.h"
@@ -270,8 +269,6 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
     frame->FrameScheduler()->DidStopLoading(identifier_);
 
   loader_ = fetch_context.CreateURLLoader(request);
-  loader_->SetLoadingTaskRunner(
-      Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner());
   DCHECK(loader_);
   WrappedResourceRequest wrapped_request(request);
   wrapped_request.SetAllowStoredCredentials(credentials_allowed ==
@@ -414,6 +411,7 @@ bool SendPingCommon(LocalFrame* frame,
                     ResourceRequest& request,
                     const AtomicString& initiator,
                     StoredCredentials credentials_allowed) {
+  request.SetKeepalive(true);
   if (MixedContentChecker::ShouldBlockFetch(frame, request, request.Url()))
     return false;
 

@@ -77,6 +77,7 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Vector.h"
@@ -831,7 +832,17 @@ void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
     const ResourceRequest& request) {
   auto loader = GetFrame()->CreateURLLoader();
-  loader->SetLoadingTaskRunner(GetTaskRunner().Get());
+  RefPtr<WebTaskRunner> task_runner;
+
+  if (request.GetKeepalive()) {
+    // The loader should be able to work after the frame destruction, so we
+    // cannot use the task runner associated with the frame.
+    task_runner =
+        Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
+  } else {
+    task_runner = GetTaskRunner();
+  }
+  loader->SetLoadingTaskRunner(task_runner.Get());
   return loader;
 }
 
