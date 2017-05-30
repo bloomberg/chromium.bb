@@ -4210,69 +4210,13 @@ void LayerTreeHostImpl::ElementIsAnimatingChanged(
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
-  // TODO(weiliangc): Most of the code is duplicated with LayerTeeHost version
-  // of function. Should try to share code.
   LayerTreeImpl* tree =
       list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
-  if (!tree)
-    return;
-  PropertyTrees* property_trees = tree->property_trees();
-
-  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
-       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
-    if (!mask.currently_running[property] &&
-        !mask.potentially_animating[property])
-      continue;
-
-    switch (property) {
-      case TargetProperty::TRANSFORM:
-        if (TransformNode* transform_node =
-                property_trees->transform_tree.FindNodeFromElementId(
-                    element_id)) {
-          if (mask.currently_running[property])
-            transform_node->is_currently_animating =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            transform_node->has_potential_animation =
-                state.potentially_animating[property];
-            transform_node->has_only_translation_animations =
-                mutator_host()->HasOnlyTranslationTransforms(element_id,
-                                                             list_type);
-            property_trees->transform_tree.set_needs_update(true);
-            tree->set_needs_update_draw_properties();
-          }
-        }
-        break;
-      case TargetProperty::OPACITY:
-        if (EffectNode* effect_node =
-                property_trees->effect_tree.FindNodeFromElementId(element_id)) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_opacity =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            effect_node->has_potential_opacity_animation =
-                state.potentially_animating[property];
-            property_trees->effect_tree.set_needs_update(true);
-          }
-        }
-        break;
-      case TargetProperty::FILTER:
-        if (EffectNode* effect_node =
-                property_trees->effect_tree.FindNodeFromElementId(element_id)) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_filter =
-                state.currently_running[property];
-          if (mask.potentially_animating[property])
-            effect_node->has_potential_filter_animation =
-                state.potentially_animating[property];
-          // Filter animation changes only the node, and the subtree does not
-          // care. There is no need to request update on property trees here.
-        }
-        break;
-      default:
-        break;
-    }
-  }
+  // TODO(wkorman): Explore enabling DCHECK in ElementIsAnimatingChanged()
+  // below. Currently enabling causes batch of unit test failures.
+  if (tree && tree->property_trees()->ElementIsAnimatingChanged(
+                  mutator_host(), element_id, list_type, mask, state, false))
+    tree->set_needs_update_draw_properties();
 }
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {

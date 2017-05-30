@@ -17,6 +17,7 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -31,6 +32,7 @@ namespace cc {
 
 class CopyOutputRequest;
 class LayerTreeImpl;
+class MutatorHost;
 class RenderSurfaceImpl;
 class ScrollState;
 struct ClipNode;
@@ -670,6 +672,15 @@ class CC_EXPORT PropertyTrees final {
 
   void clear();
 
+  // Applies an animation state change for a particular element in
+  // this property tree. Returns whether a draw property update is
+  // needed.
+  bool ElementIsAnimatingChanged(const MutatorHost* mutator_host,
+                                 ElementId element_id,
+                                 ElementListType list_type,
+                                 const PropertyAnimationState& mask,
+                                 const PropertyAnimationState& state,
+                                 bool check_node_existence);
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
