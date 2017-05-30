@@ -457,6 +457,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignItems.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifyContent.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifySelf.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPIAnimationName.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIBaselineShift.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIBorderImageOutset.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIBorderImageRepeat.h",

@@ -42,6 +42,7 @@
 #include "core/css/parser/FontVariantNumericParser.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSPropertyAnimationNameUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
@@ -331,25 +332,6 @@ static CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange& range) {
   return ConsumeNumber(range, kValueRangeNonNegative);
 }
 
-static CSSValue* ConsumeAnimationName(CSSParserTokenRange& range,
-                                      const CSSParserContext* context,
-                                      bool allow_quoted_name) {
-  if (range.Peek().Id() == CSSValueNone)
-    return ConsumeIdent(range);
-
-  if (allow_quoted_name && range.Peek().GetType() == kStringToken) {
-    // Legacy support for strings in prefixed animations.
-    context->Count(UseCounter::kQuotedAnimationName);
-
-    const CSSParserToken& token = range.ConsumeIncludingWhitespace();
-    if (EqualIgnoringASCIICase(token.Value(), "none"))
-      return CSSIdentifierValue::Create(CSSValueNone);
-    return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
-  }
-
-  return ConsumeCustomIdent(range);
-}
-
 static CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() != kIdentToken)
@@ -479,7 +461,8 @@ static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
     case CSSPropertyAnimationIterationCount:
       return ConsumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
-      return ConsumeAnimationName(range, context, use_legacy_parsing);
+      return CSSPropertyAnimationNameUtils::ConsumeAnimationName(
+          range, context, use_legacy_parsing);
     case CSSPropertyAnimationPlayState:
       return ConsumeIdent<CSSValueRunning, CSSValuePaused>(range);
     case CSSPropertyTransitionProperty:
@@ -1689,10 +1672,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
           range_);
     case CSSPropertyAnimationIterationCount:
       return ConsumeCommaSeparatedList(ConsumeAnimationIterationCount, range_);
-    case CSSPropertyAnimationName:
-      return ConsumeCommaSeparatedList(
-          ConsumeAnimationName, range_, context_,
-          unresolved_property == CSSPropertyAliasWebkitAnimationName);
     case CSSPropertyAnimationPlayState:
       return ConsumeCommaSeparatedList(
           ConsumeIdent<CSSValueRunning, CSSValuePaused>, range_);
