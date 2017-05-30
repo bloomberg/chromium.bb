@@ -8,6 +8,6 @@ console-log-before-inspector-open.html:7 log
 console-log-before-inspector-open.html:8 info
 console-log-before-inspector-open.html:9 warn
 (anonymous) @ console-log-before-inspector-open.html:9
-console-log-before-inspector-open.html:10 error
-(anonymous) @ console-log-before-inspector-open.html:10
+console-log-before-i…pector-open.html:10 error
+(anonymous) @ console-log-before-i…pector-open.html:10
 
