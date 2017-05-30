@@ -56,8 +56,8 @@ public class ChildProcessLauncher {
                         ChildProcessCreationParams creationParams,
                         ChildProcessConnection.StartCallback startCallback,
                         ChildProcessConnection.DeathCallback deathCallback) {
-                    boolean bindToCallerCheck = isServiceExternalFromCreationParams(
-                            creationParams, true /* sandboxed */);
+                    boolean bindToCallerCheck =
+                            creationParams == null ? false : creationParams.getBindToCallerCheck();
                     ChildConnectionAllocator allocator =
                             getConnectionAllocator(context, creationParams, true /* sandboxed */);
                     return ChildProcessLauncher.allocateBoundConnection(context, allocator,
