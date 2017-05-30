@@ -95,6 +95,11 @@ DEFINE_TRACE(HTMLVideoElement) {
   HTMLMediaElement::Trace(visitor);
 }
 
+bool HTMLVideoElement::HasPendingActivity() const {
+  return HTMLMediaElement::HasPendingActivity() ||
+         (image_loader_ && image_loader_->HasPendingActivity());
+}
+
 Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
     ContainerNode* insertion_point) {
   if (insertion_point->isConnected() && custom_controls_fullscreen_detector_)

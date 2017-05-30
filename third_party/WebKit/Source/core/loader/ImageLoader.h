@@ -140,7 +140,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   virtual void NoImageResourceToLoad() {}
 
   bool HasPendingEvent() const;
-  void UpdatedHasPendingEvent();
 
   void DispatchPendingLoadEvent();
   void DispatchPendingErrorEvent();
@@ -160,8 +159,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void CrossSiteOrCSPViolationOccurred(AtomicString);
   void EnqueueImageLoadingMicroTask(UpdateFromElementBehavior, ReferrerPolicy);
 
-  void TimerFired(TimerBase*);
-
   KURL ImageSourceToKURL(AtomicString) const;
 
   // Used to determine whether to immediately initiate the load or to schedule a
@@ -178,12 +175,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Member<Element> element_;
   Member<ImageResourceContent> image_;
   Member<ImageResource> image_resource_for_image_document_;
-  // FIXME: Oilpan: We might be able to remove this Persistent hack when
-  // ImageResourceClient is traceable.
-  GC_PLUGIN_IGNORE("http://crbug.com/383741")
-  Persistent<Element> keep_alive_;
 
-  Timer<ImageLoader> deref_element_timer_;
   AtomicString failed_load_url_;
   WeakPtr<Task> pending_task_;  // owned by Microtask
   std::unique_ptr<IncrementLoadEventDelayCount>
@@ -213,7 +205,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   bool image_complete_ : 1;
   bool loading_image_document_ : 1;
-  bool element_is_protected_ : 1;
   bool suppress_error_events_ : 1;
 };
 

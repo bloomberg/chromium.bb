@@ -137,6 +137,10 @@ DEFINE_TRACE(HTMLInputElement) {
   TextControlElement::Trace(visitor);
 }
 
+bool HTMLInputElement::HasPendingActivity() const {
+  return ImageLoader() && ImageLoader()->HasPendingActivity();
+}
+
 HTMLImageLoader& HTMLInputElement::EnsureImageLoader() {
   if (!image_loader_)
     image_loader_ = HTMLImageLoader::Create(this);

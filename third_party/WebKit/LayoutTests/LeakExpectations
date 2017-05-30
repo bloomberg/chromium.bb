@@ -25,9 +25,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
 
-crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
-crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
-
 # -----------------------------------------------------------------
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------

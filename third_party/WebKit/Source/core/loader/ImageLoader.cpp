@@ -156,12 +156,10 @@ class ImageLoader::Task {
 
 ImageLoader::ImageLoader(Element* element)
     : element_(element),
-      deref_element_timer_(this, &ImageLoader::TimerFired),
       has_pending_load_event_(false),
       has_pending_error_event_(false),
       image_complete_(true),
       loading_image_document_(false),
-      element_is_protected_(false),
       suppress_error_events_(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
@@ -190,20 +188,10 @@ DEFINE_TRACE(ImageLoader) {
 void ImageLoader::SetImageForTest(ImageResourceContent* new_image) {
   DCHECK(new_image);
   SetImageWithoutConsideringPendingLoadEvent(new_image);
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 void ImageLoader::ClearImage() {
   SetImageWithoutConsideringPendingLoadEvent(nullptr);
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 void ImageLoader::SetImageForImageDocument(ImageResource* new_image_resource) {
@@ -218,11 +206,6 @@ void ImageLoader::SetImageForImageDocument(ImageResource* new_image_resource) {
   // loading is just started.
   // TODO(hiroshige): clean up the behavior of flags. https://crbug.com/719759
   image_complete_ = true;
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 void ImageLoader::SetImageWithoutConsideringPendingLoadEvent(
@@ -414,11 +397,6 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
 
   if (LayoutImageResource* image_resource = GetLayoutImageResource())
     image_resource->ResetAnimation();
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
@@ -589,11 +567,6 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     // https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element:the-img-element-55
     if (!suppress_error_events_)
       DispatchErrorEvent();
-
-    // Only consider updating the protection ref-count of the Element
-    // immediately before returning from this function as doing so might result
-    // in the destruction of this ImageLoader.
-    UpdatedHasPendingEvent();
     return;
   }
   has_pending_load_event_ = true;
@@ -646,33 +619,6 @@ bool ImageLoader::HasPendingEvent() const {
   return false;
 }
 
-void ImageLoader::UpdatedHasPendingEvent() {
-  // If an Element that does image loading is removed from the DOM the
-  // load/error event for the image is still observable. As long as the
-  // ImageLoader is actively loading, the Element itself needs to be ref'ed to
-  // keep it from being destroyed by DOM manipulation or garbage collection. If
-  // such an Element wishes for the load to stop when removed from the DOM it
-  // needs to stop the ImageLoader explicitly.
-  bool was_protected = element_is_protected_;
-  element_is_protected_ = HasPendingEvent();
-  if (was_protected == element_is_protected_)
-    return;
-
-  if (element_is_protected_) {
-    if (deref_element_timer_.IsActive())
-      deref_element_timer_.Stop();
-    else
-      keep_alive_ = element_;
-  } else {
-    DCHECK(!deref_element_timer_.IsActive());
-    deref_element_timer_.StartOneShot(0, BLINK_FROM_HERE);
-  }
-}
-
-void ImageLoader::TimerFired(TimerBase*) {
-  keep_alive_.Clear();
-}
-
 void ImageLoader::DispatchPendingEvent(ImageEventSender* event_sender) {
   RESOURCE_LOADING_DVLOG(1) << "ImageLoader::dispatchPendingEvent " << this;
   DCHECK(event_sender == &LoadEventSender() ||
@@ -692,11 +638,6 @@ void ImageLoader::DispatchPendingLoadEvent() {
   has_pending_load_event_ = false;
   if (GetElement()->GetDocument().GetFrame())
     DispatchLoadEvent();
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 void ImageLoader::DispatchPendingErrorEvent() {
@@ -705,11 +646,6 @@ void ImageLoader::DispatchPendingErrorEvent() {
 
   if (GetElement()->GetDocument().GetFrame())
     GetElement()->DispatchEvent(Event::Create(EventTypeNames::error));
-
-  // Only consider updating the protection ref-count of the Element immediately
-  // before returning from this function as doing so might result in the
-  // destruction of this ImageLoader.
-  UpdatedHasPendingEvent();
 }
 
 bool ImageLoader::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
