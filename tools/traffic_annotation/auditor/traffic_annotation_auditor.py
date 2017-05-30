@@ -75,7 +75,7 @@ def _ParsRawAnnotations(raw_annotations):
   """Parses raw annotations texts which are received from the clang tool.
   Args:
     raw_annotations: str Serialization of annotations and metadata. Each
-        annotation should have the following lines:
+        annotation should have either of the following lines:
         1- "==== NEW ANNOTATION ===="
         2- File path.
         3- Name of the function including this position.
@@ -85,6 +85,13 @@ def _ParsRawAnnotations(raw_annotations):
         7- Completing id or group id, when applicable, empty otherwise.
         8- Serialization of annotation text (several lines)
         n- "==== ANNOTATION ENDS ===="
+        or:
+        1: "==== NEW CALL ===="
+        2: File path.
+        3: Name of the function in which the call is made.
+        4: Name of the called function.
+        5: Does the call have an annotation?
+        6: "==== CALL ENDS ===="
 
   Returns:
     annotations: ExtractedNetworkTrafficAnnotation A protobuf including all
@@ -104,58 +111,71 @@ def _ParsRawAnnotations(raw_annotations):
 
   try:
     while current < len(lines) - 1:
-      if lines[current] != "==== NEW ANNOTATION ====":
-        raise Exception(
-            "Error at line %i, expected starting new annotaion." % current)
-      if current + 5 >= len(lines):
-        raise Exception(
-            "Not enough header lines at line %i." % current)
+      if lines[current] == "==== NEW ANNOTATION ====":
+        if current + 6 >= len(lines):
+          raise Exception(
+              "Not enough header lines at line %i." % current)
 
-      # Extract header lines.
-      source = traffic_annotation_pb2.NetworkTrafficAnnotation.TrafficSource()
-      source.file = lines[current + 1]
-      source.function = lines[current + 2]
-      source.line = int(lines[current + 3])
-      unique_id = lines[current + 5]
+        # Extract header lines.
+        source = traffic_annotation_pb2.NetworkTrafficAnnotation.TrafficSource()
+        source.file = lines[current + 1]
+        source.function = lines[current + 2]
+        source.line = int(lines[current + 3])
+        unique_id = lines[current + 5]
 
-      new_metadata = {'function_type': lines[current + 4],
-                      'extra_id': lines[current + 6],
-                      'unique_id_hash': _ComputeStringHash(unique_id)}
-      # Extract serialized proto.
-      current += 7
-      annotation_text = ""
+        new_metadata = {'function_type': lines[current + 4],
+                        'extra_id': lines[current + 6],
+                        'unique_id_hash': _ComputeStringHash(unique_id)}
+        # Extract serialized proto.
+        current += 7
+        annotation_text = ""
 
-      while current < len(lines):
-        current += 1
-        if lines[current - 1] == "==== ANNOTATION ENDS ====":
-          break
+        while current < len(lines):
+          if lines[current] == "==== ANNOTATION ENDS ====":
+            break
+          else:
+            annotation_text += lines[current]
+          current += 1
         else:
-          annotation_text += lines[current - 1]
-      else:
+          raise Exception(
+            "Error at line %i, expected annotation end tag." % current)
+        current += 1
+
+        # Process unittests and undefined tags.
+        if unique_id in ("test", "test_partial"):
+          continue
+        if unique_id in ("undefined", "missing"):
+          errors.append("Annotation is not defined for file '%s', line %i." %
+              (source.file, source.line))
+          continue
+
+        # Decode serialized proto.
+        annotation_proto = traffic_annotation_pb2.NetworkTrafficAnnotation()
+        try:
+          text_format.Parse(annotation_text, annotation_proto)
+        except Exception as error:
+          errors.append("Annotation in file '%s', line %i, has an error: %s" %
+              (source.file, source.line, error))
+
+        # Add new proto.
+        annotation_proto.unique_id = unique_id
+        annotation_proto.source.CopyFrom(source)
+        annotations.network_traffic_annotation.add().CopyFrom(annotation_proto)
+        metadata.append(new_metadata)
+      elif lines[current] == "==== NEW CALL ====":
+        # Ignore calls for now.
+        while current < len(lines):
+          if lines[current] == "==== CALL ENDS ====":
+            break
+          current += 1
+        else:
+          raise Exception(
+              "Error at line %i, expected call end tag." % current)
+        current += 1
+      else: # The line is neither new annotation nor new call.
         raise Exception(
-          "Error at line %i, expected annotation end tag." % current)
-
-      # Process unittests and undefined tags.
-      if unique_id in ("test", "test_partial"):
-        continue
-      if unique_id in ("undefined", "missing"):
-        errors.append("Annotation is not defined for file '%s', line %i." %
-            (source.file, source.line))
-        continue
-
-      # Decode serialized proto.
-      annotation_proto = traffic_annotation_pb2.NetworkTrafficAnnotation()
-      try:
-        text_format.Parse(annotation_text, annotation_proto)
-      except Exception as error:
-        errors.append("Annotation in file '%s', line %i, has error: %s" %
-            (source.file, source.line, error))
-
-      # Add new proto.
-      annotation_proto.unique_id = unique_id
-      annotation_proto.source.CopyFrom(source)
-      annotations.network_traffic_annotation.add().CopyFrom(annotation_proto)
-      metadata.append(new_metadata)
+            "Error at line %i, expected starting new annotation or call." %
+            current)
 
   except Exception as error:
     errors.append(str(error))

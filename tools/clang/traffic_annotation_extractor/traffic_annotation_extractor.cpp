@@ -8,8 +8,18 @@
 //   - net::CompleteNetworkTrafficAnnotation
 //   - net::BranchedCompleteNetworkTrafficAnnotation
 // It extracts the location info and content of annotation tags, and outputs
-// them to llvm::outs. Please refer to README.md for build and usage
-// instructions.
+// them to llvm::outs. It also extracts all calls of the following network
+// request creation functions and returns their source location and availability
+// of a net::[Partial]NetworkTrafficAnnotation parameter in them:
+//   - SSLClientSocket::SSLClientSocket
+//   - TCPClientSocket::TCPClientSocket
+//   - UDPClientSocket::UDPClientSocket
+//   - URLFetcher::Create
+//   - ClientSocketFactory::CreateDatagramClientSocket
+//   - ClientSocketFactory::CreateSSLClientSocket
+//   - ClientSocketFactory::CreateTransportClientSocket
+//   - URLRequestContext::CreateRequest
+// Please refer to README.md for build and usage instructions.
 
 #include <memory>
 #include <vector>
@@ -28,26 +38,26 @@ using namespace clang::ast_matchers;
 
 namespace {
 
+// Information about location of a line of code.
+struct Location {
+  std::string file_path;
+  int line_number = -1;
+
+  // Name of the function including this line. E.g., in the following code,
+  // |function_name| will be 'foo' for all |line_number| values 101-103.
+  //
+  // 100 void foo() {
+  // 101   NetworkTrafficAnnotationTag baz =
+  // 102       net::DefineNetworkTrafficAnnotation(...); }
+  // 103   bar(baz);
+  // 104 }
+  // If no function is found, 'Global Namespace' will be returned.
+  std::string function_name;
+};
+
 // An instance of a call to either of the 4 network traffic annotation
 // definition functions.
 struct NetworkAnnotationInstance {
-  // Information about where the call has happened.
-  struct Location {
-    std::string file_path;
-    int line_number = -1;
-
-    // Name of the function including this line. E.g., in the following code,
-    // |function_name| will be 'foo' for all |line_number| values 101-103.
-    //
-    // 100 void foo() {
-    // 101   NetworkTrafficAnnotationTag baz =
-    // 102       net::DefineNetworkTrafficAnnotation(...); }
-    // 103   bar(baz);
-    // 104 }
-    // If no function is found, 'Global Namespace' will be returned.
-    std::string function_name;
-  };
-
   // Annotation content. These are the arguments of the call to either of the 4
   // network traffic annotation definition functions.
   struct Annotation {
@@ -90,7 +100,23 @@ struct NetworkAnnotationInstance {
   }
 };
 
-using Collector = std::vector<NetworkAnnotationInstance>;
+// An instance of a call to one of the monitored function.
+struct CallInstance {
+  // Location of the call.
+  Location location;
+
+  // Whether the function is annotated.
+  bool has_annotation = false;
+
+  // Name of the called function.
+  std::string called_function_name;
+};
+
+// A structure to keep detected annotation and call instances.
+struct Collector {
+  std::vector<NetworkAnnotationInstance> annotations;
+  std::vector<CallInstance> calls;
+};
 
 // This class implements the call back functions for AST Matchers. The matchers
 // are defined in RunMatchers function. When a pattern is found there,
@@ -105,6 +131,60 @@ class NetworkAnnotationTagCallback : public MatchFinder::MatchCallback {
   // Is called on any pattern found by ASTMathers that are defined in RunMathers
   // function.
   virtual void run(const MatchFinder::MatchResult& result) override {
+    if (const clang::CallExpr* call_expr =
+            result.Nodes.getNodeAs<clang::CallExpr>("monitored_function")) {
+      AddFunction(call_expr, result);
+    } else {
+      AddAnnotation(result);
+    }
+  }
+
+  void GetInstanceLocation(const MatchFinder::MatchResult& result,
+                           const clang::CallExpr* call_expr,
+                           const clang::FunctionDecl* ancestor,
+                           Location* instance_location) {
+    clang::SourceLocation source_location = call_expr->getLocStart();
+    if (source_location.isMacroID()) {
+      source_location =
+          result.SourceManager->getImmediateMacroCallerLoc(source_location);
+    }
+    instance_location->file_path =
+        result.SourceManager->getFilename(source_location);
+    instance_location->line_number =
+        result.SourceManager->getSpellingLineNumber(source_location);
+    if (ancestor)
+      instance_location->function_name = ancestor->getQualifiedNameAsString();
+    else
+      instance_location->function_name = "Global Namespace";
+
+    std::replace(instance_location->file_path.begin(),
+                 instance_location->file_path.end(), '\\', '/');
+
+    // Trim leading "../"s from file path.
+    while (instance_location->file_path.length() > 3 &&
+           instance_location->file_path.substr(0, 3) == "../") {
+      instance_location->file_path = instance_location->file_path.substr(
+          3, instance_location->file_path.length() - 3);
+    }
+  }
+
+  // Stores a function call that should be monitored.
+  void AddFunction(const clang::CallExpr* call_expr,
+                   const MatchFinder::MatchResult& result) {
+    CallInstance instance;
+
+    const clang::FunctionDecl* ancestor =
+        result.Nodes.getNodeAs<clang::FunctionDecl>("function_context");
+    GetInstanceLocation(result, call_expr, ancestor, &instance.location);
+    instance.called_function_name =
+        call_expr->getDirectCallee()->getQualifiedNameAsString();
+    instance.has_annotation =
+        (result.Nodes.getNodeAs<clang::RecordDecl>("annotation") != nullptr);
+    collector_->calls.push_back(instance);
+  }
+
+  // Stores an annotation.
+  void AddAnnotation(const MatchFinder::MatchResult& result) {
     NetworkAnnotationInstance instance;
 
     const clang::StringLiteral* unique_id =
@@ -143,31 +223,9 @@ class NetworkAnnotationTagCallback : public MatchFinder::MatchCallback {
     instance.annotation.unique_id = unique_id->getString();
     instance.annotation.text = annotation_text->getString();
 
-    // Get annotation location.
-    clang::SourceLocation source_location = call_expr->getLocStart();
-    if (source_location.isMacroID()) {
-      source_location =
-          result.SourceManager->getImmediateMacroCallerLoc(source_location);
-    }
-    instance.location.file_path =
-        result.SourceManager->getFilename(source_location);
-    instance.location.line_number =
-        result.SourceManager->getSpellingLineNumber(source_location);
-    if (ancestor)
-      instance.location.function_name = ancestor->getQualifiedNameAsString();
-    else
-      instance.location.function_name = "Global Namespace";
+    GetInstanceLocation(result, call_expr, ancestor, &instance.location);
 
-    // Trim leading "../"s from file path.
-    std::replace(instance.location.file_path.begin(),
-                 instance.location.file_path.end(), '\\', '/');
-    while (instance.location.file_path.length() > 3 &&
-           instance.location.file_path.substr(0, 3) == "../") {
-      instance.location.file_path = instance.location.file_path.substr(
-          3, instance.location.file_path.length() - 3);
-    }
-
-    collector_->push_back(instance);
+    collector_->annotations.push_back(instance);
   }
 
  private:
@@ -182,14 +240,24 @@ int RunMatchers(clang::tooling::ClangTool* clang_tool, Collector* collector) {
 
   // Set up patterns to find network traffic annotation definition functions,
   // their arguments, and their ancestor function (when possible).
+  auto bind_function_context_if_present =
+      anyOf(hasAncestor(functionDecl().bind("function_context")),
+            unless(hasAncestor(functionDecl())));
+  auto has_annotation_parameter = anyOf(
+      hasAnyParameter(hasType(
+          recordDecl(anyOf(hasName("net::NetworkTrafficAnnotationTag"),
+                           hasName("net::PartialNetworkTrafficAnnotationTag")))
+              .bind("annotation"))),
+      unless(hasAnyParameter(hasType(recordDecl(
+          anyOf(hasName("net::NetworkTrafficAnnotationTag"),
+                hasName("net::PartialNetworkTrafficAnnotationTag")))))));
   match_finder.addMatcher(
       callExpr(hasDeclaration(functionDecl(
                    anyOf(hasName("DefineNetworkTrafficAnnotation"),
                          hasName("net::DefineNetworkTrafficAnnotation")))),
                hasArgument(0, stringLiteral().bind("unique_id")),
                hasArgument(1, stringLiteral().bind("annotation_text")),
-               anyOf(hasAncestor(functionDecl().bind("function_context")),
-                     unless(hasAncestor(functionDecl()))))
+               bind_function_context_if_present)
           .bind("definition_function"),
       &callback);
   match_finder.addMatcher(
@@ -199,8 +267,7 @@ int RunMatchers(clang::tooling::ClangTool* clang_tool, Collector* collector) {
                hasArgument(0, stringLiteral().bind("unique_id")),
                hasArgument(1, stringLiteral().bind("completing_id")),
                hasArgument(2, stringLiteral().bind("annotation_text")),
-               anyOf(hasAncestor(functionDecl().bind("function_context")),
-                     unless(hasAncestor(functionDecl()))))
+               bind_function_context_if_present)
           .bind("partial_function"),
       &callback);
   match_finder.addMatcher(
@@ -209,8 +276,7 @@ int RunMatchers(clang::tooling::ClangTool* clang_tool, Collector* collector) {
                          hasName("net::CompleteNetworkTrafficAnnotation")))),
                hasArgument(0, stringLiteral().bind("unique_id")),
                hasArgument(2, stringLiteral().bind("annotation_text")),
-               anyOf(hasAncestor(functionDecl().bind("function_context")),
-                     unless(hasAncestor(functionDecl()))))
+               bind_function_context_if_present)
           .bind("completing_function"),
       &callback);
   match_finder.addMatcher(
@@ -220,10 +286,27 @@ int RunMatchers(clang::tooling::ClangTool* clang_tool, Collector* collector) {
                hasArgument(0, stringLiteral().bind("unique_id")),
                hasArgument(1, stringLiteral().bind("group_id")),
                hasArgument(3, stringLiteral().bind("annotation_text")),
-               anyOf(hasAncestor(functionDecl().bind("function_context")),
-                     unless(hasAncestor(functionDecl()))))
+               bind_function_context_if_present)
           .bind("branched_completing_function"),
       &callback);
+
+  // Setup patterns to find functions that should be monitored.
+  match_finder.addMatcher(
+      callExpr(
+          hasDeclaration(functionDecl(
+              anyOf(hasName("SSLClientSocket::SSLClientSocket"),
+                    hasName("TCPClientSocket::TCPClientSocket"),
+                    hasName("UDPClientSocket::UDPClientSocket"),
+                    hasName("URLFetcher::Create"),
+                    hasName("ClientSocketFactory::CreateDatagramClientSocket"),
+                    hasName("ClientSocketFactory::CreateSSLClientSocket"),
+                    hasName("ClientSocketFactory::CreateTransportClientSocket"),
+                    hasName("URLRequestContext::CreateRequest")),
+              has_annotation_parameter)),
+          bind_function_context_if_present)
+          .bind("monitored_function"),
+      &callback);
+
   std::unique_ptr<clang::tooling::FrontendActionFactory> frontend_factory =
       clang::tooling::newFrontendActionFactory(&match_finder);
   return clang_tool->run(frontend_factory.get());
@@ -249,16 +332,27 @@ int main(int argc, const char* argv[]) {
 
   // For each call to any of the functions that define a network traffic
   // annotation, write annotation text and relevant meta data into llvm::outs().
-  for (const NetworkAnnotationInstance& call : collector) {
+  for (const NetworkAnnotationInstance& instance : collector.annotations) {
     llvm::outs() << "==== NEW ANNOTATION ====\n";
-    llvm::outs() << call.location.file_path << "\n";
-    llvm::outs() << call.location.function_name << "\n";
-    llvm::outs() << call.location.line_number << "\n";
-    llvm::outs() << call.GetTypeName() << "\n";
-    llvm::outs() << call.annotation.unique_id << "\n";
-    llvm::outs() << call.annotation.extra_id << "\n";
-    llvm::outs() << call.annotation.text << "\n";
+    llvm::outs() << instance.location.file_path << "\n";
+    llvm::outs() << instance.location.function_name << "\n";
+    llvm::outs() << instance.location.line_number << "\n";
+    llvm::outs() << instance.GetTypeName() << "\n";
+    llvm::outs() << instance.annotation.unique_id << "\n";
+    llvm::outs() << instance.annotation.extra_id << "\n";
+    llvm::outs() << instance.annotation.text << "\n";
     llvm::outs() << "==== ANNOTATION ENDS ====\n";
+  }
+
+  // For each call, write annotation text and relevant meta data.
+  for (const CallInstance& instance : collector.calls) {
+    llvm::outs() << "==== NEW CALL ====\n";
+    llvm::outs() << instance.location.file_path << "\n";
+    llvm::outs() << instance.location.function_name << "\n";
+    llvm::outs() << instance.location.line_number << "\n";
+    llvm::outs() << instance.called_function_name << "\n";
+    llvm::outs() << instance.has_annotation << "\n";
+    llvm::outs() << "==== CALL ENDS ====\n";
   }
 
   return 0;

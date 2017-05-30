@@ -25,16 +25,26 @@ Example for call using run_tool.py:
   `tools/clang/scripts/run_tool.py --tool=traffic_annotation_extractor
      --generate-compdb -p=out/Debug components/spellcheck/browser`
 
-The executable extracts network traffic annotations from given file paths based
-  on build parameters in build path, and writes them to llvm::outs.
-  Each output will have the following format:
-  - Line 1: File path.
-  - Line 2: Name of the function in which annotation is defined.
-  - Line 3: Line number of annotation.
-  - Line 4: Function type ("Definition", "Partial", "Completing",
+The executable extracts network traffic annotations and calls to network request
+  generation functions from given file paths based on build parameters in build
+  path, and writes them to llvm::outs.
+
+Each annotation output will have the following format:
+  - Line 1: "==== NEW ANNOTATION ===="
+  - Line 2: File path.
+  - Line 3: Name of the function in which the annotation is defined.
+  - Line 4: Line number of the annotation.
+  - Line 5: Function type ("Definition", "Partial", "Completing",
             "BranchedCompleting").
-  - Line 5: Unique id of annotation.
-  - Line 6: Completing id or group id, when applicable, empty otherwise.
-  - Line 7-: Serialized protobuf of the annotation.
-Outputs are enclosed by "==== NEW ANNOTATION ====" and
-  "==== ANNOTATION ENDS ===="
+  - Line 6: Unique id of annotation.
+  - Line 7: Completing id or group id, when applicable, empty otherwise.
+  - Line 8-: Serialized protobuf of the annotation. (Several lines)
+  - Last line:  "==== ANNOTATION ENDS ===="
+
+Each function call output will have the following format:
+  - Line 1: "==== NEW CALL ===="
+  - Line 2: File path.
+  - Line 3: Name of the function in which the call is made.
+  - Line 4: Name of the called function.
+  - Line 5: Does the call have an annotation?
+  - Line 6: "==== CALL ENDS ===="
