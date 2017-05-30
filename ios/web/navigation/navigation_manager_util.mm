@@ -13,6 +13,19 @@
 
 namespace web {
 
+NavigationItem* GetItemWithUniqueID(NavigationManager* navigation_manager,
+                                    int unique_id) {
+  NavigationItem* transient_item = navigation_manager->GetTransientItem();
+  if (transient_item && transient_item->GetUniqueID() == unique_id)
+    return transient_item;
+
+  NavigationItem* pending_item = navigation_manager->GetPendingItem();
+  if (pending_item && pending_item->GetUniqueID() == unique_id)
+    return pending_item;
+
+  return GetCommittedItemWithUniqueID(navigation_manager, unique_id);
+}
+
 NavigationItem* GetCommittedItemWithUniqueID(
     NavigationManager* navigation_manager,
     int unique_id) {
