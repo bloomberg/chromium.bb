@@ -134,7 +134,8 @@ dist_yaml_TESTS =				\
 	yaml/da-dk-g08.yaml			\
 	yaml/da-dk-g16.yaml	\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
-	yaml/da-dk-g18-dictionary_harness.yaml	\
+		yaml/da-dk-g16-lit.yaml	\
+yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g28-dictionary_harness.yaml	\

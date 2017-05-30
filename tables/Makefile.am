@@ -49,6 +49,7 @@ table_files = \
 	da-dk.dis \
 	da-dk-g08.ctb \
 	da-dk-g16.ctb \
+	da-dk-g16-lit.ctb \
 	da-dk-g18.ctb \
 	da-dk-g26.ctb \
 	da-dk-g26l.ctb \
