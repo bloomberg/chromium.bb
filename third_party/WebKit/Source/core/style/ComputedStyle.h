@@ -1723,7 +1723,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // text-orientation (aka -webkit-text-orientation, -epub-text-orientation)
   static TextOrientation InitialTextOrientation() {
-    return kTextOrientationMixed;
+    return TextOrientation::kMixed;
   }
   TextOrientation GetTextOrientation() const {
     return static_cast<TextOrientation>(
@@ -3720,10 +3720,12 @@ inline bool ComputedStyle::IsSharable() const {
 
 inline bool ComputedStyle::SetTextOrientation(
     TextOrientation text_orientation) {
-  if (compareEqual(rare_inherited_data_->text_orientation_, text_orientation))
+  if (compareEqual(rare_inherited_data_->text_orientation_,
+                   static_cast<unsigned>(text_orientation)))
     return false;
 
-  rare_inherited_data_.Access()->text_orientation_ = text_orientation;
+  rare_inherited_data_.Access()->text_orientation_ =
+      static_cast<unsigned>(text_orientation);
   return true;
 }
 

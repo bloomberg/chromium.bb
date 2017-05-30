@@ -1606,13 +1606,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextOrientation e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTextOrientationSideways:
+    case TextOrientation::kSideways:
       value_id_ = CSSValueSideways;
       break;
-    case kTextOrientationMixed:
+    case TextOrientation::kMixed:
       value_id_ = CSSValueMixed;
       break;
-    case kTextOrientationUpright:
+    case TextOrientation::kUpright:
       value_id_ = CSSValueUpright;
       break;
   }
@@ -1623,18 +1623,18 @@ inline TextOrientation CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSideways:
     case CSSValueSidewaysRight:
-      return kTextOrientationSideways;
+      return TextOrientation::kSideways;
     case CSSValueMixed:
     case CSSValueVerticalRight:  // -webkit-text-orientation
-      return kTextOrientationMixed;
+      return TextOrientation::kMixed;
     case CSSValueUpright:
-      return kTextOrientationUpright;
+      return TextOrientation::kUpright;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextOrientationMixed;
+  return TextOrientation::kMixed;
 }
 
 template <>
