@@ -669,30 +669,22 @@ void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
 
 void NetworkListView::UpdateInfoLabel(int message_id,
                                       int insertion_index,
-                                      views::Label** label_ptr) {
-  views::Label* label = *label_ptr;
+                                      InfoLabel** info_label_ptr) {
+  InfoLabel* info_label = *info_label_ptr;
   if (!message_id) {
-    if (label) {
+    if (info_label) {
       needs_relayout_ = true;
-      delete label;
-      *label_ptr = nullptr;
+      delete info_label;
+      *info_label_ptr = nullptr;
     }
     return;
   }
-  base::string16 text = l10n_util::GetStringUTF16(message_id);
-  if (!label) {
-    // TODO(mohsen): Update info label to follow MD specs. See
-    // https://crbug.com/687778.
-    label = new views::Label();
-    label->SetBorder(views::CreateEmptyBorder(
-        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
-        kTrayPopupPaddingBetweenItems, 0));
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
-  }
-  label->SetText(text);
-  PlaceViewAtIndex(label, insertion_index);
-  *label_ptr = label;
+  if (!info_label)
+    info_label = new InfoLabel(message_id);
+  else
+    info_label->SetMessage(message_id);
+  PlaceViewAtIndex(info_label, insertion_index);
+  *info_label_ptr = info_label;
 }
 
 int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,

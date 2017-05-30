@@ -310,8 +310,8 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
     if (device_map_.size() == 0 && bluetooth_available && bluetooth_enabled) {
-      scroll_content()->AddChildView(TrayPopupUtils::CreateInfoLabelRowView(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
+      scroll_content()->AddChildView(
+          new InfoLabel(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
     }
 
     // Focus the device which was focused before the device-list update.
