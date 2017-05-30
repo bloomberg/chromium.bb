@@ -1571,8 +1571,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                       Document* document) const {
   if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
       !RequiredCSP().IsEmpty()) {
-    // TODO(amalika): Strengthen this DCHECK that requiredCSP has proper format
-    DCHECK(RequiredCSP().GetString().ContainsOnlyASCII());
+    DCHECK(ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString()));
     resource_request.SetHTTPHeaderField(HTTPNames::Required_CSP, RequiredCSP());
   }
 

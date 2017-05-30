@@ -1172,4 +1172,96 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
       "https");
 }
 
+TEST_F(ContentSecurityPolicyTest, IsValidTest) {
+  // Empty string is invalid
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(""));
+
+  // Policy with single directive
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("base-uri http://example.com"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "invalid-policy-name http://example.com"));
+
+  // Policy with multiple directives
+  EXPECT_TRUE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri http://example.com 'self'; child-src http://example.com; "
+      "default-src http://example.com"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "default-src http://example.com; "
+      "invalid-policy-name http://example.com"));
+
+  // 'self', 'none'
+  EXPECT_TRUE(ContentSecurityPolicy::IsValidCSPAttr("script-src 'self'"));
+  EXPECT_TRUE(ContentSecurityPolicy::IsValidCSPAttr("default-src 'none'"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr("script-src 'slef'"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr("default-src 'non'"));
+
+  // invalid ascii character
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src https:  \x08"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1%2F%DFisnotSorB%2F"));
+
+  // paths on script-src
+  EXPECT_TRUE(ContentSecurityPolicy::IsValidCSPAttr("script-src 127.0.0.1:*/"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src 127.0.0.1:*/path"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1:*/path?query=string"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1:*/path#anchor"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src 127.0.0.1:8000/"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src 127.0.0.1:8000/path"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1:8000/path?query=string"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1:8000/path#anchor"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 127.0.0.1:8000/thisisa;pathwithasemicolon"));
+
+  // script-src invalid hosts
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr("script-src http:/"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr("script-src http://"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http:/127.0.0.1"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http:///127.0.0.1"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http://127.0.0.1:/"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src https://127.?.0.1:*"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src https://127.0.0.1:"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src https://127.0.0.1:\t*   "));
+
+  // script-src host wildcards
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http://*.0.1:8000"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http://*.0.1:8000/"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http://*.0.1:*"));
+  EXPECT_TRUE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src http://*.0.1:*/"));
+
+  // missing semicolon
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "default-src 'self' script-src example.com"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 'self' object-src 'self' style-src *"));
+
+  // 'none' with other sources
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src http://127.0.0.1:8000 'none'"));
+  EXPECT_FALSE(
+      ContentSecurityPolicy::IsValidCSPAttr("script-src 'none' 'none' 'none'"));
+
+  // comma separated
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 'none', object-src 'none'"));
+}
+
 }  // namespace blink

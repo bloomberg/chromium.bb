@@ -1709,4 +1709,16 @@ bool ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(
   }
 }
 
+// static
+bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr) {
+  ContentSecurityPolicy* policy = ContentSecurityPolicy::Create();
+  policy->AddPolicyFromHeaderValue(attr,
+                                   kContentSecurityPolicyHeaderTypeEnforce,
+                                   kContentSecurityPolicyHeaderSourceHTTP);
+  if (policy->console_messages_.IsEmpty() && policy->policies_.size() == 1) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace blink
