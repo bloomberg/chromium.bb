@@ -49,6 +49,102 @@ PlainText(const EphemeralRange&,
 String PlainText(const EphemeralRangeInFlatTree&,
                  const TextIteratorBehavior& = TextIteratorBehavior());
 
+// TODO(xiaochengh): Move the class to dedicated files.
+// TextIteratorTextNodeHandler extracts plain text from a text node by calling
+// HandleTextNode() function. It should be used only by TextIterator.
+class TextIteratorTextNodeHandler final {
+  STACK_ALLOCATED();
+
+ public:
+  TextIteratorTextNodeHandler(const TextIteratorBehavior&,
+                              TextIteratorTextState*);
+
+  // Initializes the full iteration range of the TextIterator. This function
+  // should be called only once from TextIterator::Initialize.
+  // TODO(xiaochengh): TextNodeHandler doesn't need to know the full iteration
+  // range; The offset range in the current node suffices. Remove this function.
+  void Initialize(Node* start_container,
+                  int start_offset,
+                  Node* end_container,
+                  int end_offset);
+
+  Text* GetNode() const { return text_node_; }
+
+  // Returns true if more text is emitted without traversing to the next node.
+  bool HandleRemainingTextRuns();
+
+  // Returns true if a leading white space is emitted before a replaced element.
+  bool FixLeadingWhiteSpaceForReplacedElement(Node*);
+
+  void ResetCollapsedWhiteSpaceFixup();
+
+  // TODO(xiaochengh): Make the return type |void|. The current return value is
+  // not very meaningful.
+  bool HandleTextNode(Text*);
+
+ private:
+  void HandlePreFormattedTextNode();
+  void HandleTextBox();
+  void HandleTextNodeFirstLetter(LayoutTextFragment*);
+  bool ShouldHandleFirstLetter(const LayoutText&) const;
+  bool ShouldProceedToRemainingText() const;
+  void ProceedToRemainingText();
+  size_t RestoreCollapsedTrailingSpace(InlineTextBox* next_text_box,
+                                       size_t subrun_end);
+
+  // Used when the visibility of the style should not affect text gathering.
+  bool IgnoresStyleVisibility() const {
+    return behavior_.IgnoresStyleVisibility();
+  }
+
+  void SpliceBuffer(UChar,
+                    Node* text_node,
+                    Node* offset_base_node,
+                    int text_start_offset,
+                    int text_end_offset);
+  void EmitText(Node* text_node,
+                LayoutText* layout_object,
+                int text_start_offset,
+                int text_end_offset);
+
+  // The range.
+  Member<Node> start_container_;
+  int start_offset_ = 0;
+  Member<Node> end_container_;
+  int end_offset_ = 0;
+
+  // The current text node and offset, from which text is being emitted.
+  Member<Text> text_node_;
+  int offset_ = 0;
+
+  InlineTextBox* text_box_ = nullptr;
+
+  // Remember if we are in the middle of handling a pre-formatted text node.
+  bool needs_handle_pre_formatted_text_node_ = false;
+  // Used when deciding text fragment created by :first-letter should be looked
+  // into.
+  bool handled_first_letter_ = false;
+  // Used when iteration over :first-letter text to save pointer to
+  // remaining text box.
+  InlineTextBox* remaining_text_box_ = nullptr;
+  // Used to point to LayoutText object for :first-letter.
+  LayoutText* first_letter_text_ = nullptr;
+
+  // Used to do the whitespace collapsing logic.
+  bool last_text_node_ended_with_collapsed_space_ = false;
+
+  // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
+  Vector<InlineTextBox*> sorted_text_boxes_;
+  size_t sorted_text_boxes_position_ = 0;
+
+  const TextIteratorBehavior behavior_;
+
+  // Contains state of emitted text.
+  TextIteratorTextState& text_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextIteratorTextNodeHandler);
+};
+
 // Iterates through the DOM range, returning all the text, and 0-length
 // boundaries at points where replaced elements break up the text flow.  The
 // text comes back in chunks so as to optimize for performance of the iteration.
@@ -141,34 +237,13 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // not always clearly control the iteration progress. Should consider removing
   // the return values and control the iteration in a cleaner way.
   bool HandleTextNode();
-  void HandlePreFormattedTextNode();
   bool HandleReplacedElement();
   bool HandleNonTextNode();
-
-  void HandleTextBox();
-  void HandleTextNodeFirstLetter(LayoutTextFragment*);
-  bool ShouldHandleFirstLetter(const LayoutText&) const;
-  bool ShouldProceedToRemainingText() const;
-  void ProceedToRemainingText();
-  void ResetCollapsedWhiteSpaceFixup();
-
-  // Returns true if more text is emitted without traversing to the next node.
-  bool HandleRemainingTextRuns();
-
-  // Returns true if a leading white space is emitted before a replaced element.
-  bool FixLeadingWhiteSpaceForReplacedElement(Node* parent);
-
   void SpliceBuffer(UChar,
                     Node* text_node,
                     Node* offset_base_node,
                     int text_start_offset,
                     int text_end_offset);
-  void EmitText(Node* text_node,
-                LayoutText* layout_object,
-                int text_start_offset,
-                int text_end_offset);
-  size_t RestoreCollapsedTrailingSpace(InlineTextBox* next_text_box,
-                                       size_t subrun_end);
 
   // Used by selection preservation code. There should be one character emitted
   // between every VisiblePosition in the Range used to create the TextIterator.
@@ -223,7 +298,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
   Member<Node> node_;
-  int offset_;
   IterationProgress iteration_progress_;
   FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
   int shadow_depth_;
@@ -238,34 +312,14 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   Member<Node> end_node_;
   Member<Node> past_end_node_;
 
-  // The current text node, from which text is being emitted.
-  Member<Text> text_node_;
-
   // Used when there is still some pending text from the current node; when
   // these are false and 0, we go back to normal iterating.
   bool needs_another_newline_;
-  InlineTextBox* text_box_;
-  // Used when iteration over :first-letter text to save pointer to
-  // remaining text box.
-  InlineTextBox* remaining_text_box_;
-  // Used to point to LayoutText object for :first-letter.
-  LayoutText* first_letter_text_;
 
-  // Used to do the whitespace collapsing logic.
   Member<Text> last_text_node_;
-  bool last_text_node_ended_with_collapsed_space_;
-
-  // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
-  Vector<InlineTextBox*> sorted_text_boxes_;
-  size_t sorted_text_boxes_position_;
 
   const TextIteratorBehavior behavior_;
 
-  // Remember if we are in the middle of handling a pre-formatted text node.
-  bool needs_handle_pre_formatted_text_node_;
-  // Used when deciding text fragment created by :first-letter should be looked
-  // into.
-  bool handled_first_letter_;
   // Used when stopsOnFormControls() is true to determine if the iterator should
   // keep advancing.
   bool should_stop_;
@@ -275,6 +329,11 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   // Contains state of emitted text.
   TextIteratorTextState text_state_;
+
+  // Helper for extracting text content from text nodes.
+  // TODO(xiaochengh): We should store a pointer here, so that we can use
+  // forward declaration and switch it to Layout NG easier.
+  TextIteratorTextNodeHandler text_node_handler_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

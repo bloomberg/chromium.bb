@@ -152,29 +152,27 @@ bool IsRenderedAsTable(const Node* node) {
 
 }  // namespace
 
+TextIteratorTextNodeHandler::TextIteratorTextNodeHandler(
+    const TextIteratorBehavior& behavior,
+    TextIteratorTextState* text_state)
+    : behavior_(behavior), text_state_(*text_state) {}
+
 template <typename Strategy>
 TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     const TextIteratorBehavior& behavior)
-    : offset_(0),
-      start_container_(nullptr),
+    : start_container_(nullptr),
       start_offset_(0),
       end_container_(nullptr),
       end_offset_(0),
       needs_another_newline_(false),
-      text_box_(nullptr),
-      remaining_text_box_(nullptr),
-      first_letter_text_(nullptr),
       last_text_node_(nullptr),
-      last_text_node_ended_with_collapsed_space_(false),
-      sorted_text_boxes_position_(0),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
-      needs_handle_pre_formatted_text_node_(false),
-      handled_first_letter_(false),
       should_stop_(false),
       handle_shadow_root_(false),
-      text_state_(behavior_) {
+      text_state_(behavior_),
+      text_node_handler_(behavior_, &text_state_) {
   DCHECK(start.IsNotNull());
   DCHECK(end.IsNotNull());
 
@@ -195,6 +193,22 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
              end.ComputeContainerNode(), end.ComputeOffsetInContainerNode());
 }
 
+void TextIteratorTextNodeHandler::Initialize(Node* start_container,
+                                             int start_offset,
+                                             Node* end_container,
+                                             int end_offset) {
+  // This function should be called only once.
+  DCHECK(!start_container_);
+  DCHECK_EQ(start_offset_, 0);
+  DCHECK(!end_container_);
+  DCHECK_EQ(end_offset_, 0);
+
+  start_container_ = start_container;
+  start_offset_ = start_offset;
+  end_container_ = end_container;
+  end_offset_ = end_offset;
+}
+
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::Initialize(Node* start_container,
                                                  int start_offset,
@@ -202,6 +216,9 @@ void TextIteratorAlgorithm<Strategy>::Initialize(Node* start_container,
                                                  int end_offset) {
   DCHECK(start_container);
   DCHECK(end_container);
+
+  text_node_handler_.Initialize(start_container, start_offset, end_container,
+                                end_offset);
 
   // Remember the range - this does not change.
   start_container_ = start_container;
@@ -264,8 +281,7 @@ bool TextIteratorAlgorithm<Strategy>::IsInsideAtomicInlineElement() const {
   return layout_object && layout_object->IsAtomicInlineLevel();
 }
 
-template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::HandleRemainingTextRuns() {
+bool TextIteratorTextNodeHandler::HandleRemainingTextRuns() {
   if (ShouldProceedToRemainingText())
     ProceedToRemainingText();
   // Handle remembered text box
@@ -307,7 +323,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     return;
   }
 
-  if (HandleRemainingTextRuns())
+  if (text_node_handler_.HandleRemainingTextRuns())
     return;
 
   while (node_ && (node_ != past_end_node_ || shadow_depth_ > 0)) {
@@ -511,8 +527,7 @@ static bool HasVisibleTextNode(LayoutText* layout_object) {
              EVisibility::kVisible;
 }
 
-template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
+bool TextIteratorTextNodeHandler::ShouldHandleFirstLetter(
     const LayoutText& layout_text) const {
   if (handled_first_letter_)
     return false;
@@ -522,8 +537,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldHandleFirstLetter(
   return offset_ < static_cast<int>(text_fragment.TextStartOffset());
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::HandlePreFormattedTextNode() {
+void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   // TODO(xiaochengh): Get rid of repeated computation of these fields.
   LayoutText* const layout_object = text_node_->GetLayoutObject();
   const String str = layout_object->GetText();
@@ -592,8 +606,11 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
   last_text_node_ = ToText(node_);
+  return text_node_handler_.HandleTextNode(ToText(node_));
+}
 
-  text_node_ = ToText(node_);
+bool TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
+  text_node_ = node;
   offset_ = text_node_ == start_container_ ? start_offset_ : 0;
   handled_first_letter_ = false;
   first_letter_text_ = nullptr;
@@ -646,8 +663,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 }
 
 // Restore the collapsed space for copy & paste. See http://crbug.com/318925
-template <typename Strategy>
-size_t TextIteratorAlgorithm<Strategy>::RestoreCollapsedTrailingSpace(
+size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
     InlineTextBox* next_text_box,
     size_t subrun_end) {
   if (next_text_box || !text_box_->Root().NextRootBox() ||
@@ -675,8 +691,7 @@ size_t TextIteratorAlgorithm<Strategy>::RestoreCollapsedTrailingSpace(
   return subrun_end;
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
+void TextIteratorTextNodeHandler::HandleTextBox() {
   LayoutText* layout_object =
       first_letter_text_ ? first_letter_text_ : text_node_->GetLayoutObject();
   const unsigned text_start_offset = layout_object->TextStartOffset();
@@ -814,8 +829,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
   }
 }
 
-template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::ShouldProceedToRemainingText() const {
+bool TextIteratorTextNodeHandler::ShouldProceedToRemainingText() const {
   if (text_box_ || !remaining_text_box_)
     return false;
   if (text_node_ != end_container_)
@@ -823,16 +837,14 @@ bool TextIteratorAlgorithm<Strategy>::ShouldProceedToRemainingText() const {
   return offset_ < end_offset_;
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::ProceedToRemainingText() {
+void TextIteratorTextNodeHandler::ProceedToRemainingText() {
   text_box_ = remaining_text_box_;
   remaining_text_box_ = 0;
   first_letter_text_ = nullptr;
   offset_ = text_node_->GetLayoutObject()->TextStartOffset();
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::HandleTextNodeFirstLetter(
+void TextIteratorTextNodeHandler::HandleTextNodeFirstLetter(
     LayoutTextFragment* layout_object) {
   handled_first_letter_ = true;
 
@@ -873,8 +885,7 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
   return false;
 }
 
-template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::FixLeadingWhiteSpaceForReplacedElement(
+bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement(
     Node* parent) {
   // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
   // we can get rid of this function.
@@ -912,9 +923,9 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return true;
   }
 
-  DCHECK_EQ(last_text_node_, text_node_);
+  DCHECK_EQ(last_text_node_, text_node_handler_.GetNode());
   if (last_text_node_) {
-    if (FixLeadingWhiteSpaceForReplacedElement(
+    if (text_node_handler_.FixLeadingWhiteSpaceForReplacedElement(
             Strategy::Parent(*last_text_node_)))
       return false;
   }
@@ -1216,8 +1227,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
                  1);
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::ResetCollapsedWhiteSpaceFixup() {
+void TextIteratorTextNodeHandler::ResetCollapsedWhiteSpaceFixup() {
   // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
   // we can get rid of this function.
   last_text_node_ended_with_collapsed_space_ = false;
@@ -1231,14 +1241,23 @@ void TextIteratorAlgorithm<Strategy>::SpliceBuffer(UChar c,
                                                    int text_end_offset) {
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
                            text_end_offset);
+  text_node_handler_.ResetCollapsedWhiteSpaceFixup();
+}
+
+void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
+                                               Node* text_node,
+                                               Node* offset_base_node,
+                                               int text_start_offset,
+                                               int text_end_offset) {
+  text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
+                           text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
 }
 
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::EmitText(Node* text_node,
-                                               LayoutText* layout_object,
-                                               int text_start_offset,
-                                               int text_end_offset) {
+void TextIteratorTextNodeHandler::EmitText(Node* text_node,
+                                           LayoutText* layout_object,
+                                           int text_start_offset,
+                                           int text_end_offset) {
   text_state_.EmitText(text_node, layout_object, text_start_offset,
                        text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
