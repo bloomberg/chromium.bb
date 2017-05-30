@@ -121,10 +121,6 @@ XFAIL_TESTS =					\
 	squash_space				\
 	compbrlAtCursor
 
-# en-ueb-symbols_harness.yaml defines the desired behaviour.
-# Apparently the tables aren't quite there yet.
-XFAIL_TESTS += yaml/en-ueb-symbols_harness.yaml
-
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
