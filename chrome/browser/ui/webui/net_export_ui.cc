@@ -51,29 +51,6 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-class ProxyScriptFetcherContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit ProxyScriptFetcherContextGetter(IOThread* io_thread)
-      : io_thread_(io_thread) {}
-
-  net::URLRequestContext* GetURLRequestContext() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(io_thread_->globals()->proxy_script_fetcher_context.get());
-    return io_thread_->globals()->proxy_script_fetcher_context.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  }
-
- protected:
-  ~ProxyScriptFetcherContextGetter() override {}
-
- private:
-  IOThread* const io_thread_;  // Owned by BrowserProcess.
-};
-
 // May only be accessed on the UI thread
 base::LazyInstance<base::FilePath>::Leaky
     last_save_dir = LAZY_INSTANCE_INITIALIZER;
@@ -399,8 +376,6 @@ NetExportMessageHandler::GetURLRequestContexts() const {
           ->GetMediaURLRequestContext());
   context_getters.push_back(
       g_browser_process->io_thread()->system_url_request_context_getter());
-  context_getters.push_back(
-      new ProxyScriptFetcherContextGetter(g_browser_process->io_thread()));
 
   return context_getters;
 }

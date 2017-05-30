@@ -82,19 +82,16 @@ class HostMappingRules;
 class HostResolver;
 class HttpAuthPreferences;
 class HttpServerProperties;
-class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class LoggingNetworkChangeObserver;
 class NetworkDelegate;
 class NetworkQualityEstimator;
 class ProxyConfigService;
-class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestContextStorage;
-class URLRequestJobFactory;
 
 namespace ct {
 class STHObserver;
@@ -160,21 +157,7 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     std::unique_ptr<net::HttpServerProperties> http_server_properties;
-    std::unique_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
-    std::unique_ptr<net::HttpNetworkSession>
-        proxy_script_fetcher_http_network_session;
-    std::unique_ptr<net::HttpTransactionFactory>
-        proxy_script_fetcher_http_transaction_factory;
-    std::unique_ptr<net::URLRequestJobFactory>
-        proxy_script_fetcher_url_request_job_factory;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
-    // TODO(willchan): Remove proxy script fetcher context since it's not
-    // necessary now that I got rid of refcounting URLRequestContexts.
-    //
-    // The first URLRequestContext is |system_url_request_context|. We introduce
-    // |proxy_script_fetcher_context| for the second context. It has a direct
-    // ProxyService, since we always directly connect to fetch the PAC script.
-    std::unique_ptr<net::URLRequestContext> proxy_script_fetcher_context;
     std::unique_ptr<net::URLRequestContextStorage>
         system_request_context_storage;
     std::unique_ptr<net::URLRequestContext> system_request_context;
@@ -302,14 +285,6 @@ class IOThread : public content::BrowserThreadDelegate {
       bool is_quic_allowed_by_policy,
       bool http_09_on_non_default_ports_enabled,
       net::HttpNetworkSession::Params* params);
-
-  // TODO(willchan): Remove proxy script fetcher context since it's not
-  // necessary now that I got rid of refcounting URLRequestContexts.
-  // See IOThread::Globals for details.
-  static net::URLRequestContext* ConstructProxyScriptFetcherContext(
-      IOThread::Globals* globals,
-      const net::HttpNetworkSession::Params& params,
-      net::NetLog* net_log);
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.

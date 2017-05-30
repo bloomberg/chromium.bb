@@ -1456,6 +1456,7 @@ test("browser_tests") {
       "../browser/interstitials/security_interstitial_page_test_utils.cc",
       "../browser/interstitials/security_interstitial_page_test_utils.h",
       "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
+      "../browser/io_thread_browsertest.cc",
       "../browser/lifetime/browser_close_manager_browsertest.cc",
       "../browser/loader/chrome_resource_dispatcher_host_delegate_browsertest.cc",
       "../browser/loadtimes_extension_bindings_browsertest.cc",

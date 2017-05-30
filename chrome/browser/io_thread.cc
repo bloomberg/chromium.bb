@@ -644,9 +644,6 @@ void IOThread::Init() {
 
   CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
-  // For the ProxyScriptFetcher, we use a direct ProxyService.
-  globals_->proxy_script_fetcher_proxy_service =
-      net::ProxyService::CreateDirectWithNetLog(net_log_);
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   if (command_line.HasSwitch(switches::kHostRules)) {
@@ -714,6 +711,9 @@ void IOThread::CleanUp() {
     UnregisterSTHObserver(ct_tree_tracker_.get());
     ct_tree_tracker_.reset();
   }
+
+  if (globals_->system_request_context)
+    globals_->system_request_context->proxy_service()->OnShutdown();
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
@@ -822,9 +822,6 @@ void IOThread::DisableQuic() {
   if (globals_->system_request_context_storage)
     globals_->system_request_context_storage->http_network_session()
         ->DisableQuic();
-
-  if (globals_->proxy_script_fetcher_http_network_session)
-    globals_->proxy_script_fetcher_http_network_session->DisableQuic();
 }
 
 base::TimeTicks IOThread::creation_time() const {
@@ -907,18 +904,10 @@ void IOThread::ConstructSystemRequestContext() {
       globals_->cert_transparency_verifier.get());
   context->set_ct_policy_enforcer(globals_->ct_policy_enforcer.get());
 
-  TRACE_EVENT_BEGIN0("startup",
-                     "IOThread::Init:ProxyScriptFetcherRequestContext");
-  globals_->proxy_script_fetcher_context.reset(
-      ConstructProxyScriptFetcherContext(globals_, params_, net_log_));
-  TRACE_EVENT_END0("startup",
-                   "IOThread::Init:ProxyScriptFetcherRequestContext");
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   context_storage->set_proxy_service(ProxyServiceFactory::CreateProxyService(
-      net_log_, globals_->proxy_script_fetcher_context.get(),
-      globals_->system_network_delegate.get(),
+      net_log_, context, globals_->system_network_delegate.get(),
       std::move(system_proxy_config_service_), command_line,
       WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled()));
 
@@ -932,8 +921,24 @@ void IOThread::ConstructSystemRequestContext() {
       base::MakeUnique<net::HttpNetworkLayer>(
           context_storage->http_network_session()));
 
-  context_storage->set_job_factory(
-      base::MakeUnique<net::URLRequestJobFactoryImpl>());
+  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
+      new net::URLRequestJobFactoryImpl());
+
+  job_factory->SetProtocolHandler(url::kDataScheme,
+                                  base::MakeUnique<net::DataProtocolHandler>());
+  job_factory->SetProtocolHandler(
+      url::kFileScheme,
+      base::MakeUnique<net::FileProtocolHandler>(
+          base::CreateTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  job_factory->SetProtocolHandler(
+      url::kFtpScheme,
+      net::FtpProtocolHandler::Create(globals_->host_resolver.get()));
+#endif
+
+  context_storage->set_job_factory(std::move(job_factory));
 }
 
 // static
@@ -1028,79 +1033,6 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
 
   params->http_09_on_non_default_ports_enabled =
       http_09_on_non_default_ports_enabled;
-}
-
-// static
-net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
-    IOThread::Globals* globals,
-    const net::HttpNetworkSession::Params& params,
-    net::NetLog* net_log) {
-  net::URLRequestContext* context = new net::URLRequestContext;
-  context->set_net_log(net_log);
-  context->set_host_resolver(globals->host_resolver.get());
-  context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_transport_security_state(
-      globals->transport_security_state.get());
-  context->set_cert_transparency_verifier(
-      globals->cert_transparency_verifier.get());
-  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
-  context->set_ssl_config_service(globals->ssl_config_service.get());
-  context->set_http_auth_handler_factory(
-      globals->http_auth_handler_factory.get());
-  context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
-
-  context->set_job_factory(
-      globals->proxy_script_fetcher_url_request_job_factory.get());
-
-  context->set_cookie_store(globals->system_request_context->cookie_store());
-  context->set_channel_id_service(
-      globals->system_request_context->channel_id_service());
-  context->set_network_delegate(globals->system_network_delegate.get());
-  context->set_http_user_agent_settings(
-      globals->http_user_agent_settings.get());
-  context->set_http_server_properties(globals->http_server_properties.get());
-
-  context->set_enable_brotli(globals->enable_brotli);
-
-  net::HttpNetworkSession::Params session_params(params);
-  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
-      context, &session_params);
-
-  globals->proxy_script_fetcher_http_network_session.reset(
-      new net::HttpNetworkSession(session_params));
-  globals->proxy_script_fetcher_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(
-          globals->proxy_script_fetcher_http_network_session.get()));
-  context->set_name("proxy");
-  context->set_http_transaction_factory(
-      globals->proxy_script_fetcher_http_transaction_factory.get());
-
-  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
-      new net::URLRequestJobFactoryImpl());
-
-  job_factory->SetProtocolHandler(url::kDataScheme,
-                                  base::MakeUnique<net::DataProtocolHandler>());
-  job_factory->SetProtocolHandler(
-      url::kFileScheme,
-      base::MakeUnique<net::FileProtocolHandler>(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  job_factory->SetProtocolHandler(
-      url::kFtpScheme,
-      net::FtpProtocolHandler::Create(globals->host_resolver.get()));
-#endif
-  globals->proxy_script_fetcher_url_request_job_factory =
-      std::move(job_factory);
-
-  context->set_job_factory(
-      globals->proxy_script_fetcher_url_request_job_factory.get());
-
-  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
-  // system URLRequestContext too. There's no reason this should be tied to a
-  // profile.
-  return context;
 }
 
 metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {
