@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/net/spdyproxy/chrome_data_use_group_provider.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -114,8 +113,6 @@ CreateDataReductionProxyChromeIOData(
   data_reduction_proxy_io_data->set_lofi_ui_service(
       base::MakeUnique<data_reduction_proxy::ContentLoFiUIService>(
           ui_task_runner, base::Bind(&OnLoFiResponseReceivedOnUI)));
-  data_reduction_proxy_io_data->set_data_usage_source_provider(
-      base::MakeUnique<ChromeDataUseGroupProvider>());
 
   return data_reduction_proxy_io_data;
 }

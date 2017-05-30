@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
@@ -418,8 +417,8 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
                        int64_t data_used,
                        int64_t original_size,
                        const base::Time& time) {
-    compression_stats_->RecordDataUsage(data_usage_host, data_used,
-                                        original_size, time);
+    compression_stats_->RecordDataUseByHost(data_usage_host, data_used,
+                                            original_size, time);
   }
 
   void GetHistoricalDataUsage(
@@ -570,9 +569,9 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
   const int64_t kOriginalLength = 200;
   const int64_t kReceivedLength = 100;
 
-  compression_stats()->UpdateContentLengths(
+  compression_stats()->RecordDataUseWithMimeType(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, nullptr, std::string());
+      UNKNOWN_TYPE, std::string());
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -581,9 +580,9 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
             GetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength));
 
   // Record the same numbers again, and total lengths should be doubled.
-  compression_stats()->UpdateContentLengths(
+  compression_stats()->RecordDataUseWithMimeType(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, nullptr, std::string());
+      UNKNOWN_TYPE, std::string());
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));

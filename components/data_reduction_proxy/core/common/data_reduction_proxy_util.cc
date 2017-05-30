@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/version.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -56,6 +57,22 @@ int64_t ScaleByteCountByRatio(int64_t byte_count,
     return byte_count;
   }
   return static_cast<int64_t>(scaled_byte_count);
+}
+
+// Estimate the size of the original headers of |request|. If |used_drp| is
+// true, then it's assumed that the original request would have used HTTP/1.1,
+// otherwise it assumes that the original request would have used the same
+// protocol as |request| did. This is to account for stuff like HTTP/2 header
+// compression.
+int64_t EstimateOriginalHeaderBytes(const net::URLRequest& request,
+                                    bool used_drp) {
+  if (used_drp) {
+    // TODO(sclittle): Remove headers added by Data Reduction Proxy when
+    // computing original size. https://crbug.com/535701.
+    return request.response_headers()->raw_headers().size();
+  }
+  return std::max<int64_t>(0, request.GetTotalReceivedBytes() -
+                                  request.received_response_content_length());
 }
 
 }  // namespace
@@ -185,6 +202,30 @@ int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
   return ScaleByteCountByRatio(request.received_response_content_length(),
                                original_content_length_from_header,
                                content_length_from_header);
+}
+
+int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
+                                      bool used_drp,
+                                      const LoFiDecider* lofi_decider) {
+  if (request.was_cached() || !request.response_headers())
+    return request.GetTotalReceivedBytes();
+
+  if (lofi_decider) {
+    if (lofi_decider->IsClientLoFiAutoReloadRequest(request))
+      return 0;
+
+    int64_t first, last, length;
+    if (lofi_decider->IsClientLoFiImageRequest(request) &&
+        request.response_headers()->GetContentRangeFor206(&first, &last,
+                                                          &length) &&
+        length > request.received_response_content_length()) {
+      return EstimateOriginalHeaderBytes(request, used_drp) + length;
+    }
+  }
+
+  return used_drp ? EstimateOriginalHeaderBytes(request, used_drp) +
+                        util::CalculateEffectiveOCL(request)
+                  : request.GetTotalReceivedBytes();
 }
 
 }  // namespace util

@@ -546,6 +546,8 @@ void ProfileImplIOData::InitializeInternal(
   request_interceptors.insert(
       request_interceptors.begin(),
       data_reduction_proxy_io_data()->CreateInterceptor());
+  data_reduction_proxy_io_data()->SetDataUseAscriber(
+      io_thread_globals->data_use_ascriber.get());
   main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
