@@ -17,13 +17,10 @@ constexpr uint32_t kMaxBeginFrameCount = 4;
 SurfaceDependencyTracker::SurfaceDependencyTracker(
     SurfaceManager* surface_manager,
     BeginFrameSource* begin_frame_source)
-    : surface_manager_(surface_manager),
-      begin_frame_source_(begin_frame_source) {
-  begin_frame_source_->AddObserver(this);
-}
+    : surface_manager_(surface_manager), deadline_(this, begin_frame_source) {}
 
 SurfaceDependencyTracker::~SurfaceDependencyTracker() {
-  begin_frame_source_->RemoveObserver(this);
+  deadline_.Cancel();
 }
 
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
@@ -51,8 +48,8 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
 
   blocked_surfaces_by_id_.insert(surface->surface_id());
 
-  if (needs_deadline && !frames_since_deadline_set_)
-    frames_since_deadline_set_ = 0;
+  if (needs_deadline && !deadline_.has_deadline())
+    deadline_.Set(kMaxBeginFrameCount);
 }
 
 void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {
@@ -79,7 +76,7 @@ void SurfaceDependencyTracker::OnSurfaceDependenciesChanged(
   // If there are no more dependencies to resolve then we don't need to have a
   // deadline.
   if (blocked_surfaces_from_dependency_.empty())
-    frames_since_deadline_set_.reset();
+    deadline_.Cancel();
 }
 
 void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
@@ -109,7 +106,7 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   }
 
   if (blocked_surfaces_from_dependency_.empty())
-    frames_since_deadline_set_.reset();
+    deadline_.Cancel();
 
   blocked_surfaces_by_id_.erase(surface->surface_id());
 
@@ -118,20 +115,7 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   NotifySurfaceIdAvailable(surface->surface_id());
 }
 
-void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
-  // If no deadline is set then we have nothing to do.
-  if (!frames_since_deadline_set_)
-    return;
-
-  // TODO(fsamuel, kylechar): We have a single global deadline here. We should
-  // scope deadlines to surface subtrees. We cannot do that until
-  // SurfaceReferences have been fully implemented
-  // (see https://crbug.com/689719).
-  last_begin_frame_args_ = args;
-  // Nothing to do if we haven't hit a deadline yet.
-  if (++(*frames_since_deadline_set_) != kMaxBeginFrameCount)
-    return;
-
+void SurfaceDependencyTracker::OnDeadline() {
   late_surfaces_by_id_.clear();
 
   // Activate all surfaces that respect the deadline.
@@ -158,15 +142,7 @@ void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
     }
     blocked_surface->ActivatePendingFrameForDeadline();
   }
-
-  frames_since_deadline_set_.reset();
 }
-
-const BeginFrameArgs& SurfaceDependencyTracker::LastUsedBeginFrameArgs() const {
-  return last_begin_frame_args_;
-}
-
-void SurfaceDependencyTracker::OnBeginFrameSourcePausedChanged(bool paused) {}
 
 void SurfaceDependencyTracker::NotifySurfaceIdAvailable(
     const SurfaceId& surface_id) {
@@ -180,7 +156,7 @@ void SurfaceDependencyTracker::NotifySurfaceIdAvailable(
   // If there are no more blockers in the system, then we no longer need to
   // have a deadline.
   if (blocked_surfaces_from_dependency_.empty())
-    frames_since_deadline_set_.reset();
+    deadline_.Cancel();
 
   // Tell each surface about the availability of its blocker.
   for (const SurfaceId& blocked_surface_by_id : blocked_surfaces_by_id) {
