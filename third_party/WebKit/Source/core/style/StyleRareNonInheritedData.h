@@ -64,16 +64,6 @@ class StyleReflection;
 class StyleTransformData;
 class StyleWillChangeData;
 
-// Page size type.
-// StyleRareNonInheritedData::page_size_ is meaningful only when
-// StyleRareNonInheritedData::page_size_type_ is kResolved.
-enum class PageSizeType {
-  kAuto,       // size: auto
-  kLandscape,  // size: landscape
-  kPortrait,   // size: portrait
-  kResolved    // Size is fully resolved.
-};
-
 // This struct is for rarely used non-inherited CSS3, CSS2, and WebKit-specific
 // properties.  By grouping them together, we save space, and only allocate this
 // object when someone actually uses one of these properties.
