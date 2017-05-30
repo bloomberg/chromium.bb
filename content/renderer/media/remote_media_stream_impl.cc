@@ -13,16 +13,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/remote_media_stream_track_adapter.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
-#include "content/renderer/media/webrtc/track_observer.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -47,229 +43,6 @@ bool IsTrackInVector(const VectorType& v, const std::string& id) {
   return false;
 }
 }  // namespace
-
-// Base class used for mapping between webrtc and blink MediaStream tracks.
-// An instance of a RemoteMediaStreamTrackAdapter is stored in
-// RemoteMediaStreamImpl per remote audio and video track.
-template<typename WebRtcMediaStreamTrackType>
-class RemoteMediaStreamTrackAdapter
-    : public base::RefCountedThreadSafe<
-          RemoteMediaStreamTrackAdapter<WebRtcMediaStreamTrackType>> {
- public:
-  RemoteMediaStreamTrackAdapter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      WebRtcMediaStreamTrackType* webrtc_track)
-      : main_thread_(main_thread), webrtc_track_(webrtc_track),
-        id_(webrtc_track->id()) {
-  }
-
-  const scoped_refptr<WebRtcMediaStreamTrackType>& observed_track() {
-    return webrtc_track_;
-  }
-
-  blink::WebMediaStreamTrack* webkit_track() {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(!webkit_track_.IsNull());
-    return &webkit_track_;
-  }
-
-  const std::string& id() const { return id_; }
-
-  bool initialized() const {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    return !webkit_track_.IsNull();
-  }
-
-  void Initialize() {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(!initialized());
-    webkit_initialize_.Run();
-    webkit_initialize_.Reset();
-    DCHECK(initialized());
-  }
-
- protected:
-  friend class base::RefCountedThreadSafe<
-      RemoteMediaStreamTrackAdapter<WebRtcMediaStreamTrackType>>;
-
-  virtual ~RemoteMediaStreamTrackAdapter() {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-  }
-
-  void InitializeWebkitTrack(blink::WebMediaStreamSource::Type type) {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(webkit_track_.IsNull());
-
-    blink::WebString webkit_track_id(blink::WebString::FromUTF8(id_));
-    blink::WebMediaStreamSource webkit_source;
-    webkit_source.Initialize(webkit_track_id, type, webkit_track_id,
-                             true /* remote */);
-    webkit_track_.Initialize(webkit_track_id, webkit_source);
-    DCHECK(!webkit_track_.IsNull());
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  // This callback will be run when Initialize() is called and then freed.
-  // The callback is used by derived classes to bind objects that need to be
-  // instantiated and initialized on the signaling thread but then moved to
-  // and used on the main thread when initializing the webkit object(s).
-  base::Callback<void()> webkit_initialize_;
-
- private:
-  const scoped_refptr<WebRtcMediaStreamTrackType> webrtc_track_;
-  blink::WebMediaStreamTrack webkit_track_;
-  // const copy of the webrtc track id that allows us to check it from both the
-  // main and signaling threads without incurring a synchronous thread hop.
-  const std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackAdapter);
-};
-
-class RemoteVideoTrackAdapter
-    : public RemoteMediaStreamTrackAdapter<webrtc::VideoTrackInterface> {
- public:
-  // Called on the signaling thread
-  RemoteVideoTrackAdapter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      webrtc::VideoTrackInterface* webrtc_track)
-      : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track) {
-    std::unique_ptr<TrackObserver> observer(
-        new TrackObserver(main_thread, observed_track().get()));
-    // Here, we use base::Unretained() to avoid a circular reference.
-    webkit_initialize_ = base::Bind(
-        &RemoteVideoTrackAdapter::InitializeWebkitVideoTrack,
-        base::Unretained(this), base::Passed(&observer),
-        observed_track()->enabled());
-  }
-
- protected:
-  ~RemoteVideoTrackAdapter() override {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    if (initialized()) {
-      static_cast<MediaStreamRemoteVideoSource*>(
-          webkit_track()->Source().GetExtraData())
-          ->OnSourceTerminated();
-    }
-  }
-
- private:
-  void InitializeWebkitVideoTrack(std::unique_ptr<TrackObserver> observer,
-                                  bool enabled) {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    std::unique_ptr<MediaStreamRemoteVideoSource> video_source(
-        new MediaStreamRemoteVideoSource(std::move(observer)));
-    InitializeWebkitTrack(blink::WebMediaStreamSource::kTypeVideo);
-    webkit_track()->Source().SetExtraData(video_source.get());
-    MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
-        video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
-        enabled);
-    webkit_track()->SetTrackData(media_stream_track);
-  }
-};
-
-// RemoteAudioTrackAdapter is responsible for listening on state
-// change notifications on a remote webrtc audio MediaStreamTracks and notify
-// WebKit.
-class RemoteAudioTrackAdapter
-    : public RemoteMediaStreamTrackAdapter<webrtc::AudioTrackInterface>,
-      public webrtc::ObserverInterface {
- public:
-  RemoteAudioTrackAdapter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      webrtc::AudioTrackInterface* webrtc_track);
-
-  void Unregister();
-
- protected:
-  ~RemoteAudioTrackAdapter() override;
-
- private:
-  void InitializeWebkitAudioTrack();
-
-  // webrtc::ObserverInterface implementation.
-  void OnChanged() override;
-
-  void OnChangedOnMainThread(
-      webrtc::MediaStreamTrackInterface::TrackState state);
-
-#if DCHECK_IS_ON()
-  bool unregistered_;
-#endif
-
-  webrtc::MediaStreamTrackInterface::TrackState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteAudioTrackAdapter);
-};
-
-// Called on the signaling thread.
-RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-    webrtc::AudioTrackInterface* webrtc_track)
-    : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track),
-#if DCHECK_IS_ON()
-      unregistered_(false),
-#endif
-      state_(observed_track()->state()) {
-  // TODO(tommi): Use TrackObserver instead.
-  observed_track()->RegisterObserver(this);
-  // Here, we use base::Unretained() to avoid a circular reference.
-  webkit_initialize_ =
-      base::Bind(&RemoteAudioTrackAdapter::InitializeWebkitAudioTrack,
-                 base::Unretained(this));
-}
-
-RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
-#if DCHECK_IS_ON()
-  DCHECK(unregistered_);
-#endif
-}
-
-void RemoteAudioTrackAdapter::Unregister() {
-#if DCHECK_IS_ON()
-  DCHECK(!unregistered_);
-  unregistered_ = true;
-#endif
-  observed_track()->UnregisterObserver(this);
-}
-
-void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack() {
-  InitializeWebkitTrack(blink::WebMediaStreamSource::kTypeAudio);
-
-  MediaStreamAudioSource* const source =
-      new PeerConnectionRemoteAudioSource(observed_track().get());
-  webkit_track()->Source().SetExtraData(source);  // Takes ownership.
-  source->ConnectToTrack(*(webkit_track()));
-}
-
-void RemoteAudioTrackAdapter::OnChanged() {
-  main_thread_->PostTask(FROM_HERE,
-      base::Bind(&RemoteAudioTrackAdapter::OnChangedOnMainThread,
-          this, observed_track()->state()));
-}
-
-void RemoteAudioTrackAdapter::OnChangedOnMainThread(
-    webrtc::MediaStreamTrackInterface::TrackState state) {
-  DCHECK(main_thread_->BelongsToCurrentThread());
-
-  if (state == state_ || !initialized())
-    return;
-
-  state_ = state;
-
-  switch (state) {
-    case webrtc::MediaStreamTrackInterface::kLive:
-      webkit_track()->Source().SetReadyState(
-          blink::WebMediaStreamSource::kReadyStateLive);
-      break;
-    case webrtc::MediaStreamTrackInterface::kEnded:
-      webkit_track()->Source().SetReadyState(
-          blink::WebMediaStreamSource::kReadyStateEnded);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
 
 RemoteMediaStreamImpl::Observer::Observer(
     const base::WeakPtr<RemoteMediaStreamImpl>& media_stream,
@@ -355,14 +128,14 @@ void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
         audio_track_observers_.size());
   for (size_t i = 0; i < audio_track_observers_.size(); ++i) {
     audio_track_observers_[i]->Initialize();
-    webkit_audio_tracks[i] = *audio_track_observers_[i]->webkit_track();
+    webkit_audio_tracks[i] = *audio_track_observers_[i]->web_track();
   }
 
   blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks(
         video_track_observers_.size());
   for (size_t i = 0; i < video_track_observers_.size(); ++i) {
     video_track_observers_[i]->Initialize();
-    webkit_video_tracks[i] = *video_track_observers_[i]->webkit_track();
+    webkit_video_tracks[i] = *video_track_observers_[i]->web_track();
   }
 
   webkit_stream_.Initialize(blink::WebString::FromUTF8(label),
@@ -378,7 +151,7 @@ void RemoteMediaStreamImpl::OnChanged(
   while (audio_it != audio_track_observers_.end()) {
     if (!IsTrackInVector(*audio_tracks.get(), (*audio_it)->id())) {
       (*audio_it)->Unregister();
-      webkit_stream_.RemoveTrack(*(*audio_it)->webkit_track());
+      webkit_stream_.RemoveTrack(*(*audio_it)->web_track());
       audio_it = audio_track_observers_.erase(audio_it);
     } else {
       ++audio_it;
@@ -388,7 +161,7 @@ void RemoteMediaStreamImpl::OnChanged(
   auto video_it = video_track_observers_.begin();
   while (video_it != video_track_observers_.end()) {
     if (!IsTrackInVector(*video_tracks.get(), (*video_it)->id())) {
-      webkit_stream_.RemoveTrack(*(*video_it)->webkit_track());
+      webkit_stream_.RemoveTrack(*(*video_it)->web_track());
       video_it = video_track_observers_.erase(video_it);
     } else {
       ++video_it;
@@ -400,7 +173,7 @@ void RemoteMediaStreamImpl::OnChanged(
     if (!IsTrackInVector(audio_track_observers_, track->id())) {
       track->Initialize();
       audio_track_observers_.push_back(track);
-      webkit_stream_.AddTrack(*track->webkit_track());
+      webkit_stream_.AddTrack(*track->web_track());
       // Set the track to null to avoid unregistering it below now that it's
       // been associated with a media stream.
       track = nullptr;
@@ -412,7 +185,7 @@ void RemoteMediaStreamImpl::OnChanged(
     if (!IsTrackInVector(video_track_observers_, track->id())) {
       track->Initialize();
       video_track_observers_.push_back(track);
-      webkit_stream_.AddTrack(*track->webkit_track());
+      webkit_stream_.AddTrack(*track->web_track());
     }
   }
 
