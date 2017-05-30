@@ -25,7 +25,7 @@ MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   aura::Env::GetInstanceDontCreate()->PrependPreTargetHandler(this);
   if (root_) {
-    aura::client::GetActivationClient(root_)->AddObserver(this);
+    wm::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
   }
 }
@@ -36,7 +36,7 @@ MenuPreTargetHandler::~MenuPreTargetHandler() {
 }
 
 void MenuPreTargetHandler::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (!controller_->drag_in_progress())
@@ -59,8 +59,7 @@ void MenuPreTargetHandler::Cleanup() {
   if (!root_)
     return;
   // The ActivationClient may have been destroyed by the time we get here.
-  aura::client::ActivationClient* client =
-      aura::client::GetActivationClient(root_);
+  wm::ActivationClient* client = wm::GetActivationClient(root_);
   if (client)
     client->RemoveObserver(this);
   root_->RemoveObserver(this);

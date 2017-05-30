@@ -59,7 +59,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   bool AttemptToStartDrag(aura::Window* window,
                           const gfx::Point& point_in_parent,
                           int window_component,
-                          aura::client::WindowMoveSource source,
+                          ::wm::WindowMoveSource source,
                           const EndClosure& end_closure);
 
   // If there is a drag in progress it is reverted, otherwise does nothing.

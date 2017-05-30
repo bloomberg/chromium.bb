@@ -20,11 +20,11 @@ namespace views {
 // TooltipManagerAura public:
 
 TooltipManagerAura::TooltipManagerAura(Widget* widget) : widget_(widget) {
-  aura::client::SetTooltipText(GetWindow(), &tooltip_text_);
+  wm::SetTooltipText(GetWindow(), &tooltip_text_);
 }
 
 TooltipManagerAura::~TooltipManagerAura() {
-  aura::client::SetTooltipText(GetWindow(), NULL);
+  wm::SetTooltipText(GetWindow(), NULL);
 }
 
 // static
@@ -82,14 +82,13 @@ const gfx::FontList& TooltipManagerAura::GetFontList() const {
 }
 
 int TooltipManagerAura::GetMaxWidth(const gfx::Point& point) const {
-  return aura::client::GetTooltipClient(
-             widget_->GetNativeView()->GetRootWindow())
+  return wm::GetTooltipClient(widget_->GetNativeView()->GetRootWindow())
       ->GetMaxWidth(point);
 }
 
 void TooltipManagerAura::UpdateTooltip() {
   aura::Window* root_window = GetWindow()->GetRootWindow();
-  if (aura::client::GetTooltipClient(root_window)) {
+  if (wm::GetTooltipClient(root_window)) {
     if (!widget_->IsVisible()) {
       UpdateTooltipForTarget(NULL, gfx::Point(), root_window);
       return;
@@ -104,7 +103,7 @@ void TooltipManagerAura::UpdateTooltip() {
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
   aura::Window* root_window = GetWindow()->GetRootWindow();
-  if (aura::client::GetTooltipClient(root_window)) {
+  if (wm::GetTooltipClient(root_window)) {
     gfx::Point view_point =
         root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, GetWindow(), &view_point);
@@ -137,9 +136,9 @@ void TooltipManagerAura::UpdateTooltipForTarget(View* target,
     tooltip_text_.clear();
   }
 
-  aura::client::SetTooltipId(GetWindow(), target);
+  wm::SetTooltipId(GetWindow(), target);
 
-  aura::client::GetTooltipClient(root_window)->UpdateTooltip(GetWindow());
+  wm::GetTooltipClient(root_window)->UpdateTooltip(GetWindow());
 }
 
 aura::Window* TooltipManagerAura::GetWindow() {

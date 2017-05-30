@@ -68,6 +68,7 @@ source_set("exo") {
     "//ui/views",
     "//ui/views/mus",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   if (use_ozone) {
@@ -101,7 +102,7 @@ source_set("test_support") {
     "//ui/compositor",
     "//ui/gfx/geometry",
     "//ui/views",
-    "//ui/wm:wm",
+    "//ui/wm",
   ]
 }
 

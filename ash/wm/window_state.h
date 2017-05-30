@@ -310,7 +310,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // active. This should be done before a resizer gets created.
   void CreateDragDetails(const gfx::Point& point_in_parent,
                          int window_component,
-                         aura::client::WindowMoveSource source);
+                         ::wm::WindowMoveSource source);
 
   // Deletes and clears a pointer to DragDetails. This should be done when the
   // resizer gets destroyed.

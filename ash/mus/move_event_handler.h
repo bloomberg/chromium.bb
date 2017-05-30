@@ -48,7 +48,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void AttemptToStartDrag(
       const gfx::Point& point_in_parent,
       int window_component,
-      aura::client::WindowMoveSource source,
+      ::wm::WindowMoveSource source,
       const base::Callback<void(bool success)>& end_closure);
 
   // Returns whether we're in a drag.

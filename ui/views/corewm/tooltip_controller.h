@@ -33,7 +33,7 @@ class TooltipControllerTestHelper;
 
 // TooltipController provides tooltip functionality for aura.
 class VIEWS_EXPORT TooltipController
-    : public aura::client::TooltipClient,
+    : public wm::TooltipClient,
       public ui::EventHandler,
       public aura::client::CursorClientObserver,
       public aura::WindowObserver {
@@ -41,7 +41,7 @@ class VIEWS_EXPORT TooltipController
   explicit TooltipController(std::unique_ptr<Tooltip> tooltip);
   ~TooltipController() override;
 
-  // Overridden from aura::client::TooltipClient.
+  // Overridden from wm::TooltipClient.
   int GetMaxWidth(const gfx::Point& location) const override;
   void UpdateTooltip(aura::Window* target) override;
   void SetTooltipShownTimeout(aura::Window* target, int timeout_in_ms) override;

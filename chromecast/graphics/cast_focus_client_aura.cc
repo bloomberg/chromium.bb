@@ -223,11 +223,10 @@ void CastFocusClientAura::ResetFocusWithinActiveWindow(aura::Window* window) {
   }
 }
 
-void CastFocusClientAura::AddObserver(
-    aura::client::ActivationChangeObserver* observer) {}
+void CastFocusClientAura::AddObserver(wm::ActivationChangeObserver* observer) {}
 
 void CastFocusClientAura::RemoveObserver(
-    aura::client::ActivationChangeObserver* observer) {}
+    wm::ActivationChangeObserver* observer) {}
 
 void CastFocusClientAura::ActivateWindow(aura::Window* window) {}
 

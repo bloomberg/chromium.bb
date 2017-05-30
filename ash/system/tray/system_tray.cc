@@ -151,8 +151,7 @@ class SystemBubbleWrapper {
 
 // An activation observer to close the bubble if the window other
 // than system bubble nor popup notification is activated.
-class SystemTray::ActivationObserver
-    : public aura::client::ActivationChangeObserver {
+class SystemTray::ActivationObserver : public ::wm::ActivationChangeObserver {
  public:
   explicit ActivationObserver(SystemTray* tray) : tray_(tray) {
     DCHECK(tray_);

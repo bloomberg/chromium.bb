@@ -85,6 +85,7 @@ source_set("lib") {
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
+    "//ui/wm/public",
   ]
 
   public_deps = [

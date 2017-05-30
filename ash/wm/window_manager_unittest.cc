@@ -203,7 +203,7 @@ TEST_F(WindowManagerTest, Focus) {
   w123->Focus();
   EXPECT_EQ(w123.get(),
             aura::client::GetFocusClient(w12.get())->GetFocusedWindow());
-  aura::client::SetActivationDelegate(w1.get(), &activation_delegate);
+  ::wm::SetActivationDelegate(w1.get(), &activation_delegate);
 
   // Hiding the focused window will set the focus to NULL because
   // parent window is not focusable.
@@ -216,12 +216,12 @@ TEST_F(WindowManagerTest, Focus) {
   EXPECT_FALSE(keyev.handled() || details.dispatcher_destroyed);
 
   // Set the focus back to w123
-  aura::client::SetActivationDelegate(w1.get(), NULL);
+  ::wm::SetActivationDelegate(w1.get(), NULL);
   w123->Show();
   w123->Focus();
   EXPECT_EQ(w123.get(),
             aura::client::GetFocusClient(w12.get())->GetFocusedWindow());
-  aura::client::SetActivationDelegate(w1.get(), &activation_delegate);
+  ::wm::SetActivationDelegate(w1.get(), &activation_delegate);
 
   // Removing the focused window will set the focus to NULL because
   // parent window is not focusable.
@@ -233,7 +233,7 @@ TEST_F(WindowManagerTest, Focus) {
 
   // Must set to NULL since the activation delegate will be destroyed before
   // the windows.
-  aura::client::SetActivationDelegate(w1.get(), NULL);
+  ::wm::SetActivationDelegate(w1.get(), NULL);
 }
 
 // Various assertion testing for activating windows.

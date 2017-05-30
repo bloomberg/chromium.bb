@@ -282,8 +282,7 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   ASSERT_TRUE(RotationLocked());
 
-  aura::client::ActivationClient* activation_client =
-      Shell::Get()->activation_client();
+  ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_FALSE(RotationLocked());
 
@@ -305,8 +304,7 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
   delegate()->Lock(content2.get(), blink::kWebScreenOrientationLockPortrait);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
-  aura::client::ActivationClient* activation_client =
-      Shell::Get()->activation_client();
+  ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_TRUE(RotationLocked());
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -348,8 +346,7 @@ TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
   content.reset();
   EXPECT_FALSE(RotationLocked());
 
-  aura::client::ActivationClient* activation_client =
-      Shell::Get()->activation_client();
+  ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_FALSE(RotationLocked());
 
@@ -770,8 +767,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
 
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
-  aura::client::ActivationClient* activation_client =
-      Shell::Get()->activation_client();
+  ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   // Activating any will switch to the natural orientation.
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());

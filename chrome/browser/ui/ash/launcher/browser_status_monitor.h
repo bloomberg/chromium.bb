@@ -27,7 +27,7 @@ class Browser;
 // BrowserStatusMonitor monitors creation/deletion of Browser and its
 // TabStripModel to keep the launcher representation up to date as the
 // active tab changes.
-class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
+class BrowserStatusMonitor : public wm::ActivationChangeObserver,
                              public BrowserTabStripTrackerDelegate,
                              public chrome::BrowserListObserver,
                              public TabStripModelObserver {
@@ -54,11 +54,10 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   // UpdateBrowserItemState().
   void UpdateBrowserItemState();
 
-  // aura::client::ActivationChangeObserver overrides:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // wm::ActivationChangeObserver overrides:
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // BrowserTabStripTrackerDelegate overrides:
   bool ShouldTrackBrowser(Browser* browser) override;

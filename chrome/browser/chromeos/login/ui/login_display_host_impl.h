@@ -300,8 +300,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
-  std::unique_ptr<aura::client::ScopedDragDropDisabler>
-      scoped_drag_drop_disabler_;
+  std::unique_ptr<wm::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;

@@ -184,7 +184,7 @@ void ImmersiveFocusWatcherAura::UpdateFocusRevealedLock() {
   } else {
     aura::Window* native_window = widget->GetNativeWindow();
     aura::Window* active_window =
-        aura::client::GetActivationClient(native_window->GetRootWindow())
+        ::wm::GetActivationClient(native_window->GetRootWindow())
             ->GetActiveWindow();
     if (GetAnchorView(active_window)) {
       // BubbleObserver will already have locked the top-of-window views if the

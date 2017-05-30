@@ -216,7 +216,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
-  aura::client::SetWindowMoveClient(window(), NULL);
+  wm::SetWindowMoveClient(window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
 }
@@ -477,7 +477,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
                     !params.remove_standard_frame);
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
-  aura::client::SetWindowMoveClient(window(), x11_window_move_client_.get());
+  wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   SetWindowTransparency();
 
@@ -988,12 +988,12 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  aura::client::WindowMoveSource window_move_source =
-      source == Widget::MOVE_LOOP_SOURCE_MOUSE ?
-      aura::client::WINDOW_MOVE_SOURCE_MOUSE :
-      aura::client::WINDOW_MOVE_SOURCE_TOUCH;
+  wm::WindowMoveSource window_move_source =
+      source == Widget::MOVE_LOOP_SOURCE_MOUSE ? wm::WINDOW_MOVE_SOURCE_MOUSE
+                                               : wm::WINDOW_MOVE_SOURCE_TOUCH;
   if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset,
-      window_move_source) == aura::client::MOVE_SUCCESSFUL)
+                                           window_move_source) ==
+      wm::MOVE_SUCCESSFUL)
     return Widget::MOVE_LOOP_SUCCESSFUL;
 
   return Widget::MOVE_LOOP_CANCELED;

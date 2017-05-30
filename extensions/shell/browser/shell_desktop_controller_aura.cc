@@ -282,7 +282,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
       new wm::FocusController(new AppsFocusRules());
   aura::client::SetFocusClient(host_->window(), focus_controller);
   host_->window()->AddPreTargetHandler(focus_controller);
-  aura::client::SetActivationClient(host_->window(), focus_controller);
+  wm::SetActivationClient(host_->window(), focus_controller);
   focus_client_.reset(focus_controller);
 
   capture_client_.reset(
@@ -348,7 +348,7 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
       static_cast<wm::FocusController*>(focus_client_.get());
   if (focus_controller) {
     host_->window()->RemovePreTargetHandler(focus_controller);
-    aura::client::SetActivationClient(host_->window(), NULL);
+    wm::SetActivationClient(host_->window(), NULL);
   }
 
   host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());

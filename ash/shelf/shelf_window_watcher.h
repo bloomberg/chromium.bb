@@ -23,7 +23,7 @@ class ShelfModel;
 // the ShelfItem when the window is added to the default container and maintains
 // it until the window is closed, even if the window is transiently reparented
 // (e.g. during a drag).
-class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
+class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
                            public display::DisplayObserver {
  public:
   explicit ShelfWindowWatcher(ShelfModel* model);
@@ -89,7 +89,7 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   // Removes the shelf item when a window closes.
   void OnUserWindowDestroying(aura::Window* window);
 
-  // aura::client::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;

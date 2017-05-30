@@ -372,8 +372,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
         if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
             !window_state->IsMinimized()) {
           // Several unit tests come here without an activation client.
-          aura::client::ActivationClient* client =
-              aura::client::GetActivationClient(window->GetRootWindow());
+          wm::ActivationClient* client =
+              wm::GetActivationClient(window->GetRootWindow());
           if (client)
             client->ActivateWindow(window);
         }

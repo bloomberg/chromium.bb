@@ -151,7 +151,7 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   WmWindow* GetToplevelWindow();
 
   // The implementation of this matches
-  // aura::client::ActivationClient::GetToplevelWindow().
+  // wm::ActivationClient::GetToplevelWindow().
   WmWindow* GetToplevelWindowForFocus();
 
   // See aura::client::ParentWindowWithContext() for details of what this does.

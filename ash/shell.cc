@@ -381,7 +381,7 @@ ShelfModel* Shell::shelf_model() {
   return shelf_controller_->model();
 }
 
-aura::client::ActivationClient* Shell::activation_client() {
+::wm::ActivationClient* Shell::activation_client() {
   return focus_controller_.get();
 }
 
@@ -1133,18 +1133,17 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   DCHECK(drag_drop_controller_.get());
 
   aura::client::SetFocusClient(root_window, focus_controller_.get());
-  aura::client::SetActivationClient(root_window, focus_controller_.get());
+  ::wm::SetActivationClient(root_window, focus_controller_.get());
   root_window->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
   aura::client::SetCursorClient(root_window, cursor_manager_.get());
-  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
+  ::wm::SetTooltipClient(root_window, tooltip_controller_.get());
   aura::client::SetEventClient(root_window, event_client_.get());
 
-  aura::client::SetWindowMoveClient(root_window,
-                                    toplevel_window_event_handler_.get());
+  ::wm::SetWindowMoveClient(root_window, toplevel_window_event_handler_.get());
   root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
   root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
 }
@@ -1212,7 +1211,7 @@ ui::EventTargeter* Shell::GetEventTargeter() {
 }
 
 void Shell::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (gained_active)

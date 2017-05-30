@@ -83,7 +83,7 @@ MoveEventHandler* MoveEventHandler::GetForWindow(aura::Window* window) {
 void MoveEventHandler::AttemptToStartDrag(
     const gfx::Point& point_in_parent,
     int window_component,
-    aura::client::WindowMoveSource source,
+    ::wm::WindowMoveSource source,
     const base::Callback<void(bool success)>& end_closure) {
   toplevel_window_event_handler_.AttemptToStartDrag(
       window_, point_in_parent, window_component, source,

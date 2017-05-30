@@ -19,13 +19,12 @@ namespace ash {
 namespace {
 
 // An activation delegate which disables activating the drag and drop window.
-class CaptureWindowActivationDelegate
-    : public aura::client::ActivationDelegate {
+class CaptureWindowActivationDelegate : public ::wm::ActivationDelegate {
  public:
   CaptureWindowActivationDelegate() {}
   ~CaptureWindowActivationDelegate() override {}
 
-  // aura::client::ActivationDelegate overrides:
+  // wm::ActivationDelegate overrides:
   bool ShouldActivate() const override { return false; }
 
  private:
@@ -44,7 +43,7 @@ aura::Window* CreateCaptureWindow(aura::Window* context_root,
   window->SetType(aura::client::WINDOW_TYPE_POPUP);
   window->Init(ui::LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(window, context_root, gfx::Rect());
-  aura::client::SetActivationDelegate(window, activation_delegate_instance);
+  ::wm::SetActivationDelegate(window, activation_delegate_instance);
   window->Show();
   DCHECK(window->bounds().size().IsEmpty());
   return window;

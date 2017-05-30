@@ -36,7 +36,7 @@ class WallpaperManager
       public ash::mojom::WallpaperPicker,
       public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver,
-      public aura::client::ActivationChangeObserver,
+      public wm::ActivationChangeObserver,
       public aura::WindowObserver {
  public:
   class PendingWallpaper;
@@ -101,7 +101,7 @@ class WallpaperManager
   // user_manager::UserManager::UserSessionStateObserver:
   void UserChangedChildStatus(user_manager::User* user) override;
 
-  // aura::client::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
@@ -230,8 +230,7 @@ class WallpaperManager
 
   content::NotificationRegistrar registrar_;
 
-  ScopedObserver<aura::client::ActivationClient,
-                 aura::client::ActivationChangeObserver>
+  ScopedObserver<wm::ActivationClient, wm::ActivationChangeObserver>
       activation_client_observer_;
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
 

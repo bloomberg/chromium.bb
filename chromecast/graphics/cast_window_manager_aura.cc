@@ -205,8 +205,7 @@ void CastWindowManagerAura::Setup() {
   focus_client_.reset(new CastFocusClientAura());
   aura::client::SetFocusClient(window_tree_host_->window(),
                                focus_client_.get());
-  aura::client::SetActivationClient(window_tree_host_->window(),
-                                    focus_client_.get());
+  wm::SetActivationClient(window_tree_host_->window(), focus_client_.get());
   aura::client::SetWindowParentingClient(window_tree_host_->window(), this);
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
@@ -220,7 +219,7 @@ void CastWindowManagerAura::TearDown() {
   }
   capture_client_.reset();
   aura::client::SetWindowParentingClient(window_tree_host_->window(), nullptr);
-  aura::client::SetActivationClient(window_tree_host_->window(), nullptr);
+  wm::SetActivationClient(window_tree_host_->window(), nullptr);
   aura::client::SetFocusClient(window_tree_host_->window(), nullptr);
   focus_client_.reset();
   window_tree_host_.reset();

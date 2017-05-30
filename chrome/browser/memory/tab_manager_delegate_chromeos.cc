@@ -61,10 +61,10 @@ namespace {
 // a little while before doing the adjustment.
 const int kFocusedProcessScoreAdjustIntervalMs = 500;
 
-aura::client::ActivationClient* GetActivationClient() {
+wm::ActivationClient* GetActivationClient() {
   if (!ash::Shell::HasInstance())
     return nullptr;
-  return aura::client::GetActivationClient(ash::Shell::GetPrimaryRootWindow());
+  return wm::GetActivationClient(ash::Shell::GetPrimaryRootWindow());
 }
 
 bool IsArcMemoryManagementEnabled() {
@@ -325,7 +325,7 @@ void TabManagerDelegate::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void TabManagerDelegate::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (arc::IsArcAppWindow(gained_active)) {

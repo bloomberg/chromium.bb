@@ -46,7 +46,7 @@ int GetSizeChangeDirectionForWindowComponent(int window_component) {
 DragDetails::DragDetails(aura::Window* window,
                          const gfx::Point& location,
                          int window_component,
-                         aura::client::WindowMoveSource source)
+                         ::wm::WindowMoveSource source)
     : initial_state_type(wm::GetWindowState(window)->GetStateType()),
       initial_bounds_in_parent(window->bounds()),
       initial_location_in_parent(location),

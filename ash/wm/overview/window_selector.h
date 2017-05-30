@@ -36,7 +36,7 @@ class WindowGrid;
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public aura::WindowObserver,
-                                  public aura::client::ActivationChangeObserver,
+                                  public ::wm::ActivationChangeObserver,
                                   public views::TextfieldController {
  public:
   // Returns true if the window can be selected in overview mode.
@@ -95,7 +95,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // aura::client::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;

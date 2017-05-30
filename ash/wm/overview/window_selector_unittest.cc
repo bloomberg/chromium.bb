@@ -63,8 +63,7 @@ static const int kHeaderHeight = 32;
 const char kActiveWindowChangedFromOverview[] =
     "WindowSelector_ActiveWindowChanged";
 
-class NonActivatableActivationDelegate
-    : public aura::client::ActivationDelegate {
+class NonActivatableActivationDelegate : public ::wm::ActivationDelegate {
  public:
   bool ShouldActivate() const override { return false; }
 };
@@ -117,8 +116,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
   aura::Window* CreateNonActivatableWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateWindow(bounds);
-    aura::client::SetActivationDelegate(window,
-                                        &non_activatable_activation_delegate_);
+    ::wm::SetActivationDelegate(window, &non_activatable_activation_delegate_);
     EXPECT_FALSE(wm::CanActivateWindow(window));
     return window;
   }
@@ -1843,9 +1841,8 @@ TEST_F(WindowSelectorTest, TransformedRectIsCenteredWithInset) {
 TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   const gfx::Rect bounds(10, 10, 100, 100);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-  std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
-                          aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   gfx::Point location = resizer->GetInitialLocation();
   location.Offset(20, 20);

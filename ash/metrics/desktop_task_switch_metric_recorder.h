@@ -14,14 +14,14 @@ namespace ash {
 // Tracks metrics for task switches caused by the user activating a task window
 // by clicking or tapping on it.
 class ASH_EXPORT DesktopTaskSwitchMetricRecorder
-    : public aura::client::ActivationChangeObserver {
+    : public ::wm::ActivationChangeObserver {
  public:
   explicit DesktopTaskSwitchMetricRecorder();
   ~DesktopTaskSwitchMetricRecorder() override;
 
-  // aura::client::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
+      ::wm::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 

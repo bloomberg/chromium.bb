@@ -2014,6 +2014,7 @@ source_set("browser") {
       "//ui/aura_extra",
       "//ui/strings",
       "//ui/wm",
+      "//ui/wm/public",
     ]
     sources += [
       "renderer_host/delegated_frame_host_client_aura.cc",

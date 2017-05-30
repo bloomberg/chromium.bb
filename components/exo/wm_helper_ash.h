@@ -18,7 +18,7 @@ namespace exo {
 
 // A helper class for accessing WindowManager related features.
 class WMHelperAsh : public WMHelper,
-                    public aura::client::ActivationChangeObserver,
+                    public wm::ActivationChangeObserver,
                     public aura::client::FocusChangeObserver,
                     public aura::client::CursorClientObserver,
                     public ash::ShellObserver,
@@ -42,11 +42,10 @@ class WMHelperAsh : public WMHelper,
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsMaximizeModeWindowManagerEnabled() const override;
 
-  // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // Overridden from wm::ActivationChangeObserver:
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,

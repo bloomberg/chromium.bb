@@ -179,8 +179,8 @@ TEST_F(ExtendedDesktopTest, Basic) {
   // Make sure root windows share the same controllers.
   EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),
             aura::client::GetFocusClient(root_windows[1]));
-  EXPECT_EQ(aura::client::GetActivationClient(root_windows[0]),
-            aura::client::GetActivationClient(root_windows[1]));
+  EXPECT_EQ(::wm::GetActivationClient(root_windows[0]),
+            ::wm::GetActivationClient(root_windows[1]));
   EXPECT_EQ(aura::client::GetCaptureClient(root_windows[0]),
             aura::client::GetCaptureClient(root_windows[1]));
 }

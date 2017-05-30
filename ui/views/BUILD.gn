@@ -587,6 +587,7 @@ component("views") {
       "//ui/aura",
       "//ui/touch_selection",
       "//ui/wm",
+      "//ui/wm/public",
     ]
     if (!is_chromeos) {
       if (use_x11) {
@@ -792,6 +793,7 @@ static_library("test_support_internal") {
       "//ui/aura:test_support",
       "//ui/views/mus",
       "//ui/wm",
+      "//ui/wm/public",
     ]
     if (use_x11 && !is_chromeos) {
       sources += [
@@ -987,6 +989,7 @@ source_set("views_unittests_sources") {
       "//ui/aura:test_support",
       "//ui/touch_selection",
       "//ui/wm",
+      "//ui/wm/public",
     ]
   }
 

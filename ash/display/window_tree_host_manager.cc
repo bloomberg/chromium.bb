@@ -177,7 +177,7 @@ class FocusActivationStore {
   void Store(bool clear_focus) {
     if (!activation_client_) {
       aura::Window* root = Shell::GetPrimaryRootWindow();
-      activation_client_ = aura::client::GetActivationClient(root);
+      activation_client_ = ::wm::GetActivationClient(root);
       capture_client_ = aura::client::GetCaptureClient(root);
       focus_client_ = aura::client::GetFocusClient(root);
     }
@@ -218,7 +218,7 @@ class FocusActivationStore {
   }
 
  private:
-  aura::client::ActivationClient* activation_client_;
+  ::wm::ActivationClient* activation_client_;
   aura::client::CaptureClient* capture_client_;
   aura::client::FocusClient* focus_client_;
   aura::WindowTracker tracker_;

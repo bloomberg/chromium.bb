@@ -80,6 +80,7 @@ component("wm") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/resources",
+    "//ui/wm/public",
   ]
 
   if (use_x11) {
@@ -151,6 +152,7 @@ test("wm_unittests") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/resources",
+    "//ui/wm/public",
   ]
 
   data_deps = [

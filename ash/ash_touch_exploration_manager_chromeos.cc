@@ -133,7 +133,7 @@ void AshTouchExplorationManager::ToggleSpokenFeedback() {
 }
 
 void AshTouchExplorationManager::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
+    ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   UpdateTouchExplorationState();

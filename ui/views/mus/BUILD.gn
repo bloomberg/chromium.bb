@@ -76,6 +76,7 @@ component("mus") {
     "//ui/platform_window/stub",
     "//ui/views",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   if (is_linux && !is_android) {
@@ -255,6 +256,7 @@ test("views_mus_interactive_ui_tests") {
     "//ui/views",
     "//ui/views:test_support_internal",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   data_deps = [

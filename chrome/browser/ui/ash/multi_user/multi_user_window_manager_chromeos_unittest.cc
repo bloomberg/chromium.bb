@@ -704,8 +704,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ActiveWindowTests) {
   const AccountId account_id_B(AccountId::FromUserEmail("B"));
   const AccountId account_id_C(AccountId::FromUserEmail("C"));
 
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window(0)->GetRootWindow());
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
 
   // Set some windows to the active owner.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
@@ -1394,8 +1394,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindowActivationTest) {
   ::wm::AddTransientChild(window(1), window(2));
   window(2)->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window(0)->GetRootWindow());
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
 
   // Activate window #0 will activate its deepest transient child window #2.
   activation_client->ActivateWindow(window(0));
@@ -1536,8 +1536,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
       user_manager()->FindUser(account_id_A));
 
   // Set the windows owner.
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window(0)->GetRootWindow());
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_A);
@@ -1587,8 +1587,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, GetActiveBrowserTest) {
   multi_user_window_manager()->ActiveUserChanged(
       user_manager()->FindUser(account_id_A));
 
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(window(0)->GetRootWindow());
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   Profile* profile = multi_user_util::GetProfileFromAccountId(account_id_A);
   Browser::CreateParams params(profile, true);

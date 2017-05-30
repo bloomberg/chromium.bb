@@ -118,8 +118,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
   void OnAnimationCompleted() {
     // Window may have been destroyed by this point.
     if (window_) {
-      aura::client::AnimationHost* animation_host =
-          aura::client::GetAnimationHost(window_);
+      AnimationHost* animation_host = GetAnimationHost(window_);
       if (animation_host)
         animation_host->OnWindowHidingAnimationCompleted();
       window_->RemoveObserver(this);
@@ -241,8 +240,7 @@ gfx::Rect GetLayerWorldBoundsAfterTransform(ui::Layer* layer,
 // animation will fit inside of it.
 void AugmentWindowSize(aura::Window* window,
                        const gfx::Transform& end_transform) {
-  aura::client::AnimationHost* animation_host =
-      aura::client::GetAnimationHost(window);
+  AnimationHost* animation_host = GetAnimationHost(window);
   if (!animation_host)
     return;
 

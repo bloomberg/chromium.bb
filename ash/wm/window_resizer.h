@@ -104,7 +104,7 @@ ASH_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component,
-    aura::client::WindowMoveSource source);
+    ::wm::WindowMoveSource source);
 
 }  // namespace ash
 

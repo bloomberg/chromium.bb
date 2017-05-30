@@ -132,15 +132,15 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
   // restored after drag completes.
   window_state->set_window_position_managed(true);
   generator.PressLeftButton();
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(w1->GetRootWindow());
+  ::wm::WindowMoveClient* move_client =
+      ::wm::GetWindowMoveClient(w1->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
                  base::Unretained(window_state), base::Unretained(w1.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
+  EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   // Window position auto manage property should be restored to true.
   EXPECT_TRUE(window_state->window_position_managed());
   // Position should have been offset by 100,100.
@@ -156,9 +156,9 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
       FROM_HERE,
       base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
                  base::Unretained(window_state), base::Unretained(w1.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
+  EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   // Window position auto manage property should be restored to true.
   EXPECT_FALSE(window_state->window_position_managed());
   // Position should have been offset by 100,100.
@@ -700,7 +700,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
 }
 
 // Verifies that a drag cannot be started via
-// aura::client::WindowMoveClient::RunMoveLoop() while another drag is already
+// wm::WindowMoveClient::RunMoveLoop() while another drag is already
 // in progress.
 TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   std::unique_ptr<aura::Window> window1(CreateWindow(HTCAPTION));
@@ -714,11 +714,11 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   generator.MoveMouseBy(10, 11);
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
 
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window2->GetRootWindow());
-  EXPECT_EQ(aura::client::MOVE_CANCELED,
+  ::wm::WindowMoveClient* move_client =
+      ::wm::GetWindowMoveClient(window2->GetRootWindow());
+  EXPECT_EQ(::wm::MOVE_CANCELED,
             move_client->RunMoveLoop(window2.get(), gfx::Vector2d(),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE));
 
   generator.ReleaseLeftButton();
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
@@ -743,15 +743,15 @@ TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
   generator.PressLeftButton();
   window->SetCapture();
 
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window->GetRootWindow());
+  ::wm::WindowMoveClient* move_client =
+      ::wm::GetWindowMoveClient(window->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SendMouseReleaseAndReleaseCapture,
                  base::Unretained(&generator), base::Unretained(window.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
+  EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE));
 }
 
 namespace {
@@ -770,14 +770,14 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window.get());
 
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window->GetRootWindow());
+  ::wm::WindowMoveClient* move_client =
+      ::wm::GetWindowMoveClient(window->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&CheckHasCaptureAndReleaseCapture,
                             base::Unretained(window.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
+  EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
-                                     aura::client::WINDOW_MOVE_SOURCE_TOUCH));
+                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH));
 }
 
 // Tests that dragging a snapped window to another display updates the window's

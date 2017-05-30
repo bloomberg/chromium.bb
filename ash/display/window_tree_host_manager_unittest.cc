@@ -62,7 +62,7 @@ class Resetter {
 class TestObserver : public WindowTreeHostManager::Observer,
                      public display::DisplayObserver,
                      public aura::client::FocusChangeObserver,
-                     public aura::client::ActivationChangeObserver {
+                     public ::wm::ActivationChangeObserver {
  public:
   TestObserver()
       : changing_count_(0),
@@ -78,8 +78,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
     display::Screen::GetScreen()->AddObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->AddObserver(this);
-    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
-        ->AddObserver(this);
+    ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())->AddObserver(this);
   }
 
   ~TestObserver() override {
@@ -87,7 +86,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
     display::Screen::GetScreen()->RemoveObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
-    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
+    ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
   }
 
@@ -117,9 +116,9 @@ class TestObserver : public WindowTreeHostManager::Observer,
     focus_changed_count_++;
   }
 
-  // Overridden from aura::client::ActivationChangeObserver
+  // Overridden from wm::ActivationChangeObserver
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
+      ::wm::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override {
     activation_changed_count_++;

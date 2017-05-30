@@ -220,7 +220,7 @@ bool WindowResizer::IsBottomEdge(int window_component) {
 }
 
 void WindowResizer::AdjustDeltaForTouchResize(int* delta_x, int* delta_y) {
-  if (details().source != aura::client::WINDOW_MOVE_SOURCE_TOUCH ||
+  if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH ||
       !(details().bounds_change & kBoundsChange_Resizes))
     return;
 

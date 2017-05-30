@@ -51,7 +51,7 @@ class ShelfWidget;
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
     : public ShellObserver,
-      public aura::client::ActivationChangeObserver,
+      public ::wm::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
@@ -139,7 +139,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;
 
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;

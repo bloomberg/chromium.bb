@@ -613,7 +613,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
     browser_window->GetNativeWindow()->SetBoundsInScreen(
         gfx::Rect(secondary_bounds.CenterPoint().x() - 100, 10, 200, 200),
         second_display);
-    aura::client::GetActivationClient(native_window->GetRootWindow())
+    wm::GetActivationClient(native_window->GetRootWindow())
         ->ActivateWindow(native_window);
     EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
               ash::Shell::GetRootWindowForNewWindows());
@@ -632,7 +632,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   // Activate another window in the primary display and create a new window.
   // It should be created in the primary display.
   {
-    aura::client::GetActivationClient(another_native_window->GetRootWindow())
+    wm::GetActivationClient(another_native_window->GetRootWindow())
         ->ActivateWindow(another_native_window);
     EXPECT_EQ(ash::Shell::GetPrimaryRootWindow(),
               ash::Shell::GetRootWindowForNewWindows());
