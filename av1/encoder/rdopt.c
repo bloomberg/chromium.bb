@@ -3676,7 +3676,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_PALETTE
   pmi->palette_size[0] = 0;
-  pmi->palette_size[1] = 0;
   if (above_mi)
     palette_y_mode_ctx +=
         (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
@@ -4859,6 +4858,16 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_EXT_INTRA
 
+static void init_sbuv_mode(MB_MODE_INFO *const mbmi) {
+  mbmi->uv_mode = DC_PRED;
+#if CONFIG_PALETTE
+  mbmi->palette_mode_info.palette_size[1] = 0;
+#endif  // CONFIG_PALETTE
+#if CONFIG_FILTER_INTRA
+  mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+#endif  // CONFIG_FILTER_INTRA
+}
+
 static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        int *rate, int *rate_tokenonly,
                                        int64_t *distortion, int *skippable,
@@ -4880,12 +4889,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   uint8_t *best_palette_color_map = NULL;
 #endif  // CONFIG_PALETTE
 
-#if CONFIG_FILTER_INTRA
-  mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-#endif  // CONFIG_FILTER_INTRA
-#if CONFIG_PALETTE
-  pmi->palette_size[1] = 0;
-#endif  // CONFIG_PALETTE
   for (mode = DC_PRED; mode <= TM_PRED; ++mode) {
 #if CONFIG_EXT_INTRA
     const int is_directional_mode =
@@ -4982,6 +4985,7 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   (void)ctx;
+  init_sbuv_mode(&x->e_mbd.mi[0]->mbmi);
 #if CONFIG_CB4X4
 #if CONFIG_CHROMA_2X2
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
@@ -9475,7 +9479,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   if (intra_yrd < best_rd) {
     max_uv_tx_size = uv_txsize_lookup[bsize][xd->mi[0]->mbmi.tx_size]
                                      [pd[1].subsampling_x][pd[1].subsampling_y];
-
+    init_sbuv_mode(&xd->mi[0]->mbmi);
 #if CONFIG_CB4X4
 #if !CONFIG_CHROMA_2X2
     max_uv_tx_size = AOMMAX(max_uv_tx_size, TX_4X4);
