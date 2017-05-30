@@ -110,11 +110,11 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     const v8::Local<v8::Function>& disconnected_callback,
     const v8::Local<v8::Function>& adopted_callback,
     const v8::Local<v8::Function>& attribute_changed_callback,
-    const HashSet<AtomicString>& observed_attributes) {
+    HashSet<AtomicString>&& observed_attributes) {
   ScriptCustomElementDefinition* definition = new ScriptCustomElementDefinition(
       script_state, descriptor, constructor, connected_callback,
       disconnected_callback, adopted_callback, attribute_changed_callback,
-      observed_attributes);
+      std::move(observed_attributes));
 
   // Add a constructor -> name mapping to the registry.
   v8::Local<v8::Value> name_value =
@@ -151,8 +151,8 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const v8::Local<v8::Function>& disconnected_callback,
     const v8::Local<v8::Function>& adopted_callback,
     const v8::Local<v8::Function>& attribute_changed_callback,
-    const HashSet<AtomicString>& observed_attributes)
-    : CustomElementDefinition(descriptor, observed_attributes),
+    HashSet<AtomicString>&& observed_attributes)
+    : CustomElementDefinition(descriptor, std::move(observed_attributes)),
       script_state_(script_state),
       constructor_(script_state->GetIsolate(), constructor) {}
 

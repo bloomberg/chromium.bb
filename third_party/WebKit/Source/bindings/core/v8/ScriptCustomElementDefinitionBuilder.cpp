@@ -138,7 +138,7 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
   return ScriptCustomElementDefinition::Create(
       script_state_.Get(), registry_, descriptor, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
-      attribute_changed_callback_, observed_attributes_);
+      attribute_changed_callback_, std::move(observed_attributes_));
 }
 
 }  // namespace blink
