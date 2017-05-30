@@ -415,8 +415,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
   download_prefs->SetDownloadPath(download_directory.GetPath());
 
   DownloadTestObserverNotInProgress download_observer(
-      content::BrowserContext::GetDownloadManager(profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
+      content::BrowserContext::GetDownloadManager(profile()), 1);
   download_observer.StartObserving();
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/download"))

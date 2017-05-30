@@ -606,8 +606,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToTinySniffedDownloads) {
   GURL url = embedded_test_server()->GetURL("/downloads/tiny_binary.bin");
   DownloadTestObserverNotInProgress download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
   download_observer.StartObserving();
   ui_test_utils::NavigateToURL(browser(), url);
   download_observer.WaitForFinished();
@@ -620,8 +619,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToLargeSniffedDownloads) {
   GURL url = embedded_test_server()->GetURL("/downloads/thisdayinhistory.xls");
   DownloadTestObserverNotInProgress download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
   download_observer.StartObserving();
   ui_test_utils::NavigateToURL(browser(), url);
   download_observer.WaitForFinished();
@@ -633,8 +631,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToADownloads) {
   DownloadTestObserverNotInProgress download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
   download_observer.StartObserving();
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
                                               "/download-anchor-attrib.html"));
