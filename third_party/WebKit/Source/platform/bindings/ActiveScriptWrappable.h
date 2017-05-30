@@ -55,7 +55,7 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
 
   bool DispatchHasPendingActivity(
       ActiveScriptWrappableBase* object) const final {
-    return static_cast<T*>(object)->T::HasPendingActivity();
+    return static_cast<T*>(object)->HasPendingActivity();
   }
 
   ScriptWrappable* ToScriptWrappable(
