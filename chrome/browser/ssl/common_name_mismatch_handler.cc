@@ -19,7 +19,9 @@ CommonNameMismatchHandler::CommonNameMismatchHandler(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : request_url_(request_url), request_context_(request_context) {}
 
-CommonNameMismatchHandler::~CommonNameMismatchHandler() {}
+CommonNameMismatchHandler::~CommonNameMismatchHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 // static
 CommonNameMismatchHandler::TestingState
@@ -32,7 +34,7 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
   if (testing_state_ == IGNORE_REQUESTS_FOR_TESTING)
     return;
 
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsCheckingSuggestedUrl());
   DCHECK(check_url_callback_.is_null());
 
@@ -105,7 +107,7 @@ void CommonNameMismatchHandler::Cancel() {
 
 void CommonNameMismatchHandler::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCheckingSuggestedUrl());
   DCHECK_EQ(url_fetcher_.get(), source);
   DCHECK(!check_url_callback_.is_null());
