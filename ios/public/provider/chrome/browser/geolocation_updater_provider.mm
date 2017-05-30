@@ -4,6 +4,10 @@
 
 #import "ios/public/provider/chrome/browser/geolocation_updater_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios {
 
 GeolocationUpdaterProvider::GeolocationUpdaterProvider() {
