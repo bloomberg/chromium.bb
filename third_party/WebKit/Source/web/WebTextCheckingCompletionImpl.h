@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpellCheckerClientImpl_h
-#define SpellCheckerClientImpl_h
+#ifndef WebTextCheckingCompletionImpl_h
+#define WebTextCheckingCompletionImpl_h
 
-#include "core/CoreExport.h"
-#include "core/editing/spellcheck/SpellCheckerClient.h"
+#include "platform/heap/Handle.h"
+#include "platform/text/TextChecking.h"
+#include "platform/wtf/RefPtr.h"
+#include "public/web/WebTextCheckingCompletion.h"
 
 namespace blink {
 
-class WebViewBase;
-
-// TODO(xiaochengh): Split SpellCheckerClientImpl into two classes according to
-// the split that should be done to its interface.
-class CORE_EXPORT SpellCheckerClientImpl final
-    : public NON_EXPORTED_BASE(SpellCheckerClient) {
+class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
  public:
-  explicit SpellCheckerClientImpl(WebViewBase*);
+  explicit WebTextCheckingCompletionImpl(TextCheckingRequest* request)
+      : request_(request) {}
 
-  ~SpellCheckerClientImpl() override;
-
-  bool IsSpellCheckingEnabled() override;
-  void ToggleSpellCheckingEnabled() override;
-  void UpdateSpellingUIWithMisspelledWord(const String&) override;
-  void ShowSpellingUI(bool show) override;
-  bool SpellingUIIsShowing() override;
+  void DidFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
+  void DidCancelCheckingText() override;
 
  private:
-  // Returns whether or not the focused control needs spell-checking.
-  // Currently, this function just retrieves the focused node and determines
-  // whether or not it is a <textarea> element or an element whose
-  // contenteditable attribute is true.
-  // FIXME: Bug 740540: This code just implements the default behavior
-  // proposed in this issue. We should also retrieve "spellcheck" attributes
-  // for text fields and create a flag to over-write the default behavior.
-  bool ShouldSpellcheckByDefault();
+  virtual ~WebTextCheckingCompletionImpl() {}
 
-  WebViewBase* web_view_;
-
-  // This flag is set to false if spell check for this editor is manually
-  // turned off. The default setting is SpellCheckAutomatic.
-  enum {
-    kSpellCheckAutomatic,
-    kSpellCheckForcedOn,
-    kSpellCheckForcedOff
-  } spell_check_this_field_status_;
+  Persistent<TextCheckingRequest> request_;
 };
 
 }  // namespace blink

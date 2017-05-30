@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,32 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTextCheckingCompletionImpl_h
-#define WebTextCheckingCompletionImpl_h
+#include "web/WebTextCheckingCompletionImpl.h"
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/text/TextChecking.h"
-#include "platform/wtf/RefPtr.h"
-#include "public/web/WebTextCheckingCompletion.h"
+#include "platform/text/TextCheckerClient.h"
+#include "platform/wtf/Assertions.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebTextCheckingResult.h"
+#include "web/EditorClientImpl.h"
 
 namespace blink {
 
-class CORE_EXPORT WebTextCheckingCompletionImpl final
-    : public WebTextCheckingCompletion {
- public:
-  explicit WebTextCheckingCompletionImpl(TextCheckingRequest* request)
-      : request_(request) {}
+static Vector<TextCheckingResult> ToCoreResults(
+    const WebVector<WebTextCheckingResult>& results) {
+  Vector<TextCheckingResult> core_results;
+  for (size_t i = 0; i < results.size(); ++i)
+    core_results.push_back(results[i]);
+  return core_results;
+}
 
-  void DidFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
-  void DidCancelCheckingText() override;
+void WebTextCheckingCompletionImpl::DidFinishCheckingText(
+    const WebVector<WebTextCheckingResult>& results) {
+  request_->DidSucceed(ToCoreResults(results));
+  delete this;
+}
 
- private:
-  virtual ~WebTextCheckingCompletionImpl() {}
-
-  Persistent<TextCheckingRequest> request_;
-};
+void WebTextCheckingCompletionImpl::DidCancelCheckingText() {
+  request_->DidCancel();
+  delete this;
+}
 
 }  // namespace blink
-
-#endif

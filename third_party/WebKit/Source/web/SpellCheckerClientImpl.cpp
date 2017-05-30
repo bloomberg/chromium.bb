@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/spellcheck/SpellCheckerClientImpl.h"
+#include "web/SpellCheckerClientImpl.h"
 
 #include "core/dom/Element.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -109,10 +109,9 @@ void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
 
 void SpellCheckerClientImpl::UpdateSpellingUIWithMisspelledWord(
     const String& misspelled_word) {
-  if (web_view_->SpellCheckClient()) {
+  if (web_view_->SpellCheckClient())
     web_view_->SpellCheckClient()->UpdateSpellingUIWithMisspelledWord(
         WebString(misspelled_word));
-  }
 }
 
 void SpellCheckerClientImpl::ShowSpellingUI(bool show) {

@@ -5,7 +5,6 @@
 #ifndef TextCheckerClientImpl_h
 #define TextCheckerClientImpl_h
 
-#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextCheckerClient.h"
 
@@ -15,7 +14,7 @@ class WebLocalFrameBase;
 class WebTextCheckClient;
 
 // TODO(xiaochengh): Rename TextCheckerClientImpl to SpellCheckerClientImpl.
-class CORE_EXPORT TextCheckerClientImpl final
+class TextCheckerClientImpl final
     : public GarbageCollected<TextCheckerClientImpl>,
       public TextCheckerClient {
  public:
