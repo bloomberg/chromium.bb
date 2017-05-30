@@ -112,7 +112,7 @@ TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {
   ConditionValidator::Result result = validator_.MeetsConditions(
       kTestFeatureFoo, kValidFeatureConfig, model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
-  EXPECT_FALSE(result.model_ready_ok);
+  EXPECT_FALSE(result.event_model_ready_ok);
 
   model_.SetIsReady(true);
   EXPECT_TRUE(validator_

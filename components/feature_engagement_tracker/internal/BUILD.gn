@@ -52,6 +52,8 @@ static_library("internal") {
     "persistent_store.h",
     "single_invalid_configuration.cc",
     "single_invalid_configuration.h",
+    "stats.cc",
+    "stats.h",
     "storage_validator.h",
     "store.h",
     "system_time_provider.cc",

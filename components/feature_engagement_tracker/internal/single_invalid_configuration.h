@@ -17,7 +17,7 @@ struct Feature;
 namespace feature_engagement_tracker {
 
 // An Configuration that always returns the same single invalid configuration,
-// regardless of which feature.
+// regardless of which feature. Also holds an empty ConfigMap.
 class SingleInvalidConfiguration : public Configuration {
  public:
   SingleInvalidConfiguration();
@@ -26,10 +26,14 @@ class SingleInvalidConfiguration : public Configuration {
   // Configuration implementation.
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
+  const Configuration::ConfigMap& GetRegisteredFeatures() const override;
 
  private:
   // The invalid configuration to always return.
   FeatureConfig invalid_feature_config_;
+
+  // An empty map.
+  ConfigMap configs_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleInvalidConfiguration);
 };

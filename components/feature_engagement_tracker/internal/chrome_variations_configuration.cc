@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
+#include "components/feature_engagement_tracker/internal/stats.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
 
 namespace {
@@ -211,8 +212,13 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
 
   std::map<std::string, std::string> params;
   bool result = base::GetFieldTrialParamsByFeature(*feature, &params);
-  if (!result)
+  if (!result) {
+    stats::RecordConfigParsingEvent(
+        stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL);
+    // Returns early. If no field trial, ConfigParsingEvent::FAILURE will not be
+    // recorded.
     return;
+  }
 
   for (const auto& it : params) {
     const std::string& key = it.first;
@@ -220,12 +226,16 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
       EventConfig event_config;
       if (!ParseEventConfig(params[key], &event_config)) {
         ++parse_errors;
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_USED_EVENT_PARSE);
         continue;
       }
       config.used = event_config;
     } else if (key == kEventConfigTriggerKey) {
       EventConfig event_config;
       if (!ParseEventConfig(params[key], &event_config)) {
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_TRIGGER_EVENT_PARSE);
         ++parse_errors;
         continue;
       }
@@ -233,6 +243,8 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
     } else if (key == kSessionRateKey) {
       Comparator comparator;
       if (!ParseComparator(params[key], &comparator)) {
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_SESSION_RATE_PARSE);
         ++parse_errors;
         continue;
       }
@@ -240,6 +252,8 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
     } else if (key == kAvailabilityKey) {
       Comparator comparator;
       if (!ParseComparator(params[key], &comparator)) {
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_AVAILABILITY_PARSE);
         ++parse_errors;
         continue;
       }
@@ -248,6 +262,8 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
                                 base::CompareCase::INSENSITIVE_ASCII)) {
       EventConfig event_config;
       if (!ParseEventConfig(params[key], &event_config)) {
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_OTHER_EVENT_PARSE);
         ++parse_errors;
         continue;
       }
@@ -255,13 +271,33 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
     } else {
       DVLOG(1) << "Ignoring unknown key when parsing config for feature "
                << feature->name << ": " << key;
+      stats::RecordConfigParsingEvent(
+          stats::ConfigParsingEvent::FAILURE_UNKNOWN_KEY);
     }
   }
 
   // The |used| and |trigger| members are required, so should not be the
   // default values.
-  config.valid = config.used != EventConfig() &&
-                 config.trigger != EventConfig() && parse_errors == 0;
+  bool has_used_event = config.used != EventConfig();
+  bool has_trigger_event = config.trigger != EventConfig();
+  config.valid = has_used_event && has_trigger_event && parse_errors == 0;
+
+  if (config.valid) {
+    stats::RecordConfigParsingEvent(stats::ConfigParsingEvent::SUCCESS);
+  } else {
+    stats::RecordConfigParsingEvent(stats::ConfigParsingEvent::FAILURE);
+  }
+
+  // Notice parse errors for used and trigger events will also cause the
+  // following histograms being recorded.
+  if (!has_used_event) {
+    stats::RecordConfigParsingEvent(
+        stats::ConfigParsingEvent::FAILURE_USED_EVENT_MISSING);
+  }
+  if (!has_trigger_event) {
+    stats::RecordConfigParsingEvent(
+        stats::ConfigParsingEvent::FAILURE_TRIGGER_EVENT_MISSING);
+  }
 }
 
 const FeatureConfig& ChromeVariationsConfiguration::GetFeatureConfig(
@@ -269,6 +305,11 @@ const FeatureConfig& ChromeVariationsConfiguration::GetFeatureConfig(
   auto it = configs_.find(&feature);
   DCHECK(it != configs_.end());
   return it->second;
+}
+
+const Configuration::ConfigMap&
+ChromeVariationsConfiguration::GetRegisteredFeatures() const {
+  return configs_;
 }
 
 }  // namespace feature_engagement_tracker

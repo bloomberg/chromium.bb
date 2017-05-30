@@ -5127,6 +5127,81 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="InProductHelp.Dismissed">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>The user dismissed the in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_DataSaverPreview">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>The user triggered an event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_DownloadHome">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>The user triggered an event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_DownloadPage">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>The user triggered an event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_DataSaverPreview">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The user triggered an used event in in-product help.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_DownloadHome">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The user triggered an used event in in-product help.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_DownloadPage">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The user triggered an used event in in-product help.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_DataSaverPreview">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_DownloadHome">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_DownloadPage">
+  <owner>nyquist@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
 <action name="Indent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

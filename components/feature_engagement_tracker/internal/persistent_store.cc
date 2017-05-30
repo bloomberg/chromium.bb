@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/feature_engagement_tracker/internal/stats.h"
 
 namespace feature_engagement_tracker {
 namespace {
@@ -18,7 +19,10 @@ const char kDatabaseUMAName[] = "FeatureEngagementTrackerEventStore";
 using KeyEventPair = std::pair<std::string, Event>;
 using KeyEventList = std::vector<KeyEventPair>;
 
-void NoopUpdateCallback(bool success) {}
+void NoopUpdateCallback(bool success) {
+  stats::RecordDbUpdate(success, stats::StoreType::EVENTS_STORE);
+}
+
 }  // namespace
 
 PersistentStore::PersistentStore(
@@ -48,7 +52,6 @@ void PersistentStore::WriteEvent(const Event& event) {
   std::unique_ptr<KeyEventList> entries = base::MakeUnique<KeyEventList>();
   entries->push_back(KeyEventPair(event.name(), event));
 
-  // TODO(dtrainor, nyquist): Consider tracking failures here and storing UMA.
   db_->UpdateEntries(std::move(entries),
                      base::MakeUnique<std::vector<std::string>>(),
                      base::Bind(&NoopUpdateCallback));
@@ -59,13 +62,14 @@ void PersistentStore::DeleteEvent(const std::string& event_name) {
   auto deletes = base::MakeUnique<std::vector<std::string>>();
   deletes->push_back(event_name);
 
-  // TODO(dtrainor, nyquist): Consider tracking failures here and storing UMA.
   db_->UpdateEntries(base::MakeUnique<KeyEventList>(), std::move(deletes),
                      base::Bind(&NoopUpdateCallback));
 }
 
 void PersistentStore::OnInitComplete(const OnLoadedCallback& callback,
                                      bool success) {
+  stats::RecordDbInitEvent(success, stats::StoreType::EVENTS_STORE);
+
   if (!success) {
     callback.Run(false, base::MakeUnique<std::vector<Event>>());
     return;
@@ -79,6 +83,7 @@ void PersistentStore::OnLoadComplete(
     const OnLoadedCallback& callback,
     bool success,
     std::unique_ptr<std::vector<Event>> entries) {
+  stats::RecordEventDbLoadEvent(success, *entries.get());
   ready_ = success;
   callback.Run(success, std::move(entries));
 }

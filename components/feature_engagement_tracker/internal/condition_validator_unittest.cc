@@ -18,7 +18,7 @@ TEST(ConditionValidatorResultTest, TestAllErrors) {
 
 TEST(ConditionValidatorResultTest, TestModelNotReady) {
   ConditionValidator::Result result(true);
-  result.model_ready_ok = false;
+  result.event_model_ready_ok = false;
   EXPECT_FALSE(result.NoErrors());
 }
 
