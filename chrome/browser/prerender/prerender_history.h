@@ -10,7 +10,7 @@
 #include <list>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
@@ -25,7 +25,7 @@ namespace prerender {
 // PrerenderHistory maintains a per-session history of prerendered pages
 // and their final dispositions. It has a fixed maximum capacity, and old
 // items in history will be removed when the capacity is reached.
-class PrerenderHistory : public base::NonThreadSafe {
+class PrerenderHistory {
  public:
   // Entry is an individual entry in the history list. It corresponds to a
   // specific prerendered page.
@@ -73,6 +73,8 @@ class PrerenderHistory : public base::NonThreadSafe {
  private:
   std::list<Entry> entries_;
   size_t max_items_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHistory);
 };
