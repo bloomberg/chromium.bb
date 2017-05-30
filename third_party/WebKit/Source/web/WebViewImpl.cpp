@@ -52,6 +52,7 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
+#include "core/exported/WebFactory.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -337,7 +338,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebPageVisibilityState visibility_state)
     : client_(client),
       spell_check_client_(nullptr),
-      chrome_client_impl_(ChromeClientImpl::Create(this)),
+      chrome_client_(WebFactory::GetInstance().CreateChromeClient(this)),
       context_menu_client_impl_(this),
       editor_client_impl_(this),
       spell_checker_client_impl_(this),
@@ -386,7 +387,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       last_frame_time_monotonic_(0),
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
-  page_clients.chrome_client = chrome_client_impl_.Get();
+  page_clients.chrome_client = chrome_client_.Get();
   page_clients.context_menu_client = &context_menu_client_impl_;
   page_clients.editor_client = &editor_client_impl_;
   page_clients.spell_checker_client = &spell_checker_client_impl_;

@@ -124,6 +124,8 @@ component("web") {
     "WebEmbeddedWorkerImpl.cpp",
     "WebEmbeddedWorkerImpl.h",
     "WebExport.h",
+    "WebFactoryImpl.cpp",
+    "WebFactoryImpl.h",
     "WebFormControlElement.cpp",
     "WebFormElement.cpp",
     "WebFormElementObserverImpl.cpp",

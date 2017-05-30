@@ -34,6 +34,7 @@
 #include <memory>
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ResizeViewportAnchor.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
@@ -60,7 +61,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
-#include "web/ChromeClientImpl.h"
 #include "web/ContextMenuClientImpl.h"
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
@@ -497,7 +497,7 @@ class WEB_EXPORT WebViewImpl final
   }
 
   class ChromeClient& ChromeClient() const override {
-    return *chrome_client_impl_.Get();
+    return *chrome_client_.Get();
   }
 
   // Returns the currently active WebInputMethodController which is the one
@@ -603,7 +603,9 @@ class WEB_EXPORT WebViewImpl final
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
   WebSpellCheckClient* spell_check_client_;
 
-  Persistent<ChromeClientImpl> chrome_client_impl_;
+  // ChromeClient needs blink:: qualifier so it doesn't clash with ChromeClient
+  // method. TODO(sashab): Rename getter to GetChromeClient to fix this.
+  Persistent<blink::ChromeClient> chrome_client_;
   ContextMenuClientImpl context_menu_client_impl_;
   EditorClientImpl editor_client_impl_;
   SpellCheckerClientImpl spell_checker_client_impl_;
