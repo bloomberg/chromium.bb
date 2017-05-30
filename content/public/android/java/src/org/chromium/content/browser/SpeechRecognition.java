@@ -18,6 +18,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -33,6 +34,7 @@ import java.util.List;
  */
 @JNINamespace("content")
 public class SpeechRecognition {
+    private static final String TAG = "SpeechRecog";
 
     // Constants describing the speech recognition provider we depend on.
     private static final String PROVIDER_PACKAGE_NAME = "com.google.android.googlequicksearchbox";
@@ -239,7 +241,13 @@ public class SpeechRecognition {
             nativeOnRecognitionError(mNativeSpeechRecognizerImplAndroid, error);
         }
 
-        mRecognizer.destroy();
+        try {
+            mRecognizer.destroy();
+        } catch (IllegalArgumentException e) {
+            // Intentionally swallow exception. This incorrectly throws exception on some samsung
+            // devices, causing crashes.
+            Log.w(TAG, "Destroy threw exception " + mRecognizer, e);
+        }
         mRecognizer = null;
         nativeOnRecognitionEnd(mNativeSpeechRecognizerImplAndroid);
         mNativeSpeechRecognizerImplAndroid = 0;
