@@ -32,9 +32,11 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     WebURLRequest::FetchCredentialsMode credentials_mode,
+    RefPtr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   global_scope_->FetchAndInvokeScript(module_url_record, credentials_mode,
+                                      std::move(outside_settings_task_runner),
                                       pending_tasks);
 }
 

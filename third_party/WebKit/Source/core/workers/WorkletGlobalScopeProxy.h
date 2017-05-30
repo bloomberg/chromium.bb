@@ -6,6 +6,7 @@
 #define WorkletGlobalScopeProxy_h
 
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -23,9 +24,11 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
 
   // Runs the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
-  virtual void FetchAndInvokeScript(const KURL& module_url_record,
-                                    WebURLRequest::FetchCredentialsMode,
-                                    WorkletPendingTasks*) {}
+  virtual void FetchAndInvokeScript(
+      const KURL& module_url_record,
+      WebURLRequest::FetchCredentialsMode,
+      RefPtr<WebTaskRunner> outside_settings_task_runner,
+      WorkletPendingTasks*) {}
 
   // Evaluates the given script source code. This should be called only for
   // threaded worklets that still use classic script loading.

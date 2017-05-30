@@ -56,6 +56,7 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
 void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     WebURLRequest::FetchCredentialsMode credentials_mode,
+    RefPtr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   // Step 1: "Let insideSettings be the workletGlobalScope's associated
@@ -71,8 +72,8 @@ void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
 
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.
-  WorkletModuleTreeClient* client =
-      new WorkletModuleTreeClient(modulator, pending_tasks);
+  WorkletModuleTreeClient* client = new WorkletModuleTreeClient(
+      modulator, std::move(outside_settings_task_runner), pending_tasks);
   modulator->FetchTree(module_request, client);
 }
 

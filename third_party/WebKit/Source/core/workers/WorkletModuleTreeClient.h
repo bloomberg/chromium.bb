@@ -4,19 +4,23 @@
 
 #include "core/dom/Modulator.h"
 #include "core/workers/WorkletPendingTasks.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/GarbageCollected.h"
 
 namespace blink {
 
 class ModuleScript;
 
+// A ModuleTreeClient that lives on the worklet context's thread.
 class WorkletModuleTreeClient final
     : public GarbageCollectedFinalized<WorkletModuleTreeClient>,
       public ModuleTreeClient {
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleTreeClient);
 
  public:
-  WorkletModuleTreeClient(Modulator*, WorkletPendingTasks*);
+  WorkletModuleTreeClient(Modulator*,
+                          RefPtr<WebTaskRunner> outside_settings_task_runner,
+                          WorkletPendingTasks*);
 
   // Implements ModuleTreeClient.
   void NotifyModuleTreeLoadFinished(ModuleScript*) final;
@@ -25,7 +29,8 @@ class WorkletModuleTreeClient final
 
  private:
   Member<Modulator> modulator_;
-  Member<WorkletPendingTasks> pending_tasks_;
+  RefPtr<WebTaskRunner> outside_settings_task_runner_;
+  CrossThreadPersistent<WorkletPendingTasks> pending_tasks_;
 };
 
 }  // namespace blink

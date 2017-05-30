@@ -55,8 +55,6 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
   virtual void Initialize() = 0;
   virtual bool IsInitialized() const = 0;
 
-  Member<LocalFrame> frame_;
-
   HeapHashMap<Member<WorkletScriptLoader>, Member<ScriptPromiseResolver>>
       loader_to_resolver_map_;
 };
