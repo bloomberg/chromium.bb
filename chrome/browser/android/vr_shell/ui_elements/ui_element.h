@@ -22,7 +22,7 @@ class TimeTicks;
 namespace vr_shell {
 
 class Animation;
-class VrShellRenderer;
+class UiElementRenderer;
 
 enum XAnchoring {
   XNONE = 0,
@@ -107,7 +107,7 @@ class UiElement : public WorldRectangle {
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
 
-  virtual void Render(VrShellRenderer* renderer,
+  virtual void Render(UiElementRenderer* renderer,
                       vr::Mat4f view_proj_matrix) const;
 
   virtual void Initialize();

@@ -22,7 +22,6 @@
 #include "chrome/browser/android/vr_shell/ui_elements/video_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
-#include "chrome/browser/android/vr_shell/vr_shell.h"
 
 namespace vr_shell {
 

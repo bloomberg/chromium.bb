@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 
-#include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "device/vr/vr_math.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -24,13 +24,13 @@ void ScreenDimmer::Initialize() {
   set_fill(Fill::SELF);
 }
 
-void ScreenDimmer::Render(VrShellRenderer* renderer,
+void ScreenDimmer::Render(UiElementRenderer* renderer,
                           vr::Mat4f view_proj_matrix) const {
   vr::Mat4f m;
   vr::SetIdentityM(&m);
   vr::ScaleM(m, {2.0f, 2.0f, 1.0f}, &m);
-  renderer->GetGradientQuadRenderer()->Draw(m, kDimmerOuterColor,
-                                            kDimmerInnerColor, kDimmerOpacity);
+  renderer->DrawGradientQuad(m, kDimmerOuterColor, kDimmerInnerColor,
+                             kDimmerOpacity);
 }
 
 }  // namespace vr_shell
