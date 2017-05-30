@@ -42,6 +42,10 @@ class TestInstaller : public CrxInstaller {
 
   int error_;
   int install_count_;
+
+ private:
+  // Contains the |unpack_path| argument of the Install call.
+  base::FilePath unpack_path_;
 };
 
 // A ReadOnlyTestInstaller is an installer that knows about files in an existing
