@@ -1,5 +1,7 @@
 .. _devguide-coding-fileio:
 
+.. include:: /migration/deprecation.inc
+
 ########
 File I/O
 ########

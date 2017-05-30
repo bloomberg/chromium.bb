@@ -1,5 +1,7 @@
 .. _download:
 
+.. include:: /migration/deprecation.inc
+
 Download the Native Client SDK
 ==============================
 

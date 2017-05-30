@@ -1,5 +1,7 @@
 .. _nacldev:
 
+.. include:: /migration/deprecation.inc
+
 ####################
 NaCl Dev Environment
 ####################

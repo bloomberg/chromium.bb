@@ -1,5 +1,7 @@
 .. _sandbox-internals-index:
 
+.. include:: /migration/deprecation.inc
+
 #################
 Sandbox Internals
 #################

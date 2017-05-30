@@ -1,5 +1,7 @@
 .. _devcycle-running:
 
+.. include:: /migration/deprecation.inc
+
 #######
 Running
 #######

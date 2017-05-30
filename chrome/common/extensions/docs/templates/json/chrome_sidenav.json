@@ -722,6 +722,10 @@
             ]
           },
           {
+            "title": "WebAssembly Migration Guide",
+            "href": "/native-client/migration"
+          },
+          {
             "title": "Download the SDK",
             "href": "/native-client/sdk/download",
             "items": [

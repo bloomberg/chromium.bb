@@ -1,3 +1,5 @@
+.. include:: /migration/deprecation.inc
+
 ########################
 Welcome to Native Client
 ########################

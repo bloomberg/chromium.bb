@@ -1,5 +1,7 @@
 .. _view_focus_input_events:
 
+.. include:: /migration/deprecation.inc
+
 ####################################
 View Change, Focus, and Input Events
 ####################################

@@ -1,5 +1,7 @@
 .. _tutorial:
 
+.. include:: /migration/deprecation.inc
+
 ######################################
 C++ Tutorial: Getting Started (Part 1)
 ######################################

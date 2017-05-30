@@ -1,5 +1,7 @@
 .. _contest_faq:
 
+.. include:: /migration/deprecation.inc
+
 ####################
 Security Contest FAQ
 ####################

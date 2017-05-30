@@ -1,7 +1,15 @@
 {{+bindTo:partials.standard_nacl_article}}
 
-<section id="release-notes">
-<span id="sdk-release-notes"></span><h1 id="release-notes"><span id="sdk-release-notes"></span>Release Notes</h1>
+<b><font color="#cc0000">
+NOTE:
+Deprecation of the technologies described here has been announced
+for platforms other than ChromeOS.<br/>
+Please visit our
+<a href="/native-client/migration">migration guide</a>
+for details.
+</font></b>
+<hr/><section id="release-notes">
+<h1 id="release-notes">Release Notes</h1>
 <p>The dates in the following release notes denote when Chrome and the NaCl SDK
 reached canary status. The stable release is typically 6 weeks later.</p>
 <h2 id="chrome-pepper-49">Chrome/Pepper 49</h2>
@@ -37,7 +45,7 @@ possible to do so. Simply translate the pexe to a nexe using the
 browser (version <code>Y</code>).</li>
 <li>PNaCl&#8217;s support for use of libstdc++ 4.6 as the C++ standard library is
 deprecated and will be removed in the next release. PNaCl has used libc++
-(which is much more up-to-date, currently based on LLVM 3.6) as the default
+(which is much more up to date, currently based on LLVM 3.6) as the default
 since Pepper 33.</li>
 <li>PNaCl&#8217;s experimental <a class="reference external" href="https://chromium.googlesource.com/native_client/pnacl-subzero/+/master/README.rst">Subzero translator</a> is available for x86-32 NaCl in
 Chrome version 43, behind a flag. To give it a try, run Chrome with the

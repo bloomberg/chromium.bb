@@ -1,5 +1,7 @@
 .. _message-system:
 
+.. include:: /migration/deprecation.inc
+
 ################
 Messaging System
 ################

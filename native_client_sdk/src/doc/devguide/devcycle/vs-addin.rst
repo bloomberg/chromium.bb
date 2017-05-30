@@ -1,5 +1,7 @@
 .. _devcycle-vs-addin:
 
+.. include:: /migration/deprecation.inc
+
 ############################
 Debugging with Visual Studio
 ############################

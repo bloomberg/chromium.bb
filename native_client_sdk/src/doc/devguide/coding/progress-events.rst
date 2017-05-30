@@ -1,5 +1,7 @@
 .. _devcycle-progress-events:
 
+.. include:: /migration/deprecation.inc
+
 ###############
 Progress Events
 ###############

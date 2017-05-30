@@ -2,6 +2,8 @@
 
 .. TODO: After default toolchain is changed to pnacl, recreate the make examples.
 
+.. include:: /migration/deprecation.inc
+
 Examples
 ========
 

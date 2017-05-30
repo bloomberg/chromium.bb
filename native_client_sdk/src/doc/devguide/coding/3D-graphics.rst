@@ -1,5 +1,7 @@
 .. _devguide-coding-3D-graphics:
 
+.. include:: /migration/deprecation.inc
+
 ###########
 3D Graphics
 ###########
