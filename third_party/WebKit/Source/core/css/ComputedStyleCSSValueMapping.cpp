@@ -2823,7 +2823,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextAlign:
       return CSSIdentifierValue::Create(style.GetTextAlign());
     case CSSPropertyTextAlignLast:
-      return CSSIdentifierValue::Create(style.GetTextAlignLast());
+      return CSSIdentifierValue::Create(style.TextAlignLast());
     case CSSPropertyTextDecoration:
       if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
         return ValuesForShorthandProperty(textDecorationShorthand(), style,

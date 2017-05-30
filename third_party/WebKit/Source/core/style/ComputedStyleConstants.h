@@ -248,16 +248,6 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
   return a = a | b;
 }
 
-enum class TextAlignLast {
-  kAuto,
-  kStart,
-  kEnd,
-  kLeft,
-  kRight,
-  kCenter,
-  kJustify
-};
-
 enum TextUnderlinePosition {
   // FIXME: Implement support for 'under left' and 'under right' values.
   kTextUnderlinePositionAuto,

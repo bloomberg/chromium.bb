@@ -2015,9 +2015,9 @@
     {
       name: "text-align-last",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "TextAlignLast",
-      default_value: "TextAlignLast::kAuto",
+      field_template: "keyword",
+      keywords: ["auto", "start", "end", "left", "right", "center", "justify"],
+      default_value: "auto",
       field_size: 3,
       field_group: "rare-inherited",
     },
