@@ -31,12 +31,10 @@ MULTIPROCESS_TEST_MAIN(ServerTest) {
   mac::SandboxPolicy policy;
   google::protobuf::MapPair<std::string, std::string> allowed_pair(
       "ALLOWED_READ_DIR", allowed_path);
-  google::protobuf::MapPair<std::string, std::string> exec_pair(
-      "EXECUTABLE_PATH", exec_path);
   CHECK(policy.mutable_params()->insert(allowed_pair).second);
-  CHECK(policy.mutable_params()->insert(exec_pair).second);
   policy.set_profile(profile);
 
+  CHECK(exec_server.SetParameter("EXECUTABLE_PATH", exec_path));
   CHECK(exec_server.ApplySandboxProfile(policy));
 
   // Test that the sandbox profile is actually applied.

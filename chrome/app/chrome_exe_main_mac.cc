@@ -16,21 +16,73 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <string>
+#include <vector>
+
 #include "chrome/common/chrome_version.h"
+
+#if defined(HELPER_EXECUTABLE)
+#include "sandbox/mac/seatbelt_exec.h"
+#endif  // defined(HELPER_EXECUTABLE)
+
+namespace {
 
 typedef int (*ChromeMainPtr)(int, char**);
 
-__attribute__((visibility("default"))) int main(int argc, char* argv[]) {
 #if defined(HELPER_EXECUTABLE)
-  const char* const rel_path =
-      "../../../" PRODUCT_FULLNAME_STRING
-      " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
-#else
-  const char* const rel_path =
-      "../Versions/" CHROME_VERSION_STRING "/" PRODUCT_FULLNAME_STRING
-      " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
+// The command line parameter to engage the v2 sandbox.
+constexpr char v2_sandbox_arg[] = "--v2-sandbox";
+// The command line parameter for the file descriptor used to receive the
+// sandbox policy.
+constexpr char fd_mapping_arg[] = "--fd_mapping=";
+
+__attribute__((noreturn)) void SandboxExec(const char* exec_path,
+                                           int argc,
+                                           char* argv[],
+                                           int fd_mapping) {
+  char rp[MAXPATHLEN];
+  if (realpath(exec_path, rp) == NULL) {
+    perror("realpath");
+    abort();
+  }
+
+  sandbox::SeatbeltExecServer server(fd_mapping);
+
+  // The name of the parameter containing the executable path.
+  const std::string exec_param = "EXECUTABLE_PATH";
+  // The name of the parameter containing the PID of Chrome.
+  const std::string pid_param = "CHROMIUM_PID";
+
+  if (!server.SetParameter(exec_param, rp) ||
+      !server.SetParameter(pid_param, std::to_string(getpid()))) {
+    fprintf(stderr, "Failed to set up parameters for sandbox.\n");
+    abort();
+  }
+
+  if (server.InitializeSandbox() != 0) {
+    fprintf(stderr, "Failed to initialize sandbox.\n");
+    abort();
+  }
+
+  std::vector<char*> new_argv;
+  for (int i = 1; i < argc; ++i) {
+    if (strcmp(argv[i], v2_sandbox_arg) != 0 &&
+        strncmp(argv[i], fd_mapping_arg, strlen(fd_mapping_arg)) != 0) {
+      new_argv.push_back(argv[i]);
+    }
+  }
+  new_argv.push_back(nullptr);
+
+  // The helper executable re-executes itself under the sandbox.
+  execv(exec_path, new_argv.data());
+  perror("execve");
+  abort();
+}
 #endif  // defined(HELPER_EXECUTABLE)
 
+}  // namespace
+
+__attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   uint32_t exec_path_size = 0;
   int rv = _NSGetExecutablePath(NULL, &exec_path_size);
   if (rv != -1) {
@@ -39,16 +91,42 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   }
 
   char* exec_path = new char[exec_path_size];
-  if (!exec_path) {
-    fprintf(stderr, "malloc %u: %s\n", exec_path_size, strerror(errno));
-    abort();
-  }
-
   rv = _NSGetExecutablePath(exec_path, &exec_path_size);
   if (rv != 0) {
     fprintf(stderr, "_NSGetExecutablePath: get path failed\n");
     abort();
   }
+
+#if defined(HELPER_EXECUTABLE)
+  bool enable_v2_sandbox = false;
+  int fd_mapping = -1;
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], v2_sandbox_arg) == 0) {
+      enable_v2_sandbox = true;
+    } else if (strncmp(argv[i], fd_mapping_arg, strlen(fd_mapping_arg)) == 0) {
+      // Parse --fd_mapping=X to get the file descriptor X.
+      std::string arg(argv[i]);
+      std::string fd_str = arg.substr(strlen(fd_mapping_arg), arg.length());
+      fd_mapping = std::stoi(fd_str);
+    }
+  }
+  if (enable_v2_sandbox && fd_mapping == -1) {
+    fprintf(stderr, "Must pass a valid file descriptor to --fd_mapping.\n");
+    abort();
+  }
+
+  // SandboxExec either aborts or execs, but there is no return.
+  if (enable_v2_sandbox)
+    SandboxExec(exec_path, argc, argv, fd_mapping);
+
+  const char* const rel_path =
+      "../../../" PRODUCT_FULLNAME_STRING
+      " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
+#else
+  const char* const rel_path =
+      "../Versions/" CHROME_VERSION_STRING "/" PRODUCT_FULLNAME_STRING
+      " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
+#endif  // defined(HELPER_EXECUTABLE)
 
   // Slice off the last part of the main executable path, and append the
   // version framework information.
@@ -59,15 +137,11 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   }
   delete[] exec_path;
 
-  const size_t parent_path_len = strlen(parent_dir);
+  const size_t parent_dir_len = strlen(parent_dir);
   const size_t rel_path_len = strlen(rel_path);
   // 2 accounts for a trailing NUL byte and the '/' in the middle of the paths.
-  const size_t framework_path_size = parent_path_len + rel_path_len + 2;
+  const size_t framework_path_size = parent_dir_len + rel_path_len + 2;
   char* framework_path = new char[framework_path_size];
-  if (!framework_path) {
-    fprintf(stderr, "malloc %zu: %s\n", framework_path_size, strerror(errno));
-    abort();
-  }
   snprintf(framework_path, framework_path_size, "%s/%s", parent_dir, rel_path);
 
   void* library = dlopen(framework_path, RTLD_LAZY | RTLD_LOCAL | RTLD_FIRST);

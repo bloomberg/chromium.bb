@@ -74,6 +74,13 @@ class SEATBELT_EXPORT SeatbeltExecServer {
   // succeeds.
   bool ApplySandboxProfile(const mac::SandboxPolicy& sandbox_policy);
 
+  // Set a string parameter in the sandbox profile. This is present in the
+  // server because the process about to initialize a sandbox may need to add
+  // some extra parameters, such as the path to the executable or the current
+  // PID. This must be called before InitializeSandbox().
+  bool SetParameter(const base::StringPiece key,
+                    const base::StringPiece value) WARN_UNUSED_RESULT;
+
  private:
   // Reads from the |fd_| and stores the data into a string. This does
   // not append a NUL terminator as protobuf does not expect one.
@@ -81,6 +88,9 @@ class SEATBELT_EXPORT SeatbeltExecServer {
 
   // The file descriptor used to communicate with the launcher process.
   base::ScopedFD fd_;
+
+  // Extra parameters added by the server process.
+  std::map<std::string, std::string> extra_params_;
 };
 
 }  // namespace sandbox
