@@ -421,6 +421,16 @@ enum ScrollSnapType {
 
 enum AutoRepeatType { kNoAutoRepeat, kAutoFill, kAutoFit };
 
+// Page size type.
+// StyleRareNonInheritedData::page_size_ is meaningful only when
+// StyleRareNonInheritedData::page_size_type_ is kResolved.
+enum class PageSizeType {
+  kAuto,       // size: auto
+  kLandscape,  // size: landscape
+  kPortrait,   // size: portrait
+  kResolved    // Size is fully resolved.
+};
+
 // In order to conserve memory, the border width uses fixed point,
 // which can be bitpacked.  This fixed point implementation is
 // essentially the same as in LayoutUnit.  Six bits are used for the
