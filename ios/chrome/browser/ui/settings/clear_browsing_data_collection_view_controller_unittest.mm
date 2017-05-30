@@ -247,8 +247,8 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
     int cache_size;
     NSString* expected_output;
   } kTestCases[] = {
-      {0, @"less than 1 MB"},
-      {(1 << 20) - 1, @"less than 1 MB"},
+      {0, @"Less than 1 MB"},
+      {(1 << 20) - 1, @"Less than 1 MB"},
       {(1 << 20), @"1 MB"},
       {(1 << 20) + (1 << 19), @"1.5 MB"},
       {(1 << 21), @"2 MB"},
@@ -287,12 +287,12 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
     int cache_size;
     NSString* expected_output;
   } kTestCases[] = {
-      {0, @"less than 1 MB"},
-      {(1 << 20) - 1, @"less than 1 MB"},
-      {(1 << 20), @"less than 1 MB"},
-      {(1 << 20) + (1 << 19), @"less than 1.5 MB"},
-      {(1 << 21), @"less than 2 MB"},
-      {(1 << 30), @"less than 1 GB"}
+      {0, @"Less than 1 MB"},
+      {(1 << 20) - 1, @"Less than 1 MB"},
+      {(1 << 20), @"Less than 1 MB"},
+      {(1 << 20) + (1 << 19), @"Less than 1.5 MB"},
+      {(1 << 21), @"Less than 2 MB"},
+      {(1 << 30), @"Less than 1 GB"}
   };
   // clang-format on
 
