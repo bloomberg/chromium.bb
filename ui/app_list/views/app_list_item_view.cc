@@ -227,58 +227,6 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
   progress_bar_->SetValue(percent_downloaded / 100.0);
 }
 
-const char* AppListItemView::GetClassName() const {
-  return kViewClassName;
-}
-
-void AppListItemView::Layout() {
-  gfx::Rect rect(GetContentsBounds());
-
-  const int left_right_padding =
-      title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
-  rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
-  const int y = rect.y();
-
-  icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
-
-  const gfx::Size title_size = title_->GetPreferredSize();
-  gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
-                         y + kGridIconDimension + kIconTitleSpacing,
-                         title_size.width(),
-                         title_size.height());
-  title_bounds.Intersect(rect);
-  title_->SetBoundsRect(title_bounds);
-  SetTitleSubpixelAA();
-
-  gfx::Rect progress_bar_bounds(progress_bar_->GetPreferredSize());
-  progress_bar_bounds.set_x(
-      (GetContentsBounds().width() - progress_bar_bounds.width()) / 2);
-  progress_bar_bounds.set_y(title_bounds.y());
-  progress_bar_->SetBoundsRect(progress_bar_bounds);
-}
-
-void AppListItemView::OnPaint(gfx::Canvas* canvas) {
-  if (apps_grid_view_->IsDraggedView(this))
-    return;
-
-  gfx::Rect rect(GetContentsBounds());
-  if (apps_grid_view_->IsSelectedView(this))
-    canvas->FillRect(rect, kSelectedColor);
-
-  if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
-    DCHECK(apps_grid_view_->model()->folders_enabled());
-
-    // Draw folder dropping preview circle.
-    gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
-                                   icon_->y() + icon_->size().height() / 2);
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setAntiAlias(true);
-    flags.setColor(kFolderBubbleColor);
-    canvas->DrawCircle(center, kFolderPreviewRadius, flags);
-  }
-}
-
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
@@ -321,6 +269,28 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
   return views::CustomButton::ShouldEnterPushedState(event);
 }
 
+void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
+  if (apps_grid_view_->IsDraggedView(this))
+    return;
+
+  gfx::Rect rect(GetContentsBounds());
+  if (apps_grid_view_->IsSelectedView(this))
+    canvas->FillRect(rect, kSelectedColor);
+
+  if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
+    DCHECK(apps_grid_view_->model()->folders_enabled());
+
+    // Draw folder dropping preview circle.
+    gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
+                                   icon_->y() + icon_->size().height() / 2);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    flags.setColor(kFolderBubbleColor);
+    canvas->DrawCircle(center, kFolderPreviewRadius, flags);
+  }
+}
+
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
 
@@ -335,6 +305,35 @@ bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
         this, &AppListItemView::OnMouseDragTimer);
   }
   return true;
+}
+
+const char* AppListItemView::GetClassName() const {
+  return kViewClassName;
+}
+
+void AppListItemView::Layout() {
+  gfx::Rect rect(GetContentsBounds());
+
+  const int left_right_padding =
+      title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
+  rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
+  const int y = rect.y();
+
+  icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
+
+  const gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
+                         y + kGridIconDimension + kIconTitleSpacing,
+                         title_size.width(), title_size.height());
+  title_bounds.Intersect(rect);
+  title_->SetBoundsRect(title_bounds);
+  SetTitleSubpixelAA();
+
+  gfx::Rect progress_bar_bounds(progress_bar_->GetPreferredSize());
+  progress_bar_bounds.set_x(
+      (GetContentsBounds().width() - progress_bar_bounds.width()) / 2);
+  progress_bar_bounds.set_y(title_bounds.y());
+  progress_bar_->SetBoundsRect(progress_bar_bounds);
 }
 
 bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {

@@ -17,16 +17,13 @@ class Windows10CaptionButton : public views::CustomButton {
 
   // views::CustomButton:
   gfx::Size CalculatePreferredSize() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
   // The base color to use for the button symbols and background blending. Uses
   // the more readable of black and white.
   SkColor GetBaseColor() const;
-
-  // Paints the background of the button (the semi-transparent rectangle that
-  // appears when you hover or press the button).
-  void PaintBackground(gfx::Canvas* canvas);
 
   // Paints the minimize/maximize/restore/close icon for the button.
   void PaintSymbol(gfx::Canvas* canvas);

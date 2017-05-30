@@ -30,9 +30,7 @@ class NotificationButton : public views::CustomButton {
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
-  void OnBlur() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
@@ -42,7 +40,6 @@ class NotificationButton : public views::CustomButton {
  private:
   views::ImageView* icon_;
   views::Label* title_;
-  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationButton);
 };

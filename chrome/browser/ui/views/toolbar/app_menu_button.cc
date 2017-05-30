@@ -143,9 +143,9 @@ void AppMenuButton::Layout() {
   views::MenuButton::Layout();
 }
 
-void AppMenuButton::OnPaint(gfx::Canvas* canvas) {
+void AppMenuButton::PaintButtonContents(gfx::Canvas* canvas) {
   if (!animation_) {
-    views::MenuButton::OnPaint(canvas);
+    views::MenuButton::PaintButtonContents(canvas);
     return;
   }
 

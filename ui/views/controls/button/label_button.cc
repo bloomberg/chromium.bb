@@ -179,10 +179,6 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   InvalidateLayout();
 }
 
-void LabelButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
-  focus_painter_ = std::move(focus_painter);
-}
-
 gfx::Size LabelButton::CalculatePreferredSize() const {
   if (cached_preferred_size_valid_)
     return cached_preferred_size_;
@@ -335,11 +331,6 @@ gfx::Rect LabelButton::GetChildAreaBounds() {
 
 bool LabelButton::ShouldUseFloodFillInkDrop() const {
   return !GetText().empty();
-}
-
-void LabelButton::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-  Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void LabelButton::OnFocus() {

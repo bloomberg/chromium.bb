@@ -114,11 +114,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
   void OnMouseDragTimer();
 
-  // views::View overrides:
-  const char* GetClassName() const override;
-  void Layout() override;
-  void OnPaint(gfx::Canvas* canvas) override;
-
   // views::ContextMenuController overrides:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -127,8 +122,11 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // views::CustomButton overrides:
   void StateChanged(ButtonState old_state) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // views::View overrides:
+  const char* GetClassName() const override;
+  void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;

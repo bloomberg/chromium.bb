@@ -109,12 +109,6 @@ void OverflowButton::UpdateChevronImage() {
   SchedulePaint();
 }
 
-void OverflowButton::OnPaint(gfx::Canvas* canvas) {
-  gfx::Rect bounds = CalculateButtonBounds();
-  PaintBackground(canvas, bounds);
-  PaintForeground(canvas, bounds);
-}
-
 std::unique_ptr<views::InkDrop> OverflowButton::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
@@ -147,6 +141,12 @@ std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
   gfx::Insets insets = GetLocalBounds().InsetsFrom(CalculateButtonBounds());
   return base::MakeUnique<views::RoundRectInkDropMask>(
       size(), insets, kOverflowButtonCornerRadius);
+}
+
+void OverflowButton::PaintButtonContents(gfx::Canvas* canvas) {
+  gfx::Rect bounds = CalculateButtonBounds();
+  PaintBackground(canvas, bounds);
+  PaintForeground(canvas, bounds);
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,

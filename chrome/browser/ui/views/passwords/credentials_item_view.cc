@@ -195,9 +195,7 @@ void CredentialsItemView::Layout() {
   }
 }
 
-void CredentialsItemView::OnPaint(gfx::Canvas* canvas) {
+void CredentialsItemView::OnPaintBackground(gfx::Canvas* canvas) {
   if (state() == STATE_PRESSED || state() == STATE_HOVERED)
     canvas->DrawColor(hover_color_);
-
-  CustomButton::OnPaint(canvas);
 }

@@ -144,43 +144,6 @@ bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-void AppListButton::OnPaint(gfx::Canvas* canvas) {
-  // Call the base class first to paint any background/borders.
-  View::OnPaint(canvas);
-
-  gfx::PointF circle_center(GetCenterPoint());
-
-  // Paint the circular background.
-  cc::PaintFlags bg_flags;
-  bg_flags.setColor(background_color_);
-  bg_flags.setAntiAlias(true);
-  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);
-
-  // Paint a white ring as the foreground. The ceil/dsf math assures that the
-  // ring draws sharply and is centered at all scale factors.
-  const float kRingOuterRadiusDp = 7.f;
-  const float kRingThicknessDp = 1.5f;
-
-  {
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float dsf = canvas->UndoDeviceScaleFactor();
-    circle_center.Scale(dsf);
-
-    cc::PaintFlags fg_flags;
-    fg_flags.setAntiAlias(true);
-    fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
-    fg_flags.setColor(kShelfIconColor);
-    const float thickness = std::ceil(kRingThicknessDp * dsf);
-    const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
-    fg_flags.setStrokeWidth(thickness);
-    // Make sure the center of the circle lands on pixel centers.
-    canvas->DrawCircle(circle_center, radius, fg_flags);
-  }
-
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
-}
-
 void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->SetName(shelf_view_->GetTitleForView(this));
@@ -222,6 +185,38 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
   return base::MakeUnique<views::CircleInkDropMask>(size(), GetCenterPoint(),
                                                     kAppListButtonRadius);
+}
+
+void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
+  gfx::PointF circle_center(GetCenterPoint());
+
+  // Paint the circular background.
+  cc::PaintFlags bg_flags;
+  bg_flags.setColor(background_color_);
+  bg_flags.setAntiAlias(true);
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);
+
+  // Paint a white ring as the foreground. The ceil/dsf math assures that the
+  // ring draws sharply and is centered at all scale factors.
+  const float kRingOuterRadiusDp = 7.f;
+  const float kRingThicknessDp = 1.5f;
+
+  {
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    circle_center.Scale(dsf);
+
+    cc::PaintFlags fg_flags;
+    fg_flags.setAntiAlias(true);
+    fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
+    fg_flags.setColor(kShelfIconColor);
+    const float thickness = std::ceil(kRingThicknessDp * dsf);
+    const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
+    fg_flags.setStrokeWidth(thickness);
+    // Make sure the center of the circle lands on pixel centers.
+    canvas->DrawCircle(circle_center, radius, fg_flags);
+  }
 }
 
 gfx::Point AppListButton::GetCenterPoint() const {

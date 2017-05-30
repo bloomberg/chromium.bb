@@ -216,22 +216,6 @@ void AlertIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateEnabledForMuteToggle();
 }
 
-void AlertIndicatorButton::OnPaint(gfx::Canvas* canvas) {
-  double opaqueness = 1.0;
-  if (fade_animation_) {
-    opaqueness = fade_animation_->GetCurrentValue();
-    if (alert_state_ == TabAlertState::NONE)
-      opaqueness = 1.0 - opaqueness;  // Fading out, not in.
-  } else if (is_dormant()) {
-    opaqueness = 0.5;
-  }
-  if (opaqueness < 1.0)
-    canvas->SaveLayerAlpha(opaqueness * SK_AlphaOPAQUE);
-  ImageButton::OnPaint(canvas);
-  if (opaqueness < 1.0)
-    canvas->Restore();
-}
-
 bool AlertIndicatorButton::DoesIntersectRect(const views::View* target,
                                              const gfx::Rect& rect) const {
   // If this button is not enabled, Tab (the parent View) handles all mouse
@@ -280,6 +264,22 @@ bool AlertIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
   }
 
   return views::ImageButton::IsTriggerableEvent(event);
+}
+
+void AlertIndicatorButton::PaintButtonContents(gfx::Canvas* canvas) {
+  double opaqueness = 1.0;
+  if (fade_animation_) {
+    opaqueness = fade_animation_->GetCurrentValue();
+    if (alert_state_ == TabAlertState::NONE)
+      opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  } else if (is_dormant()) {
+    opaqueness = 0.5;
+  }
+  if (opaqueness < 1.0)
+    canvas->SaveLayerAlpha(opaqueness * SK_AlphaOPAQUE);
+  ImageButton::PaintButtonContents(canvas);
+  if (opaqueness < 1.0)
+    canvas->Restore();
 }
 
 gfx::ImageSkia AlertIndicatorButton::GetImageToPaint() {

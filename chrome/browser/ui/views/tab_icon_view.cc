@@ -122,7 +122,7 @@ const char* TabIconView::GetClassName() const {
   return "TabIconView";
 }
 
-void TabIconView::OnPaint(gfx::Canvas* canvas) {
+void TabIconView::PaintButtonContents(gfx::Canvas* canvas) {
   bool rendered = false;
 
   if (model_->ShouldTabIconViewAnimate()) {

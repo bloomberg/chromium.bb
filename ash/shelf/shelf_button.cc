@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
@@ -26,6 +27,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/painter.h"
 
 namespace {
 
@@ -233,6 +235,8 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
 
   AddChildView(indicator_);
   AddChildView(icon_view_);
+
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 ShelfButton::~ShelfButton() {
@@ -430,14 +434,6 @@ void ShelfButton::OnFocus() {
 void ShelfButton::OnBlur() {
   ClearState(STATE_FOCUSED);
   CustomButton::OnBlur();
-}
-
-void ShelfButton::OnPaint(gfx::Canvas* canvas) {
-  CustomButton::OnPaint(canvas);
-  if (HasFocus()) {
-    canvas->DrawSolidFocusRect(gfx::RectF(GetLocalBounds()), kFocusBorderColor,
-                               kFocusBorderThickness);
-  }
 }
 
 void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {

@@ -15,8 +15,6 @@
 
 namespace views {
 
-class Painter;
-
 // An image button.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain, unless in accessibility mode. Call
@@ -60,8 +58,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   void SetImageAlignment(HorizontalAlignment h_align,
                          VerticalAlignment v_align);
 
-  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
-
   // The minimum size of the contents (not including the border). The contents
   // will be at least this size, but may be larger if the image itself is
   // larger.
@@ -75,13 +71,11 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
   // Overridden from View:
   const char* GetClassName() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
   gfx::Size CalculatePreferredSize() const override;
 
  protected:
-  // Overridden from View:
-  void OnFocus() override;
-  void OnBlur() override;
+  // Overridden from CustomButton:
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
@@ -89,8 +83,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
   // Updates button background for |scale_factor|.
   void UpdateButtonBackground(ui::ScaleFactor scale_factor);
-
-  Painter* focus_painter() { return focus_painter_.get(); }
 
   // The images used to render the different states of this button.
   gfx::ImageSkia images_[STATE_COUNT];
@@ -118,8 +110,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   // small curved corner in the close button designed to fit into the frame
   // resources.
   bool draw_image_mirrored_;
-
-  std::unique_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageButton);
 };

@@ -31,6 +31,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace {
@@ -277,8 +278,44 @@ TrayBackgroundView::CreateInkDropHighlight() const {
   return highlight;
 }
 
+void TrayBackgroundView::PaintButtonContents(gfx::Canvas* canvas) {
+  if (shelf()->GetBackgroundType() ==
+          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
+      !separator_visible_) {
+    return;
+  }
+  // In the given |canvas|, for a horizontal shelf draw a separator line to the
+  // right or left of the TrayBackgroundView when the system is LTR or RTL
+  // aligned, respectively. For a vertical shelf draw the separator line
+  // underneath the items instead.
+  const gfx::Rect local_bounds = GetLocalBounds();
+  const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
+
+  if (shelf_->IsHorizontalAlignment()) {
+    const gfx::PointF point(
+        base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
+        (kShelfSize - kTrayItemSize) / 2);
+    const gfx::Vector2dF vector(0, kTrayItemSize);
+    canvas->Draw1pxLine(point, point + vector, color);
+  } else {
+    const gfx::PointF point((kShelfSize - kTrayItemSize) / 2,
+                            local_bounds.height() - kSeparatorWidth);
+    const gfx::Vector2dF vector(kTrayItemSize, 0);
+    canvas->Draw1pxLine(point, point + vector, color);
+  }
+}
+
 void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
   tray_container_->UpdateAfterShelfAlignmentChange();
+
+  // The tray itself expands to the right and bottom edge of the screen to make
+  // sure clicking on the edges brings up the popup. However, the focus border
+  // should be only around the container.
+  gfx::Rect paint_bounds(GetBackgroundBounds());
+  paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, kFocusBorderThickness,
+      GetLocalBounds().InsetsFrom(paint_bounds)));
 }
 
 void TrayBackgroundView::OnImplicitAnimationsCompleted() {
@@ -383,44 +420,6 @@ void TrayBackgroundView::HandlePerformActionResult(bool action_performed,
   if (action_performed)
     return;
   ActionableView::HandlePerformActionResult(action_performed, event);
-}
-
-void TrayBackgroundView::OnPaintFocus(gfx::Canvas* canvas) {
-  // The tray itself expands to the right and bottom edge of the screen to make
-  // sure clicking on the edges brings up the popup. However, the focus border
-  // should be only around the container.
-  gfx::RectF paint_bounds(GetBackgroundBounds());
-  paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
-  canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor,
-                             kFocusBorderThickness);
-}
-
-void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
-  ActionableView::OnPaint(canvas);
-  if (shelf()->GetBackgroundType() ==
-          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
-      !separator_visible_) {
-    return;
-  }
-  // In the given |canvas|, for a horizontal shelf draw a separator line to the
-  // right or left of the TrayBackgroundView when the system is LTR or RTL
-  // aligned, respectively. For a vertical shelf draw the separator line
-  // underneath the items instead.
-  const gfx::Rect local_bounds = GetLocalBounds();
-  const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
-
-  if (shelf_->IsHorizontalAlignment()) {
-    const gfx::PointF point(
-        base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
-        (kShelfSize - kTrayItemSize) / 2);
-    const gfx::Vector2dF vector(0, kTrayItemSize);
-    canvas->Draw1pxLine(point, point + vector, color);
-  } else {
-    const gfx::PointF point((kShelfSize - kTrayItemSize) / 2,
-                            local_bounds.height() - kSeparatorWidth);
-    const gfx::Vector2dF vector(kTrayItemSize, 0);
-    canvas->Draw1pxLine(point, point + vector, color);
-  }
 }
 
 gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {

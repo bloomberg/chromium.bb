@@ -32,8 +32,8 @@ ImageButton::ImageButton(ButtonListener* listener)
     : CustomButton(listener),
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
-      draw_image_mirrored_(false),
-      focus_painter_(Painter::CreateDashedFocusPainter()) {
+      draw_image_mirrored_(false) {
+  SetFocusPainter(Painter::CreateDashedFocusPainter());
   // By default, we request that the gfx::Canvas passed to our View::OnPaint()
   // implementation is flipped horizontally so that the button's images are
   // mirrored when the UI directionality is right-to-left.
@@ -83,10 +83,6 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
   SchedulePaint();
 }
 
-void ImageButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
-  focus_painter_ = std::move(focus_painter);
-}
-
 void ImageButton::SetMinimumImageSize(const gfx::Size& size) {
   if (minimum_image_size_ == size)
     return;
@@ -102,10 +98,21 @@ const char* ImageButton::GetClassName() const {
   return kViewClassName;
 }
 
-void ImageButton::OnPaint(gfx::Canvas* canvas) {
-  // Call the base class first to paint any background/borders.
-  View::OnPaint(canvas);
+gfx::Size ImageButton::CalculatePreferredSize() const {
+  gfx::Size size(kDefaultWidth, kDefaultHeight);
+  if (!images_[STATE_NORMAL].isNull()) {
+    size = gfx::Size(images_[STATE_NORMAL].width(),
+                     images_[STATE_NORMAL].height());
+  }
 
+  size.SetToMax(minimum_image_size_);
+
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
+}
+
+void ImageButton::PaintButtonContents(gfx::Canvas* canvas) {
   // TODO(estade|tdanderson|bruthig): The ink drop layer should be positioned
   // behind the button's image which means the image needs to be painted to its
   // own layer instead of to the Canvas.
@@ -124,38 +131,10 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 
     canvas->DrawImageInt(img, position.x(), position.y());
   }
-
-  Painter::PaintFocusPainter(this, canvas, focus_painter());
-}
-
-gfx::Size ImageButton::CalculatePreferredSize() const {
-  gfx::Size size(kDefaultWidth, kDefaultHeight);
-  if (!images_[STATE_NORMAL].isNull()) {
-    size = gfx::Size(images_[STATE_NORMAL].width(),
-                     images_[STATE_NORMAL].height());
-  }
-
-  size.SetToMax(minimum_image_size_);
-
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  return size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
-
-void ImageButton::OnFocus() {
-  CustomButton::OnFocus();
-  if (focus_painter_.get())
-    SchedulePaint();
-}
-
-void ImageButton::OnBlur() {
-  CustomButton::OnBlur();
-  if (focus_painter_.get())
-    SchedulePaint();
-}
 
 gfx::ImageSkia ImageButton::GetImageToPaint() {
   gfx::ImageSkia img;

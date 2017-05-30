@@ -36,7 +36,6 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
