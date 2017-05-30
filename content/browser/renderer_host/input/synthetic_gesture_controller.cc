@@ -40,27 +40,6 @@ void SyntheticGestureController::QueueSyntheticGesture(
     StartGesture(*pending_gesture_queue_.FrontGesture());
 }
 
-void SyntheticGestureController::RequestBeginFrame() {
-  DCHECK(!dispatch_timer_.IsRunning());
-  delegate_->RequestBeginFrameForSynthesizedInput(
-      base::BindOnce(&SyntheticGestureController::OnBeginFrame,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void SyntheticGestureController::OnBeginFrame() {
-  // In order to make sure we get consistent results across runs, we attempt to
-  // start the timer at a fixed offset from the vsync. Starting the timer
-  // shortly after a begin-frame is likely to produce latency close to the worst
-  // cases. We feel 2 milliseconds is a good offset for this.
-  constexpr base::TimeDelta kSynthesizedDispatchDelay =
-      base::TimeDelta::FromMilliseconds(2);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&SyntheticGestureController::StartTimer,
-                     weak_ptr_factory_.GetWeakPtr()),
-      kSynthesizedDispatchDelay);
-}
-
 void SyntheticGestureController::StartTimer() {
   // TODO(sad): Change the interval to allow sending multiple events per begin
   // frame.
@@ -111,7 +90,7 @@ void SyntheticGestureController::StartGesture(const SyntheticGesture& gesture) {
                            "SyntheticGestureController::running",
                            &gesture);
   if (!dispatch_timer_.IsRunning())
-    RequestBeginFrame();
+    StartTimer();
 }
 
 void SyntheticGestureController::StopGesture(

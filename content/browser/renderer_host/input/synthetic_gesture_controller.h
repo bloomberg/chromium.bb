@@ -57,10 +57,7 @@ class CONTENT_EXPORT SyntheticGestureController {
  private:
   friend class SyntheticGestureControllerTestBase;
 
-  void RequestBeginFrame();
-  void OnBeginFrame();
   void StartTimer();
-
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
                    const OnGestureCompleteCallback& completion_callback,
