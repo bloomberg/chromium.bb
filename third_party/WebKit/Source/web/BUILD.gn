@@ -56,8 +56,6 @@ component("web") {
     "CompositorWorkerProxyClientImpl.h",
     "ContextMenuClientImpl.cpp",
     "ContextMenuClientImpl.h",
-    "DateTimeChooserImpl.cpp",
-    "DateTimeChooserImpl.h",
     "DedicatedWorkerMessagingProxyProviderImpl.cpp",
     "DedicatedWorkerMessagingProxyProviderImpl.h",
     "DevToolsEmulator.cpp",
