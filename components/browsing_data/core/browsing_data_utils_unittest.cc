@@ -63,8 +63,8 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
     bool sync_enabled;
     std::string expected_output;
   } kTestCases[] = {
-      {0, 0, 0, false, "None"},
-      {0, 0, 0, true, "None"},
+      {0, 0, 0, false, "none"},
+      {0, 0, 0, true, "none"},
       {1, 0, 0, false, "1 credit card"},
       {0, 5, 0, false, "5 addresses"},
       {0, 0, 1, false, "1 suggestion"},
@@ -107,7 +107,7 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
     int is_synced;
     std::string expected_output;
   } kTestCases[] = {
-      {0, false, "None"},        {0, true, "None"},
+      {0, false, "none"},        {0, true, "none"},
       {1, false, "1 password"},  {1, true, "1 password (synced)"},
       {5, false, "5 passwords"}, {5, true, "5 passwords (synced)"},
   };
