@@ -18,7 +18,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -65,7 +65,6 @@ class PolicyService;
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
-                           public base::NonThreadSafe,
                            public KeepAliveStateObserver {
  public:
   // |local_state_task_runner| must be a shutdown-blocking task runner.
@@ -353,6 +352,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<physical_web::PhysicalWebDataSource>
       physical_web_data_source_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

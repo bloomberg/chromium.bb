@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task_runner.h"
 #include "base/tracked_objects.h"
@@ -122,16 +123,19 @@ void SetBrowserStartupIsComplete() {
 
 // Observes the first visible page load and sets the startup complete
 // flag accordingly.
-class StartupObserver : public WebContentsObserver, public base::NonThreadSafe {
+class StartupObserver : public WebContentsObserver {
  public:
   StartupObserver() : weak_factory_(this) {}
-  ~StartupObserver() override { DCHECK(IsBrowserStartupComplete()); }
+  ~StartupObserver() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(IsBrowserStartupComplete());
+  }
 
   void Start();
 
  private:
   void OnStartupComplete() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     SetBrowserStartupIsComplete();
     delete this;
   }
@@ -155,6 +159,8 @@ class StartupObserver : public WebContentsObserver, public base::NonThreadSafe {
   }
 
   void WebContentsDestroyed() override { OnStartupComplete(); }
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<StartupObserver> weak_factory_;
 
