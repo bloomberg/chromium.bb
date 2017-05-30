@@ -28,7 +28,7 @@
 #include "core/editing/iterators/TextIterator.h"
 
 #include <unicode/utf16.h>
-#include "bindings/core/v8/ExceptionState.h"
+//#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
@@ -38,7 +38,6 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/CharacterIterator.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
@@ -48,7 +47,6 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "platform/fonts/Font.h"
-#include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
