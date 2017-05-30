@@ -1,5 +1,7 @@
 .. _cds2014:
 
+.. include:: /migration/deprecation.inc
+
 ###############################################
 Chrome Dev Summit 2014 - Native Client Codelabs
 ###############################################

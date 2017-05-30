@@ -212,7 +212,7 @@ Data Fields</h2><table class="memberdecls">
 <p>Runs the thread message loop. </p>
 <p>Running the message loop is required for you to get issued completion callbacks on the thread.</p>
 <p>The message loop identified by the argument must have been previously successfully attached to the current thread.</p>
-<p>You may not run nested run loops. Since the main thread has an implicit message loop that the system runs, you may not call Run on the main thread.</p>
+<p>You may not run nested message loops. Since the main thread has an implicit message loop that the system runs, you may not call Run on the main thread.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd><ul>
 <li>PP_OK: The message loop was successfully run. Note that on success, the message loop will only exit when you call <a class="el" href="struct_p_p_b___message_loop__1__0.html#adbbdc03661c9ac41df82fffcc566603d" title="Posts a quit message to the given message loop's work queue.">PostQuit()</a>.</li>
 <li>PP_ERROR_BADRESOURCE: The given message loop resource is invalid.</li>

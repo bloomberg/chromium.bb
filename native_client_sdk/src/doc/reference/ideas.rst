@@ -1,5 +1,7 @@
 .. _ideas:
 
+.. include:: /migration/deprecation.inc
+
 #################
 Contributor Ideas
 #################

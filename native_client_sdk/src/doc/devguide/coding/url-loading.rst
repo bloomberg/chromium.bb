@@ -1,5 +1,7 @@
 .. _devguide-coding-url-loading:
 
+.. include:: /migration/deprecation.inc
+
 ###########
 URL Loading
 ###########

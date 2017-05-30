@@ -1,6 +1,8 @@
 toc:
 - title: "Version 31 (dev)"
   path: /native-client/dev/version
+- title: "API Migration Guide"
+  path: /native-client/deprecation/migration
 - title: "What is Native Client?"
   path: /native-client/dev/overview
 - title: "Demos"
