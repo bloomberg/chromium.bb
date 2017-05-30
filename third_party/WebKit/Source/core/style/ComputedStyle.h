@@ -1665,15 +1665,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
-  // speak
-  static ESpeak InitialSpeak() { return ESpeak::kNormal; }
-  ESpeak Speak() const {
-    return static_cast<ESpeak>(rare_inherited_data_->speak_);
-  }
-  void SetSpeak(ESpeak s) {
-    SET_VAR(rare_inherited_data_, speak_, static_cast<unsigned>(s));
-  }
-
   // text-align-last
   static TextAlignLast InitialTextAlignLast() { return TextAlignLast::kAuto; }
   TextAlignLast GetTextAlignLast() const {
