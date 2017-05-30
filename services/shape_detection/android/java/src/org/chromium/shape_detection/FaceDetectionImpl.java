@@ -5,6 +5,7 @@
 package org.chromium.shape_detection;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
@@ -39,6 +40,17 @@ public class FaceDetectionImpl implements FaceDetection {
         // in this case, https://crbug.com/684930.
         Bitmap bitmap = BitmapUtils.convertToBitmap(bitmapData);
 
+        // FaceDetector requires an even width, so pad the image if the width is odd.
+        // https://developer.android.com/reference/android/media/FaceDetector.html#FaceDetector(int, int, int)
+        final int width = bitmapData.width + (bitmapData.width % 2);
+        final int height = bitmapData.height;
+        if (width != bitmapData.width) {
+            Bitmap paddedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(paddedBitmap);
+            canvas.drawBitmap(bitmap, 0, 0, null);
+            bitmap = paddedBitmap;
+        }
+
         // A Bitmap must be in 565 format for findFaces() to work. See
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/media/java/android/media/FaceDetector.java#124
         //
@@ -48,8 +60,6 @@ public class FaceDetectionImpl implements FaceDetection {
         // original image is premultiplied. We can use getPixels() which does
         // the unmultiplication while copying to a new array. See
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/graphics/java/android/graphics/Bitmap.java#538
-        final int width = bitmapData.width;
-        final int height = bitmapData.height;
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         final Bitmap unPremultipliedBitmap =
