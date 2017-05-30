@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
 #include "content/public/renderer/webrtc_log_message_delegate.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -23,8 +24,7 @@ class WebRtcLoggingMessageFilter;
 // WebRtcLoggingHandlerHost and receives logging messages from libjingle and
 // writes them to a shared memory buffer.
 class ChromeWebRtcLogMessageDelegate
-    : public content::WebRtcLogMessageDelegate,
-      public base::NonThreadSafe {
+    : public content::WebRtcLogMessageDelegate {
  public:
   ChromeWebRtcLogMessageDelegate(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -51,6 +51,8 @@ class ChromeWebRtcLogMessageDelegate
   base::TimeTicks last_log_buffer_send_;
 
   WebRtcLoggingMessageFilter* message_filter_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebRtcLogMessageDelegate);
 };

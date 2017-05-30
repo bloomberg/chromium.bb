@@ -19,7 +19,7 @@ ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
 }
 
 ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
@@ -34,7 +34,7 @@ void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
 
 void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
     const WebRtcLoggingMessageData& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (logging_started_ && message_filter_) {
     if (!log_buffer_.empty()) {
@@ -60,18 +60,18 @@ void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
 }
 
 void ChromeWebRtcLogMessageDelegate::OnFilterRemoved() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   message_filter_ = NULL;
 }
 
 void ChromeWebRtcLogMessageDelegate::OnStartLogging() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   logging_started_ = true;
   content::InitWebRtcLogging();
 }
 
 void ChromeWebRtcLogMessageDelegate::OnStopLogging() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!log_buffer_.empty())
     SendLogBuffer();
   if (message_filter_)
@@ -80,7 +80,7 @@ void ChromeWebRtcLogMessageDelegate::OnStopLogging() {
 }
 
 void ChromeWebRtcLogMessageDelegate::SendLogBuffer() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (logging_started_ && message_filter_) {
     message_filter_->AddLogMessages(log_buffer_);
     last_log_buffer_send_ = base::TimeTicks::Now();
