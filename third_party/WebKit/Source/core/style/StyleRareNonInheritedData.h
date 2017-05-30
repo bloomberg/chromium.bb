@@ -107,7 +107,7 @@ class CORE_EXPORT StyleRareNonInheritedData
   LengthPoint object_position_;
 
   LineClampValue line_clamp;  // An Apple extension.
-  DraggableRegionMode draggable_region_mode_;
+  unsigned draggable_region_mode_ : 2;  // DraggableRegionMode
 
   DataRef<StyleDeprecatedFlexibleBoxData>
       deprecated_flexible_box_;  // Flexible box properties

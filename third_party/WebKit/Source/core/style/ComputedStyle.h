@@ -1579,10 +1579,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // -webkit-app-region
   DraggableRegionMode GetDraggableRegionMode() const {
-    return rare_non_inherited_data_->draggable_region_mode_;
+    return static_cast<DraggableRegionMode>(
+        rare_non_inherited_data_->draggable_region_mode_);
   }
   void SetDraggableRegionMode(DraggableRegionMode v) {
-    SET_VAR(rare_non_inherited_data_, draggable_region_mode_, v);
+    SET_VAR(rare_non_inherited_data_, draggable_region_mode_,
+            static_cast<unsigned>(v));
   }
 
   // -webkit-appearance
