@@ -227,14 +227,6 @@ bool HTMLIFrameElement::IsInteractiveContent() const {
   return true;
 }
 
-void HTMLIFrameElement::SandboxValueWasSet(const AtomicString& value) {
-  setAttribute(sandboxAttr, value);
-}
-
-void HTMLIFrameElement::AllowValueWasSet(const AtomicString& value) {
-  setAttribute(allowAttr, value);
-}
-
 ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {
   return referrer_policy_;
 }

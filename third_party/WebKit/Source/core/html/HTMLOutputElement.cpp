@@ -39,7 +39,7 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document)
     : HTMLFormControlElement(HTMLNames::outputTag, document),
       is_default_value_mode_(true),
       default_value_(""),
-      tokens_(DOMTokenList::Create(this)) {}
+      tokens_(DOMTokenList::Create(*this, HTMLNames::forAttr)) {}
 
 HTMLOutputElement::~HTMLOutputElement() {}
 
@@ -105,10 +105,6 @@ void HTMLOutputElement::setValue(const String& value) {
   setTextContent(value);
 }
 
-void HTMLOutputElement::ValueWasSet(const AtomicString& value) {
-  setAttribute(HTMLNames::forAttr, value);
-}
-
 String HTMLOutputElement::defaultValue() const {
   return default_value_;
 }
@@ -130,7 +126,6 @@ int HTMLOutputElement::tabIndex() const {
 DEFINE_TRACE(HTMLOutputElement) {
   visitor->Trace(tokens_);
   HTMLFormControlElement::Trace(visitor);
-  DOMTokenListObserver::Trace(visitor);
 }
 
 }  // namespace blink

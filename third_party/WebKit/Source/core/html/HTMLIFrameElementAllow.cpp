@@ -13,15 +13,7 @@ using blink::WebFeaturePolicyFeature;
 namespace blink {
 
 HTMLIFrameElementAllow::HTMLIFrameElementAllow(HTMLIFrameElement* element)
-    : DOMTokenList(this), element_(element) {}
-
-HTMLIFrameElementAllow::~HTMLIFrameElementAllow() {}
-
-DEFINE_TRACE(HTMLIFrameElementAllow) {
-  visitor->Trace(element_);
-  DOMTokenList::Trace(visitor);
-  DOMTokenListObserver::Trace(visitor);
-}
+    : DOMTokenList(*element, HTMLNames::allowAttr) {}
 
 Vector<WebFeaturePolicyFeature>
 HTMLIFrameElementAllow::ParseAllowedFeatureNames(
@@ -61,11 +53,6 @@ HTMLIFrameElementAllow::ParseAllowedFeatureNames(
 bool HTMLIFrameElementAllow::ValidateTokenValue(const AtomicString& token_value,
                                                 ExceptionState&) const {
   return GetDefaultFeatureNameMap().Contains(token_value.GetString());
-}
-
-void HTMLIFrameElementAllow::ValueWasSet(const AtomicString& value) {
-  DCHECK(element_);
-  element_->AllowValueWasSet(value);
 }
 
 }  // namespace blink

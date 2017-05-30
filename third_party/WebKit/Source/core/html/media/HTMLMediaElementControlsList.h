@@ -13,18 +13,11 @@ namespace blink {
 
 class HTMLMediaElement;
 
-class HTMLMediaElementControlsList final : public DOMTokenList,
-                                           public DOMTokenListObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementControlsList);
-
+class HTMLMediaElementControlsList final : public DOMTokenList {
  public:
   static HTMLMediaElementControlsList* Create(HTMLMediaElement* element) {
     return new HTMLMediaElementControlsList(element);
   }
-
-  ~HTMLMediaElementControlsList() override;
-
-  DECLARE_VIRTUAL_TRACE();
 
   // Whether the list dictates to hide a certain control.
   CORE_EXPORT bool ShouldHideDownload() const;
@@ -34,11 +27,6 @@ class HTMLMediaElementControlsList final : public DOMTokenList,
  private:
   explicit HTMLMediaElementControlsList(HTMLMediaElement*);
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
-
-  // DOMTokenListObserver.
-  void ValueWasSet(const AtomicString&) override;
-
-  Member<HTMLMediaElement> element_;
 };
 
 }  // namespace blink

@@ -26,6 +26,7 @@
 #define DOMTokenList_h
 
 #include "core/CoreExport.h"
+#include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -34,16 +35,8 @@
 
 namespace blink {
 
+class Element;
 class ExceptionState;
-
-class CORE_EXPORT DOMTokenListObserver : public GarbageCollectedMixin {
- public:
-  // Called when the value property is set, even if the tokens in
-  // the set have not changed.
-  virtual void ValueWasSet(const AtomicString& value) = 0;
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-};
 
 class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
                                  public ScriptWrappable {
@@ -51,11 +44,11 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   WTF_MAKE_NONCOPYABLE(DOMTokenList);
 
  public:
-  static DOMTokenList* Create(DOMTokenListObserver* observer = nullptr) {
-    return new DOMTokenList(observer);
+  static DOMTokenList* Create(Element& element, const QualifiedName& attr) {
+    return new DOMTokenList(element, attr);
   }
-
   virtual ~DOMTokenList() {}
+  DECLARE_VIRTUAL_TRACE();
 
   unsigned length() const { return tokens_.size(); }
   const AtomicString item(unsigned index) const;
@@ -70,9 +63,7 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   bool supports(const AtomicString&, ExceptionState&);
 
   const AtomicString& value() const { return value_; }
-  // DOMTokenListObserver::ValueWasSet or setValue override should update the
-  // associated attribute value.
-  virtual void setValue(const AtomicString&);
+  void setValue(const AtomicString&);
 
   // This function should be called when the associated attribute value was
   // updated.
@@ -80,15 +71,13 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
                                const AtomicString& new_value);
 
   const SpaceSplitString& Tokens() const { return tokens_; }
-  void SetObserver(DOMTokenListObserver* observer) { observer_ = observer; }
 
   const AtomicString& toString() const { return value(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(observer_); }
-
  protected:
-  DOMTokenList(DOMTokenListObserver* observer) : observer_(observer) {}
-
+  DOMTokenList(Element& element, const QualifiedName& attr)
+      : element_(element), attribute_name_(attr) {}
+  Element& GetElement() const { return *element_; }
   void AddInternal(const AtomicString&);
   void RemoveInternal(const AtomicString&);
 
@@ -104,7 +93,8 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
 
   SpaceSplitString tokens_;
   AtomicString value_;
-  WeakMember<DOMTokenListObserver> observer_;
+  const Member<Element> element_;
+  const QualifiedName attribute_name_;
   bool is_in_update_step_ = false;
 };
 

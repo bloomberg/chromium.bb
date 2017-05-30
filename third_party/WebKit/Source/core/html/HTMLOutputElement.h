@@ -36,10 +36,8 @@
 
 namespace blink {
 
-class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
-                                            private DOMTokenListObserver {
+class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 
  public:
   static HTMLOutputElement* Create(Document&);
@@ -70,9 +68,6 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
   void ChildrenChanged(const ChildrenChange&) override;
   void ResetImpl() override;
   int tabIndex() const override;
-
-  // DOMTokenListObserver function
-  void ValueWasSet(const AtomicString&) final;
 
   bool is_default_value_mode_;
   String default_value_;

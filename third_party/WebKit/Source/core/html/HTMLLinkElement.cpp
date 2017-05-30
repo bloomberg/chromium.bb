@@ -51,7 +51,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
                                         bool created_by_parser)
     : HTMLElement(linkTag, document),
       link_loader_(LinkLoader::Create(this)),
-      sizes_(DOMTokenList::Create(this)),
+      sizes_(DOMTokenList::Create(*this, HTMLNames::sizesAttr)),
       rel_list_(this, RelList::Create(this)),
       created_by_parser_(created_by_parser) {}
 
@@ -269,10 +269,6 @@ RefPtr<WebTaskRunner> HTMLLinkElement::GetLoadingTaskRunner() {
   return TaskRunnerHelper::Get(TaskType::kNetworking, &GetDocument());
 }
 
-void HTMLLinkElement::ValueWasSet(const AtomicString& value) {
-  setAttribute(HTMLNames::sizesAttr, value);
-}
-
 bool HTMLLinkElement::SheetLoaded() {
   DCHECK(GetLinkStyle());
   return GetLinkStyle()->SheetLoaded();
@@ -368,7 +364,6 @@ DEFINE_TRACE(HTMLLinkElement) {
   visitor->Trace(rel_list_);
   HTMLElement::Trace(visitor);
   LinkLoaderClient::Trace(visitor);
-  DOMTokenListObserver::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(HTMLLinkElement) {

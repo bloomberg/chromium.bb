@@ -210,7 +210,6 @@ class CORE_EXPORT HTMLMediaElement
       const RecordMetricsBehavior = RecordMetricsBehavior::kDoNotRecord) const;
   DOMTokenList* controlsList() const;
   HTMLMediaElementControlsList* ControlsListInternal() const;
-  void ControlsListValueWasSet(const AtomicString&);
   double volume() const;
   void setVolume(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   bool muted() const;

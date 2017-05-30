@@ -51,9 +51,9 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CSSSelectorWatch.h"
-#include "core/dom/ClassList.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementIntersectionObserverData.h"
@@ -3511,9 +3511,8 @@ Element* Element::closest(const AtomicString& selectors,
 DOMTokenList& Element::classList() {
   ElementRareData& rare_data = EnsureElementRareData();
   if (!rare_data.GetClassList()) {
-    ClassList* class_list = ClassList::Create(this);
-    class_list->DidUpdateAttributeValue(g_null_atom,
-                                        getAttribute(HTMLNames::classAttr));
+    DOMTokenList* class_list = DOMTokenList::Create(*this, classAttr);
+    class_list->DidUpdateAttributeValue(g_null_atom, getAttribute(classAttr));
     rare_data.SetClassList(class_list);
   }
   return *rare_data.GetClassList();

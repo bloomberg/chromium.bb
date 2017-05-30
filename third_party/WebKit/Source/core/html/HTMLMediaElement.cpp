@@ -2441,10 +2441,6 @@ HTMLMediaElementControlsList* HTMLMediaElement::ControlsListInternal() const {
   return controls_list_.Get();
 }
 
-void HTMLMediaElement::ControlsListValueWasSet(const AtomicString& value) {
-  setAttribute(controlslistAttr, value);
-}
-
 double HTMLMediaElement::volume() const {
   return volume_;
 }

@@ -14,31 +14,19 @@ namespace blink {
 
 class HTMLIFrameElement;
 
-class CORE_EXPORT HTMLIFrameElementAllow final : public DOMTokenList,
-                                                 public DOMTokenListObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementAllow);
-
+class CORE_EXPORT HTMLIFrameElementAllow final : public DOMTokenList {
  public:
   static HTMLIFrameElementAllow* Create(HTMLIFrameElement* element) {
     return new HTMLIFrameElementAllow(element);
   }
 
-  ~HTMLIFrameElementAllow() override;
-
   // Returns unique set of valid feature names.
   Vector<WebFeaturePolicyFeature> ParseAllowedFeatureNames(
       String& invalid_tokens_error_message) const;
 
-  DECLARE_VIRTUAL_TRACE();
-
  private:
   explicit HTMLIFrameElementAllow(HTMLIFrameElement*);
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
-
-  // DOMTokenListObserver.
-  void ValueWasSet(const AtomicString&) override;
-
-  Member<HTMLIFrameElement> element_;
 };
 
 }  // namespace blink
