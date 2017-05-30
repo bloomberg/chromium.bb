@@ -19,15 +19,27 @@ namespace views {
 namespace test {
 using InkDropMode = InkDropHostViewTestApi::InkDropMode;
 
-class InkDropHostViewColor : public InkDropHostView {
+class TestInkDropHostView : public InkDropHostView {
  public:
+  TestInkDropHostView() {}
+
   // Accessors to InkDropHostView internals.
   ui::EventHandler* GetTargetHandler() { return target_handler(); }
+
+  int on_ink_drop_created_count() const { return on_ink_drop_created_count_; }
 
  protected:
   SkColor GetInkDropBaseColor() const override {
     return gfx::kPlaceholderColor;
   }
+
+  // InkDropHostView:
+  void OnInkDropCreated() override { ++on_ink_drop_created_count_; }
+
+ private:
+  int on_ink_drop_created_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInkDropHostView);
 };
 
 class InkDropHostViewTest : public testing::Test {
@@ -37,7 +49,7 @@ class InkDropHostViewTest : public testing::Test {
 
  protected:
   // Test target.
-  InkDropHostViewColor host_view_;
+  TestInkDropHostView host_view_;
 
   // Provides internal access to |host_view_| test target.
   InkDropHostViewTestApi test_api_;
@@ -69,6 +81,33 @@ TEST_F(InkDropHostViewTest, GetInkDropCenterBasedOnLastEventForLocatedEvent) {
 
   test_api_.AnimateInkDrop(InkDropState::ACTION_PENDING, &located_event);
   EXPECT_EQ(gfx::Point(5, 6), test_api_.GetInkDropCenterBasedOnLastEvent());
+}
+
+TEST_F(InkDropHostViewTest, HasInkDrop) {
+  EXPECT_FALSE(test_api_.HasInkDrop());
+
+  test_api_.GetInkDrop();
+  EXPECT_TRUE(test_api_.HasInkDrop());
+
+  test_api_.SetInkDropMode(InkDropMode::OFF);
+  EXPECT_FALSE(test_api_.HasInkDrop());
+}
+
+TEST_F(InkDropHostViewTest, OnInkDropCreatedOnlyNotfiedOnCreation) {
+  EXPECT_EQ(0, host_view_.on_ink_drop_created_count());
+
+  test_api_.GetInkDrop();
+  EXPECT_EQ(1, host_view_.on_ink_drop_created_count());
+
+  test_api_.GetInkDrop();
+  EXPECT_EQ(1, host_view_.on_ink_drop_created_count());
+
+  test_api_.SetInkDropMode(InkDropMode::OFF);
+  test_api_.SetInkDropMode(InkDropMode::ON);
+  EXPECT_EQ(1, host_view_.on_ink_drop_created_count());
+
+  test_api_.GetInkDrop();
+  EXPECT_EQ(2, host_view_.on_ink_drop_created_count());
 }
 
 // Verifies that SetInkDropMode() sets up gesture handling properly.

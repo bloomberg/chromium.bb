@@ -160,6 +160,12 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
     UpdateImage();
 }
 
+std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
+  std::unique_ptr<InkDrop> ink_drop = LabelButton::CreateInkDrop();
+  ink_drop->SetShowHighlightOnHover(false);
+  return ink_drop;
+}
+
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
   const gfx::Size size(21, 21);
@@ -168,11 +174,6 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
       kInkDropSmallCornerRadius, image()->GetMirroredBounds().CenterPoint(),
       GetInkDropBaseColor(), ink_drop_visible_opacity()));
   return ripple;
-}
-
-std::unique_ptr<views::InkDropHighlight> Checkbox::CreateInkDropHighlight()
-    const {
-  return nullptr;
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {

@@ -54,6 +54,7 @@ class VIEWS_EXPORT InkDropHost {
 
   // Creates and returns the visual effect used for hover and focus. Used by
   // InkDropImpl instances.
+  // Note: InkDropHostView does not accept null return values.
   virtual std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const = 0;
 
  private:

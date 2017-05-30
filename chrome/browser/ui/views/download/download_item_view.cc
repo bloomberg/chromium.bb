@@ -180,6 +180,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
 
   dropdown_button_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
+  dropdown_button_->set_has_ink_drop_action_on_click(false);
   AddChildView(dropdown_button_);
 
   LoadIcon();
@@ -529,14 +530,15 @@ std::unique_ptr<views::InkDropRipple> DownloadItemView::CreateInkDropRipple()
 
 std::unique_ptr<views::InkDropHighlight>
 DownloadItemView::CreateInkDropHighlight() const {
-  if (IsShowingWarningDialog())
-    return nullptr;
-
   gfx::Size size = GetPreferredSize();
   return base::MakeUnique<views::InkDropHighlight>(
       size, kInkDropSmallCornerRadius,
       gfx::RectF(gfx::SizeF(size)).CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor()));
+}
+
+void DownloadItemView::OnInkDropCreated() {
+  ConfigureInkDrop();
 }
 
 void DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
@@ -893,6 +895,16 @@ void DownloadItemView::SetDropdownState(State new_state) {
   SchedulePaint();
 }
 
+void DownloadItemView::ConfigureInkDrop() {
+  if (HasInkDrop())
+    GetInkDrop()->SetShowHighlightOnHover(!IsShowingWarningDialog());
+}
+
+void DownloadItemView::SetMode(Mode mode) {
+  mode_ = mode;
+  ConfigureInkDrop();
+}
+
 void DownloadItemView::ToggleWarningDialog() {
   if (model_.IsDangerous())
     ShowWarningDialog();
@@ -912,7 +924,7 @@ void DownloadItemView::ClearWarningDialog() {
          content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
   DCHECK(IsShowingWarningDialog());
 
-  mode_ = NORMAL_MODE;
+  SetMode(NORMAL_MODE);
   dropdown_state_ = NORMAL;
 
   // ExperienceSampling: User proceeded through the warning.
@@ -936,7 +948,7 @@ void DownloadItemView::ClearWarningDialog() {
 }
 
 void DownloadItemView::ShowWarningDialog() {
-  DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
+  DCHECK(!IsShowingWarningDialog());
   time_download_warning_shown_ = base::Time::Now();
   content::DownloadDangerType danger_type = download()->GetDangerType();
   RecordDangerousDownloadWarningShown(danger_type);
@@ -946,7 +958,7 @@ void DownloadItemView::ShowWarningDialog() {
         danger_type);
   }
 #endif
-  mode_ = model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE;
+  SetMode(model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE);
 
   // ExperienceSampling: Dangerous or malicious download warning is being shown
   // to the user, so we start a new SamplingEvent and track it.
