@@ -17,4 +17,6 @@ enum class PDFLoadStatus {
 
 void ReportPDFLoadStatus(PDFLoadStatus status);
 
+constexpr char kPDFMimeType[] = "application/pdf";
+
 #endif  // CHROME_COMMON_PDF_UMA_H_

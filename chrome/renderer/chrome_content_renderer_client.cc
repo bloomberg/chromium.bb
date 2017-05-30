@@ -30,6 +30,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pause_tabs_field_trial.h"
+#include "chrome/common/pdf_uma.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/render_messages.h"
@@ -146,7 +147,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/common/pdf_uma.h"
 #include "chrome/common/plugin_utils.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
@@ -646,6 +646,10 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   *plugin = CreatePlugin(render_frame, params, output);
 #else  // !BUILDFLAG(ENABLE_PLUGINS)
   PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
+  if (orig_mime_type == kPDFMimeType) {
+    ReportPDFLoadStatus(
+        PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
+  }
   auto* placeholder = NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
       render_frame, params);
   *plugin = placeholder->plugin();
