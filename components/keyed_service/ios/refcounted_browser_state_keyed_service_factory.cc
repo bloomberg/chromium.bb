@@ -50,7 +50,7 @@ web::BrowserState*
 RefcountedBrowserStateKeyedServiceFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
   // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Safe default for Incognito mode: no service.
   if (context->IsOffTheRecord())
