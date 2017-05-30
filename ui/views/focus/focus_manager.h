@@ -71,12 +71,6 @@
 // Note that FocusTraversable views do not have to be RootViews:
 // AccessibleToolbarView is FocusTraversable.
 
-namespace base {
-namespace debug {
-class StackTrace;
-}
-}
-
 namespace ui {
 class Accelerator;
 class AcceleratorTarget;
@@ -354,9 +348,6 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
 
   // The view that currently is focused.
   View* focused_view_ = nullptr;
-
-  // TODO(sky): remove, used for debugging 687232.
-  std::unique_ptr<base::debug::StackTrace> stack_when_focused_view_set_;
 
   // The AcceleratorManager this FocusManager is associated with.
   ui::AcceleratorManager accelerator_manager_;
