@@ -1200,23 +1200,26 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
 
   // Shortcut exists, icon is requested from shortcut.
   icon_loader.FetchImage(id_shortcut_exist);
-  EXPECT_EQ(1UL, delegate.update_image_cnt());
+  // Icon was sent on request and loader should be updated.
+  delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
   EXPECT_EQ(id_shortcut_exist, delegate.app_id());
+
   content::RunAllBlockingPoolTasksUntilIdle();
   const size_t shortcut_request_cnt =
       app_instance()->shortcut_icon_requests().size();
   EXPECT_NE(0U, shortcut_request_cnt);
   EXPECT_EQ(initial_icon_request_count, app_instance()->icon_requests().size());
-  for (const auto& request : app_instance()->shortcut_icon_requests()) {
+  for (const auto& request : app_instance()->shortcut_icon_requests())
     EXPECT_EQ(shortcuts[0].icon_resource_id, request->icon_resource_id());
-  }
 
   // Fallback when shortcut is not found for shelf group id, use app id instead.
   // Remove the IconRequestRecord for |app_id| to observe the icon request for
   // |app_id| is re-sent.
+  const size_t update_image_count_before = delegate.update_image_cnt();
   MaybeRemoveIconRequestRecord(app_id);
   icon_loader.FetchImage(id_shortcut_absent);
-  EXPECT_EQ(2UL, delegate.update_image_cnt());
+  // Expected default update.
+  EXPECT_EQ(update_image_count_before + 1, delegate.update_image_cnt());
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(app_instance()->icon_requests().size() >
               initial_icon_request_count);
