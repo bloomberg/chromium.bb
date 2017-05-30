@@ -54,7 +54,6 @@ DeprecateAs=*
 DoNotCheckConstants
 DoNotTestNewObject
 EnforceRange
-ExperimentalCallbackFunction
 Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
