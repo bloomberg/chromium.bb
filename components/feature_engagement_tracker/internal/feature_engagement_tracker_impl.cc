@@ -83,12 +83,17 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
   base::FilePath event_storage_dir = storage_dir.Append(kEventDBStorageDir);
   auto store =
       base::MakeUnique<PersistentStore>(event_storage_dir, std::move(db));
+
+  auto configuration = base::MakeUnique<ChromeVariationsConfiguration>();
+  configuration->ParseFeatureConfigs(GetAllFeatures());
+
   auto storage_validator = base::MakeUnique<FeatureConfigStorageValidator>();
+  storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
+
   auto raw_model = base::MakeUnique<ModelImpl>(std::move(store),
                                                std::move(storage_validator));
 
   auto model = base::MakeUnique<InitAwareModel>(std::move(raw_model));
-  auto configuration = base::MakeUnique<ChromeVariationsConfiguration>();
   auto condition_validator =
       base::MakeUnique<FeatureConfigConditionValidator>();
   auto time_provider = base::MakeUnique<SystemTimeProvider>();
@@ -104,10 +109,6 @@ FeatureEngagementTracker* FeatureEngagementTracker::Create(
 
   auto availability_model = base::MakeUnique<AvailabilityModelImpl>(
       std::move(availability_store_loader));
-
-  // Initialize the configuration.
-  configuration->ParseFeatureConfigs(GetAllFeatures());
-  storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
 
   return new FeatureEngagementTrackerImpl(
       std::move(model), std::move(availability_model), std::move(configuration),
