@@ -289,9 +289,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  gl::GLContextAttribs attribs;
-  attribs.context_priority = gl::ContextPriorityHigh;
-  context_ = gl::init::CreateGLContext(nullptr, surface_.get(), attribs);
+  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                       gl::GLContextAttribs());
   if (!context_.get()) {
     LOG(ERROR) << "gl::init::CreateGLContext failed";
     ForceExitVr();
