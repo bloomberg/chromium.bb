@@ -496,7 +496,7 @@ class WEB_EXPORT WebViewImpl final
     return last_frame_time_monotonic_;
   }
 
-  class ChromeClient& ChromeClient() const override {
+  class ChromeClient& GetChromeClient() const override {
     return *chrome_client_.Get();
   }
 
@@ -603,9 +603,7 @@ class WEB_EXPORT WebViewImpl final
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
   WebSpellCheckClient* spell_check_client_;
 
-  // ChromeClient needs blink:: qualifier so it doesn't clash with ChromeClient
-  // method. TODO(sashab): Rename getter to GetChromeClient to fix this.
-  Persistent<blink::ChromeClient> chrome_client_;
+  Persistent<ChromeClient> chrome_client_;
   ContextMenuClientImpl context_menu_client_impl_;
   EditorClientImpl editor_client_impl_;
   SpellCheckerClientImpl spell_checker_client_impl_;

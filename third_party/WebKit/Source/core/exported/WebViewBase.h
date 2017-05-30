@@ -181,7 +181,7 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual CompositorAnimationHost* AnimationHost() const = 0;
   virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
 
-  virtual class ChromeClient& ChromeClient() const = 0;
+  virtual class ChromeClient& GetChromeClient() const = 0;
 
   // These methods are consumed by test code only.
   virtual BrowserControls& GetBrowserControls() = 0;
