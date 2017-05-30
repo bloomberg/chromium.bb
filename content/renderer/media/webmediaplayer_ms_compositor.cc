@@ -450,16 +450,26 @@ void WebMediaPlayerMSCompositor::StopUsingProviderInternal() {
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(current_frame_lock_);
-  if (!current_frame_.get() || !player_)
-    return;
-
+  scoped_refptr<media::VideoFrame> current_frame_ref;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    if (!current_frame_ || !player_)
+      return;
+    current_frame_ref = current_frame_;
+  }
   // Copy the frame so that rendering can show the last received frame.
   // The original frame must not be referenced when the player is paused since
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera, HW decoded frames.
-  current_frame_ =
-      CopyFrame(current_frame_, player_->GetSkCanvasVideoRenderer());
+  scoped_refptr<media::VideoFrame> copied_frame =
+      CopyFrame(current_frame_ref, player_->GetSkCanvasVideoRenderer());
+  // Copying frame can take time, so only set the copied frame if
+  // |current_frame_| hasn't been changed.
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    if (current_frame_ == current_frame_ref)
+      current_frame_ = std::move(copied_frame);
+  }
 }
 
 void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
