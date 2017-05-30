@@ -11,7 +11,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -160,10 +160,12 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(content::BrowserThread::GetBlockingPool(),
-                                   FROM_HERE,
-                                   base::Bind(&CheckNautilusIsDefault),
-                                   base::Bind(&ShowItem, profile, full_path));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::MayBlock(),
+       base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&CheckNautilusIsDefault),
+      base::BindOnce(&ShowItem, profile, full_path));
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {
