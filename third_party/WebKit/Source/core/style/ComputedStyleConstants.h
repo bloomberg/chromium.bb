@@ -248,14 +248,14 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
   return a = a | b;
 }
 
-enum TextAlignLast {
-  kTextAlignLastAuto,
-  kTextAlignLastStart,
-  kTextAlignLastEnd,
-  kTextAlignLastLeft,
-  kTextAlignLastRight,
-  kTextAlignLastCenter,
-  kTextAlignLastJustify
+enum class TextAlignLast {
+  kAuto,
+  kStart,
+  kEnd,
+  kLeft,
+  kRight,
+  kCenter,
+  kJustify
 };
 
 enum TextUnderlinePosition {
