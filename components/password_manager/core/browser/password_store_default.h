@@ -34,7 +34,7 @@ class PasswordStoreDefault : public PasswordStore {
 
   void ShutdownOnUIThread() override;
 
-  // To be used only for testing.
+  // To be used only for testing or in subclasses.
   LoginDatabase* login_db() const { return login_db_.get(); }
 
  protected:
@@ -84,10 +84,6 @@ class PasswordStoreDefault : public PasswordStore {
 
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
-  }
-
-  void set_login_db(std::unique_ptr<password_manager::LoginDatabase> login_db) {
-    login_db_.swap(login_db);
   }
 
  private:

@@ -1650,37 +1650,6 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
                                    base::Bucket(5, 1)));
 }
 
-TEST_F(LoginDatabaseTest, ClearPasswordValues) {
-  db().set_clear_password_values(true);
-
-  // Add a PasswordForm, the password should be cleared.
-  base::HistogramTester histogram_tester;
-  PasswordForm form;
-  form.origin = GURL("http://accounts.google.com/LoginAuth");
-  form.signon_realm = "http://accounts.google.com/";
-  form.username_value = ASCIIToUTF16("my_username");
-  form.password_value = ASCIIToUTF16("12345");
-  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
-
-  std::vector<std::unique_ptr<PasswordForm>> result;
-  EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
-  ASSERT_EQ(1U, result.size());
-  PasswordForm expected_form = form;
-  expected_form.password_value.clear();
-  EXPECT_EQ(expected_form, *result[0]);
-
-  // Update the password, it should stay empty.
-  form.password_value = ASCIIToUTF16("password");
-  EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
-  EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
-  ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(expected_form, *result[0]);
-
-  // Encrypting/decrypting shouldn't happen. Thus there should be no keychain
-  // access on Mac.
-  histogram_tester.ExpectTotalCount("OSX.Keychain.Access", 0);
-}
-
 #if defined(OS_POSIX)
 // Only the current user has permission to read the database.
 //
