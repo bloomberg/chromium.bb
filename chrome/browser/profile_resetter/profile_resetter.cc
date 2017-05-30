@@ -79,11 +79,12 @@ ProfileResetter::ProfileResetter(Profile* profile)
       pending_reset_flags_(0),
       cookies_remover_(nullptr),
       weak_ptr_factory_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(profile_);
 }
 
 ProfileResetter::~ProfileResetter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cookies_remover_)
     cookies_remover_->RemoveObserver(this);
 }
@@ -92,7 +93,7 @@ void ProfileResetter::Reset(
     ProfileResetter::ResettableFlags resettable_flags,
     std::unique_ptr<BrandcodedDefaultSettings> master_settings,
     const base::Closure& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(master_settings);
 
   // We should never be called with unknown flags.
@@ -144,7 +145,7 @@ bool ProfileResetter::IsActive() const {
 }
 
 void ProfileResetter::MarkAsDone(Resettable resettable) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check that we are never called twice or unexpectedly.
   CHECK(pending_reset_flags_ & resettable);
@@ -161,7 +162,7 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
 }
 
 void ProfileResetter::ResetDefaultSearchEngine() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(template_url_service_);
   // If TemplateURLServiceFactory is ready we can clean it right now.
   // Otherwise, load it and continue from ProfileResetter::Observe.
@@ -192,7 +193,7 @@ void ProfileResetter::ResetDefaultSearchEngine() {
 }
 
 void ProfileResetter::ResetHomepage() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
   std::string homepage;
@@ -214,7 +215,7 @@ void ProfileResetter::ResetHomepage() {
 }
 
 void ProfileResetter::ResetContentSettings() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
@@ -234,7 +235,7 @@ void ProfileResetter::ResetContentSettings() {
 }
 
 void ProfileResetter::ResetCookiesAndSiteData() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cookies_remover_);
 
   cookies_remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_);
@@ -253,7 +254,7 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 }
 
 void ProfileResetter::ResetExtensions() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<std::string> brandcode_extensions;
   master_settings_->GetExtensions(&brandcode_extensions);
@@ -285,7 +286,7 @@ void ProfileResetter::ResetExtensions() {
 }
 
 void ProfileResetter::ResetStartupPages() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
   std::unique_ptr<base::ListValue> url_list(
@@ -336,7 +337,7 @@ void ProfileResetter::ResetShortcuts() {
 void ProfileResetter::OnTemplateURLServiceLoaded() {
   // TemplateURLService has loaded. If we need to clean search engines, it's
   // time to go on.
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   template_url_service_sub_.reset();
   if (pending_reset_flags_ & DEFAULT_SEARCH_ENGINE)
     ResetDefaultSearchEngine();
