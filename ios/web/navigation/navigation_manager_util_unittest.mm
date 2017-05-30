@@ -34,8 +34,8 @@ class NavigationManagerUtilTest : public PlatformTest {
   TestBrowserState browser_state_;
 };
 
-// Tests GetCommittedItemWithUniqueID and GetCommittedItemIndexWithUniqueID
-// functions.
+// Tests GetCommittedItemWithUniqueID, GetCommittedItemIndexWithUniqueID and
+// GetItemWithUniqueID functions.
 TEST_F(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
   manager_.AddPendingItem(
@@ -45,16 +45,26 @@ TEST_F(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   NavigationItem* item = manager_.GetPendingItem();
   int unique_id = item->GetUniqueID();
   EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
 
   // Commit that pending item.
   [controller_ commitPendingItem];
   EXPECT_EQ(item, GetCommittedItemWithUniqueID(&manager_, unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
   EXPECT_EQ(0, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
 
   // Remove committed item.
   manager_.RemoveItemAtIndex(0);
   EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
+  EXPECT_FALSE(GetItemWithUniqueID(&manager_, unique_id));
+  EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
+
+  // Add transient item.
+  [controller_ addTransientItemWithURL:GURL("http://chromium.org")];
+  item = manager_.GetTransientItem();
+  EXPECT_FALSE(GetCommittedItemWithUniqueID(&manager_, unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(&manager_, unique_id));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(&manager_, unique_id));
 }
 

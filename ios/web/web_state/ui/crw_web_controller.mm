@@ -4423,19 +4423,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
                           : WKNavigationResponsePolicyCancel);
 }
 
-// TODO(stuartmorgan): Move all the guesswork around these states out of the
-// superclass, and wire these up to the remaining methods.
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
   [_navigationStates setState:web::WKNavigationState::STARTED
                 forNavigation:navigation];
-
-  if (navigation &&
-      ![[_navigationStates lastAddedNavigation] isEqual:navigation]) {
-    // |navigation| is not the latest navigation and will be cancelled.
-    // Ignore |navigation| as a new navigation will start soon.
-    return;
-  }
 
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
   if (webViewURL.is_empty()) {
@@ -4444,38 +4435,52 @@ registerLoadRequestForURL:(const GURL&)requestURL
     webViewURL = GURL(url::kAboutBlankURL);
   }
 
-  // Intercept renderer-initiated navigations. If this navigation has not yet
-  // been registered, do so. loadPhase check is necessary because
-  // lastRegisteredRequestURL may be the same as the webViewURL on a new tab
-  // created by window.open (default is about::blank).
-  if (_lastRegisteredRequestURL != webViewURL ||
-      self.loadPhase != web::LOAD_REQUESTED) {
-    // Reset current WebUI if one exists.
-    [self clearWebUI];
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  if (context) {
+    // This is already seen and registered navigation.
+
+    if (context->GetUrl() != webViewURL) {
+      // Update last seen URL because it may be changed by WKWebView (f.e. by
+      // performing characters escaping).
+      web::NavigationItem* item = web::GetItemWithUniqueID(
+          self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+      if (item) {
+        item->SetVirtualURL(webViewURL);
+        item->SetURL(webViewURL);
+      }
+
+      _lastRegisteredRequestURL = webViewURL;
+    }
+    return;
+  }
+
+  // This is renderer-initiated navigation which was not seen before and should
+  // be registered.
+
+  [self clearWebUI];
+
+  if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
     // Restart app specific URL loads to properly capture state.
     // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
     // navigation rather than restarting the load.
-    if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
-      // Renderer-initiated loads of WebUI can be done only from other WebUI
-      // pages. WebUI pages may have increased power and using the same web
-      // process (which may potentially be controller by an attacker) is
-      // dangerous.
-      if (web::GetWebClient()->IsAppSpecificURL(_documentURL)) {
-        [self abortLoad];
-        NavigationManager::WebLoadParams params(webViewURL);
-        [self loadWithParams:params];
-      }
-      return;
-    } else {
-      std::unique_ptr<web::NavigationContextImpl> navigationContext =
-          [self registerLoadRequestForURL:webViewURL];
-      [_navigationStates setContext:std::move(navigationContext)
-                      forNavigation:navigation];
+
+    // Renderer-initiated loads of WebUI can be done only from other WebUI
+    // pages. WebUI pages may have increased power and using the same web
+    // process (which may potentially be controller by an attacker) is
+    // dangerous.
+    if (web::GetWebClient()->IsAppSpecificURL(_documentURL)) {
+      [self abortLoad];
+      NavigationManager::WebLoadParams params(webViewURL);
+      [self loadWithParams:params];
     }
+    return;
   }
 
-  // Ensure the URL is registered and loadPhase is as expected.
-  DCHECK(_lastRegisteredRequestURL == webViewURL);
+  std::unique_ptr<web::NavigationContextImpl> navigationContext =
+      [self registerLoadRequestForURL:webViewURL];
+  [_navigationStates setContext:std::move(navigationContext)
+                  forNavigation:navigation];
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
 }
 
