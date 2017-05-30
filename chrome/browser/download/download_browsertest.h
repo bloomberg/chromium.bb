@@ -14,11 +14,8 @@
 // from IN_PROGRESS to another state, but only after StartObserving() is called.
 class DownloadTestObserverNotInProgress : public content::DownloadTestObserver {
  public:
-  DownloadTestObserverNotInProgress(
-      content::DownloadManager* download_manager,
-      size_t count,
-      content::DownloadTestObserver::DangerousDownloadAction
-          dangerous_download_action);
+  DownloadTestObserverNotInProgress(content::DownloadManager* download_manager,
+                                    size_t count);
   ~DownloadTestObserverNotInProgress() override;
 
   void StartObserving();
