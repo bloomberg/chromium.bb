@@ -75,20 +75,15 @@ class EventRouterForwarder;
 }
 
 namespace net {
-class CTPolicyEnforcer;
 class CertVerifier;
 class CTLogVerifier;
 class HostMappingRules;
 class HostResolver;
 class HttpAuthPreferences;
-class HttpServerProperties;
-class HttpUserAgentSettings;
 class LoggingNetworkChangeObserver;
-class NetworkDelegate;
 class NetworkQualityEstimator;
 class ProxyConfigService;
 class SSLConfigService;
-class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestContextStorage;
@@ -143,20 +138,11 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<chrome::android::ExternalDataUseObserver>
         external_data_use_observer;
 #endif  // defined(OS_ANDROID)
-    // The "system" NetworkDelegate, used for Profile-agnostic network events.
-    std::unique_ptr<net::NetworkDelegate> system_network_delegate;
     std::unique_ptr<net::HostResolver> host_resolver;
     std::unique_ptr<net::CertVerifier> cert_verifier;
-    // This TransportSecurityState doesn't load or save any state. It's only
-    // used to enforce pinning for system requests and will only use built-in
-    // pins.
-    std::unique_ptr<net::TransportSecurityState> transport_security_state;
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     std::unique_ptr<net::CTVerifier> cert_transparency_verifier;
-    std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer;
-    scoped_refptr<net::SSLConfigService> ssl_config_service;
     std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
-    std::unique_ptr<net::HttpServerProperties> http_server_properties;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     std::unique_ptr<net::URLRequestContextStorage>
         system_request_context_storage;
@@ -167,7 +153,6 @@ class IOThread : public content::BrowserThreadDelegate {
         extension_event_router_forwarder;
 #endif
     std::unique_ptr<net::HostMappingRules> host_mapping_rules;
-    std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
     std::unique_ptr<
         net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver>

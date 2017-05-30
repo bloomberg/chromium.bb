@@ -553,14 +553,6 @@ void IOThread::Init() {
           new chrome_browser_data_usage::TabIdAnnotator()),
       std::move(data_use_amortizer)));
 
-  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
-      new ChromeNetworkDelegate(extension_event_router_forwarder(),
-                                &system_enable_referrers_));
-  // By default, data usage is considered off the record.
-  chrome_network_delegate->set_data_use_aggregator(
-      globals_->data_use_aggregator.get(),
-      true /* is_data_usage_off_the_record */);
-
 #if defined(OS_ANDROID)
   globals_->external_data_use_observer.reset(
       new chrome::android::ExternalDataUseObserver(
@@ -568,10 +560,6 @@ void IOThread::Init() {
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif  // defined(OS_ANDROID)
-
-  globals_->system_network_delegate =
-      globals_->data_use_ascriber->CreateNetworkDelegate(
-          std::move(chrome_network_delegate), GetMetricsDataUseForwarder());
 
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
@@ -618,8 +606,6 @@ void IOThread::Init() {
       command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
 #endif
 
-  globals_->transport_security_state.reset(new net::TransportSecurityState());
-
   std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
       net::ct::CreateLogVerifiersForKnownLogs());
 
@@ -637,13 +623,7 @@ void IOThread::Init() {
   // Register the ct_tree_tracker_ as observer for verified SCTs.
   globals_->cert_transparency_verifier->SetObserver(ct_tree_tracker_.get());
 
-  globals_->ct_policy_enforcer.reset(new net::CTPolicyEnforcer());
-  params_.ct_policy_enforcer = globals_->ct_policy_enforcer.get();
-
-  globals_->ssl_config_service = GetSSLConfigService();
-
   CreateDefaultAuthHandlerFactory();
-  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   if (command_line.HasSwitch(switches::kHostRules)) {
@@ -653,8 +633,6 @@ void IOThread::Init() {
     TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
   params_.host_mapping_rules = *globals_->host_mapping_rules.get();
-  globals_->http_user_agent_settings.reset(
-      new net::StaticHttpUserAgentSettings(std::string(), GetUserAgent()));
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
   params_.enable_token_binding =
@@ -874,13 +852,23 @@ void IOThread::ConstructSystemRequestContext() {
   context->set_enable_brotli(globals_->enable_brotli);
   context->set_name("system");
 
-  context->set_http_user_agent_settings(
-      globals_->http_user_agent_settings.get());
-  context->set_network_delegate(globals_->system_network_delegate.get());
+  context_storage->set_http_user_agent_settings(
+      base::MakeUnique<net::StaticHttpUserAgentSettings>(std::string(),
+                                                         GetUserAgent()));
+  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
+      new ChromeNetworkDelegate(extension_event_router_forwarder(),
+                                &system_enable_referrers_));
+  // By default, data usage is considered off the record.
+  chrome_network_delegate->set_data_use_aggregator(
+      globals_->data_use_aggregator.get(),
+      true /* is_data_usage_off_the_record */);
+  context_storage->set_network_delegate(
+      globals_->data_use_ascriber->CreateNetworkDelegate(
+          std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
   context->set_net_log(net_log_);
   context->set_host_resolver(globals_->host_resolver.get());
 
-  context->set_ssl_config_service(globals_->ssl_config_service.get());
+  context_storage->set_ssl_config_service(GetSSLConfigService());
   context->set_http_auth_handler_factory(
       globals_->http_auth_handler_factory.get());
 
@@ -894,20 +882,22 @@ void IOThread::ConstructSystemRequestContext() {
   context->cookie_store()->SetChannelIDServiceID(
       context->channel_id_service()->GetUniqueID());
 
-  context->set_transport_security_state(
-      globals_->transport_security_state.get());
+  context_storage->set_transport_security_state(
+      base::MakeUnique<net::TransportSecurityState>());
 
-  context->set_http_server_properties(globals_->http_server_properties.get());
+  context_storage->set_http_server_properties(
+      base::MakeUnique<net::HttpServerPropertiesImpl>());
 
   context->set_cert_verifier(globals_->cert_verifier.get());
   context->set_cert_transparency_verifier(
       globals_->cert_transparency_verifier.get());
-  context->set_ct_policy_enforcer(globals_->ct_policy_enforcer.get());
+  context_storage->set_ct_policy_enforcer(
+      base::MakeUnique<net::CTPolicyEnforcer>());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   context_storage->set_proxy_service(ProxyServiceFactory::CreateProxyService(
-      net_log_, context, globals_->system_network_delegate.get(),
+      net_log_, context, context->network_delegate(),
       std::move(system_proxy_config_service_), command_line,
       WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled()));
 

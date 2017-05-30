@@ -479,7 +479,7 @@ void ProfileImplIOData::InitializeInternal(
 
   main_context->set_transport_security_state(transport_security_state());
   main_context->set_ct_policy_enforcer(
-      io_thread_globals->ct_policy_enforcer.get());
+      io_thread_globals->system_request_context->ct_policy_enforcer());
 
   main_context->set_net_log(io_thread->net_log());
 
