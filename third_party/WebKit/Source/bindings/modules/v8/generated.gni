@@ -82,19 +82,3 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/RemotePlaybackAvailabilityCallback.cpp",
   "$bindings_modules_v8_output_dir/RemotePlaybackAvailabilityCallback.h",
 ]
-
-bindings_modules_generated_interface_files =
-    process_file_template(
-        modules_definition_idl_files,
-        [
-          "$bindings_modules_v8_output_dir/V8{{source_name_part}}.cpp",
-          "$bindings_modules_v8_output_dir/V8{{source_name_part}}.h",
-        ])
-
-bindings_modules_generated_partial_interface_files =
-    process_file_template(
-        core_idl_with_modules_dependency_files,
-        [
-          "$bindings_modules_v8_output_dir/V8{{source_name_part}}Partial.cpp",
-          "$bindings_modules_v8_output_dir/V8{{source_name_part}}Partial.h",
-        ])
