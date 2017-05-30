@@ -14,7 +14,6 @@
 #include "./av1_rtcd.h"
 #include "av1/common/warped_motion.h"
 
-/* SSSE3 version of the rotzoom/affine warp filter */
 void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
                                   int width, int height, int stride,
                                   uint16_t *pred, int p_col, int p_row,

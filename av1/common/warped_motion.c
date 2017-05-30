@@ -701,10 +701,6 @@ static const uint16_t div_lut[DIV_LUT_NUM + 1] = {
   8240,  8224,  8208,  8192,
 };
 
-static INLINE uint16_t saturate_uint(int32_t v, int bits) {
-  return (uint16_t)clamp(v, 0, (1 << bits) - 1);
-}
-
 #if CONFIG_WARPED_MOTION
 // Decomposes a divisor D such that 1/D = y/2^shift, where y is returned
 // at precision of DIV_LUT_PREC_BITS along with the shift.
@@ -946,19 +942,9 @@ static void highbd_warp_plane_old(
   }
 }
 
-// Note: For an explanation of the warp algorithm, see the comment
-// above warp_plane()
-//
-// Note also: The "worst case" in terms of modulus of the data stored into 'tmp'
-// (ie, the result of 'sum' in the horizontal filter) occurs when:
-// coeffs = { -2,   8, -22,  87,  72, -21,   8, -2}, and
-// ref =    {  0, 255,   0, 255, 255,   0, 255,  0}
-// Before rounding, this gives sum = 716625. After rounding,
-// HORSHEAR_REDUCE_PREC_BITS = 4 => sum = 44789 > 2^15
-// HORSHEAR_REDUCE_PREC_BITS = 5 => sum = 22395 < 2^15
-//
-// So, as long as HORSHEAR_REDUCE_PREC_BITS >= 5, we can safely use a 16-bit
-// intermediate array.
+/* Note: For an explanation of the warp algorithm, and some notes on bit widths
+    for hardware implementations, see the comments above av1_warp_affine_c
+*/
 void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                               int width, int height, int stride, uint16_t *pred,
                               int p_col, int p_row, int p_width, int p_height,
@@ -966,24 +952,8 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                               int subsampling_y, int bd, int comp_avg,
                               int16_t alpha, int16_t beta, int16_t gamma,
                               int16_t delta) {
-#if HORSHEAR_REDUCE_PREC_BITS >= 5
-  int16_t tmp[15 * 8];
-#else
-  int32_t tmp[15 * 8];
-#endif
+  uint32_t tmp[15 * 8];
   int i, j, k, l, m;
-
-  /* Note: For this code to work, the left/right frame borders need to be
-     extended by at least 13 pixels each. By the time we get here, other
-     code will have set up this border, but we allow an explicit check
-     for debugging purposes.
-  */
-  /*for (i = 0; i < height; ++i) {
-    for (j = 0; j < 13; ++j) {
-      assert(ref[i * stride - 13 + j] == ref[i * stride]);
-      assert(ref[i * stride + width + j] == ref[i * stride + (width - 1)]);
-    }
-  }*/
 
   for (i = p_row; i < p_row + p_height; i += 8) {
     for (j = p_col; j < p_col + p_width; j += 8) {
@@ -1021,45 +991,28 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
         else if (iy > height - 1)
           iy = height - 1;
 
-        if (ix4 <= -7) {
-          for (l = 0; l < 8; ++l) {
-            tmp[(k + 7) * 8 + l] =
-                (1 << (bd + WARPEDPIXEL_FILTER_BITS -
-                       HORSHEAR_REDUCE_PREC_BITS - 1)) +
-                ref[iy * stride] * (1 << (WARPEDPIXEL_FILTER_BITS -
-                                          HORSHEAR_REDUCE_PREC_BITS));
-          }
-        } else if (ix4 >= width + 6) {
-          for (l = 0; l < 8; ++l) {
-            tmp[(k + 7) * 8 + l] = (1 << (bd + WARPEDPIXEL_FILTER_BITS -
-                                          HORSHEAR_REDUCE_PREC_BITS - 1)) +
-                                   ref[iy * stride + (width - 1)] *
-                                       (1 << (WARPEDPIXEL_FILTER_BITS -
-                                              HORSHEAR_REDUCE_PREC_BITS));
-          }
-        } else {
-          int sx = sx4 + beta * (k + 4);
+        int sx = sx4 + beta * (k + 4);
+        for (l = -4; l < 4; ++l) {
+          int ix = ix4 + l - 3;
+          const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
+                           WARPEDPIXEL_PREC_SHIFTS;
+          assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+          const int16_t *coeffs = warped_filter[offs];
 
-          for (l = -4; l < 4; ++l) {
-            int ix = ix4 + l - 3;
-            const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
-                             WARPEDPIXEL_PREC_SHIFTS;
-            const int16_t *coeffs = warped_filter[offs];
-            int32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
-            // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-            for (m = 0; m < 8; ++m) {
-              sum += ref[iy * stride + ix + m] * coeffs[m];
-            }
-            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
-#if HORSHEAR_REDUCE_PREC_BITS >= 5
-            tmp[(k + 7) * 8 + (l + 4)] =
-                saturate_uint(sum, bd + WARPEDPIXEL_FILTER_BITS -
-                                       HORSHEAR_REDUCE_PREC_BITS + 1);
-#else
-            tmp[(k + 7) * 8 + (l + 4)] = sum;
-#endif
-            sx += alpha;
+          uint32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
+          for (m = 0; m < 8; ++m) {
+            int sample_x = ix + m;
+            if (sample_x < 0)
+              sample_x = 0;
+            else if (sample_x > width - 1)
+              sample_x = width - 1;
+            sum += ref[iy * stride + sample_x] * coeffs[m];
           }
+          sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
+          assert(sum < (1U << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
+                               HORSHEAR_REDUCE_PREC_BITS)));
+          tmp[(k + 7) * 8 + (l + 4)] = sum;
+          sx += alpha;
         }
       }
 
@@ -1071,18 +1024,22 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
+          assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
-          int32_t sum = -(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1));
-          // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+
+          uint32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
+                               HORSHEAR_REDUCE_PREC_BITS);
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
-          sum = clip_pixel_highbd(
-              ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS), bd);
+          sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);
+          assert(sum < (1U << (bd + 2)));
+          uint16_t px =
+              clip_pixel_highbd(sum - (1 << (bd - 1)) - (1 << bd), bd);
           if (comp_avg)
-            *p = ROUND_POWER_OF_TWO(*p + sum, 1);
+            *p = ROUND_POWER_OF_TWO(*p + px, 1);
           else
-            *p = sum;
+            *p = px;
           sy += gamma;
         }
       }
@@ -1208,23 +1165,71 @@ static void warp_plane_old(const WarpedMotionParams *const wm,
    / a b \  = /   1       0    \ * / 1+alpha  beta \
    \ c d /    \ gamma  1+delta /   \    0      1   /
    where a, b, c, d are wmmat[2], wmmat[3], wmmat[4], wmmat[5] respectively.
-   The second shear (with alpha and beta) is applied by the horizontal filter,
-   then the first shear (with gamma and delta) is applied by the vertical
-   filter.
+   The horizontal shear (with alpha and beta) is applied first,
+   then the vertical shear (with gamma and delta) is applied second.
 
    The only limitation is that, to fit this in a fixed 8-tap filter size,
    the fractional pixel offsets must be at most +-1. Since the horizontal filter
    generates 15 rows of 8 columns, and the initial point we project is at (4, 4)
    within the block, the parameters must satisfy
-   4 * |alpha| + 7 * |beta| <= 1   and   4 * |gamma| + 7 * |delta| <= 1
+   4 * |alpha| + 7 * |beta| <= 1   and   4 * |gamma| + 4 * |delta| <= 1
    for this filter to be applicable.
 
-   Note: warp_affine() assumes that the caller has done all of the relevant
+   Note: This function assumes that the caller has done all of the relevant
    checks, ie. that we have a ROTZOOM or AFFINE model, that wm[4] and wm[5]
    are set appropriately (if using a ROTZOOM model), and that alpha, beta,
    gamma, delta are all in range.
 
    TODO(david.barker): Maybe support scaled references?
+*/
+/* A note on hardware implementation:
+    The warp filter is intended to be implementable using the same hardware as
+    the high-precision convolve filters from the loop-restoration and
+    convolve-round experiments.
+
+    For a single filter stage, considering all of the coefficient sets for the
+    warp filter and the regular convolution filter, an input in the range
+    [0, 2^k - 1] is mapped into the range [-56 * (2^k - 1), 184 * (2^k - 1)]
+    before rounding.
+
+    Allowing for some changes to the filter coefficient sets, call the range
+    [-64 * 2^k, 192 * 2^k]. Then, if we initialize the accumulator to 64 * 2^k,
+    we can replace this by the range [0, 256 * 2^k], which can be stored in an
+    unsigned value with 8 + k bits.
+
+    This allows the derivation of the appropriate bit widths and offsets for
+    the various intermediate values: If
+
+    F := WARPEDPIXEL_FILTER_BITS = 7 (or else the above ranges need adjusting)
+         So a *single* filter stage maps a k-bit input to a (k + F + 1)-bit
+         intermediate value.
+    H := HORSHEAR_REDUCE_PREC_BITS
+    V := VERSHEAR_REDUCE_PREC_BITS
+    (and note that we must have H + V = 2*F for the output to have the same
+     scale as the input)
+
+    then we end up with the following offsets and ranges:
+    Horizontal filter: Apply an offset of 1 << (bd + F - 1), sum fits into a
+                       uint{bd + F + 1}
+    After rounding: The values stored in 'tmp' fit into a uint{bd + F + 1 - H}.
+    Vertical filter: Apply an offset of 1 << (bd + 2*F - H), sum fits into a
+                     uint{bd + 2*F + 2 - H}
+    After rounding: The final value, before undoing the offset, fits into a
+                    uint{bd + 2}.
+
+    Then we need to undo the offsets before clamping to a pixel. Note that,
+    if we do this at the end, the amount to subtract is actually independent
+    of H and V:
+
+    offset to subtract = (1 << ((bd + F - 1) - H + F - V)) +
+                         (1 << ((bd + 2*F - H) - V))
+                      == (1 << (bd - 1)) + (1 << bd)
+
+    This allows us to entirely avoid clamping in both the warp filter and
+    the convolve-round experiment. As of the time of writing, the Wiener filter
+    from loop-restoration can encode a central coefficient up to 216, which
+    leads to a maximum value of about 282 * 2^k after applying the offset.
+    So in that case we still need to clamp.
 */
 void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                        int height, int stride, uint8_t *pred, int p_col,
@@ -1232,21 +1237,9 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                        int subsampling_x, int subsampling_y, int comp_avg,
                        int16_t alpha, int16_t beta, int16_t gamma,
                        int16_t delta) {
-  int16_t tmp[15 * 8];
+  uint16_t tmp[15 * 8];
   int i, j, k, l, m;
   const int bd = 8;
-
-  /* Note: For this code to work, the left/right frame borders need to be
-     extended by at least 13 pixels each. By the time we get here, other
-     code will have set up this border, but we allow an explicit check
-     for debugging purposes.
-  */
-  /*for (i = 0; i < height; ++i) {
-    for (j = 0; j < 13; ++j) {
-      assert(ref[i * stride - 13 + j] == ref[i * stride]);
-      assert(ref[i * stride + width + j] == ref[i * stride + (width - 1)]);
-    }
-  }*/
 
   for (i = p_row; i < p_row + p_height; i += 8) {
     for (j = p_col; j < p_col + p_width; j += 8) {
@@ -1278,86 +1271,66 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
 
       // Horizontal filter
       for (k = -7; k < 8; ++k) {
+        // Clamp to top/bottom edge of the frame
         int iy = iy4 + k;
         if (iy < 0)
           iy = 0;
         else if (iy > height - 1)
           iy = height - 1;
 
-        if (ix4 <= -7) {
-          // In this case, the rightmost pixel sampled is in column
-          // ix4 + 3 + 7 - 3 = ix4 + 7 <= 0, ie. the entire block
-          // will sample only from the leftmost column
-          // (once border extension is taken into account)
-          for (l = 0; l < 8; ++l) {
-            tmp[(k + 7) * 8 + l] =
-                (1 << (bd + WARPEDPIXEL_FILTER_BITS -
-                       HORSHEAR_REDUCE_PREC_BITS - 1)) +
-                ref[iy * stride] * (1 << (WARPEDPIXEL_FILTER_BITS -
-                                          HORSHEAR_REDUCE_PREC_BITS));
-          }
-        } else if (ix4 >= width + 6) {
-          // In this case, the leftmost pixel sampled is in column
-          // ix4 - 4 + 0 - 3 = ix4 - 7 >= width - 1, ie. the entire block
-          // will sample only from the rightmost column
-          // (once border extension is taken into account)
-          for (l = 0; l < 8; ++l) {
-            tmp[(k + 7) * 8 + l] = (1 << (bd + WARPEDPIXEL_FILTER_BITS -
-                                          HORSHEAR_REDUCE_PREC_BITS - 1)) +
-                                   ref[iy * stride + (width - 1)] *
-                                       (1 << (WARPEDPIXEL_FILTER_BITS -
-                                              HORSHEAR_REDUCE_PREC_BITS));
-          }
-        } else {
-          // If we get here, then
-          // the leftmost pixel sampled is
-          // ix4 - 4 + 0 - 3 = ix4 - 7 >= -13
-          // and the rightmost pixel sampled is at most
-          // ix4 + 3 + 7 - 3 = ix4 + 7 <= width + 12
-          // So, assuming that border extension has been done, we
-          // don't need to explicitly clamp values.
-          int sx = sx4 + alpha * (4 - 4) + beta * (k + 4);
+        int sx = sx4 + beta * (k + 4);
 
-          for (l = -4; l < 4; ++l) {
-            int ix = ix4 + l - 3;
-            // At this point, sx = sx4 + alpha * l + beta * k
-            const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
-                             WARPEDPIXEL_PREC_SHIFTS;
-            const int16_t *coeffs = warped_filter[offs];
-            int32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
-            // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-            for (m = 0; m < 8; ++m) {
-              sum += ref[iy * stride + ix + m] * coeffs[m];
-            }
-            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
-            tmp[(k + 7) * 8 + (l + 4)] =
-                saturate_uint(sum, bd + WARPEDPIXEL_FILTER_BITS -
-                                       HORSHEAR_REDUCE_PREC_BITS + 1);
-            sx += alpha;
+        for (l = -4; l < 4; ++l) {
+          int ix = ix4 + l - 3;
+          // At this point, sx = sx4 + alpha * l + beta * k
+          const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
+                           WARPEDPIXEL_PREC_SHIFTS;
+          assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+          const int16_t *coeffs = warped_filter[offs];
+
+          uint16_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
+          for (m = 0; m < 8; ++m) {
+            // Clamp to left/right edge of the frame
+            int sample_x = ix + m;
+            if (sample_x < 0)
+              sample_x = 0;
+            else if (sample_x > width - 1)
+              sample_x = width - 1;
+
+            sum += ref[iy * stride + sample_x] * coeffs[m];
           }
+          sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
+          assert(sum < (1 << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
+                              HORSHEAR_REDUCE_PREC_BITS)));
+          tmp[(k + 7) * 8 + (l + 4)] = sum;
+          sx += alpha;
         }
       }
 
       // Vertical filter
       for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
-        int sy = sy4 + gamma * (4 - 4) + delta * (k + 4);
+        int sy = sy4 + delta * (k + 4);
         for (l = -4; l < AOMMIN(4, p_col + p_width - j - 4); ++l) {
           uint8_t *p =
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           // At this point, sy = sy4 + gamma * l + delta * k
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
+          assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
-          int32_t sum = -(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1));
-          // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+
+          uint32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
+                               HORSHEAR_REDUCE_PREC_BITS);
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
-          sum = clip_pixel(ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS));
+          sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);
+          assert(sum < (1 << (bd + 2)));
+          uint8_t px = clip_pixel(sum - (1 << (bd - 1)) - (1 << bd));
           if (comp_avg)
-            *p = ROUND_POWER_OF_TWO(*p + sum, 1);
+            *p = ROUND_POWER_OF_TWO(*p + px, 1);
           else
-            *p = sum;
+            *p = px;
           sy += gamma;
         }
       }

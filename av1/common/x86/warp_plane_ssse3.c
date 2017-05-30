@@ -201,7 +201,6 @@ static const uint8_t even_mask[16] = { 0, 2,  2,  4,  4,  6,  6,  8,
 static const uint8_t odd_mask[16] = { 1, 3,  3,  5,  5,  7,  7,  9,
                                       9, 11, 11, 13, 13, 15, 15, 0 };
 
-/* SSSE3 version of the rotzoom/affine warp filter */
 void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
                            int height, int stride, uint8_t *pred, int p_col,
                            int p_row, int p_width, int p_height, int p_stride,
@@ -373,16 +372,19 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
               _mm_set1_epi16((1 << (bd + WARPEDPIXEL_FILTER_BITS - 1)) +
                              ((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1));
 
-          // Note: res_02 + res_46 and res_13 + res_57 are always in the range
-          // [-6120, 32640]. This gives us enough room to add the rounding
-          // constant to res_a, *as long as HORSHEAR_REDUCE_PREC_BITS <= 6*
-          const __m128i res_a =
-              _mm_add_epi16(_mm_add_epi16(res_02, res_46), round_const);
-          const __m128i res_b = _mm_add_epi16(res_13, res_57);
-
-          const __m128i res = _mm_srli_epi16(_mm_add_epi16(res_a, res_b),
-                                             HORSHEAR_REDUCE_PREC_BITS);
-          tmp[k + 7] = res;
+          // Note: The values res_02 + res_46 and res_13 + res_57 both
+          // fit into int16s at this point, but their sum may be too wide to fit
+          // into an int16. However, once we also add round_const, the sum of
+          // all of these fits into a uint16.
+          //
+          // The wrapping behaviour of _mm_add_* is used here to make sure we
+          // get the correct result despite converting between different
+          // (implicit) types.
+          const __m128i res_even = _mm_add_epi16(res_02, res_46);
+          const __m128i res_odd = _mm_add_epi16(res_13, res_57);
+          const __m128i res =
+              _mm_add_epi16(_mm_add_epi16(res_even, res_odd), round_const);
+          tmp[k + 7] = _mm_srli_epi16(res, HORSHEAR_REDUCE_PREC_BITS);
         }
       }
 
