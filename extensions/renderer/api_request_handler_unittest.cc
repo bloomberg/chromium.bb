@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
@@ -92,6 +93,13 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
             GetStringPropertyFromObject(context->Global(), context, "result"));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
+
+  request_id = request_handler.StartRequest(
+      context, kMethod, base::MakeUnique<base::ListValue>(),
+      v8::Local<v8::Function>(), v8::Local<v8::Function>(),
+      binding::RequestThread::UI);
+  EXPECT_NE(-1, request_id);
+  request_handler.CompleteRequest(request_id, base::ListValue(), std::string());
 }
 
 // Tests that trying to run non-existent or invalided requests is a no-op.
@@ -220,7 +228,8 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   ASSERT_TRUE(gin::Converter<ArgumentList>::FromV8(isolate(), result, &args));
   ASSERT_EQ(5u, args.size());
   EXPECT_EQ("\"method\"", V8ToString(args[0], context));
-  EXPECT_EQ("{}", V8ToString(args[1], context));
+  EXPECT_EQ(base::StringPrintf("{\"id\":%d}", request_id),
+            V8ToString(args[1], context));
   EXPECT_EQ(callback, args[2]);
   EXPECT_EQ("\"response\"", V8ToString(args[3], context));
   EXPECT_EQ("\"arguments\"", V8ToString(args[4], context));
@@ -261,7 +270,8 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArgumentsWithEmptyCallback) {
   ASSERT_TRUE(gin::Converter<ArgumentList>::FromV8(isolate(), result, &args));
   ASSERT_EQ(3u, args.size());
   EXPECT_EQ("\"method\"", V8ToString(args[0], context));
-  EXPECT_EQ("{}", V8ToString(args[1], context));
+  EXPECT_EQ(base::StringPrintf("{\"id\":%d}", request_id),
+            V8ToString(args[1], context));
   EXPECT_TRUE(args[2]->IsUndefined());
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
