@@ -2126,7 +2126,7 @@
       converter: "ConvertTextSizeAdjust",
       inherited: true,
       getter: "GetTextSizeAdjust",
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "TextSizeAdjust",
       include_paths: ["core/style/TextSizeAdjust.h"],
       default_value: "TextSizeAdjust::AdjustAuto()",
