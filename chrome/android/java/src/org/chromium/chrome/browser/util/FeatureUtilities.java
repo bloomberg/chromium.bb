@@ -268,6 +268,7 @@ public class FeatureUtilities {
      * @return Whether or not the expand button for Chrome Home is enabled.
      */
     public static boolean isChromeHomeExpandButtonEnabled() {
+        if (!ChromeFeatureList.isInitialized()) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
     }
 
