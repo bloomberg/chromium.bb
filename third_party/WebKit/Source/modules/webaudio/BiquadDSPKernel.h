@@ -75,8 +75,15 @@ class BiquadDSPKernel final : public AudioDSPKernel {
                           const float* detune);
 
  private:
+  // Compute the tail time using the BiquadFilter coefficients at
+  // index |coef_index|.
+  void UpdateTailTime(int coef_index);
+
   // Synchronize process() with getting and setting the filter coefficients.
   mutable Mutex process_lock_;
+
+  // The current tail time for biquad filter.
+  double tail_time_;
 };
 
 }  // namespace blink
