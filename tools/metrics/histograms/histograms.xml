@@ -26438,6 +26438,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Linux.Distro" enum="LinuxDistro">
+  <owner>timbrown@chromium.org</owner>
+  <summary>The Linux distro used. Logged on each start up.</summary>
+</histogram>
+
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
   <owner>thestig@chromium.org</owner>
   <summary>

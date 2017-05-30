@@ -40,6 +40,10 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
+#include "base/linux_util.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
@@ -59,6 +63,27 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum UMALinuxDistro {
+  UMA_LINUX_DISTRO_UNKNOWN = 0,
+  UMA_LINUX_DISTRO_UBUNTU_OTHER = 1,
+  UMA_LINUX_DISTRO_UBUNTU_14_04 = 2,
+  UMA_LINUX_DISTRO_UBUNTU_16_04 = 3,
+  UMA_LINUX_DISTRO_UBUNTU_16_10 = 4,
+  UMA_LINUX_DISTRO_UBUNTU_17_04 = 5,
+  UMA_LINUX_DISTRO_DEBIAN_OTHER = 6,
+  UMA_LINUX_DISTRO_DEBIAN_8 = 7,
+  UMA_LINUX_DISTRO_OPENSUSE_OTHER = 8,
+  UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_2 = 9,
+  UMA_LINUX_DISTRO_FEDORA_OTHER = 10,
+  UMA_LINUX_DISTRO_FEDORA_24 = 11,
+  UMA_LINUX_DISTRO_FEDORA_25 = 12,
+  // Note: Add new distros to the list above this line, and update LinuxDistro
+  // in tools/metrics/histograms/enums.xml accordingly.
+  UMA_LINUX_DISTRO_MAX
+};
 
 enum UMALinuxGlibcVersion {
   UMA_LINUX_GLIBC_NOT_PARSEABLE,
@@ -163,7 +188,7 @@ void RecordStartupMetricsOnBlockingPool() {
   UMA_HISTOGRAM_ENUMERATION("OSX.BluetoothAvailability",
                             availability,
                             bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
-#endif   // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
 
   // Record whether Chrome is the default browser or not.
   shell_integration::DefaultWebClientState default_state =
@@ -171,6 +196,67 @@ void RecordStartupMetricsOnBlockingPool() {
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
                             shell_integration::NUM_DEFAULT_STATES);
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+void RecordLinuxDistro() {
+  UMALinuxDistro distro_result = UMA_LINUX_DISTRO_UNKNOWN;
+
+  std::vector<std::string> distro_tokens =
+      base::SplitString(base::GetLinuxDistro(), base::kWhitespaceASCII,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (distro_tokens.size() > 0) {
+    if (distro_tokens[0] == "Ubuntu") {
+      // Format: Ubuntu YY.MM.P [LTS]
+      // We are only concerned with release (YY.MM) not the patch (P).
+      distro_result = UMA_LINUX_DISTRO_UBUNTU_OTHER;
+      if (distro_tokens.size() >= 3) {
+        base::Version version(distro_tokens[1]);
+        if (version.IsValid()) {
+          if (version.CompareToWildcardString("14.04.*") == 0) {
+            distro_result = UMA_LINUX_DISTRO_UBUNTU_14_04;
+          } else if (version.CompareToWildcardString("16.04.*") == 0) {
+            distro_result = UMA_LINUX_DISTRO_UBUNTU_16_04;
+          } else if (version.CompareToWildcardString("16.10.*") == 0) {
+            distro_result = UMA_LINUX_DISTRO_UBUNTU_16_10;
+          } else if (version.CompareToWildcardString("17.04.*") == 0) {
+            distro_result = UMA_LINUX_DISTRO_UBUNTU_17_04;
+          }
+        }
+      }
+    } else if (distro_tokens[0] == "openSUSE") {
+      // Format: openSUSE Leap RR.R
+      distro_result = UMA_LINUX_DISTRO_OPENSUSE_OTHER;
+      if (distro_tokens.size() >= 4 && distro_tokens[1] == "Leap" &&
+          distro_tokens[2] == "42.2") {
+        distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_2;
+      }
+    } else if (distro_tokens[0] == "Debian") {
+      // Format: Debian GNU/Linux R.P (<codename>)
+      // We are only concerned with the release (R) not the patch (P).
+      distro_result = UMA_LINUX_DISTRO_DEBIAN_OTHER;
+      if (distro_tokens.size() >= 3) {
+        base::Version version(distro_tokens[2]);
+        if (version.IsValid() && version.CompareToWildcardString("8.*")) {
+          distro_result = UMA_LINUX_DISTRO_DEBIAN_8;
+        }
+      }
+    } else if (distro_tokens[0] == "Fedora") {
+      // Format: Fedora release RR (<codename>)
+      distro_result = UMA_LINUX_DISTRO_FEDORA_OTHER;
+      if (distro_tokens.size() >= 3) {
+        if (distro_tokens[2] == "24") {
+          distro_result = UMA_LINUX_DISTRO_FEDORA_24;
+        } else if (distro_tokens[2] == "25") {
+          distro_result = UMA_LINUX_DISTRO_FEDORA_25;
+        }
+      }
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Linux.Distro", distro_result,
+                            UMA_LINUX_DISTRO_MAX);
+}
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 void RecordLinuxGlibcVersion() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -382,6 +468,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager",
                             GetLinuxWindowManager(),
                             UMA_LINUX_WINDOW_MANAGER_COUNT);
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           base::BindOnce(&RecordLinuxDistro));
 #endif
 
 #if defined(USE_OZONE) || defined(USE_X11)
