@@ -80,7 +80,7 @@ class APP_LIST_EXPORT SearchResultView
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

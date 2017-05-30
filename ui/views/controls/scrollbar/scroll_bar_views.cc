@@ -35,7 +35,7 @@ class ScrollBarButton : public BaseScrollBarButton {
   const char* GetClassName() const override { return "ScrollBarButton"; }
 
  protected:
-  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
   ui::NativeTheme::ExtraParams GetNativeThemeParams() const;
@@ -80,7 +80,7 @@ gfx::Size ScrollBarButton::CalculatePreferredSize() const {
       GetNativeThemePart(), GetNativeThemeState(), GetNativeThemeParams());
 }
 
-void ScrollBarButton::OnPaint(gfx::Canvas* canvas) {
+void ScrollBarButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect bounds(GetPreferredSize());
   GetNativeTheme()->Paint(canvas->sk_canvas(), GetNativeThemePart(),
                           GetNativeThemeState(), bounds,

@@ -178,13 +178,6 @@ bool MenuButton::IsTriggerableEventType(const ui::Event& event) {
   return event.type() == ui::ET_GESTURE_TAP;
 }
 
-void MenuButton::OnPaint(gfx::Canvas* canvas) {
-  LabelButton::OnPaint(canvas);
-
-  if (show_menu_marker_)
-    PaintMenuMarker(canvas);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MenuButton - Events
@@ -365,6 +358,11 @@ void MenuButton::NotifyClick(const ui::Event& event) {
   // We don't forward events to the normal button listener, instead using the
   // MenuButtonListener.
   Activate(&event);
+}
+
+void MenuButton::PaintButtonContents(gfx::Canvas* canvas) {
+  if (show_menu_marker_)
+    PaintMenuMarker(canvas);
 }
 
 void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated,

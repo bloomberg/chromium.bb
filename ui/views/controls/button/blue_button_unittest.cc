@@ -27,12 +27,12 @@ TEST_F(BlueButtonTest, Border) {
   LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("foo"));
   EXPECT_EQ(Button::STYLE_TEXTBUTTON, button->style());
   // Focus painter by default.
-  EXPECT_TRUE(button->focus_painter());
+  EXPECT_TRUE(button->focus_painter_.get());
 
   // Switch to the same style as BlueButton for a more compelling comparison.
   button->SetStyleDeprecated(Button::STYLE_BUTTON);
   EXPECT_EQ(Button::STYLE_BUTTON, button->style());
-  EXPECT_FALSE(button->focus_painter());
+  EXPECT_FALSE(button->focus_painter_.get());
 
   widget->GetContentsView()->AddChildView(button);
   button->SizeToPreferredSize();
@@ -47,7 +47,7 @@ TEST_F(BlueButtonTest, Border) {
   // ... a special blue border should be used.
   BlueButton* blue_button = new BlueButton(nullptr, base::ASCIIToUTF16("foo"));
   EXPECT_EQ(Button::STYLE_BUTTON, blue_button->style());
-  EXPECT_FALSE(blue_button->focus_painter());
+  EXPECT_FALSE(blue_button->focus_painter_.get());
 
   widget->GetContentsView()->AddChildView(blue_button);
   blue_button->SizeToPreferredSize();

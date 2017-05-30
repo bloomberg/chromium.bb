@@ -78,7 +78,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
@@ -101,6 +100,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void StateChanged(ButtonState old_state) override;
   void NotifyClick(const ui::Event& event) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Offset of the associated menu position.
   gfx::Point menu_offset_;

@@ -17,6 +17,8 @@
 
 namespace views {
 
+class Painter;
+
 // A button with custom rendering. The base of ImageButton and LabelButton.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain, unless in accessibility mode. Call
@@ -104,6 +106,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
 
+  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
+
   // Overridden from View:
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
@@ -122,6 +126,9 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void OnDragDone() override;
+  // Instead of overriding this, subclasses that want custom painting should use
+  // PaintButtonContents.
+  void OnPaint(gfx::Canvas* canvas) final;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
 
@@ -135,6 +142,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // Overridden from View:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  void OnFocus() override;
   void OnBlur() override;
 
  protected:
@@ -162,6 +170,11 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // we simply return IsTriggerableEvent(event).
   virtual bool ShouldEnterPushedState(const ui::Event& event);
 
+  // Override to paint custom button contents. Any background or border set on
+  // the view will be painted before this is called and |focus_painter_| will be
+  // painted afterwards.
+  virtual void PaintButtonContents(gfx::Canvas* canvas);
+
   // Returns true if the button should enter hovered state; that is, if the
   // mouse is over the button, and no other window has capture (which would
   // prevent the button from receiving MouseExited events and updating its
@@ -177,6 +190,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BlueButtonTest, Border);
+
   ButtonState state_;
 
   gfx::ThrobAnimation hover_animation_;
@@ -206,6 +221,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;
+
+  std::unique_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };

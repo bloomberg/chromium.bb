@@ -46,12 +46,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
   // ActionableView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Called whenever the shelf alignment changes.
   virtual void UpdateAfterShelfAlignmentChange();
@@ -109,7 +109,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   bool PerformAction(const ui::Event& event) override;
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
-  void OnPaintFocus(gfx::Canvas* canvas) override;
 
  private:
   class TrayWidgetObserver;

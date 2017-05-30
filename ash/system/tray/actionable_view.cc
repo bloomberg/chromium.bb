@@ -17,6 +17,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 
@@ -34,16 +35,12 @@ ActionableView::ActionableView(SystemTrayItem* owner,
   set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
   set_has_ink_drop_action_on_click(false);
   set_notify_enter_exit_on_child(true);
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 ActionableView::~ActionableView() {
   if (destroyed_)
     *destroyed_ = true;
-}
-
-void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
-  gfx::RectF rect(GetLocalBounds());
-  canvas->DrawSolidFocusRect(rect, kFocusBorderColor, kFocusBorderThickness);
 }
 
 void ActionableView::HandlePerformActionResult(bool action_performed,
@@ -72,24 +69,6 @@ void ActionableView::SetAccessibleName(const base::string16& name) {
 void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->SetName(accessible_name_);
-}
-
-void ActionableView::OnPaint(gfx::Canvas* canvas) {
-  CustomButton::OnPaint(canvas);
-  if (HasFocus())
-    OnPaintFocus(canvas);
-}
-
-void ActionableView::OnFocus() {
-  CustomButton::OnFocus();
-  // We render differently when focused.
-  SchedulePaint();
-}
-
-void ActionableView::OnBlur() {
-  CustomButton::OnBlur();
-  // We render differently when focused.
-  SchedulePaint();
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {

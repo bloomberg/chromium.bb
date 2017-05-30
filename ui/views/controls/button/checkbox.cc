@@ -125,23 +125,6 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
-void Checkbox::OnPaint(gfx::Canvas* canvas) {
-  LabelButton::OnPaint(canvas);
-
-  if (!UseMd() || !HasFocus())
-    return;
-
-  cc::PaintFlags focus_flags;
-  focus_flags.setAntiAlias(true);
-  focus_flags.setColor(
-      SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_FocusedBorderColor),
-                  0x66));
-  focus_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  focus_flags.setStrokeWidth(2);
-  PaintFocusRing(canvas, focus_flags);
-}
-
 void Checkbox::OnFocus() {
   LabelButton::OnFocus();
   if (!UseMd())
@@ -179,6 +162,21 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
 SkColor Checkbox::GetInkDropBaseColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ButtonEnabledColor);
+}
+
+void Checkbox::PaintButtonContents(gfx::Canvas* canvas) {
+  if (!UseMd() || !HasFocus())
+    return;
+
+  cc::PaintFlags focus_flags;
+  focus_flags.setAntiAlias(true);
+  focus_flags.setColor(
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_FocusedBorderColor),
+                  0x66));
+  focus_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  focus_flags.setStrokeWidth(2);
+  PaintFocusRing(canvas, focus_flags);
 }
 
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {

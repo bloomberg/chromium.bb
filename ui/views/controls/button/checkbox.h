@@ -43,13 +43,13 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // LabelButton:
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
 
   // Set the image shown for each button state depending on whether it is

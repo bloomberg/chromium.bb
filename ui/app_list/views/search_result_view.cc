@@ -240,7 +240,7 @@ void SearchResultView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
 }
 
-void SearchResultView::OnPaint(gfx::Canvas* canvas) {
+void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;

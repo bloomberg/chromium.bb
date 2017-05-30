@@ -101,7 +101,30 @@ const char* FrameCaptionButton::GetClassName() const {
   return kViewClassName;
 }
 
-void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
+void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
+  // CustomButton does not become pressed when the user drags off and then back
+  // onto the button. Make FrameCaptionButton pressed in this case because this
+  // behavior is more consistent with AlternateFrameSizeButton.
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    if (HitTestPoint(event->location())) {
+      SetState(STATE_PRESSED);
+      RequestFocus();
+      event->StopPropagation();
+    } else {
+      SetState(STATE_NORMAL);
+    }
+  } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
+    if (HitTestPoint(event->location())) {
+      SetState(STATE_HOVERED);
+      NotifyClick(*event);
+      event->StopPropagation();
+    }
+  }
+  CustomButton::OnGestureEvent(event);
+}
+
+void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   SkAlpha bg_alpha = SK_AlphaTRANSPARENT;
   if (hover_animation().is_animating())
     bg_alpha = hover_animation().CurrentValueBetween(0, kHoveredAlpha);
@@ -143,29 +166,6 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(icon_image_, centered_origin_x, centered_origin_y,
                          flags);
   }
-}
-
-void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
-  // CustomButton does not become pressed when the user drags off and then back
-  // onto the button. Make FrameCaptionButton pressed in this case because this
-  // behavior is more consistent with AlternateFrameSizeButton.
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    if (HitTestPoint(event->location())) {
-      SetState(STATE_PRESSED);
-      RequestFocus();
-      event->StopPropagation();
-    } else {
-      SetState(STATE_NORMAL);
-    }
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
-    if (HitTestPoint(event->location())) {
-      SetState(STATE_HOVERED);
-      NotifyClick(*event);
-      event->StopPropagation();
-    }
-  }
-  CustomButton::OnGestureEvent(event);
 }
 
 int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {

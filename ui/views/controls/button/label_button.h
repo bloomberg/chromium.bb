@@ -23,7 +23,6 @@ namespace views {
 
 class InkDropContainerView;
 class LabelButtonBorder;
-class Painter;
 
 // LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public CustomButton,
@@ -89,9 +88,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Call SetMinSize(gfx::Size()) to clear the size if needed.
   void SetImageLabelSpacing(int spacing);
 
-  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
-  Painter* focus_painter() { return focus_painter_.get(); }
-
   // Creates the default border for this button. This can be overridden by
   // subclasses.
   virtual std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const;
@@ -129,7 +125,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual bool ShouldUseFloodFillInkDrop() const;
 
   // View:
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
@@ -238,8 +233,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // text direction) while |this| is laid out as ALIGN_LEFT (alignment matches
   // UI direction).
   gfx::HorizontalAlignment horizontal_alignment_;
-
-  std::unique_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

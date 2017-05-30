@@ -54,14 +54,13 @@ class PageSwitcherButton : public views::CustomButton {
     return gfx::Size(button_width_, kButtonHeight);
   }
 
-  void OnPaint(gfx::Canvas* canvas) override {
+  void PaintButtonContents(gfx::Canvas* canvas) override {
     if (state() == STATE_HOVERED)
       PaintButton(canvas, kPagerHoverColor);
     else
       PaintButton(canvas, kPagerNormalColor);
   }
 
- private:
   void OnGestureEvent(ui::GestureEvent* event) override {
     CustomButton::OnGestureEvent(event);
 
@@ -73,6 +72,7 @@ class PageSwitcherButton : public views::CustomButton {
     SchedulePaint();
   }
 
+ private:
   // Paints a button that has two rounded corner at bottom.
   void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
     gfx::Rect rect(GetContentsBounds());

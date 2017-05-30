@@ -58,12 +58,9 @@ SkColor Windows10CaptionButton::GetBaseColor() const {
   return color_utils::IsDark(blend_color) ? SK_ColorWHITE : SK_ColorBLACK;
 }
 
-void Windows10CaptionButton::OnPaint(gfx::Canvas* canvas) {
-  PaintBackground(canvas);
-  PaintSymbol(canvas);
-}
-
-void Windows10CaptionButton::PaintBackground(gfx::Canvas* canvas) {
+void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
+  // Paint the background of the button (the semi-transparent rectangle that
+  // appears when you hover or press the button).
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   const SkColor bg_color =
       theme_provider->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
@@ -107,6 +104,10 @@ void Windows10CaptionButton::PaintBackground(gfx::Canvas* canvas) {
     alpha = gfx::Tween::IntValueBetween(hover_animation().GetCurrentValue(),
                                         SK_AlphaTRANSPARENT, hovered_alpha);
   canvas->FillRect(GetContentsBounds(), SkColorSetA(base_color, alpha));
+}
+
+void Windows10CaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
+  PaintSymbol(canvas);
 }
 
 namespace {

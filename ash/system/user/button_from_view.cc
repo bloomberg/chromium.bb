@@ -12,13 +12,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/gfx/canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace tray {
@@ -41,6 +41,8 @@ ButtonFromView::ButtonFromView(views::View* content,
   // Only make it focusable when we are active/interested in clicks.
   if (listener)
     SetFocusForPlatform();
+
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 ButtonFromView::~ButtonFromView() {}
@@ -51,26 +53,6 @@ void ButtonFromView::OnMouseEntered(const ui::MouseEvent& event) {
 
 void ButtonFromView::OnMouseExited(const ui::MouseEvent& event) {
   button_hovered_ = false;
-}
-
-void ButtonFromView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-  if (HasFocus()) {
-    gfx::RectF rect(GetLocalBounds());
-    canvas->DrawSolidFocusRect(rect, kFocusBorderColor, kFocusBorderThickness);
-  }
-}
-
-void ButtonFromView::OnFocus() {
-  View::OnFocus();
-  // Adding focus frame.
-  SchedulePaint();
-}
-
-void ButtonFromView::OnBlur() {
-  View::OnBlur();
-  // Removing focus frame.
-  SchedulePaint();
 }
 
 void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

@@ -43,11 +43,6 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
  protected:
   SystemTrayItem* owner() { return owner_; }
 
-  // Draws focus rectangle on the canvas.
-  // Default implementation draws the focus rectangle with certain inset and
-  // color. Subclasses can override to change the default settings.
-  virtual void OnPaintFocus(gfx::Canvas* canvas);
-
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
   // been handled and an action was performed. Returns false otherwise.
@@ -65,9 +60,6 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void OnFocus() override;
-  void OnBlur() override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()

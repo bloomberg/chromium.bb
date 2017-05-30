@@ -263,8 +263,8 @@ const TabSizeInfo& GetTabSizeInfo() {
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //
-//  A subclass of button that hit-tests to the shape of the new tab button and
-//  does custom drawing.
+//  A subclass of ImageButton that hit-tests to the shape of the new tab button
+//  and does custom drawing.
 
 class NewTabButton : public views::ImageButton,
                      public views::MaskedTargeterDelegate {
@@ -284,7 +284,7 @@ class NewTabButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(gfx::Path* mask) const override;
@@ -361,7 +361,7 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void NewTabButton::OnPaint(gfx::Canvas* canvas) {
+void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const int visible_height = GetLayoutSize(NEW_TAB_BUTTON).height();
   canvas->Translate(gfx::Vector2d(0, height() - visible_height));

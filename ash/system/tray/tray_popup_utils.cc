@@ -275,10 +275,7 @@ std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
 }
 
 void TrayPopupUtils::ConfigureTrayPopupButton(views::CustomButton* button) {
-  // All buttons that call into here want this focus painter, but
-  // SetFocusPainter is defined separately on derived classes and isn't part of
-  // CustomButton. TODO(estade): Address this.
-  // button->SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  button->SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   button->SetFocusForPlatform();
 
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
