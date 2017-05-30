@@ -612,9 +612,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // YES if the navigation to |url| should be treated as a reload.
 - (BOOL)shouldReload:(const GURL&)destinationURL
           transition:(ui::PageTransition)transition;
-// Internal implementation of reload. Reloads without notifying the delegate.
-// Most callers should use -reload instead.
-- (void)reloadInternal;
 // Aborts any load for both the web view and web controller.
 - (void)abortLoad;
 // Updates the internal state and informs the delegate that any outstanding load
@@ -2024,9 +2021,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
           destinationURL == item->GetOriginalRequestURL());
 }
 
-// Reload either the web view or the native content depending on which is
-// displayed.
-- (void)reloadInternal {
+- (void)reload {
   // Clear last user interaction.
   // TODO(crbug.com/546337): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
@@ -2060,11 +2055,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self loadCurrentURL];
     }
   }
-}
-
-- (void)reload {
-  [_delegate webWillReload];
-  [self reloadInternal];
 }
 
 - (void)abortLoad {

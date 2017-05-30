@@ -985,11 +985,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          currentIndex:sessionTab->current_navigation_index];
 }
 
-- (void)webWillReload {
-  if ([_parentTabModel tabUsageRecorder])
-    [_parentTabModel tabUsageRecorder]->RecordReload(self);
-}
-
 // Halt the tab, which amounts to halting its webController.
 - (void)terminateNetworkActivity {
   [self.webController terminateNetworkActivity];
@@ -1408,6 +1403,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  if ([_parentTabModel tabUsageRecorder] &&
+      PageTransitionCoreTypeIs(navigation->GetPageTransition(),
+                               ui::PAGE_TRANSITION_RELOAD)) {
+    [_parentTabModel tabUsageRecorder]->RecordReload(self);
+  }
+
   [self.dialogDelegate cancelDialogForTab:self];
   [_parentTabModel notifyTabChanged:self];
   [_openInController disable];

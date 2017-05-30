@@ -50,8 +50,6 @@ class GURL;
 // very intertwined. We should streamline the logic to jump between classes
 // less, then remove any delegate method that becomes unneccessary as a result.
 
-// Called when the page is reloaded.
-- (void)webWillReload;
 // Called when a page is loaded using loadWithParams.
 - (void)webDidUpdateSessionForLoadWithParams:
             (const web::NavigationManager::WebLoadParams&)params
