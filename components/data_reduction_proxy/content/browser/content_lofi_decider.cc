@@ -117,10 +117,7 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     if (!(request_info->GetPreviewsState() & content::SERVER_LITE_PAGE_ON))
       accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
   } else if (lofi_enabled_via_flags_or_field_trial &&
-             // Only use Lo-Fi if Lite Pages aren't enabled or fallback from
-             // Lite Pages to Lo-Fi is enabled.
-             (!lite_page_enabled_via_flags_or_field_trial ||
-              params::IsLitePageFallbackEnabled()) &&
+             !lite_page_enabled_via_flags_or_field_trial &&
              resource_type_supports_empty_image &&
              !(request_info->GetPreviewsState() &
                content::SERVER_LITE_PAGE_ON)) {

@@ -89,15 +89,12 @@ class LitePage(IntegrationTest):
         self.assertIn(response.status, [200, 204])
 
   # Lo-Fi fallback is not currently supported via the client. Check that
-  # no Lo-Fi response is received if the user is in the
-  # DataCompressionProxyLitePageFallback field trial and a Lite Page is not
-  # served.
+  # no Lo-Fi response is received if a Lite Page is not served.
   def testLitePageFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--force-fieldtrials='
-                               'DataCompressionProxyLoFi/Enabled_Preview/'
-                               'DataCompressionProxyLitePageFallback/Enabled')
+                               'DataCompressionProxyLoFi/Enabled_Preview/')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'DataCompressionProxyLoFi.Enabled_Preview:'
                                'effective_connection_type/4G')

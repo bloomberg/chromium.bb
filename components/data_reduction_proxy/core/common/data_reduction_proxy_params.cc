@@ -41,8 +41,6 @@ const char kAndroidOneIdentifier[] = "sprout";
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
 const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
-const char kLitePageFallbackFieldTrial[] =
-    "DataCompressionProxyLitePageFallback";
 const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
 
 const char kBlackListTransitionFieldTrial[] =
@@ -112,10 +110,6 @@ const char* GetLoFiFieldTrialName() {
   return kLoFiFieldTrial;
 }
 
-const char* GetLitePageFallbackFieldTrialName() {
-  return kLitePageFallbackFieldTrial;
-}
-
 const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
 }
@@ -135,11 +129,6 @@ bool IsIncludedInLitePageFieldTrial() {
   return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
          base::StartsWith(FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
                           kLitePage, base::CompareCase::SENSITIVE);
-}
-
-bool IsLitePageFallbackEnabled() {
-  return IsIncludedInFieldTrial(GetLitePageFallbackFieldTrialName()) ||
-         (IsLoFiOnViaFlags() && AreLitePagesEnabledViaFlags());
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {
