@@ -33,8 +33,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
   void OnWidgetClosing(views::Widget* widget) override;
 
   // Overridden from MessageBubbleBase:
-  views::TrayBubbleView::InitParams GetInitParams(
-      views::TrayBubbleView::AnchorAlignment anchor_alignment) override;
   void InitializeContents(views::TrayBubbleView* bubble_view) override;
   void OnBubbleViewDestroyed() override;
   void UpdateBubbleView() override;

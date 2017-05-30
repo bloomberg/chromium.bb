@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -62,16 +61,6 @@ void MessageBubbleBase::SetMaxHeight(int height) {
   max_height_ = height;
   if (bubble_view_)
     bubble_view_->SetMaxHeight(max_height_);
-}
-
-views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
-  views::TrayBubbleView::InitParams init_params(
-      anchor_alignment,
-      kNotificationWidth,
-      kNotificationWidth);
-  init_params.bg_color = kBackgroundDarkColor;
-  return init_params;
 }
 
 }  // namespace message_center

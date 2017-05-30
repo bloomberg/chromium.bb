@@ -133,10 +133,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
-  void OnBeforeBubbleWidgetInit(
-      views::Widget* anchor_widget,
-      views::Widget* bubble_widget,
-      views::Widget::InitParams* params) const override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }

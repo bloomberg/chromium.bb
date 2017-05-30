@@ -171,33 +171,16 @@ class BottomAlignedBoxLayout : public BoxLayout {
 using internal::TrayBubbleContentMask;
 using internal::BottomAlignedBoxLayout;
 
-TrayBubbleView::InitParams::InitParams(AnchorAlignment anchor_alignment,
-                                       int min_width,
-                                       int max_width)
-    : anchor_alignment(anchor_alignment),
-      min_width(min_width),
-      max_width(max_width),
-      max_height(0),
-      can_activate(false),
-      close_on_deactivate(true) {}
+TrayBubbleView::InitParams::InitParams() = default;
 
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
-// static
-TrayBubbleView* TrayBubbleView::Create(View* anchor,
-                                       Delegate* delegate,
-                                       InitParams* init_params) {
-  return new TrayBubbleView(anchor, delegate, *init_params);
-}
-
-TrayBubbleView::TrayBubbleView(View* anchor,
-                               Delegate* delegate,
-                               const InitParams& init_params)
-    : BubbleDialogDelegateView(anchor,
+TrayBubbleView::TrayBubbleView(const InitParams& init_params)
+    : BubbleDialogDelegateView(init_params.anchor_view,
                                GetArrowAlignment(init_params.anchor_alignment)),
       params_(init_params),
       layout_(new BottomAlignedBoxLayout(this)),
-      delegate_(delegate),
+      delegate_(init_params.delegate),
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(
           arrow(),
@@ -206,11 +189,14 @@ TrayBubbleView::TrayBubbleView(View* anchor,
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  DCHECK(delegate_);
+  DCHECK(params_.parent_window);
+  DCHECK(anchor_widget());  // Computed by BubbleDialogDelegateView().
   bubble_border_->set_use_theme_background_color(!init_params.bg_color);
   bubble_border_->set_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_border_->set_paint_arrow(BubbleBorder::PAINT_NONE);
+  set_parent_window(params_.parent_window);
   set_can_activate(params_.can_activate);
-  DCHECK(anchor_widget());  // Computed by BubbleDialogDelegateView().
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
@@ -283,8 +269,6 @@ int TrayBubbleView::GetDialogButtons() const {
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
-  if (delegate_)
-    delegate_->OnBeforeBubbleWidgetInit(anchor_widget(), bubble_widget, params);
   // Apply a WM-provided shadow (see ui/wm/core/).
   params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
   params->shadow_elevation = wm::ShadowElevation::LARGE;

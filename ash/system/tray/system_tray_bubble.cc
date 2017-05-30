@@ -196,7 +196,11 @@ void SystemTrayBubble::InitView(views::View* anchor,
     init_params->max_height = GetDetailedBubbleMaxHeight();
   }
 
-  bubble_view_ = TrayBubbleView::Create(anchor, tray_, init_params);
+  init_params->delegate = tray_;
+  // Place the bubble on same display as this system tray.
+  init_params->parent_window = tray_->GetBubbleWindowContainer();
+  init_params->anchor_view = anchor;
+  bubble_view_ = new TrayBubbleView(*init_params);
   UpdateBottomPadding();
   bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);

@@ -451,8 +451,10 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // (like network) replaces most of the menu.
     full_system_tray_menu_ = items.size() > 1;
 
-    TrayBubbleView::InitParams init_params(
-        GetAnchorAlignment(), kTrayMenuMinimumWidth, kTrayPopupMaxWidth);
+    TrayBubbleView::InitParams init_params;
+    init_params.anchor_alignment = GetAnchorAlignment();
+    init_params.min_width = kTrayMenuMinimumWidth;
+    init_params.max_width = kTrayPopupMaxWidth;
     // TODO(oshima): Change TrayBubbleView itself.
     init_params.can_activate = false;
     // The bubble is not initially activatable, but will become activatable if
@@ -579,16 +581,6 @@ void SystemTray::OnMouseExitedView() {
 
 base::string16 SystemTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-void SystemTray::OnBeforeBubbleWidgetInit(
-    views::Widget* anchor_widget,
-    views::Widget* bubble_widget,
-    views::Widget::InitParams* params) const {
-  // Place the bubble in the same root window as |anchor_widget|.
-  RootWindowController::ForWindow(anchor_widget->GetNativeWindow())
-      ->ConfigureWidgetInitParamsForContainer(
-          bubble_widget, kShellWindowId_SettingBubbleContainer, params);
 }
 
 void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
