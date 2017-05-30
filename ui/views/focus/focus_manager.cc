@@ -5,13 +5,9 @@
 #include "ui/views/focus/focus_manager.h"
 
 #include <algorithm>
-#include <cstring>
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/input_method.h"
@@ -28,16 +24,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
-namespace {
-
-#if defined(OS_CHROMEOS)
-// Crash appears to be specific to chromeos, so only log there.
-bool should_log_focused_view = true;
-#else
-bool should_log_focused_view = false;
-#endif
-
-}  // namespace
 
 bool FocusManager::arrow_key_traversal_enabled_ = false;
 
@@ -355,12 +341,6 @@ void FocusManager::SetFocusedViewWithReason(
   if (focused_view_) {
     focused_view_->AddObserver(this);
     focused_view_->Focus();
-    if (should_log_focused_view) {
-      stack_when_focused_view_set_ =
-          base::MakeUnique<base::debug::StackTrace>();
-    }
-  } else {
-    stack_when_focused_view_set_.reset();
   }
 
   for (FocusChangeListener& observer : focus_change_listeners_)
@@ -593,33 +573,6 @@ bool FocusManager::IsFocusable(View* view) const {
 
 void FocusManager::OnViewIsDeleting(View* view) {
   CHECK_EQ(view, focused_view_);
-
-  // Widget forwards the appropriate calls such that we should never end up
-  // here. None-the-less crashes indicate we are. This logs the stack once when
-  // this happens.
-  // TODO(sky): remove when cause of 687232 is found.
-  if (stack_when_focused_view_set_ && should_log_focused_view) {
-    should_log_focused_view = false;
-    size_t stack_size = 0u;
-    const void* const* instruction_pointers =
-        stack_when_focused_view_set_->Addresses(&stack_size);
-    static constexpr size_t kMaxStackSize = 100;
-    const void* instruction_pointers_copy[kMaxStackSize];
-    // Insert markers bracketing the crash to make it easier to locate.
-    memset(&instruction_pointers_copy[0], 0xAB,
-           sizeof(instruction_pointers_copy[0]));
-    const size_t last_marker_index =
-        std::min(kMaxStackSize - 1, stack_size + 1);
-    memset(&instruction_pointers_copy[last_marker_index], 0xAB,
-           sizeof(instruction_pointers_copy[last_marker_index]));
-    std::memcpy(&instruction_pointers_copy[1], instruction_pointers,
-                std::min(kMaxStackSize - 2, stack_size) * sizeof(const void*));
-    base::debug::Alias(&stack_size);
-    base::debug::Alias(&instruction_pointers_copy);
-    base::debug::DumpWithoutCrashing();
-    stack_when_focused_view_set_.reset();
-  }
-
   focused_view_->RemoveObserver(this);
   focused_view_ = nullptr;
 }
