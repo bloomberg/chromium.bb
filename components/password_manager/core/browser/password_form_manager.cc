@@ -264,21 +264,7 @@ PasswordFormManager::~PasswordFormManager() {
                               GetActionsTaken(), kMaxNumActionsTaken);
   }
 
-  if (!observed_form_.origin.SchemeIsCryptographic()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "PasswordManager.QueryingSuppressedAccountsFinished",
-        form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms());
-    if (form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
-          GetStatsForSuppressedHTTPSAccount(PasswordForm::TYPE_GENERATED),
-          kMaxSuppressedAccountStats);
-      UMA_HISTOGRAM_ENUMERATION(
-          "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
-          GetStatsForSuppressedHTTPSAccount(PasswordForm::TYPE_MANUAL),
-          kMaxSuppressedAccountStats);
-    }
-  }
+  RecordHistogramsOnSuppressedAccounts();
 
   if (submit_result_ == kSubmitResultNotSubmitted) {
     if (has_generated_password_)
@@ -305,14 +291,14 @@ int PasswordFormManager::GetActionsTaken() const {
              (manager_action_ + kManagerActionMax * submit_result_);
 }
 
-int PasswordFormManager::GetStatsForSuppressedHTTPSAccount(
-    PasswordForm::Type type) const {
-  DCHECK(form_fetcher_->DidCompleteQueryingSuppressedHTTPSForms());
+int PasswordFormManager::GetHistogramSampleForSuppressedAccounts(
+    const std::vector<const autofill::PasswordForm*> suppressed_forms,
+    PasswordForm::Type manual_or_generated) const {
+  DCHECK(form_fetcher_->DidCompleteQueryingSuppressedForms());
 
   SuppressedAccountExistence best_matching_account = kSuppressedAccountNone;
-  for (const autofill::PasswordForm* form :
-       form_fetcher_->GetSuppressedHTTPSForms()) {
-    if (form->type != type)
+  for (const autofill::PasswordForm* form : suppressed_forms) {
+    if (form->type != manual_or_generated)
       continue;
 
     SuppressedAccountExistence current_account;
@@ -343,6 +329,55 @@ int PasswordFormManager::GetStatsForSuppressedHTTPSAccount(
   (mixed_base_encoding *= kUserActionMax) += user_action_;
   DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
   return mixed_base_encoding;
+}
+
+void PasswordFormManager::RecordHistogramsOnSuppressedAccounts() const {
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.QueryingSuppressedAccountsFinished",
+                        form_fetcher_->DidCompleteQueryingSuppressedForms());
+
+  if (!form_fetcher_->DidCompleteQueryingSuppressedForms())
+    return;
+
+  if (!observed_form_.origin.SchemeIsCryptographic()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
+        GetHistogramSampleForSuppressedAccounts(
+            form_fetcher_->GetSuppressedHTTPSForms(),
+            PasswordForm::TYPE_GENERATED),
+        kMaxSuppressedAccountStats);
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
+        GetHistogramSampleForSuppressedAccounts(
+            form_fetcher_->GetSuppressedHTTPSForms(),
+            PasswordForm::TYPE_MANUAL),
+        kMaxSuppressedAccountStats);
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SuppressedAccount.Generated.PSLMatching",
+      GetHistogramSampleForSuppressedAccounts(
+          form_fetcher_->GetSuppressedPSLMatchingForms(),
+          PasswordForm::TYPE_GENERATED),
+      kMaxSuppressedAccountStats);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SuppressedAccount.Manual.PSLMatching",
+      GetHistogramSampleForSuppressedAccounts(
+          form_fetcher_->GetSuppressedPSLMatchingForms(),
+          PasswordForm::TYPE_MANUAL),
+      kMaxSuppressedAccountStats);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SuppressedAccount.Generated.SameOrganizationName",
+      GetHistogramSampleForSuppressedAccounts(
+          form_fetcher_->GetSuppressedSameOrganizationNameForms(),
+          PasswordForm::TYPE_GENERATED),
+      kMaxSuppressedAccountStats);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SuppressedAccount.Manual.SameOrganizationName",
+      GetHistogramSampleForSuppressedAccounts(
+          form_fetcher_->GetSuppressedSameOrganizationNameForms(),
+          PasswordForm::TYPE_MANUAL),
+      kMaxSuppressedAccountStats);
 }
 
 // static

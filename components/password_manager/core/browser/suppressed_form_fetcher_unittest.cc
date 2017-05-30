@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/suppressed_https_form_fetcher.h"
+#include "components/password_manager/core/browser/suppressed_form_fetcher.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -27,7 +27,7 @@ constexpr const char kTestHttpSameOrgNameURL[] = "http://login.example.co.uk/";
 constexpr const char kTestHttpsSameOrgNameURL[] =
     "https://login.example.co.uk/";
 
-class MockConsumer : public SuppressedHTTPSFormFetcher::Consumer {
+class MockConsumer : public SuppressedFormFetcher::Consumer {
  public:
   MockConsumer() = default;
   ~MockConsumer() = default;
@@ -37,8 +37,8 @@ class MockConsumer : public SuppressedHTTPSFormFetcher::Consumer {
                void(const std::vector<std::unique_ptr<PasswordForm>>&));
 
  protected:
-  // SuppressedHTTPSFormFetcher::Consumer:
-  void ProcessSuppressedHTTPSForms(
+  // SuppressedFormFetcher::Consumer:
+  void ProcessSuppressedForms(
       std::vector<std::unique_ptr<PasswordForm>> forms) override {
     ProcessSuppressedHTTPSFormsConstRef(forms);
   }
@@ -69,10 +69,10 @@ class PasswordManagerClientWithMockStore : public StubPasswordManagerClient {
 
 }  // namespace
 
-class SuppressedHTTPSFormFetcherTest : public testing::Test {
+class SuppressedFormFetcherTest : public testing::Test {
  public:
-  SuppressedHTTPSFormFetcherTest() = default;
-  ~SuppressedHTTPSFormFetcherTest() override = default;
+  SuppressedFormFetcherTest() = default;
+  ~SuppressedFormFetcherTest() override = default;
 
   MockConsumer* mock_consumer() { return &consumer_; }
   MockPasswordStore* mock_store() { return &client_.mock_password_store(); }
@@ -84,38 +84,34 @@ class SuppressedHTTPSFormFetcherTest : public testing::Test {
   MockConsumer consumer_;
   PasswordManagerClientWithMockStore client_;
 
-  DISALLOW_COPY_AND_ASSIGN(SuppressedHTTPSFormFetcherTest);
+  DISALLOW_COPY_AND_ASSIGN(SuppressedFormFetcherTest);
 };
 
-TEST_F(SuppressedHTTPSFormFetcherTest, EmptyStore) {
+TEST_F(SuppressedFormFetcherTest, EmptyStore) {
   EXPECT_CALL(*mock_store(), GetLoginsForSameOrganizationName(kTestHttpURL, _));
-  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
-      kTestHttpURL, mock_client(), mock_consumer());
+  SuppressedFormFetcher suppressed_form_fetcher(kTestHttpURL, mock_client(),
+                                                mock_consumer());
   EXPECT_CALL(*mock_consumer(),
               ProcessSuppressedHTTPSFormsConstRef(::testing::IsEmpty()));
   suppressed_form_fetcher.OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>>());
 }
 
-TEST_F(SuppressedHTTPSFormFetcherTest, FullStore) {
-  static constexpr const PasswordFormData kSuppressedHTTPSCredentials[] = {
+TEST_F(SuppressedFormFetcherTest, FullStore) {
+  static constexpr const PasswordFormData kSuppressedCredentials[] = {
       // Credential that is for the HTTPS counterpart of the observed form.
       {PasswordForm::SCHEME_HTML, kTestHttpsURL, kTestHttpsURL, "", L"", L"",
        L"", L"username_value_1", L"password_value_1", true, 1},
       // Once again, but with a different username/password.
       {PasswordForm::SCHEME_HTML, kTestHttpsURL, kTestHttpsURL, "", L"", L"",
        L"", L"username_value_2", L"password_value_2", true, 1},
-  };
-
-  static constexpr const PasswordFormData kOtherCredentials[] = {
-      // Credential exactly matching the observed form.
-      {PasswordForm::SCHEME_HTML, kTestHttpURL, kTestHttpURL, "", L"", L"", L"",
-       L"username_value_1", L"password_value_1", true, 1},
       // A PSL match to the observed form.
       {PasswordForm::SCHEME_HTML, kTestPSLMatchingHttpURL,
        kTestPSLMatchingHttpURL, "", L"", L"", L"", L"username_value_2",
        L"password_value_2", true, 1},
-      // A PSL match to the HTTPS counterpart of the observed form.
+      // A PSL match to the HTTPS counterpart of the observed form. Note that
+      // this is *not* a PSL match to the observed form, but a same organization
+      // name match.
       {PasswordForm::SCHEME_HTML, kTestPSLMatchingHttpsURL,
        kTestPSLMatchingHttpsURL, "", L"", L"", L"", L"username_value_3",
        L"password_value_3", true, 1},
@@ -130,21 +126,27 @@ TEST_F(SuppressedHTTPSFormFetcherTest, FullStore) {
        kTestHttpsSameOrgNameURL, "", L"", L"", L"", L"username_value_5",
        L"password_value_5", true, 1}};
 
+  static const PasswordFormData kNotSuppressedCredentials[] = {
+      // Credential exactly matching the observed form.
+      {PasswordForm::SCHEME_HTML, kTestHttpURL, kTestHttpURL, "", L"", L"", L"",
+       L"username_value_1", L"password_value_1", true, 1},
+  };
+
   std::vector<std::unique_ptr<PasswordForm>> simulated_store_results;
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
-  for (const auto& form_data : kSuppressedHTTPSCredentials) {
+  for (const auto& form_data : kSuppressedCredentials) {
     expected_results.push_back(CreatePasswordFormFromDataForTesting(form_data));
     simulated_store_results.push_back(
         CreatePasswordFormFromDataForTesting(form_data));
   }
-  for (const auto& form_data : kOtherCredentials) {
+  for (const auto& form_data : kNotSuppressedCredentials) {
     simulated_store_results.push_back(
         CreatePasswordFormFromDataForTesting(form_data));
   }
 
   EXPECT_CALL(*mock_store(), GetLoginsForSameOrganizationName(kTestHttpURL, _));
-  SuppressedHTTPSFormFetcher suppressed_form_fetcher(
-      kTestHttpURL, mock_client(), mock_consumer());
+  SuppressedFormFetcher suppressed_form_fetcher(kTestHttpURL, mock_client(),
+                                                mock_consumer());
   EXPECT_CALL(*mock_consumer(),
               ProcessSuppressedHTTPSFormsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));

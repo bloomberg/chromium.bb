@@ -91537,6 +91537,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="HTTPSNotHTTP"
       label="The credential was suppressed because it was for an HTTPS origin
              whereas the observed form was for an HTTP origin."/>
+  <suffix name="PSLMatching"
+      label="The credential was suppressed and not auto-filled because it was
+             a PSL-match."/>
+  <suffix name="SameOrganizationName"
+      label="The credential was suppressed because it was for an HTTP/HTTPS
+             origin that was neither an exact nor PSL-match to that of the
+             observed form. Its origin had, however, the same
+             organization-identifying name."/>
   <affected-histogram name="PasswordManager.SuppressedAccount.Manual"/>
 </histogram_suffixes>
 

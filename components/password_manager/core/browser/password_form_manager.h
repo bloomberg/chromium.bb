@@ -332,18 +332,16 @@ class PasswordFormManager : public FormFetcher::Consumer {
   static const int kMaxNumActionsTaken =
       kManagerActionMax * kUserActionMax * kSubmitResultMax;
 
-  // Enumerates whether there was a `suppressed` stored credential, meaning that
-  // it was not filled because it was for an origin that was similar to, but not
-  // exactly (or PSL) matching the origin of |observed_form_|. Currently, the
-  // only class of suppressed credentials considered are HTTPS credentials not
-  // filled on the HTTP version of the origin.
+  // Enumerates whether there were `suppressed` credentials. These are stored
+  // credentials that were not filled, even though they might be related to the
+  // |observed_form_|. See FormFetcher::GetSuppressed* for details.
   //
-  // If a suppressed credential exists, it is also recorded whether its username
-  // and password matched those entered or filled into the observed form.
+  // If suppressed credentials exist, it is also recorded whether their username
+  // and/or password matched those submitted.
   enum SuppressedAccountExistence {
     kSuppressedAccountNone,
-    // Recorded when there exists a suppressed credential, but there was no
-    // submitted form to compare the username and password to.
+    // Recorded when there exists a suppressed account, but there was no
+    // submitted form to compare its username and password to.
     kSuppressedAccountExists,
     // Recorded when there was a submitted form.
     kSuppressedAccountExistsDifferentUsername,
@@ -432,12 +430,22 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // UMA.
   int GetActionsTaken() const;
 
-  // Computes statistics on whether there was a stored credential with the
-  // specified |type| that could not be filled into the |observed_form_| because
-  // the scheme of its origin was HTTPS rather than HTTP; and encodes this
-  // information into an integer so it can be recorded as a UMA histogram.
-  int GetStatsForSuppressedHTTPSAccount(
-      autofill::PasswordForm::Type type) const;
+  // When supplied with the list of all |suppressed_forms| that belong to
+  // certain suppressed credential type (see FormFetcher::GetSuppressed*),
+  // filters that list down to forms that are either |manual_or_generated|, and
+  // based on that, computes the histogram sample that is a mixed-based
+  // representation of a combination of four attributes:
+  //  -- whether there were suppressed credentials (and if so, their relation to
+  //     the submitted username/password).
+  //  -- whether the |observed_form_| got ultimately submitted
+  //  -- what action the password manager performed (|manager_action_|),
+  //  -- and what action the user performed (|user_action_|_).
+  int GetHistogramSampleForSuppressedAccounts(
+      const std::vector<const autofill::PasswordForm*> suppressed_forms,
+      autofill::PasswordForm::Type manual_or_generated) const;
+
+  // Records all histograms in the PasswordManager.SuppressedAccount.* family.
+  void RecordHistogramsOnSuppressedAccounts() const;
 
   // Tries to set all votes (e.g. autofill field types, generation vote) to
   // a |FormStructure| and upload it to the server. Returns true on success.
