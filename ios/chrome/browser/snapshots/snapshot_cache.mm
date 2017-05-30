@@ -10,7 +10,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
@@ -19,7 +18,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/lru_cache.h"
@@ -54,19 +52,11 @@ static NSArray* const kSnapshotCacheDirectory = @[ @"Chromium", @"Snapshots" ];
 const NSUInteger kCacheInitialCapacity = 100;
 const NSUInteger kGreyInitialCapacity = 8;
 const CGFloat kJPEGImageQuality = 1.0;  // Highest quality. No compression.
+// Sequence token to make sure creation/deletion of snapshots don't overlap.
+const char kSequenceToken[] = "SnapshotCacheSequenceToken";
 // Maximum size in number of elements that the LRU cache can hold before
 // starting to evict elements.
 const NSUInteger kLRUCacheMaxCapacity = 6;
-
-struct SnapshotTaskRunner {
-  const scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-};
-
-// Sequence token to make sure creation/deletion of snapshots don't overlap.
-base::LazyInstance<SnapshotTaskRunner>::Leaky g_snapshot_task_runner =
-    LAZY_INSTANCE_INITIALIZER;
 
 // The paths of the images saved to disk, given a cache directory.
 base::FilePath FilePathForSessionID(NSString* sessionID,
@@ -285,8 +275,9 @@ void ConvertAndSaveGreyImage(
     [imageDictionary_ setObject:img forKey:sessionID];
 
   // Save the image to disk.
-  g_snapshot_task_runner.Get().task_runner->PostTask(
-      FROM_HERE, base::BindBlock(^{
+  web::WebThread::PostBlockingPoolSequencedTask(
+      kSequenceToken, FROM_HERE,
+      base::BindBlock(^{
         base::scoped_nsobject<UIImage> image([img retain]);
         WriteImageToDisk(image,
                          [SnapshotCache imagePathForSessionID:sessionID]);
@@ -300,8 +291,9 @@ void ConvertAndSaveGreyImage(
   else
     [imageDictionary_ removeObjectForKey:sessionID];
 
-  g_snapshot_task_runner.Get().task_runner->PostTask(
-      FROM_HERE, base::BindBlock(^{
+  web::WebThread::PostBlockingPoolSequencedTask(
+      kSequenceToken, FROM_HERE,
+      base::BindBlock(^{
         base::FilePath imagePath =
             [SnapshotCache imagePathForSessionID:sessionID];
         base::DeleteFile(imagePath, false);
@@ -365,8 +357,9 @@ void ConvertAndSaveGreyImage(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Copying the date, as the block must copy the value, not the reference.
   const base::Time dateCopy = date;
-  g_snapshot_task_runner.Get().task_runner->PostTask(
-      FROM_HERE, base::BindBlock(^{
+  web::WebThread::PostBlockingPoolSequencedTask(
+      kSequenceToken, FROM_HERE,
+      base::BindBlock(^{
         std::set<base::FilePath> filesToKeep;
         for (NSString* sessionID : liveSessionIds) {
           base::FilePath curImagePath =
@@ -581,10 +574,9 @@ void ConvertAndSaveGreyImage(
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ConvertAndSaveGreyImage, colorImagePath, greyImagePath,
-                     backgroundingColorImage_));
+  web::WebThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&ConvertAndSaveGreyImage, colorImagePath,
+                            greyImagePath, backgroundingColorImage_));
 }
 
 @end
