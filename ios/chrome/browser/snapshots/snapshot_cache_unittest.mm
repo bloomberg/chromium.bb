@@ -215,9 +215,7 @@ class SnapshotCacheTest : public PlatformTest {
 TEST_F(SnapshotCacheTest, Cache) {
   SnapshotCache* cache = GetSnapshotCache();
 
-  NSUInteger expectedCacheSize = kSessionCount;
-  if ([cache usesLRUCache])
-    expectedCacheSize = MIN(kSessionCount, [cache lruCacheMaxSize]);
+  NSUInteger expectedCacheSize = MIN(kSessionCount, [cache lruCacheMaxSize]);
 
   // Put all images in the cache.
   for (NSUInteger i = 0; i < expectedCacheSize; ++i) {
