@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -214,8 +214,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
 // P2PAsyncAddressResolver. Libjingle sig slots are not thread safe. In case
 // of MT sig slots clients must call disconnect. This class is to make sure
 // we destruct from the same thread on which is created.
-class AsyncAddressResolverImpl :  public base::NonThreadSafe,
-                                  public rtc::AsyncResolverInterface {
+class AsyncAddressResolverImpl : public rtc::AsyncResolverInterface {
  public:
   AsyncAddressResolverImpl(P2PSocketDispatcher* dispatcher);
   ~AsyncAddressResolverImpl() override;
@@ -230,6 +229,9 @@ class AsyncAddressResolverImpl :  public base::NonThreadSafe,
   virtual void OnAddressResolved(const net::IPAddressList& addresses);
 
   scoped_refptr<P2PAsyncAddressResolver> resolver_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   int port_;   // Port number in |addr| from Start() method.
   std::vector<rtc::IPAddress> addresses_;  // Resolved addresses.
 };
@@ -677,10 +679,11 @@ AsyncAddressResolverImpl::AsyncAddressResolverImpl(
 }
 
 AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Copy port number from |addr|. |port_| must be copied
   // when resolved address is returned in GetResolvedAddress.
   port_ = addr.port();
@@ -692,7 +695,7 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(
     int family, rtc::SocketAddress* addr) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (addresses_.empty())
    return false;
@@ -708,12 +711,12 @@ bool AsyncAddressResolverImpl::GetResolvedAddress(
 }
 
 int AsyncAddressResolverImpl::GetError() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return addresses_.empty() ? -1 : 0;
 }
 
 void AsyncAddressResolverImpl::Destroy(bool wait) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   resolver_->Cancel();
   // Libjingle doesn't need this object any more and it's not going to delete
   // it explicitly.
@@ -722,7 +725,7 @@ void AsyncAddressResolverImpl::Destroy(bool wait) {
 
 void AsyncAddressResolverImpl::OnAddressResolved(
     const net::IPAddressList& addresses) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < addresses.size(); ++i) {
     rtc::SocketAddress socket_address;
     if (!jingle_glue::IPEndPointToSocketAddress(
