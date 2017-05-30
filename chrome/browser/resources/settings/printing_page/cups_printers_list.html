@@ -9,19 +9,8 @@
 <dom-module id="settings-cups-printers-list">
   <template>
     <style include="settings-shared">
-      #container {
-        border-top: 1px solid lightgray;
-        display: flex;
-        padding: 2px 20px;
-      }
-
-      .name-column {
+      .printer-name {
         flex: 1;
-        margin: 2px;
-      }
-
-      .list-item {
-        min-height: 20px;
       }
     </style>
 
@@ -33,18 +22,18 @@
         $i18n{removePrinter}
       </button>
     </dialog>
-    <template is="dom-repeat" items="[[printers]]"
-        filter="[[filterPrinter_(searchTerm)]]">
-      <div id="container" class="list-item">
-        <div class="name-column">
-          <span class="name" id="printer-name">[[item.printerName]]</span>
+    <div class="list-frame vertical-list">
+      <template is="dom-repeat" items="[[printers]]"
+          filter="[[filterPrinter_(searchTerm)]]">
+        <div class="list-item">
+          <div class="printer-name text-elide">[[item.printerName]]</div>
           <!--TODO(xdai): Add icon for enterprise CUPS printer. -->
+          <paper-icon-button icon="cr:more-vert" on-tap="onOpenActionMenuTap_"
+              title="$i18n{moreActions}">
+          </paper-icon-button>
         </div>
-        <paper-icon-button icon="cr:more-vert" on-tap="onOpenActionMenuTap_"
-            title="$i18n{moreActions}">
-        </paper-icon-button>
-      </div>
-    </template>
+      </template
+    </div>
   </template>
   <script src="cups_printers_list.js"></script>
 </dom-module>
