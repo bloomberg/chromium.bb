@@ -296,21 +296,13 @@ var tests = [
 
     // The fullscreen setting is deprecated.
     var fullscreen = chrome.contentSettings.fullscreen;
-    caught = false;
-    try {
-      // Trying to set the fullscreen setting to anything but 'allow' should
-      // fail.
-      fullscreen.set({primaryPattern: pattern, setting: 'block'});
-    } catch (e) {
-      caught = true;
-    }
-    chrome.test.assertTrue(caught);
-
     var deprecatedSettingTest = new Promise(function(resolve, reject) {
       fullscreen.get({primaryUrl: url}, (details) => {
         chrome.test.assertTrue(!!details);
         chrome.test.assertEq('allow', details.setting);
-        fullscreen.set({primaryPattern: pattern, setting: 'allow'}, () => {
+        // Trying to set the fullscreen setting to anything but 'allow' should
+        // silently fail.
+        fullscreen.set({primaryPattern: pattern, setting: 'block'}, () => {
           fullscreen.get({primaryUrl: url}, (details) => {
             chrome.test.assertTrue(!!details);
             chrome.test.assertEq('allow', details.setting);
