@@ -55,7 +55,7 @@ template <class T> class DeleteHelper;
 // You can make named sequence tokens to make it easier to share a token
 // across different components.
 //
-// You can also post tasks to the pool without ordering using PostTask.
+// You can also post tasks to the pool without ordering using PostWorkerTask.
 // These will be executed in an unspecified order. The order of execution
 // between tasks with different sequence tokens is also unspecified.
 //
@@ -254,6 +254,29 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // given shutdown behavior.
   scoped_refptr<TaskRunner> GetTaskRunnerWithShutdownBehavior(
       WorkerShutdown shutdown_behavior) WARN_UNUSED_RESULT;
+
+  // Posts the given task for execution in the worker pool. Tasks posted with
+  // this function will execute in an unspecified order on a background thread.
+  // Returns true if the task was posted. If your tasks have ordering
+  // requirements, see PostSequencedWorkerTask().
+  //
+  // This class will attempt to delete tasks that aren't run
+  // (non-block-shutdown semantics) but can't guarantee that this happens. If
+  // all worker threads are busy running CONTINUE_ON_SHUTDOWN tasks, there
+  // will be no workers available to delete these tasks. And there may be
+  // tasks with the same sequence token behind those CONTINUE_ON_SHUTDOWN
+  // tasks. Deleting those tasks before the previous one has completed could
+  // cause nondeterministic crashes because the task could be keeping some
+  // objects alive which do work in their destructor, which could voilate the
+  // assumptions of the running task.
+  //
+  // The task will be guaranteed to run to completion before shutdown
+  // (BLOCK_SHUTDOWN semantics).
+  //
+  // Returns true if the task was posted successfully. This may fail during
+  // shutdown regardless of the specified ShutdownBehavior.
+  bool PostWorkerTask(const tracked_objects::Location& from_here,
+                      OnceClosure task);
 
   // Same as PostWorkerTask but allows specification of the shutdown behavior.
   bool PostWorkerTaskWithShutdownBehavior(
