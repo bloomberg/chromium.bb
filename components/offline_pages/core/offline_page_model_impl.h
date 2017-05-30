@@ -120,8 +120,13 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   typedef std::vector<std::unique_ptr<OfflinePageArchiver>> PendingArchivers;
 
-  // Callback for ensuring archive directory is created.
-  void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);
+  // Callback for ensuring archive directory is created when saving page.
+  void ContinueSavingPageWithArchivesDir(
+      const SavePageParams& save_page_params,
+      std::unique_ptr<OfflinePageArchiver> archiver,
+      const SavePageCallback& callback,
+      const base::TimeTicks& start_time,
+      ArchiveManager::ArchivesDirCreationResult result);
 
   void GetPagesMatchingQueryWhenLoadDone(
       std::unique_ptr<OfflinePageModelQuery> query,
