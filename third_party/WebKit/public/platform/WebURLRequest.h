@@ -290,6 +290,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool UseStreamOnResponse() const;
   BLINK_PLATFORM_EXPORT void SetUseStreamOnResponse(bool);
 
+  // True if the request can work after the fetch group is terminated.
+  BLINK_PLATFORM_EXPORT bool GetKeepalive() const;
+  BLINK_PLATFORM_EXPORT void SetKeepalive(bool);
+
   // The service worker mode indicating which service workers should get events
   // for this request.
   BLINK_PLATFORM_EXPORT ServiceWorkerMode GetServiceWorkerMode() const;

@@ -217,6 +217,10 @@ class PLATFORM_EXPORT ResourceRequest final {
     use_stream_on_response_ = use_stream_on_response;
   }
 
+  // True if the request can work after the fetch group is terminated.
+  bool GetKeepalive() const { return keepalive_; }
+  void SetKeepalive(bool keepalive) { keepalive_ = keepalive; }
+
   // The service worker mode indicating which service workers should get events
   // for this request.
   WebURLRequest::ServiceWorkerMode GetServiceWorkerMode() const {
@@ -346,6 +350,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool has_user_gesture_ : 1;
   bool download_to_file_ : 1;
   bool use_stream_on_response_ : 1;
+  bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
   WebURLRequest::ServiceWorkerMode service_worker_mode_;
   ResourceLoadPriority priority_;
@@ -401,6 +406,7 @@ struct CrossThreadResourceRequestData {
   bool download_to_file_;
   WebURLRequest::ServiceWorkerMode service_worker_mode_;
   bool use_stream_on_response_;
+  bool keepalive_;
   bool should_reset_app_cache_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;

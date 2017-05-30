@@ -1216,6 +1216,7 @@ WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
   new_request.SetShouldResetAppCache(request.ShouldResetAppCache());
   new_request.SetFetchRequestMode(request.GetFetchRequestMode());
   new_request.SetFetchCredentialsMode(request.GetFetchCredentialsMode());
+  new_request.SetKeepalive(request.GetKeepalive());
 
   new_request.SetHTTPReferrer(WebString::FromUTF8(redirect_info.new_referrer),
                               NetReferrerPolicyToBlinkReferrerPolicy(
