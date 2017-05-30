@@ -429,11 +429,23 @@ int Node::OnUserMessage(std::unique_ptr<UserMessageEvent> message) {
   // this node. When the message is forwarded, these ports will get transferred
   // following the usual method. If the message cannot be accepted, then the
   // newly bound ports will simply be closed.
-
   for (size_t i = 0; i < message->num_ports(); ++i) {
-    int rv = AcceptPort(message->ports()[i], message->port_descriptors()[i]);
-    if (rv != OK)
-      return rv;
+    Event::PortDescriptor& descriptor = message->port_descriptors()[i];
+    if (descriptor.referring_node_name == kInvalidNodeName) {
+      // If the referring node name is invalid, this descriptor can be ignored
+      // and the port should already exist locally.
+      if (!GetPort(message->ports()[i]))
+        return ERROR_PORT_UNKNOWN;
+    } else {
+      int rv = AcceptPort(message->ports()[i], descriptor);
+      if (rv != OK)
+        return rv;
+
+      // Ensure that the referring node is wiped out of this descriptor. This
+      // allows the event to be forwarded across multiple local hops without
+      // attempting to accept the port more than once.
+      descriptor.referring_node_name = kInvalidNodeName;
+    }
   }
 
   bool has_next_message = false;
@@ -993,7 +1005,6 @@ int Node::WillForwardUserMessage_Locked(const LockedPort& port,
   // by a proxy. Otherwise, use the next outgoing sequence number.
   if (message->sequence_num() == 0)
     message->set_sequence_num(port->next_sequence_num_to_send++);
-
 #if DCHECK_IS_ON()
   std::ostringstream ports_buf;
   for (size_t i = 0; i < message->num_ports(); ++i) {
@@ -1033,10 +1044,16 @@ int Node::WillForwardUserMessage_Locked(const LockedPort& port,
       }
     }
 
-    Event::PortDescriptor* port_descriptors = message->port_descriptors();
-    for (size_t i = 0; i < message->num_ports(); ++i) {
-      WillSendPort(LockedPort(ports[i].get()), port->peer_node_name,
-                   message->ports() + i, port_descriptors + i);
+    if (port->peer_node_name != name_) {
+      // We only bother to proxy and rewrite ports in the event if it's going to
+      // be routed to an external node. This substantially reduces the amount of
+      // port churn in the system, as many port-carrying events are routed at
+      // least 1 or 2 intra-node hops before (if ever) being routed externally.
+      Event::PortDescriptor* port_descriptors = message->port_descriptors();
+      for (size_t i = 0; i < message->num_ports(); ++i) {
+        WillSendPort(LockedPort(ports[i].get()), port->peer_node_name,
+                     message->ports() + i, port_descriptors + i);
+      }
     }
 
     for (size_t i = 0; i < message->num_ports(); ++i)
