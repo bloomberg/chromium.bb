@@ -24,6 +24,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/node_channel.h"
+#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
@@ -38,7 +39,6 @@ namespace edk {
 class Broker;
 class Core;
 class MachPortRelay;
-class PortsMessage;
 
 // The owner of ports::Node which facilitates core EDK implementation. All
 // public interface methods are safe to call from any thread.
@@ -103,8 +103,8 @@ class NodeController : public ports::NodeDelegate,
   void ClosePort(const ports::PortRef& port);
 
   // Sends a message on a port to its peer.
-  int SendMessage(const ports::PortRef& port_ref,
-                  std::unique_ptr<PortsMessage> message);
+  int SendUserMessage(const ports::PortRef& port_ref,
+                      std::unique_ptr<ports::UserMessageEvent> message);
 
   // Merges a local port |port| into a port reserved by |name| in the parent.
   void MergePortIntoParent(const std::string& name, const ports::PortRef& port);
@@ -176,19 +176,16 @@ class NodeController : public ports::NodeDelegate,
                scoped_refptr<NodeChannel> channel,
                bool start_channel);
   void DropPeer(const ports::NodeName& name, NodeChannel* channel);
-  void SendPeerMessage(const ports::NodeName& name,
-                       ports::ScopedMessage message);
+  void SendPeerEvent(const ports::NodeName& name, ports::ScopedEvent event);
   void AcceptIncomingMessages();
   void ProcessIncomingMessages();
   void DropAllPeers();
 
   // ports::NodeDelegate:
   void GenerateRandomPortName(ports::PortName* port_name) override;
-  void AllocMessage(size_t num_header_bytes,
-                    ports::ScopedMessage* message) override;
-  void ForwardMessage(const ports::NodeName& node,
-                      ports::ScopedMessage message) override;
-  void BroadcastMessage(ports::ScopedMessage message) override;
+  void ForwardEvent(const ports::NodeName& node,
+                    ports::ScopedEvent event) override;
+  void BroadcastEvent(ports::ScopedEvent event) override;
   void PortStatusChanged(const ports::PortRef& port) override;
 
   // NodeChannel::Delegate:
@@ -207,7 +204,7 @@ class NodeController : public ports::NodeDelegate,
   void OnAcceptBrokerClient(const ports::NodeName& from_node,
                             const ports::NodeName& broker_name,
                             ScopedPlatformHandle broker_channel) override;
-  void OnPortsMessage(const ports::NodeName& from_node,
+  void OnEventMessage(const ports::NodeName& from_node,
                       Channel::MessagePtr message) override;
   void OnRequestPortMerge(const ports::NodeName& from_node,
                           const ports::PortName& connector_port_name,
@@ -220,11 +217,11 @@ class NodeController : public ports::NodeDelegate,
   void OnBroadcast(const ports::NodeName& from_node,
                    Channel::MessagePtr message) override;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  void OnRelayPortsMessage(const ports::NodeName& from_node,
+  void OnRelayEventMessage(const ports::NodeName& from_node,
                            base::ProcessHandle from_process,
                            const ports::NodeName& destination,
                            Channel::MessagePtr message) override;
-  void OnPortsMessageFromRelay(const ports::NodeName& from_node,
+  void OnEventMessageFromRelay(const ports::NodeName& from_node,
                                const ports::NodeName& source_node,
                                Channel::MessagePtr message) override;
 #endif
@@ -311,14 +308,14 @@ class NodeController : public ports::NodeDelegate,
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_relay_messages_;
 
-  // Guards |incoming_messages_| and |incoming_messages_task_posted_|.
-  base::Lock messages_lock_;
-  std::queue<ports::ScopedMessage> incoming_messages_;
+  // Guards |incoming_events_| and |incoming_events_task_posted_|.
+  base::Lock events_lock_;
+  std::vector<ports::ScopedEvent> incoming_events_;
   // Ensures that there is only one incoming messages task posted to the IO
   // thread.
-  bool incoming_messages_task_posted_ = false;
-  // Flag to fast-path checking |incoming_messages_|.
-  AtomicFlag incoming_messages_flag_;
+  bool incoming_events_task_posted_ = false;
+  // Flag to fast-path checking |incoming_events_|.
+  AtomicFlag incoming_events_flag_;
 
   // Guards |shutdown_callback_|.
   base::Lock shutdown_lock_;

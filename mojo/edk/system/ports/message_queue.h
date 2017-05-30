@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <deque>
-#include <functional>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "mojo/edk/system/ports/message.h"
+#include "mojo/edk/system/ports/event.h"
 
 namespace mojo {
 namespace edk {
@@ -42,7 +42,8 @@ class MessageQueue {
 
   // Gives ownership of the message. If |filter| is non-null, the next message
   // will only be retrieved if the filter successfully matches it.
-  void GetNextMessage(ScopedMessage* message, MessageFilter* filter);
+  void GetNextMessage(std::unique_ptr<UserMessageEvent>* message,
+                      MessageFilter* filter);
 
   // Takes ownership of the message. Note: Messages are ordered, so while we
   // have added a message to the queue, we may still be waiting on a message
@@ -53,13 +54,14 @@ class MessageQueue {
   // until GetNextMessage is called enough times to return a null message.
   // In other words, has_next_message acts like an edge trigger.
   //
-  void AcceptMessage(ScopedMessage message, bool* has_next_message);
+  void AcceptMessage(std::unique_ptr<UserMessageEvent> message,
+                     bool* has_next_message);
 
   // Returns all of the ports referenced by messages in this message queue.
   void GetReferencedPorts(std::deque<PortName>* ports);
 
  private:
-  std::vector<ScopedMessage> heap_;
+  std::vector<std::unique_ptr<UserMessageEvent>> heap_;
   uint64_t next_sequence_num_;
   bool signalable_ = true;
 

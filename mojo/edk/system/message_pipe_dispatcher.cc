@@ -12,19 +12,16 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/message_filter.h"
-#include "mojo/edk/system/ports_message.h"
 #include "mojo/edk/system/request_context.h"
+#include "mojo/edk/system/user_message_impl.h"
 
 namespace mojo {
 namespace edk {
 
 namespace {
-
-using DispatcherHeader = MessageForTransit::DispatcherHeader;
-using MessageHeader = MessageForTransit::MessageHeader;
 
 #pragma pack(push, 1)
 
@@ -60,78 +57,6 @@ class MessagePipeDispatcher::PortObserverThunk
   DISALLOW_COPY_AND_ASSIGN(PortObserverThunk);
 };
 
-// A MessageFilter used by ReadMessage to determine whether a message should
-// actually be consumed yet.
-class ReadMessageFilter : public ports::MessageFilter {
- public:
-  // Creates a new ReadMessageFilter which captures and potentially modifies
-  // various (unowned) local state within MessagePipeDispatcher::ReadMessage.
-  ReadMessageFilter(bool read_any_size,
-                    bool may_discard,
-                    uint32_t* num_bytes,
-                    uint32_t* num_handles,
-                    bool* no_space,
-                    bool* invalid_message)
-      : read_any_size_(read_any_size),
-        may_discard_(may_discard),
-        num_bytes_(num_bytes),
-        num_handles_(num_handles),
-        no_space_(no_space),
-        invalid_message_(invalid_message) {}
-
-  ~ReadMessageFilter() override {}
-
-  // ports::MessageFilter:
-  bool Match(const ports::Message& m) override {
-    const PortsMessage& message = static_cast<const PortsMessage&>(m);
-    if (message.num_payload_bytes() < sizeof(MessageHeader)) {
-      *invalid_message_ = true;
-      return true;
-    }
-
-    const MessageHeader* header =
-        static_cast<const MessageHeader*>(message.payload_bytes());
-    if (header->header_size > message.num_payload_bytes()) {
-      *invalid_message_ = true;
-      return true;
-    }
-
-    uint32_t bytes_to_read = 0;
-    uint32_t bytes_available =
-        static_cast<uint32_t>(message.num_payload_bytes()) -
-        header->header_size;
-    if (num_bytes_) {
-      bytes_to_read = std::min(*num_bytes_, bytes_available);
-      *num_bytes_ = bytes_available;
-    }
-
-    uint32_t handles_to_read = 0;
-    uint32_t handles_available = header->num_dispatchers;
-    if (num_handles_) {
-      handles_to_read = std::min(*num_handles_, handles_available);
-      *num_handles_ = handles_available;
-    }
-
-    if (handles_to_read < handles_available ||
-        (!read_any_size_ && bytes_to_read < bytes_available)) {
-      *no_space_ = true;
-      return may_discard_;
-    }
-
-    return true;
-  }
-
- private:
-  const bool read_any_size_;
-  const bool may_discard_;
-  uint32_t* const num_bytes_;
-  uint32_t* const num_handles_;
-  bool* const no_space_;
-  bool* const invalid_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadMessageFilter);
-};
-
 #if DCHECK_IS_ON()
 
 // A MessageFilter which never matches a message. Used to peek at the size of
@@ -142,8 +67,8 @@ class PeekSizeMessageFilter : public ports::MessageFilter {
   ~PeekSizeMessageFilter() override {}
 
   // ports::MessageFilter:
-  bool Match(const ports::Message& message) override {
-    message_size_ = message.num_payload_bytes();
+  bool Match(const ports::UserMessageEvent& message) override {
+    message_size_ = message.GetMessage<UserMessageImpl>()->user_payload_size();
     return false;
   }
 
@@ -211,13 +136,14 @@ MojoResult MessagePipeDispatcher::Close() {
 }
 
 MojoResult MessagePipeDispatcher::WriteMessage(
-    std::unique_ptr<MessageForTransit> message,
+    std::unique_ptr<ports::UserMessageEvent> message,
     MojoWriteMessageFlags flags) {
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  size_t num_bytes = message->num_bytes();
-  int rv = node_controller_->SendMessage(port_, message->TakePortsMessage());
+  const size_t num_bytes =
+      message->GetMessage<UserMessageImpl>()->user_payload_size();
+  int rv = node_controller_->SendUserMessage(port_, std::move(message));
 
   DVLOG(4) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "; rv=" << rv
@@ -240,7 +166,7 @@ MojoResult MessagePipeDispatcher::WriteMessage(
 }
 
 MojoResult MessagePipeDispatcher::ReadMessage(
-    std::unique_ptr<MessageForTransit>* message,
+    std::unique_ptr<ports::UserMessageEvent>* message,
     uint32_t* num_bytes,
     MojoHandle* handles,
     uint32_t* num_handles,
@@ -250,9 +176,7 @@ MojoResult MessagePipeDispatcher::ReadMessage(
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  bool no_space = false;
-  bool may_discard = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD;
-  bool invalid_message = false;
+  const bool may_discard = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD;
 
   // Grab a message if the provided handles buffer is large enough. If the input
   // |num_bytes| is provided and |read_any_size| is false, we also ensure
@@ -260,127 +184,16 @@ MojoResult MessagePipeDispatcher::ReadMessage(
   //
   // If |read_any_size| is true, the input value of |*num_bytes| is ignored.
   // This flag exists to support both new and old API behavior.
+  MojoResult read_result = UserMessageImpl::ReadMessageEventFromPort(
+      node_controller_, port_, read_any_size, may_discard, num_bytes, handles,
+      num_handles, message);
 
-  ports::ScopedMessage ports_message;
-  ReadMessageFilter filter(read_any_size, may_discard, num_bytes, num_handles,
-                           &no_space, &invalid_message);
-  int rv = node_controller_->node()->GetMessage(port_, &ports_message, &filter);
+  // We may need to update anyone watching our signals in case we just read the
+  // last available message.
+  base::AutoLock lock(signal_lock_);
+  watchers_.NotifyState(GetHandleSignalsStateNoLock());
 
-  if (invalid_message)
-    return MOJO_RESULT_UNKNOWN;
-
-  if (rv != ports::OK && rv != ports::ERROR_PORT_PEER_CLOSED) {
-    if (rv == ports::ERROR_PORT_UNKNOWN ||
-        rv == ports::ERROR_PORT_STATE_UNEXPECTED)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-
-    NOTREACHED();
-    return MOJO_RESULT_UNKNOWN;  // TODO: Add a better error code here?
-  }
-
-  if (no_space) {
-    if (may_discard) {
-      // May have been the last message on the pipe. Need to update signals just
-      // in case.
-      base::AutoLock lock(signal_lock_);
-      watchers_.NotifyState(GetHandleSignalsStateNoLock());
-    }
-    // |*num_handles| (and/or |*num_bytes| if |read_any_size| is false) wasn't
-    // sufficient to hold this message's data. The message will still be in
-    // queue unless MOJO_READ_MESSAGE_FLAG_MAY_DISCARD was set.
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  }
-
-  if (!ports_message) {
-    // No message was available in queue.
-
-    if (rv == ports::OK)
-      return MOJO_RESULT_SHOULD_WAIT;
-
-    // Peer is closed and there are no more messages to read.
-    DCHECK_EQ(rv, ports::ERROR_PORT_PEER_CLOSED);
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
-  // Alright! We have a message and the caller has provided sufficient storage
-  // in which to receive it.
-
-  {
-    // We need to update anyone watching our signals in case that was the last
-    // available message.
-    base::AutoLock lock(signal_lock_);
-    watchers_.NotifyState(GetHandleSignalsStateNoLock());
-  }
-
-  std::unique_ptr<PortsMessage> msg(
-      static_cast<PortsMessage*>(ports_message.release()));
-
-  const MessageHeader* header =
-      static_cast<const MessageHeader*>(msg->payload_bytes());
-  const DispatcherHeader* dispatcher_headers =
-      reinterpret_cast<const DispatcherHeader*>(header + 1);
-
-  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max())
-    return MOJO_RESULT_UNKNOWN;
-
-  // Deserialize dispatchers.
-  if (header->num_dispatchers > 0) {
-    CHECK(handles);
-    std::vector<DispatcherInTransit> dispatchers(header->num_dispatchers);
-    size_t data_payload_index = sizeof(MessageHeader) +
-        header->num_dispatchers * sizeof(DispatcherHeader);
-    if (data_payload_index > header->header_size)
-      return MOJO_RESULT_UNKNOWN;
-    const char* dispatcher_data = reinterpret_cast<const char*>(
-        dispatcher_headers + header->num_dispatchers);
-    size_t port_index = 0;
-    size_t platform_handle_index = 0;
-    ScopedPlatformHandleVectorPtr msg_handles = msg->TakeHandles();
-    const size_t num_msg_handles = msg_handles ? msg_handles->size() : 0;
-    for (size_t i = 0; i < header->num_dispatchers; ++i) {
-      const DispatcherHeader& dh = dispatcher_headers[i];
-      Type type = static_cast<Type>(dh.type);
-
-      size_t next_payload_index = data_payload_index + dh.num_bytes;
-      if (msg->num_payload_bytes() < next_payload_index ||
-          next_payload_index < data_payload_index) {
-        return MOJO_RESULT_UNKNOWN;
-      }
-
-      size_t next_port_index = port_index + dh.num_ports;
-      if (msg->num_ports() < next_port_index || next_port_index < port_index)
-        return MOJO_RESULT_UNKNOWN;
-
-      size_t next_platform_handle_index =
-          platform_handle_index + dh.num_platform_handles;
-      if (num_msg_handles < next_platform_handle_index ||
-          next_platform_handle_index < platform_handle_index) {
-        return MOJO_RESULT_UNKNOWN;
-      }
-
-      PlatformHandle* out_handles =
-          num_msg_handles ? msg_handles->data() + platform_handle_index
-                          : nullptr;
-      dispatchers[i].dispatcher = Dispatcher::Deserialize(
-          type, dispatcher_data, dh.num_bytes, msg->ports() + port_index,
-          dh.num_ports, out_handles, dh.num_platform_handles);
-      if (!dispatchers[i].dispatcher)
-        return MOJO_RESULT_UNKNOWN;
-
-      dispatcher_data += dh.num_bytes;
-      data_payload_index = next_payload_index;
-      port_index = next_port_index;
-      platform_handle_index = next_platform_handle_index;
-    }
-
-    if (!node_controller_->core()->AddDispatchersFromTransit(dispatchers,
-                                                             handles))
-      return MOJO_RESULT_UNKNOWN;
-  }
-
-  CHECK(msg);
-  *message = MessageForTransit::WrapPortsMessage(std::move(msg));
-  return MOJO_RESULT_OK;
+  return read_result;
 }
 
 HandleSignalsState
@@ -533,7 +346,7 @@ void MessagePipeDispatcher::OnPortStatusChanged() {
   ports::PortStatus port_status;
   if (node_controller_->node()->GetStatus(port_, &port_status) == ports::OK) {
     if (port_status.has_messages) {
-      ports::ScopedMessage unused;
+      std::unique_ptr<ports::UserMessageEvent> unused;
       PeekSizeMessageFilter filter;
       node_controller_->node()->GetMessage(port_, &unused, &filter);
       DVLOG(4) << "New message detected on message pipe " << pipe_id_
