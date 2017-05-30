@@ -71,7 +71,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
             if (isMovingUp && !mAnimatingToolbarButtonDisappearance
                     && mToolbarButtonVisibilityPercent != 0.f) {
                 animateToolbarButtonVisibility(false);
-            } else if (isMovingDown && heightFraction < 0.45f && !mAnimatingToolbarButtonAppearance
+            } else if (isMovingDown && heightFraction < 0.40f && !mAnimatingToolbarButtonAppearance
                     && mToolbarButtonVisibilityPercent != 1.f) {
                 // If the sheet is moving down and the height is less than 45% of the max, start
                 // showing the toolbar buttons. 45% is used rather than 50% so that the buttons
