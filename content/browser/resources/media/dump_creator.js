@@ -34,26 +34,26 @@ var DumpCreator = (function() {
         '<p><label><input type=checkbox>' +
         'Enable diagnostic audio recordings</label></p>' +
         '<p class=audio-diagnostic-dumps-info>A diagnostic audio recording is' +
-        ' used for analyzing audio problems. It consists of two files and' +
-        ' contains the audio played out from the speaker and recorded from' +
-        ' the microphone and is saved to the local disk. Checking this box' +
-        ' will enable the recording for ongoing WebRTC calls and for future' +
-        ' WebRTC calls. When the box is unchecked or this page is closed, all' +
-        ' ongoing recordings will be stopped and this recording' +
-        ' functionality will be disabled for future WebRTC calls. Recordings' +
-        ' in multiple tabs are supported as well as multiple recordings in' +
-        ' the same tab. When enabling, you select a base filename to which' +
-        ' suffixes will be appended as</p>' +
+        ' used for analyzing audio problems. It consists of several files and' +
+        ' contains the audio played out to the speaker (output) and captured' +
+        ' from the microphone (input). The data is saved locally.' +
+        ' Checking this box will enable recordings of all ongoing input and' +
+        ' output audio streams (including non-WebRTC streams) and for future' +
+        ' audio streams. When the box is unchecked or this page is closed,' +
+        ' all ongoing recordings will be stopped and this recording' +
+        ' functionality disabled. Recording audio from multiple tabs is' +
+        ' supported as well as multiple recordings from the same tab.</p>' +
+        '<p>When enabling, select a base filename to which the following' +
+        ' suffixes will be added:</p>' +
         '<p><div>&lt;base filename&gt;.&lt;render process ID&gt;' +
-        '.aec_dump.&lt;recording ID&gt;</div>' +
+        '.aec_dump.&lt;AEC dump recording ID&gt;</div>' +
         '<div>&lt;base filename&gt;.&lt;render process ID&gt;' +
-        '.source_input.&lt;stream ID&gt;.wav</div></p>' +
-        '<p class=audio-diagnostic-dumps-info>If recordings are disabled and' +
-        ' then enabled using the same base filename, the microphone recording' +
-        ' file will be overwritten, and the AEC dump file will be appended to' +
-        ' and may become invalid. It is recommended to choose a new base' +
-        ' filename each time or move the produced files before enabling' +
-        ' again.</p>' +
+        '.source_input.&lt;stream ID&gt;.wav</div>' +
+        '<div>&lt;base filename&gt;.output' +
+        '.&lt;output stream recording ID&gt;.wav</div></p>' +
+        '<p class=audio-diagnostic-dumps-info>It is recommended to choose a' +
+        ' new base filename each time the feature is enabled to avoid ending' +
+        ' up with partially overwritten or unusable audio files.</p>' +
         '<p><label><input type=checkbox>' +
         'Enable diagnostic packet and event recording</label></p>' +
         '<p class=audio-diagnostic-dumps-info>A diagnostic packet and event' +
