@@ -848,7 +848,7 @@
     },
     {
       name: "RestrictCanRequestURLCharacterSet",
-      status: "experimental",
+      status: "stable",
     },
     // Handles frame scrolling via the root PaintLayer instead of the FrameView.
     // crbug.com/417782 tracks enabling this by default.
