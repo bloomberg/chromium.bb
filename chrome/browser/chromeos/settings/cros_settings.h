@@ -13,7 +13,7 @@
 #include "base/callback_list.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
@@ -28,7 +28,7 @@ namespace chromeos {
 class DeviceSettingsService;
 
 // This class manages per-device/global settings.
-class CrosSettings : public base::NonThreadSafe {
+class CrosSettings {
  public:
   // Manage singleton instance.
   static void Initialize();
@@ -133,6 +133,8 @@ class CrosSettings : public base::NonThreadSafe {
   // the order they are added.
   base::hash_map<std::string, std::unique_ptr<base::CallbackList<void(void)>>>
       settings_observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };

@@ -83,6 +83,7 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
 }
 
 CrosSettings::~CrosSettings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {
@@ -91,7 +92,7 @@ bool CrosSettings::IsCrosSettings(const std::string& path) {
 }
 
 void CrosSettings::Set(const std::string& path, const base::Value& in_value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CrosSettingsProvider* provider;
   provider = GetProvider(path);
   if (provider)
@@ -99,7 +100,7 @@ void CrosSettings::Set(const std::string& path, const base::Value& in_value) {
 }
 
 const base::Value* CrosSettings::GetPref(const std::string& path) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CrosSettingsProvider* provider = GetProvider(path);
   if (provider)
     return provider->Get(path);
@@ -109,7 +110,7 @@ const base::Value* CrosSettings::GetPref(const std::string& path) const {
 
 CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
     const base::Closure& callback) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < providers_.size(); ++i) {
     CrosSettingsProvider::TrustedStatus status =
         providers_[i]->PrepareTrustedValues(callback);
@@ -120,33 +121,33 @@ CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
 }
 
 void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::SetInteger(const std::string& path, int in_value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::SetDouble(const std::string& path, double in_value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::SetString(const std::string& path,
                              const std::string& in_value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::AppendToList(const std::string& path,
                                 const base::Value* value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* old_value = GetPref(path);
   std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
                                                    : new base::ListValue());
@@ -157,7 +158,7 @@ void CrosSettings::AppendToList(const std::string& path,
 
 void CrosSettings::RemoveFromList(const std::string& path,
                                   const base::Value* value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* old_value = GetPref(path);
   std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
                                                    : new base::ListValue());
@@ -167,7 +168,7 @@ void CrosSettings::RemoveFromList(const std::string& path,
 
 bool CrosSettings::GetBoolean(const std::string& path,
                               bool* bool_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsBoolean(bool_value);
@@ -176,7 +177,7 @@ bool CrosSettings::GetBoolean(const std::string& path,
 
 bool CrosSettings::GetInteger(const std::string& path,
                               int* out_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsInteger(out_value);
@@ -185,7 +186,7 @@ bool CrosSettings::GetInteger(const std::string& path,
 
 bool CrosSettings::GetDouble(const std::string& path,
                              double* out_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsDouble(out_value);
@@ -194,7 +195,7 @@ bool CrosSettings::GetDouble(const std::string& path,
 
 bool CrosSettings::GetString(const std::string& path,
                              std::string* out_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsString(out_value);
@@ -203,7 +204,7 @@ bool CrosSettings::GetString(const std::string& path,
 
 bool CrosSettings::GetList(const std::string& path,
                            const base::ListValue** out_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsList(out_value);
@@ -213,7 +214,7 @@ bool CrosSettings::GetList(const std::string& path,
 bool CrosSettings::GetDictionary(
     const std::string& path,
     const base::DictionaryValue** out_value) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
   if (value)
     return value->GetAsDictionary(out_value);
@@ -223,7 +224,7 @@ bool CrosSettings::GetDictionary(
 bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email,
                                    bool* wildcard_match) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string canonicalized_email(
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
   std::string wildcard_email;
@@ -271,7 +272,7 @@ bool CrosSettings::FindEmailInList(const std::string& path,
 
 bool CrosSettings::AddSettingsProvider(
     std::unique_ptr<CrosSettingsProvider> provider) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CrosSettingsProvider* provider_ptr = provider.get();
   providers_.push_back(std::move(provider));
 
@@ -287,7 +288,7 @@ bool CrosSettings::AddSettingsProvider(
 
 std::unique_ptr<CrosSettingsProvider> CrosSettings::RemoveSettingsProvider(
     CrosSettingsProvider* provider) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = std::find_if(
       providers_.begin(), providers_.end(),
       [provider](const std::unique_ptr<CrosSettingsProvider>& ptr) {
@@ -306,7 +307,7 @@ CrosSettings::AddSettingsObserver(const std::string& path,
                                   const base::Closure& callback) {
   DCHECK(!path.empty());
   DCHECK(!callback.is_null());
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!GetProvider(path)) {
     NOTREACHED() << "Trying to add an observer for an unregistered setting: "
@@ -338,7 +339,7 @@ CrosSettingsProvider* CrosSettings::GetProvider(
 }
 
 void CrosSettings::FireObservers(const std::string& path) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto observer_iterator = settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end())
     return;
