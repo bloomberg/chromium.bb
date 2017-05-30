@@ -60,6 +60,11 @@ class GIN_EXPORT IsolateHolder {
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 AccessMode access_mode,
                 AllowAtomicsWaitMode atomics_wait_mode);
+
+  // This constructor is to create V8 snapshot for Blink.
+  // Note this constructor calls isolate->Enter() internally.
+  IsolateHolder(intptr_t* reference_table, v8::StartupData* existing_blob);
+
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
@@ -91,6 +96,10 @@ class GIN_EXPORT IsolateHolder {
   // This method returns if v8::Locker is needed to access isolate.
   AccessMode access_mode() const { return access_mode_; }
 
+  v8::SnapshotCreator* snapshot_creator() const {
+    return snapshot_creator_.get();
+  }
+
   void EnableIdleTasks(std::unique_ptr<V8IdleTaskRunner> idle_task_runner);
 
   // This method returns V8IsolateMemoryDumpProvider of this isolate, used for
@@ -105,6 +114,7 @@ class GIN_EXPORT IsolateHolder {
   std::unique_ptr<PerIsolateData> isolate_data_;
   std::unique_ptr<RunMicrotasksObserver> task_observer_;
   std::unique_ptr<V8IsolateMemoryDumpProvider> isolate_memory_dump_provider_;
+  std::unique_ptr<v8::SnapshotCreator> snapshot_creator_;
   AccessMode access_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolateHolder);
