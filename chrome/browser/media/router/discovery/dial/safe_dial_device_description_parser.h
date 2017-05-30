@@ -26,8 +26,8 @@ class SafeDialDeviceDescriptionParser {
   // device description XML.
   // |success|: returns false if parsing fails.
   // |device_description|: device description object. Empty if parsing fails.
-  using DeviceDescriptionCallback = chrome::mojom::DialDeviceDescriptionParser::
-      ParseDialDeviceDescriptionCallback;
+  using DeviceDescriptionCallback =
+      base::Callback<void(chrome::mojom::DialDeviceDescriptionPtr)>;
 
   SafeDialDeviceDescriptionParser();
   virtual ~SafeDialDeviceDescriptionParser();

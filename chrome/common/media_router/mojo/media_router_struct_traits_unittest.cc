@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_router/mojo/media_router_struct_traits.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
@@ -27,8 +29,8 @@ class MediaRouterStructTraitsTest
  private:
   // MediaRouterTraitsTestService Impl
   void EchoMediaSink(const MediaSinkInternal& sink,
-                     const EchoMediaSinkCallback& callback) override {
-    callback.Run(sink);
+                     EchoMediaSinkCallback callback) override {
+    std::move(callback).Run(sink);
   }
 
   base::MessageLoop loop_;
