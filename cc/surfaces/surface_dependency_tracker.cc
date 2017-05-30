@@ -36,12 +36,12 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
     return;
   }
 
-  // Referenced surface IDs that aren't currently known to the surface manager
+  // Activation dependencies that aren't currently known to the surface manager
   // or do not have an active CompsotiorFrame block this frame.
   for (const SurfaceId& surface_id :
        pending_frame.metadata.activation_dependencies) {
-    Surface* surface_dependency = surface_manager_->GetSurfaceForId(surface_id);
-    if (!surface_dependency || !surface_dependency->HasActiveFrame())
+    Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
+    if (!dependency || !dependency->HasActiveFrame())
       blocked_surfaces_from_dependency_[surface_id].insert(
           surface->surface_id());
   }
