@@ -54,4 +54,14 @@ TEST(BorderValueTest, BorderValueWidth) {
   EXPECT_EQ(kMaxForBorderWidth, border.Width());
 }
 
+TEST(BorderValueTest, BorderValueColor) {
+  BorderValue border1 = BorderValue(
+      EBorderStyle::kSolid, StyleColor::CurrentColor(), 5, kOutlineIsAutoOff);
+  EXPECT_EQ(border1.ColorIsCurrentColor(), true);
+
+  BorderValue border2 = BorderValue(
+      EBorderStyle::kSolid, StyleColor(Color(128, 0, 0)), 5, kOutlineIsAutoOff);
+  EXPECT_EQ(border2.ColorIsCurrentColor(), false);
+}
+
 }  // namespace blink
