@@ -264,28 +264,22 @@ VisiblePosition SelectionModifier::ModifyExtendingForward(
 
 VisiblePosition SelectionModifier::ModifyMovingRight(
     TextGranularity granularity) {
-  VisiblePosition pos;
   switch (granularity) {
     case kCharacterGranularity:
-      if (selection_.IsRange()) {
-        if (DirectionOfSelection() == TextDirection::kLtr)
-          pos = CreateVisiblePosition(selection_.end(), selection_.Affinity());
-        else
-          pos =
-              CreateVisiblePosition(selection_.Start(), selection_.Affinity());
-      } else {
-        pos = RightPositionOf(
+      if (!selection_.IsRange()) {
+        return RightPositionOf(
             CreateVisiblePosition(selection_.Extent(), selection_.Affinity()));
       }
-      break;
+      if (DirectionOfSelection() == TextDirection::kLtr)
+        return CreateVisiblePosition(selection_.end(), selection_.Affinity());
+      return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
     case kWordGranularity: {
-      bool skips_space_when_moving_right =
+      const bool skips_space_when_moving_right =
           GetFrame() &&
           GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
-      pos = RightWordPosition(
+      return RightWordPosition(
           CreateVisiblePosition(selection_.Extent(), selection_.Affinity()),
           skips_space_when_moving_right);
-      break;
     }
     case kSentenceGranularity:
     case kLineGranularity:
@@ -293,15 +287,14 @@ VisiblePosition SelectionModifier::ModifyMovingRight(
     case kSentenceBoundary:
     case kParagraphBoundary:
     case kDocumentBoundary:
-      // FIXME: Implement all of the above.
-      pos = ModifyMovingForward(granularity);
-      break;
+      // TODO(editing-dev): Implement all of the above.
+      return ModifyMovingForward(granularity);
     case kLineBoundary:
-      pos =
-          RightBoundaryOfLine(StartForPlatform(), DirectionOfEnclosingBlock());
-      break;
+      return RightBoundaryOfLine(StartForPlatform(),
+                                 DirectionOfEnclosingBlock());
   }
-  return pos;
+  NOTREACHED() << granularity;
+  return VisiblePosition();
 }
 
 VisiblePosition SelectionModifier::ModifyMovingForward(
