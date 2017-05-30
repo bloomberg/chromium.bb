@@ -11,6 +11,10 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Returns YES if |view| or any view it contains is a WKWebView.
 BOOL ViewHierarchyContainsWKWebView(UIView* view) {
@@ -96,8 +100,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
                                                        callback:callback];
 }
 
-- (void)setImage:(UIImage*)img withSessionID:(NSString*)sessionID {
-  [[SnapshotCache sharedInstance] setImage:img withSessionID:sessionID];
+- (void)setImage:(UIImage*)image withSessionID:(NSString*)sessionID {
+  [[SnapshotCache sharedInstance] setImage:image withSessionID:sessionID];
 }
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
