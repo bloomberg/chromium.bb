@@ -35,10 +35,11 @@ class DesktopViewport {
   DesktopViewport();
   ~DesktopViewport();
 
-  // Sets the |desktop_size_| and initializes the viewport when necessary.
+  // Sets the |desktop_size_| and (re)initializes the viewport.
   void SetDesktopSize(int desktop_width, int desktop_height);
 
-  // Sets the |surface_size_| and initializes the viewport when necessary.
+  // Sets the |surface_size_| and (re)initializes the viewport if both
+  // dimensions are changed.
   void SetSurfaceSize(int surface_width, int surface_height);
 
   // Translates the desktop on the surface's reference frame by <dx, dy>.
