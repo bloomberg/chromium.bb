@@ -48,15 +48,6 @@ crbug.com/701695 external/wpt/html/webappapis/scripting/events/event-handler-pro
 crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 
 # -----------------------------------------------------------------
-# Untriaged but known leaks of ActiveDOMObject (IndexedDB).
-# -----------------------------------------------------------------
-# The leak detector's result for ActiveDOMObject (especially IndexedDB) is
-# flaky and we need to fix the leak detector (crbug.com/507224). Until then,
-# the tests for IndexedDB are skipped.
-crbug.com/506752 external/wpt/IndexedDB/ [ Skip ]
-crbug.com/506752 storage/indexeddb/ [ Skip ]
-
-# -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (http).
 # -----------------------------------------------------------------
 crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
