@@ -44,7 +44,7 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
 }  // namespace
 
 NSImage* ThemeService::GetNSImageNamed(int id, bool incognito) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool is_tab_or_toolbar_color =
       id == IDR_THEME_TAB_BACKGROUND_INACTIVE ||
@@ -147,7 +147,7 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool incognito) const {
 }
 
 NSColor* ThemeService::GetNSImageColorNamed(int id, bool incognito) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool is_tab_or_toolbar_color =
       id == IDR_THEME_TAB_BACKGROUND_INACTIVE ||
@@ -187,7 +187,7 @@ bool ThemeService::HasCustomColor(int id) const {
 }
 
 NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int original_id = id;
   const bool is_mode_material = true;
@@ -216,7 +216,7 @@ NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
 }
 
 NSColor* ThemeService::GetNSColorTint(int id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check to see if we already have the color in the cache.
   NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
@@ -245,7 +245,7 @@ NSColor* ThemeService::GetNSColorTint(int id) const {
 }
 
 NSGradient* ThemeService::GetNSGradient(int id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check to see if we already have the gradient in the cache.
   NSGradientMap::const_iterator nsgradient_iter = nsgradient_cache_.find(id);
@@ -328,7 +328,7 @@ void ThemeService::NotifyPlatformThemeChanged() {
 }
 
 void ThemeService::FreePlatformCaches() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Free images.
   for (NSImageMap::iterator i = nsimage_cache_.begin();
