@@ -867,6 +867,20 @@ void UserSessionManager::OnSessionRestoreStateChanged(
 
   login_manager->RemoveObserver(this);
 
+  // Terminate user session if merge session fails for an online sign-in.
+  // Otherwise, auth token dependent code would be in an invalid state.
+  // Important piece such as policy code might be broken because of this and
+  // subject to an exploit. See http://crbug.com/677312.
+  const bool is_online_signin =
+      user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML ||
+      user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML;
+  if (is_online_signin && state == OAuth2LoginManager::SESSION_RESTORE_FAILED) {
+    LOG(ERROR)
+        << "Session restore failed for online sign-in, terminating session.";
+    chrome::AttemptUserExit();
+    return;
+  }
+
   if (exit_after_session_restore_ &&
       (state  == OAuth2LoginManager::SESSION_RESTORE_DONE ||
        state  == OAuth2LoginManager::SESSION_RESTORE_FAILED ||

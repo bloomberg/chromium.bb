@@ -586,6 +586,37 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, OverlappingContinueSessionRestore) {
   EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 }
 
+// Tests that user session is terminated if merge session fails for an online
+// sign-in. This is necessary to prevent policy exploit.
+// See http://crbug.com/677312
+IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
+  SimulateNetworkOnline();
+  WaitForGaiaPageLoad();
+
+  content::WindowedNotificationObserver termination_waiter(
+      chrome::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources());
+
+  // Configure FakeGaia so that online auth succeeds but merge session fails.
+  FakeGaia::MergeSessionParams params;
+  params.auth_sid_cookie = kTestAuthSIDCookie;
+  params.auth_lsid_cookie = kTestAuthLSIDCookie;
+  params.auth_code = kTestAuthCode;
+  params.refresh_token = kTestRefreshToken;
+  params.access_token = kTestAuthLoginAccessToken;
+  fake_gaia_->SetMergeSessionParams(params);
+
+  // Simulate an online sign-in.
+  GetLoginDisplay()->ShowSigninScreenForCreds(kTestEmail, kTestAccountPassword);
+
+  // User session should be terminated.
+  termination_waiter.Wait();
+
+  // Merge session should fail. Check after |termination_waiter| to ensure
+  // user profile is initialized and there is an OAuth2LoginManage.
+  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+}
+
 const char kGooglePageContent[] =
     "<html><title>Hello!</title><script>alert('hello');</script>"
     "<body>Hello Google!</body></html>";
