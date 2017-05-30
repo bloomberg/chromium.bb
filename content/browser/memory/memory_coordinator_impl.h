@@ -10,8 +10,8 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -45,8 +45,7 @@ enum class MemoryCondition : int {
 // MemoryCoordinatorImpl is an implementation of MemoryCoordinator.
 class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
                                              public MemoryCoordinator,
-                                             public NotificationObserver,
-                                             public base::NonThreadSafe {
+                                             public NotificationObserver {
  public:
   static MemoryCoordinatorImpl* GetInstance();
 
@@ -255,6 +254,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // MemoryCoordinator and removed automatically when an underlying binding is
   // disconnected.
   ChildInfoMap children_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorImpl);
 };
