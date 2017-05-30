@@ -162,10 +162,13 @@ struct SelectedMap {
   DISALLOW_COPY_AND_ASSIGN(SelectedMap);
 };
 
-static SelectedMap CollectSelectedMap(
-    const SelectionPaintRange& range,
-    LayoutSelection::SelectionPaintInvalidationMode
-        block_paint_invalidation_mode) {
+enum class CollectSelectedMapOption {
+  kCollectBlock,
+  kNotCollectBlock,
+};
+
+static SelectedMap CollectSelectedMap(const SelectionPaintRange& range,
+                                      CollectSelectedMapOption option) {
   if (range.IsNull())
     return SelectedMap();
 
@@ -184,8 +187,7 @@ static SelectedMap CollectSelectedMap(
     // Blocks are responsible for painting line gaps and margin gaps.  They
     // must be examined as well.
     selected_map.object_map.Set(runner, runner->GetSelectionState());
-    if (block_paint_invalidation_mode ==
-        LayoutSelection::kPaintInvalidationNewXOROld) {
+    if (option == CollectSelectedMapOption::kCollectBlock) {
       LayoutBlock* containing_block = runner->ContainingBlock();
       while (containing_block && !containing_block->IsLayoutView()) {
         SelectedBlockMap::AddResult result = selected_map.block_map.insert(
@@ -221,20 +223,12 @@ static void SetSelectionState(const SelectionPaintRange& range) {
   }
 }
 
-void LayoutSelection::SetSelection(
-    const SelectionPaintRange& new_range,
-    SelectionPaintInvalidationMode block_paint_invalidation_mode) {
-  DCHECK(!new_range.IsNull());
-
-  // Just return if the selection hasn't changed.
-  if (paint_range_ == new_range)
-    return;
-
-  DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
-  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
-
+// Set SetSelectionState and ShouldInvalidateSelection flag of LayoutObjects
+// comparing them in |new_range| and |old_range|.
+static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
+                                    const SelectionPaintRange& old_range) {
   SelectedMap old_selected_map =
-      CollectSelectedMap(paint_range_, block_paint_invalidation_mode);
+      CollectSelectedMap(old_range, CollectSelectedMapOption::kCollectBlock);
 
   // Now clear the selection.
   for (auto layout_object : old_selected_map.object_map.Keys())
@@ -248,7 +242,7 @@ void LayoutSelection::SetSelection(
   // SelectionState, it's just more convenient to have it use the same data
   // structure as |old_selected_map|.
   SelectedMap new_selected_map =
-      CollectSelectedMap(new_range, kPaintInvalidationNewXOROld);
+      CollectSelectedMap(new_range, CollectSelectedMapOption::kCollectBlock);
 
   // Have any of the old selected objects changed compared to the new selection?
   for (const auto& pair : old_selected_map.object_map) {
@@ -257,9 +251,9 @@ void LayoutSelection::SetSelection(
     SelectionState old_selection_state = pair.value;
     if (new_selection_state != old_selection_state ||
         (new_range.StartLayoutObject() == obj &&
-         new_range.StartOffset() != paint_range_.StartOffset()) ||
+         new_range.StartOffset() != old_range.StartOffset()) ||
         (new_range.EndLayoutObject() == obj &&
-         new_range.EndOffset() != paint_range_.EndOffset())) {
+         new_range.EndOffset() != old_range.EndOffset())) {
       obj->SetShouldInvalidateSelection();
       new_selected_map.object_map.erase(obj);
     }
@@ -285,8 +279,6 @@ void LayoutSelection::SetSelection(
   // they need to be updated.
   for (auto layout_object : new_selected_map.block_map.Keys())
     layout_object->SetShouldInvalidateSelection();
-
-  paint_range_ = new_range;
 }
 
 std::pair<int, int> LayoutSelection::SelectionStartEnd() {
@@ -306,8 +298,8 @@ void LayoutSelection::ClearSelection() {
   if (paint_range_.IsNull())
     return;
 
-  const SelectedMap& old_selected_map =
-      CollectSelectedMap(paint_range_, kPaintInvalidationNewMinusOld);
+  const SelectedMap& old_selected_map = CollectSelectedMap(
+      paint_range_, CollectSelectedMapOption::kNotCollectBlock);
   // Clear SelectionState and invalidation.
   for (auto layout_object : old_selected_map.object_map.Keys()) {
     const SelectionState old_state = layout_object->GetSelectionState();
@@ -369,9 +361,18 @@ void LayoutSelection::Commit() {
   if (!start_layout_object || !end_layout_object)
     return;
   DCHECK(start_layout_object->View() == end_layout_object->View());
-  SetSelection(
-      SelectionPaintRange(start_layout_object, start_pos.ComputeEditingOffset(),
-                          end_layout_object, end_pos.ComputeEditingOffset()));
+
+  const SelectionPaintRange new_range(
+      start_layout_object, start_pos.ComputeEditingOffset(), end_layout_object,
+      end_pos.ComputeEditingOffset());
+  // Just return if the selection hasn't changed.
+  if (paint_range_ == new_range)
+    return;
+
+  DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
+  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
+  UpdateLayoutObjectState(new_range, paint_range_);
+  paint_range_ = new_range;
 }
 
 void LayoutSelection::OnDocumentShutdown() {
