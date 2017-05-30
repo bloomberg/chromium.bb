@@ -9,31 +9,12 @@
 # ask hajimehoshi@.                                                       #
 ###########################################################################
 
-# view-source:// tests are not supported by the leak detector
-crbug.com/364398 fast/frames/viewsource/viewsource-1.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-2.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-3.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-4.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-5.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-6.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-7.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
-crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
-crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
-crbug.com/364398 virtual/mojo-loading/http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
-crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
-crbug.com/364398 virtual/mojo-loading/http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
-
 # FIXME: The below tests fails when the leak detector is disabled.
 crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/366029 virtual/disable-spinvalidation/compositing/fixed-body-background-positioned.html [ Failure Pass ]
 
 # FIXME: The below tests crashes when the leak detector is run on debug builds
 crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
-
-# The leak detector doesn't wait for worker threads to completely clean up, so leaks are expected.
-crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
 
 # FIXME: scroll customization leaks memory. See
 # codereview.chromium.org/1236913004/ for context.
@@ -45,10 +26,7 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 # -----------------------------------------------------------------
 
 crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
-crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
-crbug.com/327574 virtual/mojo-loading/http/tests/permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
-crbug.com/629058 plugins/fullscreen-plugins-dont-reload.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks which may be false positives.
@@ -70,9 +48,6 @@ crbug.com/701695 external/wpt/html/webappapis/scripting/events/event-handler-pro
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
-crbug.com/506529 fast/mediastream/MediaStreamConstructor.html [ Leak ]
-crbug.com/506529 fast/events/constructors/media-stream-event-constructor.html [ Leak ]
-crbug.com/506529 fast/files/workers/worker-read-blob-async-crash.html [ Leak ]
 crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 
 # -----------------------------------------------------------------
@@ -87,14 +62,8 @@ crbug.com/506752 storage/indexeddb/ [ Skip ]
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (http).
 # -----------------------------------------------------------------
-crbug.com/506754 http/tests/cachestorage/window/cache-put.html [ Leak ]
-crbug.com/506754 virtual/mojo-loading/http/tests/cachestorage/window/cache-put.html [ Leak ]
-crbug.com/506754 http/tests/inspector/network/network-xhr-replay.html [ Leak ]
-crbug.com/506754 virtual/mojo-loading/http/tests/inspector/network/network-xhr-replay.html [ Leak ]
 crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
 crbug.com/506754 virtual/mojo-loading/http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
-crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
-crbug.com/506754 virtual/mojo-loading/http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
@@ -124,8 +93,6 @@ crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-centr
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-002.xhtml [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Leak ]
 
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 crbug.com/664874 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
