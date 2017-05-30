@@ -26237,6 +26237,10 @@ from previous Chrome versions.
     Save operation failed because an interstitial page (i.e. page warning of
     expired certificates or improper dev signatures) was detected.
   </int>
+  <int value="11" label="Archive folder missing">
+    Save operation failed because there's no available archive folder for the
+    page and the attemp to create the archive folder also failed.
+  </int>
 </enum>
 
 <enum name="OfflinePagesSharedPageWasOffline" type="int">
