@@ -251,6 +251,32 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
   return;
 }
 
+static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
+                              const aom_prob *coeff_lps) {
+  const tran_low_t min_level = 1 + NUM_BASE_LEVELS;
+  const tran_low_t max_level = 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE;
+  if (abs_qc >= min_level) {
+    const int cost0 = av1_cost_bit(coeff_lps[ctx], 0);
+    const int cost1 = av1_cost_bit(coeff_lps[ctx], 1);
+    if (abs_qc >= max_level)
+      return COEFF_BASE_RANGE * cost0;
+    else
+      return (abs_qc - min_level) * cost0 + cost1;
+  } else {
+    return 0;
+  }
+}
+
+static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
+                                aom_prob (*coeff_base)[COEFF_BASE_CONTEXTS],
+                                int base_idx) {
+  const int level = base_idx + 1;
+  if (abs_qc < level)
+    return 0;
+  else
+    return av1_cost_bit(coeff_base[base_idx][ctx], abs_qc == level);
+}
+
 int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                         int block, TXB_CTX *txb_ctx) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -370,6 +396,96 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
     txb_mask[scan[c]] = 1;
   }
 
+  return cost;
+}
+
+static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
+                                    const aom_prob *dc_sign_prob,
+                                    int dc_sign_ctx) {
+  const int sign = (qc < 0) ? 1 : 0;
+  // sign bit cost
+  if (coeff_idx == 0) {
+    return av1_cost_bit(dc_sign_prob[dc_sign_ctx], sign);
+  } else {
+    return av1_cost_bit(128, sign);
+  }
+}
+static INLINE int get_golomb_cost(int abs_qc) {
+  if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    // residual cost
+    int r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
+    int ri = r;
+    int length = 0;
+
+    while (ri) {
+      ri >>= 1;
+      ++length;
+    }
+
+    return av1_cost_literal(2 * length - 1);
+  } else {
+    return 0;
+  }
+}
+
+static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
+                          TxbProbs *txb_probs) {
+  const TXB_CTX *txb_ctx = txb_info->txb_ctx;
+  const int is_nz = (qc != 0);
+  const tran_low_t abs_qc = abs(qc);
+  int cost = 0;
+  const int16_t *scan = txb_info->scan_order->scan;
+  const int16_t *iscan = txb_info->scan_order->iscan;
+
+  if (scan_idx < txb_info->seg_eob) {
+    int coeff_ctx =
+        get_nz_map_ctx2(txb_info->qcoeff, scan[scan_idx], txb_info->bwl, iscan);
+    cost += av1_cost_bit(txb_probs->nz_map[coeff_ctx], is_nz);
+  }
+
+  if (is_nz) {
+    cost += get_sign_bit_cost(qc, scan_idx, txb_probs->dc_sign_prob,
+                              txb_ctx->dc_sign_ctx);
+
+    int ctx_ls[NUM_BASE_LEVELS] = { 0 };
+    get_base_ctx_set(txb_info->qcoeff, scan[scan_idx], txb_info->bwl, ctx_ls);
+
+    int i;
+    for (i = 0; i < NUM_BASE_LEVELS; ++i) {
+      cost += get_base_cost(abs_qc, ctx_ls[i], txb_probs->coeff_base, i);
+    }
+
+    if (abs_qc > NUM_BASE_LEVELS) {
+      int ctx = get_level_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->bwl);
+      cost += get_br_cost(abs_qc, ctx, txb_probs->coeff_lps);
+      cost += get_golomb_cost(abs_qc);
+    }
+
+    if (scan_idx < txb_info->seg_eob) {
+      int eob_ctx =
+          get_eob_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->bwl);
+      cost += av1_cost_bit(txb_probs->eob_flag[eob_ctx],
+                           scan_idx == (txb_info->eob - 1));
+    }
+  }
+  return cost;
+}
+
+// TODO(angiebird): make this static once it's called
+int get_txb_cost(TxbInfo *txb_info, TxbProbs *txb_probs) {
+  int cost = 0;
+  int txb_skip_ctx = txb_info->txb_ctx->txb_skip_ctx;
+  const int16_t *scan = txb_info->scan_order->scan;
+  if (txb_info->eob == 0) {
+    cost = av1_cost_bit(txb_probs->txb_skip[txb_skip_ctx], 1);
+    return cost;
+  }
+  cost = av1_cost_bit(txb_probs->txb_skip[txb_skip_ctx], 0);
+  for (int c = 0; c < txb_info->eob; ++c) {
+    tran_low_t qc = txb_info->qcoeff[scan[c]];
+    int coeff_cost = get_coeff_cost(qc, c, txb_info, txb_probs);
+    cost += coeff_cost;
+  }
   return cost;
 }
 

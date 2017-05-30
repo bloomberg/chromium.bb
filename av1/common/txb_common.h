@@ -130,17 +130,18 @@ static INLINE int get_level_ctx(const tran_low_t *tcoeffs,
   return 8 + ctx;
 }
 
-static int sig_ref_offset[11][2] = {
+#define SIG_REF_OFFSET_NUM 11
+static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { -2, -1 }, { -2, 0 }, { -2, 1 }, { -1, -2 }, { -1, -1 }, { -1, 0 },
   { -1, 1 },  { 0, -2 }, { 0, -1 }, { 1, -2 },  { 1, -1 },
 };
 
 static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const uint8_t *txb_mask,
-                                 const int c,  // raster order
+                                 const int coeff_idx,  // raster order
                                  const int bwl) {
-  const int row = c >> bwl;
-  const int col = c - (row << bwl);
+  const int row = coeff_idx >> bwl;
+  const int col = coeff_idx - (row << bwl);
   int ctx = 0;
   int idx;
   int stride = 1 << bwl;
@@ -166,7 +167,7 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
     return 5 + ctx;
   }
 
-  for (idx = 0; idx < 11; ++idx) {
+  for (idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     int ref_row = row + sig_ref_offset[idx][0];
     int ref_col = col + sig_ref_offset[idx][1];
     int pos;
@@ -200,14 +201,93 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
   return 14 + ctx;
 }
 
+static INLINE int get_nz_count(const tran_low_t *tcoeffs, int stride, int row,
+                               int col, const int16_t *iscan) {
+  int count = 0;
+  const int pos = row * stride + col;
+  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
+    const int ref_row = row + sig_ref_offset[idx][0];
+    const int ref_col = col + sig_ref_offset[idx][1];
+    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+      continue;
+    const int nb_pos = ref_row * stride + ref_col;
+    if (iscan[nb_pos] < iscan[pos]) count += (tcoeffs[nb_pos] != 0);
+  }
+  return count;
+}
+
+// TODO(angiebird): optimize this function by generate a table that maps from
+// count to ctx
+static INLINE int get_nz_map_ctx_from_count(int count,
+                                            const tran_low_t *tcoeffs,
+                                            int coeff_idx,  // raster order
+                                            int bwl, const int16_t *iscan) {
+  const int row = coeff_idx >> bwl;
+  const int col = coeff_idx - (row << bwl);
+  int ctx = 0;
+
+  if (row == 0 && col == 0) return 0;
+
+  if (row == 0 && col == 1) return 1 + (tcoeffs[0] != 0);
+
+  if (row == 1 && col == 0) return 3 + (tcoeffs[0] != 0);
+
+  if (row == 1 && col == 1) {
+    int pos;
+    ctx = (tcoeffs[0] != 0);
+
+    if (iscan[1] < iscan[coeff_idx]) ctx += (tcoeffs[1] != 0);
+    pos = 1 << bwl;
+    if (iscan[pos] < iscan[coeff_idx]) ctx += (tcoeffs[pos] != 0);
+
+    ctx = (ctx + 1) >> 1;
+
+    assert(5 + ctx <= 7);
+
+    return 5 + ctx;
+  }
+
+  if (row == 0) {
+    ctx = (count + 1) >> 1;
+
+    assert(ctx < 3);
+    return 8 + ctx;
+  }
+
+  if (col == 0) {
+    ctx = (count + 1) >> 1;
+
+    assert(ctx < 3);
+    return 11 + ctx;
+  }
+
+  ctx = count >> 1;
+
+  assert(14 + ctx < 20);
+
+  return 14 + ctx;
+}
+
+// TODO(angiebird): merge this function with get_nz_map_ctx() after proper
+// testing
+static INLINE int get_nz_map_ctx2(const tran_low_t *tcoeffs,
+                                  const int coeff_idx,  // raster order
+                                  const int bwl, const int16_t *iscan) {
+  int stride = 1 << bwl;
+  const int row = coeff_idx >> bwl;
+  const int col = coeff_idx - (row << bwl);
+  int count = get_nz_count(tcoeffs, stride, row, col, iscan);
+  return get_nz_map_ctx_from_count(count, tcoeffs, coeff_idx, bwl, iscan);
+}
+
 static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
-                              const int c,  // raster order
+                              const int coeff_idx,  // raster order
                               const int bwl) {
   (void)tcoeffs;
-  if (bwl == 2) return av1_coeff_band_4x4[c];
-  if (bwl == 3) return av1_coeff_band_8x8[c];
-  if (bwl == 4) return av1_coeff_band_16x16[c];
-  if (bwl == 5) return av1_coeff_band_32x32[c];
+  if (bwl == 2) return av1_coeff_band_4x4[coeff_idx];
+  if (bwl == 3) return av1_coeff_band_8x8[coeff_idx];
+  if (bwl == 4) return av1_coeff_band_16x16[coeff_idx];
+  if (bwl == 5) return av1_coeff_band_32x32[coeff_idx];
 
   assert(0);
   return 0;
