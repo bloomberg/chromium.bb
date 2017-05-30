@@ -4844,9 +4844,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   // clang-format on
 
   unsigned char* packets[] = {packet, packet_cid_be, packet39, packet_cid_be39};
-  size_t index = GetPacketIndex(framer_.version(), framer_.perspective());
 
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
+  size_t index = GetPacketIndex(framer_.version(), framer_.perspective());
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 

@@ -162,7 +162,7 @@ QUIC_FLAG(bool,
 // written in big endian.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_big_endian_connection_id_server,
-          false)
+          true)
 
 // Simplify QUIC\'s adaptive time loss detection to measure the necessary
 // reordering window for every spurious retransmit.

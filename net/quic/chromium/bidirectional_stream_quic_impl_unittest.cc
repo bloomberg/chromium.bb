@@ -370,7 +370,7 @@ class BidirectionalStreamQuicImplTest
                       kDefaultServerHostName,
                       Perspective::IS_CLIENT),
         server_maker_(GetParam(),
-                      connection_id_,
+                      GetPeerInMemoryConnectionId(connection_id_),
                       &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_SERVER),
