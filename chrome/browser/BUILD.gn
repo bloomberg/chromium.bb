@@ -1604,6 +1604,7 @@ split_static_library("browser") {
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/ukm:observers",
+    "//components/ukm:ukm_interface",
     "//components/ukm/debug_page",
     "//components/undo",
     "//components/update_client",

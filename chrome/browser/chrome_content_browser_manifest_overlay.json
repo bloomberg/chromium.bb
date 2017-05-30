@@ -15,7 +15,8 @@
           "rappor::mojom::RapporRecorder",
           "spellcheck::mojom::SpellCheckHost",
           "startup_metric_utils::mojom::StartupMetricHost",
-          "translate::mojom::ContentTranslateDriver"
+          "translate::mojom::ContentTranslateDriver",
+          "ukm::mojom::UkmRecorderInterface"
         ],
         "gpu": [
           "metrics::mojom::CallStackProfileCollector"
