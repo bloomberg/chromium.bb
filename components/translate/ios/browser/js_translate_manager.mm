@@ -34,9 +34,6 @@
       @"performance.now = performance['now'] ||"
       @"(function () { return Date.now(); });\n";
   script = [kPerformancePlaceholder stringByAppendingString:script];
-  // TODO(shreyasv): This leads to some duplicate code from
-  // CRWJSInjectionManager. Consider refactoring this to its own js injection
-  // manager.
   NSString* path =
       [base::mac::FrameworkBundle() pathForResource:@"translate_ios"
                                              ofType:@"js"];

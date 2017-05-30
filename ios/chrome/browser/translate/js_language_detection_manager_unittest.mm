@@ -37,7 +37,6 @@ NSString* GetLongString(NSUInteger length) {
 
 }  // namespace
 
-// TODO(shreyasv): Moved this to the translate component.
 // Test fixture to test language detection.
 class JsLanguageDetectionManagerTest : public ChromeWebTest {
  protected:
