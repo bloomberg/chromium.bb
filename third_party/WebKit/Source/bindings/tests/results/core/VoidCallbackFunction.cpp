@@ -46,14 +46,15 @@ bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
   if (!script_state_->ContextIsValid())
     return false;
 
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
+  // crbug.com/653769
+  DummyExceptionStateForTesting exceptionState;
+
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(script_state_.Get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 

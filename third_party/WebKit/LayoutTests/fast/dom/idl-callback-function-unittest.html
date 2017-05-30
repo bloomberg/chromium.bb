@@ -44,6 +44,13 @@ test(function() {
 }, 'Callback function which takes a number sequence');
 
 test(function() {
+  var callback = function(enum_value) {
+    assert_equals(enum_value, 'foo');
+  };
+  callbackFunctionTest.testEnumCallback(callback, 'foo');
+}, 'Callback function which takes an enum value');
+
+test(function() {
     assert_throws(new TypeError(), function() {
         callbackFunctionTest.testCallback(null, 'hello', 'world');
     });
