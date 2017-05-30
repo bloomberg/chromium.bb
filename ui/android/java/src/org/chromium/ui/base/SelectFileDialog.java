@@ -156,6 +156,10 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 && !window.hasPermission(Manifest.permission.RECORD_AUDIO)) {
             missingPermissions.add(Manifest.permission.RECORD_AUDIO);
         }
+        if (UiUtils.shouldShowPhotoPicker()
+                && !window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
         if (missingPermissions.isEmpty()) {
             launchSelectFileIntent();
