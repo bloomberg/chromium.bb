@@ -87846,6 +87846,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Net.QuicSession.ConnectionCloseErrorCodeServer"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="HighDownloadBandwidth" separator=".">
+  <suffix name="HighDownloadBandwidth" label="download with high bandwidth."/>
+  <affected-histogram name="Download.Parallelizable.DownloadTime"/>
+  <affected-histogram name="Download.Parallelizable.FileSize"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="HistogramInconsistencies" separator=".">
   <suffix name="Cronet" label="Cronet histograms."/>
   <affected-histogram name="Histogram.InconsistenciesBrowser"/>

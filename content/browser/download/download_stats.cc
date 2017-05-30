@@ -343,6 +343,8 @@ const base::FilePath::CharType* kDangerousFileTypes[] = {
 // will be kept in overflow bucket.
 const int64_t kMaxFileSizeKb = 4 * 1024 * 1024; /* 4GB. */
 
+const int64_t kHighBandwidthBytesPerSecond = 30 * 1024 * 1024;
+
 // Maps extensions to their matching UMA histogram int value.
 int GetDangerousFileType(const base::FilePath& file_path) {
   for (size_t i = 0; i < arraysize(kDangerousFileTypes); ++i) {
@@ -886,6 +888,14 @@ void RecordParallelizableDownloadAverageStats(
   UMA_HISTOGRAM_LONG_TIMES("Download.Parallelizable.DownloadTime", time_span);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.Parallelizable.FileSize", file_size_kb,
                               1, kMaxFileSizeKb, 50);
+  if (average_bandwidth > kHighBandwidthBytesPerSecond) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Download.Parallelizable.DownloadTime.HighDownloadBandwidth",
+        time_span);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Download.Parallelizable.FileSize.HighDownloadBandwidth", file_size_kb,
+        1, kMaxFileSizeKb, 50);
+  }
 }
 
 void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event) {
