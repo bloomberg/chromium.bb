@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -32,16 +32,18 @@ namespace {
 const int64_t kMaxSessionRestoreTimeInSec = 60;
 
 // The set of blocked profiles.
-class ProfileSet : public base::NonThreadSafe, public std::set<Profile*> {
+class ProfileSet : public std::set<Profile*> {
  public:
   ProfileSet() {}
 
-  virtual ~ProfileSet() {}
+  virtual ~ProfileSet() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
   static ProfileSet* Get();
 
  private:
   friend struct ::base::LazyInstanceTraitsBase<ProfileSet>;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSet);
 };
