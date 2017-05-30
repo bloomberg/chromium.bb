@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -24,8 +24,7 @@ class URLFetcher;
 // This class handles errors due to common name mismatches
 // (|ERR_CERT_COMMON_NAME_INVALID|) and helps remediate them by suggesting
 // alternative URLs that may be what the user intended to load.
-class CommonNameMismatchHandler : public net::URLFetcherDelegate,
-                                  public base::NonThreadSafe {
+class CommonNameMismatchHandler : public net::URLFetcherDelegate {
  public:
   enum SuggestedUrlCheckResult {
     // The request succeeds with good response code i.e. URL exists and its
@@ -85,6 +84,8 @@ class CommonNameMismatchHandler : public net::URLFetcherDelegate,
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   CheckUrlCallback check_url_callback_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CommonNameMismatchHandler);
 };
