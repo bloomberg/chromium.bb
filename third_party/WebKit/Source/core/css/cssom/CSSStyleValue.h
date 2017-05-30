@@ -54,7 +54,7 @@ class CORE_EXPORT CSSStyleValue
   virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
     return ToCSSValue();
   }
-  virtual String cssText() const {
+  virtual String toString() const {
     const CSSValue* result = ToCSSValue();
     // TODO(meade): Remove this once all the number and length types are
     // rewritten.

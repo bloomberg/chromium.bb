@@ -745,8 +745,8 @@ interface CSSStyleSheet : StyleSheet
 interface CSSStyleValue
     static method parse
     attribute @@toStringTag
-    getter cssText
     method constructor
+    method toString
 interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
     method constructor

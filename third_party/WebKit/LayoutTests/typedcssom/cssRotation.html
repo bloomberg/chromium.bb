@@ -71,10 +71,10 @@ test(function() {
     for (var attribute in expectedMatrix) {
       if (attribute == "matrix") {
         assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      } else if (attribute != "cssText") {
+      } else if (attribute != "toString") {
         // Due to the complex trigonometric calculations required for a CSSRotation matrix,
-        // the 6 significant figures of each value in the cssText might be different.
-        // Hence, do not check cssText.
+        // the 6 significant figures of each value in the toString might be different.
+        // Hence, do not check toString.
         assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       }
     }

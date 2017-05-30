@@ -18,7 +18,7 @@ function generatePaintStyleLogging(properties) {
                     const value = styleMap.get(properties[i]);
                     let serialized;
                     if (value) {
-                        serialized = '[' + value.constructor.name + '=' + value.cssText + ']';
+                        serialized = '[' + value.constructor.name + '=' + value.toString() + ']';
                     } else {
                         serialized = '[null]';
                     }

@@ -117,7 +117,7 @@ test(function() {
   let result = testElement.styleMap.get('transform');
   assert_equals(result.constructor, CSSStyleValue,
       'result is a base CSSStyleValue');
-  assert_equals(result.cssText, 'rotate(calc(102.296deg))');
+  assert_equals(result.toString(), 'rotate(calc(102.296deg))');
 }, 'Getting transform when it has a rotate with a calc angle does not crash');
 
 test(function() {
@@ -125,25 +125,25 @@ test(function() {
   let result = testElement.styleMap.get('transform');
   assert_equals(result.constructor, CSSStyleValue,
       'result is a base CSSStyleValue');
-  assert_equals(result.cssText, 'rotate3d(1, 2, 3, calc(102.296deg))');
+  assert_equals(result.toString(), 'rotate3d(1, 2, 3, calc(102.296deg))');
 }, 'Getting transform when it has a rotate3d with a calc angle does not crash');
 
 test(function() {
   testElement.style.transform = 'skew(calc(5deg + 0.1rad))';
   let result = testElement.styleMap.get('transform');
-  assert_equals(result.cssText, 'skew(calc(10.7296deg))');
+  assert_equals(result.toString(), 'skew(calc(10.7296deg))');
   assert_equals(result.constructor,  CSSStyleValue);
 }, 'Getting transform when it has a skew with a calc angle does not crash');
 
 test(function() {
   testElement.style.transform = 'skew(calc(5deg + 0.1rad), 5deg)';
   let result = testElement.styleMap.get('transform');
-  assert_equals(result.cssText, 'skew(calc(10.7296deg), 5deg)');
+  assert_equals(result.toString(), 'skew(calc(10.7296deg), 5deg)');
   assert_equals(result.constructor,  CSSStyleValue);
 
   testElement.style.transform = 'skew(5deg, calc(5deg + 0.1rad))';
   result = testElement.styleMap.get('transform');
-  assert_equals(result.cssText, 'skew(5deg, calc(10.7296deg))');
+  assert_equals(result.toString(), 'skew(5deg, calc(10.7296deg))');
   assert_equals(result.constructor,  CSSStyleValue);
 }, 'Getting transform when it has a 2-argument skew with a calc angle ' +
    'does not crash');
@@ -151,14 +151,14 @@ test(function() {
 test(function() {
   testElement.style.transform = 'skewX(calc(5deg + 0.1rad))';
   let result = testElement.styleMap.get('transform');
-  assert_equals(result.cssText, 'skewX(calc(10.7296deg))');
+  assert_equals(result.toString(), 'skewX(calc(10.7296deg))');
   assert_equals(result.constructor,  CSSStyleValue);
 }, 'Getting transform when it has a skewX with a calc angle does not crash');
 
 test(function() {
   testElement.style.transform = 'skewY(calc(5deg + 0.1rad))';
   let result = testElement.styleMap.get('transform');
-  assert_equals(result.cssText, 'skewY(calc(10.7296deg))');
+  assert_equals(result.toString(), 'skewY(calc(10.7296deg))');
   assert_equals(result.constructor,  CSSStyleValue);
 }, 'Getting transform when it has a skewY with a calc angle does not crash');
 

@@ -17,42 +17,42 @@ var computedStyleMap = getComputedStyleMap(testElement);
 test(function() {
   var result = computedStyleMap.get('line-height');
   assert_equals(result.constructor.name, CSSUnitValue.name);
-  assert_equals(result.cssText, '10px');
+  assert_equals(result.toString(), '10px');
 }, 'Getting a 10px lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = '20px';
   var result = computedStyleMap.getAll('line-height');
   assert_equals(result.length, 1);
-  assert_equals(result[0].cssText, '20px');
+  assert_equals(result[0].toString(), '20px');
 }, 'getAll for lineHeight returns a single value');
 
 test(function() {
   testElement.style.lineHeight = '10%';
   var result = computedStyleMap.get('line-height');
   assert_equals(result.constructor.name, CSSUnitValue.name);
-  assert_equals(result.cssText, '10px');
+  assert_equals(result.toString(), '10px');
 }, 'Getting a 10% lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = '0.2';
   var result = computedStyleMap.get('line-height');
   assert_equals(result.constructor.name, CSSUnitValue.name);
-  assert_equals(result.cssText, '20px');
+  assert_equals(result.toString(), '20px');
 }, 'Getting a number lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = 'calc(10px + 10%)';
   var result = computedStyleMap.get('line-height');
   assert_equals(result.constructor.name, CSSUnitValue.name);
-  assert_equals(result.cssText, '20px');
+  assert_equals(result.toString(), '20px');
 }, 'Getting a calc lineHeight results in a CSSUnitValue');
 
 test(function() {
   testElement.style.lineHeight = 'normal';
   var result = computedStyleMap.get('line-height');
   assert_equals(result.constructor.name, CSSKeywordValue.name);
-  assert_equals(result.cssText, 'normal');
+  assert_equals(result.toString(), 'normal');
 }, 'Getting a normal lineHeight results in a CSSKeywordValue');
 
 </script>

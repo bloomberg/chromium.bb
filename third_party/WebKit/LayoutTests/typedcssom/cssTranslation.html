@@ -53,9 +53,9 @@ var values = [
 
 function expectedCssString(obj) {
   var cssText = obj.is2D ? "translate(" : "translate3d(";
-  cssText += obj.x.cssText + ", " + obj.y.cssText;
+  cssText += obj.x.toString() + ", " + obj.y.toString();
   if (!obj.is2D)
-    cssText += ", " + obj.z.cssText;
+    cssText += ", " + obj.z.toString();
   cssText += ")";
   return cssText;
 }

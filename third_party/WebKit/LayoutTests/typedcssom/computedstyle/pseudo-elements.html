@@ -28,7 +28,7 @@ function t1Callback(pseudoComputedStyleMap) {
   t1.step(function() {
     var pseudoResult = pseudoComputedStyleMap.get('width');
     assert_equals(pseudoResult.constructor.name, CSSUnitValue.name);
-    assert_equals(pseudoResult.cssText, '100px');
+    assert_equals(pseudoResult.toString(), '100px');
   });
   t1.done();
 }
@@ -38,7 +38,7 @@ function t2Callback(pseudoComputedStyleMap) {
   t2.step(function() {
     var styleValueList = pseudoComputedStyleMap.getAll('width');
     assert_equals(styleValueList.length, 1);
-    assert_equals(styleValueList[0].cssText, '100px');
+    assert_equals(styleValueList[0].toString(), '100px');
   });
   t2.done();
 }

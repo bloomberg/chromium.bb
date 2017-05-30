@@ -13,7 +13,7 @@ test(function() {
 
   var result = computedStyleMap.get('border-top-width');
   assert_equals(result.constructor.name, CSSUnitValue.name);
-  assert_equals(result.cssText, '10px');
+  assert_equals(result.toString(), '10px');
 }, "Getting a 10px border-top-width returns a CSSUnitValue");
 
 test(function() {
@@ -21,7 +21,7 @@ test(function() {
 
   var result = computedStyleMap.getAll('border-top-width');
   assert_equals(result.length, 1);
-  assert_equals(result[0].cssText, '20px');
+  assert_equals(result[0].toString(), '20px');
 }, "getAll for border-top-width returns a single value");
 
 </script>
