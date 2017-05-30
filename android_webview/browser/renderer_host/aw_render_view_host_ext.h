@@ -10,7 +10,7 @@
 #include "android_webview/common/aw_hit_test_data.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,8 +31,7 @@ class AwRenderViewHostExtClient {
 
 // Provides RenderViewHost wrapper functionality for sending WebView-specific
 // IPC messages to the renderer and from there to WebKit.
-class AwRenderViewHostExt : public content::WebContentsObserver,
-                            public base::NonThreadSafe {
+class AwRenderViewHostExt : public content::WebContentsObserver {
  public:
 
   // To send receive messages to a RenderView we take the WebContents instance,
@@ -116,6 +115,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   AwHitTestData last_hit_test_data_;
 
   bool has_new_hit_test_data_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewHostExt);
 };
