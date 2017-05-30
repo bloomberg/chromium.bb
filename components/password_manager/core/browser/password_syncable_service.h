@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
@@ -32,8 +32,7 @@ namespace password_manager {
 class PasswordStoreSync;
 
 // The implementation of the SyncableService API for passwords.
-class PasswordSyncableService : public syncer::SyncableService,
-                                public base::NonThreadSafe {
+class PasswordSyncableService : public syncer::SyncableService {
  public:
   // Since the constructed |PasswordSyncableService| is typically owned by the
   // |password_store|, the constructor doesn't take ownership of the
@@ -112,6 +111,8 @@ class PasswordSyncableService : public syncer::SyncableService,
 
   // True if processing sync changes is in progress.
   bool is_processing_sync_changes_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableService);
 };

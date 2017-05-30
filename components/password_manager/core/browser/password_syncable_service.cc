@@ -141,6 +141,7 @@ PasswordSyncableService::PasswordSyncableService(
 }
 
 PasswordSyncableService::~PasswordSyncableService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
@@ -148,7 +149,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(syncer::PASSWORDS, type);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   syncer::SyncMergeResult merge_result(type);
@@ -229,7 +230,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
 }
 
 void PasswordSyncableService::StopSyncing(syncer::ModelType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(syncer::PASSWORDS, type);
 
   sync_processor_.reset();
@@ -238,7 +239,7 @@ void PasswordSyncableService::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(syncer::PASSWORDS, type);
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
   ReadFromPasswordStore(&password_entries, nullptr);
@@ -256,7 +257,7 @@ syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
 syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   SyncEntries sync_entries;
   base::Time time_now = base::Time::Now();
@@ -280,7 +281,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
 
 void PasswordSyncableService::ActOnPasswordStoreChanges(
     const PasswordStoreChangeList& local_changes) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!sync_processor_) {
     if (!flare_.is_null()) {
@@ -309,7 +310,7 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
 
 void PasswordSyncableService::InjectStartSyncFlare(
     const syncer::SyncableService::StartSyncFlare& flare) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   flare_ = flare;
 }
 
