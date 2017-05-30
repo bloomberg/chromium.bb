@@ -266,42 +266,50 @@
 
       <if expr="not is_android and not is_ios">
         <!-- MD Bookmarks. -->
-        <include name="IDR_MD_BOOKMARKS_ACTIONS_HTML" file="resources\md_bookmarks\actions.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ACTIONS_JS" file="resources\md_bookmarks\actions.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_API_LISTENER_HTML" file="resources\md_bookmarks\api_listener.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_API_LISTENER_JS" file="resources\md_bookmarks\api_listener.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\md_bookmarks\command_manager.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_JS" file="resources\md_bookmarks\command_manager.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_CONSTANTS_HTML" file="resources\md_bookmarks\constants.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_CONSTANTS_JS" file="resources\md_bookmarks\constants.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_DND_MANAGER_HTML" file="resources\md_bookmarks\dnd_manager.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_DND_MANAGER_JS" file="resources\md_bookmarks\dnd_manager.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\md_bookmarks\edit_dialog.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_JS" file="resources\md_bookmarks\edit_dialog.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_HTML" file="resources\md_bookmarks\folder_node.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_JS" file="resources\md_bookmarks\folder_node.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ICONS_HTML" file="resources\md_bookmarks\icons.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ITEM_HTML" file="resources\md_bookmarks\item.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ITEM_JS" file="resources\md_bookmarks\item.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_LIST_HTML" file="resources\md_bookmarks\list.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_LIST_JS" file="resources\md_bookmarks\list.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_REDUCERS_HTML" file="resources\md_bookmarks\reducers.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_REDUCERS_JS" file="resources\md_bookmarks\reducers.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ROUTER_HTML" file="resources\md_bookmarks\router.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_ROUTER_JS" file="resources\md_bookmarks\router.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_SHARED_STYLE_HTML" file="resources\md_bookmarks\shared_style.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_SHARED_VARS_HTML" file="resources\md_bookmarks\shared_vars.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_HTML" file="resources\md_bookmarks\store_client.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_JS" file="resources\md_bookmarks\store_client.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_STORE_HTML" file="resources\md_bookmarks\store.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_STORE_JS" file="resources\md_bookmarks\store.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_TOOLBAR_HTML" file="resources\md_bookmarks\toolbar.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_TOOLBAR_JS" file="resources\md_bookmarks\toolbar.js" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_UTIL_HTML" file="resources\md_bookmarks\util.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_UTIL_JS" file="resources\md_bookmarks\util.js" type="BINDATA" />
+        <if expr="use_vulcanize">
+          <then>
+            <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
+          </then>
+          <else>
+            <include name="IDR_MD_BOOKMARKS_ACTIONS_HTML" file="resources\md_bookmarks\actions.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ACTIONS_JS" file="resources\md_bookmarks\actions.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_API_LISTENER_HTML" file="resources\md_bookmarks\api_listener.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_API_LISTENER_JS" file="resources\md_bookmarks\api_listener.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\md_bookmarks\command_manager.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_JS" file="resources\md_bookmarks\command_manager.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_CONSTANTS_HTML" file="resources\md_bookmarks\constants.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_CONSTANTS_JS" file="resources\md_bookmarks\constants.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_DND_MANAGER_HTML" file="resources\md_bookmarks\dnd_manager.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_DND_MANAGER_JS" file="resources\md_bookmarks\dnd_manager.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\md_bookmarks\edit_dialog.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_JS" file="resources\md_bookmarks\edit_dialog.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_HTML" file="resources\md_bookmarks\folder_node.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_JS" file="resources\md_bookmarks\folder_node.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ICONS_HTML" file="resources\md_bookmarks\icons.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ITEM_HTML" file="resources\md_bookmarks\item.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ITEM_JS" file="resources\md_bookmarks\item.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_LIST_HTML" file="resources\md_bookmarks\list.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_LIST_JS" file="resources\md_bookmarks\list.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_REDUCERS_HTML" file="resources\md_bookmarks\reducers.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_REDUCERS_JS" file="resources\md_bookmarks\reducers.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ROUTER_HTML" file="resources\md_bookmarks\router.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_ROUTER_JS" file="resources\md_bookmarks\router.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_SHARED_STYLE_HTML" file="resources\md_bookmarks\shared_style.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_SHARED_VARS_HTML" file="resources\md_bookmarks\shared_vars.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_HTML" file="resources\md_bookmarks\store_client.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_JS" file="resources\md_bookmarks\store_client.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_STORE_HTML" file="resources\md_bookmarks\store.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_STORE_JS" file="resources\md_bookmarks\store.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_TOOLBAR_HTML" file="resources\md_bookmarks\toolbar.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_TOOLBAR_JS" file="resources\md_bookmarks\toolbar.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_UTIL_HTML" file="resources\md_bookmarks\util.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_UTIL_JS" file="resources\md_bookmarks\util.js" type="BINDATA" />
+          </else>
+        </if>
 
         <!-- MD History. -->
         <include name="IDR_MD_HISTORY_CONSTANTS_HTML" file="resources\md_history\constants.html" type="BINDATA" />
