@@ -20,7 +20,10 @@
 #include "extensions/common/switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/ownership/mock_owner_key_util.h"
+#include "crypto/rsa_private_key.h"
 #endif
 
 namespace extensions {
@@ -106,7 +109,18 @@ class TestDelegate : public UsersPrivateDelegate {
 
 class UsersPrivateApiTest : public ExtensionApiTest {
  public:
-  UsersPrivateApiTest() {}
+  UsersPrivateApiTest() {
+#if defined(OS_CHROMEOS)
+    // Mock owner key pairs. Note this needs to happen before
+    // OwnerSettingsServiceChromeOS is created.
+    scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util =
+        new ownership::MockOwnerKeyUtil();
+    owner_key_util->SetPrivateKey(crypto::RSAPrivateKey::Create(512));
+
+    chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
+        ->SetOwnerKeyUtilForTesting(owner_key_util);
+#endif
+  }
   ~UsersPrivateApiTest() override {}
 
   static std::unique_ptr<KeyedService> GetUsersPrivateDelegate(
