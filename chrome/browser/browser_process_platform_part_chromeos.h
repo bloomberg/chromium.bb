@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
 namespace chromeos {
@@ -38,8 +38,7 @@ class BrowserPolicyConnectorChromeOS;
 
 class ScopedKeepAlive;
 
-class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
-                                   public base::NonThreadSafe {
+class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
  public:
   BrowserProcessPlatformPart();
   ~BrowserProcessPlatformPart() override;
@@ -131,6 +130,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   base::flat_set<std::string> compatible_cros_components_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

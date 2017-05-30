@@ -32,7 +32,9 @@
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {}
 
-BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {}
+BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
   DCHECK(!automatic_reboot_manager_);
@@ -95,7 +97,7 @@ void BrowserProcessPlatformPart::UnregisterKeepAlive() {
 }
 
 chromeos::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!created_profile_helper_)
     CreateProfileHelper();
   return profile_helper_.get();

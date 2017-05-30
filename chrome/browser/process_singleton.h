@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROCESS_SINGLETON_H_
 #define CHROME_BROWSER_PROCESS_SINGLETON_H_
 
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -21,7 +22,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
-#include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -47,7 +47,7 @@ class CommandLine;
 // - the Windows implementation uses an invisible global message window;
 // - the Linux implementation uses a Unix domain socket in the user data dir.
 
-class ProcessSingleton : public base::NonThreadSafe {
+class ProcessSingleton {
  public:
   // Used to send the reason of remote hang process termination as histogram.
   enum RemoteHungProcessTerminateReason {
@@ -217,6 +217,8 @@ class ProcessSingleton : public base::NonThreadSafe {
   class LinuxWatcher;
   scoped_refptr<LinuxWatcher> watcher_;
 #endif
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingleton);
 };
