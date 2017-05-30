@@ -526,7 +526,7 @@
       priority: "High",
       field_template: "storage_only",
       type_name: "TextOrientation",
-      default_value: "kTextOrientationMixed",
+      default_value: "TextOrientation::kMixed",
       field_size: 2,
       field_group: "rare-inherited",
     },

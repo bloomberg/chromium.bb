@@ -290,11 +290,7 @@ enum class TextEmphasisMark {
 
 enum class TextEmphasisPosition { kOver, kUnder };
 
-enum TextOrientation {
-  kTextOrientationMixed,
-  kTextOrientationUpright,
-  kTextOrientationSideways
-};
+enum class TextOrientation { kMixed, kUpright, kSideways };
 
 enum TextOverflow { kTextOverflowClip = 0, kTextOverflowEllipsis };
 
