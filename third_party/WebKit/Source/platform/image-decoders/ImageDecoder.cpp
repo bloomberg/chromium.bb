@@ -63,8 +63,6 @@ inline bool MatchesBMPSignature(const char* contents) {
   return !memcmp(contents, "BM", 2);
 }
 
-// This needs to be updated if we ever add a Matches*Signature() which requires
-// more characters.
 static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
 std::unique_ptr<ImageDecoder> ImageDecoder::Create(
@@ -72,8 +70,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     bool data_complete,
     AlphaOption alpha_option,
     const ColorBehavior& color_behavior) {
-  // We need at least kLongestSignatureLength bytes to run the signature
-  // matcher.
+  // At least kLongestSignatureLength bytes are needed to sniff the signature.
   if (data->size() < kLongestSignatureLength)
     return nullptr;
 
@@ -85,38 +82,28 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
   // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)
   char buffer[kLongestSignatureLength];
   const FastSharedBufferReader fast_reader(data);
-  const ImageDecoder::SniffResult sniff_result = DetermineImageType(
-      fast_reader.GetConsecutiveData(0, kLongestSignatureLength, buffer),
-      kLongestSignatureLength);
+  const char* contents =
+      fast_reader.GetConsecutiveData(0, kLongestSignatureLength, buffer);
 
   std::unique_ptr<ImageDecoder> decoder;
-  switch (sniff_result) {
-    case SniffResult::JPEG:
-      decoder.reset(new JPEGImageDecoder(alpha_option, color_behavior,
-                                         max_decoded_bytes));
-      break;
-    case SniffResult::PNG:
-      decoder.reset(
-          new PNGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
-      break;
-    case SniffResult::GIF:
-      decoder.reset(
-          new GIFImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
-      break;
-    case SniffResult::WEBP:
-      decoder.reset(new WEBPImageDecoder(alpha_option, color_behavior,
-                                         max_decoded_bytes));
-      break;
-    case SniffResult::ICO:
-      decoder.reset(
-          new ICOImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
-      break;
-    case SniffResult::BMP:
-      decoder.reset(
-          new BMPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
-      break;
-    case SniffResult::kInvalid:
-      break;
+  if (MatchesJPEGSignature(contents)) {
+    decoder.reset(
+        new JPEGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+  } else if (MatchesPNGSignature(contents)) {
+    decoder.reset(
+        new PNGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+  } else if (MatchesGIFSignature(contents)) {
+    decoder.reset(
+        new GIFImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+  } else if (MatchesWebPSignature(contents)) {
+    decoder.reset(
+        new WEBPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+  } else if (MatchesICOSignature(contents) || MatchesCURSignature(contents)) {
+    decoder.reset(
+        new ICOImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+  } else if (MatchesBMPSignature(contents)) {
+    decoder.reset(
+        new BMPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
   }
 
   if (decoder)
@@ -127,25 +114,6 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
 
 bool ImageDecoder::HasSufficientDataToSniffImageType(const SharedBuffer& data) {
   return data.size() >= kLongestSignatureLength;
-}
-
-ImageDecoder::SniffResult ImageDecoder::DetermineImageType(const char* contents,
-                                                           size_t length) {
-  DCHECK_GE(length, kLongestSignatureLength);
-
-  if (MatchesJPEGSignature(contents))
-    return SniffResult::JPEG;
-  if (MatchesPNGSignature(contents))
-    return SniffResult::PNG;
-  if (MatchesGIFSignature(contents))
-    return SniffResult::GIF;
-  if (MatchesWebPSignature(contents))
-    return SniffResult::WEBP;
-  if (MatchesICOSignature(contents) || MatchesCURSignature(contents))
-    return SniffResult::ICO;
-  if (MatchesBMPSignature(contents))
-    return SniffResult::BMP;
-  return SniffResult::kInvalid;
 }
 
 size_t ImageDecoder::FrameCount() {

@@ -402,10 +402,6 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
  private:
-  enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, kInvalid };
-
-  static SniffResult DetermineImageType(const char* data, size_t length);
-
   // Some code paths compute the size of the image as "width * height * 4"
   // and return it as a (signed) int.  Avoid overflow.
   static bool SizeCalculationMayOverflow(unsigned width, unsigned height) {
