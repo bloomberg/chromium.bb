@@ -15,7 +15,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
@@ -32,7 +32,6 @@ class UsageTracker;
 // This class holds per-client usage tracking information and caches per-host
 // usage data.  An instance of this class is created per client.
 class ClientUsageTracker : public SpecialStoragePolicy::Observer,
-                           public base::NonThreadSafe,
                            public base::SupportsWeakPtr<ClientUsageTracker> {
  public:
   typedef base::Callback<void(int64_t limited_usage, int64_t unlimited_usage)>
@@ -131,6 +130,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   HostUsageAccumulatorMap host_usage_accumulators_;
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ClientUsageTracker);
 };
