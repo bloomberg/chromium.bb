@@ -193,6 +193,44 @@ function mouseWheelScroll(targetSelector, direction) {
   });
 }
 
+// Request a pointer lock and capture.
+function mouseRequestPointerLockAndCaptureInTarget(targetSelector, targetFrame) {
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  var button = 'left';
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector, targetDocument);
+      var target = targetDocument.querySelector(targetSelector);
+      var targetRect = target.getBoundingClientRect();
+      var xPosition = frameLeft + targetRect.left + boundaryOffset;
+      var yPosition = frameTop + targetRect.top + boundaryOffset;
+
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'mouse',
+         actions: [
+            {name: 'pointerMove', x: xPosition, y: yPosition},
+            {name: 'pointerDown', x: xPosition, y: yPosition, button: 'left'},
+            {name: 'pointerMove', x: xPosition + 30, y: yPosition + 30},
+            {name: 'pointerMove', x: xPosition + 30, y: yPosition},
+            {name: 'pointerMove', x: xPosition + 60, y: yPosition + 30},
+            {name: 'pointerMove', x: xPosition + 30, y: yPosition + 20},
+            {name: 'pointerMove', x: xPosition + 10, y: yPosition + 50},
+            {name: 'pointerMove', x: xPosition + 40, y: yPosition + 10},
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
 // Touch inputs.
 function touchTapInTarget(targetSelector, targetFrame) {
   var targetDocument = document;

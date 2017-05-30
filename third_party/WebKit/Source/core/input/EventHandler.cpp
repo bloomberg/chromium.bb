@@ -1215,6 +1215,10 @@ void EventHandler::ReleasePointerCapture(int pointer_id, EventTarget* target) {
   }
 }
 
+void EventHandler::ReleaseMousePointerCapture() {
+  pointer_event_manager_->ReleaseMousePointerCapture();
+}
+
 bool EventHandler::HasPointerCapture(int pointer_id,
                                      const EventTarget* target) const {
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
@@ -1228,6 +1232,12 @@ bool EventHandler::HasPointerCapture(int pointer_id,
 bool EventHandler::HasProcessedPointerCapture(int pointer_id,
                                               const EventTarget* target) const {
   return pointer_event_manager_->HasProcessedPointerCapture(pointer_id, target);
+}
+
+void EventHandler::ProcessPendingPointerCaptureForPointerLock(
+    const WebMouseEvent& mouse_event) {
+  pointer_event_manager_->ProcessPendingPointerCaptureForPointerLock(
+      mouse_event);
 }
 
 void EventHandler::ElementRemoved(EventTarget* target) {

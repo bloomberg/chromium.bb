@@ -2196,7 +2196,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
 
   if (is_pointer_locked &&
       WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    MainFrameImpl()->FrameWidget()->PointerLockMouseEvent(input_event);
+    MainFrameImpl()->FrameWidget()->PointerLockMouseEvent(coalesced_event);
     return WebInputEventResult::kHandledSystem;
   }
 

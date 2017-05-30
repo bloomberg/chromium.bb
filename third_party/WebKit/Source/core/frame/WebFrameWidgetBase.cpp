@@ -237,6 +237,11 @@ Page* WebFrameWidgetBase::GetPage() const {
 
 void WebFrameWidgetBase::DidAcquirePointerLock() {
   GetPage()->GetPointerLockController().DidAcquirePointerLock();
+
+  LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
+  if (focusedFrame) {
+    focusedFrame->GetEventHandler().ReleaseMousePointerCapture();
+  }
 }
 
 void WebFrameWidgetBase::DidNotAcquirePointerLock() {
@@ -248,10 +253,25 @@ void WebFrameWidgetBase::DidLosePointerLock() {
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
-void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
+// TODO(665924): Remove direct dispatches of mouse events from
+// PointerLockController, instead passing them through EventHandler.
+void WebFrameWidgetBase::PointerLockMouseEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  const WebInputEvent& input_event = coalesced_event.Event();
+  const WebMouseEvent& mouse_event =
+      static_cast<const WebMouseEvent&>(input_event);
+  WebMouseEvent transformed_event = TransformWebMouseEvent(
+      ToWebLocalFrameBase(LocalRoot())->GetFrameView(), mouse_event);
+
+  LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
+  if (focusedFrame) {
+    focusedFrame->GetEventHandler().ProcessPendingPointerCaptureForPointerLock(
+        transformed_event);
+  }
+
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   AtomicString event_type;
-  switch (event.GetType()) {
+  switch (input_event.GetType()) {
     case WebInputEvent::kMouseDown:
       event_type = EventTypeNames::mousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
@@ -276,11 +296,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
       NOTREACHED();
   }
 
-  const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
-
   if (GetPage()) {
-    WebMouseEvent transformed_event = TransformWebMouseEvent(
-        ToWebLocalFrameBase(LocalRoot())->GetFrameView(), mouse_event);
     GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
         transformed_event, event_type);
   }
@@ -299,6 +315,13 @@ void WebFrameWidgetBase::ShowContextMenu(WebMenuSourceType source_type) {
                                                                  source_type);
     }
   }
+}
+
+LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
+  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
+  return (frame && frame->LocalFrameRoot() == ToCoreFrame(LocalRoot()))
+             ? frame
+             : nullptr;
 }
 
 }  // namespace blink

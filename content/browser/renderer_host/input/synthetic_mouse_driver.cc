@@ -17,7 +17,10 @@ SyntheticMouseDriver::~SyntheticMouseDriver() {}
 void SyntheticMouseDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
   mouse_event_.SetTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
-  target->DispatchInputEventToPlatform(mouse_event_);
+  if (mouse_event_.GetType() != blink::WebInputEvent::kUndefined) {
+    target->DispatchInputEventToPlatform(mouse_event_);
+    mouse_event_.SetType(blink::WebInputEvent::kUndefined);
+  }
 }
 
 void SyntheticMouseDriver::Press(float x,

@@ -9,6 +9,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "platform/wtf/Assertions.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebDragData.h"
 #include "public/web/WebFrameWidget.h"
 
@@ -118,10 +119,11 @@ class CORE_EXPORT WebFrameWidgetBase
   WebDragOperation drag_operation_ = kWebDragOperationNone;
 
   // Helper function to process events while pointer locked.
-  void PointerLockMouseEvent(const WebInputEvent&);
+  void PointerLockMouseEvent(const WebCoalescedInputEvent&);
 
  private:
   void CancelDrag();
+  LocalFrame* FocusedLocalFrameInWidget() const;
 
   static bool ignore_input_events_;
   RefPtr<UserGestureToken> pointer_lock_gesture_token_;

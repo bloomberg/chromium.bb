@@ -549,6 +549,8 @@ bool PointerEventManager::GetPointerCaptureState(
   return pointer_capture_target_temp != pending_pointercapture_target_temp;
 }
 
+// TODO(lanwei): Replace the last two parameters by a single WebMouseEvent
+// pointer which defaults to null, crbug.com/727333.
 EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     PointerEvent* pointer_event,
     EventTarget* hit_test_target,
@@ -608,6 +610,14 @@ void PointerEventManager::ProcessPendingPointerCapture(
   }
 }
 
+void PointerEventManager::ProcessPendingPointerCaptureForPointerLock(
+    const WebMouseEvent& mouse_event) {
+  PointerEvent* pointer_event = pointer_event_factory_.Create(
+      EventTypeNames::mousemove, mouse_event, Vector<WebMouseEvent>(),
+      frame_->GetDocument()->domWindow());
+  ProcessPendingPointerCapture(pointer_event);
+}
+
 void PointerEventManager::RemoveTargetFromPointerCapturingMapping(
     PointerCapturingMap& map,
     const EventTarget* target) {
@@ -665,6 +675,10 @@ void PointerEventManager::ReleasePointerCapture(int pointer_id,
   // capturing of a particular |pointerId|. See crbug.com/614481.
   if (pending_pointer_capture_target_.at(pointer_id) == target)
     ReleasePointerCapture(pointer_id);
+}
+
+void PointerEventManager::ReleaseMousePointerCapture() {
+  ReleasePointerCapture(PointerEventFactory::kMouseId);
 }
 
 bool PointerEventManager::HasPointerCapture(int pointer_id,

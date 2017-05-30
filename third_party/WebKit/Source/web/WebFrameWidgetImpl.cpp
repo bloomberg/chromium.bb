@@ -377,7 +377,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   DCHECK(client_);
   if (client_->IsPointerLocked() &&
       WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    PointerLockMouseEvent(input_event);
+    PointerLockMouseEvent(coalesced_event);
     return WebInputEventResult::kHandledSystem;
   }
 

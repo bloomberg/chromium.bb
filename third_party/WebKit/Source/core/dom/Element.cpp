@@ -3073,14 +3073,19 @@ void Element::setPointerCapture(int pointer_id,
                                 ExceptionState& exception_state) {
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
-            pointer_id))
+            pointer_id)) {
       exception_state.ThrowDOMException(kInvalidPointerId, "InvalidPointerId");
-    else if (!isConnected())
+    } else if (!isConnected() ||
+               (GetDocument().GetPage() && GetDocument()
+                                               .GetPage()
+                                               ->GetPointerLockController()
+                                               .GetElement())) {
       exception_state.ThrowDOMException(kInvalidStateError,
                                         "InvalidStateError");
-    else
+    } else {
       GetDocument().GetFrame()->GetEventHandler().SetPointerCapture(pointer_id,
                                                                     this);
+    }
   }
 }
 
