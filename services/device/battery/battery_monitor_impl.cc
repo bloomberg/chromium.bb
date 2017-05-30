@@ -30,14 +30,13 @@ BatteryMonitorImpl::BatteryMonitorImpl() : status_to_report_(false) {
 
 BatteryMonitorImpl::~BatteryMonitorImpl() {}
 
-void BatteryMonitorImpl::QueryNextStatus(
-    const QueryNextStatusCallback& callback) {
+void BatteryMonitorImpl::QueryNextStatus(QueryNextStatusCallback callback) {
   if (!callback_.is_null()) {
     DVLOG(1) << "Overlapped call to QueryNextStatus!";
     binding_->Close();
     return;
   }
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   if (status_to_report_)
     ReportStatus();
@@ -54,8 +53,7 @@ void BatteryMonitorImpl::DidChange(const mojom::BatteryStatus& battery_status) {
 }
 
 void BatteryMonitorImpl::ReportStatus() {
-  callback_.Run(status_.Clone());
-  callback_.Reset();
+  std::move(callback_).Run(status_.Clone());
 
   status_to_report_ = false;
 }

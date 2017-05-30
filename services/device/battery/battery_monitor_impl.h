@@ -23,7 +23,7 @@ class BatteryMonitorImpl : public mojom::BatteryMonitor {
 
  private:
   // mojom::BatteryMonitor methods:
-  void QueryNextStatus(const QueryNextStatusCallback& callback) override;
+  void QueryNextStatus(QueryNextStatusCallback callback) override;
 
   void RegisterSubscription();
   void DidChange(const mojom::BatteryStatus& battery_status);
