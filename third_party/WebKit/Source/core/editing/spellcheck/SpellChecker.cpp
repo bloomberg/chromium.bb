@@ -305,8 +305,7 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
                                             .Build());
     GetFrame().Selection().RevealSelection();
     GetSpellCheckerClient().UpdateSpellingUIWithMisspelledWord(misspelled_word);
-    GetFrame().GetDocument()->Markers().AddSpellingMarker(
-        misspelling_range.StartPosition(), misspelling_range.EndPosition());
+    GetFrame().GetDocument()->Markers().AddSpellingMarker(misspelling_range);
   }
 }
 
@@ -550,15 +549,12 @@ static void AddMarker(Document* document,
     return;
 
   if (type == DocumentMarker::kSpelling) {
-    document->Markers().AddSpellingMarker(range_to_mark.StartPosition(),
-                                          range_to_mark.EndPosition(),
-                                          description);
+    document->Markers().AddSpellingMarker(range_to_mark, description);
     return;
   }
 
   DCHECK_EQ(type, DocumentMarker::kGrammar);
-  document->Markers().AddGrammarMarker(
-      range_to_mark.StartPosition(), range_to_mark.EndPosition(), description);
+  document->Markers().AddGrammarMarker(range_to_mark, description);
 }
 
 void SpellChecker::MarkAndReplaceFor(

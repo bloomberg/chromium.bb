@@ -53,11 +53,9 @@ class CORE_EXPORT DocumentMarkerController final
   explicit DocumentMarkerController(Document&);
 
   void Clear();
-  void AddSpellingMarker(const Position& start,
-                         const Position& end,
+  void AddSpellingMarker(const EphemeralRange&,
                          const String& description = g_empty_string);
-  void AddGrammarMarker(const Position& start,
-                        const Position& end,
+  void AddGrammarMarker(const EphemeralRange&,
                         const String& description = g_empty_string);
   void AddTextMatchMarker(const EphemeralRange&, DocumentMarker::MatchStatus);
   void AddCompositionMarker(const EphemeralRange&,
@@ -112,8 +110,7 @@ class CORE_EXPORT DocumentMarkerController final
 
  private:
   void AddMarker(Node*, DocumentMarker*);
-  void AddSpellCheckMarker(const Position& start,
-                           const Position& end,
+  void AddSpellCheckMarker(const EphemeralRange&,
                            DocumentMarker::MarkerType,
                            const String& description = g_empty_string);
 

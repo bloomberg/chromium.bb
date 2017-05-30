@@ -122,29 +122,26 @@ void DocumentMarkerController::Clear() {
   possibly_existing_marker_types_ = 0;
 }
 
-void DocumentMarkerController::AddSpellingMarker(const Position& start,
-                                                 const Position& end,
+void DocumentMarkerController::AddSpellingMarker(const EphemeralRange& range,
                                                  const String& description) {
-  AddSpellCheckMarker(start, end, DocumentMarker::kSpelling, description);
+  AddSpellCheckMarker(range, DocumentMarker::kSpelling, description);
 }
 
-void DocumentMarkerController::AddGrammarMarker(const Position& start,
-                                                const Position& end,
+void DocumentMarkerController::AddGrammarMarker(const EphemeralRange& range,
                                                 const String& description) {
-  AddSpellCheckMarker(start, end, DocumentMarker::kGrammar, description);
+  AddSpellCheckMarker(range, DocumentMarker::kGrammar, description);
 }
 
 void DocumentMarkerController::AddSpellCheckMarker(
-    const Position& start,
-    const Position& end,
+    const EphemeralRange& range,
     DocumentMarker::MarkerType type,
     const String& description) {
   DCHECK(type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar)
       << type;
   // Use a TextIterator to visit the potentially multiple nodes the range
   // covers.
-  for (TextIterator marked_text(start, end); !marked_text.AtEnd();
-       marked_text.Advance()) {
+  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
+       !marked_text.AtEnd(); marked_text.Advance()) {
     AddMarker(marked_text.CurrentContainer(),
               new DocumentMarker(
                   type, marked_text.StartOffsetInCurrentContainer(),
