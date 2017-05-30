@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">افزودن به صفحه اصلی</translation>
 <translation id="2146738493024040262">برنامه فوری را باز کنید</translation>
 <translation id="2148716181193084225">امروز</translation>
-<translation id="2154710561487035718">کپی نشانی وب</translation>
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">محافظت از شما و دستگاهتان دربرابر سایت‌های خطرناک</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، برنامه وب. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">به‌دلیل خطاهای سیستم فایل، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="3398320232533725830">باز کردن مدیر نشانک‌ها</translation>
 <translation id="3414952576877147120">اندازه:</translation>
-<translation id="3435896845095436175">فعال کردن</translation>
 <translation id="3443221991560634068">تازه‌سازی صفحه کنونی</translation>
 <translation id="3452612588551937789">‏برای دسترسی به نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید.</translation>
 <translation id="3487093336331957349">پیشنهادهای جستجو و سایت</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">جزئیات</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">انتخاب پوشه</translation>
-<translation id="4535858793016067060">‏با روشن کردن «منابع ناشناخته» در تنظیمات امنیت Android، آزمایش «افزودن بهبودیافته به صفحه اصلی» را امتحان کنید. حتماً بعد از امتحان آن، این تنظیم را غیرفعال کنید.</translation>
 <translation id="4558311620361989323">میان‌برهای صفحه وب</translation>
 <translation id="4572422548854449519">به حساب مدیریت‌شده وارد شوید</translation>
 <translation id="4581964774250883625">اکنون در حالت ناشناس هستید.</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
-<translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
 <translation id="5004339818306944878">‏تا ۶۰٪ کمتر داده مصرف کنید و به وب سرعت ببخشید. سرورهای Google صفحاتی را که بازدید می‌کنید بهینه‌سازی می‌کند.</translation>
 <translation id="5005498671520578047">کپی گذرواژه</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> می‌خواهد مرتبط شود</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> حذف شد</translation>
 <translation id="5345083863238459644">دسترسی به موقعیت مکانی نیز <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">آزمایش «افزودن بهبودیافته به صفحه اصلی»</translation>
 <translation id="5372829067651257087">نشانی وب کپی شد.</translation>
 <translation id="5384883051496921101">این سایت می‌خواهد خارج از حالت ناشناس، اطلاعاتی را با برنامه‌ای به اشتراک بگذارد.</translation>
 <translation id="5400569084694353794">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
@@ -653,7 +648,6 @@
 <translation id="7929962904089429003">باز کردن منو</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
-<translation id="7949961459945740081">دریافت جدیدترین قابلیت‌ها</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
 <translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
@@ -664,7 +658,6 @@
 <translation id="8015452622527143194">برگرداندن همه‌چیز در صفحه به‌اندازه پیش‌فرض</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
-<translation id="8033827949643255796">انتخاب شد</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> روز باقی‌مانده است</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> مگابایت موجود است</translation>

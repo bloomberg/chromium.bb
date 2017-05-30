@@ -836,7 +836,6 @@ Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /></translati
 <translation id="2224551243087462610">Klasör adını düzenle</translation>
 <translation id="2226449515541314767">Bu sitenin MIDI cihazları üzerinde tam denetime sahip olması engellendi.</translation>
 <translation id="2226720438730111184">Ne Olduğunu Anlatın</translation>
-<translation id="222903405933288376">Google, size yerel içerik sağlamak için konumunuzu kullanır. Bunu <ph name="SETTINGS_LINK" /> sayfasından değiştirebilirsiniz.</translation>
 <translation id="2229161054156947610">1 saatten fazla bir süre kaldı</translation>
 <translation id="222931766245975952">Dosya kesilmiş</translation>
 <translation id="222949136907494149"><ph name="URL" />, bilgisayarınızın konumunu kullanmak istiyor.</translation>
@@ -1088,7 +1087,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2575247648642144396">Uzantı, mevcut sayfada işlem yapabildiğinde bu simge görünür. Simgeyi tıklayarak veya <ph name="EXTENSION_SHORTCUT" /> tuşuna basarak bu uzantıyı kullanın.</translation>
 <translation id="2576842806987913196">Bu adla bir CRX dosyası zaten var.</translation>
 <translation id="2579575372772932244">Profil yeniden oluşturuluyor, lütfen bekleyin...</translation>
-<translation id="2580168606262715640">Telefonunuz bulunamıyor. Telefonunuzun, kol mesafesinde olduğundan emin olun.</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> ana makinesinin birden fazla dosya indirmesine her zaman izin ver</translation>
 <translation id="2580924999637585241">Toplam: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Uzun</translation>
@@ -2173,7 +2171,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="4130207949184424187">Bu uzantı, Çok Amaçlı Adres Çubuğu'nda arama yaptığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="413121957363593859">Bileşenler</translation>
 <translation id="4131410914670010031">Siyah beyaz</translation>
-<translation id="4135054690906486073">Bu ağ diğer kullanıcılarla paylaşılıyor</translation>
 <translation id="4135450933899346655">Sertifikalarınız</translation>
 <translation id="4138267921960073861">Oturum açma ekranında kullanıcı adlarını ve fotoğrafları göster</translation>
 <translation id="4140559601186535628">Push Mesajları</translation>
@@ -2577,9 +2574,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4813345808229079766">Bağlantı</translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
-<translation id="4816617200045929931">Profil hata iletisini almadan önce tam olarak ne yaptığınızı belirtin:
-
-****BU SATIRIN ALTINDAKİ BİLGİLERİ DEĞİŞTİRMEYİN****</translation>
 <translation id="4820334425169212497">Hayır, görmüyorum</translation>
 <translation id="4821086771593057290">Şifreniz değiştirildi. Lütfen yeni şifrenizle tekrar deneyin.</translation>
 <translation id="4821935166599369261">&amp;Profil Oluşturma Etkin</translation>
@@ -2945,7 +2939,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5340217413897845242">Raf öğesi 6</translation>
 <translation id="5341390997810576190">Hücresel veri kullan</translation>
 <translation id="5342091991439452114">PIN en az <ph name="MINIMUM" /> basamaklı olmalıdır</translation>
-<translation id="5342344590724511265">Sekme kilitlendi geri bildirimi.</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> telefonu kullan</translation>
 <translation id="534916491091036097">Sol parantez</translation>
 <translation id="5350965906220856151">Hata!</translation>
@@ -3218,6 +3211,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5764483294734785780">Sesi farklı kay&amp;det...</translation>
 <translation id="57646104491463491">Değiştirilme Tarihi</translation>
 <translation id="5764797882307050727">Lütfen cihazınızda biraz yer açın.</translation>
+<translation id="5765425701854290211">Maalesef bazı dosyalar hasar gördü ve güncelleme başarılı olmadı. Senkronize edilen dosyalarınız güvende.</translation>
 <translation id="5765491088802881382">Ağ kullanılamıyor</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5771585441665576801">Harf çevirisi (geia → γεια)</translation>
@@ -4433,6 +4427,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7615910377284548269">Korumalı alanda olmayan eklentinin engellenmesini yönet...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" cihazına bağlanıyor</translation>
 <translation id="761779991806306006">Hiçbir şifre kaydedilmedi.</translation>
+<translation id="7622114377921274169">Şarj oluyor.</translation>
 <translation id="7624154074265342755">Kablosuz ağlar</translation>
 <translation id="7624337243375417909">caps lock kapalı</translation>
 <translation id="7627790789328695202">Hata! <ph name="FILE_NAME" /> zaten mevcut. Yeniden adlandırın ve tekrar deneyin.</translation>
@@ -4873,6 +4868,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8270242299912238708">PDF dokümanları</translation>
 <translation id="827097179112817503">Ana Sayfa düğmesini göster</translation>
 <translation id="8272443605911821513">"Diğer araçlar" menüsündeki Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
+<translation id="8274924778568117936">Güncelleme bitene kadar <ph name="DEVICE_TYPE" /> cihazınızı kapatmayın. Yükleme işlemi tamamlandıktan sonra <ph name="DEVICE_TYPE" /> cihazınız yeniden başlatılacaktır.</translation>
 <translation id="8275038454117074363">İçe aktar</translation>
 <translation id="8276560076771292512">Önbelleği Boşalt ve Tam Yeniden Yükle</translation>
 <translation id="8279388322240498158">Sorani Kürtçe İngilizce temelli klavye</translation>
@@ -5314,7 +5310,6 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="8963572037665351978">Sunumdan Çık</translation>
 <translation id="8965037249707889821">Eski şifreyi girin</translation>
 <translation id="8965697826696209160">Yeterli alan yok.</translation>
-<translation id="8968527460726243404">ChromeOS Sistemi Görsel Yazıcı</translation>
 <translation id="8970203673128054105">Yayın modu listesini görüntüle</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Güvenlik duvarının, Google sunucularından yapılan indirme işlemlerini engellemediğinden emin olmak için lütfen ağ yöneticinizle görüşün.</translation>
@@ -5490,6 +5485,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="93766956588638423">Uzantıyı onar</translation>
 <translation id="938470336146445890">Lütfen bir kullanıcı sertifikası yükleyin.</translation>
 <translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Parolayı girin</translation>
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="940425055435005472">Yazı tipi boyutu:</translation>

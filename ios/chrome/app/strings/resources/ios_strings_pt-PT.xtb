@@ -38,7 +38,7 @@
 <translation id="1580783302095112590">Correio enviado.</translation>
 <translation id="1646446875146297738">Se ativar a funcionalidade "Não monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado.
 
-Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados noutros Websites visitados por si como resposta a este pedido. Muitos Websites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Websites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados noutros Sites visitados por si como resposta a este pedido. Muitos Sites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Sites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1657011748321897393">A partilha falhou porque não está ligado à rede.</translation>
 <translation id="165877110639533037">Sem separadores abertos</translation>
 <translation id="1687475363370981210">Marcar tudo como lido</translation>
@@ -140,7 +140,7 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="3567664240939803299">Pretende que o Google Smart Lock guarde a palavra-passe p/ este site?</translation>
 <translation id="3588820906588687999">Abrir imagem num novo separador</translation>
 <translation id="3603009562372709545">Copiar URL do Link</translation>
-<translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
+<translation id="360480449234699036">Saiba mais acerca dos tópicos nos Sites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>

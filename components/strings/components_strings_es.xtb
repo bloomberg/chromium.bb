@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">La conexión se ha encriptado y autenticado con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio clave.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
 <translation id="2889159643044928134">No volver a cargar</translation>
-<translation id="2900469785430194048">Google Chrome se ha quedado sin memoria al intentar mostrar esta página web.</translation>
 <translation id="2909946352844186028">Se ha detectado un cambio de red.</translation>
 <translation id="2916038427272391327">Cierra otros programas</translation>
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3032412215588512954">¿Quieres volver a cargar este sitio web?</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{al menos un elemento en dispositivos sincronizados}=1{un elemento (y otros elementos más en dispositivos sincronizados)}other{# elementos (y otros elementos más en dispositivos sincronizados)}}</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
 <translation id="3063697135517575841">Chrome no ha podido confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
 <translation id="3064966200440839136">Saldrás del modo incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Datos del certificado</translation>
 <translation id="3690164694835360974">Inicio de sesión no seguro</translation>
 <translation id="3693415264595406141">Contraseña:</translation>
-<translation id="3696411085566228381">ninguno</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{ninguna}=1{Una aplicación ($1)}=2{Dos aplicaciones ($1, $2)}other{# aplicaciones ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">La página no responde o se cierra</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnósticos de red<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Tu conexión con este sitio web no es completamente segura</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección del proxy<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{No hay cookies}=1{1 sitio web usa cookies. }other{# sitios web usan cookies. }}</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -571,7 +566,7 @@
 <translation id="6146055958333702838">Comprueba los cables y reinicia los routers, los módems o cualquier otro dispositivo
     de red que estés utilizando.</translation>
 <translation id="614940544461990577">Prueba a:</translation>
-<translation id="6151417162996330722">El certificado del servidor tiene un período de validez demasiado largo.</translation>
+<translation id="6151417162996330722">El certificado del servidor tiene un periodo de validez demasiado largo.</translation>
 <translation id="6157877588268064908">Selecciona una dirección para ver los métodos de envío y los requisitos</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6169916984152623906">Ahora puedes navegar de forma privada; las otras personas que usen este dispositivo no verán tu actividad. No obstante, se guardarán las descargas y los marcadores.</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">¿Necesitas ayuda?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, prueba nuestro canal beta en la página chrome.com/beta.</translation>
-<translation id="6389758589412724634">Chromium se ha quedado sin memoria al intentar mostrar esta página web.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6410264514553301377">Introduce la fecha de vencimiento y el código CVC de la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Has solicitado permiso a uno de tus padres para poder acceder a este sitio web</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Fecha de caducidad: <ph name="EXPIRATION_DATE_ABBR" /> (usada por última vez el <ph name="LAST_USED_DATE_NO_DETAIL" />)</translation>
 <translation id="6563469144985748109">Tu administrador aún no la ha aprobado</translation>
 <translation id="6569060085658103619">Estas viendo la página de una extensión</translation>
-<translation id="6593753688552673085">menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opciones de cifrado</translation>
 <translation id="662080504995468778">Seguir aquí</translation>
 <translation id="6626291197371920147">Añadir un número de tarjeta válido</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Introducir término de búsqueda&gt;</translation>
 <translation id="6711464428925977395">Se ha producido un error con el servidor proxy o la dirección es incorrecta.</translation>
 <translation id="6727102863431372879">Establecer</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{ninguno}=1{Un elemento}other{# elementos}}</translation>
 <translation id="674375294223700098">Error de certificado de servidor desconocido</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositivo se ha suspendido.</translation>
@@ -664,7 +656,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Es posible que en tu cuenta de Google haya otros datos de navegación registrados, que puedes consultar en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Contraseñas</translation>
-<translation id="7050187094878475250">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado cuyo período de validez es demasiado largo para que se considere de confianza.</translation>
+<translation id="7050187094878475250">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado cuyo periodo de validez es demasiado largo para que se considere de confianza.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="7079718277001814089">Este sitio web contiene software malicioso</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">Es posible que los atacantes que se encuentren en este sitio web intenten engañarte para que instales programas que empeoren tu experiencia de navegación (por ejemplo, que cambien tu página principal o muestren anuncios adicionales en los sitios web a los que accedas).</translation>
 <translation id="7674629440242451245">Si estás interesado en probar nuevas e interesantes funciones de Chrome, prueba el canal para desarrolladores en la página chrome.com/dev.</translation>
 <translation id="7682287625158474539">Dirección de envío</translation>
+<translation id="7701040980221191251">Ninguno</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Acceder a <ph name="SITE" /> (sitio no seguro)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
 <translation id="7716424297397655342">No se puede cargar este sitio web desde la caché</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Enviar</translation>
 <translation id="8041940743680923270">Utilizar valor predeterminado global (Preguntar)</translation>
 <translation id="8088680233425245692">Se ha producido un error al ver el artículo.</translation>
-<translation id="8089520772729574115">menos de 1 MB</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
 <translation id="8118489163946903409">Forma de pago</translation>
 <translation id="8131740175452115882">Confirmar</translation>

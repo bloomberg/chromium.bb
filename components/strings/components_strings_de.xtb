@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt und authentifiziert und verwendet <ph name="KX" /> als Mechanismus für den Schlüsselaustausch.</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2889159643044928134">Nicht neu laden</translation>
-<translation id="2900469785430194048">Beim Versuch, diese Webseite aufzurufen, hat Google Chrome das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3032412215588512954">Möchten Sie diese Website neu laden?</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{mindestens 1 Inhalt auf synchronisierten Geräten}=1{1 Inhalt (und weitere auf synchronisierten Geräten)}other{# Inhalte (und weitere auf synchronisierten Geräten)}}</translation>
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
 <translation id="3063697135517575841">Ihre Karte kann von Chrome zurzeit nicht bestätigt werden. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="3064966200440839136">Der Inkognitomodus wird beendet, um über eine externe Anwendung zu zahlen. Fortfahren?</translation>
@@ -336,7 +334,6 @@
 <translation id="3681007416295224113">Zertifikatinformationen</translation>
 <translation id="3690164694835360974">Log-in nicht sicher</translation>
 <translation id="3693415264595406141">Passwort:</translation>
-<translation id="3696411085566228381">keine</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
@@ -384,7 +381,6 @@
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{keine}=1{1 App ($1)}=2{2 Apps ($1, $2)}other{# Apps ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Abstürze</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Versuchen Sie, die Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="4250431568374086873">Die Verbindung zu dieser Website ist nicht uneingeschränkt sicher</translation>
@@ -468,7 +464,6 @@
 <translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="5056549851600133418">Artikel für Sie</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxyadresse prüfen<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Keine Cookies}=1{1 Website verwendet Cookies. }other{# Websites verwenden Cookies. }}</translation>
 <translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
 <translation id="5087580092889165836">Karte hinzufügen</translation>
 <translation id="5089810972385038852">Bundesstaat/-land</translation>
@@ -600,7 +595,6 @@
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 weiterer Vorschlag}other{# weitere Vorschläge}}</translation>
 <translation id="6387478394221739770">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Betaversion unter chrome.com/beta.</translation>
-<translation id="6389758589412724634">Beim Versuch, diese Webseite aufzurufen, hat Chromium das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
 <translation id="6410264514553301377">Ablaufdatum und CVC für <ph name="CREDIT_CARD" /> eingeben</translation>
 <translation id="6414888972213066896">Du hast ein Elternteil gefragt, ob du diese Website besuchen darfst</translation>
@@ -623,7 +617,6 @@
 <translation id="6556915248009097796">Gültig bis: <ph name="EXPIRATION_DATE_ABBR" />, zuletzt verwendet: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Der Administrator hat die Berechtigung noch nicht erteilt</translation>
 <translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
-<translation id="6593753688552673085">weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
 <translation id="662080504995468778">Bleiben</translation>
 <translation id="6626291197371920147">Gültige Kartennummer hinzufügen</translation>
@@ -635,7 +628,6 @@
 <translation id="6710594484020273272">&lt;Suchbegriff eingeben&gt;</translation>
 <translation id="6711464428925977395">Mit dem Proxyserver ist ein Problem aufgetreten oder die Adresse ist falsch.</translation>
 <translation id="6727102863431372879">Festlegen</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{keine}=1{1 Inhalt}other{# Inhalte}}</translation>
 <translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
@@ -741,6 +733,7 @@
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 <translation id="7674629440242451245">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Dev-Version unter chrome.com/dev.</translation>
 <translation id="7682287625158474539">Versand</translation>
+<translation id="7701040980221191251">Keine</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Weiter zu <ph name="SITE" /> (unsicher)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Zertifikat</translation>
 <translation id="7716424297397655342">Diese Website kann nicht aus dem Cache geladen werden</translation>
@@ -780,7 +773,6 @@
 <translation id="8041089156583427627">Feedback geben</translation>
 <translation id="8041940743680923270">Globalen Standard verwenden (Fragen)</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
-<translation id="8089520772729574115">weniger als 1 MB</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
 <translation id="8118489163946903409">Zahlungsmethode</translation>
 <translation id="8131740175452115882">Bestätigen</translation>

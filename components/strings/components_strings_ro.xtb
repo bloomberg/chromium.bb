@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
 <translation id="2889159643044928134">Nu reîncărca</translation>
-<translation id="2900469785430194048">Google Chrome nu a avut suficientă memorie la afișarea paginii web.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3032412215588512954">Dorești să reîncarci acest site?</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{cel puțin un element pe dispozitivele sincronizate}=1{un element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3690164694835360974">Conectarea nu este securizată</translation>
 <translation id="3693415264595406141">Parolă:</translation>
-<translation id="3696411085566228381">niciuna</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Se încarcă…</translation>
 <translation id="3712624925041724820">Licențe epuizate</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{niciuna}=1{1 aplicație ($1)}=2{2 aplicații ($1, $2)}few{# aplicații ($1, $2, $3)}other{# de aplicații ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Blocări</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Conexiunea la acest site nu este complet sigură</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Parolă incorectă</translation>
 <translation id="5056549851600133418">Articole pentru tine</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />să verifici adresa proxy-ului;<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Niciun cookie}=1{1 site folosește cookie-uri. }few{# site-uri folosesc cookie-uri. }other{# de site-uri folosesc cookie-uri. }}</translation>
 <translation id="5087286274860437796">Momentan, certificatul serverului este nevalid.</translation>
 <translation id="5087580092889165836">Adaugă un card</translation>
 <translation id="5089810972385038852">Stat</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">Ce înseamnă acestea?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{o altă sugestie}few{alte # sugestii}other{alte # de sugestii}}</translation>
 <translation id="6387478394221739770">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru beta de la chrome.com/beta.</translation>
-<translation id="6389758589412724634">Chromium nu a avut suficientă memorie la afișarea paginii web.</translation>
 <translation id="6404511346730675251">Modificați marcajul</translation>
 <translation id="6410264514553301377">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Ți-ai întrebat părintele dacă poți accesa acest site</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Expirat în <ph name="EXPIRATION_DATE_ABBR" />, folosit ultima dată pe <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
-<translation id="6593753688552673085">mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
 <translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6626291197371920147">Adaugă un număr de card valid</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Introdu termenul de căutare&gt;</translation>
 <translation id="6711464428925977395">A apărut o problemă la serverul proxy sau adresa nu este corectă.</translation>
 <translation id="6727102863431372879">Setează</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{niciuna}=1{1 element}few{# elemente}other{# de elemente}}</translation>
 <translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6753269504797312559">Valoarea politicii</translation>
 <translation id="6757797048963528358">Dispozitivul este inactiv.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">Atacatorii de pe acest site pot încerca să te înșele pentru a instala programe care dăunează experienței de navigare (de exemplu, schimbând pagina de pornire sau afișând anunțuri suplimentare pe site-urile pe care le accesezi).</translation>
 <translation id="7674629440242451245">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru pentru dezvoltatori, de la chrome.com/dev.</translation>
 <translation id="7682287625158474539">Expediere</translation>
+<translation id="7701040980221191251">Niciuna</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Accesați <ph name="SITE" /> (nesigur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
 <translation id="7716424297397655342">Acest site nu poate fi încărcat din memoria cache</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Trimiteți feedback</translation>
 <translation id="8041940743680923270">Utilizați setarea prestabilită la nivel global (Întrebați)</translation>
 <translation id="8088680233425245692">Articolul nu a fost vizualizat.</translation>
-<translation id="8089520772729574115">mai puțin de 1 MB</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
 <translation id="8118489163946903409">Metodă de plată</translation>
 <translation id="8131740175452115882">Confirmați</translation>

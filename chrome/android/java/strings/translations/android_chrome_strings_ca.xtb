@@ -116,7 +116,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
 <translation id="2146738493024040262">Obre l'aplicació instantània</translation>
 <translation id="2148716181193084225">Avui</translation>
-<translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2156074688469523661">Llocs restants (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protegeix-me a mi i al meu dispositiu de llocs perillosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicació web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3387650086002190359">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa d'errors amb el sistema de fitxers.</translation>
 <translation id="3398320232533725830">Obre el gestor d'adreces d'interès</translation>
 <translation id="3414952576877147120">Mida:</translation>
-<translation id="3435896845095436175">Activa</translation>
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
 <translation id="3452612588551937789">Inicieu la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="3487093336331957349">Suggeriments de cerques i llocs</translation>
@@ -319,7 +317,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4522570452068850558">Detalls</translation>
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Trieu la carpeta</translation>
-<translation id="4535858793016067060">Per provar l'experiment millorat Afegeix a la pantalla d'inici, activa Fonts desconegudes a la configuració de seguretat d'Android. Quan acabis de provar-lo, no oblidis desactivar aquesta opció de configuració.</translation>
 <translation id="4558311620361989323">Dreceres per a pàgines web</translation>
 <translation id="4572422548854449519">Inicia la sessió al compte gestionat</translation>
 <translation id="4581964774250883625">Has passat al mode d'incògnit.</translation>
@@ -362,7 +359,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="497421865427891073">Vés endavant</translation>
 <translation id="4988526792673242964">Pàgines</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
-<translation id="5000922062037820727">Bloquejat (recomanat)</translation>
 <translation id="5004339818306944878">Utilitza fins a un 60% menys de dades i navega més de pressa. Els servidors de Google optimitzaran les pàgines que visitis.</translation>
 <translation id="5005498671520578047">Copia la contrasenya</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> es vol connectar</translation>
@@ -403,7 +399,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5335288049665977812">Permet que els llocs executin JavaScript (opció recomanada)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> s'ha suprimit</translation>
 <translation id="5345083863238459644">L'accés a la ubicació <ph name="BEGIN_LINK" />està desactivat també per a aquest dispositiu<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experiment millorat Afegeix a la pantalla d'inici</translation>
 <translation id="5372829067651257087">S'ha copiat l'URL.</translation>
 <translation id="5384883051496921101">Aquest lloc està a punt de compartir informació amb una aplicació fora del mode d'incògnit.</translation>
 <translation id="5400569084694353794">En fer servir aquesta aplicació, accepteu les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
@@ -654,7 +649,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7929962904089429003">Obre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> no està actualitzat.</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
-<translation id="7949961459945740081">Baixa les funcions més recents</translation>
 <translation id="7963646190083259054">Proveïdor:</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
@@ -665,7 +659,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8015452622527143194">Restableix la mida de tots els elements de la pàgina</translation>
 <translation id="802154636333426148">Error de baixada</translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
-<translation id="8033827949643255796">seleccionats</translation>
 <translation id="8035133914807600019">Carpeta nova…</translation>
 <translation id="8037750541064988519">Queden <ph name="DAYS" /> dies</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>

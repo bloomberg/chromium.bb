@@ -116,7 +116,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2139186145475833000">Pridať na domovskú stránku</translation>
 <translation id="2146738493024040262">Otvoriť okamžitú aplikáciu</translation>
 <translation id="2148716181193084225">Dnes</translation>
-<translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Ochráňte seba aj svoje zariadenie pred nebezpečnými stránkami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="3387650086002190359">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu chýb systému súborov.</translation>
 <translation id="3398320232533725830">Otvorenie správcu záložiek</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
-<translation id="3435896845095436175">Aktivovať</translation>
 <translation id="3443221991560634068">Opätovné načítanie aktuálnej stránky</translation>
 <translation id="3452612588551937789">Prihláste sa pomocou účtu Google a získajte záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
 <translation id="3487093336331957349">Návrhy vyhľadávania a webov</translation>
@@ -319,7 +317,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Výber priečinka</translation>
-<translation id="4535858793016067060">Ak chcete vyskúšať experimentálnu funkciu „Zlepšené pridávanie na plochu“, zapnite v nastaveniach zabezpečenia Androidu položku „Neznáme zdroje“. Po dokončení skúšania nezabudnite toto nastavenie opäť deaktivovať.</translation>
 <translation id="4558311620361989323">Skratky pre webové stránky</translation>
 <translation id="4572422548854449519">Prihlásenie do spravovaného účtu</translation>
 <translation id="4581964774250883625">Ste v režime inkognito.</translation>
@@ -362,7 +359,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="497421865427891073">Ďalej</translation>
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
-<translation id="5000922062037820727">Blokované (odporúčané)</translation>
 <translation id="5004339818306944878">Ušetrite až 60 % dát a načítajte weby rýchlejšie. Servery Google budú optimalizovať stránky, ktoré navštívite.</translation>
 <translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> žiada o pripojenie</translation>
@@ -403,7 +399,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5335288049665977812">Povoliť webom spúšťať JavaScript (odporúča sa)</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE" /> bola odstránená</translation>
 <translation id="5345083863238459644">Prístup k polohe je <ph name="BEGIN_LINK" />vypnutý aj v tomto zariadení<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experimentálna funkcia Zlepšené pridávanie na plochu</translation>
 <translation id="5372829067651257087">Webová adresa bola skopírovaná.</translation>
 <translation id="5384883051496921101">Tento web chce zdieľať informácie s aplikáciou mimo režimu inkognito.</translation>
 <translation id="5400569084694353794">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane osobných údajov<ph name="END_LINK2" /> prehliadača Chrome.</translation>
@@ -654,7 +649,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7929962904089429003">Otvorenie ponuky</translation>
 <translation id="7942131818088350342">Aplikácia <ph name="PRODUCT_NAME" /> je zastaraná.</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
-<translation id="7949961459945740081">Získať najnovšie funkcie</translation>
 <translation id="7963646190083259054">Dodávateľ:</translation>
 <translation id="7987073022710626672">Zmluvné podmienky prehliadača Chrome</translation>
 <translation id="7998918019931843664">Znova otvoriť zavretú kartu</translation>
@@ -665,7 +659,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8015452622527143194">Vrátenie obsahu stránky na predvolenú veľkosť</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8026334261755873520">Vymazať dáta prehliadania</translation>
-<translation id="8033827949643255796">vybrané</translation>
 <translation id="8035133914807600019">Nový priečinok…</translation>
 <translation id="8037750541064988519">Zostáva: <ph name="DAYS" /> d</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB k dispozícii</translation>

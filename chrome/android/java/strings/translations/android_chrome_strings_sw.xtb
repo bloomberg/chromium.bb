@@ -116,7 +116,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2139186145475833000">Ongeza kwenye skrini ya kwanza</translation>
 <translation id="2146738493024040262">Fungua Programu Inayofunguka Papo Hapo</translation>
 <translation id="2148716181193084225">Leo</translation>
-<translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="2156074688469523661">Tovuti zilizosalia (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Jilinde na ulinde vifaa vyako dhidi ya tovuti hatari</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, programu ya wavuti. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="3387650086002190359">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya hitilafu za mfumo wa faili.</translation>
 <translation id="3398320232533725830">Fungua kidhibiti cha alamisho</translation>
 <translation id="3414952576877147120">Ukubwa:</translation>
-<translation id="3435896845095436175">Washa</translation>
 <translation id="3443221991560634068">Pakia upya ukurasa wa sasa</translation>
 <translation id="3452612588551937789">Ingia kwa kutumia Akaunti yako ya Google ili upate alamisho, historia, manenosiri na mipangilio mingine kwenye vifaa vyako vyote.</translation>
 <translation id="3487093336331957349">Mapendekezo ya utafutaji na tovuti</translation>
@@ -319,7 +317,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4522570452068850558">Maelezo</translation>
 <translation id="4526249700380860531">Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Chagua folda</translation>
-<translation id="4535858793016067060">Washa kipengele cha “Vyanzo visivyojulikana” katika mipangilio ya usalama wa Android ili ujaribu hali ya utumiaji wa "Ongeza kwenye Skrini ya kwanza Iliyoimarishwa". Hakikisha kuwa umezima mipangilio hii ukimaliza kuijaribu.</translation>
 <translation id="4558311620361989323">Njia za mikato za ukurasa wa wavuti</translation>
 <translation id="4572422548854449519">Ingia katika akaunti zinazodhibitiwa</translation>
 <translation id="4581964774250883625">Unavinjari katika hali fiche.</translation>
@@ -362,7 +359,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="497421865427891073">Nenda mbele</translation>
 <translation id="4988526792673242964">Kurasa</translation>
 <translation id="4996978546172906250">Shiriki kupitia</translation>
-<translation id="5000922062037820727">Imezuiwa (imependekezwa)</translation>
 <translation id="5004339818306944878">Tumia data chache zaidi kwa hadi asilimia 60 na uongeze kasi ya wavuti. Seva za Google zitaboresha kurasa unazotembelea.</translation>
 <translation id="5005498671520578047">Nakili nenosiri</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> inataka kuunganisha</translation>
@@ -403,7 +399,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="5335288049665977812">Ruhusu tovuti zitumie JavaScript (inapendekezwa)</translation>
 <translation id="5345040418939504969">Umefuta <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Ufikiaji wa mahali pia <ph name="BEGIN_LINK" /> umezimwa kwa kifaa hiki<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Hali ya Utumiaji Ulioboreshwa wa Ongeza kwenye Skrini ya kwanza</translation>
 <translation id="5372829067651257087">URL imenakiliwa.</translation>
 <translation id="5384883051496921101">Tovuti hii inakaribia kushiriki maelezo na programu nyingine isiyo katika hali fiche.</translation>
 <translation id="5400569084694353794">Kwa kutumia programu hii, unakubali <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome.</translation>
@@ -654,7 +649,6 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="7929962904089429003">Fungua menyu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> imepitwa na wakati.</translation>
 <translation id="7947953824732555851">Kubali na uingie</translation>
-<translation id="7949961459945740081">Jipatie vipengele vipya</translation>
 <translation id="7963646190083259054">Mchuuzi:</translation>
 <translation id="7987073022710626672">Sheria na Masharti ya Chrome</translation>
 <translation id="7998918019931843664">Fungua tena kichupo kilichofungwa</translation>
@@ -665,7 +659,6 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="8015452622527143194">Rejesha kila kitu katika ukubwa wa kawaida</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8026334261755873520">Futa data ya kuvinjari</translation>
-<translation id="8033827949643255796">kimechaguliwa</translation>
 <translation id="8035133914807600019">Folda mpya…</translation>
 <translation id="8037750541064988519">Zimesalia siku <ph name="DAYS" /></translation>
 <translation id="8051695050440594747">MB <ph name="MEGABYTES" /> zinapatikana</translation>

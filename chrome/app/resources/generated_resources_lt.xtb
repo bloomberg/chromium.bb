@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">Redaguoti aplanko pavadinimą</translation>
 <translation id="2226449515541314767">Ši svetainė užblokuota, kad negalėtų visiškai valdyti MIDI įrenginių.</translation>
 <translation id="2226720438730111184">Aprašykite problemą</translation>
-<translation id="222903405933288376">„Google“ naudoja jūsų vietovę, kad pateiktų vietinį turinį. Tai galite pakeisti nuėję į <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Liko daugiau nei 1 val.</translation>
 <translation id="222931766245975952">Failas sutrumpintas</translation>
 <translation id="222949136907494149"><ph name="URL" /> norima naudoti kompiuterio vietą.</translation>
@@ -1088,7 +1087,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2575247648642144396">Ši piktograma bus matoma, kai plėtinys galės veikti dabartiniame puslapyje. Naudokite šį plėtinį spustelėję piktogramą arba paspaudę <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">CRX failas tokiu pavadinimu jau yra.</translation>
 <translation id="2579575372772932244">Iš naujo kuriamas profilis, palaukite...</translation>
-<translation id="2580168606262715640">Nepavyko surasti jūsų telefono. Įsitikinkite, kad jis netoliese.</translation>
 <translation id="2580889980133367162">Visada leisti <ph name="HOST" /> atsisiųsti kelis failus</translation>
 <translation id="2580924999637585241">Iš viso: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Ilga</translation>
@@ -2173,7 +2171,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="4130207949184424187">Šis plėtinys pakeitė, kuris puslapis rodomas ieškant „Omnibox“.</translation>
 <translation id="413121957363593859">Komponentai</translation>
 <translation id="4131410914670010031">Nespalvotai</translation>
-<translation id="4135054690906486073">Šis tinklas bendrinamas su kitais naudotojais</translation>
 <translation id="4135450933899346655">Jūsų sertifikatai</translation>
 <translation id="4138267921960073861">Rodyti naudotojų vardus ir nuotraukas prisijungimo ekrane</translation>
 <translation id="4140559601186535628">„Push“ pranešimai</translation>
@@ -2577,9 +2574,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4813345808229079766">Ryšys</translation>
 <translation id="4813512666221746211">Tinklo klaida</translation>
 <translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
-<translation id="4816617200045929931">Papasakokite, kas tiksliai vyko prieš tai, kai buvo parodytas profilio klaidos pranešimas:
-
-****DO NOT CHANGE BELOW THIS LINE****</translation>
 <translation id="4820334425169212497">Ne, nematau</translation>
 <translation id="4821086771593057290">Slaptažodis pakeistas. Bandykite dar kartą nurodydami naują slaptažodį.</translation>
 <translation id="4821935166599369261">&amp;Profiliavimas įgalintas</translation>
@@ -2945,7 +2939,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5340217413897845242">6 lentynos elementas</translation>
 <translation id="5341390997810576190">Naudoti mobiliojo ryšio duomenis</translation>
 <translation id="5342091991439452114">PIN kodą turi sudaryti bent <ph name="MINIMUM" /> skaitm.</translation>
-<translation id="5342344590724511265">Atsiliepimai dėl užstrigusio skirtuko.</translation>
 <translation id="5342451237681332106">Naudoti „<ph name="PHONE_NAME" />“</translation>
 <translation id="534916491091036097">Kairysis skliaust.</translation>
 <translation id="5350965906220856151">Oi!</translation>
@@ -3218,6 +3211,7 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5764483294734785780">Iš&amp;saugoti garso įrašą kaip...</translation>
 <translation id="57646104491463491">Koregavimo data</translation>
 <translation id="5764797882307050727">Atlaisvinkite vietos įrenginyje.</translation>
+<translation id="5765425701854290211">Deja, kai kurie failai buvo pažeisti ir atnaujinimo procesas nebuvo sėkmingas. Sinchronizuoti failai yra saugūs.</translation>
 <translation id="5765491088802881382">Nėra pasiekiamų tinklų</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
 <translation id="5771585441665576801">Transliteracija (geia → γεια)</translation>
@@ -4435,6 +4429,7 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="7615910377284548269">Tvarkyti ne „smėlio dėžės“ papildinių blokavimą...</translation>
 <translation id="7617366389578322136">Prisijungiama prie „<ph name="DEVICE_NAME" />“</translation>
 <translation id="761779991806306006">Neišsaugota jokių slaptažodžių.</translation>
+<translation id="7622114377921274169">Įkraunama.</translation>
 <translation id="7624154074265342755">Belaidžiai tinklai</translation>
 <translation id="7624337243375417909">didžiųjų raidžių režimas išjungtas</translation>
 <translation id="7627790789328695202">Oi, „<ph name="FILE_NAME" />“ jau yra. Pervardykite jį ir bandykite dar kartą.</translation>
@@ -4875,6 +4870,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="8270242299912238708">PDF dokumentai</translation>
 <translation id="827097179112817503">Rodyti mygtuką „Pagrindinis“</translation>
 <translation id="8272443605911821513">Tvarkykite plėtinius meniu „Daugiau įrankių“ spustelėję „Plėtiniai“.</translation>
+<translation id="8274924778568117936">Neišjunkite ar neuždarykite „<ph name="DEVICE_TYPE" />“, kol atnaujinimo procesas nebus baigtas. Kai diegimo procesas baigsis, „<ph name="DEVICE_TYPE" />“ bus paleistas iš naujo.</translation>
 <translation id="8275038454117074363">Importuoti</translation>
 <translation id="8276560076771292512">Tuščia talpykla ir priverstinis įkėlimas iš naujo</translation>
 <translation id="8279388322240498158">Soranių kurdų angliška klaviatūra</translation>
@@ -5316,7 +5312,6 @@ Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose dar
 <translation id="8963572037665351978">Išeiti iš pristatymo</translation>
 <translation id="8965037249707889821">Įveskite seną slaptažodį</translation>
 <translation id="8965697826696209160">Nepakanka vietos.</translation>
-<translation id="8968527460726243404">„ChromeOS“ sistemos turinio kopijos rašymo priemonė</translation>
 <translation id="8970203673128054105">Peržiūrėti perdavimo režimo sąrašą</translation>
 <translation id="89720367119469899">Grįžimo klavišas</translation>
 <translation id="8972513834460200407">Paklauskite tinklo administratoriaus, kad įsitikintumėte, jog užkarda neblokuoja atsisiuntimų iš „Google“ serverių.</translation>
@@ -5492,6 +5487,7 @@ Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose dar
 <translation id="93766956588638423">Pataisyti plėtinį</translation>
 <translation id="938470336146445890">Įdiekite naudotojo sertifikatą.</translation>
 <translation id="938582441709398163">Klaviatūros perdanga</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Įvesti slaptafrazę</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="940425055435005472">Šrifto dydis:</translation>

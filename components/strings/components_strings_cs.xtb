@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Připojení je šifrováno a ověřeno pomocí šifry <ph name="CIPHER" /> a jako mechanismus výměny klíčů používá <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Vymazat formulář</translation>
 <translation id="2889159643044928134">Nenačítat znovu</translation>
-<translation id="2900469785430194048">Prohlížeč Google Chrome k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2916038427272391327">Zavřete ostatní programy</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Chybný typ zásady</translation>
 <translation id="3032412215588512954">Chcete tento web načíst znovu?</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{alespoň jedna položka v synchronizovaných zařízeních}=1{1 položka (a další v synchronizovaných zařízeních)}few{# položky (a další v synchronizovaných zařízeních)}many{# položky (a další v synchronizovaných zařízeních)}other{# položek (a další v synchronizovaných zařízeních)}}</translation>
 <translation id="3041612393474885105">Informace o certifikátu</translation>
 <translation id="3063697135517575841">Chrome vaši kartu aktuálně nemohl ověřit. Zkuste to prosím znovu později.</translation>
 <translation id="3064966200440839136">Chystáte se opustit anonymní režim, abyste mohli zaplatit v externí aplikaci. Chcete pokračovat?</translation>
@@ -333,7 +331,6 @@
 <translation id="3681007416295224113">Informace o certifikátu</translation>
 <translation id="3690164694835360974">Přihlášení není zabezpečené</translation>
 <translation id="3693415264595406141">Heslo:</translation>
-<translation id="3696411085566228381">žádné</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="3712624925041724820">Byly vyčerpány licence</translation>
@@ -381,7 +378,6 @@
 <translation id="4171400957073367226">Chybný ověřovací podpis</translation>
 <translation id="4196861286325780578">&amp;Opakovat přesunutí</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci firewallu a antivirového softwaru<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{žádná aplikace}=1{1 aplikace ($1)}=2{2 aplikace ($1, $2)}few{# aplikace ($1, $2 $3)}many{# aplikace ($1, $2 $3)}other{# aplikací ($1, $2 $3)}}</translation>
 <translation id="4220128509585149162">Selhání</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Spojení s tímto webem není plně zabezpečené</translation>
@@ -465,7 +461,6 @@
 <translation id="5045550434625856497">Nesprávné heslo</translation>
 <translation id="5056549851600133418">Články pro vás</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Zkontrolovat adresu proxy serveru<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Žádné soubory cookie}=1{Soubory cookie používá 1 web. }few{Soubory cookie používají # weby. }many{Soubory cookie používá # webu. }other{Soubory cookie používá # webů. }}</translation>
 <translation id="5087286274860437796">Certifikát serveru v tuto chvíli není platný.</translation>
 <translation id="5087580092889165836">Přidat kartu</translation>
 <translation id="5089810972385038852">Stát/kraj</translation>
@@ -596,7 +591,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387478394221739770">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál beta na adrese chrome.com/beta.</translation>
-<translation id="6389758589412724634">Prohlížeč Chromium k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6410264514553301377">Zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="6414888972213066896">Zeptal(a) ses rodiče, zda můžeš navštívit tento web.</translation>
@@ -619,7 +613,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6556915248009097796">Platnost do <ph name="EXPIRATION_DATE_ABBR" />, naposledy použito <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Správce vám přístup na web dosud neschválil.</translation>
 <translation id="6569060085658103619">Prohlížíte si stránku rozšíření</translation>
-<translation id="6593753688552673085">méně než <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
 <translation id="662080504995468778">Zůstat</translation>
 <translation id="6626291197371920147">Přidání platného čísla karty</translation>
@@ -631,7 +624,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6710594484020273272">&lt;Zadejte vyhledávací dotaz&gt;</translation>
 <translation id="6711464428925977395">Došlo k chybě proxy serveru nebo jste zadali nesprávnou adresu.</translation>
 <translation id="6727102863431372879">Nastavit</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{žádné položky}=1{1 položka}few{# položky}many{# položky}other{# položek}}</translation>
 <translation id="674375294223700098">Neznámá chyba certifikátu serveru.</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
 <translation id="6757797048963528358">Zařízení přešlo do režimu spánku.</translation>
@@ -737,6 +729,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7669271284792375604">Útočníci na tomto webu by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy).</translation>
 <translation id="7674629440242451245">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál pro vývojáře na adrese chrome.com/dev.</translation>
 <translation id="7682287625158474539">Doprava</translation>
+<translation id="7701040980221191251">Žádné</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Pokračovat na web <ph name="SITE" /> (nespolehlivý)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikát</translation>
 <translation id="7716424297397655342">Tento web nelze načíst z mezipaměti</translation>
@@ -776,7 +769,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8041089156583427627">Odeslat svůj názor</translation>
 <translation id="8041940743680923270">Použít výchozí globální hodnotu (Dotázat se)</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
-<translation id="8089520772729574115">méně než 1 MB</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
 <translation id="8118489163946903409">Platební metoda</translation>
 <translation id="8131740175452115882">Potvrdit</translation>

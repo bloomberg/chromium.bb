@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER" /> का उपयोग करके एन्क्रिप्ट और प्रमाणित किया गया है और यह कुंजी विनिमय तकनीक के रूप में <ph name="KX" /> का उपयोग करता है.</translation>
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
 <translation id="2889159643044928134">पुन: लोड ना करें</translation>
-<translation id="2900469785430194048">यह वेबपेज दिखाते समय Google Chrome में जगह नहीं बची.</translation>
 <translation id="2909946352844186028">नेटवर्क में बदलाव का पता चला.</translation>
 <translation id="2916038427272391327">दूसरे प्रोग्राम बंद करें</translation>
 <translation id="2922350208395188000">सर्वर प्रमाणपत्र की जांच नहीं की जा सकती.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
 <translation id="3032412215588512954">क्या आप इस साइट को फिर से लोड करना चाहते हैं?</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{समन्वयित डिवाइस पर कम से कम 1 आइटम}=1{1 आइटम (समन्वयित डिवाइस पर और भी)}one{# आइटम (समन्वयित डिवाइस पर और भी)}other{# आइटम (समन्वयित डिवाइस पर और भी)}}</translation>
 <translation id="3041612393474885105">प्रमाणपत्र जानकारी</translation>
 <translation id="3063697135517575841">Chrome इस समय आपके कार्ड की पुष्टि नहीं कर सका. कृपया बाद में पुन: प्रयास करें.</translation>
 <translation id="3064966200440839136">किसी बाहरी ऐप्लिकेशन के ज़रिए भुगतान करने के लिए गुप्त मोड छोड़ रहे हैं. जारी रखना चाहते हैं?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">प्रमाणपत्र जानकारी</translation>
 <translation id="3690164694835360974">लॉगिन सुरक्षित नहीं है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
-<translation id="3696411085566228381">कोई नहीं</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड हो रही हैं...</translation>
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल और एंटीवायरस कॉन्फ़िगरेशन की जांच करें<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{कोई नहीं}=1{1 ऐप्लिकेशन ($1)}=2{2 ऐप्लिकेशन ($1, $2)}one{# ऐप्लिकेशन ($1, $2, $3)}other{# ऐप्लिकेशन ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">क्रैश</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />नेटवर्क निदान चलाकर देखें<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">इस साइट से आपका कनेक्शन पूरी तरह से सुरक्षित नहीं है</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">ग़लत पासवर्ड</translation>
 <translation id="5056549851600133418">आपके लिए लेख</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />प्रॉक्सी पते की जांच करें<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{कोई कुकी नहीं}=1{1 साइट कुकी का उपयोग करती है. }one{# साइटें कुकी का उपयोग करती हैं. }other{# साइटें कुकी का उपयोग करती हैं. }}</translation>
 <translation id="5087286274860437796">सर्वर का प्रमाण पत्र इस समय मान्य नहीं है.</translation>
 <translation id="5087580092889165836">कार्ड जोड़ें</translation>
 <translation id="5089810972385038852">राज्य</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">इनका क्‍या अर्थ है?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्‍य सुझाव}one{# अन्‍य सुझाव}other{# अन्‍य सुझाव}}</translation>
 <translation id="6387478394221739770">बेहतरीन नई Chrome सुविधाओं में रूचि है? chrome.com/beta पर हमारा बीटा चैनल आज़माएं.</translation>
-<translation id="6389758589412724634">यह वेबपेज दिखाते समय क्रोमियम में जगह नहीं बची.</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करें</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> का समाप्ति दिनांक और CVC डालें</translation>
 <translation id="6414888972213066896">आपने अपने अभिभावक से पूछा था कि इस साइट पर जाना ठीक है या नहीं</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">खत्म होने की तारीख: <ph name="EXPIRATION_DATE_ABBR" />, पिछली बार <ph name="LAST_USED_DATE_NO_DETAIL" /> को उपयोग किया गया</translation>
 <translation id="6563469144985748109">आपके प्रबंधक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
-<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> से कम</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
 <translation id="662080504995468778">इसपर रहें</translation>
 <translation id="6626291197371920147">मान्य कार्ड नंबर जोड़ें</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
 <translation id="6727102863431372879">सेट करें</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{कोई नहीं}=1{1 आइटम}one{# आइटम}other{# आइटम}}</translation>
 <translation id="674375294223700098">अज्ञात सर्वर प्रमाणपत्र गड़बड़ी.</translation>
 <translation id="6753269504797312559">नीति मान</translation>
 <translation id="6757797048963528358">आपका डिवाइस निष्क्रिय हो गया है.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">इस साइट पर मौजूद हमलावर आपके ब्राउज़िंग अनुभव को हानि पहुंचा सकने वाले प्रोग्राम इंस्टॉल करने के लिए आपको भ्रमित कर सकते हैं (उदाहरण के लिए, आपके मुखपृष्ठ को बदलकर या आपकी विज़िट की जा रहीं साइट पर अतिरिक्त विज्ञापन दिखाकर).</translation>
 <translation id="7674629440242451245">शानदार नई Chrome सुविधाओं में रूचि है? तो chrome.com/dev पर हमारा डेव चैनल आज़माएं.</translation>
 <translation id="7682287625158474539">शिपिंग</translation>
+<translation id="7701040980221191251">कुछ नहीं</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> में आगे बढ़ें (असुरक्षित)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">प्रमाणपत्र</translation>
 <translation id="7716424297397655342">इस साइट को संचय से लोड नहीं किया जा सकता</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">सुझाव भेजें</translation>
 <translation id="8041940743680923270">वैश्विक डिफ़ॉल्ट का उपयोग करें (पूछें)</translation>
 <translation id="8088680233425245692">लेख देखने में विफल रहा.</translation>
-<translation id="8089520772729574115">1 MB से कम</translation>
 <translation id="8091372947890762290">सर्वर पर सक्रियण लंबित है</translation>
 <translation id="8118489163946903409">भुगतान विधि</translation>
 <translation id="8131740175452115882">दुबारा पूछें</translation>

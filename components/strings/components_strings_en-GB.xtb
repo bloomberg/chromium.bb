@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
 <translation id="2889159643044928134">Don't reload</translation>
-<translation id="2900469785430194048">Google Chrome ran out of memory while trying to display this web page.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2916038427272391327">Close other programmes</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Wrong policy type</translation>
 <translation id="3032412215588512954">Do you want to reload this site?</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{at least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3063697135517575841">Chrome was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3690164694835360974">Login not secure</translation>
 <translation id="3693415264595406141">Password:</translation>
-<translation id="3696411085566228381">none</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">Bad verification signature</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{none}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Try running Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Your connection to this site is not fully secure</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5056549851600133418">Articles for you</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Checking the proxy address<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{No cookies}=1{1 site uses cookies. }other{# sites use cookies. }}</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5087580092889165836">Add card</translation>
 <translation id="5089810972385038852">County</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="6387478394221739770">Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.</translation>
-<translation id="6389758589412724634">Chromium ran out of memory while trying to display this web page.</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6410264514553301377">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">You asked your parent if it's OK to visit this site</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Exp: <ph name="EXPIRATION_DATE_ABBR" />, last used <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
 <translation id="6569060085658103619">You're viewing an extension page</translation>
-<translation id="6593753688552673085">less than <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="662080504995468778">Stay</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="6711464428925977395">There is something wrong with the proxy server or the address is incorrect.</translation>
 <translation id="6727102863431372879">Set</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{none}=1{1 item}other{# items}}</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6757797048963528358">Your device went to sleep.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit).</translation>
 <translation id="7674629440242451245">Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.</translation>
 <translation id="7682287625158474539">Shipping</translation>
+<translation id="7701040980221191251">None</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /> (unsafe)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificate</translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Send Feedback</translation>
 <translation id="8041940743680923270">Use global default (Ask)</translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
-<translation id="8089520772729574115">less than 1 MB</translation>
 <translation id="8091372947890762290">Activation is pending on the server</translation>
 <translation id="8118489163946903409">Payment method</translation>
 <translation id="8131740175452115882">Confirm</translation>

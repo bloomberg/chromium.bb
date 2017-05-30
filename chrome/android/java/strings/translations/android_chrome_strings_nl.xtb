@@ -116,7 +116,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
 <translation id="2146738493024040262">Instant-app openen</translation>
 <translation id="2148716181193084225">Vandaag</translation>
-<translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Jou en je apparaat beschermen tegen gevaar</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3387650086002190359">Downloaden van <ph name="FILE_NAME" /> is mislukt door fouten in het bestandssysteem.</translation>
 <translation id="3398320232533725830">Bladwijzerbeheer openen</translation>
 <translation id="3414952576877147120">Grootte:</translation>
-<translation id="3435896845095436175">Inschakelen</translation>
 <translation id="3443221991560634068">De huidige pagina opnieuw laden</translation>
 <translation id="3452612588551937789">Log in met je Google-account om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
 <translation id="3487093336331957349">Zoek- en sitesuggesties</translation>
@@ -319,7 +317,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4522570452068850558">Details</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Map kiezen</translation>
-<translation id="4535858793016067060">Schakel de optie 'Onbekende bronnen' in de beveiligingsinstellingen van Android in om het experiment 'Verbeterde functie voor toevoegen aan startscherm' uit te voeren. Vergeet niet de instelling uit te schakelen wanneer je klaar bent met uitproberen.</translation>
 <translation id="4558311620361989323">Sneltoetsen voor webpagina's</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
 <translation id="4581964774250883625">Je bent incognito.</translation>
@@ -362,7 +359,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="4988526792673242964">Pagina's</translation>
 <translation id="4996978546172906250">Delen via</translation>
-<translation id="5000922062037820727">Geblokkeerd (aanbevolen)</translation>
 <translation id="5004339818306944878">Gebruik tot 60% minder data en maak internet sneller. De servers van Google optimaliseren de pagina's die je bezoekt.</translation>
 <translation id="5005498671520578047">Wachtwoord kopiëren</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> wil verbinding maken</translation>
@@ -403,7 +399,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> is verwijderd</translation>
 <translation id="5345083863238459644">Locatietoegang is ook <ph name="BEGIN_LINK" />uitgeschakeld voor dit apparaat<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experiment 'Verbeterde functie voor toevoegen aan startscherm'</translation>
 <translation id="5372829067651257087">URL gekopieerd.</translation>
 <translation id="5384883051496921101">Deze site staat op het punt buiten de incognitomodus informatie met een app te delen.</translation>
 <translation id="5400569084694353794">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
@@ -654,7 +649,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="7929962904089429003">Het menu openen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
-<translation id="7949961459945740081">Ontvang de nieuwste functies</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
 <translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
@@ -665,7 +659,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="8015452622527143194">Standaardgrootte van alles op de pagina herstellen</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
-<translation id="8033827949643255796">geselecteerd</translation>
 <translation id="8035133914807600019">Nieuwe map…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beschikbaar</translation>

@@ -4,7 +4,7 @@
 <translation id="1006017844123154345">Abrir versión online</translation>
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
-<translation id="1080790410959514870">Vas a salir de una cuenta administrada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
+<translation id="1080790410959514870">Vas a salir de una cuenta gestionada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
 <translation id="1121094540300013208">Informes de uso y sobre fallos</translation>
 <translation id="1137305377394488060">última hora</translation>
@@ -116,7 +116,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2139186145475833000">Añadir a pantalla de inicio</translation>
 <translation id="2146738493024040262">Abrir aplicación instantánea</translation>
 <translation id="2148716181193084225">Hoy</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Obtener protección para ti y para tu dispositivo frente a sitios web peligrosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, una aplicación web disponible en <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3387650086002190359">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el sistema de archivos.</translation>
 <translation id="3398320232533725830">Abre el administrador de marcadores</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
-<translation id="3435896845095436175">Habilitar</translation>
 <translation id="3443221991560634068">Vuelve a cargar la página actual</translation>
 <translation id="3452612588551937789">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos.</translation>
 <translation id="3487093336331957349">Sugerencias de búsqueda y sitios web</translation>
@@ -319,9 +317,8 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
-<translation id="4535858793016067060">Activa Orígenes desconocidos en los ajustes de seguridad de Android para probar el experimento mejorado Añadir a la pantalla de inicio. No olvides inhabilitar esta opción cuando hayas finalizado.</translation>
 <translation id="4558311620361989323">Combinaciones de teclas en páginas web</translation>
-<translation id="4572422548854449519">Inicia sesión en la cuenta administrada</translation>
+<translation id="4572422548854449519">Inicia sesión en la cuenta gestionada</translation>
 <translation id="4581964774250883625">Has iniciado una sesión de incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
 <translation id="4587589328781138893">Sitios web</translation>
@@ -358,11 +355,10 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="4958708863221495346">Estás compartiendo tu pantalla a través de <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="4961700429721424617">Estás cerrando sesión en una cuenta administrada por <ph name="MANAGED_DOMAIN" />. Tus datos de Chrome se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
+<translation id="4961700429721424617">Estás cerrando sesión en una cuenta gestionada por <ph name="MANAGED_DOMAIN" />. Tus datos de Chrome se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartir a través de</translation>
-<translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5004339818306944878">Reduce el uso de datos hasta en un 60% y mejora la velocidad de la Web. Los servidores de Google optimizarán las páginas que visites.</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> quiere conectarse</translation>
@@ -403,7 +399,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
 <translation id="5345040418939504969">Se ha eliminado <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">El acceso a la ubicación también está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experimento mejorado Añadir a la pantalla de inicio</translation>
 <translation id="5372829067651257087">Se ha copiado la URL.</translation>
 <translation id="5384883051496921101">Este sitio web va a compartir información con una aplicación con la que no se utilizará el modo incógnito.</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones de Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
@@ -654,7 +649,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7929962904089429003">Abre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
-<translation id="7949961459945740081">Obtener las últimas funciones</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="7987073022710626672">Condiciones de Servicio de Chrome</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
@@ -665,7 +659,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8015452622527143194">Restaura el tamaño predeterminado del contenido</translation>
 <translation id="802154636333426148">No se ha podido descargar el archivo</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
-<translation id="8033827949643255796">seleccionados</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8037750541064988519">Quedan <ph name="DAYS" /> días</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponible(s)</translation>
@@ -753,7 +746,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8981454092730389528">Controles de la actividad de tu cuenta de Google</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abre una nueva pestaña en modo incógnito</translation>
-<translation id="8998729206196772491">Estás iniciando sesión con una cuenta administrada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
+<translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9038649477754266430">Utilizar un servicio de predicciones para que las páginas se carguen más rápido</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
@@ -771,7 +764,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios web envíen notificaciones (recomendado)</translation>
 <translation id="9187199695613236444">Vista optimizada para móviles</translation>
-<translation id="9188680907066685419">Cierra sesión en la cuenta administrada</translation>
+<translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9216841883364897953">Desglose del uso de datos</translation>
 <translation id="9219103736887031265">Imágenes</translation>

@@ -116,7 +116,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2139186145475833000">Dodaj do ekranu głównego</translation>
 <translation id="2146738493024040262">Otwórz aplikację błyskawiczną</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
-<translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Chroń siebie i swoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3387650086002190359">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu błędów systemu plików.</translation>
 <translation id="3398320232533725830">Otwórz menedżera zakładek</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
-<translation id="3435896845095436175">Włącz</translation>
 <translation id="3443221991560634068">Ponownie załaduj bieżącą stronę</translation>
 <translation id="3452612588551937789">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach.</translation>
 <translation id="3487093336331957349">Podpowiadanie stron internetowych i wyszukiwanych słów</translation>
@@ -319,7 +317,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Wybierz folder</translation>
-<translation id="4535858793016067060">Włącz „Nieznane źródła” w ustawieniach zabezpieczeń Androida, by wypróbować eksperyment „Ulepszone dodawanie do ekranu głównego”. Koniecznie wyłącz to ustawienie, gdy przestaniesz używać tego eksperymentu.</translation>
 <translation id="4558311620361989323">Skróty stron internetowych</translation>
 <translation id="4572422548854449519">Zaloguj się na konto zarządzane</translation>
 <translation id="4581964774250883625">Jesteś w trybie incognito.</translation>
@@ -362,7 +359,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="497421865427891073">Dalej</translation>
 <translation id="4988526792673242964">Strony</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
-<translation id="5000922062037820727">Zablokowane (zalecane)</translation>
 <translation id="5004339818306944878">Przesyłaj nawet o 60% mniej danych i przyspiesz działanie sieci: serwery Google optymalizują strony, które odwiedzasz.</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> chce się połączyć</translation>
@@ -403,7 +399,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
 <translation id="5345040418939504969">Usunięto: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostęp do lokalizacji jest też <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Eksperyment Ulepszone dodawanie do ekranu głównego</translation>
 <translation id="5372829067651257087">URL został skopiowany.</translation>
 <translation id="5384883051496921101">Ta strona zamierza udostępnić informacje aplikacji poza trybem incognito.</translation>
 <translation id="5400569084694353794">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
@@ -654,7 +649,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7929962904089429003">Otwórz menu</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
-<translation id="7949961459945740081">Używaj najnowszych funkcji</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
 <translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
@@ -665,7 +659,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8015452622527143194">Powróć do normalnego rozmiaru całej treści strony</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
-<translation id="8033827949643255796">wybrano</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>
 <translation id="8037750541064988519">Pozostało: <ph name="DAYS" /> dni</translation>
 <translation id="8051695050440594747">Dostępne: <ph name="MEGABYTES" /> MB</translation>

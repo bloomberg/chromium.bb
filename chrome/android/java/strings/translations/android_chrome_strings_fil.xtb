@@ -116,7 +116,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2139186145475833000">Magdagdag sa Home screen</translation>
 <translation id="2146738493024040262">Buksan ang Instant App</translation>
 <translation id="2148716181193084225">Ngayon</translation>
-<translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2156074688469523661">Mga natitirang site (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protektahan ang iyong sarili at ang iyong device mula sa mga mapanganib na site</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3387650086002190359">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga error sa file system.</translation>
 <translation id="3398320232533725830">Buksan ang bookmarks manager</translation>
 <translation id="3414952576877147120">Laki:</translation>
-<translation id="3435896845095436175">I-enable</translation>
 <translation id="3443221991560634068">I-reload ang kasalukuyang page</translation>
 <translation id="3452612588551937789">Mag-sign in sa iyong Google Account upang makuha ang iyong mga bookmark, history, password at iba pang mga setting sa lahat ng iyong device.</translation>
 <translation id="3487093336331957349">Mga mungkahi sa paghahanap at site</translation>
@@ -319,7 +317,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4522570452068850558">Mga Detalye</translation>
 <translation id="4526249700380860531">Tingnan at pamahalaan ang mga naka-save na password sa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pumili ng folder</translation>
-<translation id="4535858793016067060">I-on ang “Mga hindi kilalang pinagmulan” sa Mga setting ng seguridad ng Android upang masubukan ang eksperimentong "Pinahusay na Idagdag sa Home screen." Tiyaking idi-disable mo ang setting na ito kapag tapos mo na itong subukan.</translation>
 <translation id="4558311620361989323">Mga shortcut ng webpage</translation>
 <translation id="4572422548854449519">Mag-sign in sa pinamamahalaang account</translation>
 <translation id="4581964774250883625">Naging incognito ka.</translation>
@@ -362,7 +359,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="497421865427891073">Sumulong</translation>
 <translation id="4988526792673242964">Mga Page</translation>
 <translation id="4996978546172906250">Ibahagi gamit ang</translation>
-<translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
 <translation id="5004339818306944878">Makatipid ng hanggang 60% ng data at pabilisin ang web. Io-optimize ng mga server ng Google ang mga page na binibisita mo.</translation>
 <translation id="5005498671520578047">Kopyahin password</translation>
 <translation id="5011311129201317034">Gustong kumonekta ng <ph name="SITE" /></translation>
@@ -403,7 +399,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
 <translation id="5345040418939504969">Na-delete ang <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Ang access sa lokasyon ay <ph name="BEGIN_LINK" />naka-off din para sa device na ito<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Eksperimentong Pinahusay na Idagdag sa Home screen</translation>
 <translation id="5372829067651257087">Kinopya ang URL.</translation>
 <translation id="5384883051496921101">Magbabahagi ang site na ito ng impormasyon sa isang app sa labas ng incognito mode.</translation>
 <translation id="5400569084694353794">Kapag ginamit mo ang application na ito, ang ibig sabihin, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Patakaran sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
@@ -654,7 +649,6 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="7929962904089429003">Buksan ang menu</translation>
 <translation id="7942131818088350342">Luma na ang <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
-<translation id="7949961459945740081">Kunin ang pinakabagong feature</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7987073022710626672">Mga Tuntunin ng Serbisyo ng Chrome</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
@@ -665,7 +659,6 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8015452622527143194">Ibalik ang lahat ng nasa page sa default na sukat</translation>
 <translation id="802154636333426148">Hindi na-download</translation>
 <translation id="8026334261755873520">I-clear ang data ng pagba-browse</translation>
-<translation id="8033827949643255796">pinili</translation>
 <translation id="8035133914807600019">Bagong folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> (na) araw na lang ang natitira</translation>
 <translation id="8051695050440594747">Available ang <ph name="MEGABYTES" /> MB</translation>

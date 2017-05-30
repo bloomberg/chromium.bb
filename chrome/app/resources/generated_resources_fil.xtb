@@ -837,7 +837,6 @@
 <translation id="2224551243087462610">I-edit ang pangalan ng folder</translation>
 <translation id="2226449515541314767">Na-block ang site na ito mula sa pagkakaroon ng buong kontrol sa mga MIDI device.</translation>
 <translation id="2226720438730111184">Sabihin sa Amin Kung Ano ang Nangyayari</translation>
-<translation id="222903405933288376">Ginagamit ng Google ang iyong lokasyon upang mabigyan ka ng lokal na content. Maaari mo itong baguhin sa <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Mahigit sa 1 oras ang natitira</translation>
 <translation id="222931766245975952">Naputol ang file</translation>
 <translation id="222949136907494149">Nais gamitin ng <ph name="URL" /> ang lokasyon ng iyong computer.</translation>
@@ -1089,7 +1088,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2575247648642144396">Makikita ang icon na ito kapag makakakilos ang extension sa kasalukuyang pahina. Gamitin ang extension na ito sa pamamagitan ng pag-click sa icon o sa pamamagitan ng pagpindot sa <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Mayroon nang isang CRX file na may ganitong pangalan.</translation>
 <translation id="2579575372772932244">Muling ginagawa ang profile, mangyaring maghintay...</translation>
-<translation id="2580168606262715640">Hindi mahanap ang iyong telepono. Tiyaking nasa malapit ito.</translation>
 <translation id="2580889980133367162">Palaging payagan ang <ph name="HOST" /> na mag-download ng maraming file</translation>
 <translation id="2580924999637585241">Kabuuan: <ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Matagal</translation>
@@ -2175,7 +2173,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="4130207949184424187">Binago ng extension na ito ang ipinapakitang page kapag naghahanap ka sa Omnibox.</translation>
 <translation id="413121957363593859">Mga Bahagi</translation>
 <translation id="4131410914670010031">Itim at puti</translation>
-<translation id="4135054690906486073">Ibinabahagi sa iba pang user ang network na ito</translation>
 <translation id="4135450933899346655">Iyong Mga Certificate</translation>
 <translation id="4138267921960073861">Ipakita ang mga username at larawan sa screen sa pag-sign-in</translation>
 <translation id="4140559601186535628">Mga Push Message</translation>
@@ -2579,9 +2576,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4813345808229079766">Pagkonekta</translation>
 <translation id="4813512666221746211">Error sa network</translation>
 <translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
-<translation id="4816617200045929931">Sabihin sa amin kung ano ang eksaktong nangyari bago mo nakuha ang mensahe ng error sa profile:
-
-****HUWAG GUMAWA NG PAGBABAGO SA IBABA NG LINYANG ITO****</translation>
 <translation id="4820334425169212497">Hindi, hindi ko ito nakikita</translation>
 <translation id="4821086771593057290">Nabago ang iyong password. Pakisubukang muli gamit ang iyong bagong password.</translation>
 <translation id="4821935166599369261">&amp;Pinagana ang Pag-profile</translation>
@@ -2947,7 +2941,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5340217413897845242">Item 6 sa shelf</translation>
 <translation id="5341390997810576190">Gagamit ng cellular data</translation>
 <translation id="5342091991439452114">Hindi dapat bababa sa <ph name="MINIMUM" /> (na) digit ang PIN</translation>
-<translation id="5342344590724511265">Feedback na nag-crash ang tab</translation>
 <translation id="5342451237681332106">Gamitin ang <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Kaliwang paren</translation>
 <translation id="5350965906220856151">Naku!</translation>
@@ -3219,6 +3212,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5764483294734785780">I-sa&amp;ve ang audio bilang...</translation>
 <translation id="57646104491463491">Binagong Petsa</translation>
 <translation id="5764797882307050727">Magbakante ng ilang espasyo sa iyong device.</translation>
+<translation id="5765425701854290211">Paumanhin, nasira ang ilang file at hindi nagtagumpay ang pag-update. Ligtas ang iyong mga naka-sync na file.</translation>
 <translation id="5765491088802881382">Walang magagamit na network</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
 <translation id="5771585441665576801">Transliteration (geia → γεια)</translation>
@@ -4436,6 +4430,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="7615910377284548269">Pamahalaan ang pag-block ng hindi naka-sandbox na plugin</translation>
 <translation id="7617366389578322136">Kumokonekta sa "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Walang na-save na mga password.</translation>
+<translation id="7622114377921274169">Nagcha-charge.</translation>
 <translation id="7624154074265342755">Mga wireless na network</translation>
 <translation id="7624337243375417909">naka-off ang caps lock</translation>
 <translation id="7627790789328695202">Whoops, umiiral na ang <ph name="FILE_NAME" />. Palitan ang pangalan nito at subukang muli.</translation>
@@ -4876,6 +4871,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8270242299912238708">Mga dokumentong PDF</translation>
 <translation id="827097179112817503">Ipakita ang button ng home</translation>
 <translation id="8272443605911821513">Pamahalaan ang iyong mga extension sa pamamagitan ng pag-click sa Mga Extension sa menu ng "Higit pang mga tool."</translation>
+<translation id="8274924778568117936">Huwag i-off o isara ang iyong <ph name="DEVICE_TYPE" /> hanggang sa matapos ang pag-update. Magre-restart ang <ph name="DEVICE_TYPE" /> mo pagkatapos ng pag-install.</translation>
 <translation id="8275038454117074363">I-import</translation>
 <translation id="8276560076771292512">Alisan ng Laman ang Cache at I-hard reload</translation>
 <translation id="8279388322240498158">Keyboard na batay sa Sorani Kurdish English</translation>
@@ -5095,7 +5091,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8642171459927087831">Token ng Access</translation>
 <translation id="8642267168767642381">Masyadong mabagal ang paggalaw ng daliri</translation>
 <translation id="8642947597466641025">Gawing Mas Malaki Ang Teksto</translation>
-<translation id="8647834505253004544">Hindi wastong email address</translation>
+<translation id="8647834505253004544">Di-wastong email address</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> o <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Sapilitang I-reload ang Pahinang Ito</translation>
 <translation id="8652139471850419555">Mga Gustong Network</translation>
@@ -5320,7 +5316,6 @@ Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng 
 <translation id="8963572037665351978">Lumabas sa Presentation</translation>
 <translation id="8965037249707889821">Ilagay ang lumang password</translation>
 <translation id="8965697826696209160">Walang sapat na espasyo.</translation>
-<translation id="8968527460726243404">Pangsulat ng Larawan ng ChromeOS na System</translation>
 <translation id="8970203673128054105">Tingnan ang listahan ng cast mode</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Pakisuri sa administrator ng iyong network upang matiyak na hindi bina-block ng firewall ang mga pag-download mula sa mga server ng Google.</translation>
@@ -5496,6 +5491,7 @@ Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng 
 <translation id="93766956588638423">Ayusin ang extension</translation>
 <translation id="938470336146445890">Mangyaring mag-install ng certificate ng user.</translation>
 <translation id="938582441709398163">Overlay ng Keyboard</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ilagay ang passphrase</translation>
 <translation id="939736085109172342">Bagong folder</translation>
 <translation id="940425055435005472">Laki ng Font:</translation>

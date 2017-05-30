@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">La connexió s'ha encriptat i autenticat mitjançant <ph name="CIPHER" /> i fa servir <ph name="KX" /> com a mecanisme d'intercanvi clau.</translation>
 <translation id="2835170189407361413">Esborra el formulari</translation>
 <translation id="2889159643044928134">No tornis a carregar</translation>
-<translation id="2900469785430194048">Google Chrome s'ha quedat sense memòria en provar de mostrar aquesta pàgina web.</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
 <translation id="3032412215588512954">Voleu tornar a carregar aquest lloc?</translation>
 <translation id="3037605927509011580">Oh, no!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{almenys 1 element als dispositius sincronitzats}=1{1 element (i altres elements als dispositius sincronitzats)}other{# elements (i altres elements als dispositius sincronitzats)}}</translation>
 <translation id="3041612393474885105">Informació del certificat</translation>
 <translation id="3063697135517575841">Chrome no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="3064966200440839136">Per pagar amb una aplicació externa sortiràs del mode d'incògnit. Vols continuar?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Informació del certificat</translation>
 <translation id="3690164694835360974">L'inici de sessió no és segur</translation>
 <translation id="3693415264595406141">Contrasenya:</translation>
-<translation id="3696411085566228381">cap</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">S'està carregant...</translation>
 <translation id="3712624925041724820">Llicències exhaurides</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">La signatura de verificació és incorrecta</translation>
 <translation id="4196861286325780578">&amp;Refés el moviment</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comproveu la configuració del tallafoc i de l'antivirus<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{cap}=1{1 aplicació ($1)}=2{2 aplicacions ($1, $2)}other{# aplicacions ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Errors</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proveu d'executar el Diagnòstic de xarxa<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">La teva connexió amb aquest lloc no és del tot segura</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="5056549851600133418">Articles que us poden interessar</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comproveu l'adreça del servidor intermediari<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{No s'utilitzen galetes}=1{1 lloc utilitza galetes. }other{# llocs utilitzen galetes. }}</translation>
 <translation id="5087286274860437796">En aquest moment el certificat del servidor no és vàlid.</translation>
 <translation id="5087580092889165836">Afegiu una targeta</translation>
 <translation id="5089810972385038852">Estat</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
 <translation id="6387478394221739770">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal beta a la pàgina chrome.com/beta.</translation>
-<translation id="6389758589412724634">Chromium s'ha quedat sense memòria en provar de mostrar aquesta pàgina web.</translation>
 <translation id="6404511346730675251">Edita l'adreça d'interès</translation>
 <translation id="6410264514553301377">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Has demanat permís als teus pares per visitar aquest lloc</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Data de caducitat: <ph name="EXPIRATION_DATE_ABBR" />; última utilització: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">El teu gestor encara no ho ha aprovat</translation>
 <translation id="6569060085658103619">Estàs consultant la pàgina d'una extensió</translation>
-<translation id="6593753688552673085">menys de: <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opcions d'encriptació</translation>
 <translation id="662080504995468778">No surtis</translation>
 <translation id="6626291197371920147">Afegeix un número de targeta vàlid</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Escriviu el terme de cerca&gt;</translation>
 <translation id="6711464428925977395">Hi ha hagut algun problema amb el servidor intermediari o l'adreça no és correcta.</translation>
 <translation id="6727102863431372879">Configura</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{cap}=1{1 element}other{# elements}}</translation>
 <translation id="674375294223700098">Error de certificat del servidor desconegut.</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositiu ha entrat en mode de repòs.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">És possible que els atacants d'aquest lloc intentin enganyar-te perquè instal·lis programes que perjudiquen la teva navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visites).</translation>
 <translation id="7674629440242451245">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal per a desenvolupadors a la pàgina chrome.com/dev.</translation>
 <translation id="7682287625158474539">Enviament</translation>
+<translation id="7701040980221191251">Cap</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continua per accedir a <ph name="SITE" /> (no segur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
 <translation id="7716424297397655342">Aquest lloc no es pot carregar des de la memòria cau</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Envia comentaris</translation>
 <translation id="8041940743680923270">Utilitza l'opció predeterminada global (Pregunta)</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
-<translation id="8089520772729574115">menys d'1 MB</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
 <translation id="8118489163946903409">Mètode de pagament</translation>
 <translation id="8131740175452115882">Confirma</translation>

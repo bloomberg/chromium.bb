@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="2226449515541314767">Deze site is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
 <translation id="2226720438730111184">Vertel ons wat er aan de hand is</translation>
-<translation id="222903405933288376">Google gebruikt je locatie om lokale content te leveren. Je kunt dit wijzigen in <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Meer dan 1 uur resterend</translation>
 <translation id="222931766245975952">Bestand afgekapt</translation>
 <translation id="222949136907494149"><ph name="URL" /> wil de locatie van je computer gebruiken.</translation>
@@ -1088,7 +1087,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2575247648642144396">Dit pictogram is zichtbaar wanneer de extensie acties kan uitvoeren op de huidige pagina. Gebruik deze extensie door op het pictogram te klikken of op <ph name="EXTENSION_SHORTCUT" /> te drukken.</translation>
 <translation id="2576842806987913196">Er is al een CRX-bestand aanwezig met deze naam.</translation>
 <translation id="2579575372772932244">Profiel wordt opnieuw gemaakt. Een ogenblik geduld...</translation>
-<translation id="2580168606262715640">Kan je telefoon niet vinden. Zorg ervoor dat deze zich in de buurt bevindt.</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> altijd toestaan meerdere bestanden te downloaden</translation>
 <translation id="2580924999637585241">Totaal: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lang</translation>
@@ -2173,7 +2171,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4130207949184424187">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je vanuit de omnibox zoekt.</translation>
 <translation id="413121957363593859">Componenten</translation>
 <translation id="4131410914670010031">Zwart/wit</translation>
-<translation id="4135054690906486073">Dit netwerk wordt gedeeld met andere gebruikers</translation>
 <translation id="4135450933899346655">Je certificaten</translation>
 <translation id="4138267921960073861">Gebruikersnamen en foto's weergeven in het inlogscherm</translation>
 <translation id="4140559601186535628">Pushberichten</translation>
@@ -2577,9 +2574,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4813345808229079766">Verbinding</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="4816492930507672669">Aanpassen aan pagina</translation>
-<translation id="4816617200045929931">Vertel ons wat er precies gebeurde voordat je de foutmelding voor het profiel kreeg:
-
-****ONDER DEZE REGEL NIETS WIJZIGEN****</translation>
 <translation id="4820334425169212497">Nee, ik zie het niet</translation>
 <translation id="4821086771593057290">Je wachtwoord is gewijzigd. Probeer het opnieuw met je nieuwe wachtwoord.</translation>
 <translation id="4821935166599369261">&amp;Profiling ingeschakeld</translation>
@@ -2944,7 +2938,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5340217413897845242">Plankartikel 6</translation>
 <translation id="5341390997810576190">Mobiele data gebruiken</translation>
 <translation id="5342091991439452114">Pincode moet minimaal <ph name="MINIMUM" /> cijfers bevatten</translation>
-<translation id="5342344590724511265">Feedback over vastgelopen tabblad.</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> gebruiken</translation>
 <translation id="534916491091036097">Haakje openen</translation>
 <translation id="5350965906220856151">Oeps!</translation>
@@ -3216,6 +3209,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5764483294734785780">Audio op&amp;slaan als...</translation>
 <translation id="57646104491463491">Bijgewerkt op</translation>
 <translation id="5764797882307050727">Maak ruimte vrij op je apparaat.</translation>
+<translation id="5765425701854290211">Sommige bestanden zijn beschadigd en de update is mislukt. Je gesynchroniseerde bestanden zijn veilig.</translation>
 <translation id="5765491088802881382">Er zijn geen netwerken beschikbaar</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5771585441665576801">Transliteratie (geia → γεια)</translation>
@@ -4432,6 +4426,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7615910377284548269">Blokkeren van plug-ins zonder sandbox beheren…</translation>
 <translation id="7617366389578322136">Verbinding maken met '<ph name="DEVICE_NAME" />'</translation>
 <translation id="761779991806306006">Geen wachtwoorden opgeslagen.</translation>
+<translation id="7622114377921274169">Opladen.</translation>
 <translation id="7624154074265342755">Draadloze netwerken</translation>
 <translation id="7624337243375417909">Caps Lock uit</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> bestaat al. Geef een nieuwe naam op en probeer het opnieuw.</translation>
@@ -4871,6 +4866,7 @@ Resterende tijd berekenen</translation>
 <translation id="8270242299912238708">Pdf-documenten</translation>
 <translation id="827097179112817503">Knop 'Homepage' weergeven</translation>
 <translation id="8272443605911821513">Beheer je extensies door op 'Extensies' te klikken in het menu 'Meer tools'.</translation>
+<translation id="8274924778568117936">Je moet je <ph name="DEVICE_TYPE" /> niet uitschakelen of sluiten totdat de update is voltooid. Je <ph name="DEVICE_TYPE" /> wordt opnieuw opgestart nadat de installatie is voltooid.</translation>
 <translation id="8275038454117074363">Importeren</translation>
 <translation id="8276560076771292512">Cache wissen en geforceerd opnieuw laden</translation>
 <translation id="8279388322240498158">Op Engels gebaseerd toetsenbord voor Soranî</translation>
@@ -5313,7 +5309,6 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="8963572037665351978">Presentatie sluiten</translation>
 <translation id="8965037249707889821">Oud wachtwoord opgeven</translation>
 <translation id="8965697826696209160">Er is onvoldoende ruimte.</translation>
-<translation id="8968527460726243404">ChromeOS System Image Writer</translation>
 <translation id="8970203673128054105">Lijst voor Cast-modus bekijken</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Neem contact op met je netwerkbeheerder om ervoor te zorgen dat downloads van Google-servers niet door de firewall worden geblokkeerd.</translation>
@@ -5489,6 +5484,7 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="93766956588638423">Extensie repareren</translation>
 <translation id="938470336146445890">Installeer een gebruikerscertificaat.</translation>
 <translation id="938582441709398163">Overlay voor toetsenbord</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Wachtwoordzin opgeven</translation>
 <translation id="939736085109172342">Nieuwe map</translation>
 <translation id="940425055435005472">Lettergrootte:</translation>

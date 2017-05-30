@@ -63,7 +63,7 @@
 <translation id="1091767800771861448">Prima ESCAPE para ignorar (apenas nas compilações não oficiais).</translation>
 <translation id="1093457606523402488">Redes visíveis</translation>
 <translation id="1094607894174825014">Foi solicitada uma operação de leitura ou de escrita com um desvio inválido em: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Inicie sessão<ph name="END_SIGN_IN_LINK" /> para controlar e visualizar os Websites que esta pessoa visita.</translation>
+<translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Inicie sessão<ph name="END_SIGN_IN_LINK" /> para controlar e visualizar os Sites que esta pessoa visita.</translation>
 <translation id="1097658378307015415">Antes de iniciar sessão, entre como Convidado para ativar a rede <ph name="NETWORK_ID" /></translation>
 <translation id="1108600514891325577">&amp;Parar</translation>
 <translation id="110918622319006905">VPN de terceiros</translation>
@@ -292,7 +292,7 @@
 <translation id="1427049173708736891">Mantenha o seu <ph name="DEVICE_TYPE" /> desbloqueado quando o seu telemóvel Android estiver desbloqueado e próximo. Não é necessário introduzir a palavra-passe.</translation>
 <translation id="142758023928848008">Ativar as teclas aderentes (para executar atalhos de teclado escrevendo-os sequencialmente)</translation>
 <translation id="1429740407920618615">Intensidade do Sinal:</translation>
-<translation id="143027896309062157">Ler e alterar todos os dados no computador e os Websites que visita</translation>
+<translation id="143027896309062157">Ler e alterar todos os dados no computador e os Sites que visita</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1432581352905426595">Gerir motores de pesquisa</translation>
 <translation id="1433811987160647649">Perguntar antes de aceder</translation>
@@ -463,8 +463,8 @@
 <translation id="1646982517418478057">Introduza uma palavra-passe para encriptar este certificado</translation>
 <translation id="164729547906544836">Teclado tâmil (itrans)</translation>
 <translation id="164814987133974965">Um utilizador supervisionado pode explorar a Web com a sua orientação. Enquanto gestor de um utilizador supervisionado, pode
-    <ph name="BEGIN_BOLD" />permitir ou proibir<ph name="END_BOLD" /> determinados Websites,
-    <ph name="BEGIN_BOLD" />analisar<ph name="END_BOLD" /> os Websites que o utilizador supervisionado tenha visitado e
+    <ph name="BEGIN_BOLD" />permitir ou proibir<ph name="END_BOLD" /> determinados Sites,
+    <ph name="BEGIN_BOLD" />analisar<ph name="END_BOLD" /> os Sites que o utilizador supervisionado tenha visitado e
     <ph name="BEGIN_BOLD" />gerir<ph name="END_BOLD" /> outras definições.</translation>
 <translation id="1648797160541174252">Proxy de rede para <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Os detalhes de início de sessão estão desatualizados</translation>
@@ -836,7 +836,6 @@
 <translation id="2224551243087462610">Editar nome da pasta</translation>
 <translation id="2226449515541314767">Este site foi impedido de ter controlo total sobre dispositivos MIDI.</translation>
 <translation id="2226720438730111184">Indique-nos o que está a acontecer</translation>
-<translation id="222903405933288376">O Google utiliza a sua localização para lhe fornecer conteúdo local. Pode alterar esta opção em <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Falta mais de 1 hora</translation>
 <translation id="222931766245975952">Ficheiro truncado</translation>
 <translation id="222949136907494149"><ph name="URL" /> pretende utilizar a localização do seu computador.</translation>
@@ -848,7 +847,7 @@
 <translation id="2233502537820838181">&amp;Mais informações</translation>
 <translation id="2238379619048995541">Dados do estado de frequência</translation>
 <translation id="2239921694246509981">Adicionar pessoa supervisionada</translation>
-<translation id="2241053333139545397">Ler e alterar os seus dados em vários Websites</translation>
+<translation id="2241053333139545397">Ler e alterar os seus dados em vários Sites</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2242603986093373032">Nenhum dispositivo</translation>
 <translation id="2242687258748107519">Informação de ficheiro</translation>
@@ -856,8 +855,8 @@
 <translation id="2246340272688122454">A transferir imagem de recuperação...</translation>
 <translation id="2249499294612408921">Um utilizador supervisionado pode explorar a Web com a sua orientação. Na qualidade de gestor de um utilizador supervisionado no Chrome, pode
 
- • autorizar ou proibir determinados Websites,
- • verificar Websites que o utilizador supervisionado visitou e
+ • autorizar ou proibir determinados Sites,
+ • verificar Sites que o utilizador supervisionado visitou e
  • gerir outras definições.
 
 A criação de um utilizador supervisionado não cria uma Conta Google, pelo que os marcadores, o histórico de navegação e outras preferências de um utilizador supervisionado não o seguem para outros dispositivos com a Sincronização do Chrome.
@@ -1088,7 +1087,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2575247648642144396">Este ícone estará visível quando a extensão puder agir na página atual. Clique no ícone ou prima <ph name="EXTENSION_SHORTCUT" /> para utilizar esta extensão.</translation>
 <translation id="2576842806987913196">Já existe um ficheiro CRX com este nome.</translation>
 <translation id="2579575372772932244">A recriar o perfil. Aguarde…</translation>
-<translation id="2580168606262715640">Não é possível localizar o telemóvel. Certifique-se de que o mesmo está à distância de um braço.</translation>
 <translation id="2580889980133367162">Permitir sempre que o <ph name="HOST" /> transfira vários ficheiros</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Longo</translation>
@@ -1203,7 +1201,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2738771556149464852">Não posterior a</translation>
 <translation id="2739191690716947896">Depurar</translation>
 <translation id="2739240477418971307">Alterar as definições de acessibilidade</translation>
-<translation id="2740393541869613458">analisar Websites que o utilizador supervisionado visitou e</translation>
+<translation id="2740393541869613458">analisar Sites que o utilizador supervisionado visitou e</translation>
 <translation id="2743387203779672305">Copiar para a área de transferência</translation>
 <translation id="2744221223678373668">Partilhadas</translation>
 <translation id="2745080116229976798">Subordinação qualificada Microsoft</translation>
@@ -1275,7 +1273,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2815500128677761940">Barra de marcadores</translation>
 <translation id="2815693974042551705">Pasta de marcadores</translation>
 <translation id="2817109084437064140">Importar e vincular ao dispositivo...</translation>
-<translation id="2817861546829549432">A activação de “Do Not Track” (Não Seguir) significa que será incluído um pedido com o seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido será interpretado. Por exemplo, alguns Websites poderão responder a este pedido mostrando-lhe anúncios que não têm por base outros Websites que visitou. Ainda assim, muitos Websites recolherão e utilizarão os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, serviços, anúncios e recomendações sobre os seus Websites, e gerar relatórios estatísticos.</translation>
+<translation id="2817861546829549432">A activação de “Do Not Track” (Não Seguir) significa que será incluído um pedido com o seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido será interpretado. Por exemplo, alguns Sites poderão responder a este pedido mostrando-lhe anúncios que não têm por base outros Sites que visitou. Ainda assim, muitos Sites recolherão e utilizarão os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, serviços, anúncios e recomendações sobre os seus Sites, e gerar relatórios estatísticos.</translation>
 <translation id="2818476747334107629">Detalhes da impressora</translation>
 <translation id="2822634587701817431">Reduzir/expandir</translation>
 <translation id="2825758591930162672">Chave pública do requerente</translation>
@@ -1426,8 +1424,8 @@ Pretende pará-lo?</translation>
 <translation id="302781076327338683">Atualizar processo para ignorar a cache</translation>
 <translation id="3030243755303701754">Um utilizador supervisionado pode explorar a Web com a sua orientação. Como gestor de um utilizador supervisionado no Chrome, pode:
 
- • permitir ou proibir determinados Websites,
- • rever os Websites visitados pelo utilizador supervisionado, e
+ • permitir ou proibir determinados Sites,
+ • rever os Sites visitados pelo utilizador supervisionado, e
  • gerir outras definições.
 
 A criação de um utilizador supervisionado não cria uma Conta Google, pelo que os marcadores, o histórico de navegação e outras preferências de um utilizador supervisionado não o seguem para outros dispositivos com a Sincronização do Chrome. Depois de criar um novo utilizador supervisionado, pode gerir as respetivas definições a qualquer momento, a partir de qualquer dispositivo, em <ph name="BEGIN_MANAGE_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_MANAGE_LINK" />.
@@ -1495,7 +1493,7 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="312759608736432009">Fabricante do dispositivo:</translation>
 <translation id="3127919023693423797">A autenticar...</translation>
 <translation id="3128230619496333808">Separador 6</translation>
-<translation id="3129046656563914402">Foi criado um utilizador supervisionado com o nome <ph name="NEW_PROFILE_NAME" />. Para definir que Websites este utilizador supervisionado pode ver, pode configurar restrições e definições em <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode navegar em todos os sites na Web.
+<translation id="3129046656563914402">Foi criado um utilizador supervisionado com o nome <ph name="NEW_PROFILE_NAME" />. Para definir que Sites este utilizador supervisionado pode ver, pode configurar restrições e definições em <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode navegar em todos os sites na Web.
 
 Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras instruções.</translation>
 <translation id="3129140854689651517">Localizar texto</translation>
@@ -1523,7 +1521,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras i
 <translation id="316125635462764134">Remover aplicação</translation>
 <translation id="3161522574479303604">Todos os idiomas</translation>
 <translation id="3162559335345991374">A rede Wi-Fi que está a utilizar pode exigir que visite a respetiva página de início de sessão.</translation>
-<translation id="316307797510303346">Controlar e visualizar os Websites que esta pessoa visita a partir de <ph name="CUSTODIAN_EMAIL" />.
+<translation id="316307797510303346">Controlar e visualizar os Sites que esta pessoa visita a partir de <ph name="CUSTODIAN_EMAIL" />.
   Os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="3165390001037658081">Alguns operadores podem bloquear esta funcionalidade.</translation>
 <translation id="3166571619128686629">Clique ou diga "OK Google" para iniciar uma pesquisa por voz</translation>
@@ -1623,7 +1621,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras i
 <translation id="3313080019966590424"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" />, <ph name="SUB_STATUS_TEXT" />
 De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3313473140726597081">A sua página inicial foi alterada para <ph name="URL" />. Para desativar as extensões que alteram a sua página inicial, clique em Restaurar.</translation>
-<translation id="3313590242757056087">Para definir que Websites o utilizador supervisionado pode ver, pode configurar restrições
+<translation id="3313590242757056087">Para definir que Sites o utilizador supervisionado pode ver, pode configurar restrições
     e definições em <ph name="MANAGEMENT_URL" />.
     Se não alterar as predefinições, <ph name="USER_DISPLAY_NAME" />
     pode navegar por todos os sites na Web.</translation>
@@ -1708,7 +1706,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3441653493275994384">Ecrã</translation>
 <translation id="3445092916808119474">Tornar no ecrã principal</translation>
 <translation id="3445830502289589282">Autenticação da fase 2:</translation>
-<translation id="344630545793878684">Ler os seus dados em vários Websites</translation>
+<translation id="344630545793878684">Ler os seus dados em vários Sites</translation>
 <translation id="3449839693241009168">Prima <ph name="SEARCH_KEY" /> para enviar comandos para <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Percentagem de ocupação no estado inativo</translation>
 <translation id="3450505713373650336">A fazer cópia de segurança de <ph name="FILE_COUNT" /> fotografias</translation>
@@ -2174,7 +2172,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="4130207949184424187">Esta extensão alterou a página apresentada quando pesquisa a partir da caixa geral.</translation>
 <translation id="413121957363593859">Componentes</translation>
 <translation id="4131410914670010031">Preto e branco</translation>
-<translation id="4135054690906486073">Esta rede é partilhada com outros utilizadores</translation>
 <translation id="4135450933899346655">Os seus certificados</translation>
 <translation id="4138267921960073861">Mostrar nomes de utilizador e fotografias no ecrã de início de sessão</translation>
 <translation id="4140559601186535628">Mensagens push</translation>
@@ -2548,7 +2545,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4761104368405085019">Utilizar o seu microfone</translation>
 <translation id="4762718786438001384">Espaço em disco do dispositivo criticamente baixo</translation>
-<translation id="4763830802490665879">Os cookies de vários Websites serão apagados à saída.</translation>
+<translation id="4763830802490665879">Os cookies de vários Sites serão apagados à saída.</translation>
 <translation id="4768332406694066911">Tem certificados destas entidades que o identificam</translation>
 <translation id="4768698601728450387">Recortar imagem</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2578,9 +2575,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4813345808229079766">Ligação</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
-<translation id="4816617200045929931">Diga-nos o que aconteceu exatamente antes de lhe ter aparecido a mensagem de erro do perfil:
-
-****NÃO ALTERAR ABAIXO DESTA LINHA****</translation>
 <translation id="4820334425169212497">Não, não estou a ver</translation>
 <translation id="4821086771593057290">A sua palavra-passe foi alterada. Tente novamente com a nova palavra-passe.</translation>
 <translation id="4821935166599369261">Criação de &amp;perfis ativada</translation>
@@ -2698,7 +2692,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4974733135013075877">Sair e bloqueio para crianças</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém um programa malicioso.</translation>
-<translation id="498294082491145744">Altere as definições que controlam o acesso dos Websites a funcionalidades como cookies, JavaScript, plug-ins, geolocalização, microfone, câmara, etc.</translation>
+<translation id="498294082491145744">Altere as definições que controlam o acesso dos Sites a funcionalidades como cookies, JavaScript, plug-ins, geolocalização, microfone, câmara, etc.</translation>
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="4988792151665380515">Falha ao exportar chave pública.</translation>
 <translation id="49896407730300355">Rodar para a &amp;esquerda</translation>
@@ -2866,7 +2860,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5235050375939235066">Pretende desinstalar a aplicação?</translation>
 <translation id="5238278114306905396">A aplicação "<ph name="EXTENSION_NAME" />" foi automaticamente removida.</translation>
 <translation id="5238369540257804368">Âmbitos</translation>
-<translation id="5241128660650683457">Ler todos os dados nos Websites visitados</translation>
+<translation id="5241128660650683457">Ler todos os dados nos Sites visitados</translation>
 <translation id="5241298539944515331">Teclado vietnamita (VIQR)</translation>
 <translation id="5242724311594467048">Ativar a extensão "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5245965967288377800">Rede WiMAX</translation>
@@ -2897,7 +2891,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="527605719918376753">Desativar som do separador</translation>
 <translation id="527605982717517565">Permitir sempre JavaScript em <ph name="HOST" /></translation>
 <translation id="52809057403474396">Os plug-ins foram bloqueados nesta página.</translation>
-<translation id="5282733140964383898">Se ativar a funcionalidade "Não Monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado. Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados noutros Websites visitados por si como resposta a este pedido. Muitos Websites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Websites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="5282733140964383898">Se ativar a funcionalidade "Não Monitorizar", será incluído um pedido no seu tráfego de navegação. Os possíveis efeitos dependerão da resposta ao pedido por parte de um Website e da forma como o pedido é interpretado. Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados noutros Sites visitados por si como resposta a este pedido. Muitos Sites continuarão a recolher e utilizar os seus dados de navegação com o objetivo de melhorar a segurança, fornecer conteúdos, serviços, anúncios e recomendações nos seus Sites e gerar estatísticas de relatórios. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="5283677936944177147">Ups! O sistema não conseguiu determinar o modelo ou o número de série do dispositivo.</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5287425679749926365">As suas contas</translation>
@@ -2946,7 +2940,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5340217413897845242">Artigo de prateleira 6</translation>
 <translation id="5341390997810576190">Utilizar dados móveis</translation>
 <translation id="5342091991439452114">O PIN deve ter pelo menos <ph name="MINIMUM" /> dígitos</translation>
-<translation id="5342344590724511265">Comentários acerca de falha do separador.</translation>
 <translation id="5342451237681332106">Utilizar o <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Parêntesis esquerdo</translation>
 <translation id="5350965906220856151">Ups!</translation>
@@ -2990,7 +2983,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5409029099497331039">Surpreenda-me</translation>
 <translation id="5411472733320185105">Não utilize as definições de proxy para os anfitriões e domínios seguintes:</translation>
 <translation id="5412637665001827670">Teclado búlgaro</translation>
-<translation id="5414566801737831689">Ler os ícones dos Websites que visita</translation>
+<translation id="5414566801737831689">Ler os ícones dos Sites que visita</translation>
 <translation id="5417998409611691946">Agora, o <ph name="DEVICE_TYPE" /> pode:</translation>
 <translation id="5418923334382419584">Teclado birmanês</translation>
 <translation id="5419294236999569767">Hora do sistema</translation>
@@ -3219,6 +3212,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5764483294734785780">Gua&amp;rdar áudio como...</translation>
 <translation id="57646104491463491">Data modificada</translation>
 <translation id="5764797882307050727">Liberte algum espaço no dispositivo.</translation>
+<translation id="5765425701854290211">Infelizmente, alguns ficheiros estavam danificados, pelo que a atualização não foi concluída com êxito. Os seus ficheiros sincronizados estão seguros.</translation>
 <translation id="5765491088802881382">Não existe nenhuma rede disponível</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5771585441665576801">Transliteração (geia → γεια)</translation>
@@ -3336,7 +3330,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5921745308587794300">Rodar janela</translation>
 <translation id="5924047253200400718">Obter ajuda<ph name="SCANNING_STATUS" /></translation>
 <translation id="5925147183566400388">Apontador para a declaração de práticas de certificação</translation>
-<translation id="5931146425219109062">Ler e alterar todos os dados nos Websites que visita</translation>
+<translation id="5931146425219109062">Ler e alterar todos os dados nos Sites que visita</translation>
 <translation id="5932881020239635062">Série</translation>
 <translation id="5933376509899483611">Fuso horário</translation>
 <translation id="5934281776477898549">Sem atualizações</translation>
@@ -3477,7 +3471,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6162157842722615167">Smart Lock para Chromebook</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Expandir tudo...</translation>
-<translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Websites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6166185671393271715">Importar palavras-passe para o Chrome</translation>
 <translation id="6169666352732958425">Não é possível transmitir o ambiente de trabalho.</translation>
@@ -3813,7 +3807,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="6647838571840953560">Atualmente no canal <ph name="CHANNEL_NAME" /></translation>
 <translation id="6649018507441623493">Aguarde um momento...</translation>
 <translation id="665061930738760572">Abrir numa &amp;Nova Janela</translation>
-<translation id="6651237644330755633">Confiar neste certificado para identificar Websites</translation>
+<translation id="6651237644330755633">Confiar neste certificado para identificar Sites</translation>
 <translation id="6652975592920847366">Criar Suporte de Dados de Recuperação do SO</translation>
 <translation id="6653525630739667879">Não é possível guardar em $1. Todas as edições serão guardadas em $2 na pasta Transferências.</translation>
 <translation id="6655190889273724601">Modo de programador</translation>
@@ -3889,7 +3883,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="6773575010135450071">Mais ações...</translation>
 <translation id="677965093459947883">Muito pequeno</translation>
 <translation id="6780439250949340171">gerir outras definições</translation>
-<translation id="6782111308708962316">Impedir que os Websites de terceiros guardem e leiam dados de cookies</translation>
+<translation id="6782111308708962316">Impedir que os Sites de terceiros guardem e leiam dados de cookies</translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6787839852456839824">Atalhos de teclado</translation>
 <translation id="6788210894632713004">Extensão expandida</translation>
@@ -3909,7 +3903,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="6805647936811177813">Inicie sessão no <ph name="TOKEN_NAME" /> para importar o certificado de cliente de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Ativar o controlo RLZ em <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
-<translation id="6810613314571580006">Iniciar sessão automaticamente nos Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
+<translation id="6810613314571580006">Iniciar sessão automaticamente nos Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
 <translation id="6812349420832218321">O <ph name="PRODUCT_NAME" /> não pode ser executado como raiz.</translation>
 <translation id="6812841287760418429">Manter alterações</translation>
 <translation id="6817174620439930047">Perguntar sempre que um site pretender utilizar mensagens exclusivas do sistema para aceder a dispositivos MIDI (recomendado)</translation>
@@ -4046,7 +4040,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7017004637493394352">Diga "Ok Google" novamente</translation>
 <translation id="7017219178341817193">Adicionar uma nova página</translation>
 <translation id="7017354871202642555">Não é possível definir o modo uma vez definida a janela.</translation>
-<translation id="7017480957358237747">permitir ou proibir determinados Websites,</translation>
+<translation id="7017480957358237747">permitir ou proibir determinados Sites,</translation>
 <translation id="7017587484910029005">Escreva os caracteres que vê na imagem abaixo.</translation>
 <translation id="7018275672629230621">Ler e alterar o histórico de navegação</translation>
 <translation id="7019805045859631636">Rápido</translation>
@@ -4177,7 +4171,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7224023051066864079">Máscara de sub-rede:</translation>
 <translation id="722454870747268814">Novo separador de navegação anónima</translation>
 <translation id="7225179976675429563">Tipo de rede em falta</translation>
-<translation id="7228479291753472782">Manipular definições que especificam se os Websites podem utilizar funcionalidades como a geolocalização, o microfone, a câmara, etc.</translation>
+<translation id="7228479291753472782">Manipular definições que especificam se os Sites podem utilizar funcionalidades como a geolocalização, o microfone, a câmara, etc.</translation>
 <translation id="7229570126336867161">Requer EVDO</translation>
 <translation id="7230787553283372882">Personalizar o tamanho do texto</translation>
 <translation id="7238585580608191973">Impressão digital SHA-256</translation>
@@ -4317,7 +4311,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7444983668544353857">Desactivar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445786591457833608">Não é possível traduzir este idioma</translation>
 <translation id="7447657194129453603">Estado da rede:</translation>
-<translation id="744859430125590922">Controlar e visualizar os Websites que esta pessoa visita a partir de <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="744859430125590922">Controlar e visualizar os Sites que esta pessoa visita a partir de <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Ao selecionar esta impressora, está a conceder à seguinte extensão a autorização para aceder à sua impressora:</translation>
 <translation id="7456142309650173560">programador</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
@@ -4362,7 +4356,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7507930499305566459">Certificado do dispositivo de resposta do estado</translation>
 <translation id="7508545000531937079">Apresentação de diapositivos</translation>
 <translation id="7511955381719512146">A rede Wi-Fi que está a utilizar pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="7513029293694390567">Inicie sessão automaticamente nos Websites com as credenciais armazenadas. Se esta funcionalidade estiver desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
+<translation id="7513029293694390567">Inicie sessão automaticamente nos Sites com as credenciais armazenadas. Se esta funcionalidade estiver desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
 <translation id="751507702149411736">Bielorrusso</translation>
 <translation id="7517569744831774757">Repor as predefinições originais das definições.</translation>
 <translation id="7517786267097410259">Criar palavra-passe –</translation>
@@ -4435,6 +4429,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7615910377284548269">Gerir bloqueio de plug-ins sem isolamento de processos...</translation>
 <translation id="7617366389578322136">A estabelecer ligação a "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="761779991806306006">Nenhuma palavra-passe guardada.</translation>
+<translation id="7622114377921274169">A carregar…</translation>
 <translation id="7624154074265342755">Redes sem fios</translation>
 <translation id="7624337243375417909">caps lock desligado</translation>
 <translation id="7627790789328695202">Ups, <ph name="FILE_NAME" /> já existe. Dê um nome novo e tente novamente.</translation>
@@ -4696,7 +4691,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017667670902200762">Autenticação incorreta</translation>
-<translation id="8018313076035239964">Controle as informações que os Websites podem utilizar e os conteúdos que podem apresentar</translation>
+<translation id="8018313076035239964">Controle as informações que os Sites podem utilizar e os conteúdos que podem apresentar</translation>
 <translation id="8022523925619404071">Ativar atualização automática</translation>
 <translation id="8023801379949507775">Atualizar extensões agora</translation>
 <translation id="8024483450737722621">As aplicações que transferiu do Google Play são eliminadas deste Chromebook.
@@ -4749,7 +4744,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8083739373364455075">Obtenha 100 GB gratuitos com o Google Drive</translation>
 <translation id="8086015605808120405">A configurar <ph name="PRINTER_NAME" />…</translation>
 <translation id="8088137642766812908">Tenha cuidado, esta funcionalidade pode criar problemas</translation>
-<translation id="8090234456044969073">Ler uma lista dos Websites visitados com mais frequência</translation>
+<translation id="8090234456044969073">Ler uma lista dos Sites visitados com mais frequência</translation>
 <translation id="8094917007353911263">A rede que está a utilizar pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="80974698889265265">Os PINs não coincidem</translation>
 <translation id="8098975406164436557">Utilizar este telemóvel para desbloquear o <ph name="DEVICE_TYPE" />?</translation>
@@ -4874,6 +4869,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar botão Página inicial</translation>
 <translation id="8272443605911821513">Faça a gestão das suas extensões clicando em Extensões no menu "Mais ferramentas".</translation>
+<translation id="8274924778568117936">Não desligue ou feche o <ph name="DEVICE_TYPE" /> até a atualização terminar. O <ph name="DEVICE_TYPE" /> será reiniciado quando a instalação estiver concluída.</translation>
 <translation id="8275038454117074363">Importar</translation>
 <translation id="8276560076771292512">Esvaziar cache e recarregamento forçado</translation>
 <translation id="8279388322240498158">Teclado curdo sorani baseado no inglês</translation>
@@ -5205,7 +5201,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8800004011501252845">A mostrar destinos para</translation>
 <translation id="8800420788467349919">Volume: <ph name="PRECENTAGE" /> %</translation>
 <translation id="8803496343472038847">Teclado russo fonético</translation>
-<translation id="8804398419035066391">Comunicar com Websites de cooperação</translation>
+<translation id="8804398419035066391">Comunicar com Sites de cooperação</translation>
 <translation id="8807632654848257479">Estável</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Gato</translation>
@@ -5314,7 +5310,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8963572037665351978">Sair da apresentação</translation>
 <translation id="8965037249707889821">Introduzir palavra-passe antiga</translation>
 <translation id="8965697826696209160">Não existe espaço suficiente.</translation>
-<translation id="8968527460726243404">Criador de imagem do sistema do SO Chrome</translation>
 <translation id="8970203673128054105">Ver lista do modo de transmissão</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulte o seu administrador de rede para ter a certeza de que a firewall não está a bloquear as transferências dos servidores da Google.</translation>
@@ -5333,7 +5328,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8996526648899750015">Adicionar conta...</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ] ( <ph name="DEVICE" /> )</translation>
 <translation id="9000649589621199759">Não é possível localizar o telemóvel. Certifique-se de que está a utilizar um telemóvel Android compatível que está ligado e à distância de um braço. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
-<translation id="9003647077635673607">Permitir em todos os Websites</translation>
+<translation id="9003647077635673607">Permitir em todos os Sites</translation>
 <translation id="9003677638446136377">Verificar novamente</translation>
 <translation id="9003704114456258138">Frequência</translation>
 <translation id="9004952710076978168">Recebeu uma notificação para uma impressora desconhecida.</translation>
@@ -5358,7 +5353,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="902638246363752736">Definições do teclado</translation>
 <translation id="9026731007018893674">transferir</translation>
 <translation id="9026738002206640372">Desassociar Conta</translation>
-<translation id="9027146684281895941">Supervisione esta pessoa para controlar e ver os Websites visitados pela mesma a partir da sua Conta Google.</translation>
+<translation id="9027146684281895941">Supervisione esta pessoa para controlar e ver os Sites visitados pela mesma a partir da sua Conta Google.</translation>
 <translation id="9027459031423301635">Abrir Link num Novo &amp;Separador</translation>
 <translation id="9027603907212475920">Configurar sincronização...</translation>
 <translation id="9030515284705930323">A sua entidade não ativou a Google Play Store para a sua conta. Contacte o administrador para obter mais informações.</translation>
@@ -5489,6 +5484,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="93766956588638423">Reparar extensão</translation>
 <translation id="938470336146445890">Instale um certificado de utilizador.</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Introduzir frase de acesso</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="940425055435005472">Tamanho do tipo de letra:</translation>

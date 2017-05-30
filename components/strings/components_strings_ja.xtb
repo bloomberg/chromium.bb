@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
 <translation id="2889159643044928134">再読み込みを中止</translation>
-<translation id="2900469785430194048">このウェブページを表示しようとしましたが、Google Chrome のメモリが不足しています。</translation>
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2916038427272391327">他のプログラムを終了する</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3032412215588512954">このサイトを再読み込みしますか？</translation>
 <translation id="3037605927509011580">エラー</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{同期デバイスで 1 件以上のアイテム}=1{1 件のアイテム（同期デバイスではそれ以上のアイテム）}other{# 件のアイテム（同期デバイスではそれ以上のアイテム）}}</translation>
 <translation id="3041612393474885105">証明書情報</translation>
 <translation id="3063697135517575841">Chrome でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="3064966200440839136">外部アプリケーションを経由したお支払いの処理に進むため、シークレット モードを解除します。続行しますか？</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">証明書情報</translation>
 <translation id="3690164694835360974">ログイン情報は保護されません</translation>
 <translation id="3693415264595406141">パスワード:</translation>
-<translation id="3696411085566228381">なし</translation>
 <translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
 <translation id="370665806235115550">読み込んでいます...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{なし}=1{1 個のアプリ（$1）}=2{2 個のアプリ（$1、$2）}other{# 個のアプリ（$1、$2、$3）}}</translation>
 <translation id="4220128509585149162">クラッシュ</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="4250431568374086873">このサイトへの接続は完全には保護されていません</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />プロキシ アドレスを確認する<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Cookie は使用されていません。}=1{1 件のサイトで Cookie が使用されています。}other{# 件のサイトで Cookie が使用されています。}}</translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">ヘルプ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
 <translation id="6387478394221739770">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/beta から Beta チャンネルをお試しください。</translation>
-<translation id="6389758589412724634">このウェブページを表示しようとしましたが、Chromium のメモリが不足しています。</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> の有効期限と CVC を入力</translation>
 <translation id="6414888972213066896">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
-<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> 未満</translation>
 <translation id="6596325263575161958">暗号化オプション</translation>
 <translation id="662080504995468778">とどまる</translation>
 <translation id="6626291197371920147">有効なカード番号を追加</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
 <translation id="6727102863431372879">設定</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{なし}=1{1 件のアイテム}other{# 件のアイテム}}</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
 <translation id="6757797048963528358">デバイスがスリープ状態です。</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">このサイトを利用すると、悪意のあるユーザーによって、閲覧時のエクスペリエンスを損なうプログラム（ホームページを改ざんする、アクセス先のサイトに追加の広告を表示するなどのプログラム）をインストールするよう誘導される可能性があります。</translation>
 <translation id="7674629440242451245">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/dev から Dev チャンネルをお試しください。</translation>
 <translation id="7682287625158474539">発送先</translation>
+<translation id="7701040980221191251">なし</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">証明書</translation>
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="8041940743680923270">グローバルのデフォルト値（[確認]）を使用</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
-<translation id="8089520772729574115">1 MB 未満</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="8118489163946903409">お支払い方法</translation>
 <translation id="8131740175452115882">確認</translation>

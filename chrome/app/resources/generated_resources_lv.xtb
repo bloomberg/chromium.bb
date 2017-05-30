@@ -836,7 +836,6 @@ Vēl jālādē: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="2224551243087462610">Rediģēt mapes nosaukumu</translation>
 <translation id="2226449515541314767">Šajā vietnē ir bloķēta MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="2226720438730111184">Aprakstiet problēmu.</translation>
-<translation id="222903405933288376">Google izmanto jūsu atrašanās vietu, lai piedāvātu vietējo saturu. Varat to mainīt šeit: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Atlikusi vairāk nekā 1 stunda</translation>
 <translation id="222931766245975952">Fails ir saīsināts</translation>
 <translation id="222949136907494149"><ph name="URL" /> vēlas izmantot jūsu datora atrašanās vietu.</translation>
@@ -1088,7 +1087,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2575247648642144396">Šī ikona ir redzama, ja pašlaik atvērtajā lapā var lietot paplašinājumu. Lai lietotu šo paplašinājumu, noklikšķiniet uz ikonas vai nospiediet taustiņu kombināciju <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">CRX fails ar šādu nosaukumu jau pastāv.</translation>
 <translation id="2579575372772932244">Notiek atkārtota profila izveide. Lūdzu, uzgaidiet...</translation>
-<translation id="2580168606262715640">Nevar atrast jūsu tālruni. Tam ir jāatrodas izstieptas rokas attālumā.</translation>
 <translation id="2580889980133367162">Vienmēr ļaut saimniekdatoram <ph name="HOST" /> lejupielādēt vairākus failus</translation>
 <translation id="2580924999637585241">Kopā: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Ilgi</translation>
@@ -2174,7 +2172,6 @@ Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
 <translation id="4130207949184424187">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, kad veicat meklēšanu, izmantojot universālo lodziņu.</translation>
 <translation id="413121957363593859">Komponenti</translation>
 <translation id="4131410914670010031">Melnbaltā</translation>
-<translation id="4135054690906486073">Šo tīklu izmanto arī citi lietotāji.</translation>
 <translation id="4135450933899346655">Jūsu sertifikāti</translation>
 <translation id="4138267921960073861">Rādīt lietotājvārdus un fotoattēlus pierakstīšanās ekrānā</translation>
 <translation id="4140559601186535628">Pašpiegādes ziņojumi</translation>
@@ -2578,9 +2575,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4813345808229079766">Savienojums</translation>
 <translation id="4813512666221746211">Tīkla kļūda</translation>
 <translation id="4816492930507672669">Ietilpināt lapā</translation>
-<translation id="4816617200045929931">Pastāstiet, kas notika tieši pirms tam, kad tika parādīts profila kļūdas ziņojums.
-
-****NEVEICIET IZMAIŅAS ZEM ŠĪS LĪNIJAS****</translation>
 <translation id="4820334425169212497">Nē, es to neredzu</translation>
 <translation id="4821086771593057290">Jūsu parole ir mainījusies. Mēģiniet vēlreiz, izmantojot jauno paroli.</translation>
 <translation id="4821935166599369261">%Profilēšana iespējota</translation>
@@ -2946,7 +2940,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5340217413897845242">6. plaukta vienums</translation>
 <translation id="5341390997810576190">tiks izmantoti mobilie dati;</translation>
 <translation id="5342091991439452114">PIN kodā ir jābūt vismaz <ph name="MINIMUM" /> cipariem.</translation>
-<translation id="5342344590724511265">Atsauksme par cilnes avāriju.</translation>
 <translation id="5342451237681332106">Izmantot tālruni <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Kreisā iek.</translation>
 <translation id="5350965906220856151">Kļūda!</translation>
@@ -3218,6 +3211,7 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5764483294734785780">S&amp;aglabāt audio kā...</translation>
 <translation id="57646104491463491">Modificētais datums</translation>
 <translation id="5764797882307050727">Lūdzu, atbrīvojiet vietu savā ierīcē.</translation>
+<translation id="5765425701854290211">Diemžēl daži faili bija bojāti, un atjaunināšana nebija sekmīga. Jūsu sinhronizētie faili ir drošībā.</translation>
 <translation id="5765491088802881382">Nav pieejamu tīklu</translation>
 <translation id="5765780083710877561">Apraksts:</translation>
 <translation id="5771585441665576801">Transliterācija (geia → γεια)</translation>
@@ -4434,6 +4428,7 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7615910377284548269">Pārvaldīt tādu spraudņu bloķēšanu, kas nav ievietoti smilškastē...</translation>
 <translation id="7617366389578322136">Notiek savienojuma izveide ar ierīci <ph name="DEVICE_NAME" />.</translation>
 <translation id="761779991806306006">Nav nevienas saglabātas paroles.</translation>
+<translation id="7622114377921274169">Notiek uzlāde.</translation>
 <translation id="7624154074265342755">Bezvadu tīkli</translation>
 <translation id="7624337243375417909">burtslēga taustiņš izslēgts</translation>
 <translation id="7627790789328695202">Diemžēl fails <ph name="FILE_NAME" /> jau pastāv. Pārdēvējiet to un mēģiniet vēlreiz.</translation>
@@ -4873,6 +4868,7 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="8270242299912238708">PDF dokumenti</translation>
 <translation id="827097179112817503">Rādīt pogu Sākums</translation>
 <translation id="8272443605911821513">Pārvaldiet savus paplašinājumus, izvēlnē “Citi rīki” noklikšķinot uz Paplašinājumi.</translation>
+<translation id="8274924778568117936">Neizslēdziet un neaizveriet savu <ph name="DEVICE_TYPE" /> ierīci, kamēr notiek atjaunināšana. Pēc instalēšanas pabeigšanas jūsu <ph name="DEVICE_TYPE" /> ierīce tiks restartēta.</translation>
 <translation id="8275038454117074363">Importēt</translation>
 <translation id="8276560076771292512">Iztīrīt kešatmiņu un veikt stingro atkārtoto ielādi</translation>
 <translation id="8279388322240498158">Uz angļu valodu balstīta kurdu (Sorani) tastatūra</translation>
@@ -5314,7 +5310,6 @@ Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmā
 <translation id="8963572037665351978">Iziet no prezentācijas</translation>
 <translation id="8965037249707889821">Ievadiet veco paroli</translation>
 <translation id="8965697826696209160">Nepietiek vietas.</translation>
-<translation id="8968527460726243404">ChromeOS sistēmas attēla rakstītājs</translation>
 <translation id="8970203673128054105">Skatīt apraides režīmu sarakstu</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Lūdzu, sazinieties ar savu tīkla administratoru, lai pārliecinātos, vai ugunsmūris nebloķē lejupielādes no Google serveriem.</translation>
@@ -5490,6 +5485,7 @@ Atlicis: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="93766956588638423">Labot paplašinājumu</translation>
 <translation id="938470336146445890">Instalējiet lietotāja sertifikātu.</translation>
 <translation id="938582441709398163">Tastatūras pārklājums</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ievadiet ieejas frāzi</translation>
 <translation id="939736085109172342">Jauna mape</translation>
 <translation id="940425055435005472">Fonta lielums:</translation>

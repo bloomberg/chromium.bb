@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">إضافة إلى الشاشة الرئيسية</translation>
 <translation id="2146738493024040262">فتح تطبيق فوري</translation>
 <translation id="2148716181193084225">اليوم</translation>
-<translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
 <translation id="3398320232533725830">فتح مدير الإشارات المرجعية</translation>
 <translation id="3414952576877147120">الحجم:</translation>
-<translation id="3435896845095436175">تمكين الإضافات</translation>
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
 <translation id="3487093336331957349">اقتراحات البحث والمواقع</translation>
@@ -320,7 +318,6 @@
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4526249700380860531">‏عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">اختيار مجلد</translation>
-<translation id="4535858793016067060">‏يمكنك تشغيل "مصادر غير معروفة" في إعدادات الأمان في Android لتجربة "الإضافة المحسنة إلى الشاشة الرئيسية". وتأكد من تعطيل هذا الإعداد عند الانتهاء من المحاولة.</translation>
 <translation id="4558311620361989323">اختصارات صفحة الويب</translation>
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
 <translation id="4581964774250883625">لقد انتقلت إلى التصفح المتخفي.</translation>
@@ -363,7 +360,6 @@
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
-<translation id="5000922062037820727">محظور (موصى به)</translation>
 <translation id="5004339818306944878">‏يمكنك خفض استخدام البيانات بنسبة تصل إلى 60%، إلى جانب تسريع الويب. كما ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5011311129201317034">يريد <ph name="SITE" /> الاتصال</translation>
@@ -404,7 +400,6 @@
 <translation id="5335288049665977812">السماح للمواقع بتشغيل جافا سكريبت (موصى به)</translation>
 <translation id="5345040418939504969">تم حذف <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">الوصول إلى الموقع أيضًا <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">التجربة "إضافة محسنة إلى الشاشة الرئيسية"</translation>
 <translation id="5372829067651257087">‏تمّ نسح عنوان URL.</translation>
 <translation id="5384883051496921101">موقع الويب هذا على وشك مشاركة معلومات مع أحد التطبيقات خارج وضع التصفح المتخفي.</translation>
 <translation id="5400569084694353794">باستخدام هذا التطبيق، فإنك توافق على <ph name="BEGIN_LINK1" />شروط الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
@@ -655,7 +650,6 @@
 <translation id="7929962904089429003">فتح القائمة</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
-<translation id="7949961459945740081">الحصول على أحدث الميزات</translation>
 <translation id="7963646190083259054">المورّد:</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
@@ -666,7 +660,6 @@
 <translation id="8015452622527143194">إعادة كل محتويات الصفحة إلى الحجم الافتراضي</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
-<translation id="8033827949643255796">تم التحديد</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>

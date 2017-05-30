@@ -55,7 +55,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="1886928167269928266">El origen de los tiempos</translation>
 <translation id="1911619930368729126">Subir a Google Drive</translation>
 <translation id="1941314575388338491">Toca dos veces para copiar.</translation>
-<translation id="1952728750904661634">Inicia sesión con una cuenta administrada</translation>
+<translation id="1952728750904661634">Inicia sesión con una cuenta gestionada</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1989112275319619282">Examinar</translation>
 <translation id="2068952045031577364">La semana pasada</translation>
@@ -400,7 +400,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>
-<translation id="9188680907066685419">Cierra sesión en la cuenta administrada</translation>
+<translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Informe sobre fallos enviado.</translation>
 <translation id="935490618240037774">Tus marcadores, historial, contraseñas y otros ajustes se sincronizarán con tu cuenta de Google para que puedas utilizarlos en todos tus dispositivos.</translation>

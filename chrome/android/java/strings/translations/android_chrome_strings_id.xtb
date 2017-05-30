@@ -116,7 +116,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2139186145475833000">Tambahkan ke Layar Utama</translation>
 <translation id="2146738493024040262">Buka Aplikasi Instan</translation>
 <translation id="2148716181193084225">Hari ini</translation>
-<translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Situs yang tersisa (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Lindungi perangkat dan diri Anda dari situs berbahaya</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplikasi web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="3387650086002190359">Download <ph name="FILE_NAME" /> gagal karena kesalahan sistem file.</translation>
 <translation id="3398320232533725830">Membuka pengelola bookmark</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
-<translation id="3435896845095436175">Aktifkan</translation>
 <translation id="3443221991560634068">Memuat ulang halaman saat ini</translation>
 <translation id="3452612588551937789">Masuk dengan Akun Google untuk mendapatkan bookmark, sandi, riwayat, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="3487093336331957349">Saran situs dan penelusuran</translation>
@@ -319,7 +317,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4522570452068850558">Detail</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pilih folder</translation>
-<translation id="4535858793016067060">Aktifkan “Sumber tidak dikenal” di setelan keamanan Android untuk mencoba eksperimen "Tambah ke layar Utama yang Disempurnakan". Pastikan untuk menonaktifkan setelan ini setelah Anda mencobanya.</translation>
 <translation id="4558311620361989323">Pintasan halaman web</translation>
 <translation id="4572422548854449519">Masuk ke akun yang dikelola</translation>
 <translation id="4581964774250883625">Anda masuk mode penyamaran.</translation>
@@ -362,7 +359,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="497421865427891073">Maju</translation>
 <translation id="4988526792673242964">Laman</translation>
 <translation id="4996978546172906250">Bagikan dengan</translation>
-<translation id="5000922062037820727">Diblokir (disarankan)</translation>
 <translation id="5004339818306944878">Hemat data hingga 60% dan waktu loading lebih cepat. Server Google akan mengoptimalkan halaman yang Anda kunjungi.</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ingin terhubung</translation>
@@ -403,7 +399,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5335288049665977812">Izinkan situs menjalankan JavaScript (disarankan)</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Akses lokasi juga <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Eksperimen Tambah ke layar Utama yang Disempurnakan</translation>
 <translation id="5372829067651257087">URL disalin.</translation>
 <translation id="5384883051496921101">Situs ini akan membagikan informasi dengan aplikasi di luar mode penyamaran.</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
@@ -566,7 +561,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6963766334940102469">Hapus bookmark</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
-<translation id="6979737339423435258">Sepanjang waktu</translation>
+<translation id="6979737339423435258">Semua</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6985347914332179298">Tidak ada download di sini</translation>
 <translation id="6990079615885386641">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -654,7 +649,6 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="7929962904089429003">Membuka menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> sudah usang.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
-<translation id="7949961459945740081">Dapatkan fitur terbaru</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
 <translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
@@ -665,7 +659,6 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8015452622527143194">Mengembalikan semua di halaman ke ukuran default</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8026334261755873520">Hapus data browsing</translation>
-<translation id="8033827949643255796">dipilih</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tersedia</translation>

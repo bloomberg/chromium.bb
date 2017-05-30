@@ -837,7 +837,6 @@
 <translation id="2224551243087462610">폴더 이름 수정</translation>
 <translation id="2226449515541314767">이 사이트는 MIDI 기기를 완전히 제어할 수 없도록 차단되었습니다.</translation>
 <translation id="2226720438730111184">어떤 문제인지 알려주세요.</translation>
-<translation id="222903405933288376">Google에서는 사용자 위치를 사용하여 현지 콘텐츠를 제공합니다. <ph name="SETTINGS_LINK" />에서 이 설정을 변경할 수 있습니다.</translation>
 <translation id="2229161054156947610">1시간 이상 남음</translation>
 <translation id="222931766245975952">파일이 잘림</translation>
 <translation id="222949136907494149"><ph name="URL" />에서 내 컴퓨터의 위치에 액세스하려고 합니다.</translation>
@@ -1089,7 +1088,6 @@
 <translation id="2575247648642144396">현재 페이지에서 확장 프로그램을 실행할 수 있으면 아이콘이 표시됩니다. 아이콘을 클릭하거나 <ph name="EXTENSION_SHORTCUT" />을(를) 눌러 확장 프로그램을 사용합니다.</translation>
 <translation id="2576842806987913196">동일한 이름의 CRX 파일이 이미 있습니다.</translation>
 <translation id="2579575372772932244">프로필을 다시 만드는 중입니다. 잠시 기다려 주세요.</translation>
-<translation id="2580168606262715640">휴대전화를 찾을 수 없습니다. 휴대전화가 손에 닿는 거리에 있는지 확인하세요.</translation>
 <translation id="2580889980133367162"><ph name="HOST" />에서 여러 파일을 다운로드할 수 있도록 항상 허용</translation>
 <translation id="2580924999637585241">합계: <ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">길게</translation>
@@ -2173,7 +2171,6 @@
 <translation id="4130207949184424187">검색주소창에서 검색하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="413121957363593859">컴포넌트</translation>
 <translation id="4131410914670010031">흑백</translation>
-<translation id="4135054690906486073">다른 사용자와 공유 중인 네트워크입니다.</translation>
 <translation id="4135450933899346655">내 인증서</translation>
 <translation id="4138267921960073861">로그인 화면에 사용자 이름과 사진 표시</translation>
 <translation id="4140559601186535628">푸시 메시지</translation>
@@ -2577,9 +2574,6 @@
 <translation id="4813345808229079766">연결</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
 <translation id="4816492930507672669">페이지 맞춤</translation>
-<translation id="4816617200045929931">프로필 오류 메시지가 표시되기 전에 정확히 무슨 일이 있었는지 알려주세요.
-
-****이 선 아래 내용을 변경하지 마세요****</translation>
 <translation id="4820334425169212497">아니요, 표시되지 않습니다.</translation>
 <translation id="4821086771593057290">비밀번호가 변경되었습니다. 새 비밀번호로 다시 시도해 주세요.</translation>
 <translation id="4821935166599369261">프로파일링 사용(&amp;P)</translation>
@@ -2945,7 +2939,6 @@
 <translation id="5340217413897845242">서가 항목 6</translation>
 <translation id="5341390997810576190">모바일 데이터 사용</translation>
 <translation id="5342091991439452114">PIN은 <ph name="MINIMUM" />자리 이상이어야 합니다.</translation>
-<translation id="5342344590724511265">탭 다운 관련 피드백</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> 사용</translation>
 <translation id="534916491091036097">왼쪽 괄호</translation>
 <translation id="5350965906220856151">오류 발생</translation>
@@ -3217,6 +3210,7 @@
 <translation id="5764483294734785780">오디오를 다른 이름으로 저장...(&amp;V)</translation>
 <translation id="57646104491463491">수정된 날짜</translation>
 <translation id="5764797882307050727">기기의 저장용량을 확보하세요.</translation>
+<translation id="5765425701854290211">죄송합니다. 일부 파일이 손상되어 업데이트에 실패했습니다. 동기화된 파일은 안전하게 유지됩니다.</translation>
 <translation id="5765491088802881382">사용할 수 있는 네트워크가 없습니다.</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5771585441665576801">음역(geia → γεια)</translation>
@@ -4432,6 +4426,7 @@
 <translation id="7615910377284548269">샌드박스 처리되지 않은 플러그인 차단 관리...</translation>
 <translation id="7617366389578322136">'<ph name="DEVICE_NAME" />'에 연결 중입니다.</translation>
 <translation id="761779991806306006">저장된 비밀번호가 없습니다.</translation>
+<translation id="7622114377921274169">충전 중</translation>
 <translation id="7624154074265342755">무선 네트워크</translation>
 <translation id="7624337243375417909">Caps Lock 사용 안함</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" />이(가) 이미 있습니다. 이름을 변경한 후 다시 시도해 주세요.</translation>
@@ -4872,6 +4867,7 @@
 <translation id="8270242299912238708">PDF 문서</translation>
 <translation id="827097179112817503">홈 버튼 표시</translation>
 <translation id="8272443605911821513">'추가 도구' 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
+<translation id="8274924778568117936">업데이트가 완료될 때까지 <ph name="DEVICE_TYPE" />을(를) 끄거나 닫지 마세요. 설치가 완료되면 <ph name="DEVICE_TYPE" />이(가) 다시 시작됩니다.</translation>
 <translation id="8275038454117074363">가져오기</translation>
 <translation id="8276560076771292512">캐시 비우기 및 강력 새로고침</translation>
 <translation id="8279388322240498158">소라니 쿠르드어 영어 기반 키보드</translation>
@@ -5313,7 +5309,6 @@
 <translation id="8963572037665351978">프레젠테이션 종료</translation>
 <translation id="8965037249707889821">이전 비밀번호 입력</translation>
 <translation id="8965697826696209160">저장 공간이 부족합니다.</translation>
-<translation id="8968527460726243404">ChromeOS 시스템 이미지 작성기</translation>
 <translation id="8970203673128054105">전송 모드 목록 보기</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">네트워크 관리자에게 문의하여 방화벽이 Google 서버에서 다운로드를 차단하지 않는지 확인하시기 바랍니다.</translation>
@@ -5489,6 +5484,7 @@
 <translation id="93766956588638423">확장 프로그램 복구</translation>
 <translation id="938470336146445890">사용자 인증서를 설치하세요.</translation>
 <translation id="938582441709398163">키보드 오버레이</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">암호 입력</translation>
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="940425055435005472">글꼴 크기:</translation>

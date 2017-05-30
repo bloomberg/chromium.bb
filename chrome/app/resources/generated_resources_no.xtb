@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">Rediger mappenavn</translation>
 <translation id="2226449515541314767">Full kontroll over MIDI-enheter er blokkert for dette nettstedet.</translation>
 <translation id="2226720438730111184">Fortell oss hva som skjer</translation>
-<translation id="222903405933288376">Google bruker posisjonen din for å gi deg lokalt innhold. Du kan endre dette i <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Mer enn én time igjen</translation>
 <translation id="222931766245975952">Filen er komprimert</translation>
 <translation id="222949136907494149"><ph name="URL" /> ønsker å bruke posisjonen til enheten din.</translation>
@@ -1084,7 +1083,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2575247648642144396">Dette ikonet vises når utvidelsen kan brukes på den gjeldende siden. Aktivér utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Det fins allerede en .crx-fil med dette navnet.</translation>
 <translation id="2579575372772932244">Profilen opprettes på nytt. Vent litt …</translation>
-<translation id="2580168606262715640">Telefonen din ble ikke funnet. Sørg for at den er innenfor en armlengdes avstand.</translation>
 <translation id="2580889980133367162">Tillat alltid at <ph name="HOST" /> laster ned flere filer</translation>
 <translation id="2580924999637585241">Totalt: <ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /></translation>
 <translation id="258095186877893873">Lang</translation>
@@ -2165,7 +2163,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4130207949184424187">Denne utvidelsen har endret hvilken side som vises når du søker fra multifunksjonsfeltet.</translation>
 <translation id="413121957363593859">Komponenter</translation>
 <translation id="4131410914670010031">Svarthvitt</translation>
-<translation id="4135054690906486073">Dette nettverket deles med andre brukere</translation>
 <translation id="4135450933899346655">Dine sertifikater</translation>
 <translation id="4138267921960073861">Vis brukernavn og bilder på påloggingsskjermen</translation>
 <translation id="4140559601186535628">Pushmeldinger</translation>
@@ -2569,9 +2566,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4813345808229079766">Tilkobling</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="4816492930507672669">Tilpass til siden</translation>
-<translation id="4816617200045929931">Fortell oss nøyaktig hva som skjedde før du fikk profilfeilmeldingen:
-
-****IKKE ENDRE NOE NEDENFOR DENNE LINJEN****</translation>
 <translation id="4820334425169212497">Nei, jeg ser den ikke</translation>
 <translation id="4821086771593057290">Passordet er endret. Prøv på nytt med ditt nye passord.</translation>
 <translation id="4821935166599369261">&amp;Profilering aktivert</translation>
@@ -2934,7 +2928,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5340217413897845242">Hylleelement 6</translation>
 <translation id="5341390997810576190">bruke mobildata</translation>
 <translation id="5342091991439452114">PIN-koden må inneholde minst <ph name="MINIMUM" /> sifre</translation>
-<translation id="5342344590724511265">Tilbakemelding for kræsjet fane.</translation>
 <translation id="5342451237681332106">Bruk <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Venstreparentes</translation>
 <translation id="5350965906220856151">Å nei!</translation>
@@ -3206,6 +3199,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5764483294734785780">La&amp;gre lyd som</translation>
 <translation id="57646104491463491">Dato endret</translation>
 <translation id="5764797882307050727">Du må frigjøre plass på enheten.</translation>
+<translation id="5765425701854290211">Beklager, men noen av filene var skadet, og oppdateringen kunne ikke gjennomføres. De synkroniserte filene dine er trygge.</translation>
 <translation id="5765491088802881382">Ingen nettverk er tilgjengelige</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5771585441665576801">Translitterasjon (geia → γεια)</translation>
@@ -4412,6 +4406,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7615910377284548269">Administrer blokkering av programtillegg uten prosessisolering</translation>
 <translation id="7617366389578322136">Kobler til «<ph name="DEVICE_NAME" />»</translation>
 <translation id="761779991806306006">Ingen passord er lagret.</translation>
+<translation id="7622114377921274169">Lader.</translation>
 <translation id="7624154074265342755">Trådløse nettverk</translation>
 <translation id="7624337243375417909">capslock er av</translation>
 <translation id="7627790789328695202">Beklager, <ph name="FILE_NAME" /> finnes allerede. Gi den et nytt navn og prøv igjen.</translation>
@@ -4851,6 +4846,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
 <translation id="8272443605911821513">Administrer utvidelsene dine ved å klikke på Utvidelser i Flere verktøy-menyen.</translation>
+<translation id="8274924778568117936">Du må ikke slå av eller lukke <ph name="DEVICE_TYPE" />-enheten din før oppdateringen er ferdig. <ph name="DEVICE_TYPE" />-enheten starter på nytt når installasjonen er ferdig.</translation>
 <translation id="8275038454117074363">Importer</translation>
 <translation id="8276560076771292512">Tøm bufferen og kjør en hard nyinnlasting</translation>
 <translation id="8279388322240498158">Engelsk-basert tastatur for kurdisk (sorani)</translation>
@@ -5291,7 +5287,6 @@ Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</t
 <translation id="8963572037665351978">Lukk presentasjonen</translation>
 <translation id="8965037249707889821">Skriv inn det gamle passordet</translation>
 <translation id="8965697826696209160">Du har ikke nok ledig plass.</translation>
-<translation id="8968527460726243404">ChromeOS System Image Writer</translation>
 <translation id="8970203673128054105">Vis listen over castemoduser</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontakt nettverksadministratoren din for å sjekke at brannmuren ikke blokkerer nedlastinger fra Google-tjenere.</translation>
@@ -5467,6 +5462,7 @@ Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</t
 <translation id="93766956588638423">Reparer utvidelsen</translation>
 <translation id="938470336146445890">Installer et brukersertifikat.</translation>
 <translation id="938582441709398163">Tastaturbelegg</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Angi en passordfrase</translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="940425055435005472">Skriftstørrelse:</translation>

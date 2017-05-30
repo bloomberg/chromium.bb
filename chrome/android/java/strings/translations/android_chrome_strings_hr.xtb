@@ -116,7 +116,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2139186145475833000">Dodaj na početni zaslon</translation>
 <translation id="2146738493024040262">Otvori instant aplikaciju</translation>
 <translation id="2148716181193084225">Danas</translation>
-<translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Zaštitite sebe i svoj uređaj od opasnih web-lokacija</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web-aplikacija. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3387650086002190359">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog nepoznate pogreške sustava datoteka.</translation>
 <translation id="3398320232533725830">Otvaranje upravitelja oznaka</translation>
 <translation id="3414952576877147120">Veličina:</translation>
-<translation id="3435896845095436175">Omogući</translation>
 <translation id="3443221991560634068">Ponovno učitavanje trenutačne stranice</translation>
 <translation id="3452612588551937789">Prijavite se Google računom da biste pristupali svojim oznakama, zaporkama, povijesti i ostalim postavkama na svim svojim uređajima.</translation>
 <translation id="3487093336331957349">Prijedlozi pretraživanja i web-lokacija</translation>
@@ -319,7 +317,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4522570452068850558">Detalji</translation>
 <translation id="4526249700380860531">Prikaz spremljenih zaporki i upravljanje njima na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Odabir mape</translation>
-<translation id="4535858793016067060">Uključite opciju "Nepoznati izvori" u sigurnosnim postavkama Androida da biste isprobali eksperiment "Poboljšano dodavanje na početni zaslon". Obavezno onemogućite tu postavku nakon što je isprobate.</translation>
 <translation id="4558311620361989323">Prečaci web-stranice</translation>
 <translation id="4572422548854449519">Prijava na upravljani račun</translation>
 <translation id="4581964774250883625">Sada ste u anonimnom načinu.</translation>
@@ -362,7 +359,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="497421865427891073">Idi naprijed</translation>
 <translation id="4988526792673242964">Stranice</translation>
 <translation id="4996978546172906250">Dijeli putem</translation>
-<translation id="5000922062037820727">Blokirano (preporučeno)</translation>
 <translation id="5004339818306944878">Trošite do 60% manje podataka i ubrzajte web. Googleovi poslužitelji optimizirat će stranice koje posjećujete.</translation>
 <translation id="5005498671520578047">Kopiranje zaporke</translation>
 <translation id="5011311129201317034">Web-lokacija <ph name="SITE" /> želi se povezati</translation>
@@ -403,7 +399,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
 <translation id="5345040418939504969">Izbrisana je oznaka <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Pristup lokaciji <ph name="BEGIN_LINK" />isključen je i za ovaj uređaj<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Eksperiment Poboljšano dodavanje na početni zaslon</translation>
 <translation id="5372829067651257087">URL je kopiran.</translation>
 <translation id="5384883051496921101">Ova će web-lokacija dijeliti podatke s aplikacijom izvan anonimnog načina.</translation>
 <translation id="5400569084694353794">Upotrebom te aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK1" />Uvjete pružanja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavijest o privatnosti<ph name="END_LINK2" />.</translation>
@@ -654,7 +649,6 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="7929962904089429003">Otvaranje izbornika</translation>
 <translation id="7942131818088350342">Proizvod <ph name="PRODUCT_NAME" /> zastario je.</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
-<translation id="7949961459945740081">Nabavite najnovije značajke</translation>
 <translation id="7963646190083259054">Dobavljač:</translation>
 <translation id="7987073022710626672">Chromeovi uvjeti pružanja usluge</translation>
 <translation id="7998918019931843664">Ponovno otvaranje zatvorene kartice</translation>
@@ -665,7 +659,6 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8015452622527143194">Vraćanje svega na stranici na zadanu veličinu</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>
 <translation id="8026334261755873520">Brisanje podataka o pregledavanju</translation>
-<translation id="8033827949643255796">odabrano</translation>
 <translation id="8035133914807600019">Nova mapa…</translation>
 <translation id="8037750541064988519">Preostalo dana: <ph name="DAYS" /></translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB dostupno</translation>

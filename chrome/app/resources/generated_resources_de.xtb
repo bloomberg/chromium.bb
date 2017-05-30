@@ -832,7 +832,6 @@
 <translation id="2224551243087462610">Ordnername bearbeiten</translation>
 <translation id="2226449515541314767">Dieser Website wurde keine vollständige Kontrolle über MIDI-Geräte gewährt.</translation>
 <translation id="2226720438730111184">Sagen Sie uns, was los ist</translation>
-<translation id="222903405933288376">Google nutzt Ihren Standort, um Ihnen lokale Inhalte anzuzeigen. Sie können diese Einstellung unter <ph name="SETTINGS_LINK" /> ändern.</translation>
 <translation id="2229161054156947610">Noch mehr als 1 Stunde</translation>
 <translation id="222931766245975952">Datei gekürzt</translation>
 <translation id="222949136907494149"><ph name="URL" /> möchte den Standort Ihres Computers nutzen.</translation>
@@ -1084,7 +1083,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2575247648642144396">Dieses Symbol wird eingeblendet, wenn die Erweiterung auf die aktuelle Seite angewendet werden kann. Klicken Sie auf das Symbol oder drücken Sie <ph name="EXTENSION_SHORTCUT" />, um diese Erweiterung zu verwenden.</translation>
 <translation id="2576842806987913196">Es ist bereits eine CRX-Datei mit diesem Namen vorhanden.</translation>
 <translation id="2579575372772932244">Profil wird neu erstellt. Bitte warten…</translation>
-<translation id="2580168606262715640">Ihr Smartphone wurde nicht gefunden. Achten Sie darauf, dass es sich in Reichweite befindet.</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> immer das Herunterladen mehrerer Dateien gestatten</translation>
 <translation id="2580924999637585241">Gesamt: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lang</translation>
@@ -2168,7 +2166,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="4130207949184424187">Diese Erweiterung hat die Seite geändert, die bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="413121957363593859">Komponenten</translation>
 <translation id="4131410914670010031">Schwarz-Weiß</translation>
-<translation id="4135054690906486073">Dieses Netzwerk wird gemeinsam mit anderen Nutzern verwendet</translation>
 <translation id="4135450933899346655">Ihre Zertifikate</translation>
 <translation id="4138267921960073861">Nutzernamen und Fotos auf der Anmeldeseite anzeigen</translation>
 <translation id="4140559601186535628">Push-Nachrichten</translation>
@@ -2569,9 +2566,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4813345808229079766">Verbindung</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
-<translation id="4816617200045929931">Beschreiben Sie uns genau, was passiert ist, bevor Sie die Profilfehlermeldung erhalten haben:
-
-****UNTER DIESER ZEILE NICHT ÄNDERN****</translation>
 <translation id="4820334425169212497">Nein, dieser Code wird nicht angezeigt.</translation>
 <translation id="4821086771593057290">Ihr Passwort wurde geändert. Wiederholen Sie den Vorgang mit Ihrem neuen Passwort.</translation>
 <translation id="4821935166599369261">&amp;Profilerstellung aktiviert</translation>
@@ -2935,7 +2929,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5340217413897845242">Ablageartikel 6</translation>
 <translation id="5341390997810576190">Mobile Daten nutzen</translation>
 <translation id="5342091991439452114">PIN muss mindestens <ph name="MINIMUM" /> Ziffern umfassen</translation>
-<translation id="5342344590724511265">Feedback zum Tab-Absturz</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> verwenden</translation>
 <translation id="534916491091036097">Linke Klammer</translation>
 <translation id="5350965906220856151">Hoppla!</translation>
@@ -3207,6 +3200,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5764483294734785780">Audio &amp;speichern unter...</translation>
 <translation id="57646104491463491">Änderungsdatum</translation>
 <translation id="5764797882307050727">Bitte geben Sie Speicherplatz auf Ihrem Gerät frei.</translation>
+<translation id="5765425701854290211">Einige Dateien wurden beschädigt und das Update konnte nicht abgeschlossen werden. Ihre synchronisierten Dateien sind jedoch sicher.</translation>
 <translation id="5765491088802881382">Keine Netzwerke verfügbar</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5771585441665576801">Transliteration (geia → γεια)</translation>
@@ -3846,7 +3840,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="671928215901716392">Bildschirm sperren</translation>
 <translation id="6721972322305477112">&amp;Ablage</translation>
 <translation id="672213144943476270">Bitte entsperren Sie Ihr Profil, bevor Sie als Gast surfen.</translation>
-<translation id="6723354935081862304">Drücken Sie über Google Docs und andere Cloud-Ziele. <ph name="BEGIN_LINK" />Melden Sie sich an<ph name="END_LINK" />, um über Google Cloud Print zu drucken.</translation>
+<translation id="6723354935081862304">Drucken Sie über Google Docs und andere Cloud-Ziele. <ph name="BEGIN_LINK" />Melden Sie sich an<ph name="END_LINK" />, um über Google Cloud Print zu drucken.</translation>
 <translation id="6723661294526996303">Lesezeichen und Einstellungen importieren...</translation>
 <translation id="6723839937902243910">Akkuleistung</translation>
 <translation id="6725206449694821596">Internet Printing Protocol (IPP)</translation>
@@ -4425,6 +4419,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7615910377284548269">Blockierung von Plug-ins ohne Sandbox verwalten...</translation>
 <translation id="7617366389578322136">Verbindung zu "<ph name="DEVICE_NAME" />" wird hergestellt</translation>
 <translation id="761779991806306006">Es wurden keine Passwörter gespeichert.</translation>
+<translation id="7622114377921274169">Wird aufgeladen.</translation>
 <translation id="7624154074265342755">Drahtlosnetzwerke</translation>
 <translation id="7624337243375417909">Feststelltaste aus</translation>
 <translation id="7627790789328695202">Hoppla, <ph name="FILE_NAME" /> existiert bereits. Geben Sie einen anderen Namen ein und versuchen Sie es erneut.</translation>
@@ -4864,6 +4859,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8270242299912238708">PDF-Dokumente</translation>
 <translation id="827097179112817503">Schaltfläche "Startseite" anzeigen</translation>
 <translation id="8272443605911821513">Zum Verwalten Ihrer Erweiterungen klicken Sie im Menü "Mehr Tools" auf "Erweiterungen".</translation>
+<translation id="8274924778568117936">Schalten Sie Ihr <ph name="DEVICE_TYPE" /> nicht aus bzw. schließen Sie es nicht, bis das Update abgeschlossen ist. Nach Abschluss der Installation wird Ihr <ph name="DEVICE_TYPE" /> neu gestartet.</translation>
 <translation id="8275038454117074363">Importieren</translation>
 <translation id="8276560076771292512">Cache leeren und vollständig aktualisieren</translation>
 <translation id="8279388322240498158">Sorani-Tastatur nach englischem Layout</translation>
@@ -5304,7 +5300,6 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="8963572037665351978">Präsentation beenden</translation>
 <translation id="8965037249707889821">Altes Passwort eingeben</translation>
 <translation id="8965697826696209160">Nicht genügend Speicherplatz.</translation>
-<translation id="8968527460726243404">ChromeOS-Systemabbild-Writer</translation>
 <translation id="8970203673128054105">Übertragungsmodusliste aufrufen</translation>
 <translation id="89720367119469899">Esc-Taste</translation>
 <translation id="8972513834460200407">Bitten Sie Ihren Netzwerkadministrator, zu überprüfen, ob Downloads von Google-Servern von der Firewall blockiert werden.</translation>
@@ -5479,6 +5474,7 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="93766956588638423">Erweiterung reparieren</translation>
 <translation id="938470336146445890">Installieren Sie ein Nutzerzertifikat.</translation>
 <translation id="938582441709398163">Tastatur-Overlay</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Passphrase eingeben</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="940425055435005472">Schriftgröße:</translation>

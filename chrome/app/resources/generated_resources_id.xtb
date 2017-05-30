@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Edit nama folder</translation>
 <translation id="2226449515541314767">Situs ini diblokir agar tidak memiliki kontrol penuh atas perangkat MIDI.</translation>
 <translation id="2226720438730111184">Beri Tahu Kami Apa Yang Terjadi</translation>
-<translation id="222903405933288376">Google menggunakan lokasi Anda untuk memberikan konten lokal. Anda dapat mengubahnya di <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Lebih dari 1 jam lagi</translation>
 <translation id="222931766245975952">File terpotong</translation>
 <translation id="222949136907494149"><ph name="URL" /> ingin menggunakan lokasi komputer Anda.</translation>
@@ -1087,7 +1086,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2575247648642144396">Ikon ini akan terlihat saat ekstensi dapat berperan di laman aktif. Gunakan ekstensi ini dengan mengeklik ikon atau dengan menekan <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Sudah ada file CRX dengan nama ini.</translation>
 <translation id="2579575372772932244">Membuat ulang profil, harap tunggu...</translation>
-<translation id="2580168606262715640">Ponsel tidak dapat ditemukan. Pastikan ponsel berada dalam jangkauan tangan Anda.</translation>
 <translation id="2580889980133367162">Selalu izinkan <ph name="HOST" /> untuk mendownload beberapa file</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lama</translation>
@@ -2172,7 +2170,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="4130207949184424187">Ekstensi ini telah mengubah laman apa yang ditampilkan saat Anda menelusuri dari Omnibox.</translation>
 <translation id="413121957363593859">Komponen</translation>
 <translation id="4131410914670010031">Hitam dan putih</translation>
-<translation id="4135054690906486073">Jaringan ini dibagi dengan pengguna lain</translation>
 <translation id="4135450933899346655">Sertifikat Anda</translation>
 <translation id="4138267921960073861">Tampilkan nama pengguna dan foto pada layar masuk</translation>
 <translation id="4140559601186535628">Pesan Push</translation>
@@ -2576,9 +2573,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4813345808229079766">Sambungan</translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
-<translation id="4816617200045929931">Beri tahu kami hal yang terjadi sebelum Anda mendapatkan pesan kesalahan profil:
-
-****JANGAN MENGUBAH DI BAWAH BARIS INI****</translation>
 <translation id="4820334425169212497">Tidak, saya tidak melihatnya</translation>
 <translation id="4821086771593057290">Sandi Anda telah diubah. Coba lagi dengan sandi baru.</translation>
 <translation id="4821935166599369261">&amp;Penyidikan Diaktifkan</translation>
@@ -2944,7 +2938,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5340217413897845242">Item rak 6</translation>
 <translation id="5341390997810576190">Gunakan kuota internet</translation>
 <translation id="5342091991439452114">PIN minimal harus <ph name="MINIMUM" /> digit</translation>
-<translation id="5342344590724511265">Masukan tab mogok.</translation>
 <translation id="5342451237681332106">Gunakan <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Kurung buka</translation>
 <translation id="5350965906220856151">Aduh!</translation>
@@ -3216,6 +3209,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5764483294734785780">Sim&amp;pan audio sebagai...</translation>
 <translation id="57646104491463491">Tanggal Dimodifikasi</translation>
 <translation id="5764797882307050727">Harap kosongkan sebagian ruang di perangkat.</translation>
+<translation id="5765425701854290211">Maaf, beberapa file rusak dan update tidak berhasil. File yang telah Anda sinkronkan aman.</translation>
 <translation id="5765491088802881382">Jaringan tidak tersedia</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5771585441665576801">Transliterasi (geia → γεια)</translation>
@@ -3258,7 +3252,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5829401023154985950">Kelola...</translation>
 <translation id="5830410401012830739">Mengelola setelan lokasi...</translation>
 <translation id="5830720307094128296">Simp&amp;an Laman Sebagai...</translation>
-<translation id="5832669303303483065">Tambahkan alamat jalan yang baru...</translation>
+<translation id="5832669303303483065">Tambahkan alamat baru...</translation>
 <translation id="5832805196449965646">Tambahkan Orang</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5832965267196858040">Saluran ini tidak cocok digunakan di perangkat utama dan fitur serta aplikasi tertentu dapat mengalami kerusakan.</translation>
@@ -4431,6 +4425,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7615910377284548269">Mengelola pemblokiran plugin yang tidak dimasukkan kotak pasir...</translation>
 <translation id="7617366389578322136">Menyambungkan ke "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Tidak ada sandi yang tersimpan.</translation>
+<translation id="7622114377921274169">Mengisi daya.</translation>
 <translation id="7624154074265342755">Jaringan nirkabel</translation>
 <translation id="7624337243375417909">caps lock nonaktif</translation>
 <translation id="7627790789328695202">Ups, <ph name="FILE_NAME" /> sudah ada. Ganti nama dan coba lagi.</translation>
@@ -4870,6 +4865,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8270242299912238708">Dokumen PDF</translation>
 <translation id="827097179112817503">Tampilkan tombol beranda</translation>
 <translation id="8272443605911821513">Kelola ekstensi Anda dengan mengeklik Ekstensi pada menu "Alat lainnya".</translation>
+<translation id="8274924778568117936">Jangan menonaktifkan atau menutup <ph name="DEVICE_TYPE" /> Anda sampai proses update selesai. <ph name="DEVICE_TYPE" /> Anda akan dimulai ulang setelah proses instal selesai.</translation>
 <translation id="8275038454117074363">Impor</translation>
 <translation id="8276560076771292512">Kosongkan Cache dan Muat Ulang Keras</translation>
 <translation id="8279388322240498158">Keyboard berbasis Inggris Kurdi Sorani</translation>
@@ -5310,7 +5306,6 @@ Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</transl
 <translation id="8963572037665351978">Keluar dari Presentasi</translation>
 <translation id="8965037249707889821">Masukkan sandi lama</translation>
 <translation id="8965697826696209160">Ruang tidak cukup.</translation>
-<translation id="8968527460726243404">Penulis Gambar Sistem ChromeOS</translation>
 <translation id="8970203673128054105">Lihat daftar mode transmisi</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Hubungi administrator jaringan Anda untuk memastikan bahwa firewall tidak memblokir download dari server Google.</translation>
@@ -5485,6 +5480,7 @@ Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</transl
 <translation id="93766956588638423">Perbaiki ekstensi</translation>
 <translation id="938470336146445890">Instal sertifikat pengguna.</translation>
 <translation id="938582441709398163">Hamparan Keyboard</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Masukkan frasa sandi</translation>
 <translation id="939736085109172342">Folder baru</translation>
 <translation id="940425055435005472">Ukuran font:</translation>

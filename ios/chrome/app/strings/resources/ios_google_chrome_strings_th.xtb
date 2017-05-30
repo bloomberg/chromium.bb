@@ -6,7 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
-<translation id="2347208864470321755">เมื่อเปิดคุณลักษณะนี้ Chrome จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="2347208864470321755">เมื่อเปิดฟีเจอร์นี้ Chrome จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">ในการบันทึกรูปภาพ ให้แตะการตั้งค่าเพื่ออนุญาตให้ Chrome ใช้รูปภาพ</translation>
 <translation id="2576431527583832481">Chrome พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="257708665678654955">คุณต้องการให้ Google Chrome เสนอการแปลหน้าภาษา<ph name="LANGUAGE_NAME" />จากเว็บไซต์นี้ในครั้งถัดไปไหม</translation>
@@ -32,7 +32,7 @@
 <translation id="5639704535586432836">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Google Chrome เพื่อเปิดกล้องถ่ายรูป</translation>
 <translation id="5642200033778930880">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="5703130498371792817">หากคุณชอบ Chrome โปรด<ph name="BEGIN_LINK" />ให้คะแนนแอปนี้<ph name="END_LINK" /></translation>
-<translation id="6036420186814142909">Google Chrome มีคุณลักษณะที่ช่วยให้คุณสามารถจัดการข้อมูลอินเทอร์เน็ตและระดับความเร็วที่คุณสามารถใช้ในการโหลดหน้าเว็บ
+<translation id="6036420186814142909">Google Chrome มีฟีเจอร์ที่ช่วยให้คุณสามารถจัดการข้อมูลอินเทอร์เน็ตและระดับความเร็วที่คุณสามารถใช้ในการโหลดหน้าเว็บ
 <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>

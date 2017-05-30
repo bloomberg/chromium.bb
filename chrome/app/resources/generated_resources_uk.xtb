@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Редагувати ім’я папки</translation>
 <translation id="2226449515541314767">Цьому сайту заборонено повністю контролювати пристрої MIDI.</translation>
 <translation id="2226720438730111184">Розкажіть нам, що відбувається</translation>
-<translation id="222903405933288376">Google використовує ваші геодані, щоб надавати результати локального пошуку. Цей параметр можна змінити на сторінці "<ph name="SETTINGS_LINK" />".</translation>
 <translation id="2229161054156947610">Залишилося більше 1 год.</translation>
 <translation id="222931766245975952">Файл скорочено</translation>
 <translation id="222949136907494149"><ph name="URL" /> хоче використовувати місцезнаходження вашого комп’ютера.</translation>
@@ -1087,7 +1086,6 @@
 <translation id="2575247648642144396">Цей значок відображатиметься, якщо розширення зможе працювати на поточній сторінці. Запустіть розширення, натиснувши значок або комбінацію клавіш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Файл у форматі CRX із такою назвою вже існує.</translation>
 <translation id="2579575372772932244">Відновлення профілю, зачекайте…</translation>
-<translation id="2580168606262715640">Не вдається знайти телефон. Переконайтеся, що він поблизу.</translation>
 <translation id="2580889980133367162">Завжди дозволяти <ph name="HOST" /> завантажувати декілька файлів</translation>
 <translation id="2580924999637585241">Усього: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Довго</translation>
@@ -2172,7 +2170,6 @@
 <translation id="4130207949184424187">Це розширення змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
 <translation id="413121957363593859">Компоненти</translation>
 <translation id="4131410914670010031">Чорно-білий</translation>
-<translation id="4135054690906486073">Інші користувачі мають доступ до цієї мережі</translation>
 <translation id="4135450933899346655">Ваші сертифікати</translation>
 <translation id="4138267921960073861">Показувати імена користувачів і фото на екрані входу</translation>
 <translation id="4140559601186535628">Push-повідомлення</translation>
@@ -2576,9 +2573,6 @@
 <translation id="4813345808229079766">З’єднання</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4816492930507672669">За розміром сторінки</translation>
-<translation id="4816617200045929931">Опишіть, що сталося перед тим, як з’явилося повідомлення про помилку профілю:
-
-****НЕ ЗМІНЮЙТЕ ТЕКСТ НИЖЧЕ****</translation>
 <translation id="4820334425169212497">Ні</translation>
 <translation id="4821086771593057290">Ваш пароль змінено. Повторіть спробу з новим паролем.</translation>
 <translation id="4821935166599369261">&amp;Профілювання ввімкнено</translation>
@@ -2944,7 +2938,6 @@
 <translation id="5340217413897845242">Елемент полиці 6</translation>
 <translation id="5341390997810576190">Використовувати мобільний трафік</translation>
 <translation id="5342091991439452114">Мінімальна кількість цифр у PIN-коді: <ph name="MINIMUM" /></translation>
-<translation id="5342344590724511265">Відповідь "Вкладка аварійно закрилась".</translation>
 <translation id="5342451237681332106">Використовувати телефон <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Ліва дужка</translation>
 <translation id="5350965906220856151">Помилка</translation>
@@ -3216,6 +3209,7 @@
 <translation id="5764483294734785780">Збере&amp;гти аудіо як...</translation>
 <translation id="57646104491463491">Дата змінення</translation>
 <translation id="5764797882307050727">Звільніть місце на пристрої.</translation>
+<translation id="5765425701854290211">Деякі файли пошкоджено, тому їх не вдалось оновити. Синхронізовані файли надійно зберігаються.</translation>
 <translation id="5765491088802881382">Недоступна жодна мережа</translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5771585441665576801">Транслітерація (geia → γεια)</translation>
@@ -4432,6 +4426,7 @@
 <translation id="7615910377284548269">Керувати блокуванням плагінів із неізольованим програмним середовищем…</translation>
 <translation id="7617366389578322136">Під’єднання до пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">Немає збережених паролів.</translation>
+<translation id="7622114377921274169">Заряджається.</translation>
 <translation id="7624154074265342755">Бездротові мережі</translation>
 <translation id="7624337243375417909">Caps Lock вимкнено</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" вже існує. Перейменуйте його та повторіть спробу.</translation>
@@ -4871,6 +4866,7 @@
 <translation id="8270242299912238708">Документи PDF</translation>
 <translation id="827097179112817503">Показати кнопку "Домашня сторінка"</translation>
 <translation id="8272443605911821513">Керуйте своїми розширеннями, натиснувши "Розширення" в меню "Інші інструменти".</translation>
+<translation id="8274924778568117936">Не вимикайте та не закривайте пристрій <ph name="DEVICE_TYPE" />, поки не завершиться оновлення. Коли встановляться оновлення, пристрій <ph name="DEVICE_TYPE" /> перезавантажиться.</translation>
 <translation id="8275038454117074363">Імпорт</translation>
 <translation id="8276560076771292512">Очищення кеш-пам’яті й жорстке перезавантаження</translation>
 <translation id="8279388322240498158">Курдська клавіатура сорані на основі англійської мови</translation>
@@ -5311,7 +5307,6 @@
 <translation id="8963572037665351978">Вийти з презентації</translation>
 <translation id="8965037249707889821">Введіть старий пароль</translation>
 <translation id="8965697826696209160">Недостатньо місця.</translation>
-<translation id="8968527460726243404">Засіб створення образів ОС Chrome</translation>
 <translation id="8970203673128054105">Переглянути список режиму трансляції</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Зверніться до адміністратора мережі, щоб переконатися, що брандмауер не блокує завантаження із серверів Google.</translation>
@@ -5486,6 +5481,7 @@
 <translation id="93766956588638423">Відновити розширення</translation>
 <translation id="938470336146445890">Установіть сертифікат користувача.</translation>
 <translation id="938582441709398163">Розкладка клавіатури</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ввести парольну фразу</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="940425055435005472">Розмір шрифту:</translation>

@@ -116,7 +116,6 @@
 <translation id="2139186145475833000">加到主畫面</translation>
 <translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2148716181193084225">今天</translation>
-<translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
-<translation id="3435896845095436175">啟用</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史紀錄、密碼和其他設定。</translation>
 <translation id="3487093336331957349">搜尋與網站建議</translation>
@@ -319,7 +317,6 @@
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4532845899244822526">選擇資料夾</translation>
-<translation id="4535858793016067060">開啟 Android 安全性設定中的「不明來源」即可體驗「增強型新增至主畫面」實驗功能。體驗結束後請務必停用這項設定。</translation>
 <translation id="4558311620361989323">網頁快速鍵</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
 <translation id="4581964774250883625">你已啟用無痕模式。</translation>
@@ -362,7 +359,6 @@
 <translation id="497421865427891073">往前</translation>
 <translation id="4988526792673242964">頁數</translation>
 <translation id="4996978546172906250">分享方式：</translation>
-<translation id="5000922062037820727">已封鎖 (建議)</translation>
 <translation id="5004339818306944878">Google 伺服器會對你造訪的網頁進行最佳化處理，最多可減少 60% 的數據用量，並加快網頁載入速度。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> 要求連線</translation>
@@ -403,7 +399,6 @@
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE" />」</translation>
 <translation id="5345083863238459644">這個裝置的<ph name="BEGIN_LINK" />位置資訊存取功能已一併關閉<ph name="END_LINK" />。</translation>
-<translation id="5349103022427743704">增強型新增至主畫面實驗功能</translation>
 <translation id="5372829067651257087">已複製網址。</translation>
 <translation id="5384883051496921101">這個網站即將與外部應用程式分享資訊，分享時會自動退出無痕模式。</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
@@ -654,7 +649,6 @@
 <translation id="7929962904089429003">開啟選單</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
-<translation id="7949961459945740081">取得最新功能</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
@@ -665,7 +659,6 @@
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
-<translation id="8033827949643255796">已選取</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>

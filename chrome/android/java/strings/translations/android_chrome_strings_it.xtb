@@ -116,7 +116,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
 <translation id="2146738493024040262">Apri l'app istantanea</translation>
 <translation id="2148716181193084225">Oggi</translation>
-<translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="3387650086002190359">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori del file system.</translation>
 <translation id="3398320232533725830">Apri Gestione Preferiti</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
-<translation id="3435896845095436175">Abilita</translation>
 <translation id="3443221991560634068">Ricarica la pagina corrente</translation>
 <translation id="3452612588551937789">Accedi con il tuo account Google per avere preferiti, cronologia, password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="3487093336331957349">Suggerimenti di termini di ricerca e siti</translation>
@@ -319,7 +317,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Scegli cartella</translation>
-<translation id="4535858793016067060">Attiva l'opzione "Origini sconosciute" nelle impostazioni Sicurezza di Android per provare l'esperimento "Funzione Aggiungi a schermata Home migliorata". Assicurati di disattivare questa opzione quando hai finito la prova.</translation>
 <translation id="4558311620361989323">Scorciatoie delle pagine web</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
 <translation id="4581964774250883625">Sei passato alla navigazione in incognito.</translation>
@@ -362,7 +359,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="497421865427891073">Avanti</translation>
 <translation id="4988526792673242964">Pagine</translation>
 <translation id="4996978546172906250">Condividi tramite</translation>
-<translation id="5000922062037820727">Bloccata (opzione consigliata)</translation>
 <translation id="5004339818306944878">Utilizza fino al 60% di dati in meno e velocizza il Web. I server Google ottimizzeranno le pagine che visiti.</translation>
 <translation id="5005498671520578047">Copia password</translation>
 <translation id="5011311129201317034">Il sito <ph name="SITE" /> desidera collegarsi</translation>
@@ -403,7 +399,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminato</translation>
 <translation id="5345083863238459644">L'accesso alla posizione è stato <ph name="BEGIN_LINK" />disattivato anche per il dispositivo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Esperimento Funzione Aggiungi a schermata Home migliorata</translation>
 <translation id="5372829067651257087">URL copiato.</translation>
 <translation id="5384883051496921101">Questo sito sta per condividere informazioni con un'app esterna alla modalità di navigazione in incognito.</translation>
 <translation id="5400569084694353794">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
@@ -654,7 +649,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7929962904089429003">Apri il menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> è obsoleto.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
-<translation id="7949961459945740081">Scopri le nuove funzioni</translation>
 <translation id="7963646190083259054">Fornitore:</translation>
 <translation id="7987073022710626672">Termini di servizio di Chrome</translation>
 <translation id="7998918019931843664">Riapri la scheda chiusa</translation>
@@ -665,7 +659,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
-<translation id="8033827949643255796">selezionati</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibili</translation>

@@ -837,7 +837,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2224551243087462610">Upravit název složky</translation>
 <translation id="2226449515541314767">U tohoto webu byla zablokována úplná kontrola zařízení MIDI.</translation>
 <translation id="2226720438730111184">Sdělte nám, co se děje</translation>
-<translation id="222903405933288376">Google vám poskytuje místní obsah na základě vaší polohy. Toto nastavení můžete změnit na stránce <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Zbývá více než hodina</translation>
 <translation id="222931766245975952">Soubor byl zkrácen</translation>
 <translation id="222949136907494149">Web <ph name="URL" /> chce použít polohu vašeho počítače.</translation>
@@ -1088,7 +1087,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2575247648642144396">Ikona se zobrazí, když bude možné rozšíření použít na aktuální stránce. Rozšíření aktivujete kliknutím na ikonu nebo klávesovou zkratkou <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Soubor CRX s tímto názvem již existuje.</translation>
 <translation id="2579575372772932244">Opětovné vytváření profilu, prosím čekejte...</translation>
-<translation id="2580168606262715640">Telefon nebyl nalezen. Zkontrolujte, zda je na dosah.</translation>
 <translation id="2580889980133367162">Vždy povolit hostiteli <ph name="HOST" /> stahování několika souborů</translation>
 <translation id="2580924999637585241">Celkem: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Dlouhé</translation>
@@ -2170,7 +2168,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4130207949184424187">Toto rozšíření změnilo stránku, která se zobrazí při vyhledávání z omniboxu.</translation>
 <translation id="413121957363593859">Komponenty</translation>
 <translation id="4131410914670010031">Černobíle</translation>
-<translation id="4135054690906486073">Tato síť je sdílena s dalšími uživateli</translation>
 <translation id="4135450933899346655">Vaše certifikáty</translation>
 <translation id="4138267921960073861">Zobrazit na přihlašovací obrazovce uživatelská jména a fotografie</translation>
 <translation id="4140559601186535628">Nabízené zprávy</translation>
@@ -2573,9 +2570,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4813345808229079766">Spojení</translation>
 <translation id="4813512666221746211">Chyba sítě</translation>
 <translation id="4816492930507672669">Přizpůsobit na stránku</translation>
-<translation id="4816617200045929931">Sdělte nám, co se přesně stalo před zobrazením zprávy o chybě profilu:
-
-****TEXT POD TÍMTO ŘÁDKEM NEMĚNIT****</translation>
 <translation id="4820334425169212497">Ne, nevidím jej</translation>
 <translation id="4821086771593057290">Vaše heslo se změnilo. Zkuste to prosím znovu s novým heslem.</translation>
 <translation id="4821935166599369261">&amp;Profilování povoleno</translation>
@@ -2938,7 +2932,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5340217413897845242">Položka č. 6 v poličce</translation>
 <translation id="5341390997810576190">Bude používat mobilní data</translation>
 <translation id="5342091991439452114">Minimální počet číslic v kódu PIN: <ph name="MINIMUM" /></translation>
-<translation id="5342344590724511265">Zpětná vazba k selhání karty</translation>
 <translation id="5342451237681332106">Použít telefon <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Levá závorka</translation>
 <translation id="5350965906220856151">A jéje...</translation>
@@ -3210,6 +3203,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5764483294734785780">Uložit &amp;zvuk jako...</translation>
 <translation id="57646104491463491">Datum úpravy</translation>
 <translation id="5764797882307050727">Uvolněte v zařízení místo.</translation>
+<translation id="5765425701854290211">Je nám líto, ale některé soubory byly poškozeny a aktualizace se nezdařila. Synchronizované soubory jsou v bezpečí.</translation>
 <translation id="5765491088802881382">K dispozici nejsou žádné sítě</translation>
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5771585441665576801">Přepis (geia → γεια)</translation>
@@ -4422,6 +4416,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7615910377284548269">Spravovat blokování pluginů mimo izolovaný prostor...</translation>
 <translation id="7617366389578322136">Připojování k zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="761779991806306006">Nebyla uložena žádná hesla.</translation>
+<translation id="7622114377921274169">Nabíjení.</translation>
 <translation id="7624154074265342755">Bezdrátové sítě</translation>
 <translation id="7624337243375417909">caps lock je vypnut</translation>
 <translation id="7627790789328695202">Jejda, soubor <ph name="FILE_NAME" /> již existuje. Přejmenujte jej a zkuste to znovu.</translation>
@@ -4862,6 +4857,7 @@ Výpočet zbývajícího času</translation>
 <translation id="8270242299912238708">Dokumenty PDF</translation>
 <translation id="827097179112817503">Zobrazit tlačítko Domovská stránka</translation>
 <translation id="8272443605911821513">Chcete-li spravovat rozšíření, klikněte v nabídce Nástroje na příkaz Rozšíření.</translation>
+<translation id="8274924778568117936">V průběhu aktualizace <ph name="DEVICE_TYPE" /> nevypínejte ani nezavírejte. Po dokončení instalace se <ph name="DEVICE_TYPE" /> restartuje.</translation>
 <translation id="8275038454117074363">Importovat</translation>
 <translation id="8276560076771292512">Vymazání mezipaměti a úplné opětovné načtení</translation>
 <translation id="8279388322240498158">Kurdská klávesnice (sorání) s anglickým rozložením</translation>
@@ -5303,7 +5299,6 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="8963572037665351978">Ukončit prezentaci</translation>
 <translation id="8965037249707889821">Zadat staré heslo</translation>
 <translation id="8965697826696209160">Nedostatek místa.</translation>
-<translation id="8968527460726243404">Zapisovač obrazu systému Chrome OS</translation>
 <translation id="8970203673128054105">Zobrazit seznam režimů odesílání</translation>
 <translation id="89720367119469899">Escapovat</translation>
 <translation id="8972513834460200407">Obraťte se na svého správce sítě a ověřte, že stahování ze serverů Google neblokuje firewall.</translation>
@@ -5479,6 +5474,7 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="93766956588638423">Opravit rozšíření</translation>
 <translation id="938470336146445890">Nainstalujte prosím uživatelský certifikát.</translation>
 <translation id="938582441709398163">Překryvná klávesnice</translation>
+<translation id="939519157834106403">Identifikátor SSID</translation>
 <translation id="939598580284253335">Zadat heslovou frázi</translation>
 <translation id="939736085109172342">Nová složka</translation>
 <translation id="940425055435005472">Velikost písma:</translation>

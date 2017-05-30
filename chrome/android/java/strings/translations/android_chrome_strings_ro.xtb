@@ -116,7 +116,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2139186145475833000">Adaugă pe ecran pornire</translation>
 <translation id="2146738493024040262">Deschide aplicația instantanee</translation>
 <translation id="2148716181193084225">Astăzi</translation>
-<translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protecție împotriva site-urilor periculoase</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicație web. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3387650086002190359">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor erori privind sistemul de fișiere.</translation>
 <translation id="3398320232533725830">Deschide managerul de marcaje</translation>
 <translation id="3414952576877147120">Dimensiune:</translation>
-<translation id="3435896845095436175">Activează</translation>
 <translation id="3443221991560634068">Reîncarcă pagina curentă</translation>
 <translation id="3452612588551937789">Conectează-te folosind Contul Google pentru a accesa marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="3487093336331957349">Sugestii de căutare și de site-uri</translation>
@@ -319,7 +317,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4522570452068850558">Detalii</translation>
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Alege dosarul</translation>
-<translation id="4535858793016067060">Activează opțiunea „Surse necunoscute” din setările de securitate Android ca să încerci experimentul „Funcția îmbunătățită Adaugă pe ecranul de pornire”. Asigură-te că dezactivezi această setare după ce ai încercat-o.</translation>
 <translation id="4558311620361989323">Comenzi rapide pentru pagini web</translation>
 <translation id="4572422548854449519">Conectează-te la contul gestionat</translation>
 <translation id="4581964774250883625">Ai trecut în modul incognito.</translation>
@@ -362,7 +359,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="497421865427891073">Înainte</translation>
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
-<translation id="5000922062037820727">Blocată (recomandat)</translation>
 <translation id="5004339818306944878">Folosește cu până la 60% mai puține date și navighează mai rapid pe web. Serverele Google vor optimiza paginile pe care le accesezi.</translation>
 <translation id="5005498671520578047">Copiază parola</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> dorește să se conecteze</translation>
@@ -403,7 +399,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5335288049665977812">Permite site-urilor să ruleze JavaScript (recomandat)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> a fost șters</translation>
 <translation id="5345083863238459644">Accesul la locație este <ph name="BEGIN_LINK" />dezactivat și pe acest dispozitiv<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experimentul „Funcția îmbunătățită Adaugă pe ecranul de pornire”</translation>
 <translation id="5372829067651257087">Adresa URL a fost copiată.</translation>
 <translation id="5384883051496921101">Site-ul este pe cale să permită accesul la informații unei aplicații în afara modului incognito.</translation>
 <translation id="5400569084694353794">Folosind această aplicație, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
@@ -654,7 +649,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="7929962904089429003">Deschide meniul</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> este învechit.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
-<translation id="7949961459945740081">Obține ultimele funcții</translation>
 <translation id="7963646190083259054">Producător:</translation>
 <translation id="7987073022710626672">Termenii și condițiile Chrome</translation>
 <translation id="7998918019931843664">Redeschideți fila închisă</translation>
@@ -665,7 +659,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8015452622527143194">Readuce pagina la dimensiunea prestabilită</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
-<translation id="8033827949643255796">selectate</translation>
 <translation id="8035133914807600019">Dosar nou…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> zile rămase</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MO disponibili</translation>

@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Edit nama folder</translation>
 <translation id="2226449515541314767">Tapak ini telah disekat daripada mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="2226720438730111184">Beritahu Kami Perkara Yang Berlaku</translation>
-<translation id="222903405933288376">Google menggunakan lokasi anda untuk memberikan kandungan setempat. Anda boleh menukar tetapan ini di <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Tinggal lebih 1 jam</translation>
 <translation id="222931766245975952">Fail dipangkas</translation>
 <translation id="222949136907494149"><ph name="URL" /> mahu menggunakan lokasi komputer anda.</translation>
@@ -1087,7 +1086,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2575247648642144396">Ikon ini akan dapat dilihat apabila perlanjutan boleh bertindak ke atas halaman semasa. Gunakan sambungan ini dengan mengklik pada ikon atau dengan menekan <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Fail CRX dengan nama ini telah wujud.</translation>
 <translation id="2579575372772932244">Membuat semula profil, sila tunggu...</translation>
-<translation id="2580168606262715640">Tidak dapat mencari telefon anda. Pastikan ia dalam jangkauan lengan.</translation>
 <translation id="2580889980133367162">Sentiasa benarkan <ph name="HOST" /> memuat turun berbilang fail</translation>
 <translation id="2580924999637585241">Jumlah: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lama</translation>
@@ -2173,7 +2171,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4130207949184424187">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda membuat carian daripada Kotak Omni.</translation>
 <translation id="413121957363593859">Komponen</translation>
 <translation id="4131410914670010031">Hitam putih</translation>
-<translation id="4135054690906486073">Rangkaian ini dikongsi dengan pengguna lain</translation>
 <translation id="4135450933899346655">Sijil Anda</translation>
 <translation id="4138267921960073861">Paparkan nama pengguna dan foto pada skrin log masuk</translation>
 <translation id="4140559601186535628">Mesej Tolak</translation>
@@ -2577,9 +2574,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4813345808229079766">Sambungan</translation>
 <translation id="4813512666221746211">Ralat rangkaian</translation>
 <translation id="4816492930507672669">Muat halaman</translation>
-<translation id="4816617200045929931">Beritahu kami perkara yang berlaku sebelum anda mendapat mesej ralat profil:
-
-****JANGAN UBAH DI BAWAH GARIS INI****</translation>
 <translation id="4820334425169212497">Tidak, saya tidak melihatnya</translation>
 <translation id="4821086771593057290">Kata laluan anda telah ditukar. Sila cuba semula dengan kata laluan baharu anda.</translation>
 <translation id="4821935166599369261">&amp;Pemprofilan Didayakan</translation>
@@ -2945,7 +2939,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5340217413897845242">Item rak 6</translation>
 <translation id="5341390997810576190">Gunakan data selular</translation>
 <translation id="5342091991439452114">PIN mestilah sekurang-kurangnya <ph name="MINIMUM" /> digit</translation>
-<translation id="5342344590724511265">Maklum balas tab ranap.</translation>
 <translation id="5342451237681332106">Gunakan <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Tanda kurung kiri</translation>
 <translation id="5350965906220856151">Alamak!</translation>
@@ -3217,6 +3210,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5764483294734785780">Si&amp;mpan audio sebagai...</translation>
 <translation id="57646104491463491">Tarikh Diubah Suai</translation>
 <translation id="5764797882307050727">Sila kosongkan sedikit ruang pada peranti anda.</translation>
+<translation id="5765425701854290211">Maaf, beberapa fail telah rosak dan kemas kini tidak berjaya dilakukan. Fail yang telah disegerakkan berada dalam keadaan selamat.</translation>
 <translation id="5765491088802881382">Tiada rangkaian tersedia</translation>
 <translation id="5765780083710877561">Huraian:</translation>
 <translation id="5771585441665576801">Pengalihan huruf (geia → γεια)</translation>
@@ -4432,6 +4426,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7615910377284548269">Urus penyekatan pemalam tanpa kotak pasir...</translation>
 <translation id="7617366389578322136">Menyambung ke "<ph name="DEVICE_NAME" />"</translation>
 <translation id="761779991806306006">Tiada kata laluan disimpan.</translation>
+<translation id="7622114377921274169">Mengecas.</translation>
 <translation id="7624154074265342755">Rangkaian wayarles</translation>
 <translation id="7624337243375417909">kunci huruf besar dimatikan</translation>
 <translation id="7627790789328695202">Op, <ph name="FILE_NAME" /> telah pun wujud. Namakan semula dan cuba lagi.</translation>
@@ -4871,6 +4866,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8270242299912238708">Dokumen PDF</translation>
 <translation id="827097179112817503">Paparkan butang laman utama</translation>
 <translation id="8272443605911821513">Urus sambungan anda dengan mengklik Sambungan dalam menu "Lagi alat".</translation>
+<translation id="8274924778568117936">Jangan matikan atau menutup <ph name="DEVICE_TYPE" /> anda sehingga kemas kini selesai. <ph name="DEVICE_TYPE" /> anda akan dimulakan semula selepas pemasangan selesai.</translation>
 <translation id="8275038454117074363">Import</translation>
 <translation id="8276560076771292512">Cache kosong dan Muat Semula Keras</translation>
 <translation id="8279388322240498158">Papan kekunci berdasarkan bahasa Inggeris Kurdish Sorani</translation>
@@ -5313,7 +5309,6 @@ Pemberitahuan, tetingkap dan dialog seterusnya mungkin dipisahkan antara desktop
 <translation id="8963572037665351978">Keluar daripada Pembentangan</translation>
 <translation id="8965037249707889821">Masukkan kata laluan lama</translation>
 <translation id="8965697826696209160">Tiada ruang yang mencukupi.</translation>
-<translation id="8968527460726243404">Penulis Imej Sistem ChromeOS</translation>
 <translation id="8970203673128054105">Lihat senarai mod hantar</translation>
 <translation id="89720367119469899">Lepas</translation>
 <translation id="8972513834460200407">Sila semak dengan pentadbir rangkaian anda bagi memastikan bahawa tembok api tidak menyekat muat turun dari pelayan Google.</translation>
@@ -5488,6 +5483,7 @@ Pemberitahuan, tetingkap dan dialog seterusnya mungkin dipisahkan antara desktop
 <translation id="93766956588638423">Baiki sambungan</translation>
 <translation id="938470336146445890">Sila pasang sijil pengguna.</translation>
 <translation id="938582441709398163">Tindihan Papan Kekunci</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Masukkan frasa laluan</translation>
 <translation id="939736085109172342">Folder baharu</translation>
 <translation id="940425055435005472">Saiz fon:</translation>

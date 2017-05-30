@@ -220,7 +220,6 @@
 <translation id="2826760142808435982">Forbindelsen er krypteret og godkendt ved hjælp af <ph name="CIPHER" />, og den anvender <ph name="KX" /> som primær udvekslingsmekanisme.</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
 <translation id="2889159643044928134">Genindlæs ikke siden</translation>
-<translation id="2900469785430194048">Google Chrome løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="2909946352844186028">Der blev registreret en netværksændring.</translation>
 <translation id="2916038427272391327">Luk andre programmer</translation>
 <translation id="2922350208395188000">Serverens certifikat kan ikke kontrolleres.</translation>
@@ -243,7 +242,6 @@
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="3032412215588512954">Vil du genindlæse denne side?</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
-<translation id="3040955737384246924">{COUNT,plural, =0{mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
 <translation id="3041612393474885105">Certifikatoplysninger</translation>
 <translation id="3063697135517575841">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
 <translation id="3064966200440839136">Du forlader inkognitotilstand for at betale via en ekstern applikation. Vil du fortsætte?</translation>
@@ -337,7 +335,6 @@
 <translation id="3681007416295224113">Certifikatoplysninger</translation>
 <translation id="3690164694835360974">Login er ikke sikkert</translation>
 <translation id="3693415264595406141">Adgangskode:</translation>
-<translation id="3696411085566228381">ingen</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Indlæser...</translation>
 <translation id="3712624925041724820">Licenserne er opbrugt</translation>
@@ -385,7 +382,6 @@
 <translation id="4171400957073367226">Ugyldig verifikationssignatur</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollere firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
-<translation id="4206349416402437184">{COUNT,plural, =0{ingen}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# app ($1, $2, $3)}other{# apps ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Nedbrud</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prøv at køre Netværksdiagnosticering<ph name="END_LINK" />.</translation>
 <translation id="4250431568374086873">Din forbindelse til dette website er ikke helt sikker</translation>
@@ -469,7 +465,6 @@
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="5056549851600133418">Artikler til dig</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Tjekke proxy-adressen<ph name="END_LINK" /></translation>
-<translation id="5076731569460970710">{COUNT,plural, =0{Ingen cookies}=1{1 website bruger cookies. }one{# website bruger cookies. }other{# websites bruger cookies. }}</translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5087580092889165836">Tilføj kort</translation>
 <translation id="5089810972385038852">Delstat</translation>
@@ -601,7 +596,6 @@
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
-<translation id="6389758589412724634">Chromium løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6410264514553301377">Indtast udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Du har spurgt en af dine forældre, om det er i orden, at du besøger dette website.</translation>
@@ -624,7 +618,6 @@
 <translation id="6556915248009097796">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />. Sidst anvendt <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
-<translation id="6593753688552673085">mindre end <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="662080504995468778">Bliv her</translation>
 <translation id="6626291197371920147">Tilføj gyldigt kortnummer</translation>
@@ -636,7 +629,6 @@
 <translation id="6710594484020273272">&lt;Indtast søgeterm&gt;</translation>
 <translation id="6711464428925977395">Der er noget galt med proxyserveren, eller adressen er forkert.</translation>
 <translation id="6727102863431372879">Angiv</translation>
-<translation id="6731320287533051140">{COUNT,plural, =0{ingen}=1{1 element}one{# element}other{# elementer}}</translation>
 <translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
@@ -742,6 +734,7 @@
 <translation id="7669271284792375604">Hackere på dette website kan forsøge at narre dig til at installere programmer, der skader din browseroplevelse (f.eks. ved at ændre din startside eller vise flere annoncer på de websites, du besøger).</translation>
 <translation id="7674629440242451245">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores udviklerkanal på chrome.com/dev.</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
+<translation id="7701040980221191251">Ingen</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsæt til <ph name="SITE" /> (usikkert)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
 <translation id="7716424297397655342">Dette website kan ikke indlæses fra cachen</translation>
@@ -781,7 +774,6 @@
 <translation id="8041089156583427627">Send feedback</translation>
 <translation id="8041940743680923270">Brug global standard (spørg)</translation>
 <translation id="8088680233425245692">Artiklen kunne ikke vises.</translation>
-<translation id="8089520772729574115">mindre end 1 MB</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="8118489163946903409">Betalingsmetode</translation>
 <translation id="8131740175452115882">Bekræft</translation>

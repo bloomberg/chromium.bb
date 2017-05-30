@@ -116,7 +116,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
 <translation id="2146738493024040262">Hazır Uygulamayı aç</translation>
 <translation id="2148716181193084225">Bugün</translation>
-<translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2156074688469523661">Kalan site sayısı (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web uygulaması. <ph name="APP_URL" /></translation>
@@ -218,7 +217,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3398320232533725830">Yer işareti yöneticisini açar</translation>
 <translation id="3414952576877147120">Boyut:</translation>
-<translation id="3435896845095436175">Etkinleştir</translation>
 <translation id="3443221991560634068">Geçerli sayfayı yeniden yükler</translation>
 <translation id="3452612588551937789">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
 <translation id="3487093336331957349">Arama ve site önerileri</translation>
@@ -319,7 +317,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="4532845899244822526">Klasör seçin</translation>
-<translation id="4535858793016067060">"İyileştirilmiş Ana Ekrana Ekle" özelliğini denemek için Android güvenlik ayarlarından "Bilinmeyen Kaynaklar'ı" açın. Denemeyi bitirdikten sonra bu ayarı tekrar devre dışı bırakmayı unutmayın.</translation>
 <translation id="4558311620361989323">Web sayfası kısayolları</translation>
 <translation id="4572422548854449519">Yönetilen hesapta oturum açın</translation>
 <translation id="4581964774250883625">Gizli moda geçtiniz.</translation>
@@ -362,7 +359,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
-<translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="5004339818306944878">%60'a kadar daha az veri kullanın ve web'i hızlandırın. Google sunucuları, ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="5005498671520578047">Şifreyi kopyalayın</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> bağlanmak istiyor</translation>
@@ -403,7 +399,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5335288049665977812">Sitelerin JavaScript çalıştırmasına izin ver (önerilir)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> silindi</translation>
 <translation id="5345083863238459644">Konum erişimi de <ph name="BEGIN_LINK" />bu cihaz için kapatıldı<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">İyileştirilmiş "Ana ekrana ekle" Denemesi</translation>
 <translation id="5372829067651257087">URL kopyalandı.</translation>
 <translation id="5384883051496921101">Bu site, gizli mod dışında bir uygulama ile bilgi paylaşımında bulunmak üzere.</translation>
 <translation id="5400569084694353794">Bu uygulamayı kullanarak <ph name="BEGIN_LINK1" />Chrome'un Gizlilik Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
@@ -654,7 +649,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7929962904089429003">Menüyü açar</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
-<translation id="7949961459945740081">En yeni özellikleri al</translation>
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -665,7 +659,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8015452622527143194">Sayfadaki her şeyi varsayılan boyutuna döndürür</translation>
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
-<translation id="8033827949643255796">seçildi</translation>
 <translation id="8035133914807600019">Yeni klasör…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> gün kaldı</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB kullanılabilir</translation>

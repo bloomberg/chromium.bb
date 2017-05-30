@@ -440,7 +440,7 @@
 <translation id="161707228174452095">Sormenjälki lisättiin!</translation>
 <translation id="1617097702943948177">Väliaikainen tallennustila:</translation>
 <translation id="1618268899808219593">Ohj&amp;ekeskus</translation>
-<translation id="1620510694547887537">kameraasi</translation>
+<translation id="1620510694547887537">Kamera</translation>
 <translation id="1624026626836496796">Tämä tehdään vain kerran, eikä kirjautumistietoja tallenneta.</translation>
 <translation id="1627276047960621195">Tiedostokuvaajat</translation>
 <translation id="1628736721748648976">Koodaus</translation>
@@ -835,7 +835,6 @@
 <translation id="2224551243087462610">Muokkaa kansion nimeä</translation>
 <translation id="2226449515541314767">Tältä sivustolta on estetty MIDI-laitteiden täysi käyttöoikeus.</translation>
 <translation id="2226720438730111184">Kerro, mitä tapahtuu</translation>
-<translation id="222903405933288376">Google tarjoaa paikallista sisältöä sijaintisi avulla. Voit muuttaa asetusta täällä: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="2229161054156947610">Yli tunti jäljellä</translation>
 <translation id="222931766245975952">Tiedosto katkaistu</translation>
 <translation id="222949136907494149"><ph name="URL" /> haluaa käyttää tietokoneesi sijaintia.</translation>
@@ -1087,7 +1086,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2575247648642144396">Tämä kuvake näkyy, kun laajennus voi toimia nykyisellä sivulla. Ota laajennus käyttöön klikkaamalla kuvaketta tai painamalla <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2576842806987913196">Tämän niminen CRX-tiedosto on jo olemassa.</translation>
 <translation id="2579575372772932244">Profiilia luodaan uudelleen…</translation>
-<translation id="2580168606262715640">Puhelinta ei löydy. Varmista, että se on käden ulottuvilla.</translation>
 <translation id="2580889980133367162">Anna aina isännän <ph name="HOST" /> ladata useita tiedostoja</translation>
 <translation id="2580924999637585241">Yhteensä: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Pitkä</translation>
@@ -1558,7 +1556,7 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi (<ph name="ACCOUNT_EMAI
 <translation id="3224239078034945833">Kanada, monikielinen</translation>
 <translation id="3225084153129302039">Violetti oletusavatar</translation>
 <translation id="3225319735946384299">Koodin allekirjoitus</translation>
-<translation id="3227137524299004712">mikrofoniasi</translation>
+<translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="32279126412636473">Lataa uudelleen (⌘R)</translation>
 <translation id="3228679360002431295">Muodostetaan yhteys ja tarkistetaan<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Arvo:</translation>
@@ -2170,7 +2168,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4130207949184424187">Tämä laajennus on vaihtanut omnibox-hakujen aloitussivun.</translation>
 <translation id="413121957363593859">Osat</translation>
 <translation id="4131410914670010031">Mustavalkoinen</translation>
-<translation id="4135054690906486073">Tämä verkko on jaettu muiden käyttäjien kanssa.</translation>
 <translation id="4135450933899346655">Omat varmenteet</translation>
 <translation id="4138267921960073861">Näytä käyttäjänimet ja valokuvat kirjautumisruudulla</translation>
 <translation id="4140559601186535628">Push-viestit</translation>
@@ -2402,7 +2399,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4545759655004063573">Ei voi tallentaa, sillä käyttöluvat eivät riitä. Tallenna muuhun sijaintiin.</translation>
 <translation id="4547659257713117923">Ei välilehtiä muista laitteista</translation>
 <translation id="4547992677060857254">Valitsemasi kansio sisältää arkaluonteisia tiedostoja. Haluatko varmasti myöntää käyttäjälle "$1" pysyvän kirjoitusoikeuden tähän kansioon?</translation>
-<translation id="4552089082226364758">Salama</translation>
+<translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">Sivun käyttöoikeus</translation>
 <translation id="4552678318981539154">Osta lisää tallennustilaa</translation>
 <translation id="4554591392113183336">Ulkoinen laajennus on sama tai aiempi versio kuin nykyinen.</translation>
@@ -2569,9 +2566,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4813345808229079766">Yhteys</translation>
 <translation id="4813512666221746211">Verkkovirhe</translation>
 <translation id="4816492930507672669">Sovita sivulle</translation>
-<translation id="4816617200045929931">Kerro meille, mitä tapahtui juuri ennen profiilivirheviestiä:
-
-****ÄLÄ MUUTA MITÄÄN TÄMÄN VIIVAN ALAPUOLELLA****</translation>
 <translation id="4820334425169212497">Ei, en näe sitä</translation>
 <translation id="4821086771593057290">Salasanasi on muuttunut. Yritä uudelleen uudella salasanalla.</translation>
 <translation id="4821935166599369261">&amp;Profilointi on käytössä</translation>
@@ -2935,7 +2929,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5340217413897845242">Hyllyn kohde 6</translation>
 <translation id="5341390997810576190">Käytä mobiilidataa</translation>
 <translation id="5342091991439452114">PIN-koodissa on oltava vähintään <ph name="MINIMUM" /> numeroa.</translation>
-<translation id="5342344590724511265">Välilehti kaatoi palautesivun.</translation>
 <translation id="5342451237681332106">Käytä puhelinta <ph name="PHONE_NAME" /></translation>
 <translation id="534916491091036097">Vasen sulje</translation>
 <translation id="5350965906220856151">Voi ei!</translation>
@@ -3207,6 +3200,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5764483294734785780">T&amp;allenna audiotiedosto nimellä...</translation>
 <translation id="57646104491463491">Muokkauspäivämäärä</translation>
 <translation id="5764797882307050727">Vapauta lisää tilaa laitteeltasi.</translation>
+<translation id="5765425701854290211">Jotkin tiedostot vahingoittuivat, joten päivitys epäonnistui. Synkronoidut tiedostosi ovat turvassa.</translation>
 <translation id="5765491088802881382">Ei verkkoja saatavilla</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="5771585441665576801">Translitterointi (geia → γεια)</translation>
@@ -4423,6 +4417,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7615910377284548269">Hallinnoi hiekkalaatikossa toimimattomien laajennuksien estoa…</translation>
 <translation id="7617366389578322136">Yhdistetään laitteeseen <ph name="DEVICE_NAME" />.</translation>
 <translation id="761779991806306006">Ei tallennettuja salasanoja.</translation>
+<translation id="7622114377921274169">Ladataan</translation>
 <translation id="7624154074265342755">Langattomat verkot</translation>
 <translation id="7624337243375417909">caps lock pois päältä</translation>
 <translation id="7627790789328695202">Hups, <ph name="FILE_NAME" /> on jo olemassa. Anna kohteelle toinen nimi ja yritä uudelleen.</translation>
@@ -4861,6 +4856,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8270242299912238708">PDF-dokumentit</translation>
 <translation id="827097179112817503">Näytä Etusivu-painike</translation>
 <translation id="8272443605911821513">Hallinnoi laajennuksiasi valitsemalla Lisätyökalut-valikossa Laajennukset.</translation>
+<translation id="8274924778568117936">Pidä <ph name="DEVICE_TYPE" /> päällä, kunnes päivitys on valmis. <ph name="DEVICE_TYPE" /> käynnistyy uudelleen, kun asennus on valmis.</translation>
 <translation id="8275038454117074363">Tuo</translation>
 <translation id="8276560076771292512">Tyhjennä välimuisti ja pakota päivitys</translation>
 <translation id="8279388322240498158">Soranîn englantiin perustuva näppäimistö</translation>
@@ -5301,7 +5297,6 @@ Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien v�
 <translation id="8963572037665351978">Poistu esityksestä</translation>
 <translation id="8965037249707889821">Syötä vanha salasana</translation>
 <translation id="8965697826696209160">Tallennustila ei riitä.</translation>
-<translation id="8968527460726243404">Chrome-käyttöjärjestelmän näköistiedoston kirjoittaja</translation>
 <translation id="8970203673128054105">Näytä Cast-tilaluettelo</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Ota yhteyttä verkon järjestelmänvalvojaan ja varmista, ettei palomuuri estä latauksia Googlen palvelimilta.</translation>
@@ -5476,6 +5471,7 @@ Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien v�
 <translation id="93766956588638423">Korjaa laajennus</translation>
 <translation id="938470336146445890">Asenna käyttäjävarmenne.</translation>
 <translation id="938582441709398163">Näppäimistön peitto</translation>
+<translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Anna tunnuslause</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
 <translation id="940425055435005472">Kirjasimen koko:</translation>
