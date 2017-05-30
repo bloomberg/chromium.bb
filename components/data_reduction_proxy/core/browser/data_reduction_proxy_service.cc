@@ -60,14 +60,14 @@ DataReductionProxyService::DataReductionProxyService(
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
 }
 
 void DataReductionProxyService::SetIOData(
     base::WeakPtr<DataReductionProxyIOData> io_data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   io_data_ = io_data;
   initialized_ = true;
   for (DataReductionProxyServiceObserver& observer : observer_list_)
@@ -88,14 +88,14 @@ void DataReductionProxyService::SetIOData(
 }
 
 void DataReductionProxyService::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_factory_.InvalidateWeakPtrs();
 }
 
 void DataReductionProxyService::UpdateDataUseForHost(int64_t network_bytes,
                                                      int64_t original_bytes,
                                                      const std::string& host) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (compression_stats_) {
     compression_stats_->RecordDataUsage(host, original_bytes, network_bytes,
                                         base::Time::Now());
@@ -109,7 +109,7 @@ void DataReductionProxyService::UpdateContentLengths(
     DataReductionProxyRequestType request_type,
     scoped_refptr<DataUseGroup> data_use_group,
     const std::string& mime_type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (compression_stats_) {
     compression_stats_->UpdateContentLengths(
         data_used, original_size, data_reduction_proxy_enabled, request_type,
@@ -118,44 +118,44 @@ void DataReductionProxyService::UpdateContentLengths(
 }
 
 void DataReductionProxyService::AddEvent(std::unique_ptr<base::Value> event) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_store_->AddEvent(std::move(event));
 }
 
 void DataReductionProxyService::AddEnabledEvent(
     std::unique_ptr<base::Value> event,
     bool enabled) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_store_->AddEnabledEvent(std::move(event), enabled);
 }
 
 void DataReductionProxyService::AddEventAndSecureProxyCheckState(
     std::unique_ptr<base::Value> event,
     SecureProxyCheckState state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_store_->AddEventAndSecureProxyCheckState(std::move(event), state);
 }
 
 void DataReductionProxyService::AddAndSetLastBypassEvent(
     std::unique_ptr<base::Value> event,
     int64_t expiration_ticks) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_store_->AddAndSetLastBypassEvent(std::move(event), expiration_ticks);
 }
 
 void DataReductionProxyService::SetUnreachable(bool unreachable) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetUnreachable(unreachable);
 }
 
 void DataReductionProxyService::SetLoFiModeActiveOnMainFrame(
     bool lo_fi_mode_active) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetLoFiModeActiveOnMainFrame(lo_fi_mode_active);
 }
 
 void DataReductionProxyService::SetLoFiModeOff() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (io_task_runner_->BelongsToCurrentThread()) {
     io_task_runner_->PostTask(
         FROM_HERE,
@@ -168,7 +168,7 @@ void DataReductionProxyService::SetLoFiModeOff() {
 }
 
 void DataReductionProxyService::InitializeLoFiPrefs() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!prefs_)
     return;
 
@@ -254,7 +254,7 @@ void DataReductionProxyService::SetStringPref(const std::string& pref_path,
 }
 
 void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (io_task_runner_->BelongsToCurrentThread()) {
     io_data_->SetProxyPrefs(enabled, at_startup);
     return;
@@ -266,7 +266,7 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
 
 void DataReductionProxyService::SetPingbackReportingFraction(
     float pingback_reporting_fraction) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pingback_client_->SetPingbackReportingFraction(pingback_reporting_fraction);
 }
 
@@ -317,24 +317,24 @@ void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
 
 void DataReductionProxyService::AddObserver(
     DataReductionProxyServiceObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
 }
 
 void DataReductionProxyService::RemoveObserver(
     DataReductionProxyServiceObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
 }
 
 bool DataReductionProxyService::Initialized() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return initialized_;
 }
 
 base::WeakPtr<DataReductionProxyService>
 DataReductionProxyService::GetWeakPtr() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
 }
 
