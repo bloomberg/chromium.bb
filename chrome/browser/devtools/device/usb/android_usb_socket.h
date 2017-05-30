@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 
-class AndroidUsbSocket : public net::StreamSocket,
-                         public base::NonThreadSafe {
+class AndroidUsbSocket : public net::StreamSocket {
  public:
   AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
                    uint32_t socket_id,
@@ -77,6 +76,9 @@ class AndroidUsbSocket : public net::StreamSocket,
   net::CompletionCallback read_callback_;
   net::CompletionCallback write_callback_;
   base::Closure delete_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<AndroidUsbSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidUsbSocket);

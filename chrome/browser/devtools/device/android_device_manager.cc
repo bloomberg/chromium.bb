@@ -457,6 +457,7 @@ AndroidDeviceManager::Device::Device(
 }
 
 AndroidDeviceManager::Device::~Device() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   provider_->AddRef();
   DeviceProvider* raw_ptr = provider_.get();
   provider_ = nullptr;
@@ -541,6 +542,7 @@ AndroidDeviceManager::AndroidDeviceManager()
 }
 
 AndroidDeviceManager::~AndroidDeviceManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetDeviceProviders(DeviceProviders());
 }
 

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,7 +20,7 @@ namespace net {
 class StreamSocket;
 }
 
-class AndroidDeviceManager : public base::NonThreadSafe {
+class AndroidDeviceManager {
  public:
   using CommandCallback =
       base::Callback<void(int, const std::string&)>;
@@ -107,8 +107,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
   class DeviceProvider;
 
-  class Device : public base::RefCountedThreadSafe<Device>,
-                 public base::NonThreadSafe {
+  class Device : public base::RefCountedThreadSafe<Device> {
    public:
     void QueryDeviceInfo(const DeviceInfoCallback& callback);
 
@@ -144,6 +143,9 @@ class AndroidDeviceManager : public base::NonThreadSafe {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     scoped_refptr<DeviceProvider> provider_;
     std::string serial_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
+
     base::WeakPtrFactory<Device> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Device);
@@ -242,6 +244,8 @@ class AndroidDeviceManager : public base::NonThreadSafe {
   scoped_refptr<HandlerThread> handler_thread_;
   DeviceProviders providers_;
   DeviceWeakMap devices_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AndroidDeviceManager> weak_factory_;
 };
