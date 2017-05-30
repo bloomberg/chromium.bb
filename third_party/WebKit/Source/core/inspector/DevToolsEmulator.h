@@ -6,6 +6,7 @@
 #define DevToolsEmulator_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
@@ -13,7 +14,6 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebViewportStyle.h"
 #include "public/web/WebDeviceEmulationParams.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -23,7 +23,7 @@ class TransformationMatrix;
 class WebInputEvent;
 class WebViewBase;
 
-class WEB_EXPORT DevToolsEmulator final
+class CORE_EXPORT DevToolsEmulator final
     : public GarbageCollectedFinalized<DevToolsEmulator> {
  public:
   ~DevToolsEmulator();
@@ -78,7 +78,7 @@ class WEB_EXPORT DevToolsEmulator final
   void ApplyViewportOverride(TransformationMatrix*);
   void UpdateRootLayerTransform();
 
-  WebViewBase* web_view_impl_;
+  WebViewBase* web_view_;
 
   bool device_metrics_enabled_;
   bool emulate_mobile_enabled_;

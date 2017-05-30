@@ -20,6 +20,8 @@ blink_core_sources("inspector") {
     "DOMEditor.h",
     "DOMPatchSupport.cpp",
     "DOMPatchSupport.h",
+    "DevToolsEmulator.cpp",
+    "DevToolsEmulator.h",
     "DevToolsHost.cpp",
     "DevToolsHost.h",
     "IdentifiersFactory.cpp",

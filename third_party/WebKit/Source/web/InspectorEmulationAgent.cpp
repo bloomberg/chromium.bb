@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/inspector/DevToolsEmulator.h"
 #include "core/inspector/protocol/DOM.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
@@ -16,7 +17,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
-#include "web/DevToolsEmulator.h"
 
 namespace blink {
 
