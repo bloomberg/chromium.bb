@@ -62,6 +62,7 @@ class CORE_EXPORT PointerEventManager
 
   void SetPointerCapture(int, EventTarget*);
   void ReleasePointerCapture(int, EventTarget*);
+  void ReleaseMousePointerCapture();
 
   // See Element::hasPointerCapture(int).
   bool HasPointerCapture(int, const EventTarget*) const;
@@ -82,6 +83,8 @@ class CORE_EXPORT PointerEventManager
   // |uniqueTouchEventId| was canceled. Also drops stale ids from
   // |m_touchIdsForCanceledPointerdowns|.
   bool PrimaryPointerdownCanceled(uint32_t unique_touch_event_id);
+
+  void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
 
  private:
   typedef HeapHashMap<int,
