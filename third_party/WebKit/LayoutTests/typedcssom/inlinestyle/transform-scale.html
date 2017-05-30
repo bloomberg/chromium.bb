@@ -6,7 +6,7 @@
 var EPSILON = 1e-6; // float epsilon
 
 function validateTransformWithSingleScale(transform, x, y, z, cssText) {
-  assert_equals(transform.cssText, cssText);
+  assert_equals(transform.toString(), cssText);
 
   // Shouldn't be base StyleValue as for unsupported values.
   assert_equals(transform.constructor.name, CSSTransformValue.name);

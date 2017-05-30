@@ -38,7 +38,7 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.toString(), values[i].cssText);
   }
-}, "toString() for CSSSkew is correct.");
+}, "toString for CSSSkew is correct.");
 
 test(function() {
   assert_throws(new TypeError(), function() { new CSSSkew(); });

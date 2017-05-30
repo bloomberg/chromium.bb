@@ -29,7 +29,7 @@ test(function() {
 
   assert_equals(entry.value[0], 'width');
   assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value[1].cssText, '50px');
+  assert_equals(entry.value[1].toString(), '50px');
 }, "Iterator for single entry returns iterator with a single value");
 
 test(function() {
@@ -54,7 +54,7 @@ test(function() {
   assert_true(iterator.next().done);
 
   assert_equals(entry.value.constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value.cssText, '70px');
+  assert_equals(entry.value.toString(), '70px');
 }, "Iterator for single value returns iterator with a single value");
 
 test(function() {
@@ -68,26 +68,26 @@ test(function() {
   }
   assert_equals(numEntries, 17);
 
-  assert_equals(entries['border-top-width'].cssText, '5px');
-  assert_equals(entries['border-right-width'].cssText, '5px');
-  assert_equals(entries['border-bottom-width'].cssText, '5px');
-  assert_equals(entries['border-left-width'].cssText, '5px');
+  assert_equals(entries['border-top-width'].toString(), '5px');
+  assert_equals(entries['border-right-width'].toString(), '5px');
+  assert_equals(entries['border-bottom-width'].toString(), '5px');
+  assert_equals(entries['border-left-width'].toString(), '5px');
 
-  assert_equals(entries['border-top-style'].cssText, 'solid');
-  assert_equals(entries['border-right-style'].cssText, 'solid');
-  assert_equals(entries['border-bottom-style'].cssText, 'solid');
-  assert_equals(entries['border-left-style'].cssText, 'solid');
+  assert_equals(entries['border-top-style'].toString(), 'solid');
+  assert_equals(entries['border-right-style'].toString(), 'solid');
+  assert_equals(entries['border-bottom-style'].toString(), 'solid');
+  assert_equals(entries['border-left-style'].toString(), 'solid');
 
-  assert_equals(entries['border-top-color'].cssText, 'lightcoral');
-  assert_equals(entries['border-right-color'].cssText, 'lightcoral');
-  assert_equals(entries['border-bottom-color'].cssText, 'lightcoral');
-  assert_equals(entries['border-left-color'].cssText, 'lightcoral');
+  assert_equals(entries['border-top-color'].toString(), 'lightcoral');
+  assert_equals(entries['border-right-color'].toString(), 'lightcoral');
+  assert_equals(entries['border-bottom-color'].toString(), 'lightcoral');
+  assert_equals(entries['border-left-color'].toString(), 'lightcoral');
 
-  assert_equals(entries['border-image-source'].cssText, 'initial');
-  assert_equals(entries['border-image-slice'].cssText, 'initial');
-  assert_equals(entries['border-image-width'].cssText, 'initial');
-  assert_equals(entries['border-image-outset'].cssText, 'initial');
-  assert_equals(entries['border-image-repeat'].cssText, 'initial');
+  assert_equals(entries['border-image-source'].toString(), 'initial');
+  assert_equals(entries['border-image-slice'].toString(), 'initial');
+  assert_equals(entries['border-image-width'].toString(), 'initial');
+  assert_equals(entries['border-image-outset'].toString(), 'initial');
+  assert_equals(entries['border-image-repeat'].toString(), 'initial');
 }, "Iterating entries over border element expansion");
 
 test(function() {
@@ -96,7 +96,7 @@ test(function() {
 
   assert_equals(entries.length, 1);
   assert_equals(entries[0].constructor, CSSUnparsedValue);
-  assert_equals(entries[0].cssText, '--bg-color');
+  assert_equals(entries[0].toString(), '--bg-color');
   assert_equals([...entries[0]].length, 1);
   assert_equals([...entries[0]][0].variable, "--bg-color");
   assert_equals([...entries[0]][0].fallback, null);
@@ -113,7 +113,7 @@ test(function() {
 
   assert_equals(propertyAndValue[0], '--my-custom-property');
   assert_equals(propertyAndValue[1].constructor, CSSStyleValue);
-  assert_equals(propertyAndValue[1].cssText, '5px');
+  assert_equals(propertyAndValue[1].toString(), '5px');
 }, "Custom properties set on the element come out as CSSStyleValues");
 
 test(function() {
@@ -126,7 +126,7 @@ test(function() {
 
   assert_equals(propertyAndValue[0], '@apply');
   assert_equals(propertyAndValue[1].constructor, CSSStyleValue);
-  assert_equals(propertyAndValue[1].cssText, '--foo');
+  assert_equals(propertyAndValue[1].toString(), '--foo');
 }, "@apply rules come out as CSSStyleValues");
 
 </script>

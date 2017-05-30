@@ -20,7 +20,7 @@ var computedStyleMap = getComputedStyleMap(testElement);
 function checks() {
   var result = computedStyleMap.get('background-image');
   assert_true(result instanceof CSSURLImageValue);
-  assert_equals(result.cssText, 'url(\"' + imagePath + '\")');
+  assert_equals(result.toString(), 'url(\"' + imagePath + '\")');
   assert_equals(result.state, 'loaded');
   assert_equals(result.intrinsicWidth, 1);
   assert_equals(result.intrinsicHeight, 1);

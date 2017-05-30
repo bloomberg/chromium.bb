@@ -16,7 +16,7 @@ function t1Callback(computedStyleMap) {
   t1.step(function() {
     var result = computedStyleMap.get('left');
     assert_equals(result.constructor.name, CSSUnitValue.name);
-    assert_equals(result.cssText, '10px');
+    assert_equals(result.toString(), '10px');
   });
   t1.done();
 }
@@ -27,7 +27,7 @@ function t2Callback(computedStyleMap) {
     testElement.style.left = '20px';
     var result = computedStyleMap.getAll('left');
     assert_equals(result.length, 1);
-    assert_equals(result[0].cssText, '20px');
+    assert_equals(result[0].toString(), '20px');
   });
   t2.done();
 }

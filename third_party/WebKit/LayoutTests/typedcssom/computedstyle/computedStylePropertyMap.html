@@ -27,7 +27,7 @@ test(function() {
   testElement.style.border = '1px solid #00ff00';
   var styleValue = computedStyleMap.get('border');
   assert_equals(styleValue.constructor, CSSStyleValue);
-  assert_equals(styleValue.cssText, testElement.style.border);
+  assert_equals(styleValue.toString(), testElement.style.border);
 }, 'Unsupported but serializable property returns a base CSSStyleValue.');
 
 test(function() {
@@ -65,9 +65,9 @@ test(function() {
 
 test(function() {
   testElement.style.width = '100px';
-  assert_equals(computedStyleMap.get('width').cssText, '100px');
+  assert_equals(computedStyleMap.get('width').toString(), '100px');
   testElement.style.display = 'none';
-  assert_equals(computedStyleMap.get('width').cssText, '100px');
+  assert_equals(computedStyleMap.get('width').toString(), '100px');
 }, 'get() returns correct values for an element with display: none.');
 
 </script>

@@ -51,8 +51,8 @@ CONSOLE MESSAGE: line 147:     getter ay
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSStyleValue
 CONSOLE MESSAGE: line 147:     static method parse
-CONSOLE MESSAGE: line 147:     getter cssText
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     method toString
 CONSOLE MESSAGE: line 147: interface CSSTransformComponent
 CONSOLE MESSAGE: line 147:     method asMatrix
 CONSOLE MESSAGE: line 147:     method constructor

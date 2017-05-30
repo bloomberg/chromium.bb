@@ -29,7 +29,7 @@ test(function() {
     testElement.style.transform = cssText;
 
     var result = testElement.styleMap.get('transform');
-    assert_equals(result.cssText, cssText);
+    assert_equals(result.toString(), cssText);
     assert_equals(result.constructor.name, CSSTransformValue.name);
 
     var components = [...result.values()];
