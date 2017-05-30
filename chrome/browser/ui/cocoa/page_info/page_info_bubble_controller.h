@@ -153,6 +153,11 @@ class PageInfoUIBridge : public content::WebContentsObserver,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
 
+ protected:
+  // WebContentsObserver implementation.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
  private:
   // The WebContents the bubble UI is attached to.
   content::WebContents* web_contents_;
