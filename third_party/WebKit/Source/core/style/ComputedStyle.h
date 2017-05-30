@@ -1658,15 +1658,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   StyleImage* ListStyleImage() const;
   void SetListStyleImage(StyleImage*);
 
-  // overflow-wrap (aka word-wrap)
-  static EOverflowWrap InitialOverflowWrap() { return EOverflowWrap::kNormal; }
-  EOverflowWrap OverflowWrap() const {
-    return static_cast<EOverflowWrap>(rare_inherited_data_->overflow_wrap_);
-  }
-  void SetOverflowWrap(EOverflowWrap b) {
-    SET_VAR(rare_inherited_data_, overflow_wrap_, static_cast<unsigned>(b));
-  }
-
   // quotes
   static QuotesData* InitialQuotes() { return 0; }
   QuotesData* Quotes() const { return rare_inherited_data_->quotes_.Get(); }
