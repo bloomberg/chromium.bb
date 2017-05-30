@@ -1343,6 +1343,7 @@ copy("cronet_package_copy_test_files") {
     "//net/data/ssl/certificates/quic_test.example.com.crt",
     "//net/data/ssl/certificates/quic_test.example.com.key",
     "//net/data/ssl/certificates/quic_test.example.com.key.pkcs8",
+    "//net/data/ssl/certificates/quic_test.example.com.key.pkcs8.pem",
     "//net/data/ssl/certificates/quic_test.example.com.key.sct",
   ]
   outputs = [
