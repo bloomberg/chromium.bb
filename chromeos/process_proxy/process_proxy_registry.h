@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/process_proxy/process_proxy.h"
@@ -22,7 +22,7 @@ namespace chromeos {
 
 // Keeps track of all created ProcessProxies. It is created lazily and should
 // live on a single thread (where all methods must be called).
-class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
+class CHROMEOS_EXPORT ProcessProxyRegistry {
  public:
   using OutputCallback = base::Callback<void(int terminal_id,
                                              const std::string& output_type,
@@ -72,6 +72,8 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
   std::map<int, ProcessProxyInfo> proxy_map_;
 
   std::unique_ptr<base::Thread> watcher_thread_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ProcessProxyRegistry);
 };
