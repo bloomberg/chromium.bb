@@ -16,6 +16,8 @@ namespace search {
 // default search provider URL is "http://".
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 
+bool IsMatchingServiceWorker(const GURL& my_url, const GURL& document_url);
+
 }  // namespace search
 
 #endif  // CHROME_COMMON_SEARCH_SEARCH_URLS_H_

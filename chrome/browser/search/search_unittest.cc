@@ -532,18 +532,21 @@ TEST_F(SearchTest, IsNTPURL) {
   // No margin.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   GURL remote_ntp_url(GetInstantURL(profile(), false));
+  GURL remote_ntp_service_worker_url("https://foo.com/newtab-serviceworker.js");
   GURL search_url_with_search_terms("https://foo.com/url?strk&bar=abc");
   GURL search_url_without_search_terms("https://foo.com/url?strk&bar");
 
   EXPECT_FALSE(IsNTPURL(ntp_url, profile()));
   EXPECT_TRUE(IsNTPURL(local_ntp_url, profile()));
   EXPECT_TRUE(IsNTPURL(remote_ntp_url, profile()));
+  EXPECT_TRUE(IsNTPURL(remote_ntp_service_worker_url, profile()));
   EXPECT_FALSE(IsNTPURL(search_url_with_search_terms, profile()));
   EXPECT_FALSE(IsNTPURL(search_url_without_search_terms, profile()));
 
   EXPECT_FALSE(IsNTPURL(ntp_url, NULL));
   EXPECT_FALSE(IsNTPURL(local_ntp_url, NULL));
   EXPECT_FALSE(IsNTPURL(remote_ntp_url, NULL));
+  EXPECT_FALSE(IsNTPURL(remote_ntp_service_worker_url, NULL));
   EXPECT_FALSE(IsNTPURL(search_url_with_search_terms, NULL));
   EXPECT_FALSE(IsNTPURL(search_url_without_search_terms, NULL));
 }
