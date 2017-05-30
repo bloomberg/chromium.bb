@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/vr_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -272,11 +273,22 @@ class GradientGridRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(GradientGridRenderer);
 };
 
-class VrShellRenderer {
+class VrShellRenderer : public UiElementRenderer {
  public:
   VrShellRenderer();
-  ~VrShellRenderer();
+  ~VrShellRenderer() override;
 
+  // UiElementRenderer interface (exposed to UI elements).
+  void DrawTexturedQuad(int texture_data_handle,
+                        const vr::Mat4f& view_proj_matrix,
+                        const gfx::RectF& copy_rect,
+                        float opacity) override;
+  void DrawGradientQuad(const vr::Mat4f& view_proj_matrix,
+                        const SkColor edge_color,
+                        const SkColor center_color,
+                        float opacity) override;
+
+  // VrShell's internal GL rendering API.
   ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
   TexturedQuadRenderer* GetTexturedQuadRenderer();
   WebVrRenderer* GetWebVrRenderer();

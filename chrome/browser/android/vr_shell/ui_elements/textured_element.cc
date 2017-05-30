@@ -7,7 +7,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
-#include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace vr_shell {
@@ -39,15 +39,15 @@ void TexturedElement::UpdateTexture() {
   Flush(surface.get());
 }
 
-void TexturedElement::Render(VrShellRenderer* renderer,
+void TexturedElement::Render(UiElementRenderer* renderer,
                              vr::Mat4f view_proj_matrix) const {
   if (!initialized_)
     return;
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
-  renderer->GetTexturedQuadRenderer()->AddQuad(
-      texture_handle_, view_proj_matrix, copy_rect, opacity());
+  renderer->DrawTexturedQuad(texture_handle_, view_proj_matrix, copy_rect,
+                             opacity());
 }
 
 void TexturedElement::Flush(SkSurface* surface) {

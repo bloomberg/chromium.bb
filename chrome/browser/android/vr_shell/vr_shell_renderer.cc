@@ -817,6 +817,22 @@ VrShellRenderer::VrShellRenderer()
 
 VrShellRenderer::~VrShellRenderer() = default;
 
+void VrShellRenderer::DrawTexturedQuad(int texture_data_handle,
+                                       const vr::Mat4f& view_proj_matrix,
+                                       const gfx::RectF& copy_rect,
+                                       float opacity) {
+  GetTexturedQuadRenderer()->AddQuad(texture_data_handle, view_proj_matrix,
+                                     copy_rect, opacity);
+}
+
+void VrShellRenderer::DrawGradientQuad(const vr::Mat4f& view_proj_matrix,
+                                       const SkColor edge_color,
+                                       const SkColor center_color,
+                                       float opacity) {
+  GetGradientQuadRenderer()->Draw(view_proj_matrix, edge_color, center_color,
+                                  opacity);
+}
+
 ExternalTexturedQuadRenderer*
 VrShellRenderer::GetExternalTexturedQuadRenderer() {
   Flush();

@@ -109,7 +109,7 @@ UiElement::UiElement() = default;
 
 UiElement::~UiElement() = default;
 
-void UiElement::Render(VrShellRenderer* renderer,
+void UiElement::Render(UiElementRenderer* renderer,
                        vr::Mat4f view_proj_matrix) const {
   NOTREACHED();
 }

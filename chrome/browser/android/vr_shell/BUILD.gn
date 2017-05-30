@@ -10,20 +10,16 @@ import("//testing/test.gni")
 assert(enable_vr)
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
-  static_library("vr_common") {
-    defines = []
-
+  # This library is platform-independent UI and related modules, which should
+  # compile on any platform.
+  static_library("vr_common_ui") {
     sources = [
-      "android_ui_gesture_target.cc",
-      "android_ui_gesture_target.h",
       "animation.cc",
       "animation.h",
       "color_scheme.cc",
       "color_scheme.h",
       "easing.cc",
       "easing.h",
-      "elbow_model.cc",
-      "elbow_model.h",
       "font_fallback.cc",
       "font_fallback.h",
       "fps_meter.cc",
@@ -32,10 +28,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "gltf_asset.h",
       "gltf_parser.cc",
       "gltf_parser.h",
-      "mailbox_to_surface_bridge.cc",
-      "mailbox_to_surface_bridge.h",
-      "non_presenting_gvr_delegate.cc",
-      "non_presenting_gvr_delegate.h",
       "textures/button_texture.cc",
       "textures/button_texture.h",
       "textures/close_button_texture.cc",
@@ -88,6 +80,38 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "ui_scene_manager.h",
       "ui_unsupported_mode.h",
       "vr_browser_interface.h",
+    ]
+
+    deps = [
+      "//base",
+      "//cc/paint",
+      "//components/security_state/core",
+      "//components/url_formatter",
+      "//components/vector_icons",
+      "//content/public/browser",
+      "//content/public/common",
+      "//device/vr",
+      "//skia",
+      "//ui/base",
+      "//ui/display",
+      "//ui/gl",
+      "//ui/gl/init",
+      "//ui/vector_icons",
+    ]
+  }
+
+  static_library("vr_common") {
+    defines = []
+
+    sources = [
+      "android_ui_gesture_target.cc",
+      "android_ui_gesture_target.h",
+      "elbow_model.cc",
+      "elbow_model.h",
+      "mailbox_to_surface_bridge.cc",
+      "mailbox_to_surface_bridge.h",
+      "non_presenting_gvr_delegate.cc",
+      "non_presenting_gvr_delegate.h",
       "vr_compositor.cc",
       "vr_compositor.h",
       "vr_controller.cc",
@@ -115,14 +139,12 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
     ]
 
     deps = [
+      ":vr_common_ui",
       ":vr_shell_jni_headers",
       "//base",
       "//cc",
       "//chrome:resources",
-      "//components/omnibox/browser",
       "//components/rappor",
-      "//components/security_state/core",
-      "//components/vector_icons",
       "//content/public/android:jni",
       "//content/public/browser",
       "//content/public/common",
@@ -134,7 +156,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//ui/display",
       "//ui/gl",
       "//ui/gl/init",
-      "//ui/vector_icons",
     ]
 
     public_deps = [
@@ -172,20 +193,16 @@ test("vr_shell_unittests") {
   ]
 
   deps = [
-    ":vr_common",
+    ":vr_common_ui",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//chrome/browser",
-    "//components/url_formatter",
+    "//components/security_state/core",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
-
-  # Ensure libgvr static library appears before gcc library in linking order.
-  # See https://crbug.com/704305 for details.
-  libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
 
   data = [
     "test/data/sample_inline.gltf",

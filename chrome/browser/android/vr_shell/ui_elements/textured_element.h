@@ -26,7 +26,7 @@ class TexturedElement : public UiElement {
   void Initialize() final;
 
   // UiElement interface.
-  void Render(VrShellRenderer* renderer,
+  void Render(UiElementRenderer* renderer,
               vr::Mat4f view_proj_matrix) const final;
 
  protected:
