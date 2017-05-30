@@ -643,7 +643,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   int resourceID =
       autofill::data_util::GetPaymentRequestData(autofill::kVisaCard)
           .icon_resource_id;
-  item.cardTypeIcon =
+  item.identifyingIcon =
       ResizeImage(NativeImage(resourceID), CGSizeMake(30.0, 30.0),
                   ProjectionMode::kAspectFillNoClipping);
   return item;

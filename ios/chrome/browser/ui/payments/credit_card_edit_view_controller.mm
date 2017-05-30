@@ -95,7 +95,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if (field.autofillUIType == AutofillUITypeCreditCardNumber) {
         AutofillEditItem* item =
             base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
-        item.cardTypeIcon =
+        item.identifyingIcon =
             [_dataSource cardTypeIconFromCardNumber:item.textFieldValue];
       }
     }
@@ -141,7 +141,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* updatedText =
         [textField.text stringByReplacingCharactersInRange:range
                                                 withString:newText];
-    item.cardTypeIcon = [_dataSource cardTypeIconFromCardNumber:updatedText];
+    item.identifyingIcon = [_dataSource cardTypeIconFromCardNumber:updatedText];
 
     // Update the cell.
     [self reconfigureCellsForItems:@[ item ]];
