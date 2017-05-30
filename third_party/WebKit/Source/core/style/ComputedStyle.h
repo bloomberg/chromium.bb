@@ -1863,15 +1863,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
             color.IsCurrentColor());
   }
 
-  // -webkit-text-stroke-width
-  static float InitialTextStrokeWidth() { return 0; }
-  float TextStrokeWidth() const {
-    return rare_inherited_data_->text_stroke_width_;
-  }
-  void SetTextStrokeWidth(float w) {
-    SET_VAR(rare_inherited_data_, text_stroke_width_, w);
-  }
-
   // -webkit-user-drag
   static EUserDrag InitialUserDrag() { return DRAG_AUTO; }
   EUserDrag UserDrag() const {
