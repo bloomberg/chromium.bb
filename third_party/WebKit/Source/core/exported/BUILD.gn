@@ -21,6 +21,8 @@ blink_core_sources("exported") {
     "WebDataSourceImpl.cpp",
     "WebDataSourceImpl.h",
     "WebDateTimeSuggestion.cpp",
+    "WebFactory.cpp",
+    "WebFactory.h",
     "WebFileChooserCompletionImpl.cpp",
     "WebFileChooserCompletionImpl.h",
     "WebHeap.cpp",
