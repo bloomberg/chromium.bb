@@ -14,16 +14,36 @@ namespace viz {
 
 ClientCompositorFrameSink::ClientCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
+    scoped_refptr<cc::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    cc::SharedBitmapManager* shared_bitmap_manager,
+    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
     cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
     bool enable_surface_synchronization)
     : cc::CompositorFrameSink(std::move(context_provider),
-                              nullptr,
+                              std::move(worker_context_provider),
                               gpu_memory_buffer_manager,
-                              nullptr),
+                              shared_bitmap_manager),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
       client_request_(std::move(client_request)),
+      client_binding_(this),
+      enable_surface_synchronization_(enable_surface_synchronization) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
+
+ClientCompositorFrameSink::ClientCompositorFrameSink(
+    scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
+    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
+    cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+    bool enable_surface_synchronization)
+    : cc::CompositorFrameSink(std::move(vulkan_context_provider)),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
+      compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
+      client_request_(std::move(client_request)),
+      client_binding_(this),
       enable_surface_synchronization_(enable_surface_synchronization) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -32,25 +52,30 @@ ClientCompositorFrameSink::~ClientCompositorFrameSink() {}
 
 bool ClientCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   compositor_frame_sink_.Bind(std::move(compositor_frame_sink_info_));
-  client_binding_.reset(
-      new mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>(
-          this, std::move(client_request_)));
+  client_binding_.Bind(std::move(client_request_));
 
-  begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
+  if (synthetic_begin_frame_source_) {
+    client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
+  } else {
+    begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
+    client->SetBeginFrameSource(begin_frame_source_.get());
+  }
 
-  client->SetBeginFrameSource(begin_frame_source_.get());
   return true;
 }
 
 void ClientCompositorFrameSink::DetachFromClient() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
-  client_binding_.reset();
+  synthetic_begin_frame_source_.reset();
+  client_binding_.Close();
   compositor_frame_sink_.reset();
   cc::CompositorFrameSink::DetachFromClient();
 }
@@ -65,20 +90,17 @@ void ClientCompositorFrameSink::SetLocalSurfaceId(
 void ClientCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!compositor_frame_sink_)
-    return;
-
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
 
-  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-  if (!local_surface_id_.is_valid() ||
-      frame_size != last_submitted_frame_size_) {
-    last_submitted_frame_size_ = frame_size;
-    if (!enable_surface_synchronization_)
-      local_surface_id_ = id_allocator_.GenerateId();
-  }
+  if (!enable_surface_synchronization_ &&
+      (!local_surface_id_.is_valid() || ShouldAllocateNewLocalSurfaceId(frame)))
+    local_surface_id_ = id_allocator_.GenerateId();
+
+  surface_size_ = frame.render_pass_list.back()->output_rect.size();
+  device_scale_factor_ = frame.metadata.device_scale_factor;
+
   compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                 std::move(frame));
 }
@@ -93,23 +115,27 @@ void ClientCompositorFrameSink::DidNotProduceFrame(
 void ClientCompositorFrameSink::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!client_)
-    return;
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 
 void ClientCompositorFrameSink::OnBeginFrame(
     const cc::BeginFrameArgs& begin_frame_args) {
-  begin_frame_source_->OnBeginFrame(begin_frame_args);
+  if (begin_frame_source_)
+    begin_frame_source_->OnBeginFrame(begin_frame_args);
 }
 
 void ClientCompositorFrameSink::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!client_)
-    return;
   client_->ReclaimResources(resources);
+}
+
+bool ClientCompositorFrameSink::ShouldAllocateNewLocalSurfaceId(
+    const cc::CompositorFrame& frame) {
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
+  return frame_size != surface_size_ ||
+         device_scale_factor_ != frame.metadata.device_scale_factor;
 }
 
 void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {

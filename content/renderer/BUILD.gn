@@ -439,6 +439,7 @@ target(link_target_type, "renderer") {
     "//components/payments/mojom:mojom_payment_app",
     "//components/url_formatter",
     "//components/variations",
+    "//components/viz/client",
     "//content:resources",
     "//content/child",
     "//content/common",

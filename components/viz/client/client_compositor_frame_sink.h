@@ -23,7 +23,19 @@ class ClientCompositorFrameSink
  public:
   ClientCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      cc::SharedBitmapManager* shared_bitmap_manager,
+      std::unique_ptr<cc::SyntheticBeginFrameSource>
+          synthetic_begin_frame_source,
+      cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
+      cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      bool enable_surface_synchronization);
+
+  ClientCompositorFrameSink(
+      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+      std::unique_ptr<cc::SyntheticBeginFrameSource>
+          synthetic_begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
       bool enable_surface_synchronization);
@@ -38,6 +50,9 @@ class ClientCompositorFrameSink
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
  private:
+  virtual bool ShouldAllocateNewLocalSurfaceId(
+      const cc::CompositorFrame& frame);
+
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override;
@@ -47,15 +62,17 @@ class ClientCompositorFrameSink
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
-  gfx::Size last_submitted_frame_size_;
+  gfx::Size surface_size_;
+  float device_scale_factor_ = 0.f;
+
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator id_allocator_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request_;
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
-  std::unique_ptr<mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>>
-      client_binding_;
+  mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> client_binding_;
   THREAD_CHECKER(thread_checker_);
   const bool enable_surface_synchronization_;
 
