@@ -12466,6 +12466,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="NOTIFICATION_TYPE_IMAGE"/>
   <int value="3" label="NOTIFICATION_TYPE_MULTIPLE"/>
   <int value="4" label="NOTIFICATION_TYPE_PROGRESS"/>
+  <int value="5" label="NOTIFICATION_TYPE_CUSTOM"/>
 </enum>
 
 <enum name="ExtensionPermission" type="int">
