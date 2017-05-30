@@ -76,6 +76,7 @@ ClientUsageTracker::ClientUsageTracker(
 }
 
 ClientUsageTracker::~ClientUsageTracker() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (special_storage_policy_.get())
     special_storage_policy_->RemoveObserver(this);
 }
@@ -423,7 +424,7 @@ bool ClientUsageTracker::IsUsageCacheEnabledForOrigin(
 
 void ClientUsageTracker::OnGranted(const GURL& origin,
                                    int change_flags) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
@@ -440,7 +441,7 @@ void ClientUsageTracker::OnGranted(const GURL& origin,
 
 void ClientUsageTracker::OnRevoked(const GURL& origin,
                                    int change_flags) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
@@ -456,7 +457,7 @@ void ClientUsageTracker::OnRevoked(const GURL& origin,
 }
 
 void ClientUsageTracker::OnCleared() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   global_limited_usage_ += global_unlimited_usage_;
   global_unlimited_usage_ = 0;
 
