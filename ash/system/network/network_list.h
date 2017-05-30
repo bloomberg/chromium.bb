@@ -19,7 +19,6 @@
 #include "chromeos/network/network_type_pattern.h"
 
 namespace views {
-class Label;
 class Separator;
 class View;
 }
@@ -88,23 +87,24 @@ class NetworkListView : public NetworkStateListDetailedView,
       int child_index);
   void UpdateNetworkChild(int index, const NetworkInfo* info);
 
-  // Reorders children of |container()| as necessary placing |view| at |index|.
+  // Reorders children of |scroll_content()| as necessary placing |view| at
+  // |index|.
   void PlaceViewAtIndex(views::View* view, int index);
 
-  // Creates a Label with text specified by |message_id| and adds it to
-  // |container()| if necessary or updates the text and reorders the
-  // |container()| placing the label at |insertion_index|. When |message_id| is
-  // zero removes the |*label_ptr| from the |container()| and destroys it.
-  // |label_ptr| is an in / out parameter and is only modified if the Label is
-  // created or destroyed.
+  // Creates an info label with text specified by |message_id| and adds it to
+  // |scroll_content()| if necessary or updates the text and reorders the
+  // |scroll_content()| placing the info label at |insertion_index|. When
+  // |message_id| is zero removes the |*info_label_ptr| from the
+  // |scroll_content()| and destroys it. |info_label_ptr| is an in/out parameter
+  // and is only modified if the info label is created or destroyed.
   void UpdateInfoLabel(int message_id,
                        int insertion_index,
-                       views::Label** label_ptr);
+                       InfoLabel** info_label_ptr);
 
-  // Creates a cellular/Wi-Fi header row |view| and adds it to |container()| if
-  // necessary and reorders the |container()| placing the |view| at
-  // |child_index|. Returns the index where the next child should be inserted,
-  // i.e., the index directly after the last inserted child.
+  // Creates a cellular/tether/Wi-Fi header row |view| and adds it to
+  // |scroll_content()| if necessary and reorders the |scroll_content()| placing
+  // the |view| at |child_index|. Returns the index where the next child should
+  // be inserted, i.e., the index directly after the last inserted child.
   int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
                              bool enabled,
                              int child_index,
@@ -120,8 +120,8 @@ class NetworkListView : public NetworkStateListDetailedView,
 
   bool needs_relayout_;
 
-  views::Label* no_wifi_networks_view_;
-  views::Label* no_cellular_networks_view_;
+  InfoLabel* no_wifi_networks_view_;
+  InfoLabel* no_cellular_networks_view_;
   SectionHeaderRowView* cellular_header_view_;
   SectionHeaderRowView* tether_header_view_;
   SectionHeaderRowView* wifi_header_view_;
