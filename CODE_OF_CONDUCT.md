@@ -2,9 +2,10 @@
 
 Google and the Chromium team are committed to preserving and fostering a
 diverse, welcoming community. Below is our community code of conduct, which
-applies to our repos and organizations, mailing lists, blog content, and any
-other Chromium-supported communication group, as well as any private
-communication initiated in the context of these spaces.
+applies to our repos and organizations, issue trackers, mailing lists,
+blog content, and any other Chromium-supported communication group, as
+well as any private communication initiated in the context of these
+spaces.
 
 Simply put, community discussions should be
 
