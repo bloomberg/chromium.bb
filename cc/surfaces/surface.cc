@@ -68,11 +68,9 @@ bool Surface::QueueFrame(CompositorFrame frame,
   }
 
   if (closed_) {
-    if (compositor_frame_sink_support_) {
-      ReturnedResourceArray resources;
-      TransferableResource::ReturnResources(frame.resource_list, &resources);
-      compositor_frame_sink_support_->ReturnResources(resources);
-    }
+    ReturnedResourceArray resources;
+    TransferableResource::ReturnResources(frame.resource_list, &resources);
+    compositor_frame_sink_support_->ReturnResources(resources);
     callback.Run();
     return true;
   }
@@ -234,21 +232,14 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
 void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
                                      const CompositorFrame& current_frame) {
-  // If there is no SurfaceDependencyTracker installed then the |current_frame|
-  // does not block on anything.
-  if (!surface_manager_->dependency_tracker()) {
-    blocking_surfaces_.clear();
-    return;
-  }
-
   base::flat_set<SurfaceId> new_blocking_surfaces;
 
   for (const SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {
-    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-    // If a referenced surface does not have a corresponding active frame in the
-    // display compositor, then it blocks this frame.
-    if (!surface || !surface->HasActiveFrame())
+    Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
+    // If a activation dependency does not have a corresponding active frame in
+    // the display compositor, then it blocks this frame.
+    if (!dependency || !dependency->HasActiveFrame())
       new_blocking_surfaces.insert(surface_id);
   }
 
