@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -23,8 +23,7 @@ class NotificationSource;
 // class and use it to register your notifications instead of going through the
 // notification service directly. It will automatically unregister them for
 // you.
-class CONTENT_EXPORT NotificationRegistrar :
-    NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class CONTENT_EXPORT NotificationRegistrar {
  public:
   // This class must not be derived from (we don't have a virtual destructor so
   // it won't work). Instead, use it as a member in your class.
@@ -62,6 +61,8 @@ class CONTENT_EXPORT NotificationRegistrar :
 
   // Lists all notifications we're currently registered for.
   RecordVector registered_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(NotificationRegistrar);
 };
