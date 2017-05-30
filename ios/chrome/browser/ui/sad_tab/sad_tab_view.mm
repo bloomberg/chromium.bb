@@ -30,27 +30,29 @@ namespace {
 // Color constants.
 const CGFloat kBackgroundColorBrightness = 247.0f / 255.0f;
 const CGFloat kTitleLabelTextColorBrightness = 22.0f / 255.0f;
-const CGFloat kMessageLabelTextColorBrightness = 80.0f / 255.0f;
+const CGFloat kGeneralTextColorBrightness = 80.0f / 255.0f;
 // Layout constants.
 const UIEdgeInsets kLayoutInsets = {24.0f, 24.0f, 24.0f, 24.0f};
 const CGFloat kLayoutBoundsMaxWidth = 600.0f;
 const CGFloat kContainerViewLandscapeTopPadding = 22.0f;
 const CGFloat kTitleLabelTopPadding = 26.0f;
-const CGFloat kMessageLabelTopPadding = 16.0f;
+const CGFloat kMessageTextViewTopPadding = 16.0f;
 const CGFloat kFooterLabelTopPadding = 16.0f;
 const CGFloat kActionButtonHeight = 48.0f;
 const CGFloat kActionButtonTopPadding = 16.0f;
 // Label font sizes.
 const CGFloat kTitleLabelFontSize = 23.0f;
-const CGFloat kMessageLabelFontSize = 14.0f;
+const CGFloat kMessageTextViewFontSize = 14.0f;
 const CGFloat kFooterLabelFontSize = 14.0f;
-// String constants for formatting bullets.
-// "<5xSpace><Bullet><4xSpace><Content>".
-NSString* const kMessageLabelBulletPrefix = @"     \u2022    ";
-// "<newline>".
-NSString* const kMessageLabelBulletSuffix = @"\n";
+// Feedback message bullet indentation.
+const CGFloat kBulletIndent = 17.0f;        // Left margin to bullet indent.
+const CGFloat kBulletedTextIndent = 15.0f;  // Bullet to text indent.
+// Format for bulleted line (<tab><bullet><tab><string>).
+NSString* const kMessageTextViewBulletPrefix = @"\t\u2022\t";
+// Separator for each new bullet line.
+NSString* const kMessageTextViewBulletSuffix = @"\n";
 // "<RTL Begin Indicator><NSString Token><RTL End Indicator>".
-NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
+NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 }  // namespace
 
 @interface SadTabView ()
@@ -62,7 +64,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
 // Displays the Sad Tab title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 // Displays the Sad Tab message.
-@property(nonatomic, readonly, strong) UILabel* messageLabel;
+@property(nonatomic, readonly, strong) UITextView* messageTextView;
 // Displays the Sad Tab footer message (including a link to more help).
 @property(nonatomic, readonly, strong) UILabel* footerLabel;
 // Provides Link functionality to the footerLabel.
@@ -80,21 +82,22 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
 // layouts reference the values set in previous functions.
 - (void)layoutImageView;
 - (void)layoutTitleLabel;
-- (void)layoutMessageLabel;
+- (void)layoutMessageTextView;
 - (void)layoutFooterLabel;
 - (void)layoutActionButton;
 - (void)layoutContainerView;
 
 // Takes an array of strings and bulletizes them into a single multi-line string
-// for display.
-+ (nonnull NSString*)bulletedStringFromStrings:
+// for display. The string has NSParagraphStyle attributes for tab alignment.
++ (nonnull NSAttributedString*)bulletedAttributedStringFromStrings:
     (nonnull NSArray<NSString*>*)strings;
 
 // Returns the appropriate title for the view, e.g. 'Aw Snap!'.
 - (nonnull NSString*)titleLabelText;
-// Returns the appropriate message label body for the view, this will typically
-// be a larger body of explanation or help text.
-- (nonnull NSString*)messageLabelText;
+// Returns the appropriate message text body for the view, this will typically
+// be a larger body of explanation or help text. Returns an attributed string
+// to allow for text formatting and layout to be applied to the returned string.
+- (nonnull NSAttributedString*)messageTextViewAttributedText;
 // Returns the full footer string containing a link, intended to be the last
 // piece of text.
 - (nonnull NSString*)footerLabelText;
@@ -124,7 +127,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
 @synthesize imageView = _imageView;
 @synthesize containerView = _containerView;
 @synthesize titleLabel = _titleLabel;
-@synthesize messageLabel = _messageLabel;
+@synthesize messageTextView = _messageTextView;
 @synthesize footerLabel = _footerLabel;
 @synthesize footerLabelLinkController = _footerLabelLinkController;
 @synthesize actionButton = _actionButton;
@@ -159,26 +162,50 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
 
 #pragma mark - Text Utilities
 
-+ (nonnull NSString*)bulletedStringFromStrings:
++ (nonnull NSAttributedString*)bulletedAttributedStringFromStrings:
     (nonnull NSArray<NSString*>*)strings {
   // Ensures the bullet string is appropriately directional.
   NSString* directionalBulletPrefix =
       base::i18n::IsRTL()
-          ? [NSString stringWithFormat:kMessageLabelBulletRTLFormat,
-                                       kMessageLabelBulletPrefix]
-          : kMessageLabelBulletPrefix;
-  NSMutableString* bulletedString = [NSMutableString string];
+          ? [NSString stringWithFormat:kMessageTextViewBulletRTLFormat,
+                                       kMessageTextViewBulletPrefix]
+          : kMessageTextViewBulletPrefix;
+
+  // Assemble the strings into a single string with each line preceded by a
+  // bullet point.
+  NSMutableString* bulletedString = [[NSMutableString alloc] init];
   for (NSString* string in strings) {
     // If content line has been added to the bulletedString already, ensure the
     // suffix is applied, otherwise don't (e.g. don't for the first item).
     NSArray* newStringArray =
         bulletedString.length
-            ? @[ kMessageLabelBulletSuffix, directionalBulletPrefix, string ]
+            ? @[ kMessageTextViewBulletSuffix, directionalBulletPrefix, string ]
             : @[ directionalBulletPrefix, string ];
     [bulletedString appendString:[newStringArray componentsJoinedByString:@""]];
   }
-  DCHECK(bulletedString);
-  return bulletedString;
+
+  // Prepare a paragraph style that will allow for the alignment of lines of
+  // text separately to the alignment of the bullet-points.
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+  paragraphStyle.tabStops = @[
+    [[NSTextTab alloc] initWithTextAlignment:NSTextAlignmentNatural
+                                    location:kBulletIndent
+                                     options:@{}],
+    [[NSTextTab alloc] initWithTextAlignment:NSTextAlignmentNatural
+                                    location:kBulletIndent + kBulletedTextIndent
+                                     options:@{}]
+  ];
+  paragraphStyle.firstLineHeadIndent = 0.0f;
+  paragraphStyle.headIndent = kBulletIndent + kBulletedTextIndent;
+
+  // Use the paragraph style on the full string.
+  NSAttributedString* bulletedAttributedString = [[NSAttributedString alloc]
+      initWithString:bulletedString
+          attributes:@{NSParagraphStyleAttributeName : paragraphStyle}];
+
+  DCHECK(bulletedAttributedString);
+  return bulletedAttributedString;
 }
 
 #pragma mark - Label Text
@@ -197,24 +224,31 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
   return label;
 }
 
-- (nonnull NSString*)messageLabelText {
-  NSString* label = nil;
+- (nonnull NSAttributedString*)messageTextViewAttributedText {
+  NSAttributedString* label = nil;
   switch (self.mode) {
     case SadTabViewMode::RELOAD:
-      label = l10n_util::GetNSString(IDS_SAD_TAB_MESSAGE);
+      label = [[NSAttributedString alloc]
+          initWithString:l10n_util::GetNSString(IDS_SAD_TAB_MESSAGE)];
       break;
-    case SadTabViewMode::FEEDBACK:
-      label = l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_TRY);
-      label = [label
-          stringByAppendingFormat:
-              @"\n\n%@", [[self class] bulletedStringFromStrings:@[
-                l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_CLOSE_NOTABS),
-                l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO),
-                l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
-                l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_DEVICE)
-              ]]];
-
+    case SadTabViewMode::FEEDBACK: {
+      NSString* feedbackIntroductionString = [NSString
+          stringWithFormat:@"%@\n\n",
+                           l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_TRY)];
+      NSMutableAttributedString* feedbackString =
+          [[NSMutableAttributedString alloc]
+              initWithString:feedbackIntroductionString];
+      NSAttributedString* bulletedListString =
+          [[self class] bulletedAttributedStringFromStrings:@[
+            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_CLOSE_NOTABS),
+            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO),
+            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
+            l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_RESTART_DEVICE)
+          ]];
+      [feedbackString appendAttributedString:bulletedListString];
+      label = feedbackString;
       break;
+    }
   }
   DCHECK(label);
   return label;
@@ -323,20 +357,19 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
   return _titleLabel;
 }
 
-- (UILabel*)messageLabel {
-  if (!_messageLabel) {
-    _messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    [_messageLabel setBackgroundColor:self.backgroundColor];
-    [_messageLabel setText:[self messageLabelText]];
-    [_messageLabel setLineBreakMode:NSLineBreakByWordWrapping];
-    [_messageLabel setNumberOfLines:0];
-    [_messageLabel
-        setTextColor:[UIColor colorWithWhite:kMessageLabelTextColorBrightness
+- (UITextView*)messageTextView {
+  if (!_messageTextView) {
+    _messageTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+    [_messageTextView setBackgroundColor:self.backgroundColor];
+    [_messageTextView setAttributedText:[self messageTextViewAttributedText]];
+    _messageTextView.textContainer.lineFragmentPadding = 0.0f;
+    [_messageTextView
+        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
                                        alpha:1.0]];
-    [_messageLabel setFont:[[MDFRobotoFontLoader sharedInstance]
-                               regularFontOfSize:kMessageLabelFontSize]];
+    [_messageTextView setFont:[[MDFRobotoFontLoader sharedInstance]
+                                  regularFontOfSize:kMessageTextViewFontSize]];
   }
-  return _messageLabel;
+  return _messageTextView;
 }
 
 - (UILabel*)footerLabel {
@@ -347,7 +380,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
     [_footerLabel setFont:[[MDFRobotoFontLoader sharedInstance]
                               regularFontOfSize:kFooterLabelFontSize]];
     [_footerLabel
-        setTextColor:[UIColor colorWithWhite:kMessageLabelTextColorBrightness
+        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
                                        alpha:1.0]];
 
     [_footerLabel setText:[self footerLabelText]];
@@ -398,7 +431,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
   [self addSubview:self.containerView];
   [self.containerView addSubview:self.imageView];
   [self.containerView addSubview:self.titleLabel];
-  [self.containerView addSubview:self.messageLabel];
+  [self.containerView addSubview:self.messageTextView];
   [self.containerView addSubview:self.footerLabel];
 }
 
@@ -407,7 +440,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
 
   [self layoutImageView];
   [self layoutTitleLabel];
-  [self layoutMessageLabel];
+  [self layoutMessageTextView];
   [self layoutFooterLabel];
   [self layoutActionButton];
   [self layoutContainerView];
@@ -436,16 +469,16 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(titleLabelLayout));
 }
 
-- (void)layoutMessageLabel {
+- (void)layoutMessageTextView {
   CGRect containerBounds = self.containerBounds;
-  LayoutRect messageLabelLayout = LayoutRectZero;
-  messageLabelLayout.boundingWidth = CGRectGetWidth(containerBounds);
-  messageLabelLayout.size =
-      [self.messageLabel sizeThatFits:containerBounds.size];
-  messageLabelLayout.position.originY =
-      CGRectGetMaxY(self.titleLabel.frame) + kMessageLabelTopPadding;
-  self.messageLabel.frame =
-      AlignRectOriginAndSizeToPixels(LayoutRectGetRect(messageLabelLayout));
+  LayoutRect messageTextViewLayout = LayoutRectZero;
+  messageTextViewLayout.boundingWidth = CGRectGetWidth(containerBounds);
+  messageTextViewLayout.size =
+      [self.messageTextView sizeThatFits:containerBounds.size];
+  messageTextViewLayout.position.originY =
+      CGRectGetMaxY(self.titleLabel.frame) + kMessageTextViewTopPadding;
+  self.messageTextView.frame =
+      AlignRectOriginAndSizeToPixels(LayoutRectGetRect(messageTextViewLayout));
 }
 
 - (void)layoutFooterLabel {
@@ -454,7 +487,7 @@ NSString* const kMessageLabelBulletRTLFormat = @"\u202E%@\u202C";
   footerLabelLayout.boundingWidth = CGRectGetWidth(containerBounds);
   footerLabelLayout.size = [self.footerLabel sizeThatFits:containerBounds.size];
   footerLabelLayout.position.originY =
-      CGRectGetMaxY(self.messageLabel.frame) + kFooterLabelTopPadding;
+      CGRectGetMaxY(self.messageTextView.frame) + kFooterLabelTopPadding;
   self.footerLabel.frame =
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(footerLabelLayout));
 }
