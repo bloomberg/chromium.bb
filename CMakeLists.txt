@@ -18,6 +18,7 @@ endif ()
 
 option(ENABLE_CCACHE "Enable ccache support." OFF)
 option(ENABLE_DISTCC "Enable distcc support." OFF)
+option(ENABLE_DOCS "Enable documentation generation (doxygen required)." ON)
 
 project(AOM C CXX)
 
@@ -372,6 +373,18 @@ if (XCODE)
   endif ()
 endif ()
 
+# Aomedia documentation rule.
+if (ENABLE_DOCS)
+  include(FindDoxygen)
+  if (DOXYGEN_FOUND)
+    include("${AOM_ROOT}/docs.cmake")
+    setup_documentation_targets()
+  else ()
+    message("--- Cannot find doxygen, ENABLE_DOCS turned off.")
+    set(ENABLE_DOCS OFF)
+  endif ()
+endif ()
+
 # Aomedia install rule.
 set(AOM_INSTALL_INCS
     "${AOM_ROOT}/aom/aom.h"
@@ -405,3 +418,8 @@ install(FILES "${AOM_CONFIG_DIR}/aom.pc"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+
+if (ENABLE_DOCS)
+  install(DIRECTORY "${AOM_CONFIG_DIR}/docs/html"
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/docs/aom")
+endif ()
