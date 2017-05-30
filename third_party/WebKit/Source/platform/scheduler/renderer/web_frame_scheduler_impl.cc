@@ -70,6 +70,11 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
     suspendable_task_queue_->SetBlameContext(nullptr);
   }
 
+  if (unthrottled_but_blockable_task_queue_) {
+    unthrottled_but_blockable_task_queue_->UnregisterTaskQueue();
+    unthrottled_but_blockable_task_queue_->SetBlameContext(nullptr);
+  }
+
   if (parent_web_view_scheduler_) {
     parent_web_view_scheduler_->Unregister(this);
 
@@ -185,6 +190,20 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::UnthrottledTaskRunner() {
         WebTaskRunnerImpl::Create(unthrottled_task_queue_);
   }
   return unthrottled_web_task_runner_;
+}
+
+RefPtr<blink::WebTaskRunner>
+WebFrameSchedulerImpl::UnthrottledButBlockableTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
+  if (!unthrottled_but_blockable_web_task_runner_) {
+    unthrottled_but_blockable_task_queue_ =
+        renderer_scheduler_->NewTimerTaskQueue(
+            TaskQueue::QueueType::FRAME_UNTHROTTLED);
+    unthrottled_but_blockable_task_queue_->SetBlameContext(blame_context_);
+    unthrottled_but_blockable_web_task_runner_ =
+        WebTaskRunnerImpl::Create(unthrottled_but_blockable_task_queue_);
+  }
+  return unthrottled_but_blockable_web_task_runner_;
 }
 
 blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() {

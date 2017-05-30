@@ -53,6 +53,11 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kWebGL:
     case TaskType::kUnspecedTimer:
     case TaskType::kMiscPlatformAPI:
+      // TODO(altimin): Move all these tasks to suspendable or unthrottled
+      // task runner.
+      return frame
+                 ? frame->FrameScheduler()->UnthrottledButBlockableTaskRunner()
+                 : Platform::Current()->CurrentThread()->GetWebTaskRunner();
     case TaskType::kUnthrottled:
       return frame ? frame->FrameScheduler()->UnthrottledTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
