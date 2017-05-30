@@ -183,8 +183,12 @@ CORE_EXPORT VisiblePositionInFlatTree
 EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kRightWordIfOnBoundary);
 VisiblePosition PreviousWordPosition(const VisiblePosition&);
 VisiblePosition NextWordPosition(const VisiblePosition&);
+// TODO(yosin): We'll move |RightPositionOf()| as file location function
+// for |SelectionModifier| class.
 VisiblePosition RightWordPosition(const VisiblePosition&,
                                   bool skips_space_when_moving_right);
+// TODO(yosin): We'll move |LeftPositionOf()| as file location function
+// for |SelectionModifier| class.
 VisiblePosition LeftWordPosition(const VisiblePosition&,
                                  bool skips_space_when_moving_right);
 
@@ -345,6 +349,18 @@ CORE_EXPORT PositionInFlatTree SkipWhitespace(const PositionInFlatTree&);
 CORE_EXPORT IntRect ComputeTextRect(const EphemeralRange&);
 IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
 FloatRect ComputeTextFloatRect(const EphemeralRange&);
+
+// Export below functions only for |SelectionModifier|.
+VisiblePosition HonorEditingBoundaryAtOrBefore(const VisiblePosition&,
+                                               const Position&);
+
+Position NextRootInlineBoxCandidatePosition(Node*,
+                                            const VisiblePosition&,
+                                            EditableType);
+
+Position PreviousRootInlineBoxCandidatePosition(Node*,
+                                                const VisiblePosition&,
+                                                EditableType);
 
 }  // namespace blink
 
