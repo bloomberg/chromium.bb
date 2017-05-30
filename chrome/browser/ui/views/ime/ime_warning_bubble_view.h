@@ -77,8 +77,8 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   // OnBrowserRemoved() is called.
   Browser* browser_;
 
-  // True if bubble anchors to the browser action of the extension.
-  bool anchor_to_browser_action_;
+  // True if bubble anchors to the action of the extension.
+  bool anchor_to_action_;
 
   // The check box on the bubble view.
   views::Checkbox* never_show_checkbox_;

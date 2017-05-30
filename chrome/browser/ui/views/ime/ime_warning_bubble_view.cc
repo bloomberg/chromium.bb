@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -96,7 +95,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
     : extension_(extension),
       browser_view_(browser_view),
       browser_(browser_view->browser()),
-      anchor_to_browser_action_(false),
+      anchor_to_action_(false),
       never_show_checkbox_(nullptr),
       response_callback_(callback),
       bubble_has_shown_(false),
@@ -135,10 +134,10 @@ ImeWarningBubbleView::~ImeWarningBubbleView() {
 void ImeWarningBubbleView::InitAnchorView() {
   views::View* reference_view = nullptr;
 
-  anchor_to_browser_action_ =
+  anchor_to_action_ =
       extensions::ActionInfo::GetBrowserActionInfo(extension_) ||
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
-  if (anchor_to_browser_action_) {
+      extensions::ActionInfo::GetPageActionInfo(extension_);
+  if (anchor_to_action_) {
     // Anchors the bubble to the browser action of the extension.
     reference_view = container_->GetViewForId(extension_->id());
   }
@@ -193,5 +192,5 @@ void ImeWarningBubbleView::InitLayout() {
 }
 
 bool ImeWarningBubbleView::IsToolbarAnimating() {
-  return anchor_to_browser_action_ && container_->animating();
+  return anchor_to_action_ && container_->animating();
 }
