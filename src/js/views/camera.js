@@ -525,6 +525,13 @@ camera.views.Camera = function(context, router) {
    */
   this.forceDefaultFrontFacingForReef58_ = false;
 
+  /**
+   * Aspect ratio of the last opened video stream, or null if nothing was
+   * opened.
+   * @type {?number}
+   */
+  this.lastVideoAspectRatio_ = null;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -625,6 +632,15 @@ camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES = 30;
  */
 camera.views.Camera.EFFECT_CANVAS_SIZE = 80;
 
+/**
+ * Ratio between video and window aspect ratios to be considered close enough
+ * to snap the window dimensions to the window frame. 1.1 means the aspect
+ * ratios can differ by 1.1 times.
+ *
+ * @type {number}
+ * @const
+ */
+camera.views.Camera.ASPECT_RATIO_SNAP_RANGE = 1.1;
 
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
@@ -1988,60 +2004,114 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
 };
 
 /**
- * Sets the window size to the default dimensions.
- * @return {boolean} Whether the window has been resized.
+ * Sets the window size to match the video frame aspect ratio, and positions
+ * it to stay visible and opticallly appealing.
+ * @param {number=} opt_maxOuterHeight Maximum height of the window to be
+ *     applied.
  * @private
  */
-camera.views.Camera.prototype.setDefaultGeometry_ = function() {
-  var bounds = chrome.app.window.current().innerBounds;
+camera.views.Camera.prototype.resetWindowGeometry_ = function(
+    opt_maxOuterHeight) {
+  var outerBounds = chrome.app.window.current().outerBounds;
+  var innerBounds = chrome.app.window.current().innerBounds;
+
+  var decorationInsets = {
+    left: innerBounds.left - outerBounds.left,
+    top: innerBounds.top - outerBounds.top,
+  };
+  decorationInsets.right = outerBounds.width - innerBounds.width -
+      decorationInsets.left;
+  decorationInsets.bottom = outerBounds.height - innerBounds.height -
+      decorationInsets.top;
+
+  // Screen paddings are 10% of the dimension to avoid spanning the window
+  // behind any overlay launcher (if exists). However, if the window already
+  // exceeds these paddings, then use those paddings, so the user window
+  // placement is respected. Eg. if the user moved the window behind the
+  // overlay launcher, we shouldn't move it out of there. Though, we shouldn't
+  // move the window behind the overlay launcher if it wasn't there before.
+  var screenPaddings = {
+    left: Math.min(outerBounds.left, 0.1 * screen.width),
+    top: Math.min(outerBounds.top, 0.1 * screen.height),
+    right: Math.min(0.1 * screen.width, screen.width - outerBounds.width -
+        outerBounds.left),
+    bottom: Math.min(0.1 * screen.height, screen.height - outerBounds.height -
+        outerBounds.top)
+  };
+
+  // Moving the window partly outside of the top bound is impossible with
+  // a user gesture, though some users ended up with this hard to recover
+  // situation due to a bug in Camera app. Explicitly do not allow this
+  // situation.
+  if (screenPaddings.top < 0) {
+    screenPaddings.top = 0;
+  }
+
+  // We need aspect ratio of the client are so insets have to be taken into
+  // account. Though never make the window larger than the screen size (unless
+  // maximized).
+  var maxOuterWidth = Math.min(screen.width,
+      screen.width - screenPaddings.left - screenPaddings.right);
+  var maxOuterHeight = Math.min(screen.height,
+      opt_maxOuterHeight != undefined ? opt_maxOuterHeight :
+      (screen.height - screenPaddings.top - screenPaddings.bottom));
 
   var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
-  var targetWidth = Math.round(screen.width * 0.8);
-  var targetHeight = Math.round(targetWidth / targetAspectRatio);
 
-  if (targetWidth == bounds.width && targetHeight == bounds.height)
-    return false;
+  // We need aspect ratio of the client are so insets have to be taken into
+  // account.
+  var targetWidth = maxOuterWidth;
+  var targetHeight =
+      (targetWidth - decorationInsets.left - decorationInsets.right) /
+      targetAspectRatio + decorationInsets.top + decorationInsets.bottom;
 
-  bounds.setSize(targetWidth, targetHeight)
-  bounds.setPosition(
-      Math.round(bounds.left - (targetWidth - bounds.width) / 2),
-      Math.round(bounds.top - (targetHeight - bounds.height) / 2));
-  return true;
-};
+  if (targetHeight > maxOuterHeight) {
+    targetHeight = maxOuterHeight;
+    targetWidth =
+        (targetHeight - decorationInsets.top - decorationInsets.bottom) *
+        targetAspectRatio + decorationInsets.left + decorationInsets.right;
+  }
 
-/**
- * Snaps the window aspect ratio to the frame size.
- * @private
- */
-camera.views.Camera.prototype.snapWindowAspectRatio_ = function() {
-  var bounds = chrome.app.window.current().innerBounds;
-  var windowAspectRatio = bounds.width / bounds.height;
-
-  var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
-
-  // If a user significantly resized the window, then keep the dimensions.
-  if (targetAspectRatio / windowAspectRatio > 1.5 ||
-      windowAspectRatio / targetAspectRatio > 1.5) {
+  // If dimensions didn't change, then respect the position set previously by
+  // the user.
+  if (Math.round(targetWidth) == outerBounds.width &&
+      Math.round(targetHeight) == outerBounds.height) {
     return;
   }
 
-  var targetWidth = Math.round(bounds.height * targetAspectRatio);
-  var targetHeight = bounds.height;
-  if (targetWidth > screen.width) {
-    targetWidth = bounds.width;
-    targetHeight = Math.round(bounds.width / targetAspectRatio);
+  // Use center as gravity to expand the dimensions in all directions if
+  // possible.
+  var targetLeft = outerBounds.left - (targetWidth - outerBounds.width) / 2;
+  var targetTop = outerBounds.top - (targetHeight - outerBounds.height) / 2;
+
+  var leftClamped = Math.max(screenPaddings.left, Math.min(
+      targetLeft, screen.width - targetWidth - screenPaddings.right));
+  var topClamped = Math.max(screenPaddings.top, Math.min(
+      targetTop, screen.height - targetHeight - screenPaddings.bottom));
+
+  outerBounds.setPosition(Math.round(leftClamped), Math.round(topClamped));
+  outerBounds.setSize(Math.round(targetWidth), Math.round(targetHeight));
+};
+
+/**
+ * Checks whether the current inner bounds of the window matche the passed
+ * aspect ratio closely enough.
+ * @param {number} aspectRatio Aspect ratio to compare against.
+ * @param {boolean} True if yes, false otherwise.
+ */
+camera.views.Camera.prototype.isInnerBoundsAlmostAspectRatio_ =
+    function(aspectRatio) {
+  var bounds = chrome.app.window.current().innerBounds;
+  var windowAspectRatio = bounds.width / bounds.height;
+
+  if (aspectRatio / windowAspectRatio <
+          camera.views.Camera.ASPECT_RATIO_SNAP_RANGE &&
+      windowAspectRatio / aspectRatio <
+          camera.views.Camera.ASPECT_RATIO_SNAP_RANGE) {
+    return true;
   }
 
-  bounds.setSize(targetWidth, targetHeight);
-
-  var targetLeft = Math.round(bounds.left - (targetWidth - bounds.width) / 2);
-  var targetTop = Math.round(bounds.top - (targetHeight - bounds.height) / 2);
-
-  // Clamp the window position so it stays always visible.
-  targetLeft = Math.max(0, Math.min(targetLeft, screen.width - targetWidth));
-  targetTop = Math.max(0, Math.min(targetTop, screen.height - targetHeight));
-
-  bounds.setPosition(targetLeft, targetTop);
+  return false;
 };
 
 /**
@@ -2103,14 +2173,21 @@ camera.views.Camera.prototype.start_ = function() {
   }
 
   var onSuccess = function() {
-    // Set the default dimensions to at most half of the available width
-    // and to the compatible aspect ratio. 640/360 dimensions are used to
-    // detect that the window has never been opened.
-    var bounds = chrome.app.window.current().getBounds();
-    if (bounds.width == 640 && bounds.height == 360)
-      this.setDefaultGeometry_();
-    else
-      this.snapWindowAspectRatio_();
+    // When no bounds are remembered, then apply some default geometry which
+    // matches the video aspect ratio. Otherwise, if the window is very close
+    // to the aspect ratio of the last video, then resnap to the new aspect
+    // ratio while keeping the last height. This is to avoid changing window
+    // size if the user explicitly changed the dimensions to not matching the
+    // aspect ratio.
+    var bounds = chrome.app.window.current().outerBounds;
+    if (bounds.width == 640 && bounds.height == 360) {
+      this.resetWindowGeometry_();
+    } else if (this.lastVideoAspectRatio_ != null &&
+        this.isInnerBoundsAlmostAspectRatio_(this.lastVideoAspectRatio_)) {
+      this.resetWindowGeometry_(bounds.height);
+    }
+
+    this.lastVideoAspectRatio_ = this.video_.width / this.video_.height;
 
     // Remove the initialization layer.
     document.body.classList.remove('initializing');
