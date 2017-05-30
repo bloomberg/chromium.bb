@@ -41,6 +41,23 @@ static_library("ukm") {
   ]
 }
 
+static_library("ukm_interface") {
+  sources = [
+    "ukm_interface.cc",
+    "ukm_interface.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/ukm/public/interfaces",
+  ]
+
+  deps = [
+    ":ukm",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
 # Helper library for observing signals that we need to clear any local data.
 static_library("observers") {
   sources = [

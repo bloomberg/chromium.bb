@@ -130,6 +130,8 @@ static_library("renderer") {
     "//components/translate/content/renderer",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
+    "//components/ukm/public",
+    "//components/ukm/public/interfaces",
     "//components/visitedlink/renderer",
     "//components/web_cache/renderer",
     "//content/app/resources",
