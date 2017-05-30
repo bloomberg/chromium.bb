@@ -22,5 +22,11 @@ message StartArcInstanceRequest {
   // directory.
   optional bool scan_vendor_priv_app = 3;
 
-  // Next ID to use: 4
+  // Option to start the container for Chrome OS login screen. When this is set
+  // and true, the container will start only a handful of processes that don't
+  // read an actual user's /data. |account_id|, |skip_boot_completed_broadcast|,
+  // and |scan_vendor_priv_app| are ignored when |for_login_screen| is true.
+  optional bool for_login_screen = 4;
+
+  // Next ID to use: 5
 }
