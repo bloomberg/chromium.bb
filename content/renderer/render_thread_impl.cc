@@ -625,7 +625,6 @@ RenderThreadImpl::RenderThreadImpl(
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
-      is_surface_synchronization_enabled_(false),
       renderer_binding_(this),
       field_trial_syncer_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
@@ -782,9 +781,6 @@ void RenderThreadImpl::Init(
 
   is_threaded_animation_enabled_ =
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
-
-  is_surface_synchronization_enabled_ =
-      command_line.HasSwitch(cc::switches::kEnableSurfaceSynchronization);
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_partial_raster_enabled_ =
@@ -1624,10 +1620,6 @@ bool RenderThreadImpl::IsThreadedAnimationEnabled() {
 
 bool RenderThreadImpl::IsScrollAnimatorEnabled() {
   return is_scroll_animator_enabled_;
-}
-
-bool RenderThreadImpl::IsSurfaceSynchronizationEnabled() {
-  return is_surface_synchronization_enabled_;
 }
 
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
