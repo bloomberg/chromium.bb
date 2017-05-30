@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -41,8 +40,6 @@ import java.util.concurrent.TimeoutException;
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrShellNavigationTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-    @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
 
     private static final String TEST_PAGE_2D_URL =
@@ -50,18 +47,12 @@ public class VrShellNavigationTest {
     private static final String TEST_PAGE_WEBVR_URL =
             VrTestRule.getHtmlTestFile("test_navigation_webvr_page");
 
-    private ContentViewCore mFirstTabCvc;
-    private WebContents mFirstTabWebContents;
-
     private enum Page { PAGE_2D, PAGE_WEBVR }
     private enum PresentationMode { NON_PRESENTING, PRESENTING }
     private enum FullscreenMode { NON_FULLSCREENED, FULLSCREENED }
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mFirstTabWebContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
-        mFirstTabCvc = mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         VrUtils.forceEnterVr();
         VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
     }
@@ -84,12 +75,12 @@ public class VrShellNavigationTest {
      */
     private void navigateTo(final Page to) throws InterruptedException {
         ChromeTabUtils.waitForTabPageLoaded(
-                mActivityTestRule.getActivity().getActivityTab(), new Runnable() {
+                mVrTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
                         mVrTestRule.runJavaScriptOrFail(
                                 "window.location.href = '" + getUrl(to) + "';",
-                                POLL_TIMEOUT_SHORT_MS, mFirstTabWebContents);
+                                POLL_TIMEOUT_SHORT_MS, mVrTestRule.getFirstTabWebContents());
                     }
                 }, POLL_TIMEOUT_LONG_MS);
     }
@@ -103,7 +94,9 @@ public class VrShellNavigationTest {
 
     private void enterPresentationOrFail(ContentViewCore cvc)
             throws InterruptedException, TimeoutException {
-        mVrTestRule.enterPresentationAndWait(cvc, mFirstTabWebContents);
+        mVrTestRule.enterPresentation(cvc);
+        mVrTestRule.pollJavaScriptBoolean("vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS,
+                mVrTestRule.getFirstTabWebContents());
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 
@@ -117,16 +110,8 @@ public class VrShellNavigationTest {
         Assert.assertEquals("Browser is in fullscreen",
                 fullscreenMode == FullscreenMode.FULLSCREENED, DOMUtils.isFullscreen(wc));
         // Feedback infobar should never show up during navigations.
-        Assert.assertFalse(VrUtils.isInfoBarPresent(
-                mActivityTestRule.getActivity().getWindow().getDecorView()));
-    }
-
-    public int loadUrl(String url, long secondsToWait)
-            throws IllegalArgumentException, InterruptedException {
-        int result = mActivityTestRule.loadUrl(url, secondsToWait);
-        mVrTestRule.waitOnJavaScriptStep(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
-        return result;
+        Assert.assertFalse(
+                VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
     }
 
     /**
@@ -135,12 +120,12 @@ public class VrShellNavigationTest {
     @Test
     @MediumTest
     public void test2dTo2d() throws InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(mFirstTabWebContents, Page.PAGE_2D, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_2D,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -151,12 +136,12 @@ public class VrShellNavigationTest {
     @MediumTest
     public void test2dToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_WEBVR);
 
-        assertState(mFirstTabWebContents, Page.PAGE_WEBVR, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -167,13 +152,13 @@ public class VrShellNavigationTest {
     @MediumTest
     public void test2dFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mFirstTabCvc);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        enterFullscreenOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_WEBVR);
 
-        assertState(mFirstTabWebContents, Page.PAGE_WEBVR, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -184,12 +169,12 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(mFirstTabWebContents, Page.PAGE_2D, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_2D,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -200,12 +185,12 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_WEBVR);
 
-        assertState(mFirstTabWebContents, Page.PAGE_WEBVR, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -216,13 +201,13 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterPresentationOrFail(mFirstTabCvc);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(mFirstTabWebContents, Page.PAGE_2D, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_2D,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -233,13 +218,13 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrPresentingToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterPresentationOrFail(mFirstTabCvc);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_WEBVR);
 
-        assertState(mFirstTabWebContents, Page.PAGE_WEBVR, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -250,13 +235,13 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mFirstTabCvc);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        enterFullscreenOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_2D);
 
-        assertState(mFirstTabWebContents, Page.PAGE_2D, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_2D,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 
     /**
@@ -267,12 +252,12 @@ public class VrShellNavigationTest {
     @MediumTest
     public void testWebVrFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        loadUrl(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mFirstTabCvc);
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        enterFullscreenOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_WEBVR);
 
-        assertState(mFirstTabWebContents, Page.PAGE_WEBVR, PresentationMode.NON_PRESENTING,
-                FullscreenMode.NON_FULLSCREENED);
+        assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
+                PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
     }
 }
