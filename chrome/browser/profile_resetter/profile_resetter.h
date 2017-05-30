@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -31,8 +31,7 @@ class CancellationFlag;
 // This class allows resetting certain aspects of a profile to default values.
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
-class ProfileResetter : public base::NonThreadSafe,
-                        public content::BrowsingDataRemover::Observer {
+class ProfileResetter : public content::BrowsingDataRemover::Observer {
  public:
   // Flags indicating what aspects of a profile shall be reset.
   enum Resettable {
@@ -105,6 +104,8 @@ class ProfileResetter : public base::NonThreadSafe,
   content::BrowsingDataRemover* cookies_remover_;
 
   std::unique_ptr<TemplateURLService::Subscription> template_url_service_sub_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ProfileResetter> weak_ptr_factory_;
 
