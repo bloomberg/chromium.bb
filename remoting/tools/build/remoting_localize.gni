@@ -76,7 +76,7 @@ template("remoting_localize") {
       foreach(i, invoker.variables) {
         args += [
           "--variables",
-          i,
+          rebase_path(i, root_build_dir),
         ]
       }
     }

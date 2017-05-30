@@ -84,9 +84,9 @@ action("embed_resources") {
 
   args = [
     "--data_file",
-    rebase_path("$root_out_dir/headless_lib.pak"),
+    rebase_path("$root_out_dir/headless_lib.pak", root_build_dir),
     "--gendir",
-    rebase_path("$root_gen_dir"),
+    rebase_path("$root_gen_dir", root_build_dir),
     "--header_file",
     "headless/embedded_resource_pak.h",
     "--source_file",
@@ -119,7 +119,7 @@ grit("resources") {
   ]
   grit_flags = [
     "-E",
-    "mojom_root=" + rebase_path(root_gen_dir),
+    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
     ":tab_socket__generator",
@@ -197,7 +197,7 @@ action("gen_devtools_client_api") {
     "--protocol",
     rebase_path(inputs[0], root_build_dir),
     "--output_dir",
-    rebase_path(target_gen_dir) + "/public",
+    rebase_path(target_gen_dir, root_build_dir) + "/public",
   ]
 }
 

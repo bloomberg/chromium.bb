@@ -35,7 +35,7 @@ grit("extensions_browser_resources") {
   ]
   grit_flags = [
     "-E",
-    "mojom_root=" + rebase_path(root_gen_dir),
+    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 }
 
@@ -47,7 +47,7 @@ grit("extensions_renderer_resources") {
   ]
   grit_flags = [
     "-E",
-    "mojom_root=" + rebase_path(root_gen_dir),
+    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
   deps = [

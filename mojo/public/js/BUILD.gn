@@ -77,8 +77,8 @@ action("new_bindings") {
     compiled_file,
   ]
 
-  args = rebase_path(new_bindings_js_files)
-  args += [ rebase_path(compiled_file) ]
+  args = rebase_path(new_bindings_js_files, root_build_dir)
+  args += [ rebase_path(compiled_file, root_build_dir) ]
 
   deps = [
     "//mojo/public/interfaces/bindings:new_bindings__generator",

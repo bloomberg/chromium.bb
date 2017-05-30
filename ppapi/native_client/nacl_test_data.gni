@@ -251,7 +251,8 @@ template("nacl_test_data") {
           "-arch",
           arch,
           "-Wl,-L" +
-              rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
+              rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir"),
+                          root_build_dir),
         ]
         deps = [
           ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)",

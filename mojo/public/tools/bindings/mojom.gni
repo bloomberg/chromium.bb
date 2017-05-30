@@ -270,9 +270,9 @@ template("mojom") {
       "-I",
       rebase_path("//", root_build_dir),
       "-o",
-      rebase_path(root_gen_dir),
+      rebase_path(root_gen_dir, root_build_dir),
       "--bytecode_path",
-      rebase_path("$root_gen_dir/mojo/public/tools/bindings"),
+      rebase_path("$root_gen_dir/mojo/public/tools/bindings", root_build_dir),
     ]
 
     if (defined(invoker.import_dirs)) {
@@ -378,7 +378,7 @@ template("mojom") {
         "--impl_macro",
         shared_component_impl_macro,
         "--output_file",
-        generated_shared_export_header,
+        rebase_path(generated_shared_export_header, root_build_dir),
         "--relative_path",
         rebase_path(generated_shared_export_header, root_gen_dir),
       ]
@@ -532,7 +532,7 @@ template("mojom") {
             "--impl_macro",
             "${invoker.component_macro_prefix}${bindings_configuration.component_macro_suffix}_IMPL",
             "--output_file",
-            generated_export_header,
+            rebase_path(generated_export_header, root_build_dir),
             "--relative_path",
             rebase_path(generated_export_header, root_gen_dir),
           ]
