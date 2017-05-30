@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/persistent_system_profile.h"
 #include "components/variations/variations_associated_data.h"
 
 #if defined(OS_ANDROID)
@@ -155,6 +156,10 @@ void InstantiatePersistentHistograms() {
       base::GlobalHistogramAllocator::Get();
   if (!allocator)
     return;
+
+  // Store a copy of the system profile in this allocator.
+  metrics::GlobalPersistentSystemProfile::GetInstance()
+      ->RegisterPersistentAllocator(allocator->memory_allocator());
 
   // Create tracking histograms for the allocator and record storage file.
   allocator->CreateTrackingHistograms(

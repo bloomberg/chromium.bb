@@ -1,0 +1,126 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef BASE_METRICS_PERSISTENT_SYSTEM_PROFILE_H_
+#define BASE_METRICS_PERSISTENT_SYSTEM_PROFILE_H_
+
+#include <vector>
+
+#include "base/threading/thread_checker.h"
+#include "components/metrics/proto/system_profile.pb.h"
+
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+class PersistentMemoryAllocator;
+}  // namespace base
+
+namespace metrics {
+
+// Manages a copy of the system profile inside persistent memory segments.
+class PersistentSystemProfile {
+ public:
+  PersistentSystemProfile();
+  ~PersistentSystemProfile();
+
+  // This object can store records in multiple memory allocators.
+  void RegisterPersistentAllocator(
+      base::PersistentMemoryAllocator* memory_allocator);
+  void DeregisterPersistentAllocator(
+      base::PersistentMemoryAllocator* memory_allocator);
+
+  // Stores a complete system profile.
+  void SetSystemProfile(const std::string& serialized_profile);
+
+  // Retrieves the system profile from a persistent memory allocator. Returns
+  // true if a profile was successfully retrieved.
+  static bool GetSystemProfile(
+      const base::PersistentMemoryAllocator& memory_allocator,
+      SystemProfileProto* system_profile);
+
+ private:
+  friend class PersistentSystemProfileTest;
+
+  // Defines record types that can be stored inside our local Allocators.
+  enum RecordType : uint8_t {
+    kUnusedSpace = 0,  // The default value for empty memory.
+    kSystemProfileProto,
+  };
+
+  // A class for managing record allocations inside a persistent memory segment.
+  class RecordAllocator {
+   public:
+    // Construct an allocator for writing.
+    RecordAllocator(base::PersistentMemoryAllocator* memory_allocator,
+                    size_t min_size);
+
+    // Construct an allocator for reading.
+    RecordAllocator(const base::PersistentMemoryAllocator* memory_allocator);
+
+    // These methods manage writing records to the allocator. Do not mix these
+    // with "read" calls; it's one or the other.
+    void Reset();
+    bool Write(RecordType type, const std::string& record);
+
+    // Read a record from the allocator. Do not mix this with "write" calls;
+    // it's one or the other.
+    bool Read(RecordType* type, std::string* record) const;
+
+    base::PersistentMemoryAllocator* allocator() { return allocator_; }
+
+   private:
+    // Advance to the next record segment in the memory allocator.
+    bool NextSegment() const;
+
+    // Advance to the next record segment, creating a new one if necessary with
+    // sufficent |min_size| space.
+    bool AddSegment(size_t min_size);
+
+    // Writes data to the current position, updating the passed values past
+    // the amount written. Returns false in case of an error.
+    bool WriteData(RecordType type, const char** data, size_t* remaining_size);
+
+    // Reads data from the current position, updating the passed string
+    // in-place. |type| must be initialized to kUnusedSpace and |record| must
+    // be an empty string before the first call but unchanged thereafter.
+    // Returns true when record is complete.
+    bool ReadData(RecordType* type, std::string* record) const;
+
+    // This never changes but can't be "const" because vector calls operator=().
+    base::PersistentMemoryAllocator* allocator_;  // Storage location.
+
+    // These change even though the underlying data may be "const".
+    mutable uint32_t alloc_reference_;  // Last storage block.
+    mutable size_t alloc_size_;         // Size of the block.
+    mutable size_t end_offset_;         // End of data in block.
+
+    // Copy and assign are allowed for easy use with STL containers.
+  };
+
+  // The list of registered persistent allocators, described by RecordAllocator
+  // instances.
+  std::vector<RecordAllocator> allocators_;
+
+  THREAD_CHECKER(thread_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(PersistentSystemProfile);
+};
+
+// A singleton instance of the above.
+class GlobalPersistentSystemProfile : public PersistentSystemProfile {
+ public:
+  static GlobalPersistentSystemProfile* GetInstance();
+
+ private:
+  friend struct base::DefaultSingletonTraits<GlobalPersistentSystemProfile>;
+
+  GlobalPersistentSystemProfile() {}
+  ~GlobalPersistentSystemProfile() {}
+
+  DISALLOW_COPY_AND_ASSIGN(GlobalPersistentSystemProfile);
+};
+
+}  // namespace metrics
+
+#endif  // BASE_METRICS_PERSISTENT_SYSTEM_PROFILE_H_

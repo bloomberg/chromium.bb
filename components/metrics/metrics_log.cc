@@ -22,6 +22,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/persistent_system_profile.h"
 #include "components/metrics/proto/histogram_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/metrics/proto/user_action_event.pb.h"
@@ -303,7 +304,13 @@ std::string MetricsLog::RecordEnvironment(
     metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);
 
   EnvironmentRecorder recorder(local_state_);
-  return recorder.SerializeAndRecordEnvironmentToPrefs(*system_profile);
+  std::string serialized_proto =
+      recorder.SerializeAndRecordEnvironmentToPrefs(*system_profile);
+
+  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
+      serialized_proto);
+
+  return serialized_proto;
 }
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {
