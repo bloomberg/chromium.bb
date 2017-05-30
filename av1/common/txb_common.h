@@ -32,19 +32,52 @@ static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
+static INLINE int get_level_count(const tran_low_t *tcoeffs, int stride,
+                                  int row, int col, int level,
+                                  int (*nb_offset)[2], int nb_num) {
+  int count = 0;
+  for (int idx = 0; idx < nb_num; ++idx) {
+    const int ref_row = row + nb_offset[idx][0];
+    const int ref_col = col + nb_offset[idx][1];
+    const int pos = ref_row * stride + ref_col;
+    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+      continue;
+    tran_low_t abs_coeff = abs(tcoeffs[pos]);
+    count += abs_coeff > level;
+  }
+  return count;
+}
+
+static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int stride,
+                           int row, int col, int (*nb_offset)[2], int nb_num) {
+  mag[0] = 0;
+  mag[1] = 0;
+  for (int idx = 0; idx < nb_num; ++idx) {
+    const int ref_row = row + nb_offset[idx][0];
+    const int ref_col = col + nb_offset[idx][1];
+    const int pos = ref_row * stride + ref_col;
+    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+      continue;
+    tran_low_t abs_coeff = abs(tcoeffs[pos]);
+    if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0) {
+      if (abs_coeff > mag[0]) {
+        mag[0] = abs_coeff;
+        mag[1] = 1;
+      } else if (abs_coeff == mag[0]) {
+        ++mag[1];
+      }
+    }
+  }
+}
 static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
-                                      int c,  // raster order
-                                      int bwl, int level, int (*nb_offset)[2],
-                                      int nb_num) {
-  const int row = c >> bwl;
-  const int col = c - (row << bwl);
-  const int stride = 1 << bwl;
+                                      int stride, int row, int col, int level,
+                                      int (*nb_offset)[2], int nb_num) {
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < nb_num; ++idx) {
-    int ref_row = row + nb_offset[idx][0];
-    int ref_col = col + nb_offset[idx][1];
-    int pos = (ref_row << bwl) + ref_col;
+    const int ref_row = row + nb_offset[idx][0];
+    const int ref_col = col + nb_offset[idx][1];
+    const int pos = ref_row * stride + ref_col;
     if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
       continue;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
@@ -55,31 +88,39 @@ static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
   return count;
 }
 
+static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
+                                              int mag, int level) {
+  const int ctx = (count + 1) >> 1;
+  const int sig_mag = mag > level;
+  int ctx_idx = -1;
+  if (row == 0 && col == 0) {
+    ctx_idx = (ctx << 1) + sig_mag;
+    assert(ctx_idx < 8);
+  } else if (row == 0) {
+    ctx_idx = 8 + (ctx << 1) + sig_mag;
+    assert(ctx_idx < 18);
+  } else if (col == 0) {
+    ctx_idx = 8 + 10 + (ctx << 1) + sig_mag;
+    assert(ctx_idx < 28);
+  } else {
+    ctx_idx = 8 + 10 + 10 + (ctx << 1) + sig_mag;
+    assert(ctx_idx < COEFF_BASE_CONTEXTS);
+  }
+  return ctx_idx;
+}
+
 static INLINE int get_base_ctx(const tran_low_t *tcoeffs,
                                int c,  // raster order
                                const int bwl, const int level) {
+  const int stride = 1 << bwl;
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int level_minus_1 = level - 1;
   int mag;
-  int count = get_level_count_mag(&mag, tcoeffs, c, bwl, level_minus_1,
-                                  base_ref_offset, BASE_CONTEXT_POSITION_NUM);
-  int ctx = (count + 1) >> 1;
-  mag = mag > level;
-  int ctx_idx = -1;
-  if (row == 0 && col == 0) {
-    ctx_idx = (ctx << 1) + mag;
-    assert(ctx_idx < 8);
-  } else if (row == 0) {
-    ctx_idx = 8 + (ctx << 1) + mag;
-    assert(ctx_idx < 18);
-  } else if (col == 0) {
-    ctx_idx = 8 + 10 + (ctx << 1) + mag;
-    assert(ctx_idx < 28);
-  } else {
-    ctx_idx = 8 + 10 + 10 + (ctx << 1) + mag;
-    assert(ctx_idx < COEFF_BASE_CONTEXTS);
-  }
+  int count =
+      get_level_count_mag(&mag, tcoeffs, stride, row, col, level_minus_1,
+                          base_ref_offset, BASE_CONTEXT_POSITION_NUM);
+  int ctx_idx = get_base_ctx_from_count_mag(row, col, count, mag, level);
   return ctx_idx;
 }
 
@@ -95,17 +136,13 @@ static int br_level_map[9] = {
   0, 0, 1, 1, 2, 2, 3, 3, 3,
 };
 
-static INLINE int get_level_ctx(const tran_low_t *tcoeffs,
-                                const int c,  // raster order
-                                const int bwl) {
-  const int row = c >> bwl;
-  const int col = c - (row << bwl);
-  const int level_minus_1 = NUM_BASE_LEVELS;
-  int mag;
-  int count = get_level_count_mag(&mag, tcoeffs, c, bwl, level_minus_1,
-                                  br_ref_offset, BR_CONTEXT_POSITION_NUM);
+#define BR_MAG_OFFSET 1
+// TODO(angiebird): optimize this function by using a table to map from
+// count/mag to ctx
+static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
+                                            int mag) {
   int offset = 0;
-  if (mag <= 1)
+  if (mag <= BR_MAG_OFFSET)
     offset = 0;
   else if (mag <= 3)
     offset = 1;
@@ -128,6 +165,21 @@ static INLINE int get_level_ctx(const tran_low_t *tcoeffs,
 
   // others: 8 - 11
   return 8 + ctx;
+}
+
+static INLINE int get_br_ctx(const tran_low_t *tcoeffs,
+                             const int c,  // raster order
+                             const int bwl) {
+  const int stride = 1 << bwl;
+  const int row = c >> bwl;
+  const int col = c - (row << bwl);
+  const int level_minus_1 = NUM_BASE_LEVELS;
+  int mag;
+  const int count =
+      get_level_count_mag(&mag, tcoeffs, stride, row, col, level_minus_1,
+                          br_ref_offset, BR_CONTEXT_POSITION_NUM);
+  const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
+  return ctx;
 }
 
 #define SIG_REF_OFFSET_NUM 11
