@@ -1,0 +1,41 @@
+# This test case illustrates a bug with the syllable opcode
+# (https://github.com/liblouis/liblouis/issues/354). A single instance
+# of a word where a syllable rule is triggered is translated
+# correctly. Two words is a row are also fine. However the third
+# instance of the very same word is not correctly translated. If you
+# check with lou_trace you'll notice that the syllable rule is not
+# even used. Funnily enough the fourth instance is translated
+# correctly again.
+
+table: [tables/unicode.dis, tables/de-de-g2.ctb]
+tests:
+  - # translating the word once works fine
+    - abhörauftrag
+    - ⠁⠃⠓⠪⠗⠂⠡⠞⠛
+  - # translating the word twice works also fine
+    - abhörauftrag abhörauftrag
+    - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
+  - # translating the word the third time results in an wrong translation
+    - abhörauftrag abhörauftrag abhörauftrag
+    - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
+    - {xfail: true}
+  - # the fourth translation is correct again
+    # (but the third is of course still wrong)
+    - abhörauftrag abhörauftrag abhörauftrag abhörauftrag
+    - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
+    - {xfail: true}
+
+# Now let's see if the bug is also exposed when using no umlauts. No.
+# Apparently this bug is only triggered for umlauts
+  -
+    - kaufauftrag
+    - ⠅⠡⠋⠂⠡⠞⠛
+  -
+    - kaufauftrag kaufauftrag
+    - ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛
+  -
+    - kaufauftrag kaufauftrag kaufauftrag
+    - ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛
+  -
+    - kaufauftrag kaufauftrag kaufauftrag kaufauftrag
+    - ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛ ⠅⠡⠋⠂⠡⠞⠛

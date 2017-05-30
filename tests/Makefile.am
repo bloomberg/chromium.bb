@@ -137,15 +137,15 @@ dist_yaml_TESTS =				\
 	yaml/da-dk-g18.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
-	yaml/da-dk-g28l.yaml			\
 	yaml/da-dk-g28.yaml			\
+	yaml/da-dk-g28l.yaml			\
 	yaml/el-backward.yaml			\
 	yaml/el-forward.yaml			\
 	yaml/emphasis-full.yaml			\
 	yaml/emphasis-no-context.yaml		\
-	yaml/en-gb-g1_harness.yaml		\
 	yaml/en-GB-g2_backward.yaml		\
 	yaml/en-GB-g2_harness.yaml		\
+	yaml/en-gb-g1_harness.yaml		\
 	yaml/en-ueb-02-stand_alone.yaml		\
 	yaml/en-ueb-03-symbols.yaml		\
 	yaml/en-ueb-05-grade_1_mode.yaml	\
@@ -156,9 +156,9 @@ dist_yaml_TESTS =				\
 	yaml/en-ueb-10-13-contractions.yaml	\
 	yaml/en-ueb-g1_backward.yaml		\
 	yaml/en-ueb-g1_harness.yaml		\
+	yaml/en-ueb-g2-dictionary_harness.yaml	\
 	yaml/en-ueb-g2_backward.yaml		\
 	yaml/en-ueb-g2_backward_no_dis.yaml	\
-	yaml/en-ueb-g2-dictionary_harness.yaml	\
 	yaml/en-ueb-math.yaml			\
 	yaml/en-ueb-symbols_harness.yaml	\
 	yaml/en-us-comp8-ext-back_harness.yaml	\
@@ -182,6 +182,8 @@ dist_yaml_TESTS =				\
 	yaml/hu-hu-comp8_harness.yaml		\
 	yaml/hu-hu-g1_backward.yaml		\
 	yaml/hu-hu-g1_harness.yaml		\
+	yaml/issue-238.yaml			\
+	yaml/issue-35.yaml			\
 	yaml/iu-ca-g1_harness.yaml		\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\
@@ -192,22 +194,21 @@ dist_yaml_TESTS =				\
 	yaml/multipass-forward.yaml		\
 	yaml/multipass.yaml			\
 	yaml/new_emph.yaml			\
-	yaml/nl-g0_harness.yaml			\
 	yaml/nl-NL-g0_harness.yaml		\
+	yaml/nl-g0_harness.yaml			\
 	yaml/no_8dot_harness.yaml		\
-	yaml/nocross_harness.yaml		\
 	yaml/no_g1_harness.yaml			\
 	yaml/no_g2_harness.yaml			\
 	yaml/no_harness.yaml			\
+	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sr-g1_harness.yaml			\
+	yaml/syllable.yaml			\
 	yaml/ta-ta-g1_harness.yaml		\
 	yaml/vi-g1_backward.yaml		\
 	yaml/vi-g1_harness.yaml			\
-	yaml/zh-chn.yaml				\
-	yaml/issue-35.yaml				\
-	yaml/issue-238.yaml
+	yaml/zh-chn.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml
