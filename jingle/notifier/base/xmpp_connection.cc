@@ -79,7 +79,7 @@ XmppConnection::XmppConnection(
 }
 
 XmppConnection::~XmppConnection() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClearClient();
   task_pump_->Stop();
   // We do this because XmppConnection may get destroyed as a result
@@ -91,7 +91,7 @@ XmppConnection::~XmppConnection() {
 }
 
 void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "XmppClient state changed to " << state;
   if (!weak_xmpp_client_.get()) {
     LOG(DFATAL) << "weak_xmpp_client_ unexpectedly NULL";
@@ -129,12 +129,12 @@ void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
 }
 
 void XmppConnection::OnInputLog(const char* data, int len) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "XMPP Input: " << base::StringPiece(data, len);
 }
 
 void XmppConnection::OnOutputLog(const char* data, int len) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "XMPP Output: " << base::StringPiece(data, len);
 }
 

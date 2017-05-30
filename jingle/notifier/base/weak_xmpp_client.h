@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 
 namespace rtc {
@@ -24,7 +24,7 @@ namespace notifier {
 // buzz::XmppClient's destructor isn't marked virtual, but it inherits
 // from rtc::Task, whose destructor *is* marked virtual, so we
 // can safely inherit from it.
-class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
+class WeakXmppClient : public buzz::XmppClient {
  public:
   explicit WeakXmppClient(rtc::TaskParent* parent);
 
@@ -43,6 +43,8 @@ class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
   void Stop() override;
 
  private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // We use our own WeakPtrFactory instead of inheriting from
   // SupportsWeakPtr since we want to invalidate in other places
   // besides the destructor.
