@@ -41,7 +41,7 @@ ChildProcessLauncher::ChildProcessLauncher(
       terminate_child_on_shutdown_(terminate_on_shutdown),
 #endif
       weak_factory_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 
   helper_ = new ChildProcessLauncherHelper(
@@ -52,7 +52,7 @@ ChildProcessLauncher::ChildProcessLauncher(
 }
 
 ChildProcessLauncher::~ChildProcessLauncher() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (process_.process.IsValid() && terminate_child_on_shutdown_) {
     // Client has gone away, so just kill the process.
     ChildProcessLauncherHelper::ForceNormalProcessTerminationAsync(
@@ -62,7 +62,7 @@ ChildProcessLauncher::~ChildProcessLauncher() {
 
 void ChildProcessLauncher::SetProcessPriority(bool background,
                                               bool boost_for_pending_views) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Process to_pass = process_.process.Duplicate();
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
@@ -76,7 +76,7 @@ void ChildProcessLauncher::Notify(
     ChildProcessLauncherHelper::Process process,
     mojo::edk::ScopedPlatformHandle server_handle,
     int error_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   starting_ = false;
   process_ = std::move(process);
 
@@ -103,20 +103,20 @@ void ChildProcessLauncher::Notify(
 
 bool ChildProcessLauncher::IsStarting() {
   // TODO(crbug.com/469248): This fails in some tests.
-  // DCHECK(CalledOnValidThread());
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return starting_;
 }
 
 const base::Process& ChildProcessLauncher::GetProcess() const {
   // TODO(crbug.com/469248): This fails in some tests.
-  // DCHECK(CalledOnValidThread());
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_.process;
 }
 
 base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     bool known_dead,
     int* exit_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!process_.process.IsValid()) {
     // Process is already gone, so return the cached termination status.
     if (exit_code)
