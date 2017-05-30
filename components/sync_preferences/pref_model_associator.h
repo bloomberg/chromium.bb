@@ -16,7 +16,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_preferences/synced_pref_observer.h"
@@ -37,8 +37,7 @@ class PrefServiceSyncable;
 // Contains all preference sync related logic.
 // TODO(sync): Merge this into PrefService once we separate the profile
 // PrefService from the local state PrefService.
-class PrefModelAssociator : public syncer::SyncableService,
-                            public base::NonThreadSafe {
+class PrefModelAssociator : public syncer::SyncableService {
  public:
   // Constructs a PrefModelAssociator initializing the |client_| and |type_|
   // instance variable. The |client| is not owned by this object and the caller
@@ -200,6 +199,8 @@ class PrefModelAssociator : public syncer::SyncableService,
   const PrefModelAssociatorClient* client_;  // Weak.
 
   std::vector<base::Closure> callback_list_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
