@@ -164,7 +164,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           : base::SysUTF16ToNSString(_creditCard.LastFourDigits());
   cardNumberitem.textFieldEnabled = isEditing;
   cardNumberitem.autofillUIType = AutofillUITypeCreditCardNumber;
-  cardNumberitem.cardTypeIcon =
+  cardNumberitem.identifyingIcon =
       [self cardTypeIconFromCardNumber:cardNumberitem.textFieldValue];
   [model addItem:cardNumberitem
       toSectionWithIdentifier:SectionIdentifierFields];
@@ -226,7 +226,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* updatedText =
         [textField.text stringByReplacingCharactersInRange:range
                                                 withString:newText];
-    item.cardTypeIcon = [self cardTypeIconFromCardNumber:updatedText];
+    item.identifyingIcon = [self cardTypeIconFromCardNumber:updatedText];
     // Update the cell.
     [self reconfigureCellsForItems:@[ item ]];
   }
