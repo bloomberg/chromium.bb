@@ -20,10 +20,11 @@ PrerenderHistory::PrerenderHistory(size_t max_items)
 }
 
 PrerenderHistory::~PrerenderHistory() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void PrerenderHistory::AddEntry(const Entry& entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (entries_.size() >= max_items_)
     entries_.pop_front();
   entries_.push_back(entry);
