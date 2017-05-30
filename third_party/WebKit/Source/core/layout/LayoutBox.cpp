@@ -2890,15 +2890,14 @@ bool LayoutBox::HasStretchedLogicalWidth() const {
     // Flexbox Items, which obviously should have a container.
     return false;
   }
-  const ComputedStyle* parent_style = IsAnonymous() ? cb->Style() : nullptr;
   if (cb->IsHorizontalWritingMode() != IsHorizontalWritingMode())
     return style
                .ResolvedAlignSelf(cb->SelfAlignmentNormalBehavior(this),
-                                  parent_style)
+                                  cb->Style())
                .GetPosition() == kItemPositionStretch;
   return style
              .ResolvedJustifySelf(cb->SelfAlignmentNormalBehavior(this),
-                                  parent_style)
+                                  cb->Style())
              .GetPosition() == kItemPositionStretch;
 }
 

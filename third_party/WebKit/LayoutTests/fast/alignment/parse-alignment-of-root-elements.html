@@ -21,7 +21,7 @@ test(function() {
     document.documentElement.style.alignSelf = "center";
     checkValues(document.documentElement, "alignSelf", "align-self", "center", "center");
     document.documentElement.style.alignSelf = "auto";
-    checkValues(document.documentElement, "alignSelf", "align-self", "auto", "normal");
+    checkValues(document.documentElement, "alignSelf", "align-self", "auto", "auto");
 }, "Check out how the DOM's root element resolves the align-self 'auto' values.");
 
 test(function() {
@@ -30,11 +30,11 @@ test(function() {
     document.body.style.alignItems = "auto"; // The 'auto' value is not valid for align-items.
     document.body.style.alignSelf = "auto";
     checkValues(document.body, "alignItems", "align-items", "", "normal");
-    checkValues(document.body, "alignSelf", "align-self", "auto", "center");
+    checkValues(document.body, "alignSelf", "align-self", "auto", "auto");
     block.style.alignItems = ""; // Default value is 'normal' for align-items.
     block.style.alignSelf = "auto";
     checkValues(block, "alignItems", "align-items", "", "normal");
-    checkValues(block, "alignSelf", "align-self", "auto", "normal");
+    checkValues(block, "alignSelf", "align-self", "auto", "auto");
 }, "Check out how the DOM's root element align-items's value is used to resolve its children's align-self 'auto' values.");
 
 test(function() {
@@ -48,7 +48,7 @@ test(function() {
     document.documentElement.style.justifySelf = "left";
     checkValues(document.documentElement, "justifySelf", "justify-self", "left", "left");
     document.documentElement.style.justifySelf = "auto";
-    checkValues(document.documentElement, "justifySelf", "justify-self", "auto", "normal");
+    checkValues(document.documentElement, "justifySelf", "justify-self", "auto", "auto");
 }, "Check out how the DOM's root element resolves the justify-self 'auto' values.");
 
 test(function() {
@@ -58,18 +58,18 @@ test(function() {
     document.body.style.justifyItems = "auto";
     document.body.style.justifySelf = "auto";
     checkValues(document.body, "justifyItems", "justify-items", "auto", "normal");
-    checkValues(document.body, "justifySelf", "justify-self", "auto", "center");
+    checkValues(document.body, "justifySelf", "justify-self", "auto", "auto");
     block.style.justifyItems = "auto";
     block.style.justifySelf = "auto";
     checkValues(block, "justifyItems", "justify-items",  "auto", "normal");
-    checkValues(block, "justifySelf", "justify-self",  "auto", "normal");
-}, "Check out how the DOM's root element align-items's value is used to resolve its children's align-self 'auto' values.");
+    checkValues(block, "justifySelf", "justify-self",  "auto", "auto");
+}, "Check out how the DOM's root element justify-items's value is used to resolve its children's justify-self 'auto' values.");
 
 test(function() {
     document.documentElement.style.justifyItems = "auto";
     checkValues(document.documentElement, "justifyItems", "justify-items", "auto", "normal");
-    checkValues(document.body, "justifySelf", "justify-self",  "auto", "normal");
-    checkValues(block, "justifySelf", "justify-self",  "auto", "normal");
+    checkValues(document.body, "justifySelf", "justify-self",  "auto", "auto");
+    checkValues(block, "justifySelf", "justify-self",  "auto", "auto");
 }, "Check out how the DOM's root element deals with 'auto' value in justify-items.");
 
 test(function() {
@@ -78,19 +78,19 @@ test(function() {
     document.body.style.justifyItems = "auto";
     document.body.style.justifySelf = "auto";
     checkValues(document.body, "justifyItems", "justify-items",  "auto", "legacy center");
-    checkValues(document.body, "justifySelf", "justify-self",  "auto", "center");
+    checkValues(document.body, "justifySelf", "justify-self",  "auto", "auto");
     block.style.justifyItems = "auto";
     block.style.justifySelf = "auto";
     checkValues(block, "justifyItems", "justify-items",  "auto", "legacy center");
-    checkValues(block, "justifySelf", "justify-self",  "auto", "center");
+    checkValues(block, "justifySelf", "justify-self",  "auto", "auto");
 }, "Check out how the DOM's root element justify-items's value with 'legacy' keyword is used to resolve any descendant's justify-items 'auto' values.");
 
 test(function() {
     document.documentElement.style.justifyItems = "auto";
     checkValues(document.body, "justifyItems", "justify-items",  "auto", "normal");
-    checkValues(document.body, "justifySelf", "justify-self",  "auto", "normal");
+    checkValues(document.body, "justifySelf", "justify-self",  "auto", "auto");
     checkValues(block, "justifyItems", "justify-items",  "auto", "normal");
-    checkValues(block, "justifySelf", "justify-self",  "auto", "normal");
+    checkValues(block, "justifySelf", "justify-self",  "auto", "auto");
 }, "Check out how the DOM's root element recomputes its descendant's style when 'legacy' keyword is removed from its justify-items value.");
 
 console.log("");
@@ -112,7 +112,7 @@ test(function() {
     shadowNode.style.alignItems = "";
     checkValues(shadowNode, "alignItems", "align-items", "", "normal");
     shadowNode.style.alignSelf = "auto";
-    checkValues(shadowNode, "alignSelf", "align-self", "auto", "center");
+    checkValues(shadowNode, "alignSelf", "align-self", "auto", "auto");
 }, "Shadow Node inherits from ShadowHost to resolve the 'auto' values for align-self.");
 
 test(function() {
@@ -123,7 +123,7 @@ test(function() {
     shadowNode.style.justifyItems = "";
     checkValues(shadowNode, "justifyItems", "justify-items", "", "normal");
     shadowNode.style.justifySelf = "auto";
-    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "center");
+    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "auto");
 }, "Shadow Node inherits from ShadowHost to resolve the 'auto' values for justify-self.");
 
 test(function() {
@@ -132,14 +132,14 @@ test(function() {
     shadowNode.style.justifySelf = "auto";
     checkValues(shadowHost, "justifyItems", "justify-items", "auto", "normal");
     checkValues(shadowNode, "justifyItems", "justify-items", "right", "right");
-    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "normal");
+    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "auto");
 
     checkValues(shadowHost, "justifyItems", "justify-items", "auto", "normal");
     document.documentElement.style.justifyItems = "legacy center";
     checkValues(document.documentElement, "justifyItems", "justify-items",  "legacy center", "legacy center");
     checkValues(shadowHost, "justifyItems", "justify-items",  "auto", "legacy center");
     checkValues(shadowNode, "justifyItems", "justify-items", "right", "right");
-    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "center");
+    checkValues(shadowNode, "justifySelf", "justify-self", "auto", "auto");
     shadowNode.style.justifyItems = "auto";
     checkValues(shadowNode, "justifyItems", "justify-items", "auto", "legacy center");
     document.documentElement.style.justifyItems = "auto";
@@ -161,7 +161,7 @@ test(function() {
     slotted.style.alignSelf = "start";
     checkValues(slotted, "alignSelf", "align-self", "start", "start");
     slotted.style.alignSelf = "auto";
-    checkValues(slotted, "alignSelf", "align-self", "auto", "normal");
+    checkValues(slotted, "alignSelf", "align-self", "auto", "auto");
 }, "Check out how align-self uses the 'shadowHost' as 'slotted' element's parent while 'slot' is not assigned.");
 
 test(function() {
@@ -174,7 +174,7 @@ test(function() {
     slotted.style.justifySelf = "start";
     checkValues(slotted, "justifySelf", "justify-self", "start", "start");
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "normal");
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "auto");
 }, "Check out how justify-self uses the 'shadowHost' as 'slotted' element's parent while 'slot' is not assigned.");
 
 test(function() {
@@ -188,11 +188,11 @@ test(function() {
     slotted.style.justifyItems = "auto";
     checkValues(slotted, "justifyItems", "justify-items",  "auto", "normal");
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self",  "auto", "normal");
+    checkValues(slotted, "justifySelf", "justify-self",  "auto", "auto");
     shadowNode.style.justifyItems = "auto";
     checkValues(shadowNode, "justifyItems", "justify-items", "auto", "legacy center");
     checkValues(slotted, "justifyItems", "justify-items", "auto", "normal");
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "normal");
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "auto");
     document.documentElement.style.justifyItems = "auto";
 }, "Check out how the 'legacy' keyword in justify-items affects the 'slotted' elements while 'slot' is not assigned.");
 
@@ -211,7 +211,7 @@ test(function() {
     slotted.style.alignSelf = "start";
     checkValues(slotted, "alignSelf", "align-self", "start", "start");
     slotted.style.alignSelf = "auto";
-    checkValues(slotted, "alignSelf", "align-self", "auto", "right");
+    checkValues(slotted, "alignSelf", "align-self", "auto", "auto");
 }, "Check out how align-self uses the 'slot' element's parent (Shadow Node) as 'slotted' element' s parent after the 'slot' is assigned.");
 
 test(function() {
@@ -224,7 +224,7 @@ test(function() {
     slotted.style.justifySelf = "start";
     checkValues(slotted, "justifySelf", "justify-self", "start", "start");
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "right");
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "auto");
 }, "Check out how justify-self uses the 'slot' element's parent (Shadow Node) as 'slotted' element' s parent after the 'slot' is assigned.");
 
 test(function() {
@@ -238,11 +238,11 @@ test(function() {
     slotted.style.justifyItems = "auto";
     checkValues(slotted, "justifyItems", "justify-items", "auto", "normal"); // Shadow host is not the parent now, but ShadowNode.
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "right"); // Shadow host is not the parent now, but ShadowNode.
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "auto"); // Shadow host is not the parent now, but ShadowNode.
     shadowNode.style.justifyItems = "auto";
     checkValues(shadowNode, "justifyItems", "justify-items", "auto", "legacy center");
     checkValues(slotted, "justifyItems", "justify-items", "auto", "legacy center"); // Now that shadowNode is auto, 'legacy' applies.
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "center"); // Now that shadowNode is auto, 'legacy' applies.
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "auto"); // Now that shadowNode is auto, 'legacy' applies.
     document.documentElement.style.justifyItems = "auto";
 }, "Check out how the 'legacy' keyword affects the 'slotted' elements after the 'slot' is assigned.");
 
@@ -256,7 +256,7 @@ test(function() {
     slot.style.alignSelf = "left";
     checkValues(slot, "alignSelf", "align-self",  "left", "left");
     slot.style.alignSelf = "auto";
-    checkValues(slot, "alignSelf", "align-self",  "auto", "normal");
+    checkValues(slot, "alignSelf", "align-self",  "auto", "auto");
 }, "The 'slot' element should not use its parent inside the ShadowDOM tree to resolve the align-self 'auto' values because Blink does not support slots in the flat tree.");
 
 test(function() {
@@ -270,7 +270,7 @@ test(function() {
     slot.style.justifySelf = "left";
     checkValues(slot, "justifySelf", "justify-self",  "left", "left");
     slot.style.justifySelf = "auto";
-    checkValues(slot, "justifySelf", "justify-self",  "auto", "normal");
+    checkValues(slot, "justifySelf", "justify-self",  "auto", "auto");
 }, "The 'slot' element should not use its parent inside the ShadowDOM tree to resolve the justify-self 'auto' values because Blink does not support slots in the flat tree.");
 
 </script>
