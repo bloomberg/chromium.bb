@@ -90,20 +90,27 @@ platforms.
 ### Rebaselining using try jobs
 
 The recommended way to rebaseline for a currently-in-progress CL is to use
-results from try jobs. To do this:
+results from try jobs, by using the command-tool
+`third_party/WebKit/Tools/Scripts/webkit-patch rebaseline-cl`:
 
-1. Upload a CL with changes in Blink source code or layout tests.
-2. Trigger Blink try jobs. The bots to use are the release builders on
+1. First, upload a CL.
+   There is no need to add `[ NeedsRebaseline ]` lines in TestExpectations for
+   tests that are rebaselined by this method.
+2. Trigger try jobs by running `webkit-patch rebaseline-cl`. This should
+   trigger jobs on
    [tryserver.blink](https://build.chromium.org/p/tryserver.blink/builders).
-   This can be done via the code review Web UI or via `git cl try`.
 3. Wait for all try jobs to finish.
-4. Run `third_party/WebKit/Tools/Scripts/webkit-patch rebaseline-cl` to fetch
-   new baselines.
+4. Run `webkit-patch rebaseline-cl` again to fetch new baselines.
+   By default, this will download new baselines for any failing tests
+   in the try jobs.
+   (Run `webkit-patch rebaseline-cl --help` for more specific options.)
 5. Commit the new baselines and upload a new patch.
 
 This way, the new baselines can be reviewed along with the changes, which helps
 the reviewer verify that the new baselines are correct. It also means that there
 is no period of time when the layout test results are ignored.
+
+#### Options
 
 The tests which `webkit-patch rebaseline-cl` tries to download new baselines for
 depends on its arguments.
@@ -114,6 +121,9 @@ depends on its arguments.
   considered.
 * You can also explicitly pass a list of test names, and then just those tests
   will be rebaselined.
+* If some of the try jobs failed to run, and you wish to continue rebaselining
+  assuming that there are no platform-specific results for those platforms,
+  you can add the flag `--fill-missing`.
 
 ### Rebaselining with rebaseline-o-matic
 
