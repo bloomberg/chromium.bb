@@ -25,7 +25,7 @@ constexpr uint32_t recursive_hash<1>(const char* str) {
 
 // Entry point to function that computes hash as constant expression.
 #define COMPUTE_STRING_HASH(S) \
-  static_cast<int32_t>(recursive_hash<sizeof(S)>(S))
+  static_cast<int32_t>(recursive_hash<sizeof(S) - 1>(S))
 
 }  // namespace
 
