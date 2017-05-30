@@ -208,7 +208,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   main_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
   main_context->set_ct_policy_enforcer(
-      io_thread_globals->ct_policy_enforcer.get());
+      io_thread_globals->system_request_context->ct_policy_enforcer());
 
   main_context->set_net_log(io_thread->net_log());
 

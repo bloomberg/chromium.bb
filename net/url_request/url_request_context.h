@@ -240,7 +240,7 @@ class NET_EXPORT URLRequestContext
     return http_user_agent_settings_;
   }
   void set_http_user_agent_settings(
-      HttpUserAgentSettings* http_user_agent_settings) {
+      const HttpUserAgentSettings* http_user_agent_settings) {
     http_user_agent_settings_ = http_user_agent_settings;
   }
 
@@ -298,7 +298,7 @@ class NET_EXPORT URLRequestContext
   scoped_refptr<SSLConfigService> ssl_config_service_;
   NetworkDelegate* network_delegate_;
   HttpServerProperties* http_server_properties_;
-  HttpUserAgentSettings* http_user_agent_settings_;
+  const HttpUserAgentSettings* http_user_agent_settings_;
   CookieStore* cookie_store_;
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
