@@ -746,6 +746,7 @@ if (is_win) {
     deps = [
       "//build/config:exe_and_shlib_deps",
       "//chrome/common:version_header",
+      "//sandbox/mac:seatbelt",
     ]
 
     ldflags = []

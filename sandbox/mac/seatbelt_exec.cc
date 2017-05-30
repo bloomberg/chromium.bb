@@ -75,7 +75,7 @@ bool SeatbeltExecClient::WriteString(std::string* str) {
   return static_cast<uint64_t>(written) == str->size();
 }
 
-SeatbeltExecServer::SeatbeltExecServer(int fd) : fd_(fd) {}
+SeatbeltExecServer::SeatbeltExecServer(int fd) : fd_(fd), extra_params_() {}
 
 SeatbeltExecServer::~SeatbeltExecServer() {}
 
@@ -96,6 +96,10 @@ bool SeatbeltExecServer::InitializeSandbox() {
 bool SeatbeltExecServer::ApplySandboxProfile(const mac::SandboxPolicy& policy) {
   std::vector<const char*> weak_params;
   for (const auto& pair : policy.params()) {
+    weak_params.push_back(pair.first.c_str());
+    weak_params.push_back(pair.second.c_str());
+  }
+  for (const auto& pair : extra_params_) {
     weak_params.push_back(pair.first.c_str());
     weak_params.push_back(pair.second.c_str());
   }
@@ -128,6 +132,13 @@ bool SeatbeltExecServer::ReadString(std::string* str) {
   }
   str->assign(buffer.data());
   return true;
+}
+
+bool SeatbeltExecServer::SetParameter(const base::StringPiece key,
+                                      const base::StringPiece value) {
+  return extra_params_
+      .insert(std::make_pair(key.as_string(), value.as_string()))
+      .second;
 }
 
 }  // namespace sandbox
