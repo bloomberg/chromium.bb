@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,41 @@ void CommitUnused(base::WeakPtr<IndexedDBTransaction> transaction) {
     return;
   leveldb::Status status = transaction->Commit();
   DCHECK(status.ok());
+}
+
+// Used for UMA metrics - do not change values.
+enum UmaIDBException {
+  UmaIDBExceptionUnknownError = 0,
+  UmaIDBExceptionConstraintError = 1,
+  UmaIDBExceptionDataError = 2,
+  UmaIDBExceptionVersionError = 3,
+  UmaIDBExceptionAbortError = 4,
+  UmaIDBExceptionQuotaError = 5,
+  UmaIDBExceptionTimeoutError = 6,
+  UmaIDBExceptionExclusiveMaxValue = 7
+};
+
+// Used for UMA metrics - do not change mappings.
+UmaIDBException ExceptionCodeToUmaEnum(uint16_t code) {
+  switch (code) {
+    case blink::kWebIDBDatabaseExceptionUnknownError:
+      return UmaIDBExceptionUnknownError;
+    case blink::kWebIDBDatabaseExceptionConstraintError:
+      return UmaIDBExceptionConstraintError;
+    case blink::kWebIDBDatabaseExceptionDataError:
+      return UmaIDBExceptionDataError;
+    case blink::kWebIDBDatabaseExceptionVersionError:
+      return UmaIDBExceptionVersionError;
+    case blink::kWebIDBDatabaseExceptionAbortError:
+      return UmaIDBExceptionAbortError;
+    case blink::kWebIDBDatabaseExceptionQuotaError:
+      return UmaIDBExceptionQuotaError;
+    case blink::kWebIDBDatabaseExceptionTimeoutError:
+      return UmaIDBExceptionTimeoutError;
+    default:
+      NOTREACHED();
+  }
+  return UmaIDBExceptionUnknownError;
 }
 
 }  // namespace
@@ -151,6 +187,10 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   DCHECK(!processing_event_queue_);
   if (state_ == FINISHED)
     return;
+
+  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.TransactionAbortReason",
+                            ExceptionCodeToUmaEnum(error.code()),
+                            UmaIDBExceptionExclusiveMaxValue);
 
   timeout_timer_.Stop();
 

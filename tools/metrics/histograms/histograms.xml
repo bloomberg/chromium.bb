@@ -81566,6 +81566,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.TransactionAbortReason" enum="IDBException">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded on the browser side (back end) when an IndexedDB transaction is
+    aborted, specifically recording the reason for the abort. This can be
+    triggered by javascript code on the renderer, errors or force closes on the
+    backend, or by the transaction timeout timer.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.PreloadDelayMs" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
