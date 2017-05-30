@@ -662,7 +662,8 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   cookies.clear();
 }
 
-TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
+// TODO(mattcary): disabled for breaking cronet K build: crbug.com/727566.
+TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateToEncryption) {
   CanonicalCookieVector cookies;
 
   // Create unencrypted cookie store and write something to it.
