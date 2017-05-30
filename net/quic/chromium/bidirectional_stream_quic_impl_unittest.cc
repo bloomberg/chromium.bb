@@ -317,9 +317,12 @@ class DeleteStreamDelegate : public TestDelegateBase {
   void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
     DCHECK_NE(ON_HEADERS_RECEIVED, phase_);
     DCHECK_NE(ON_DATA_READ, phase_);
+    // Make a copy of |response_headers| before the stream is deleted, since
+    // the headers are owned by the stream.
+    SpdyHeaderBlock trailers_copy = trailers.Clone();
     if (phase_ == ON_TRAILERS_RECEIVED)
       DeleteStream();
-    TestDelegateBase::OnTrailersReceived(trailers);
+    TestDelegateBase::OnTrailersReceived(trailers_copy);
   }
 
   void OnFailed(int error) override {

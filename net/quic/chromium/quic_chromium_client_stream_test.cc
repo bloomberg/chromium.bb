@@ -44,13 +44,6 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
 
   MOCK_METHOD0(OnSendData, int());
   MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
-  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
-                                  size_t frame_len) override {
-    trailers_ = headers.Clone();
-    OnTrailingHeadersAvailableMock(headers, frame_len);
-  }
-  MOCK_METHOD2(OnTrailingHeadersAvailableMock,
-               void(const SpdyHeaderBlock& headers, size_t frame_len));
   MOCK_METHOD0(OnClose, void());
   MOCK_METHOD1(OnError, void(int));
   MOCK_METHOD0(HasSendHeadersComplete, bool());
@@ -503,12 +496,11 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
 
   auto t = ProcessTrailers(trailers);
-  base::RunLoop run_loop;
-  EXPECT_CALL(delegate_,
-              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
-      .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
-  run_loop.Run();
+  TestCompletionCallback trailers_callback;
+  EXPECT_EQ(static_cast<int>(t.uncompressed_header_bytes()),
+            handle_->ReadTrailingHeaders(&delegate_.trailers_,
+                                         trailers_callback.callback()));
 
   // Read the body and verify that it arrives correctly.
   EXPECT_EQ(0,
@@ -550,13 +542,9 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   QuicHeaderList t = ProcessTrailers(trailers);
   EXPECT_FALSE(stream_->IsDoneReading());
 
-  base::RunLoop run_loop2;
-  EXPECT_CALL(delegate_,
-              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
-      .WillOnce(
-          testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
-
-  run_loop2.Run();
+  EXPECT_EQ(
+      static_cast<int>(t.uncompressed_header_bytes()),
+      handle_->ReadTrailingHeaders(&delegate_.trailers_, callback.callback()));
 
   // Read the body and verify that it arrives correctly.
   EXPECT_EQ(0, callback.WaitForResult());
@@ -607,13 +595,10 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   // Trailers are not delivered
   EXPECT_FALSE(stream_->IsDoneReading());
 
-  base::RunLoop run_loop2;
-  EXPECT_CALL(delegate_,
-              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
-      .WillOnce(
-          testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
-
-  run_loop2.Run();
+  TestCompletionCallback callback2;
+  EXPECT_EQ(
+      static_cast<int>(t.uncompressed_header_bytes()),
+      handle_->ReadTrailingHeaders(&delegate_.trailers_, callback2.callback()));
 
   // Read the body and verify that it arrives correctly.
   // OnDataAvailable() should follow right after and Read() will return 0.
