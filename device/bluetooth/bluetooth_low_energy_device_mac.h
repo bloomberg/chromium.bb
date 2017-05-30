@@ -129,11 +129,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   CBPeripheral* GetPeripheral();
 
   // Returns BluetoothRemoteGattServiceMac based on the CBService.
-  BluetoothRemoteGattServiceMac* GetBluetoothRemoteGattService(
+  BluetoothRemoteGattServiceMac* GetBluetoothRemoteGattServiceMac(
       CBService* service) const;
 
   // Returns BluetoothRemoteGattDescriptorMac based on the CBDescriptor.
-  BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptor(
+  BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptorMac(
       CBDescriptor* cb_descriptor) const;
 
   // Callback used when the CoreBluetooth Peripheral is disconnected.
