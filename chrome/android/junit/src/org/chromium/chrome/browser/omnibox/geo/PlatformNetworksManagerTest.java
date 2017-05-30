@@ -7,12 +7,16 @@ package org.chromium.chrome.browser.omnibox.geo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -33,6 +37,7 @@ import android.telephony.TelephonyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
@@ -140,6 +145,8 @@ public class PlatformNetworksManagerTest {
     private CellIdentityGsm mCellIdentityGsm;
     @Mock
     private CellIdentityCdma mCellIdentityCdma;
+    @Mock
+    private Intent mNetworkStateChangedIntent;
 
     @Before
     public void setUp() {
@@ -220,6 +227,11 @@ public class PlatformNetworksManagerTest {
                 .thenReturn(
                         Arrays.asList(mCellInfoLte, mCellInfoWcdma, mCellInfoGsm, mCellInfoCdma));
         allPermissionsGranted();
+
+        when(mContext.registerReceiver(eq(null), any(IntentFilter.class)))
+                .thenReturn(mNetworkStateChangedIntent);
+        when(mNetworkStateChangedIntent.getParcelableExtra(eq(WifiManager.EXTRA_WIFI_INFO)))
+                .thenReturn(mWifiInfo);
     }
 
     @Test
@@ -368,11 +380,26 @@ public class PlatformNetworksManagerTest {
 
     @Test
     public void testGetConnectedWifi_locationGrantedWifiDenied() {
-        ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
+        ReflectionHelpers.setStaticField(
+                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.LOLLIPOP);
         locationGrantedWifiDenied();
+        VisibleWifi visibleWifi = PlatformNetworksManager.getConnectedWifi(mContext, mWifiManager);
+        assertEquals(CONNECTED_WIFI, visibleWifi);
+        assertEquals(Long.valueOf(CURRENT_TIME_MS), visibleWifi.timestampMs());
+        verifyNetworkStateAction();
+    }
+
+    @Test
+    public void testGetConnectedWifi_locationGrantedWifiDenied_noWifiInfo() {
+        ReflectionHelpers.setStaticField(
+                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.LOLLIPOP);
+        locationGrantedWifiDenied();
+        when(mNetworkStateChangedIntent.getParcelableExtra(eq(WifiManager.EXTRA_WIFI_INFO)))
+                .thenReturn(null);
         VisibleWifi visibleWifi = PlatformNetworksManager.getConnectedWifi(mContext, mWifiManager);
         assertEquals(UNKNOWN_VISIBLE_WIFI, visibleWifi);
         assertNull(visibleWifi.timestampMs());
+        verifyNetworkStateAction();
     }
 
     @Test
@@ -488,14 +515,15 @@ public class PlatformNetworksManagerTest {
         Set<VisibleCell> expectedVisibleCells =
                 new HashSet<VisibleCell>(Arrays.asList(LTE_CELL, WCDMA_CELL, GSM_CELL, CDMA_CELL));
         Set<VisibleWifi> expectedVisibleWifis = Collections.emptySet();
-        VisibleNetworks expectedVisibleNetworks =
-                VisibleNetworks.create(null, LTE_CELL, expectedVisibleWifis, expectedVisibleCells);
+        VisibleNetworks expectedVisibleNetworks = VisibleNetworks.create(
+                CONNECTED_WIFI, LTE_CELL, expectedVisibleWifis, expectedVisibleCells);
         locationGrantedWifiDenied();
 
         VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
                 mContext, true /* includeAllVisibleNotConnectedNetworks */);
 
         assertEquals(expectedVisibleNetworks, visibleNetworks);
+        verifyNetworkStateAction();
     }
 
     @Test
@@ -546,5 +574,14 @@ public class PlatformNetworksManagerTest {
         when(mContext.checkPermission(eq(Manifest.permission.ACCESS_WIFI_STATE), any(Integer.class),
                      any(Integer.class)))
                 .thenReturn(wifiStatePermission);
+    }
+
+    private void verifyNetworkStateAction() {
+        verify(mContext).registerReceiver(eq(null), argThat(new ArgumentMatcher<IntentFilter>() {
+            @Override
+            public boolean matches(IntentFilter intentFilter) {
+                return intentFilter.hasAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+            }
+        }));
     }
 }
