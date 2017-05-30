@@ -297,6 +297,8 @@ blink_core_sources("html") {
     "forms/DateTimeChooser.h",
     "forms/DateTimeChooserClient.cpp",
     "forms/DateTimeChooserClient.h",
+    "forms/DateTimeChooserImpl.cpp",
+    "forms/DateTimeChooserImpl.h",
     "forms/DateTimeEditElement.cpp",
     "forms/DateTimeEditElement.h",
     "forms/DateTimeFieldElement.cpp",

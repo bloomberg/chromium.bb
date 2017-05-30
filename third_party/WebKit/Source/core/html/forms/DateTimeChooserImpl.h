@@ -31,9 +31,10 @@
 #ifndef DateTimeChooserImpl_h
 #define DateTimeChooserImpl_h
 
+#include <memory>
+#include "core/CoreExport.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/page/PagePopupClient.h"
-#include <memory>
 
 namespace blink {
 
@@ -41,8 +42,9 @@ class ChromeClient;
 class DateTimeChooserClient;
 class PagePopup;
 
-class DateTimeChooserImpl final : public DateTimeChooser,
-                                  public PagePopupClient {
+class CORE_EXPORT DateTimeChooserImpl final
+    : public NON_EXPORTED_BASE(DateTimeChooser),
+      public NON_EXPORTED_BASE(PagePopupClient) {
  public:
   static DateTimeChooserImpl* Create(ChromeClient*,
                                      DateTimeChooserClient*,
