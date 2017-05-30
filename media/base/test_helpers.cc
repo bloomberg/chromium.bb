@@ -69,29 +69,29 @@ WaitableMessageLoopEvent::WaitableMessageLoopEvent(base::TimeDelta timeout)
     : signaled_(false), status_(PIPELINE_OK), timeout_(timeout) {}
 
 WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 base::Closure WaitableMessageLoopEvent::GetClosure() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return BindToCurrentLoop(base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this),
       PIPELINE_OK));
 }
 
 PipelineStatusCB WaitableMessageLoopEvent::GetPipelineStatusCB() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return BindToCurrentLoop(base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this)));
 }
 
 void WaitableMessageLoopEvent::RunAndWait() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RunAndWaitForStatus(PIPELINE_OK);
 }
 
 void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (signaled_) {
     EXPECT_EQ(expected, status_);
     return;
@@ -110,7 +110,7 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
 }
 
 void WaitableMessageLoopEvent::OnCallback(PipelineStatus status) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signaled_ = true;
   status_ = status;
 
@@ -120,7 +120,7 @@ void WaitableMessageLoopEvent::OnCallback(PipelineStatus status) {
 }
 
 void WaitableMessageLoopEvent::OnTimeout() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ADD_FAILURE() << "Timed out waiting for message loop to quit";
   run_loop_->Quit();
 }
