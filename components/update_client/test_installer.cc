@@ -10,10 +10,19 @@
 #include "base/files/file_util.h"
 #include "base/values.h"
 #include "components/update_client/update_client_errors.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
 
 TestInstaller::TestInstaller() : error_(0), install_count_(0) {
+}
+
+TestInstaller::~TestInstaller() {
+  // The unpack path is deleted unconditionally by the component state code,
+  // which is driving this installer. Therefore, the unpack path must not
+  // exist when this object is destroyed.
+  if (!unpack_path_.empty())
+    EXPECT_FALSE(base::DirectoryExists(unpack_path_));
 }
 
 void TestInstaller::OnUpdateError(int error) {
@@ -24,8 +33,8 @@ CrxInstaller::Result TestInstaller::Install(
     const base::DictionaryValue& manifest,
     const base::FilePath& unpack_path) {
   ++install_count_;
-  if (!base::DeleteFile(unpack_path, true))
-    return Result(InstallError::GENERIC_ERROR);
+
+  unpack_path_ = unpack_path;
 
   return Result(InstallError::NONE);
 }
@@ -33,9 +42,6 @@ CrxInstaller::Result TestInstaller::Install(
 bool TestInstaller::GetInstalledFile(const std::string& file,
                                      base::FilePath* installed_file) {
   return false;
-}
-
-TestInstaller::~TestInstaller() {
 }
 
 bool TestInstaller::Uninstall() {

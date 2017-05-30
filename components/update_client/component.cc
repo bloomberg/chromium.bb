@@ -95,9 +95,11 @@ void InstallOnBlockingTaskRunner(
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   DCHECK(blocking_task_runner->RunsTasksOnCurrentThread());
 
+  DCHECK(base::DirectoryExists(unpack_path));
   const auto result = DoInstallOnBlockingTaskRunner(
       main_task_runner, blocking_task_runner, unpack_path, fingerprint,
       installer, callback);
+  base::DeleteFile(unpack_path, true);
 
   const ErrorCategory error_category =
       result.error ? ErrorCategory::kInstallError : ErrorCategory::kErrorNone;
