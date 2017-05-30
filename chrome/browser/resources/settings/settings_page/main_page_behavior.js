@@ -13,7 +13,7 @@ var MainPageBehaviorImpl = {
     /**
      * Help CSS to alter style during the horizontal swipe animation.
      * Note that this is unrelated to the |currentAnimation_| (which refers to
-     * the vertical exapand animation).
+     * the vertical expand animation).
      */
     isSubpageAnimating: {
       reflectToAttribute: true,
@@ -35,9 +35,7 @@ var MainPageBehaviorImpl = {
   /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
-  listeners: {
-    'neon-animation-finish': 'onNeonAnimationFinish_'
-  },
+  listeners: {'neon-animation-finish': 'onNeonAnimationFinish_'},
 
   /** @override */
   attached: function() {
