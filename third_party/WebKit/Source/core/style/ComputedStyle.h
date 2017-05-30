@@ -1705,17 +1705,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
-  // text-size-adjust (aka -webkit-text-size-adjust)
-  static TextSizeAdjust InitialTextSizeAdjust() {
-    return TextSizeAdjust::AdjustAuto();
-  }
-  TextSizeAdjust GetTextSizeAdjust() const {
-    return rare_inherited_data_->text_size_adjust_;
-  }
-  void SetTextSizeAdjust(TextSizeAdjust size_adjust) {
-    SET_VAR(rare_inherited_data_, text_size_adjust_, size_adjust);
-  }
-
   // -webkit-line-break
   static LineBreak InitialLineBreak() { return LineBreak::kAuto; }
   LineBreak GetLineBreak() const {
