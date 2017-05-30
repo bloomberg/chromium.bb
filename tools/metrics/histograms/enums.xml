@@ -18798,6 +18798,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   </int>
 </enum>
 
+<enum name="IDBException" type="int">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="Constraint error"/>
+  <int value="2" label="Data error"/>
+  <int value="3" label="Version error"/>
+  <int value="4" label="Abort error"/>
+  <int value="5" label="Quota error"/>
+  <int value="6" label="Timeout error"/>
+</enum>
+
 <enum name="IDBKeyPathType" type="int">
   <int value="0" label="None">No key path.</int>
   <int value="1" label="String">Key path is a string.</int>
