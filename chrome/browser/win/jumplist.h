@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -64,8 +65,7 @@ class Profile;
 // always delete JumpList on UI thread (the same thread it got constructed on).
 class JumpList : public sessions::TabRestoreServiceObserver,
                  public history::TopSitesObserver,
-                 public RefcountedKeyedService,
-                 public base::NonThreadSafe {
+                 public RefcountedKeyedService {
  public:
   struct JumpListData {
     JumpListData();
@@ -271,6 +271,8 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // A task runner running tasks to delete JumpListIcons directory and
   // JumpListIconsOld directory.
   scoped_refptr<base::SequencedTaskRunner> delete_jumplisticons_task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;
