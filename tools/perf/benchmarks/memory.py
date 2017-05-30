@@ -111,25 +111,6 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
 
 
 @benchmark.Enabled('android')  # catapult:#3176
-@benchmark.Owner(emails=['perezju@chromium.org'])
-class MemoryBenchmarkTop10MobileStress(MemoryBenchmarkTop10Mobile):
-  """Run top 10 mobile page set without closing/restarting the browser.
-
-  This benchmark is intended to stress-test the browser, catching memory leaks
-  or possible crashes after interacting with the browser for a period of time.
-  """
-  page_set = page_sets.MemoryTop10MobileRealistic
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_10_mobile_stress'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStorySetRun(cls):
-    return False
-
-
-@benchmark.Enabled('android')  # catapult:#3176
 @benchmark.Owner(emails=['bashi@chromium.org'])
 class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
   """Timeline based benchmark for measuring memory consumption on mobile
