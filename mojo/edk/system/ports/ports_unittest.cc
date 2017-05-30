@@ -1411,7 +1411,10 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
 
   ScopedMessage message;
   PortRef X, Y;
-  EXPECT_EQ(OK, node1.node().CreatePortPair(&X, &Y));
+  EXPECT_EQ(OK, node0.node().CreateUninitializedPort(&X));
+  EXPECT_EQ(OK, node1.node().CreateUninitializedPort(&Y));
+  EXPECT_EQ(OK, node0.node().InitializePort(X, node1.name(), Y.name()));
+  EXPECT_EQ(OK, node1.node().InitializePort(Y, node0.name(), X.name()));
 
   // Block the merge from proceeding until we can do something stupid with port
   // C. This avoids the test logic racing with async merge logic.
@@ -1422,18 +1425,20 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
 
   // Move C to a new port E. This is not a sane use of Node's public API but
   // is still hypothetically possible. It allows us to force a merge failure
-  // because C will be in an invalid state by the term the merge is processed.
+  // because C will be in an invalid state by the time the merge is processed.
   // As a result, B should be closed.
-  EXPECT_EQ(OK, node1.SendStringMessageWithPort(X, "foo", C));
+  EXPECT_EQ(OK, node1.SendStringMessageWithPort(Y, "foo", C));
 
   node1.Unblock();
 
-  ASSERT_TRUE(node1.ReadMessage(Y, &message));
+  WaitForIdle();
+
+  ASSERT_TRUE(node0.ReadMessage(X, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &E));
 
-  EXPECT_EQ(OK, node1.node().ClosePort(X));
+  EXPECT_EQ(OK, node0.node().ClosePort(X));
   EXPECT_EQ(OK, node1.node().ClosePort(Y));
 
   WaitForIdle();
@@ -1446,7 +1451,7 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
   // Close A, D, and E.
   EXPECT_EQ(OK, node0.node().ClosePort(A));
   EXPECT_EQ(OK, node1.node().ClosePort(D));
-  EXPECT_EQ(OK, node1.node().ClosePort(E));
+  EXPECT_EQ(OK, node0.node().ClosePort(E));
 
   WaitForIdle();
 
