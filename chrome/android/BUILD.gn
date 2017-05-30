@@ -494,6 +494,7 @@ android_library("chrome_test_java") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//printing:printing_java",
+    "//services:service_javatests",
     "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_protobuf:protobuf_nano_javalib",
