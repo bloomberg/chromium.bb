@@ -123,7 +123,9 @@ public class MinidumpUploadCallable implements Callable<Integer> {
             boolean success = handleExecutionResponse(connection);
 
             return success ? UPLOAD_SUCCESS : UPLOAD_FAILURE;
-        } catch (IOException e) {
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
+            // ArrayIndexOutOfBoundsException due to bad GZIPOutputStream implementation on some
+            // old sony devices.
             // For now just log the stack trace.
             Log.w(TAG, "Error while uploading " + mFileToUpload.getName(), e);
             return UPLOAD_FAILURE;
