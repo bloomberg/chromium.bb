@@ -78,7 +78,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       perspective_origin_(ComputedStyle::InitialPerspectiveOrigin()),
       object_position_(ComputedStyle::InitialObjectPosition()),
       line_clamp(ComputedStyle::InitialLineClamp()),
-      draggable_region_mode_(kDraggableRegionNone),
+      draggable_region_mode_(static_cast<unsigned>(kDraggableRegionNone)),
       shape_outside_(ComputedStyle::InitialShapeOutside()),
       clip_path_(ComputedStyle::InitialClipPath()),
       mask_(kMaskFillLayer, true),
