@@ -135,8 +135,10 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
     return false;
 
   const GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url))
+  if (new_tab_url.is_valid() && (MatchesOriginAndPath(url, new_tab_url) ||
+                                 IsMatchingServiceWorker(url, new_tab_url))) {
     return true;
+  }
 
   const TemplateURL* template_url =
       GetDefaultSearchProviderTemplateURL(profile);
@@ -420,7 +422,8 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   std::string remote_ntp_host(chrome::kChromeSearchRemoteNtpHost);
   NewTabURLDetails details = NewTabURLDetails::ForProfile(profile);
   if (details.state == NEW_TAB_URL_VALID &&
-      MatchesOriginAndPath(url, details.url)) {
+      (MatchesOriginAndPath(url, details.url) ||
+       IsMatchingServiceWorker(url, details.url))) {
     replacements.SetHost(remote_ntp_host.c_str(),
                          url::Component(0, remote_ntp_host.length()));
   }
