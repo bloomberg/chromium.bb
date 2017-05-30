@@ -98,7 +98,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
       self.skipTest('Benchmark %s is disabled' % SinglePageBenchmark.Name())
 
     if self.id() in _DISABLED_TESTS:
-      self.skipTest('Test is explictly disabled')
+      self.skipTest('Test is explicitly disabled')
 
     self.assertEqual(0, SinglePageBenchmark().Run(options),
                      msg='Failed: %s' % benchmark_class)
