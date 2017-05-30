@@ -30,6 +30,7 @@
 
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -56,7 +57,12 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
+  canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
+      surface_->getCanvas(),
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
+              color_params.UsesOutputSpaceBlending()
+          ? color_params.GetSkColorSpace()
+          : nullptr));
   canvas_->save();
 
   if (initialization_mode == kInitializeImagePixels)

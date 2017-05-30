@@ -28,6 +28,9 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   explicit SkiaPaintCanvas(SkCanvas* canvas);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
+  // If |target_color_space| is non-nullptr, then this will wrap |canvas| in a
+  // SkColorSpaceXformCanvas.
+  SkiaPaintCanvas(SkCanvas* canvas, sk_sp<SkColorSpace> target_color_space);
   ~SkiaPaintCanvas() override;
 
   SkMetaData& getMetaData() override;
@@ -139,8 +142,11 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   using PaintCanvas::drawPicture;
 
  private:
+  void WrapCanvasInColorSpaceXformCanvas(
+      sk_sp<SkColorSpace> target_color_space);
   SkCanvas* canvas_;
   std::unique_ptr<SkCanvas> owned_;
+  std::unique_ptr<SkCanvas> color_space_xform_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaPaintCanvas);
 };
