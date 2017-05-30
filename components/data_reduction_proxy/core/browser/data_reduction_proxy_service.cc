@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -97,8 +96,8 @@ void DataReductionProxyService::UpdateDataUseForHost(int64_t network_bytes,
                                                      const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (compression_stats_) {
-    compression_stats_->RecordDataUsage(host, original_bytes, network_bytes,
-                                        base::Time::Now());
+    compression_stats_->RecordDataUseByHost(host, network_bytes, original_bytes,
+                                            base::Time::Now());
   }
 }
 
@@ -107,13 +106,12 @@ void DataReductionProxyService::UpdateContentLengths(
     int64_t original_size,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
-    scoped_refptr<DataUseGroup> data_use_group,
     const std::string& mime_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (compression_stats_) {
-    compression_stats_->UpdateContentLengths(
-        data_used, original_size, data_reduction_proxy_enabled, request_type,
-        data_use_group, mime_type);
+    compression_stats_->RecordDataUseWithMimeType(data_used, original_size,
+                                                  data_reduction_proxy_enabled,
+                                                  request_type, mime_type);
   }
 }
 

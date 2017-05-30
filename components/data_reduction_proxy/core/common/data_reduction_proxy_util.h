@@ -28,6 +28,8 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
+class LoFiDecider;
+
 enum class Client {
   UNKNOWN,
   CRONET_ANDROID,
@@ -89,6 +91,13 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
 // for partial responses if necessary.
 int64_t CalculateEffectiveOCL(const net::URLRequest& request);
 
+// Given a |request| that went through the Data Reduction Proxy if |used_drp| is
+// true, this function estimates how many bytes would have been received if the
+// response had been received directly from the origin without any data saver
+// optimizations.
+int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
+                                      bool used_drp,
+                                      const LoFiDecider* lofi_decider);
 }  // namespace util
 
 namespace protobuf_parser {

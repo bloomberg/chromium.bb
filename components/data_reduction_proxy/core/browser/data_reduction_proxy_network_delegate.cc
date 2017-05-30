@@ -20,8 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
-#include "components/data_reduction_proxy/core/browser/data_use_group.h"
-#include "components/data_reduction_proxy/core/browser/data_use_group_provider.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
@@ -161,54 +159,6 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
                           received_content_length);
 }
 
-// Estimate the size of the original headers of |request|. If |used_drp| is
-// true, then it's assumed that the original request would have used HTTP/1.1,
-// otherwise it assumes that the original request would have used the same
-// protocol as |request| did. This is to account for stuff like HTTP/2 header
-// compression.
-// TODO(rajendrant): Remove this method when data use ascriber observers are
-// used to record the per-site data usage.
-int64_t EstimateOriginalHeaderBytes(const net::URLRequest& request,
-                                    bool used_drp) {
-  if (used_drp) {
-    // TODO(sclittle): Remove headers added by Data Reduction Proxy when
-    // computing original size. https://crbug.com/535701.
-    return request.response_headers()->raw_headers().size();
-  }
-  return std::max<int64_t>(0, request.GetTotalReceivedBytes() -
-                                  request.received_response_content_length());
-}
-
-// Given a |request| that went through the Data Reduction Proxy if |used_drp| is
-// true, this function estimates how many bytes would have been received if the
-// response had been received directly from the origin without any data saver
-// optimizations.
-// TODO(rajendrant): Remove this method when data use ascriber observers are
-// used to record the per-site data usage.
-int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
-                                      bool used_drp,
-                                      const LoFiDecider* lofi_decider) {
-  if (request.was_cached() || !request.response_headers())
-    return request.GetTotalReceivedBytes();
-
-  if (lofi_decider) {
-    if (lofi_decider->IsClientLoFiAutoReloadRequest(request))
-      return 0;
-
-    int64_t first, last, length;
-    if (lofi_decider->IsClientLoFiImageRequest(request) &&
-        request.response_headers()->GetContentRangeFor206(&first, &last,
-                                                          &length) &&
-        length > request.received_response_content_length()) {
-      return EstimateOriginalHeaderBytes(request, used_drp) + length;
-    }
-  }
-
-  return used_drp ? EstimateOriginalHeaderBytes(request, used_drp) +
-                        util::CalculateEffectiveOCL(request)
-                  : request.GetTotalReceivedBytes();
-}
-
 // Verifies that the chrome proxy related request headers are set correctly.
 // |via_chrome_proxy| is true if the request is being fetched via Chrome Data
 // Saver proxy.
@@ -268,15 +218,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
     const net::CompletionCallback& callback,
     GURL* new_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (data_use_group_provider_) {
-    // Creates and initializes a |DataUseGroup| for the |request| if it does not
-    // exist. Even though we do not use the |DataUseGroup| here, we want to
-    // associate one with a request as early as possible in case the frame
-    // associated with the request goes away before the request is completed.
-    scoped_refptr<DataUseGroup> data_use_group =
-        data_use_group_provider_->GetDataUseGroup(request);
-    data_use_group->Initialize();
-  }
 
   // |data_reduction_proxy_io_data_| can be NULL for Webview.
   if (data_reduction_proxy_io_data_ &&
@@ -548,7 +489,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
 
   // Estimate how many bytes would have been used if the DataReductionProxy was
   // not used, and record the data usage.
-  int64_t original_size = EstimateOriginalReceivedBytes(
+  int64_t original_size = util::EstimateOriginalReceivedBytes(
       request, request_type == VIA_DATA_REDUCTION_PROXY,
       data_reduction_proxy_io_data_
           ? data_reduction_proxy_io_data_->lofi_decider()
@@ -558,19 +499,13 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
   if (request.response_headers())
     request.response_headers()->GetMimeType(&mime_type);
 
-  scoped_refptr<DataUseGroup> data_use_group =
-      data_use_group_provider_
-          ? data_use_group_provider_->GetDataUseGroup(&request)
-          : nullptr;
-  AccumulateDataUsage(data_used, original_size, request_type, data_use_group,
-                      mime_type);
+  AccumulateDataUsage(data_used, original_size, request_type, mime_type);
 }
 
 void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
     int64_t data_used,
     int64_t original_size,
     DataReductionProxyRequestType request_type,
-    const scoped_refptr<DataUseGroup>& data_use_group,
     const std::string& mime_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(data_used, 0);
@@ -578,7 +513,7 @@ void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
   if (data_reduction_proxy_io_data_) {
     data_reduction_proxy_io_data_->UpdateContentLengths(
         data_used, original_size, data_reduction_proxy_io_data_->IsEnabled(),
-        request_type, data_use_group, mime_type);
+        request_type, mime_type);
   }
 }
 
@@ -647,12 +582,6 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
   return util::ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
                                            request.url(),
                                            &data_reduction_proxy_info);
-}
-
-void DataReductionProxyNetworkDelegate::SetDataUseGroupProvider(
-    std::unique_ptr<DataUseGroupProvider> data_use_group_provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  data_use_group_provider_ = std::move(data_use_group_provider);
 }
 
 void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(

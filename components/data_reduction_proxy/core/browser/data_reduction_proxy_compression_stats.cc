@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
-#include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -437,43 +436,23 @@ void DataReductionProxyCompressionStats::Init() {
   InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 }
 
-void DataReductionProxyCompressionStats::UpdateContentLengths(
+void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
     int64_t data_used,
     int64_t original_size,
     bool data_saver_enabled,
     DataReductionProxyRequestType request_type,
-    const scoped_refptr<DataUseGroup>& data_use_group,
     const std::string& mime_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("loader",
+               "DataReductionProxyCompressionStats::RecordDataUseWithMimeType")
   session_total_received_ += data_used;
   session_total_original_ += original_size;
-  std::string data_use_host;
-  if (data_use_group) {
-    data_use_host = data_use_group->GetHostname();
-  }
-
-  RecordData(data_used, original_size, data_saver_enabled, request_type,
-             data_use_host, mime_type);
-}
-
-void DataReductionProxyCompressionStats::RecordData(
-    int64_t data_used,
-    int64_t original_size,
-    bool data_saver_enabled,
-    DataReductionProxyRequestType request_type,
-    const std::string& data_use_host,
-    const std::string& mime_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("loader", "DataReductionProxyCompressionStats::RecordData")
 
   IncreaseInt64Pref(data_reduction_proxy::prefs::kHttpReceivedContentLength,
                     data_used);
   IncreaseInt64Pref(data_reduction_proxy::prefs::kHttpOriginalContentLength,
                     original_size);
 
-  // TODO(rajendrant): Remove RecordDataUsage once data use ascriber based per
-  // domain data usage recording is enabled.
-  RecordDataUsage(data_use_host, data_used, original_size, base::Time::Now());
   RecordRequestSizePrefs(data_used, original_size, data_saver_enabled,
                          request_type, mime_type, base::Time::Now());
 }
@@ -1188,7 +1167,7 @@ void DataReductionProxyCompressionStats::IncrementDailyUmaPrefs(
   }
 }
 
-void DataReductionProxyCompressionStats::RecordDataUsage(
+void DataReductionProxyCompressionStats::RecordDataUseByHost(
     const std::string& data_usage_host,
     int64_t data_used,
     int64_t original_size,

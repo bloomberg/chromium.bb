@@ -35,8 +35,6 @@ class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
-class DataUseGroupProvider;
-class DataUseGroup;
 
 // Values of the UMA DataReductionProxy.LoFi.TransformationType histogram.
 // This enum must remain synchronized with
@@ -75,9 +73,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void InitIODataAndUMA(
       DataReductionProxyIOData* io_data,
       DataReductionProxyBypassStats* bypass_stats);
-
-  void SetDataUseGroupProvider(
-      std::unique_ptr<DataUseGroupProvider> data_use_group_provider);
 
  private:
   friend class DataReductionProxyTestContext;
@@ -136,7 +131,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void AccumulateDataUsage(int64_t data_used,
                            int64_t original_size,
                            DataReductionProxyRequestType request_type,
-                           const scoped_refptr<DataUseGroup>& data_use_group,
                            const std::string& mime_type);
 
   // Record information such as histograms related to the Content-Length of
@@ -187,8 +181,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   DataReductionProxyIOData* data_reduction_proxy_io_data_;
 
   const DataReductionProxyConfigurator* configurator_;
-
-  std::unique_ptr<DataUseGroupProvider> data_use_group_provider_;
 
   base::ThreadChecker thread_checker_;
 
