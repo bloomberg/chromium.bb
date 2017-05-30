@@ -39,7 +39,6 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/WordAwareIterator.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"

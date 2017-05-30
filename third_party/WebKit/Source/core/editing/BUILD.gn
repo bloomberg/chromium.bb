@@ -192,8 +192,6 @@ blink_core_sources("editing") {
     "iterators/TextIteratorTextState.h",
     "iterators/TextSearcherICU.cpp",
     "iterators/TextSearcherICU.h",
-    "iterators/WordAwareIterator.cpp",
-    "iterators/WordAwareIterator.h",
     "markers/CompositionMarkerListImpl.cpp",
     "markers/CompositionMarkerListImpl.h",
     "markers/DocumentMarker.cpp",
