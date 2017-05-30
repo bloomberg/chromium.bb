@@ -53,7 +53,6 @@ class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnchor;
 class ScrollAnimatorBase;
-class SmoothScrollSequencer;
 class CompositorAnimationTimeline;
 
 enum IncludeScrollbarsInRect {
@@ -78,10 +77,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
 
   virtual PlatformChromeClient* GetChromeClient() const { return 0; }
 
-  virtual SmoothScrollSequencer* GetSmoothScrollSequencer() const {
-    return nullptr;
-  }
-
   virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
 
   virtual void SetScrollOffset(const ScrollOffset&,
@@ -104,7 +99,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   virtual LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
                                     const ScrollAlignment& align_x,
                                     const ScrollAlignment& align_y,
-                                    bool is_smooth,
                                     ScrollType = kProgrammaticScroll);
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
