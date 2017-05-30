@@ -64,8 +64,6 @@ class TestClientBinding : public cc::mojom::MojoCompositorFrameSink,
       begin_frame_source_->RemoveObserver(this);
   }
 
-  void EvictCurrentSurface() override {}
-
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override {
     sink_client_->OnBeginFrame(args);

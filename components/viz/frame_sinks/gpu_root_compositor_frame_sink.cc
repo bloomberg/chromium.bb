@@ -74,10 +74,6 @@ void GpuRootCompositorFrameSink::SetLocalSurfaceId(
   display_->SetLocalSurfaceId(local_surface_id, scale_factor);
 }
 
-void GpuRootCompositorFrameSink::EvictCurrentSurface() {
-  support_->EvictCurrentSurface();
-}
-
 void GpuRootCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
