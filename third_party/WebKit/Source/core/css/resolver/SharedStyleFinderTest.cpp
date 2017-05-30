@@ -153,7 +153,9 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByFocus) {
   EXPECT_FALSE(a->IsFocused());
   EXPECT_FALSE(b->IsFocused());
 
-  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  // :focus rules do not end up in uncommon attribute rule sets. Style sharing
+  // is skipped for focused elements in Element::SupportsStyleSharing().
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*a));
   EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 

@@ -196,6 +196,50 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass) {
   ASSERT_EQ(0u, rules->size());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_Focus) {
+  CSSTestHelper helper;
+
+  helper.AddCSSRules(":focus { }");
+  helper.AddCSSRules("[attr]:focus { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.FocusPseudoClassRules();
+  ASSERT_EQ(2u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_LinkVisited) {
+  CSSTestHelper helper;
+
+  helper.AddCSSRules(":link { }");
+  helper.AddCSSRules("[attr]:link { }");
+  helper.AddCSSRules(":visited { }");
+  helper.AddCSSRules("[attr]:visited { }");
+  helper.AddCSSRules(":-webkit-any-link { }");
+  helper.AddCSSRules("[attr]:-webkit-any-link { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.LinkPseudoClassRules();
+  ASSERT_EQ(6u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_Cue) {
+  CSSTestHelper helper;
+
+  helper.AddCSSRules("::cue(b) { }");
+  helper.AddCSSRules("video::cue(u) { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.CuePseudoRules();
+  ASSERT_EQ(2u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
+  CSSTestHelper helper;
+
+  helper.AddCSSRules("::placeholder { }");
+  helper.AddCSSRules("input::placeholder { }");
+  RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<RuleData>* rules = rule_set.PlaceholderPseudoRules();
+  ASSERT_EQ(2u, rules->size());
+}
+
 TEST(RuleSetTest, SelectorIndexLimit) {
   StringBuilder builder;
 

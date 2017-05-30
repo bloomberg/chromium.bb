@@ -90,6 +90,15 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets() {
                         LayoutTheme::GetTheme().ExtraQuirksStyleSheet();
   quirks_style_sheet_ = ParseUASheet(quirks_rules);
   default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
+
+#if DCHECK_IS_ON()
+  default_style_->CompactRulesIfNeeded();
+  default_print_style_->CompactRulesIfNeeded();
+  default_quirks_style_->CompactRulesIfNeeded();
+  DCHECK(default_style_->UniversalRules()->IsEmpty());
+  DCHECK(default_print_style_->UniversalRules()->IsEmpty());
+  DCHECK(default_quirks_style_->UniversalRules()->IsEmpty());
+#endif
 }
 
 RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {

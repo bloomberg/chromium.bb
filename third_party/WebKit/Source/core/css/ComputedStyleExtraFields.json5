@@ -85,13 +85,6 @@
     },
     // Whether this style is affected by these pseudo-classes.
     {
-      name: "AffectedByFocus",
-      field_template: "monotonic_flag",
-      default_value: "false",
-      custom_copy: true,
-      custom_compare: true,
-    },
-    {
       name: "AffectedByFocusWithin",
       field_template: "monotonic_flag",
       default_value: "false",

@@ -147,11 +147,12 @@ void RuleSet::AddToRuleSet(const AtomicString& key,
   rules->Push(rule_data);
 }
 
-static void ExtractValuesforSelector(const CSSSelector* selector,
-                                     AtomicString& id,
-                                     AtomicString& class_name,
-                                     AtomicString& custom_pseudo_element_name,
-                                     AtomicString& tag_name) {
+static void ExtractSelectorValues(const CSSSelector* selector,
+                                  AtomicString& id,
+                                  AtomicString& class_name,
+                                  AtomicString& custom_pseudo_element_name,
+                                  AtomicString& tag_name,
+                                  CSSSelector::PseudoType& pseudo_type) {
   switch (selector->Match()) {
     case CSSSelector::kId:
       id = selector->Value();
@@ -163,12 +164,31 @@ static void ExtractValuesforSelector(const CSSSelector* selector,
       if (selector->TagQName().LocalName() != g_star_atom)
         tag_name = selector->TagQName().LocalName();
       break;
+    case CSSSelector::kPseudoClass:
+    case CSSSelector::kPseudoElement:
+    case CSSSelector::kPagePseudoClass:
+      // Must match the cases in RuleSet::FindBestRuleSetAndAdd.
+      switch (selector->GetPseudoType()) {
+        case CSSSelector::kPseudoCue:
+        case CSSSelector::kPseudoLink:
+        case CSSSelector::kPseudoVisited:
+        case CSSSelector::kPseudoAnyLink:
+        case CSSSelector::kPseudoFocus:
+        case CSSSelector::kPseudoPlaceholder:
+        case CSSSelector::kPseudoHost:
+        case CSSSelector::kPseudoHostContext:
+          pseudo_type = selector->GetPseudoType();
+          break;
+        case CSSSelector::kPseudoWebKitCustomElement:
+        case CSSSelector::kPseudoBlinkInternalElement:
+          custom_pseudo_element_name = selector->Value();
+          break;
+        default:
+          break;
+      }
     default:
       break;
   }
-  if (selector->GetPseudoType() == CSSSelector::kPseudoWebKitCustomElement ||
-      selector->GetPseudoType() == CSSSelector::kPseudoBlinkInternalElement)
-    custom_pseudo_element_name = selector->Value();
 }
 
 bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
@@ -177,6 +197,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   AtomicString class_name;
   AtomicString custom_pseudo_element_name;
   AtomicString tag_name;
+  CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
 
 #ifndef NDEBUG
   all_rules_.push_back(rule_data);
@@ -184,26 +205,30 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
 
   const CSSSelector* it = &component;
   for (; it && it->Relation() == CSSSelector::kSubSelector;
-       it = it->TagHistory())
-    ExtractValuesforSelector(it, id, class_name, custom_pseudo_element_name,
-                             tag_name);
-  if (it)
-    ExtractValuesforSelector(it, id, class_name, custom_pseudo_element_name,
-                             tag_name);
+       it = it->TagHistory()) {
+    ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
+                          tag_name, pseudo_type);
+  }
+  if (it) {
+    ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
+                          tag_name, pseudo_type);
+  }
 
   // Prefer rule sets in order of most likely to apply infrequently.
   if (!id.IsEmpty()) {
     AddToRuleSet(id, EnsurePendingRules()->id_rules, rule_data);
     return true;
   }
+
   if (!class_name.IsEmpty()) {
     AddToRuleSet(class_name, EnsurePendingRules()->class_rules, rule_data);
     return true;
   }
+
   if (!custom_pseudo_element_name.IsEmpty()) {
     // Custom pseudos come before ids and classes in the order of tagHistory,
     // and have a relation of ShadowPseudo between them. Therefore we should
-    // never be a situation where extractValuesforSelector finsd id and
+    // never be a situation where ExtractSelectorValues finds id and
     // className in addition to custom pseudo.
     DCHECK(id.IsEmpty());
     DCHECK(class_name.IsEmpty());
@@ -212,7 +237,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     return true;
   }
 
-  switch (component.GetPseudoType()) {
+  switch (pseudo_type) {
     case CSSSelector::kPseudoCue:
       cue_pseudo_rules_.push_back(rule_data);
       return true;
@@ -227,17 +252,16 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::kPseudoPlaceholder:
       placeholder_pseudo_rules_.push_back(rule_data);
       return true;
+    case CSSSelector::kPseudoHost:
+    case CSSSelector::kPseudoHostContext:
+      shadow_host_rules_.push_back(rule_data);
+      return true;
     default:
       break;
   }
 
   if (!tag_name.IsEmpty()) {
     AddToRuleSet(tag_name, EnsurePendingRules()->tag_rules, rule_data);
-    return true;
-  }
-
-  if (component.IsHostPseudoClass()) {
-    shadow_host_rules_.push_back(rule_data);
     return true;
   }
 
