@@ -5,7 +5,7 @@
 // Represents image values that are specified using "url(...)".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssurlimagevalue
 [
-    Constructor(DOMString url),
+    Constructor(USVString url),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSURLImageValue : CSSImageValue {
