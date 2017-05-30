@@ -1846,16 +1846,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
             color.IsCurrentColor());
   }
 
-  // -webkit-text-security
-  static ETextSecurity InitialTextSecurity() { return ETextSecurity::kNone; }
-  ETextSecurity TextSecurity() const {
-    return static_cast<ETextSecurity>(rare_inherited_data_->text_security_);
-  }
-  void SetTextSecurity(ETextSecurity a_text_security) {
-    SET_VAR(rare_inherited_data_, text_security_,
-            static_cast<unsigned>(a_text_security));
-  }
-
   // -webkit-text-stroke-color
   void SetTextStrokeColor(const StyleColor& color) {
     SET_VAR(rare_inherited_data_, text_stroke_color_, color.Resolve(Color()));
