@@ -966,6 +966,10 @@ public class BottomSheet
                 (MarginLayoutParams) findViewById(R.id.toolbar_shadow).getLayoutParams();
         toolbarShadowParams.topMargin = (int) mToolbarHeight;
 
+        if (mCurrentState == SHEET_STATE_HALF && isSmallScreen()) {
+            setSheetState(SHEET_STATE_FULL, false);
+        }
+
         mBottomSheetContentContainer.requestLayout();
     }
 
@@ -1241,13 +1245,8 @@ public class BottomSheet
         if (sheetHeight <= getMinOffset()) return SHEET_STATE_PEEK;
         if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
 
-        float fullToHalfDiff = (getFullRatio() - getHalfRatio()) * mContainerHeight;
         boolean isMovingDownward = yVelocity < 0;
-
-        // A small screen is defined by there being less than 160dp between half and full states.
-        boolean isSmallScreen = fullToHalfDiff < mMinHalfFullDistance;
-
-        boolean shouldSkipHalfState = isMovingDownward || isSmallScreen;
+        boolean shouldSkipHalfState = isMovingDownward || isSmallScreen();
 
         // First, find the two states that the sheet height is between.
         @SheetState
@@ -1280,6 +1279,12 @@ public class BottomSheet
             return nextState;
         }
         return prevState;
+    }
+
+    private boolean isSmallScreen() {
+        // A small screen is defined by there being less than 160dp between half and full states.
+        float fullToHalfDiff = (getFullRatio() - getHalfRatio()) * mContainerHeight;
+        return fullToHalfDiff < mMinHalfFullDistance;
     }
 
     @Override
