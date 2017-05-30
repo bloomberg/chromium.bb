@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -30,7 +30,7 @@ class RTCPeerConnectionHandler;
 // There should be exactly one of these objects owned by each
 // RTCPeerConnectionHandler, and its lifetime should match the
 // lifetime of its owner.
-class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
+class CONTENT_EXPORT MediaStreamTrackMetrics {
  public:
   explicit MediaStreamTrackMetrics();
   ~MediaStreamTrackMetrics();
@@ -97,6 +97,8 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
   ObserverVector observers_;
 
   webrtc::PeerConnectionInterface::IceConnectionState ice_state_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackMetrics);
 };
