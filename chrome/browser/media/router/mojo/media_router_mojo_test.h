@@ -30,7 +30,18 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
   MockMediaRouteProvider();
   ~MockMediaRouteProvider() override;
 
-  MOCK_METHOD8(CreateRoute,
+  void CreateRoute(const std::string& source_urn,
+                   const std::string& sink_id,
+                   const std::string& presentation_id,
+                   const url::Origin& origin,
+                   int tab_id,
+                   base::TimeDelta timeout,
+                   bool incognito,
+                   CreateRouteCallback callback) {
+    CreateRouteInternal(source_urn, sink_id, presentation_id, origin, tab_id,
+                        timeout, incognito, callback);
+  }
+  MOCK_METHOD8(CreateRouteInternal,
                void(const std::string& source_urn,
                     const std::string& sink_id,
                     const std::string& presentation_id,
@@ -38,16 +49,37 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     int tab_id,
                     base::TimeDelta timeout,
                     bool incognito,
-                    const CreateRouteCallback& callback));
-  MOCK_METHOD7(JoinRoute,
+                    CreateRouteCallback& callback));
+  void JoinRoute(const std::string& source_urn,
+                 const std::string& presentation_id,
+                 const url::Origin& origin,
+                 int tab_id,
+                 base::TimeDelta timeout,
+                 bool incognito,
+                 JoinRouteCallback callback) {
+    JoinRouteInternal(source_urn, presentation_id, origin, tab_id, timeout,
+                      incognito, callback);
+  }
+  MOCK_METHOD7(JoinRouteInternal,
                void(const std::string& source_urn,
                     const std::string& presentation_id,
                     const url::Origin& origin,
                     int tab_id,
                     base::TimeDelta timeout,
                     bool incognito,
-                    const JoinRouteCallback& callback));
-  MOCK_METHOD8(ConnectRouteByRouteId,
+                    JoinRouteCallback& callback));
+  void ConnectRouteByRouteId(const std::string& source_urn,
+                             const std::string& route_id,
+                             const std::string& presentation_id,
+                             const url::Origin& origin,
+                             int tab_id,
+                             base::TimeDelta timeout,
+                             bool incognito,
+                             JoinRouteCallback callback) {
+    ConnectRouteByRouteIdInternal(source_urn, route_id, presentation_id, origin,
+                                  tab_id, timeout, incognito, callback);
+  }
+  MOCK_METHOD8(ConnectRouteByRouteIdInternal,
                void(const std::string& source_urn,
                     const std::string& route_id,
                     const std::string& presentation_id,
@@ -55,26 +87,35 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     int tab_id,
                     base::TimeDelta timeout,
                     bool incognito,
-                    const JoinRouteCallback& callback));
+                    JoinRouteCallback& callback));
   MOCK_METHOD1(DetachRoute, void(const std::string& route_id));
-  MOCK_METHOD2(TerminateRoute, void(const std::string& route_id,
-                                    const TerminateRouteCallback& callback));
+  void TerminateRoute(const std::string& route_id,
+                      TerminateRouteCallback callback) {
+    TerminateRouteInternal(route_id, callback);
+  }
+  MOCK_METHOD2(TerminateRouteInternal,
+               void(const std::string& route_id,
+                    TerminateRouteCallback& callback));
   MOCK_METHOD1(StartObservingMediaSinks, void(const std::string& source));
   MOCK_METHOD1(StopObservingMediaSinks, void(const std::string& source));
-  MOCK_METHOD3(SendRouteMessage,
+  void SendRouteMessage(const std::string& media_route_id,
+                        const std::string& message,
+                        SendRouteMessageCallback callback) {
+    SendRouteMessageInternal(media_route_id, message, callback);
+  }
+  MOCK_METHOD3(SendRouteMessageInternal,
                void(const std::string& media_route_id,
                     const std::string& message,
-                    const SendRouteMessageCallback& callback));
-  void SendRouteBinaryMessage(
-      const std::string& media_route_id,
-      const std::vector<uint8_t>& data,
-      const SendRouteMessageCallback& callback) override {
+                    SendRouteMessageCallback& callback));
+  void SendRouteBinaryMessage(const std::string& media_route_id,
+                              const std::vector<uint8_t>& data,
+                              SendRouteMessageCallback callback) override {
     SendRouteBinaryMessageInternal(media_route_id, data, callback);
   }
   MOCK_METHOD3(SendRouteBinaryMessageInternal,
                void(const std::string& media_route_id,
                     const std::vector<uint8_t>& data,
-                    const SendRouteMessageCallback& callback));
+                    SendRouteMessageCallback& callback));
   MOCK_METHOD1(StartListeningForRouteMessages,
                void(const std::string& route_id));
   MOCK_METHOD1(StopListeningForRouteMessages,
@@ -85,25 +126,24 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
   MOCK_METHOD1(StopObservingMediaRoutes, void(const std::string& source));
   MOCK_METHOD0(EnableMdnsDiscovery, void());
   MOCK_METHOD1(UpdateMediaSinks, void(const std::string& source));
-  void SearchSinks(
-      const std::string& sink_id,
-      const std::string& media_source,
-      mojom::SinkSearchCriteriaPtr search_criteria,
-      const SearchSinksCallback& callback) override {
+  void SearchSinks(const std::string& sink_id,
+                   const std::string& media_source,
+                   mojom::SinkSearchCriteriaPtr search_criteria,
+                   SearchSinksCallback callback) override {
     SearchSinksInternal(sink_id, media_source, search_criteria, callback);
   }
   MOCK_METHOD4(SearchSinksInternal,
                void(const std::string& sink_id,
                     const std::string& media_source,
                     mojom::SinkSearchCriteriaPtr& search_criteria,
-                    const SearchSinksCallback& callback));
+                    SearchSinksCallback& callback));
   MOCK_METHOD2(ProvideSinks,
                void(const std::string&, const std::vector<MediaSinkInternal>&));
   void CreateMediaRouteController(
       const std::string& route_id,
       mojom::MediaControllerRequest media_controller,
       mojom::MediaStatusObserverPtr observer,
-      const CreateMediaRouteControllerCallback& callback) override {
+      CreateMediaRouteControllerCallback callback) override {
     CreateMediaRouteControllerInternal(route_id, media_controller, observer,
                                        callback);
   }
@@ -111,7 +151,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                void(const std::string& route_id,
                     mojom::MediaControllerRequest& media_controller,
                     mojom::MediaStatusObserverPtr& observer,
-                    const CreateMediaRouteControllerCallback& callback));
+                    CreateMediaRouteControllerCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);

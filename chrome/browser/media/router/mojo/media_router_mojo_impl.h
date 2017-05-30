@@ -325,8 +325,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
       mojom::MediaRouteProviderPtr media_route_provider_ptr,
-      const mojom::MediaRouter::RegisterMediaRouteProviderCallback&
-          callback) override;
+      mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) override;
   void OnIssue(const IssueInfo& issue) override;
   void OnSinksReceived(const std::string& media_source,
                        const std::vector<MediaSinkInternal>& internal_sinks,

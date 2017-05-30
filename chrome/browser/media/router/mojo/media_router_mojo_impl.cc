@@ -134,8 +134,7 @@ void MediaRouterMojoImpl::OnConnectionError() {
 
 void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
-    const mojom::MediaRouter::RegisterMediaRouteProviderCallback&
-        callback) {
+    mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_WIN)
   // The MRPM may have been upgraded or otherwise reload such that we could be
@@ -166,7 +165,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
   // Media Router (crbug.com/687383), so we need to disable it in the provider.
   config->enable_dial_discovery = !media_router::DialLocalDiscoveryEnabled();
   config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
-  callback.Run(instance_id_, std::move(config));
+  std::move(callback).Run(instance_id_, std::move(config));
   ExecutePendingRequests();
   SyncStateToMediaRouteProvider();
 
