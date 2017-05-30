@@ -95,10 +95,10 @@ if (is_nacl) {
 
     script = "irt_debuglink.py"
     args = [
-      rebase_path(objcopy),
-      rebase_path(irt_debug),
-      rebase_path(irt_stripped),
-      rebase_path(irt_final),
+      rebase_path(objcopy, root_build_dir),
+      rebase_path(irt_debug, root_build_dir),
+      rebase_path(irt_stripped, root_build_dir),
+      rebase_path(irt_final, root_build_dir),
     ]
   }
 }

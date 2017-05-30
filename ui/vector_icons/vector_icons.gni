@@ -51,7 +51,8 @@ template("aggregate_vector_icons") {
         rebase_path(invoker.icons, root_build_dir, invoker.icon_directory)
 
     args = [
-      "--working_directory=" + rebase_path(invoker.icon_directory),
+      "--working_directory=" +
+          rebase_path(invoker.icon_directory, root_build_dir),
       "--file_list={{response_file_name}}",
       "--output_cc=" + rebase_path(output_cc, root_build_dir),
       "--output_h=" + rebase_path(output_h, root_build_dir),

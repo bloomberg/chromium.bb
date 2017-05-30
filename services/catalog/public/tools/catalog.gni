@@ -70,7 +70,7 @@ template("catalog") {
       output_filename,
     ]
 
-    args = [ "--output=" + rebase_path(output_filename) ]
+    args = [ "--output=" + rebase_path(output_filename, root_build_dir) ]
 
     if (is_debug || dcheck_always_on) {
       args += [ "--pretty" ]
