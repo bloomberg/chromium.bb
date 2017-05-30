@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "gin/converter.h"
+#include "gin/data_object_builder.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
@@ -57,6 +58,19 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
                                     binding::RequestThread thread) {
   auto request = base::MakeUnique<Request>();
 
+  // The request id is primarily used in the renderer to associate an API
+  // request with the associated callback, but it's also used in the browser as
+  // an identifier for the extension function (e.g. by the pageCapture API).
+  // TODO(devlin): We should probably fix this, since the request id is only
+  // unique per-isolate, rather than globally.
+  // TODO(devlin): We could *probably* get away with just using an integer
+  // here, but it's a little less foolproof. How slow is GenerateGUID? Should
+  // we use that instead? It means updating the IPC
+  // (ExtensionHostMsg_Request).
+  // base::UnguessableToken is another good option.
+  int request_id = next_request_id_++;
+  request->request_id = request_id;
+
   if (!custom_callback.IsEmpty() || !callback.IsEmpty()) {
     v8::Isolate* isolate = context->GetIsolate();
     // In the JS bindings, custom callbacks are called with the arguments of
@@ -69,9 +83,10 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       // properties for callback, callbackSchema, args, stack, id, and
       // customCallback. Of those, it appears that we only use stack, args, and
       // id (since callback is curried in separately). We may be able to update
-      // bindings to get away from some of those. For now, just pass in an empty
-      // object (most APIs don't rely on it).
-      v8::Local<v8::Object> request = v8::Object::New(isolate);
+      // bindings to get away from some of those. For now, just pass in an
+      // object with the request id.
+      v8::Local<v8::Object> request =
+          gin::DataObjectBuilder(isolate).Set("id", request_id).Build();
       v8::Local<v8::Value> callback_to_pass = callback;
       if (callback_to_pass.IsEmpty())
         callback_to_pass = v8::Undefined(isolate);
@@ -80,16 +95,9 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       callback = custom_callback;
     }
 
-    // TODO(devlin): We could *probably* get away with just using an integer
-    // here, but it's a little less foolproof. How slow is GenerateGUID? Should
-    // we use that instead? It means updating the IPC
-    // (ExtensionHostMsg_Request).
-    // base::UnguessableToken is another good option.
-    request->request_id = next_request_id_++;
     request->has_callback = true;
     pending_requests_.insert(std::make_pair(
-        request->request_id,
-        PendingRequest(isolate, callback, context, callback_args)));
+        request_id, PendingRequest(isolate, callback, context, callback_args)));
   }
 
   request->has_user_gesture =
@@ -98,9 +106,8 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
   request->method_name = method;
   request->thread = thread;
 
-  int id = request->request_id;
   send_request_.Run(std::move(request), context);
-  return id;
+  return request_id;
 }
 
 void APIRequestHandler::CompleteRequest(int request_id,

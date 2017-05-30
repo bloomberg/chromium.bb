@@ -297,7 +297,6 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     const char kTestCall[] = "obj.simpleFunc(2)";
     CallFunctionOnObject(context, beta_api, kTestCall);
     ValidateLastRequest("beta.simpleFunc", "[2]");
-    EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
   }
 }
