@@ -21,6 +21,7 @@ source_set("browser") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "test_chrome_browser_provider.h",
