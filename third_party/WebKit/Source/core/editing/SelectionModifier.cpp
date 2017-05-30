@@ -60,7 +60,7 @@ SelectionModifier::SelectionModifier(const LocalFrame& frame,
     : SelectionModifier(frame, selection, NoXPosForVerticalArrowNavigation()) {}
 
 TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
-  return blink::DirectionOfEnclosingBlock(selection_.Extent());
+  return DirectionOfEnclosingBlockOf(selection_.Extent());
 }
 
 static TextDirection DirectionOf(const VisibleSelection& visible_selection) {
@@ -77,7 +77,7 @@ static TextDirection DirectionOf(const VisibleSelection& visible_selection) {
   if (start_box && end_box && start_box->Direction() == end_box->Direction())
     return start_box->Direction();
 
-  return DirectionOfEnclosingBlock(visible_selection.Extent());
+  return DirectionOfEnclosingBlockOf(visible_selection.Extent());
 }
 
 TextDirection SelectionModifier::DirectionOfSelection() const {

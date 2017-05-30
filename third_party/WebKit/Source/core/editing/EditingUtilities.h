@@ -194,8 +194,9 @@ bool IsBlockFlowElement(const Node&);
 EUserSelect UsedValueOfUserSelect(const Node&);
 bool IsInPasswordField(const Position&);
 bool IsTextSecurityNode(const Node*);
-CORE_EXPORT TextDirection DirectionOfEnclosingBlock(const Position&);
-CORE_EXPORT TextDirection DirectionOfEnclosingBlock(const PositionInFlatTree&);
+CORE_EXPORT TextDirection DirectionOfEnclosingBlockOf(const Position&);
+CORE_EXPORT TextDirection
+DirectionOfEnclosingBlockOf(const PositionInFlatTree&);
 CORE_EXPORT TextDirection PrimaryDirectionOf(const Node&);
 
 // -------------------------------------------------------------------------

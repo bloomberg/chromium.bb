@@ -11,7 +11,7 @@ namespace blink {
 
 class EditingUtilitiesTest : public EditingTestBase {};
 
-TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock) {
+TEST_F(EditingUtilitiesTest, DirectionOfEnclosingBlockOf) {
   const char* body_content =
       "<p id='host'><b id='one'></b><b id='two'>22</b></p>";
   const char* shadow_content =
@@ -21,9 +21,9 @@ TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock) {
   SetShadowContent(shadow_content, "host");
   Node* one = GetDocument().getElementById("one");
 
-  EXPECT_EQ(TextDirection::kLtr, DirectionOfEnclosingBlock(Position(one, 0)));
+  EXPECT_EQ(TextDirection::kLtr, DirectionOfEnclosingBlockOf(Position(one, 0)));
   EXPECT_EQ(TextDirection::kRtl,
-            DirectionOfEnclosingBlock(PositionInFlatTree(one, 0)));
+            DirectionOfEnclosingBlockOf(PositionInFlatTree(one, 0)));
 }
 
 TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot) {

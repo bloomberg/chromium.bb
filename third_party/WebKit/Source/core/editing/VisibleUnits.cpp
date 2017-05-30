@@ -3324,7 +3324,8 @@ VisiblePositionTemplate<Strategy> LeftPositionOfAlgorithm(
   const VisiblePositionTemplate<Strategy> left = CreateVisiblePosition(pos);
   DCHECK_NE(left.DeepEquivalent(), visible_position.DeepEquivalent());
 
-  return DirectionOfEnclosingBlock(left.DeepEquivalent()) == TextDirection::kLtr
+  return DirectionOfEnclosingBlockOf(left.DeepEquivalent()) ==
+                 TextDirection::kLtr
              ? HonorEditingBoundaryAtOrBefore(left,
                                               visible_position.DeepEquivalent())
              : HonorEditingBoundaryAtOrAfter(left,
@@ -3545,7 +3546,7 @@ static VisiblePositionTemplate<Strategy> RightPositionOfAlgorithm(
   const VisiblePositionTemplate<Strategy> right = CreateVisiblePosition(pos);
   DCHECK_NE(right.DeepEquivalent(), visible_position.DeepEquivalent());
 
-  return DirectionOfEnclosingBlock(right.DeepEquivalent()) ==
+  return DirectionOfEnclosingBlockOf(right.DeepEquivalent()) ==
                  TextDirection::kLtr
              ? HonorEditingBoundaryAtOrAfter(right,
                                              visible_position.DeepEquivalent())
