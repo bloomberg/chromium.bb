@@ -1658,6 +1658,8 @@ crbug.com/336604 external/wpt/css/css-flexbox-1/flexbox_visibility-collapse-line
 crbug.com/336604 external/wpt/css/css-flexbox-1/flexbox_visibility-collapse.html [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox-1/flex-minimum-width-flex-items-006.xht [ Failure ]
 
+crbug.com/727639 inspector/sources/debugger/source-frame-inline-breakpoint-decorations.html [ NeedsManualRebaseline ]
+
 crbug.com/467127 external/wpt/css/css-flexbox-1/flex-aspect-ratio-img-column-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox-1/flex-aspect-ratio-img-row-002.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox-1/flex-aspect-ratio-img-row-003.html [ Failure ]
