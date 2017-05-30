@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "webrtc/base/sigslot.h"
@@ -33,9 +33,7 @@ namespace notifier {
 
 class WeakXmppClient;
 
-class XmppConnection
-    : public sigslot::has_slots<>,
-      public base::NonThreadSafe {
+class XmppConnection : public sigslot::has_slots<> {
  public:
   class Delegate {
    public:
@@ -98,6 +96,8 @@ class XmppConnection
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;
   Delegate* delegate_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(XmppConnection);
 };
