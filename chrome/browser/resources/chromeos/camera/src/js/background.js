@@ -61,7 +61,7 @@ camera.bg.create = function() {
       color: camera.bg.TOPBAR_COLOR
     },
     hidden: true,  // Will be shown from main.js once loaded.
-    bounds: {
+    outerBounds: {
       width: camera.bg.DEFAULT_WIDTH,
       height: camera.bg.DEFAULT_HEIGHT,
       left: Math.round(
