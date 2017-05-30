@@ -133,7 +133,7 @@ bool GetMsiComponentPath(const base::string16& product_guid,
 // GUIDS from it, and uses those to find the path of each component.
 bool MsiUtil::GetMsiComponentPaths(
     const base::string16& product_guid,
-    std::vector<base::string16>* component_paths) {
+    std::vector<base::string16>* component_paths) const {
   base::ThreadRestrictions::AssertIOAllowed();
 
   base::string16 msi_path;

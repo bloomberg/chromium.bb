@@ -20,7 +20,7 @@ class MsiUtil {
   // Note: Marked virtual to allow mocking.
   virtual bool GetMsiComponentPaths(
       const base::string16& product_guid,
-      std::vector<base::string16>* component_paths);
+      std::vector<base::string16>* component_paths) const;
 };
 
 #endif  // CHROME_BROWSER_CONFLICTS_MSI_UTIL_WIN_H_
