@@ -29,10 +29,10 @@ function checkAlignItemsValue(value, computedValue, gridEnabled)
     container.style.webkitAlignItems = value;
     if (gridEnabled) {
         checkValues(container, "alignItems", "align-items", value, computedValue);
-        checkValues(item, "alignSelf", "align-self", "auto", computedValue);
+        checkValues(item, "alignSelf", "align-self", "auto", "auto");
     } else {
         checkValues(container, "alignItems", "align-items", "flex-end", "flex-end");
-        checkValues(item, "alignSelf", "align-self", "auto", "flex-end");
+        checkValues(item, "alignSelf", "align-self", "auto", "auto");
     }
 }
 

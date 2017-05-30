@@ -2797,9 +2797,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(ItemPosition item_position)
     : CSSValue(kIdentifierClass) {
   switch (item_position) {
     case kItemPositionAuto:
-      // The 'auto' values might have been already resolved.
-      NOTREACHED();
-      value_id_ = CSSValueNormal;
+      value_id_ = CSSValueAuto;
       break;
     case kItemPositionNormal:
       value_id_ = CSSValueNormal;

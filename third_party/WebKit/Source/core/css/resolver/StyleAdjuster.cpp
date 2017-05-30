@@ -159,38 +159,6 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
   style.SetPosition(EPosition::kStatic);
 }
 
-void StyleAdjuster::AdjustStyleForAlignment(
-    ComputedStyle& style,
-    const ComputedStyle& layout_parent_style) {
-  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
-  // flag to not just mean 'auto' prior to running the StyleAdjuster but also
-  // mean 'normal' after running it.
-
-  // If the inherited value of justify-items includes the 'legacy' keyword,
-  // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
-  // 'normal'.
-  if (style.JustifyItemsPosition() == kItemPositionAuto) {
-    if (layout_parent_style.JustifyItemsPositionType() == kLegacyPosition)
-      style.SetJustifyItems(layout_parent_style.JustifyItems());
-  }
-
-  // The 'auto' keyword computes the computed value of justify-items on the
-  // parent (minus any legacy keywords), or 'normal' if the box has no parent.
-  if (style.JustifySelfPosition() == kItemPositionAuto) {
-    if (layout_parent_style.JustifyItemsPositionType() == kLegacyPosition)
-      style.SetJustifySelfPosition(layout_parent_style.JustifyItemsPosition());
-    else if (layout_parent_style.JustifyItemsPosition() != kItemPositionAuto)
-      style.SetJustifySelf(layout_parent_style.JustifyItems());
-  }
-
-  // The 'auto' keyword computes the computed value of align-items on the parent
-  // or 'normal' if the box has no parent.
-  if (style.AlignSelfPosition() == kItemPositionAuto &&
-      layout_parent_style.AlignItemsPosition() !=
-          ComputedStyle::InitialDefaultAlignment().GetPosition())
-    style.SetAlignSelf(layout_parent_style.AlignItems());
-}
-
 static void AdjustStyleForHTMLElement(ComputedStyle& style,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
@@ -511,7 +479,6 @@ void StyleAdjuster::AdjustComputedStyle(
     if (isSVGTextElement(*element))
       style.ClearMultiCol();
   }
-  AdjustStyleForAlignment(style, layout_parent_style);
 
   // If this node is sticky it marks the creation of a sticky subtree, which we
   // must track to properly handle document lifecycle in some cases.
@@ -521,6 +488,14 @@ void StyleAdjuster::AdjustComputedStyle(
   // inheritance from the ancestor and there is no harm to setting it again.
   if (style.GetPosition() == EPosition::kSticky)
     style.SetSubtreeIsSticky(true);
+
+  // If the inherited value of justify-items includes the 'legacy' keyword,
+  // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
+  // 'normal'.
+  if (style.JustifyItemsPosition() == kItemPositionAuto) {
+    if (parent_style.JustifyItemsPositionType() == kLegacyPosition)
+      style.SetJustifyItems(parent_style.JustifyItems());
+  }
 }
 
 }  // namespace blink
