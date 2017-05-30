@@ -173,7 +173,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       weak_ptr_factory_(this) {
-  SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   DCHECK(download());
   download()->AddObserver(this);
   set_context_menu_controller(this);
@@ -836,6 +836,8 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   // to null.
   static_cast<views::internal::RootView*>(GetWidget()->GetRootView())
       ->SetMouseHandler(nullptr);
+
+  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 
   if (!context_menu_.get())
     context_menu_.reset(new DownloadShelfContextMenuView(this));
