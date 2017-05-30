@@ -558,6 +558,97 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
                  txb_info->eob, scan);
 }
 
+static INLINE aom_prob get_level_prob(int level, int coeff_idx,
+                                      const TxbCache *txb_cache,
+                                      const TxbProbs *txb_probs) {
+  if (level == 0) {
+    const int ctx = txb_cache->nz_ctx_arr[coeff_idx][0];
+    return txb_probs->nz_map[ctx];
+  } else if (level >= 1 && level < 1 + NUM_BASE_LEVELS) {
+    const int idx = level - 1;
+    const int ctx = txb_cache->base_ctx_arr[idx][coeff_idx][0];
+    return txb_probs->coeff_base[idx][ctx];
+  } else if (level >= 1 + NUM_BASE_LEVELS &&
+             level < 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    const int ctx = txb_cache->br_ctx_arr[coeff_idx][0];
+    return txb_probs->coeff_lps[ctx];
+  } else if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    printf("get_level_prob does not support golomb\n");
+    assert(0);
+    return 0;
+  } else {
+    assert(0);
+    return 0;
+  }
+}
+
+static INLINE tran_low_t get_lower_coeff(tran_low_t qc) {
+  if (qc == 0) {
+    return 0;
+  }
+  return qc > 0 ? qc - 1 : qc + 1;
+}
+
+// TODO(angiebird): add static to this function once it's called
+int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
+                        TxbCache *txb_cache, TxbProbs *txb_probs,
+                        TxbInfo *txb_info) {
+  const tran_low_t qc = txb_info->qcoeff[coeff_idx];
+  if (qc == 0) {
+    *low_coeff = 0;
+    return 0;
+  }
+  const tran_low_t abs_qc = abs(qc);
+  *low_coeff = get_lower_coeff(qc);
+  int cost_diff;
+  if (*low_coeff == 0) {
+    const int scan_idx = txb_info->scan_order->iscan[coeff_idx];
+    aom_prob level_prob =
+        get_level_prob(abs_qc, coeff_idx, txb_cache, txb_probs);
+    aom_prob low_level_prob =
+        get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_probs);
+    if (scan_idx < txb_info->seg_eob) {
+      // When level-0, we code the binary of abs_qc > level
+      // but when level-k k > 0 we code the binary of abs_qc == level
+      // That's why wee need this special treatment for level-0 map
+      // TODO(angiebird): make leve-0 consistent to other levels
+      cost_diff = -av1_cost_bit(level_prob, 1) +
+                  av1_cost_bit(low_level_prob, 0) -
+                  av1_cost_bit(low_level_prob, 1);
+    } else {
+      cost_diff = -av1_cost_bit(level_prob, 1);
+    }
+
+    if (scan_idx < txb_info->seg_eob) {
+      const int eob_ctx =
+          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->bwl);
+      cost_diff -= av1_cost_bit(txb_probs->eob_flag[eob_ctx],
+                                scan_idx == (txb_info->eob - 1));
+    }
+
+    const int sign_cost = get_sign_bit_cost(
+        qc, coeff_idx, txb_probs->dc_sign_prob, txb_info->txb_ctx->dc_sign_ctx);
+    cost_diff -= sign_cost;
+  } else if (abs_qc < 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    const aom_prob level_prob =
+        get_level_prob(abs_qc, coeff_idx, txb_cache, txb_probs);
+    const aom_prob low_level_prob =
+        get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_probs);
+    cost_diff = -av1_cost_bit(level_prob, 1) + av1_cost_bit(low_level_prob, 1) -
+                av1_cost_bit(low_level_prob, 0);
+  } else if (abs_qc == 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    const aom_prob low_level_prob =
+        get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_probs);
+    cost_diff = -get_golomb_cost(abs_qc) + av1_cost_bit(low_level_prob, 1) -
+                av1_cost_bit(low_level_prob, 0);
+  } else {
+    assert(abs_qc > 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE);
+    const tran_low_t abs_low_coeff = abs(*low_coeff);
+    cost_diff = -get_golomb_cost(abs_qc) + get_golomb_cost(abs_low_coeff);
+  }
+  return cost_diff;
+}
+
 static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
                           TxbProbs *txb_probs) {
   const TXB_CTX *txb_ctx = txb_info->txb_ctx;
