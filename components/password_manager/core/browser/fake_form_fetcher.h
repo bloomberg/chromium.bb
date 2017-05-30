@@ -65,10 +65,28 @@ class FakeFormFetcher : public FormFetcher {
     suppressed_https_forms_ = suppressed_forms;
   }
 
-  bool DidCompleteQueryingSuppressedHTTPSForms() const override;
+  const std::vector<const autofill::PasswordForm*>&
+  GetSuppressedPSLMatchingForms() const override;
 
-  void set_did_complete_querying_suppressed_https_forms(bool value) {
-    did_complete_querying_suppressed_https_forms_ = value;
+  // The pointees in |suppressed_forms| must outlive the fetcher.
+  void set_suppressed_psl_matching_forms(
+      const std::vector<const autofill::PasswordForm*>& suppressed_forms) {
+    suppressed_psl_matching_forms_ = suppressed_forms;
+  }
+
+  const std::vector<const autofill::PasswordForm*>&
+  GetSuppressedSameOrganizationNameForms() const override;
+
+  // The pointees in |suppressed_forms| must outlive the fetcher.
+  void set_suppressed_same_organization_name_forms(
+      const std::vector<const autofill::PasswordForm*>& suppressed_forms) {
+    suppressed_same_organization_name_forms_ = suppressed_forms;
+  }
+
+  bool DidCompleteQueryingSuppressedForms() const override;
+
+  void set_did_complete_querying_suppressed_forms(bool value) {
+    did_complete_querying_suppressed_forms_ = value;
   }
 
   void SetNonFederated(
@@ -87,7 +105,10 @@ class FakeFormFetcher : public FormFetcher {
   std::vector<InteractionsStats> stats_;
   std::vector<const autofill::PasswordForm*> federated_;
   std::vector<const autofill::PasswordForm*> suppressed_https_forms_;
-  bool did_complete_querying_suppressed_https_forms_ = false;
+  std::vector<const autofill::PasswordForm*> suppressed_psl_matching_forms_;
+  std::vector<const autofill::PasswordForm*>
+      suppressed_same_organization_name_forms_;
+  bool did_complete_querying_suppressed_forms_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFormFetcher);
 };

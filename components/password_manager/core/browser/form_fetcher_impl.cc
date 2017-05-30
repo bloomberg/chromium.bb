@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::PasswordForm;
@@ -46,6 +47,43 @@ std::vector<std::unique_ptr<PasswordForm>> SplitFederatedMatches(
   return federated_matches;
 }
 
+void SplitSuppressedFormsAndAssignTo(
+    const PasswordStore::FormDigest& observed_form_digest,
+    std::vector<std::unique_ptr<PasswordForm>> suppressed_forms,
+    std::vector<std::unique_ptr<PasswordForm>>* same_origin_https_forms,
+    std::vector<std::unique_ptr<PasswordForm>>* psl_matching_forms,
+    std::vector<std::unique_ptr<PasswordForm>>* same_organization_name_forms) {
+  DCHECK(same_origin_https_forms);
+  DCHECK(psl_matching_forms);
+  DCHECK(same_organization_name_forms);
+  same_origin_https_forms->clear();
+  psl_matching_forms->clear();
+  same_organization_name_forms->clear();
+  for (auto& form : suppressed_forms) {
+    switch (GetMatchResult(*form, observed_form_digest)) {
+      case MatchResult::PSL_MATCH:
+        psl_matching_forms->push_back(std::move(form));
+        break;
+      case MatchResult::NO_MATCH:
+        if (form->origin.host() != observed_form_digest.origin.host()) {
+          same_organization_name_forms->push_back(std::move(form));
+        } else if (form->origin.SchemeIs(url::kHttpsScheme) &&
+                   observed_form_digest.origin.SchemeIs(url::kHttpScheme)) {
+          same_origin_https_forms->push_back(std::move(form));
+        } else {
+          // HTTP form suppressed on HTTPS observed page: The HTTP->HTTPS
+          // migration can leave tons of such HTTP forms behind, ignore these.
+        }
+        break;
+      case MatchResult::EXACT_MATCH:
+      case MatchResult::FEDERATED_MATCH:
+      case MatchResult::FEDERATED_PSL_MATCH:
+        NOTREACHED() << "Suppressed match cannot be exact or federated.";
+        break;
+    }
+  }
+}
+
 // Create a vector of const PasswordForm from a vector of
 // unique_ptr<PasswordForm> by applying get() item-wise.
 std::vector<const PasswordForm*> MakeWeakCopies(
@@ -74,12 +112,11 @@ std::vector<std::unique_ptr<PasswordForm>> MakeCopies(
 FormFetcherImpl::FormFetcherImpl(PasswordStore::FormDigest form_digest,
                                  const PasswordManagerClient* client,
                                  bool should_migrate_http_passwords,
-                                 bool should_query_suppressed_https_forms)
+                                 bool should_query_suppressed_forms)
     : form_digest_(std::move(form_digest)),
       client_(client),
       should_migrate_http_passwords_(should_migrate_http_passwords),
-      should_query_suppressed_https_forms_(
-          should_query_suppressed_https_forms) {}
+      should_query_suppressed_forms_(should_query_suppressed_forms) {}
 
 FormFetcherImpl::~FormFetcherImpl() = default;
 
@@ -111,11 +148,21 @@ const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
 
 const std::vector<const PasswordForm*>&
 FormFetcherImpl::GetSuppressedHTTPSForms() const {
-  return weak_suppressed_https_forms_;
+  return weak_suppressed_same_origin_https_forms_;
 }
 
-bool FormFetcherImpl::DidCompleteQueryingSuppressedHTTPSForms() const {
-  return did_complete_querying_suppressed_https_forms_;
+const std::vector<const PasswordForm*>&
+FormFetcherImpl::GetSuppressedPSLMatchingForms() const {
+  return weak_suppressed_psl_matching_forms_;
+}
+
+const std::vector<const PasswordForm*>&
+FormFetcherImpl::GetSuppressedSameOrganizationNameForms() const {
+  return weak_suppressed_same_organization_name_forms_;
+}
+
+bool FormFetcherImpl::DidCompleteQueryingSuppressedForms() const {
+  return did_complete_querying_suppressed_forms_;
 }
 
 void FormFetcherImpl::OnGetPasswordStoreResults(
@@ -138,18 +185,15 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
-  // If this is a non-secure Web origin (i.e. HTTP), kick off the discovery of
-  // credentials stored for the secure version of this origin (i.e. HTTPS),
-  // regardless of whether there are some precisely matching |results|.
-  //
-  // These results are used only for recording metrics at PasswordFormManager
-  // desctruction time, this is why they are requested so late.
-  if (should_query_suppressed_https_forms_ &&
+  // Kick off the discovery of suppressed credentials, regardless of whether
+  // there are some precisely matching |results|. These results are used only
+  // for recording metrics at PasswordFormManager desctruction time, this is why
+  // they are requested this late.
+  if (should_query_suppressed_forms_ &&
       form_digest_.scheme == PasswordForm::SCHEME_HTML &&
-      form_digest_.origin.SchemeIs(url::kHttpScheme)) {
-    suppressed_https_form_fetcher_ =
-        base::MakeUnique<SuppressedHTTPSFormFetcher>(form_digest_.signon_realm,
-                                                     client_, this);
+      GURL(form_digest_.signon_realm).SchemeIsHTTPOrHTTPS()) {
+    suppressed_form_fetcher_ = base::MakeUnique<SuppressedFormFetcher>(
+        form_digest_.signon_realm, client_, this);
   }
 
   if (should_migrate_http_passwords_ && results.empty() &&
@@ -174,12 +218,19 @@ void FormFetcherImpl::ProcessMigratedForms(
   ProcessPasswordStoreResults(std::move(forms));
 }
 
-void FormFetcherImpl::ProcessSuppressedHTTPSForms(
+void FormFetcherImpl::ProcessSuppressedForms(
     std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
-  did_complete_querying_suppressed_https_forms_ = true;
-
-  suppressed_https_forms_ = std::move(forms);
-  weak_suppressed_https_forms_ = MakeWeakCopies(suppressed_https_forms_);
+  did_complete_querying_suppressed_forms_ = true;
+  SplitSuppressedFormsAndAssignTo(form_digest_, std::move(forms),
+                                  &suppressed_same_origin_https_forms_,
+                                  &suppressed_psl_matching_forms_,
+                                  &suppressed_same_organization_name_forms_);
+  weak_suppressed_same_origin_https_forms_ =
+      MakeWeakCopies(suppressed_same_origin_https_forms_);
+  weak_suppressed_psl_matching_forms_ =
+      MakeWeakCopies(suppressed_psl_matching_forms_);
+  weak_suppressed_same_organization_name_forms_ =
+      MakeWeakCopies(suppressed_same_organization_name_forms_);
 }
 
 void FormFetcherImpl::Fetch() {
@@ -223,17 +274,26 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   // Create the copy without the "HTTPS migration" activated. If it was needed,
   // then it was done by |this| already.
   auto result = base::MakeUnique<FormFetcherImpl>(
-      form_digest_, client_, false, should_query_suppressed_https_forms_);
+      form_digest_, client_, false, should_query_suppressed_forms_);
 
   result->non_federated_ = MakeCopies(this->non_federated_);
   result->federated_ = MakeCopies(this->federated_);
   result->interactions_stats_ = this->interactions_stats_;
-  result->suppressed_https_forms_ = MakeCopies(this->suppressed_https_forms_);
+  result->suppressed_same_origin_https_forms_ =
+      MakeCopies(this->suppressed_same_origin_https_forms_);
+  result->suppressed_psl_matching_forms_ =
+      MakeCopies(this->suppressed_psl_matching_forms_);
+  result->suppressed_same_organization_name_forms_ =
+      MakeCopies(this->suppressed_same_organization_name_forms_);
 
   result->weak_non_federated_ = MakeWeakCopies(result->non_federated_);
   result->weak_federated_ = MakeWeakCopies(result->federated_);
-  result->weak_suppressed_https_forms_ =
-      MakeWeakCopies(result->suppressed_https_forms_);
+  result->weak_suppressed_same_origin_https_forms_ =
+      MakeWeakCopies(result->suppressed_same_origin_https_forms_);
+  result->weak_suppressed_psl_matching_forms_ =
+      MakeWeakCopies(result->suppressed_psl_matching_forms_);
+  result->weak_suppressed_same_organization_name_forms_ =
+      MakeWeakCopies(result->suppressed_same_organization_name_forms_);
 
   result->filtered_count_ = this->filtered_count_;
   result->state_ = this->state_;

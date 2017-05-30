@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_HTTPS_FORM_FETCHER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_HTTPS_FORM_FETCHER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_FORM_FETCHER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_FORM_FETCHER_H_
 
 #include <memory>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "url/gurl.h"
 
 namespace password_manager {
 
@@ -26,19 +25,19 @@ class PasswordManagerClient;
 //
 // This logic is implemented by this class, a separate PasswordStore consumer,
 // to make it very sure that these credentials will not get mistakenly filled.
-class SuppressedHTTPSFormFetcher : public PasswordStoreConsumer {
+class SuppressedFormFetcher : public PasswordStoreConsumer {
  public:
   // Interface to be implemented by the consumer of this class.
   class Consumer {
    public:
-    virtual void ProcessSuppressedHTTPSForms(
+    virtual void ProcessSuppressedForms(
         std::vector<std::unique_ptr<autofill::PasswordForm>> forms) = 0;
   };
 
-  SuppressedHTTPSFormFetcher(const std::string& observed_signon_realm,
-                             const PasswordManagerClient* client,
-                             Consumer* consumer);
-  ~SuppressedHTTPSFormFetcher() override;
+  SuppressedFormFetcher(const std::string& observed_signon_realm,
+                        const PasswordManagerClient* client,
+                        Consumer* consumer);
+  ~SuppressedFormFetcher() override;
 
  protected:
   // PasswordStoreConsumer:
@@ -46,18 +45,18 @@ class SuppressedHTTPSFormFetcher : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SuppressedHTTPSFormFetcherTest, EmptyStore);
-  FRIEND_TEST_ALL_PREFIXES(SuppressedHTTPSFormFetcherTest, FullStore);
+  FRIEND_TEST_ALL_PREFIXES(SuppressedFormFetcherTest, EmptyStore);
+  FRIEND_TEST_ALL_PREFIXES(SuppressedFormFetcherTest, FullStore);
 
   // The client and the consumer should outlive |this|.
   const PasswordManagerClient* client_;
   Consumer* consumer_;
 
-  const GURL observed_signon_realm_as_url_;
+  const std::string observed_signon_realm_;
 
-  DISALLOW_COPY_AND_ASSIGN(SuppressedHTTPSFormFetcher);
+  DISALLOW_COPY_AND_ASSIGN(SuppressedFormFetcher);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_HTTPS_FORM_FETCHER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SUPPRESSED_FORM_FETCHER_H_

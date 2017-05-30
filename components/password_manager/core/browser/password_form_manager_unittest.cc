@@ -713,6 +713,92 @@ class PasswordFormManagerTest : public testing::Test {
   // To spare typing for PasswordFormManager instances which need no driver.
   const base::WeakPtr<PasswordManagerDriver> kNoDriver;
 
+ protected:
+  enum class SimulatedManagerAction { NONE, AUTOFILLED, OFFERED, OFFERED_PSL };
+  enum class SimulatedSubmitResult { NONE, PASSED, FAILED };
+  enum class SuppressedFormType { HTTPS, PSL_MATCH, SAME_ORGANIZATION_NAME };
+
+  PasswordForm CreateSuppressedForm(SuppressedFormType suppression_type,
+                                    const char* username,
+                                    const char* password,
+                                    PasswordForm::Type manual_or_generated) {
+    PasswordForm form = *saved_match();
+    switch (suppression_type) {
+      case SuppressedFormType::HTTPS:
+        form.origin = GURL("https://accounts.google.com/a/LoginAuth");
+        form.signon_realm = "https://accounts.google.com/";
+        break;
+      case SuppressedFormType::PSL_MATCH:
+        form.origin = GURL("http://other.google.com/");
+        form.signon_realm = "http://other.google.com/";
+        break;
+      case SuppressedFormType::SAME_ORGANIZATION_NAME:
+        form.origin = GURL("https://may-or-may-not-be.google.appspot.com/");
+        form.signon_realm = "https://may-or-may-not-be.google.appspot.com/";
+        break;
+    }
+    form.type = manual_or_generated;
+    form.username_value = ASCIIToUTF16(username);
+    form.password_value = ASCIIToUTF16(password);
+    return form;
+  }
+
+  void SimulateActionsOnHTTPObservedForm(
+      FakeFormFetcher* fetcher,
+      SimulatedManagerAction manager_action,
+      SimulatedSubmitResult submit_result,
+      const char* filled_username,
+      const char* filled_password,
+      const char* submitted_password = nullptr) {
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), *observed_form(),
+        base::MakeUnique<NiceMock<MockFormSaver>>(), fetcher);
+
+    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                StartUploadRequest(_, _, _, _, _))
+        .Times(::testing::AnyNumber());
+
+    PasswordForm http_stored_form = *saved_match();
+    http_stored_form.username_value = base::ASCIIToUTF16(filled_username);
+    http_stored_form.password_value = base::ASCIIToUTF16(filled_password);
+    if (manager_action == SimulatedManagerAction::OFFERED_PSL)
+      http_stored_form.is_public_suffix_match = true;
+
+    std::vector<const PasswordForm*> matches;
+    if (manager_action != SimulatedManagerAction::NONE)
+      matches.push_back(&http_stored_form);
+
+    // Extra mile: kUserActionChoose is only recorded if there were multiple
+    // logins available and the preferred one was changed.
+    PasswordForm http_stored_form2 = http_stored_form;
+    if (manager_action == SimulatedManagerAction::OFFERED) {
+      http_stored_form.preferred = false;
+      http_stored_form2.username_value = ASCIIToUTF16("user-other@gmail.com");
+      matches.push_back(&http_stored_form2);
+    }
+
+    fetcher->Fetch();
+    fetcher->SetNonFederated(matches, 0u);
+
+    if (submit_result != SimulatedSubmitResult::NONE) {
+      PasswordForm submitted_form(*observed_form());
+      submitted_form.preferred = true;
+      submitted_form.username_value = base::ASCIIToUTF16(filled_username);
+      submitted_form.password_value =
+          submitted_password ? base::ASCIIToUTF16(submitted_password)
+                             : base::ASCIIToUTF16(filled_password);
+
+      form_manager.ProvisionallySave(
+          submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      if (submit_result == SimulatedSubmitResult::PASSED) {
+        form_manager.LogSubmitPassed();
+        form_manager.Save();
+      } else {
+        form_manager.LogSubmitFailed();
+      }
+    }
+  }
+
  private:
   // Necessary for callbacks, and for TestAutofillDriver.
   base::MessageLoop message_loop_;
@@ -3182,46 +3268,11 @@ TEST_F(PasswordFormManagerTest, NoUploadsForSubmittedFormWithOnlyOneField) {
   form_manager.Save();
 }
 
-// If the frame containing the login form is served over HTTPS, no histograms
-// should be recorded.
-TEST_F(PasswordFormManagerTest,
-       SuppressedHTTPSFormsHistogram_NotRecordedOnHTTPSLoginForms) {
-  base::HistogramTester histogram_tester;
-
-  PasswordForm https_observed_form = *observed_form();
-  https_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
-  https_observed_form.signon_realm = "https://accounts.google.com/";
-
-  // Only the scheme of the frame containing the login form maters, not the
-  // scheme of the main frame.
-  ASSERT_FALSE(client()->IsMainFrameSecure());
-
-  // Even if there are suppressed results, they are ignored (but there should be
-  // none in production in this case, though).
-  FakeFormFetcher fetcher;
-  fetcher.set_suppressed_https_forms({saved_match()});
-  fetcher.set_did_complete_querying_suppressed_https_forms(true);
-  fetcher.Fetch();
-
-  std::unique_ptr<PasswordFormManager> form_manager =
-      base::MakeUnique<PasswordFormManager>(
-          password_manager(), client(), client()->driver(), https_observed_form,
-          base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-  form_manager.reset();
-
-  histogram_tester.ExpectTotalCount(
-      "PasswordManager.QueryingSuppressedAccountsFinished", 0);
-  const auto sample_counts = histogram_tester.GetTotalCountsForPrefix(
-      "PasswordManager.SuppressedAccount.");
-  EXPECT_THAT(sample_counts, IsEmpty());
-}
-
 TEST_F(PasswordFormManagerTest,
        SuppressedHTTPSFormsHistogram_NotRecordedIfStoreWasTooSlow) {
   base::HistogramTester histogram_tester;
 
-  fake_form_fetcher()->set_did_complete_querying_suppressed_https_forms(false);
+  fake_form_fetcher()->set_did_complete_querying_suppressed_forms(false);
   fake_form_fetcher()->Fetch();
   std::unique_ptr<PasswordFormManager> form_manager =
       base::MakeUnique<PasswordFormManager>(
@@ -3237,49 +3288,52 @@ TEST_F(PasswordFormManagerTest,
   EXPECT_THAT(sample_counts, IsEmpty());
 }
 
-TEST_F(PasswordFormManagerTest,
-       SuppressedHTTPSFormsHistogram_RecordedForHTTPPages) {
-  const char kUsernameAlpha[] = "user-alpha@gmail.com";
-  const char kPasswordAlpha[] = "password-alpha";
-  const char kUsernameBeta[] = "user-beta@gmail.com";
-  const char kPasswordBeta[] = "password-beta";
+TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
+  static constexpr const struct {
+    SuppressedFormType type;
+    const char* expected_histogram_suffix;
+    void (FakeFormFetcher::*suppressed_forms_setter_func)(
+        const std::vector<const autofill::PasswordForm*>&);
+  } kSuppressedFormTypeParams[] = {
+      {SuppressedFormType::HTTPS, "HTTPSNotHTTP",
+       &FakeFormFetcher::set_suppressed_https_forms},
+      {SuppressedFormType::PSL_MATCH, "PSLMatching",
+       &FakeFormFetcher::set_suppressed_psl_matching_forms},
+      {SuppressedFormType::SAME_ORGANIZATION_NAME, "SameOrganizationName",
+       &FakeFormFetcher::set_suppressed_same_organization_name_forms}};
 
-  const auto CreateHTTPSSuppressedForm = [this](const char* username,
-                                                const char* password,
-                                                PasswordForm::Type type) {
-    PasswordForm form = *saved_match();
-    form.origin = GURL("https://accounts.google.com/a/LoginAuth");
-    form.signon_realm = "https://accounts.google.com/";
-    form.type = type;
-    form.username_value = ASCIIToUTF16(username);
-    form.password_value = ASCIIToUTF16(password);
-    return form;
+  struct SuppressedFormData {
+    const char* username_value;
+    const char* password_value;
+    PasswordForm::Type manual_or_generated;
   };
 
-  const PasswordForm kSuppressedGeneratedForm = CreateHTTPSSuppressedForm(
-      kUsernameAlpha, kPasswordAlpha, PasswordForm::TYPE_GENERATED);
-  const PasswordForm kOtherSuppressedGeneratedForm = CreateHTTPSSuppressedForm(
-      kUsernameBeta, kPasswordBeta, PasswordForm::TYPE_GENERATED);
-  const PasswordForm kSuppressedManualForm = CreateHTTPSSuppressedForm(
-      kUsernameAlpha, kPasswordBeta, PasswordForm::TYPE_MANUAL);
+  static constexpr const char kUsernameAlpha[] = "user-alpha@gmail.com";
+  static constexpr const char kPasswordAlpha[] = "password-alpha";
+  static constexpr const char kUsernameBeta[] = "user-beta@gmail.com";
+  static constexpr const char kPasswordBeta[] = "password-beta";
 
-  const std::vector<const PasswordForm*> kSuppressedFormsNone;
-  const std::vector<const PasswordForm*> kSuppressedFormsOneGenerated = {
+  static constexpr const SuppressedFormData kSuppressedGeneratedForm = {
+      kUsernameAlpha, kPasswordAlpha, PasswordForm::TYPE_GENERATED};
+  static constexpr const SuppressedFormData kOtherSuppressedGeneratedForm = {
+      kUsernameBeta, kPasswordBeta, PasswordForm::TYPE_GENERATED};
+  static constexpr const SuppressedFormData kSuppressedManualForm = {
+      kUsernameAlpha, kPasswordBeta, PasswordForm::TYPE_MANUAL};
+
+  const std::vector<const SuppressedFormData*> kSuppressedFormsNone;
+  const std::vector<const SuppressedFormData*> kSuppressedFormsOneGenerated = {
       &kSuppressedGeneratedForm};
-  const std::vector<const PasswordForm*> kSuppressedFormsTwoGenerated = {
+  const std::vector<const SuppressedFormData*> kSuppressedFormsTwoGenerated = {
       &kSuppressedGeneratedForm, &kOtherSuppressedGeneratedForm};
-  const std::vector<const PasswordForm*> kSuppressedFormsOneManual = {
+  const std::vector<const SuppressedFormData*> kSuppressedFormsOneManual = {
       &kSuppressedManualForm};
-  const std::vector<const PasswordForm*> kSuppressedFormsTwoMixed = {
+  const std::vector<const SuppressedFormData*> kSuppressedFormsTwoMixed = {
       &kSuppressedGeneratedForm, &kSuppressedManualForm};
 
-  enum class ManagerAction { NONE, AUTOFILLED, OFFERED, OFFERED_PSL };
-  enum class SubmitResult { NONE, PASSED, FAILED };
-
   const struct {
-    std::vector<const PasswordForm*> simulated_suppressed_forms;
-    ManagerAction simulate_manager_action;
-    SubmitResult simulate_submit_result;
+    std::vector<const SuppressedFormData*> simulated_suppressed_forms;
+    SimulatedManagerAction simulate_manager_action;
+    SimulatedSubmitResult simulate_submit_result;
     const char* filled_username;
     const char* filled_password;
     int expected_histogram_sample_generated;
@@ -3288,144 +3342,157 @@ TEST_F(PasswordFormManagerTest,
   } kTestCases[] = {
       // See PasswordManagerSuppressedAccountCrossActionsTaken in enums.xml.
       //
-      // Legend: (SuppressAccountType, SubmitResult, ManagerAction, UserAction)
+      // Legend: (SuppressAccountType, SubmitResult, SimulatedManagerAction,
+      // UserAction)
       // 24 = (None, Passed, None, OverrideUsernameAndPassword)
-      {kSuppressedFormsNone, ManagerAction::NONE, SubmitResult::PASSED,
-       kUsernameAlpha, kPasswordAlpha, 24, 24},
+      {kSuppressedFormsNone, SimulatedManagerAction::NONE,
+       SimulatedSubmitResult::PASSED, kUsernameAlpha, kPasswordAlpha, 24, 24},
       // 5 = (None, NotSubmitted, Autofilled, None)
-      {kSuppressedFormsNone, ManagerAction::AUTOFILLED, SubmitResult::NONE,
-       kUsernameAlpha, kPasswordAlpha, 5, 5},
+      {kSuppressedFormsNone, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::NONE, kUsernameAlpha, kPasswordAlpha, 5, 5},
       // 15 = (None, Failed, Autofilled, None)
-      {kSuppressedFormsNone, ManagerAction::AUTOFILLED, SubmitResult::FAILED,
-       kUsernameAlpha, kPasswordAlpha, 15, 15},
+      {kSuppressedFormsNone, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::FAILED, kUsernameAlpha, kPasswordAlpha, 15, 15},
 
       // 35 = (Exists, NotSubmitted, Autofilled, None)
-      {kSuppressedFormsOneGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::NONE, kUsernameAlpha, kPasswordAlpha, 35, 5},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::NONE, kUsernameAlpha, kPasswordAlpha, 35, 5},
       // 145 = (ExistsSameUsernameAndPassword, Passed, Autofilled, None)
       // 25 = (None, Passed, Autofilled, None)
-      {kSuppressedFormsOneGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameAlpha, kPasswordAlpha, 145, 25},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameAlpha, kPasswordAlpha, 145, 25},
       // 104 = (ExistsSameUsername, Failed, None, OverrideUsernameAndPassword)
       // 14 = (None, Failed, None, OverrideUsernameAndPassword)
-      {kSuppressedFormsOneGenerated, ManagerAction::NONE, SubmitResult::FAILED,
-       kUsernameAlpha, kPasswordBeta, 104, 14},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::NONE,
+       SimulatedSubmitResult::FAILED, kUsernameAlpha, kPasswordBeta, 104, 14},
       // 84 = (ExistsDifferentUsername, Passed, None,
       //       OverrideUsernameAndPassword)
-      {kSuppressedFormsOneGenerated, ManagerAction::NONE, SubmitResult::PASSED,
-       kUsernameBeta, kPasswordAlpha, 84, 24},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::NONE,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 84, 24},
 
       // 144 = (ExistsSameUsernameAndPassword, Passed, None,
       //        OverrideUsernameAndPassword)
-      {kSuppressedFormsOneManual, ManagerAction::NONE, SubmitResult::PASSED,
-       kUsernameAlpha, kPasswordBeta, 24, 144},
-      {kSuppressedFormsTwoMixed, ManagerAction::NONE, SubmitResult::PASSED,
-       kUsernameBeta, kPasswordAlpha, 84, 84},
+      {kSuppressedFormsOneManual, SimulatedManagerAction::NONE,
+       SimulatedSubmitResult::PASSED, kUsernameAlpha, kPasswordBeta, 24, 144},
+      {kSuppressedFormsTwoMixed, SimulatedManagerAction::NONE,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 84, 84},
 
       // 115 = (ExistsSameUsername, Passed, Autofilled, None)
-      {kSuppressedFormsTwoGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameAlpha, kPasswordAlpha, 145, 25},
-      {kSuppressedFormsTwoGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameAlpha, kPasswordBeta, 115, 25},
-      {kSuppressedFormsTwoGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 115, 25},
-      {kSuppressedFormsTwoGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameBeta, kPasswordBeta, 145, 25},
+      {kSuppressedFormsTwoGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameAlpha, kPasswordAlpha, 145, 25},
+      {kSuppressedFormsTwoGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameAlpha, kPasswordBeta, 115, 25},
+      {kSuppressedFormsTwoGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 115, 25},
+      {kSuppressedFormsTwoGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordBeta, 145, 25},
 
       // 86 = (ExistsDifferentUsername, Passed, Autofilled, Choose)
       // 26 = (None, Passed, Autofilled, Choose)
-      {kSuppressedFormsOneGenerated, ManagerAction::OFFERED,
-       SubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 86, 26},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::OFFERED,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 86, 26},
       // 72 = (ExistsDifferentUsername, Failed, None, ChoosePSL)
       // 12 = (None, Failed, None, ChoosePSL)
-      {kSuppressedFormsOneGenerated, ManagerAction::OFFERED_PSL,
-       SubmitResult::FAILED, kUsernameBeta, kPasswordAlpha, 72, 12},
+      {kSuppressedFormsOneGenerated, SimulatedManagerAction::OFFERED_PSL,
+       SimulatedSubmitResult::FAILED, kUsernameBeta, kPasswordAlpha, 72, 12},
       // 148 = (ExistsSameUsernameAndPassword, Passed, Autofilled,
       //        OverridePassword)
       // 28 = (None, Passed, Autofilled, OverridePassword)
-      {kSuppressedFormsTwoGenerated, ManagerAction::AUTOFILLED,
-       SubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 148, 28,
+      {kSuppressedFormsTwoGenerated, SimulatedManagerAction::AUTOFILLED,
+       SimulatedSubmitResult::PASSED, kUsernameBeta, kPasswordAlpha, 148, 28,
        kPasswordBeta},
   };
 
-  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(_, _, _, _, _))
-      .Times(::testing::AtLeast(0));
+  for (const auto& suppression_params : kSuppressedFormTypeParams) {
+    for (const auto& test_case : kTestCases) {
+      SCOPED_TRACE(suppression_params.expected_histogram_suffix);
+      SCOPED_TRACE(test_case.expected_histogram_sample_manual);
+      SCOPED_TRACE(test_case.expected_histogram_sample_generated);
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(test_case.expected_histogram_sample_manual);
-    SCOPED_TRACE(test_case.expected_histogram_sample_generated);
+      base::HistogramTester histogram_tester;
 
-    base::HistogramTester histogram_tester;
-
-    const base::string16 filled_username =
-        ASCIIToUTF16(test_case.filled_username);
-    const base::string16 filled_password =
-        ASCIIToUTF16(test_case.filled_password);
-
-    FakeFormFetcher fetcher;
-    std::unique_ptr<PasswordFormManager> form_manager =
-        base::MakeUnique<PasswordFormManager>(
-            password_manager(), client(), client()->driver(), *observed_form(),
-            base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
-
-    PasswordForm http_stored_form = *saved_match();
-    http_stored_form.username_value = filled_username;
-    http_stored_form.password_value = filled_password;
-    if (test_case.simulate_manager_action == ManagerAction::OFFERED_PSL)
-      http_stored_form.is_public_suffix_match = true;
-
-    std::vector<const PasswordForm*> matches;
-    if (test_case.simulate_manager_action != ManagerAction::NONE)
-      matches.push_back(&http_stored_form);
-
-    // Extra mile: kUserActionChoose is only recorded if there were multiple
-    // logins available and the preferred one was changed.
-    PasswordForm http_stored_form2 = http_stored_form;
-    if (test_case.simulate_manager_action == ManagerAction::OFFERED) {
-      http_stored_form.preferred = false;
-      http_stored_form2.username_value = ASCIIToUTF16("user-other@gmail.com");
-      matches.push_back(&http_stored_form2);
-    }
-
-    fetcher.set_did_complete_querying_suppressed_https_forms(true);
-    fetcher.set_suppressed_https_forms(test_case.simulated_suppressed_forms);
-    fetcher.Fetch();
-    fetcher.SetNonFederated(matches, 0u);
-
-    if (test_case.simulate_submit_result != SubmitResult::NONE) {
-      PasswordForm submitted_form(*observed_form());
-      submitted_form.preferred = true;
-      submitted_form.username_value = filled_username;
-      submitted_form.password_value =
-          test_case.submitted_password
-              ? ASCIIToUTF16(test_case.submitted_password)
-              : filled_password;
-
-      form_manager->ProvisionallySave(
-          submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-      if (test_case.simulate_submit_result == SubmitResult::PASSED) {
-        form_manager->LogSubmitPassed();
-        form_manager->Save();
-      } else {
-        form_manager->LogSubmitFailed();
+      std::vector<PasswordForm> suppressed_forms;
+      for (const auto* form_data : test_case.simulated_suppressed_forms) {
+        suppressed_forms.push_back(CreateSuppressedForm(
+            suppression_params.type, form_data->username_value,
+            form_data->password_value, form_data->manual_or_generated));
       }
+
+      std::vector<const PasswordForm*> suppressed_forms_ptrs;
+      for (const auto& form : suppressed_forms)
+        suppressed_forms_ptrs.push_back(&form);
+
+      FakeFormFetcher fetcher;
+      fetcher.set_did_complete_querying_suppressed_forms(true);
+
+      (&fetcher->*suppression_params.suppressed_forms_setter_func)(
+          suppressed_forms_ptrs);
+
+      SimulateActionsOnHTTPObservedForm(
+          &fetcher, test_case.simulate_manager_action,
+          test_case.simulate_submit_result, test_case.filled_username,
+          test_case.filled_password, test_case.submitted_password);
+
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.QueryingSuppressedAccountsFinished", true, 1);
+
+      EXPECT_THAT(
+          histogram_tester.GetAllSamples(
+              "PasswordManager.SuppressedAccount.Generated." +
+              std::string(suppression_params.expected_histogram_suffix)),
+          ::testing::ElementsAre(
+              base::Bucket(test_case.expected_histogram_sample_generated, 1)));
+      EXPECT_THAT(
+          histogram_tester.GetAllSamples(
+              "PasswordManager.SuppressedAccount.Manual." +
+              std::string(suppression_params.expected_histogram_suffix)),
+          ::testing::ElementsAre(
+              base::Bucket(test_case.expected_histogram_sample_manual, 1)));
     }
-
-    form_manager.reset();
-
-    histogram_tester.ExpectUniqueSample(
-        "PasswordManager.QueryingSuppressedAccountsFinished", true, 1);
-
-    EXPECT_THAT(histogram_tester.GetAllSamples(
-                    "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP"),
-                ::testing::ElementsAre(base::Bucket(
-                    test_case.expected_histogram_sample_generated, 1)));
-    EXPECT_THAT(histogram_tester.GetAllSamples(
-                    "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP"),
-                ::testing::ElementsAre(base::Bucket(
-                    test_case.expected_histogram_sample_manual, 1)));
   }
+}
+
+// If the frame containing the login form is served over HTTPS, no histograms on
+// supressed HTTPS forms should be recorded. Everything else should still be.
+TEST_F(PasswordFormManagerTest, SuppressedHTTPSFormsHistogram_NotRecordedFor) {
+  base::HistogramTester histogram_tester;
+
+  PasswordForm https_observed_form = *observed_form();
+  https_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
+  https_observed_form.signon_realm = "https://accounts.google.com/";
+
+  // Only the scheme of the frame containing the login form maters, not the
+  // scheme of the main frame.
+  ASSERT_FALSE(client()->IsMainFrameSecure());
+
+  // Even if there were any suppressed HTTPS forms, they should be are ignored
+  // (but there should be none in production in this case).
+  FakeFormFetcher fetcher;
+  fetcher.set_suppressed_https_forms({saved_match()});
+  fetcher.set_did_complete_querying_suppressed_forms(true);
+  fetcher.Fetch();
+
+  std::unique_ptr<PasswordFormManager> form_manager =
+      base::MakeUnique<PasswordFormManager>(
+          password_manager(), client(), client()->driver(), https_observed_form,
+          base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  form_manager.reset();
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.QueryingSuppressedAccountsFinished", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP", 0);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP", 0);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Generated.PSLMatching", 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Manual.PSLMatching", 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Generated.SameOrganizationName", 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SuppressedAccount.Manual.SameOrganizationName", 1);
 }
 
 }  // namespace password_manager

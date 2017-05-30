@@ -42,8 +42,18 @@ FakeFormFetcher::GetSuppressedHTTPSForms() const {
   return suppressed_https_forms_;
 }
 
-bool FakeFormFetcher::DidCompleteQueryingSuppressedHTTPSForms() const {
-  return did_complete_querying_suppressed_https_forms_;
+const std::vector<const autofill::PasswordForm*>&
+FakeFormFetcher::GetSuppressedPSLMatchingForms() const {
+  return suppressed_psl_matching_forms_;
+}
+
+const std::vector<const autofill::PasswordForm*>&
+FakeFormFetcher::GetSuppressedSameOrganizationNameForms() const {
+  return suppressed_same_organization_name_forms_;
+}
+
+bool FakeFormFetcher::DidCompleteQueryingSuppressedForms() const {
+  return did_complete_querying_suppressed_forms_;
 }
 
 void FakeFormFetcher::SetNonFederated(
