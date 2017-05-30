@@ -5,7 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//extensions/features/features.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//testing/test.gni")
@@ -161,10 +160,6 @@ test("components_unittests") {
     deps += [ "//components/nacl/browser:unit_tests" ]
   }
 
-  if (enable_extensions) {
-    deps += [ "//components/guest_view/browser:unit_tests" ]
-  }
-
   if (is_ios) {
     deps += [
       "//components/image_fetcher/ios:unit_tests",
@@ -281,6 +276,10 @@ test("components_unittests") {
     deps += [
       "//components/cryptauth:unit_tests",
       "//components/feedback:unit_tests",
+
+      # See comment in components/guest_view/browser/BUILD.gn for why
+      # guest_view is currently non-mobile.
+      "//components/guest_view/browser:unit_tests",
       "//components/proximity_auth:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/web_modal:unit_tests",

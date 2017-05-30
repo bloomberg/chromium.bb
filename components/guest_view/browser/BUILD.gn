@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//extensions/features/features.gni")
-
-assert(enable_extensions)
+# Currently, GuestViews are only used by extensions, so we have this
+# assert to prevent the accidental building of GuestViews on mobile
+# platforms. If you're now using GuestViews on mobile, go ahead and
+# remove this assert.
+assert(!is_android && !is_ios)
 
 static_library("browser") {
   output_name = "guest_view_browser"
