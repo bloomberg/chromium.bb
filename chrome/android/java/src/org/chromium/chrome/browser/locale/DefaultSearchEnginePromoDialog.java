@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.locale;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.Button;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -19,6 +22,7 @@ import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
+import org.chromium.ui.base.WindowAndroid;
 
 /** A dialog that forces the user to choose a default search engine. */
 public class DefaultSearchEnginePromoDialog extends PromoDialog {
@@ -56,6 +60,13 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
             @Override
             public void onTemplateUrlServiceLoaded() {
                 instance.unregisterLoadListener(this);
+
+                Activity activity = WindowAndroid.activityFromContext(context);
+                if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
+                    if (onDismissed != null) onDismissed.onResult(false);
+                    return;
+                }
+
                 new DefaultSearchEnginePromoDialog(context, dialogType, onDismissed).show();
             }
         });
