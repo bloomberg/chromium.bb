@@ -2084,7 +2084,7 @@
       custom_all: true,
       inherited: true,
       interpolable: true,
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "Length",
       include_paths: ["platform/Length.h"],
       default_value: "Length(kFixed)",
