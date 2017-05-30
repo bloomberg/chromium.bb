@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -211,9 +212,15 @@ UsersPrivateIsCurrentUserOwnerFunction::
 
 ExtensionFunction::ResponseAction
 UsersPrivateIsCurrentUserOwnerFunction::Run() {
-  bool is_owner =
-      chromeos::ProfileHelper::IsOwnerProfile(chrome_details_.GetProfile());
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_owner)));
+  chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+      browser_context())
+      ->IsOwnerAsync(base::Bind(
+          &UsersPrivateIsCurrentUserOwnerFunction::IsOwnerCallback, this));
+  return RespondLater();
+}
+
+void UsersPrivateIsCurrentUserOwnerFunction::IsOwnerCallback(bool is_owner) {
+  Respond(OneArgument(base::MakeUnique<base::Value>(is_owner)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

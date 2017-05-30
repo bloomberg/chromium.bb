@@ -89,6 +89,8 @@ class UsersPrivateIsCurrentUserOwnerFunction
   ResponseAction Run() override;
 
  private:
+  void IsOwnerCallback(bool is_owner);
+
   ChromeExtensionFunctionDetails chrome_details_;
 
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateIsCurrentUserOwnerFunction);
