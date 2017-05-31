@@ -170,7 +170,6 @@ component("web") {
     "WebSharedWorkerImpl.h",
     "WebSharedWorkerReportingProxyImpl.cpp",
     "WebSharedWorkerReportingProxyImpl.h",
-    "WebStorageEventDispatcherImpl.cpp",
     "WebSurroundingText.cpp",
     "WebTextCheckingCompletionImpl.cpp",
     "WebTextCheckingCompletionImpl.h",
