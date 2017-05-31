@@ -18,10 +18,15 @@ class AndroidWebVrLatencyTest(webvr_latency_test.WebVrLatencyTest):
   """Android implementation of the WebVR latency test."""
   def __init__(self, args):
     super(AndroidWebVrLatencyTest, self).__init__(args)
+    # Swarming stuff seems to routinely kill off adbd once a minute or so,
+    # which often causes adb's startup message to appear in the output. We need
+    # to remove this before getting the device name
+    # TODO(bsheedy): Look into preventing adbd from being killed altogether
+    # instead of working around it
     self._device_name = self._Adb(['shell', 'getprop',
-                                  'ro.product.name']).strip()
+                                   'ro.product.name']).strip().split('\n')[-1]
 
-  def _Setup(self):
+  def _OneTimeSetup(self):
     self._Adb(['root'])
 
     # Install the latest VrCore and Chrome APKs
@@ -40,11 +45,13 @@ class AndroidWebVrLatencyTest(webvr_latency_test.WebVrLatencyTest):
     self._Adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'])
     time.sleep(1)
 
+
+  def _Setup(self, url):
     # Start Chrome
     self._Adb(['shell', 'am', 'start',
                '-a', 'android.intent.action.MAIN',
                '-n', 'org.chromium.chrome/com.google.android.apps.chrome.Main',
-               self._flicker_app_url])
+               url])
     time.sleep(10)
 
     # Tap the center of the screen to start presenting.
@@ -71,6 +78,10 @@ class AndroidWebVrLatencyTest(webvr_latency_test.WebVrLatencyTest):
     # Exit VR and close Chrome
     self._Adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK'])
     self._Adb(['shell', 'am', 'force-stop', 'org.chromium.chrome'])
+
+  def _OneTimeTeardown(self):
+    # Perform teardown again in case an exception was thrown
+    self._Teardown()
     # Turn off the screen
     self._Adb(['shell', 'input', 'keyevent', 'KEYCODE_POWER'])
 
