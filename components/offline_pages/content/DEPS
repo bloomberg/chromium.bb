@@ -1,6 +1,0 @@
-include_rules = [
-  "+components/keyed_service/content",
-  "+components/ntp_snippets",
-  "+content/public/browser",
-  "+content/public/test",
-]
