@@ -267,6 +267,16 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
   SendNavigate(0, did_create_new_entry, url);
 }
 
+void TestRenderFrameHost::SimulateFeaturePolicyHeader(
+    blink::WebFeaturePolicyFeature feature,
+    const std::vector<url::Origin>& whitelist) {
+  content::ParsedFeaturePolicyHeader header(1);
+  header[0].feature = feature;
+  header[0].matches_all_origins = false;
+  header[0].origins = whitelist;
+  OnDidSetFeaturePolicyHeader(header);
+}
+
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {

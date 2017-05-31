@@ -5,7 +5,9 @@
 #include "chrome/browser/media/midi_permission_context.h"
 
 MidiPermissionContext::MidiPermissionContext(Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_MIDI) {}
+    : PermissionContextBase(profile,
+                            CONTENT_SETTINGS_TYPE_MIDI,
+                            blink::WebFeaturePolicyFeature::kMidiFeature) {}
 
 MidiPermissionContext::~MidiPermissionContext() {
 }

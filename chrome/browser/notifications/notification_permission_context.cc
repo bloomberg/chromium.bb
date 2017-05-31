@@ -159,7 +159,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 NotificationPermissionContext::NotificationPermissionContext(
     Profile* profile,
     ContentSettingsType content_settings_type)
-    : PermissionContextBase(profile, content_settings_type),
+    : PermissionContextBase(profile,
+                            content_settings_type,
+                            blink::WebFeaturePolicyFeature::kNotFound),
       weak_factory_ui_thread_(this) {
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);

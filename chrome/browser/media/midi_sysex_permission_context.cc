@@ -10,7 +10,9 @@
 #include "url/gurl.h"
 
 MidiSysexPermissionContext::MidiSysexPermissionContext(Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
+    : PermissionContextBase(profile,
+                            CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                            blink::WebFeaturePolicyFeature::kMidiFeature) {}
 
 MidiSysexPermissionContext::~MidiSysexPermissionContext() {}
 

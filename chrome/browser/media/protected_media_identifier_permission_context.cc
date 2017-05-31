@@ -41,7 +41,8 @@ using chromeos::attestation::PlatformVerificationDialog;
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER)
+                            CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                            blink::WebFeaturePolicyFeature::kEme)
 #if defined(OS_CHROMEOS)
       ,
       weak_factory_(this)

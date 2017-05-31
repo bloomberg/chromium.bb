@@ -139,6 +139,14 @@ class RenderFrameHostTester {
   // Simulate a renderer-initiated navigation up until commit.
   virtual void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
                                                   const GURL& url) = 0;
+
+  // Set the feature policy header for the RenderFrameHost for test. Currently
+  // this is limited to setting a whitelist for a single feature. This function
+  // can be generalized as needed. Setting a header policy should only be done
+  // once per navigation of the RFH.
+  virtual void SimulateFeaturePolicyHeader(
+      blink::WebFeaturePolicyFeature feature,
+      const std::vector<url::Origin>& whitelist) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.

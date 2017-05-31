@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
@@ -83,9 +84,11 @@ const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
-    const ContentSettingsType content_settings_type)
+    ContentSettingsType content_settings_type,
+    blink::WebFeaturePolicyFeature feature_policy_feature)
     : profile_(profile),
       content_settings_type_(content_settings_type),
+      feature_policy_feature_(feature_policy_feature),
       weak_factory_(this) {
 #if defined(OS_ANDROID)
   permission_queue_controller_.reset(
@@ -242,6 +245,14 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
       return PermissionResult(CONTENT_SETTING_BLOCK,
                               PermissionStatusSource::UNSPECIFIED);
     }
+  }
+
+  // Check whether the feature is enabled for the frame by feature policy. We
+  // can only do this when a RenderFrameHost has been provided.
+  if (render_frame_host &&
+      !PermissionAllowedByFeaturePolicy(render_frame_host)) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::UNSPECIFIED);
   }
 
   ContentSetting content_setting = GetPermissionStatusInternal(
@@ -462,4 +473,19 @@ ContentSettingsType PermissionContextBase::content_settings_storage_type()
   if (content_settings_type_ == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING)
     return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
   return content_settings_type_;
+}
+
+bool PermissionContextBase::PermissionAllowedByFeaturePolicy(
+    content::RenderFrameHost* rfh) const {
+  if (!base::FeatureList::IsEnabled(
+          features::kUseFeaturePolicyForPermissions)) {
+    // Default to ignoring the feature policy.
+    return true;
+  }
+
+  // Some features don't have an associated feature policy yet. Allow those.
+  if (feature_policy_feature_ == blink::WebFeaturePolicyFeature::kNotFound)
+    return true;
+
+  return rfh->IsFeatureEnabled(feature_policy_feature_);
 }
