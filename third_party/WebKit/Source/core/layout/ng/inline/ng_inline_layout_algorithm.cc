@@ -305,8 +305,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   // The baselines are always placed at pixel boundaries. Not doing so results
   // in incorrect layout of text decorations, most notably underlines.
-  LayoutUnit baseline = content_size_ + line_box.Metrics().ascent +
-                        border_and_padding_.block_start;
+  LayoutUnit baseline = content_size_ + line_box.Metrics().ascent;
   baseline = LayoutUnit(baseline.Round());
 
   // Check if the line fits into the constraint space in block direction.
@@ -431,6 +430,10 @@ void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
 }
 
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
+  // If we are resuming from a break token our start border and padding is
+  // within a previous fragment.
+  content_size_ = BreakToken() ? LayoutUnit() : border_and_padding_.block_start;
+
   NGLineBreaker line_breaker(Node(), constraint_space_, BreakToken());
   NGInlineItemResults item_results;
   while (true) {
@@ -442,7 +445,7 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   }
 
   // TODO(crbug.com/716930): Avoid calculating border/padding twice.
-  if (!Node()->Items().IsEmpty())
+  if (!BreakToken())
     content_size_ -= border_and_padding_.block_start;
 
   // TODO(kojii): Check if the line box width should be content or available.
