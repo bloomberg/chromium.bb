@@ -167,6 +167,16 @@ bool WatchTimeReporter::IsSizeLargeEnoughToReportWatchTime() const {
          initial_video_size_.width() >= kMinimumVideoSize.width();
 }
 
+void WatchTimeReporter::OnUnderflow() {
+  if (!reporting_timer_.IsRunning())
+    return;
+
+  // In the event of a pending finalize, we don't want to count underflow events
+  // that occurred after the finalize time. Yet if the finalize is canceled we
+  // want to ensure they are all recorded.
+  pending_underflow_events_.push_back(get_media_time_cb_.Run());
+}
+
 void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
   if (!reporting_timer_.IsRunning())
     return;
@@ -216,6 +226,7 @@ void WatchTimeReporter::MaybeStartReportingTimer(
   if (reporting_timer_.IsRunning())
     return;
 
+  underflow_count_ = 0;
   last_media_timestamp_ = last_media_power_timestamp_ =
       end_timestamp_for_power_ = kNoTimestamp;
   is_on_battery_power_ = IsOnBatteryPower();
@@ -315,6 +326,23 @@ void WatchTimeReporter::UpdateWatchTime() {
   }
 #undef RECORD_WATCH_TIME
 
+  // Pass along any underflow events which have occurred since the last report.
+  if (!pending_underflow_events_.empty()) {
+    if (!is_finalizing) {
+      // The maximum value here per period is ~5 events, so int cast is okay.
+      underflow_count_ += static_cast<int>(pending_underflow_events_.size());
+    } else {
+      // Only count underflow events prior to finalize.
+      for (auto& ts : pending_underflow_events_) {
+        if (ts <= end_timestamp_)
+          underflow_count_++;
+      }
+    }
+
+    log_event->params.SetInteger(MediaLog::kUnderflowCount, underflow_count_);
+    pending_underflow_events_.clear();
+  }
+
   // Always send finalize, even if we don't currently have any data, it's
   // harmless to send since nothing will be logged if we've already finalized.
   if (is_finalizing)
@@ -337,6 +365,7 @@ void WatchTimeReporter::UpdateWatchTime() {
   // Stop the timer if this is supposed to be our last tick.
   if (is_finalizing) {
     end_timestamp_ = kNoTimestamp;
+    underflow_count_ = 0;
     reporting_timer_.Stop();
   }
 }

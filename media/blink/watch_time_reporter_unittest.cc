@@ -66,6 +66,12 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
           continue;
         }
 
+        int underflow_count;
+        if (it.value().GetAsInteger(&underflow_count)) {
+          OnUnderflowUpdate(underflow_count);
+          continue;
+        }
+
         double in_seconds;
         ASSERT_TRUE(it.value().GetAsDouble(&in_seconds));
         OnWatchTimeUpdate(it.key(), base::TimeDelta::FromSecondsD(in_seconds));
@@ -75,6 +81,7 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
     MOCK_METHOD0(OnWatchTimeFinalized, void(void));
     MOCK_METHOD0(OnPowerWatchTimeFinalized, void(void));
     MOCK_METHOD2(OnWatchTimeUpdate, void(const std::string&, base::TimeDelta));
+    MOCK_METHOD1(OnUnderflowUpdate, void(int));
 
    protected:
     ~WatchTimeLogMonitor() override {}
@@ -340,13 +347,52 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   // any chance to pump.
   CycleReportingTimer();
 
+  wtr_->OnUnderflow();
+  wtr_->OnUnderflow();
   EXPECT_WATCH_TIME(Ac, kWatchTimeLate);
   EXPECT_WATCH_TIME(All, kWatchTimeLate);
   EXPECT_WATCH_TIME(Eme, kWatchTimeLate);
   EXPECT_WATCH_TIME(Mse, kWatchTimeLate);
+  EXPECT_CALL(media_log_, OnUnderflowUpdate(2));
   CycleReportingTimer();
 
   EXPECT_WATCH_TIME_FINALIZED();
+  wtr_.reset();
+}
+
+TEST_P(WatchTimeReporterTest, WatchTimeReporterUnderflow) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(10);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(15);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(base::TimeDelta::FromSeconds(5)))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, true, kSizeJustRight);
+  wtr_->OnPlaying();
+  EXPECT_TRUE(IsMonitoring());
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleReportingTimer();
+
+  wtr_->OnUnderflow();
+  wtr_->OnVolumeChange(0);
+
+  // This underflow call should be ignored since it happens after the finalize.
+  // Note: We use a muted call above to trigger finalize instead of say a pause
+  // since media time will be the same in the event of a pause and no underflow
+  // should trigger after a pause in any case.
+  wtr_->OnUnderflow();
+
+  EXPECT_WATCH_TIME(Ac, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(All, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Eme, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Mse, kWatchTimeEarly);
+  EXPECT_CALL(media_log_, OnUnderflowUpdate(1));
+  EXPECT_WATCH_TIME_FINALIZED();
+  CycleReportingTimer();
   wtr_.reset();
 }
 

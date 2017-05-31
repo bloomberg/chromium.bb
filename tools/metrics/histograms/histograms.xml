@@ -28663,6 +28663,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MeanTimeBetweenRebuffers" units="ms">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    The total watch time (see Media.WatchTime) of a given playback divided by
+    the number of rebuffering events that occured during that playback.
+  </summary>
+</histogram>
+
 <histogram name="Media.MediaElement.ContentTypeParseable"
     enum="ContentTypeParseableResult">
   <owner>jrummell@chromium.org</owner>
@@ -88608,6 +88616,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="FullscreenPortrait"/>
   <suffix name="FullscreenLandscape"/>
   <affected-histogram name="Media.Timeline.Width"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MediaMtbrCategories" separator=".">
+  <suffix name="Audio.MSE" label="MTBR for MSE media with an audio track."/>
+  <suffix name="Audio.SRC" label="MTBR for SRC media with an audio track."/>
+  <suffix name="Audio.EME" label="MTBR for EME media with an audio track."/>
+  <suffix name="AudioVideo.MSE"
+      label="MTBR for MSE media with both an audio and video track."/>
+  <suffix name="AudioVideo.SRC"
+      label="MTBR for SRC media with both an audio and video track."/>
+  <suffix name="AudioVideo.EME"
+      label="MTBR for EME media with both an audio and video track."/>
+  <affected-histogram name="Media.MeanTimeBetweenRebuffers"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaPipelineStatusForStreams" separator=".">

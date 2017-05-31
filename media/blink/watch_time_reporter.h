@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_WATCH_TIME_REPORTER_H_
 #define MEDIA_BLINK_WATCH_TIME_REPORTER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
@@ -107,6 +109,11 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // recorded for playback.
   bool IsSizeLargeEnoughToReportWatchTime() const;
 
+  // Indicates a rebuffering event occurred during playback. When watch time is
+  // finalized the total watch time for a given category will be divided by the
+  // number of rebuffering events. Reset to zero after a finalize event.
+  void OnUnderflow();
+
   // Setup the reporting interval to be immediate to avoid spinning real time
   // within the unit test.
   void set_reporting_interval_for_testing() {
@@ -171,6 +178,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   bool is_playing_ = false;
   bool is_visible_ = true;
   double volume_ = 1.0;
+  int underflow_count_ = 0;
+  std::vector<base::TimeDelta> pending_underflow_events_;
 
   // The last media timestamp seen by UpdateWatchTime().
   base::TimeDelta last_media_timestamp_ = kNoTimestamp;

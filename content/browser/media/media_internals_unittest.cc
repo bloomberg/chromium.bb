@@ -381,6 +381,14 @@ class MediaInternalsWatchTimeTest : public testing::Test,
     }
   }
 
+  void ExpectMtbrTime(const std::vector<base::StringPiece>& keys,
+                      base::TimeDelta value) {
+    for (auto key : keys) {
+      histogram_tester_->ExpectUniqueSample(key.as_string(),
+                                            value.InMilliseconds(), 1);
+    }
+  }
+
   void ExpectUkmWatchTime(size_t entry, size_t size, base::TimeDelta value) {
     ASSERT_LT(entry, test_recorder_->entries_count());
 
@@ -425,6 +433,8 @@ TEST_F(MediaInternalsWatchTimeTest, BasicAudio) {
   CycleWatchTimeReporter();
   ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
 
+  wtr_->OnUnderflow();
+  wtr_->OnUnderflow();
   CycleWatchTimeReporter();
   wtr_.reset();
 
@@ -433,6 +443,9 @@ TEST_F(MediaInternalsWatchTimeTest, BasicAudio) {
        media::MediaLog::kWatchTimeAudioEme, media::MediaLog::kWatchTimeAudioAc,
        media::MediaLog::kWatchTimeAudioEmbeddedExperience},
       kWatchTimeLate);
+  ExpectMtbrTime({media::MediaLog::kMeanTimeBetweenRebuffersAudioMse,
+                  media::MediaLog::kMeanTimeBetweenRebuffersAudioEme},
+                 kWatchTimeLate / 2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 4, kWatchTimeLate);
@@ -454,6 +467,8 @@ TEST_F(MediaInternalsWatchTimeTest, BasicVideo) {
   CycleWatchTimeReporter();
   ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
 
+  wtr_->OnUnderflow();
+  wtr_->OnUnderflow();
   CycleWatchTimeReporter();
   wtr_.reset();
 
@@ -463,6 +478,9 @@ TEST_F(MediaInternalsWatchTimeTest, BasicVideo) {
                    media::MediaLog::kWatchTimeAudioVideoAc,
                    media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
                   kWatchTimeLate);
+  ExpectMtbrTime({media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoSrc,
+                  media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoEme},
+                 kWatchTimeLate / 2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 4, kWatchTimeLate);
