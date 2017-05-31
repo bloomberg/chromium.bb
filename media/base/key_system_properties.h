@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 
@@ -27,8 +28,10 @@ class MEDIA_EXPORT KeySystemProperties {
   // Returns the codecs supported by this key system.
   virtual SupportedCodecs GetSupportedCodecs() const = 0;
 
+#if defined(OS_ANDROID)
   // Returns the codecs with hardware-secure support in this key system.
   virtual SupportedCodecs GetSupportedSecureCodecs() const;
+#endif
 
   // Returns the configuration rule for supporting a robustness requirement.
   virtual EmeConfigRule GetRobustnessConfigRule(

@@ -238,7 +238,7 @@ class KeySystemsImpl : public KeySystems {
   void UpdateSupportedKeySystems();
 
   void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<KeySystemProperties>>* key_systems);
+      std::vector<std::unique_ptr<KeySystemProperties>> key_systems);
 
   void RegisterMimeType(const std::string& mime_type, EmeCodec codecs_mask);
   bool IsValidMimeTypeCodecsCombination(const std::string& mime_type,
@@ -340,7 +340,7 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
   // Clear Key is always supported.
   key_systems_properties.emplace_back(new ClearKeyProperties());
 
-  AddSupportedKeySystems(&key_systems_properties);
+  AddSupportedKeySystems(std::move(key_systems_properties));
 }
 
 // Returns whether distinctive identifiers and persistent state can be reliably
@@ -371,11 +371,11 @@ static bool CanBlock(const KeySystemProperties& properties) {
 }
 
 void KeySystemsImpl::AddSupportedKeySystems(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>> key_systems) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(key_system_properties_map_.empty());
 
-  for (auto& properties : *key_systems) {
+  for (auto& properties : key_systems) {
     DCHECK(!properties->GetKeySystemName().empty());
     DCHECK(properties->GetPersistentLicenseSessionSupport() !=
            EmeSessionTypeSupport::INVALID);
@@ -393,7 +393,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
       continue;
     }
 
-    // Supporting persistent state is a prerequsite for supporting persistent
+    // Supporting persistent state is a prerequisite for supporting persistent
     // sessions.
     if (properties->GetPersistentStateSupport() ==
         EmeFeatureSupport::NOT_SUPPORTED) {
