@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_REQUEST_H_
 
 #include "base/logging.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -21,10 +21,9 @@ struct ResourceRequest;
 // Interface for an AppCache request. Subclasses implement this interface to
 // wrap custom request objects like URLRequest, etc to ensure that these
 // dependencies stay out of the AppCache code.
-class CONTENT_EXPORT AppCacheRequest
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class CONTENT_EXPORT AppCacheRequest {
  public:
-  virtual ~AppCacheRequest() {}
+  virtual ~AppCacheRequest();
 
   // The URL for this request.
   virtual const GURL& GetURL() const = 0;
@@ -72,6 +71,8 @@ class CONTENT_EXPORT AppCacheRequest
   // Returns the underlying ResourceRequest. Please note that only one of
   // GetURLRequest() and GetResourceRequest() should return valid results.
   virtual ResourceRequest* GetResourceRequest();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequest);
 };
