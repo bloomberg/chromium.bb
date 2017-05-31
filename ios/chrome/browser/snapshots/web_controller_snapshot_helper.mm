@@ -4,13 +4,15 @@
 
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface WebControllerSnapshotHelper ()
 
@@ -50,7 +52,7 @@
 @end
 
 @implementation CoalescingSnapshotContext {
-  base::scoped_nsobject<UIImage> _cachedSnapshot;
+  UIImage* _cachedSnapshot;
 }
 
 // Returns whether a snapshot should be cached in a page loaded context.
@@ -77,18 +79,18 @@
   if ([self shouldCacheSnapshotWithOverlays:overlays
                            visibleFrameOnly:visibleFrameOnly]) {
     DCHECK(!_cachedSnapshot);
-    _cachedSnapshot.reset([snapshot retain]);
+    _cachedSnapshot = snapshot;
   }
 }
 
 @end
 
 @implementation WebControllerSnapshotHelper {
-  base::scoped_nsobject<CoalescingSnapshotContext> _coalescingSnapshotContext;
-  base::scoped_nsobject<SnapshotManager> _snapshotManager;
-  base::WeakNSObject<CRWWebController> _webController;
+  CoalescingSnapshotContext* _coalescingSnapshotContext;
+  SnapshotManager* _snapshotManager;
+  __weak CRWWebController* _webController;
   // Owns this WebControllerSnapshotHelper.
-  base::WeakNSObject<Tab> _tab;
+  __weak Tab* _tab;
 }
 
 - (instancetype)init {
@@ -104,9 +106,9 @@
     DCHECK(tab);
     DCHECK(tab.tabId);
     DCHECK([tab webController]);
-    _snapshotManager.reset([snapshotManager retain]);
-    _webController.reset([tab webController]);
-    _tab.reset(tab);
+    _snapshotManager = snapshotManager;
+    _webController = [tab webController];
+    _tab = tab;
   }
   return self;
 }
@@ -114,10 +116,10 @@
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
   if (snapshotCoalescingEnabled) {
     DCHECK(!_coalescingSnapshotContext);
-    _coalescingSnapshotContext.reset([[CoalescingSnapshotContext alloc] init]);
+    _coalescingSnapshotContext = [[CoalescingSnapshotContext alloc] init];
   } else {
     DCHECK(_coalescingSnapshotContext);
-    _coalescingSnapshotContext.reset();
+    _coalescingSnapshotContext = nil;
   }
 }
 
@@ -242,8 +244,7 @@
     UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
-    defaultImage =
-        [[result stretchableImageWithLeftCapWidth:1 topCapHeight:1] retain];
+    defaultImage = [result stretchableImageWithLeftCapWidth:1 topCapHeight:1];
   }
   return defaultImage;
 }
