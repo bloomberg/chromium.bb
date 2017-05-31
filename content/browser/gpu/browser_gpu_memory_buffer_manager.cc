@@ -457,8 +457,6 @@ uint64_t BrowserGpuMemoryBufferManager::ClientIdToTracingProcessId(
       client_id);
 }
 
-BrowserGpuMemoryBufferManager::BufferInfo::BufferInfo() = default;
-
 BrowserGpuMemoryBufferManager::BufferInfo::BufferInfo(
     const gfx::Size& size,
     gfx::GpuMemoryBufferType type,
