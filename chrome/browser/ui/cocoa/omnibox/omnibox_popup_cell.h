@@ -68,7 +68,7 @@ class OmniboxPopupViewMac;
 
 + (CGFloat)getContentAreaWidth:(NSRect)cellFrame;
 
-+ (CGFloat)getContentTextHeight;
++ (CGFloat)getContentTextHeightForDoubleLine:(BOOL)isDoubleLine;
 
 @end
 
