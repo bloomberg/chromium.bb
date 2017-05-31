@@ -558,5 +558,15 @@ TEST_F(TabletPowerButtonControllerTest, EnableOnAccelerometerUpdate) {
   EXPECT_TRUE(tablet_controller_);
 }
 
+// Tests that when backlights get forced off due to tablet power button, media
+// sessions should be suspended.
+TEST_F(TabletPowerButtonControllerTest, SuspendMediaSessions) {
+  ASSERT_FALSE(shell_delegate_->media_sessions_suspended());
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_TRUE(GetBacklightsForcedOff());
+  EXPECT_TRUE(shell_delegate_->media_sessions_suspended());
+}
+
 }  // namespace test
 }  // namespace ash

@@ -221,6 +221,9 @@ void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
   backlights_forced_off_ = forced_off;
   UpdateTouchscreenStatus();
 
+  if (backlights_forced_off_)
+    Shell::Get()->shell_delegate()->SuspendMediaSessions();
+
   // Send an a11y alert.
   Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       forced_off ? A11Y_ALERT_SCREEN_OFF : A11Y_ALERT_SCREEN_ON);

@@ -51,14 +51,9 @@ class ShelfInitializer : public ShellObserver {
   DISALLOW_COPY_AND_ASSIGN(ShelfInitializer);
 };
 
-TestShellDelegate::TestShellDelegate()
-    : num_exit_requests_(0),
-      multi_profiles_enabled_(false),
-      force_maximize_on_first_run_(false),
-      touchscreen_enabled_in_local_pref_(true),
-      active_user_pref_service_(nullptr) {}
+TestShellDelegate::TestShellDelegate() = default;
 
-TestShellDelegate::~TestShellDelegate() {}
+TestShellDelegate::~TestShellDelegate() = default;
 
 ::service_manager::Connector* TestShellDelegate::GetShellConnector() const {
   return nullptr;
@@ -157,6 +152,10 @@ void TestShellDelegate::SetTouchscreenEnabledInPrefs(bool enabled,
 }
 
 void TestShellDelegate::UpdateTouchscreenStatusFromPrefs() {}
+
+void TestShellDelegate::SuspendMediaSessions() {
+  media_sessions_suspended_ = true;
+}
 
 }  // namespace test
 }  // namespace ash

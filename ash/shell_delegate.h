@@ -138,6 +138,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Toggles the status of touchpad between enabled and disabled.
   virtual void ToggleTouchpad() {}
+
+  // Suspends all WebContents-associated media sessions to stop managed players.
+  virtual void SuspendMediaSessions() {}
 };
 
 }  // namespace ash

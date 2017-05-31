@@ -111,8 +111,8 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
 
 }  // anonymous namespace
 
-#if !defined(OS_ANDROID)
-// The feature can't be disabled on Android.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// The feature can't be disabled on Android and Chrome OS.
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
   EXPECT_FALSE(IsPlaying(shell(), "long-audio"));
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
   EnableInternalMediaSesion();

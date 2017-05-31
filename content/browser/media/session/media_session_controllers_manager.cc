@@ -13,7 +13,9 @@ namespace content {
 namespace {
 
 bool IsMediaSessionEnabled() {
-#if defined(OS_ANDROID)
+// Media session is enabled on Android and Chrome OS to allow control of media
+// players as needed.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return true;
 #else
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

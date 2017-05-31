@@ -60,6 +60,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                                     bool use_local_state) override;
   void UpdateTouchscreenStatusFromPrefs() override;
   void ToggleTouchpad() override;
+  void SuspendMediaSessions() override;
 
   // content::NotificationObserver override:
   void Observe(int type,

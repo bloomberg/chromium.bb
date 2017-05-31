@@ -63,6 +63,7 @@ class TestShellDelegate : public ShellDelegate {
   void SetTouchscreenEnabledInPrefs(bool enabled,
                                     bool use_local_state) override;
   void UpdateTouchscreenStatusFromPrefs() override;
+  void SuspendMediaSessions() override;
 
   int num_exit_requests() const { return num_exit_requests_; }
 
@@ -70,13 +71,16 @@ class TestShellDelegate : public ShellDelegate {
     force_maximize_on_first_run_ = maximize;
   }
 
+  bool media_sessions_suspended() const { return media_sessions_suspended_; }
+
  private:
-  int num_exit_requests_;
-  bool multi_profiles_enabled_;
-  bool force_maximize_on_first_run_;
-  bool touchscreen_enabled_in_local_pref_;
+  int num_exit_requests_ = 0;
+  bool multi_profiles_enabled_ = false;
+  bool force_maximize_on_first_run_ = false;
+  bool touchscreen_enabled_in_local_pref_ = true;
+  bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
-  PrefService* active_user_pref_service_;  // Not owned.
+  PrefService* active_user_pref_service_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

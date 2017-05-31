@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -67,6 +68,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/window.h"
@@ -585,6 +587,13 @@ void ChromeShellDelegate::UpdateTouchscreenStatusFromPrefs() {
 
 void ChromeShellDelegate::ToggleTouchpad() {
   chromeos::system::InputDeviceSettings::Get()->ToggleTouchpad();
+}
+
+void ChromeShellDelegate::SuspendMediaSessions() {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
+    content::MediaSession::Get(*it)->Suspend(
+        content::MediaSession::SuspendType::SYSTEM);
+  }
 }
 
 keyboard::KeyboardUI* ChromeShellDelegate::CreateKeyboardUI() {
