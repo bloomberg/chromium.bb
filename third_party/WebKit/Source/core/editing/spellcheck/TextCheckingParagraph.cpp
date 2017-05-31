@@ -99,11 +99,6 @@ EphemeralRange TextCheckingParagraph::Subrange(int character_offset,
                                     character_count);
 }
 
-int TextCheckingParagraph::OffsetTo(const Position& position) const {
-  DCHECK(checking_range_.IsNotNull());
-  return TextIterator::RangeLength(OffsetAsRange().StartPosition(), position);
-}
-
 bool TextCheckingParagraph::IsEmpty() const {
   // Both predicates should have same result, but we check both just to be sure.
   // We need to investigate to remove this redundancy.

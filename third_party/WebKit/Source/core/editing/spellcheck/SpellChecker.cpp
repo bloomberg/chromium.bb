@@ -600,7 +600,6 @@ void SpellChecker::MarkAndReplaceFor(
   // and should be rewritten.
   // Expand the range to encompass entire paragraphs, since text checking needs
   // that much context.
-  int selection_offset = 0;
   int ambiguous_boundary_offset = -1;
 
   if (GetFrame().Selection().ComputeVisibleSelectionInDOMTree().IsCaret()) {
@@ -609,7 +608,11 @@ void SpellChecker::MarkAndReplaceFor(
     // Attempt to save the caret position so we can restore it later if needed
     const Position& caret_position =
         GetFrame().Selection().ComputeVisibleSelectionInDOMTree().end();
-    selection_offset = paragraph.OffsetTo(caret_position);
+    const Position& paragraph_start = checking_range.StartPosition();
+    const int selection_offset =
+        paragraph_start < caret_position
+            ? TextIterator::RangeLength(paragraph_start, caret_position)
+            : 0;
     if (selection_offset > 0 &&
         static_cast<unsigned>(selection_offset) <=
             paragraph.GetText().length() &&

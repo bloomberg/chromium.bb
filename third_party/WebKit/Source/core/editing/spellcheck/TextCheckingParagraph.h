@@ -41,7 +41,6 @@ class TextCheckingParagraph {
 
   int RangeLength() const;
   EphemeralRange Subrange(int character_offset, int character_count) const;
-  int OffsetTo(const Position&) const;
   void ExpandRangeToNextEnd();
 
   const String& GetText() const;
