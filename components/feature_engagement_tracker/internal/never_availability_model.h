@@ -12,7 +12,8 @@
 
 namespace feature_engagement_tracker {
 
-// An AvailabilityModel that never has any data, and is never ready.
+// An AvailabilityModel that never has any data, and is ready after having been
+// initialized.
 class NeverAvailabilityModel : public AvailabilityModel {
  public:
   NeverAvailabilityModel();
@@ -26,6 +27,14 @@ class NeverAvailabilityModel : public AvailabilityModel {
       const base::Feature& feature) const override;
 
  private:
+  // Sets |ready_| to true and posts the result to |callback|. This method
+  // exists to ensure that |ready_| is not updated directly in the
+  // Initialize(...) method.
+  void ForwardedOnInitializedCallback(OnInitializedCallback callback);
+
+  // Whether the model has been successfully initialized.
+  bool ready_;
+
   DISALLOW_COPY_AND_ASSIGN(NeverAvailabilityModel);
 };
 
