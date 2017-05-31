@@ -1572,7 +1572,8 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
   if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
       !RequiredCSP().IsEmpty()) {
     DCHECK(ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString()));
-    resource_request.SetHTTPHeaderField(HTTPNames::Required_CSP, RequiredCSP());
+    resource_request.SetHTTPHeaderField(HTTPNames::Sec_Required_CSP,
+                                        RequiredCSP());
   }
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
