@@ -38,7 +38,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/app_categorizer.h"
 #include "chrome/renderer/benchmarking_extension.h"

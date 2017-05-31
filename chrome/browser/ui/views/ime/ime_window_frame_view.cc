@@ -6,18 +6,15 @@
 
 #include "chrome/browser/ui/views/ime/ime_window_view.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

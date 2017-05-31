@@ -11,13 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
-#include "chrome/grit/generated_resources.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "extensions/strings/grit/extensions_strings.h"
 #include "url/gurl.h"
 
 namespace extensions {

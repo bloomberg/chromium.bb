@@ -26,7 +26,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

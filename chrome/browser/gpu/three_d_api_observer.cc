@@ -12,7 +12,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 

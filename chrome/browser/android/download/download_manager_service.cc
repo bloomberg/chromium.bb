@@ -15,7 +15,6 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"

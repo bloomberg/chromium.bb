@@ -13,7 +13,6 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"

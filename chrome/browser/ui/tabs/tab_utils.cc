@@ -28,7 +28,6 @@
 #include "ui/native_theme/native_theme.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
 

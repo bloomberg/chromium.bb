@@ -46,7 +46,6 @@
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"

@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_separator_view.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"

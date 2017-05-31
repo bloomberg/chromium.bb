@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/grit/components_scaled_resources.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/l10n/l10n_util.h"

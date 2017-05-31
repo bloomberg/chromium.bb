@@ -48,7 +48,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/grit/theme_resources.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif

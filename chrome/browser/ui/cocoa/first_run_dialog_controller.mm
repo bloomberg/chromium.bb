@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/strings/grit/components_strings.h"
 #include "ui/base/cocoa/controls/button_utils.h"
 #include "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/l10n/l10n_util.h"

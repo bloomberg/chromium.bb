@@ -6,7 +6,6 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/grit/theme_resources.h"
 #include "ui/vector_icons/vector_icons.h"
 
 MockPermissionRequest::MockPermissionRequest()

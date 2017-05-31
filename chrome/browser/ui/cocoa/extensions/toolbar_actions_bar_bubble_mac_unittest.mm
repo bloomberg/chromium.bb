@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/grit/components_scaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/vector_icons/vector_icons.h"

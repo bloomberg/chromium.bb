@@ -18,7 +18,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/version_info/version_info.h"

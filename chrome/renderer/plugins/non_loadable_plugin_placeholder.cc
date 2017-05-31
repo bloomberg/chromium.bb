@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/strings/grit/components_strings.h"

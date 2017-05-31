@@ -27,7 +27,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/common_resources.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/generated_schemas.h"
