@@ -477,7 +477,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-093
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-101.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-103.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-104.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-125.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-129.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-001.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-002.xht [ Failure ]
