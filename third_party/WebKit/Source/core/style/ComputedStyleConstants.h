@@ -118,7 +118,7 @@ enum class EVerticalAlign : unsigned {
   kLength
 };
 
-enum TextCombine { kTextCombineNone, kTextCombineAll };
+enum class TextCombine { kNone, kAll };
 
 enum EFillAttachment {
   kScrollBackgroundAttachment,

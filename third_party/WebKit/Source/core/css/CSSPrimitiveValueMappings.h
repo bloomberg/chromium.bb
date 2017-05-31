@@ -1318,10 +1318,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextCombine e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTextCombineNone:
+    case TextCombine::kNone:
       value_id_ = CSSValueNone;
       break;
-    case kTextCombineAll:
+    case TextCombine::kAll:
       value_id_ = CSSValueAll;
       break;
   }
@@ -1331,16 +1331,16 @@ template <>
 inline TextCombine CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
-      return kTextCombineNone;
+      return TextCombine::kNone;
     case CSSValueAll:
     case CSSValueHorizontal:  // -webkit-text-combine
-      return kTextCombineAll;
+      return TextCombine::kAll;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextCombineNone;
+  return TextCombine::kNone;
 }
 
 template <>

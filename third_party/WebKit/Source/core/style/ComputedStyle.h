@@ -1670,12 +1670,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
   // text-combine-upright (aka -webkit-text-combine, -epub-text-combine)
-  static TextCombine InitialTextCombine() { return kTextCombineNone; }
+  static TextCombine InitialTextCombine() { return TextCombine::kNone; }
   TextCombine GetTextCombine() const {
     return static_cast<TextCombine>(rare_inherited_data_->text_combine_);
   }
   void SetTextCombine(TextCombine v) {
-    SET_VAR(rare_inherited_data_, text_combine_, v);
+    SET_VAR(rare_inherited_data_, text_combine_, static_cast<unsigned>(v));
   }
 
   // text-justify
@@ -2201,7 +2201,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Text-combine utility functions.
-  bool HasTextCombine() const { return GetTextCombine() != kTextCombineNone; }
+  bool HasTextCombine() const { return GetTextCombine() != TextCombine::kNone; }
 
   // Grid utility functions.
   const Vector<GridTrackSize>& GridAutoRepeatColumns() const {

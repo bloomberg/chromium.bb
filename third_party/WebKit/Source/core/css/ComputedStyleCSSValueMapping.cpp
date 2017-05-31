@@ -3304,7 +3304,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyWebkitWritingMode:
       return CSSIdentifierValue::Create(style.GetWritingMode());
     case CSSPropertyWebkitTextCombine:
-      if (style.GetTextCombine() == kTextCombineAll)
+      if (style.GetTextCombine() == TextCombine::kAll)
         return CSSIdentifierValue::Create(CSSValueHorizontal);
     case CSSPropertyTextCombineUpright:
       return CSSIdentifierValue::Create(style.GetTextCombine());
