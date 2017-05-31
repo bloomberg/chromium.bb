@@ -783,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
       GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
   // Delay HTTP response to ensure enough time to receive notice of
   // firstContentfulPaint.
-  image->delay = base::TimeDelta::FromMilliseconds(1500);
+  image->delay = base::TimeDelta::FromMilliseconds(2500);
   image->request.before_first_contentful_paint = false;
 
   TestLearningAndPrefetching(GetURL(kHtmlFcpOrderPath), true);
