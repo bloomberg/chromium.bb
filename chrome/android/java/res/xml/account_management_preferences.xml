@@ -19,35 +19,57 @@
         android:icon="@drawable/add_circle_blue"
         android:order="1000" />
 
+    <Preference
+        android:layout="@layout/divider_preference"
+        android:order="1001" />
+
     <PreferenceCategory
         android:key="parental_settings"
         android:title="@string/account_management_parental_settings"
-        android:order="1001" />
+        android:order="1002" />
 
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="parent_accounts"
-        android:order="1002" />
+        android:order="1003" />
 
     <Preference
         android:key="child_content"
         android:title="@string/account_management_child_content_title"
-        android:order="1003" />
+        android:order="1004" />
+
+    <Preference
+        android:key="child_content_divider"
+        android:layout="@layout/divider_preference"
+        android:order="1005" />
 
     <org.chromium.chrome.browser.preferences.SyncPreference
         android:key="sync_settings"
         android:title="@string/sign_in_sync"
-        android:order="1005"/>
+        android:order="1006" />
+
+    <Preference
+        android:layout="@layout/divider_preference"
+        android:order="1007" />
 
     <Preference
         android:key="google_activity_controls"
         android:icon="@drawable/googleg"
         android:title="@string/sign_in_google_activity_controls"
         android:summary="@string/sign_in_google_activity_controls_message"
-        android:order="1006" />
+        android:order="1008" />
+
+    <Preference
+        android:layout="@layout/divider_preference"
+        android:order="1009" />
 
     <Preference
         android:key="sign_out"
         android:title="@string/account_management_sign_out"
-        android:order="1007"/>
+        android:order="1010" />
+
+    <Preference
+        android:key="sign_out_divider"
+        android:layout="@layout/divider_preference"
+        android:order="1011" />
 
 </PreferenceScreen>
