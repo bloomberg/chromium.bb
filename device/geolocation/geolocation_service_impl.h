@@ -42,7 +42,7 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
  private:
   // mojom::GeolocationService:
   void SetHighAccuracy(bool high_accuracy) override;
-  void QueryNextPosition(const QueryNextPositionCallback& callback) override;
+  void QueryNextPosition(QueryNextPositionCallback callback) override;
 
   void OnConnectionError();
 
