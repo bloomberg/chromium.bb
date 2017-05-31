@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -33,9 +33,7 @@ class URLRequestJob;
 // Subclasses implement this interface to wrap custom job objects like
 // URLRequestJob, URLLoaderJob, etc to ensure that these dependencies stay out
 // of the AppCache code.
-class CONTENT_EXPORT AppCacheJob
-    : NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public base::SupportsWeakPtr<AppCacheJob> {
+class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
  public:
   // Callback that will be invoked before the request is restarted. The caller
   // can use this opportunity to grab state from the job to determine how it
@@ -110,6 +108,8 @@ class CONTENT_EXPORT AppCacheJob
 
  protected:
   AppCacheJob();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AppCacheJob> weak_factory_;
 
