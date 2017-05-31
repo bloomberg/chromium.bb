@@ -22,6 +22,7 @@ namespace tether {
 class ActiveHost;
 class DeviceIdTetherNetworkGuidMap;
 class TetherHostResponseRecorder;
+class TimerFactory;
 
 // Caches scan results and inserts them into the network stack.
 class HostScanCache : public TetherHostResponseRecorder::Observer {
@@ -75,11 +76,6 @@ class HostScanCache : public TetherHostResponseRecorder::Observer {
 
   // TetherHostResponseRecorder::Observer:
   void OnPreviouslyConnectedHostIdsChanged() override;
-
-  class TimerFactory {
-   public:
-    virtual std::unique_ptr<base::Timer> CreateOneShotTimer() = 0;
-  };
 
  private:
   friend class HostScanCacheTest;

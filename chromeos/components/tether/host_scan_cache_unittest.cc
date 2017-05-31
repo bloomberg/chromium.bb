@@ -16,6 +16,7 @@
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
+#include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -70,6 +71,43 @@ class ExtendedMockTimer : public base::MockTimer {
   base::Closure destructor_callback_;
 };
 
+class TestTimerFactory : public TimerFactory {
+ public:
+  TestTimerFactory() {}
+  ~TestTimerFactory() override {}
+
+  std::unordered_map<std::string, ExtendedMockTimer*>&
+  tether_network_guid_to_timer_map() {
+    return tether_network_guid_to_timer_map_;
+  }
+
+  void set_tether_network_guid_for_next_timer(
+      const std::string& tether_network_guid_for_next_timer) {
+    tether_network_guid_for_next_timer_ = tether_network_guid_for_next_timer;
+  }
+
+  // TimerFactory:
+  std::unique_ptr<base::Timer> CreateOneShotTimer() override {
+    EXPECT_FALSE(tether_network_guid_for_next_timer_.empty());
+    ExtendedMockTimer* mock_timer = new ExtendedMockTimer(base::Bind(
+        &TestTimerFactory::OnActiveTimerDestructor, base::Unretained(this),
+        tether_network_guid_for_next_timer_));
+    tether_network_guid_to_timer_map_[tether_network_guid_for_next_timer_] =
+        mock_timer;
+    return base::WrapUnique(mock_timer);
+  }
+
+ private:
+  void OnActiveTimerDestructor(const std::string& tether_network_guid) {
+    tether_network_guid_to_timer_map_.erase(
+        tether_network_guid_to_timer_map_.find(tether_network_guid));
+  }
+
+  std::string tether_network_guid_for_next_timer_;
+  std::unordered_map<std::string, ExtendedMockTimer*>
+      tether_network_guid_to_timer_map_;
+};
+
 }  // namespace
 
 // TODO(khorimoto): The test uses a FakeHostScanCache to keep an in-memory
@@ -78,43 +116,6 @@ class ExtendedMockTimer : public base::MockTimer {
 // if possible.
 class HostScanCacheTest : public NetworkStateTest {
  protected:
-  class TestTimerFactory : public HostScanCache::TimerFactory {
-   public:
-    TestTimerFactory() {}
-    ~TestTimerFactory() {}
-
-    std::unordered_map<std::string, ExtendedMockTimer*>&
-    tether_network_guid_to_timer_map() {
-      return tether_network_guid_to_timer_map_;
-    }
-
-    void set_tether_network_guid_for_next_timer(
-        const std::string& tether_network_guid_for_next_timer) {
-      tether_network_guid_for_next_timer_ = tether_network_guid_for_next_timer;
-    }
-
-    // HostScanCache::TimerFactory:
-    std::unique_ptr<base::Timer> CreateOneShotTimer() override {
-      EXPECT_FALSE(tether_network_guid_for_next_timer_.empty());
-      ExtendedMockTimer* mock_timer = new ExtendedMockTimer(base::Bind(
-          &TestTimerFactory::OnActiveTimerDestructor, base::Unretained(this),
-          tether_network_guid_for_next_timer_));
-      tether_network_guid_to_timer_map_[tether_network_guid_for_next_timer_] =
-          mock_timer;
-      return base::WrapUnique(mock_timer);
-    }
-
-   private:
-    void OnActiveTimerDestructor(const std::string& tether_network_guid) {
-      tether_network_guid_to_timer_map_.erase(
-          tether_network_guid_to_timer_map_.find(tether_network_guid));
-    }
-
-    std::string tether_network_guid_for_next_timer_;
-    std::unordered_map<std::string, ExtendedMockTimer*>
-        tether_network_guid_to_timer_map_;
-  };
-
   HostScanCacheTest() {}
 
   void SetUp() override {

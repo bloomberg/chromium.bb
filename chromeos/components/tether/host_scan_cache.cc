@@ -11,6 +11,7 @@
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
+#include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/proximity_auth/logging/logging.h"
 
@@ -18,27 +19,12 @@ namespace chromeos {
 
 namespace tether {
 
-namespace {
-
-class TimerFactoryImpl : public HostScanCache::TimerFactory {
- public:
-  TimerFactoryImpl() {}
-  ~TimerFactoryImpl() {}
-
-  // HostScanCache::TimerFactory:
-  std::unique_ptr<base::Timer> CreateOneShotTimer() override {
-    return base::MakeUnique<base::OneShotTimer>();
-  }
-};
-
-}  // namespace
-
 HostScanCache::HostScanCache(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     TetherHostResponseRecorder* tether_host_response_recorder,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map)
-    : timer_factory_(base::MakeUnique<TimerFactoryImpl>()),
+    : timer_factory_(base::MakeUnique<TimerFactory>()),
       network_state_handler_(network_state_handler),
       active_host_(active_host),
       tether_host_response_recorder_(tether_host_response_recorder),
