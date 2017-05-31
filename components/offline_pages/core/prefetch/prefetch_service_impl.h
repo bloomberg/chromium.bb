@@ -20,13 +20,16 @@ namespace offline_pages {
 
 class PrefetchServiceImpl : public PrefetchService {
  public:
-  PrefetchServiceImpl(std::unique_ptr<PrefetchGCMHandler> gcm_handler);
+  PrefetchServiceImpl(
+      std::unique_ptr<PrefetchGCMHandler> gcm_handler,
+      std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector);
   ~PrefetchServiceImpl() override;
 
   // PrefetchService implementation:
   void ObserveContentSuggestionsService(
       ntp_snippets::ContentSuggestionsService* service) override;
   PrefetchDispatcher* GetDispatcher() override;
+  OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
 
   // KeyedService implementation:
@@ -36,6 +39,7 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
   std::unique_ptr<PrefetchGCMHandler> gcm_handler_;
   std::unique_ptr<PrefetchDispatcher> dispatcher_;
+  std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);
 };
