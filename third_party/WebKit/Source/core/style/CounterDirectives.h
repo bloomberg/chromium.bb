@@ -99,9 +99,13 @@ inline bool operator!=(const CounterDirectives& a, const CounterDirectives& b) {
   return !(a == b);
 }
 
-typedef HashMap<AtomicString, CounterDirectives> CounterDirectiveMap;
-
-std::unique_ptr<CounterDirectiveMap> Clone(const CounterDirectiveMap&);
+// Not to be deleted through a pointer to HashMap.
+class CounterDirectiveMap : public HashMap<AtomicString, CounterDirectives> {
+ public:
+  std::unique_ptr<CounterDirectiveMap> Clone() const {
+    return WTF::WrapUnique(new CounterDirectiveMap(*this));
+  }
+};
 
 }  // namespace blink
 

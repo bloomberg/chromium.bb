@@ -154,7 +154,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       grid_item_(o.grid_item_),
       scroll_snap_(o.scroll_snap_),
       content_(o.content_ ? o.content_->Clone() : nullptr),
-      counter_directives_(o.counter_directives_ ? Clone(*o.counter_directives_)
+      counter_directives_(o.counter_directives_ ? o.counter_directives_->Clone()
                                                 : nullptr),
       animations_(o.animations_ ? o.animations_->Clone() : nullptr),
       transitions_(o.transitions_ ? o.transitions_->Clone() : nullptr),
