@@ -35140,6 +35140,7 @@ from previous Chrome versions.
   <int value="7" label="Sites"/>
   <int value="8" label="Sync"/>
   <int value="9" label="WebApk"/>
+  <int value="10" label="Browser Actions"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus" type="int">

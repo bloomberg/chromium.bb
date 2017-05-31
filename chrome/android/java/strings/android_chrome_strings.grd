@@ -1737,6 +1737,18 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BROWSER_ACTIONS_SHARE" desc="Browser Actions menu item to share the url address of the selected link. [CHAR-LIMIT=30]">
         Share...
       </message>
+      <message name="IDS_BROWSER_ACTIONS_OPEN_IN_BACKGROUND_TOAST_MESSAGE" desc="Browser Actions toast message when to open a link in new Chrome tab in the backgoround. [CHAR-LIMIT=30]">
+        Link opened in Chrome
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_SINGLE_LINK_OPEN_NOTIFICATION_TITLE" desc="Content title displayed in the notification when one link is opened in the background from Browser Actions. [CHAR-LIMIT=30]">
+        Link opened in Chrome
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_MULTI_LINKS_OPEN_NOTIFICATION_TITLE" desc="Content title displayed in the notification when multiple links are opened in the background from Browser Actions. [CHAR-LIMIT=30]">
+        Multiple links opened in Chrome
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_NOTIFICATION_TEXT" desc="Context text displayed in the notification when links are opened in the background from Browser Actions. [CHAR-LIMIT=30]">
+        Tap to view
+      </message>
 
       <!-- App banner strings -->
       <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed. [CHAR-LIMIT=25]">

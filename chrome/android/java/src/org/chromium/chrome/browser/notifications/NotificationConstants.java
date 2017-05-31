@@ -56,6 +56,11 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_PHYSICAL_WEB = 3;
 
     /**
+     * Unique identifier for Browser Actions notification.
+     */
+    public static final int NOTIFICATION_ID_BROWSER_ACTIONS = 4;
+
+    /**
      * Unique identifier for the summary notification for downloads.  Using the ID this summary was
      * going to have before it was migrated here.
      * TODO(dtrainor): Clean up this ID and make sure it's in line with existing id counters without
