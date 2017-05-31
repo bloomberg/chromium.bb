@@ -13,8 +13,7 @@ without any warranty. */
 #include "liblouis.h"
 #include "brl_checks.h"
 
-/* Illustrates the same bug as doctests/hyphenate_xxx_test.txt
- * The same bug can be reproduced with only 3 'x'es. */
+/* The same bug can be reproduced with only 3 'x'es. */
 int main(int argc, char **argv)
 {
   int ret = 0;

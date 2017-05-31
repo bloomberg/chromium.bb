@@ -197,10 +197,6 @@ tests/uplow_with_unicode
 tests/yaml/*.log
 tests/yaml/*.trs
 
-# /tests/doctests/
-tests/doctests/Makefile
-tests/doctests/Makefile.in
-
 # /tests/yaml/
 tests/yaml/Makefile
 tests/yaml/Makefile.in

@@ -1,4 +1,4 @@
-SUBDIRS = tables tablesWithMetadata doctests yaml ueb_test_data
+SUBDIRS = tables tablesWithMetadata yaml ueb_test_data
 
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/liblouis		\
@@ -101,15 +101,6 @@ dist_check_SCRIPTS =				\
 	check_included_tables.sh		\
 	multiple_table_path.pl			\
 	ueb_test_data.pl
-
-# if we have Python and liblouis is configured with ucs4 then we can
-# invoke the python based tests
-if HAVE_PYTHON
-if HAVE_UCS4
-dist_check_SCRIPTS += \
-	check_doctests.py
-endif
-endif
 
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough

@@ -1,3 +1,0 @@
-EXTRA_DIST =					\
-	en-GB-g2.ctb_test.txt			\
-	hyphenate_xxx_test.txt

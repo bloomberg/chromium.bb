@@ -156,11 +156,6 @@ Testing Translation Tables interactively
 * lou_checkhyphens::
 * lou_checkyaml::
 
-Automated Testing of Translation Tables
-
-* YAML Tests::
-* Doctests::
-
 Programming with liblouis
 
 * Overview (library)::
@@ -2076,30 +2071,14 @@ where you define the table that is to be tested and any number of
 words or phrases to translate together with their respective expected
 translation.
 
-@table @asis
-@item YAML tests
 The YAML tests are data driven, i.e. you give the test data, a string
 to translate and the expected output. The data is in a standard format
 namely YAML. If you have @file{libyaml} installed they will
 automatically be invoked as part of the standard @command{make check}
 command.
 
-@item Doctests
-The doctests are based on a technology used in Python where you define
-your tests as if you were sitting at a terminal session with a Python
-interpreter. They only work with either Python2 and Python3 but not
-from plain C, so you need Python and you will have to compile with
-UCS4.
-@end table
-
-@menu
-* YAML Tests::
-* Doctests::
-@end menu
-
-@node YAML Tests
+@anchor{YAML Tests}
 @section YAML Tests
-
 @url{http://yaml.org/,YAML} is a human readable data serialization
 format that allows for an easy and compact way to define tests.
 
@@ -2348,32 +2327,6 @@ tests:
   - [..., ...]
   - [..., ...]
 @end example
-
-@node Doctests
-@section Doctests
-A doctest looks like you typed a command at the Python command line
-and got some output, e.g.
-
-@example
->>> translate(['table.ctb'], "Hello", mode=compbrlLeftCursor)
-("HELLO", [0,1,2,3], [0,1,2,3], 0)
-@end example
-
-There is a convenience wrapper which hides away much of the complexity
-of above example so you can write stuff like 
-
-@example
->>> t.braille('the cat sat on the mat')
-u'! cat sat on ! mat'
-@end example
-
-Essentially you are writing code, so the doctests allow you to do more
-flexible tests that are much closer to the raw iron than any of the
-other tests. However the doctests will only work in either Python2 or
-Python3.
-
-For examples on how to create doctests please see @file{*_test.txt} in
-the doctest directory in the source distribution.
 
 @node Programming with liblouis
 @chapter Programming with liblouis
@@ -3215,14 +3168,14 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
 @c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
-@c  LocalWords:  YAML Doctests JSON logLevels nocontractsign OSX DLL
+@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL
 @c  LocalWords:  MERCHANTABILITY registerLogCallback setLogLevel brf
 @c  LocalWords:  cindex chardefs xhtml pxref dec multi hyph dic Aa al
 @c  LocalWords:  mrow mfrac emphclass transnote subsubsection begemph
 @c  LocalWords:  endemph emphletter begemphword endemphword www cd th
 @c  LocalWords:  lenemphphrase begemphphrase endemphphrase andthe se
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
-@c  LocalWords:  h's brl testtrans UCS asis libyaml doctests url yaml
+@c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
 @c  LocalWords:  dotsIO otherTrans ucBrl noUndefinedDots partialTrans
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
