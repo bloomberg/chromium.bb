@@ -63,6 +63,17 @@ class CollapsedBorderValue {
     DCHECK(precedence != kBorderPrecedenceOff);
   }
 
+  CollapsedBorderValue(EBorderStyle style,
+                       const float width,
+                       const Color& color,
+                       EBorderPrecedence precedence)
+      : color_(color),
+        width_(ComputedStyle::BorderStyleIsVisible(style) ? width : 0),
+        style_(static_cast<unsigned>(style)),
+        precedence_(precedence) {
+    DCHECK(precedence != kBorderPrecedenceOff);
+  }
+
   unsigned Width() const { return width_; }
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   bool Exists() const { return precedence_ != kBorderPrecedenceOff; }

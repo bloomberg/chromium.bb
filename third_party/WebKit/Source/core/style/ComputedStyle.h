@@ -2640,12 +2640,18 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   BorderValue BorderAfter() const;
   BorderValue BorderStart() const;
   BorderValue BorderEnd() const;
+
   float BorderAfterWidth() const;
   float BorderBeforeWidth() const;
   float BorderEndWidth() const;
   float BorderStartWidth() const;
   float BorderOverWidth() const;
   float BorderUnderWidth() const;
+
+  EBorderStyle BorderAfterStyle() const;
+  EBorderStyle BorderBeforeStyle() const;
+  EBorderStyle BorderEndStyle() const;
+  EBorderStyle BorderStartStyle() const;
 
   bool HasBorderFill() const {
     return BorderImage().HasImage() && BorderImage().Fill();
@@ -2667,10 +2673,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return false;
   }
   bool HasBorderColorReferencingCurrentColor() const {
-    return (BorderLeft().NonZero() && BorderLeftColor().IsCurrentColor()) ||
-           (BorderRight().NonZero() && BorderRightColor().IsCurrentColor()) ||
-           (BorderTop().NonZero() && BorderTopColor().IsCurrentColor()) ||
-           (BorderBottom().NonZero() && BorderBottomColor().IsCurrentColor());
+    return (BorderLeftNonZero() && BorderLeftColor().IsCurrentColor()) ||
+           (BorderRightNonZero() && BorderRightColor().IsCurrentColor()) ||
+           (BorderTopNonZero() && BorderTopColor().IsCurrentColor()) ||
+           (BorderBottomNonZero() && BorderBottomColor().IsCurrentColor());
   }
 
   bool RadiiEqual(const ComputedStyle& o) const {
@@ -2685,6 +2691,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            BorderLeftStyle() == o.BorderLeftStyle() &&
            BorderLeftColor() == o.BorderLeftColor() &&
            BorderLeftColorIsCurrentColor() == o.BorderLeftColorIsCurrentColor();
+  }
+  bool BorderLeftEquals(const BorderValue& o) const {
+    return BorderLeftWidthInternal().ToFloat() == o.Width() &&
+           BorderLeftStyle() == o.Style() &&
+           BorderLeftColor() == o.GetColor() &&
+           BorderLeftColorIsCurrentColor() == o.ColorIsCurrentColor();
   }
 
   bool BorderLeftVisuallyEqual(const ComputedStyle& o) const {
@@ -2703,6 +2715,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            BorderRightColor() == o.BorderRightColor() &&
            BorderRightColorIsCurrentColor() ==
                o.BorderRightColorIsCurrentColor();
+  }
+  bool BorderRightEquals(const BorderValue& o) const {
+    return BorderRightWidthInternal().ToFloat() == o.Width() &&
+           BorderRightStyle() == o.Style() &&
+           BorderRightColor() == o.GetColor() &&
+           BorderRightColorIsCurrentColor() == o.ColorIsCurrentColor();
   }
 
   bool BorderRightVisuallyEqual(const ComputedStyle& o) const {
@@ -2731,6 +2749,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            BorderTopColor() == o.BorderTopColor() &&
            BorderTopColorIsCurrentColor() == o.BorderTopColorIsCurrentColor();
   }
+  bool BorderTopEquals(const BorderValue& o) const {
+    return BorderTopWidthInternal().ToFloat() == o.Width() &&
+           BorderTopStyle() == o.Style() && BorderTopColor() == o.GetColor() &&
+           BorderTopColorIsCurrentColor() == o.ColorIsCurrentColor();
+  }
 
   bool BorderBottomVisuallyEqual(const ComputedStyle& o) const {
     if (BorderBottomStyle() == EBorderStyle::kNone &&
@@ -2748,6 +2771,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
            BorderBottomColor() == o.BorderBottomColor() &&
            BorderBottomColorIsCurrentColor() ==
                o.BorderBottomColorIsCurrentColor();
+  }
+  bool BorderBottomEquals(const BorderValue& o) const {
+    return BorderBottomWidthInternal().ToFloat() == o.Width() &&
+           BorderBottomStyle() == o.Style() &&
+           BorderBottomColor() == o.GetColor() &&
+           BorderBottomColorIsCurrentColor() == o.ColorIsCurrentColor();
   }
 
   bool BorderEquals(const ComputedStyle& o) const {
@@ -2781,25 +2810,25 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SetBorderTopStyle(EBorderStyle::kNone);
     SetBorderTopWidth(3);
     SetBorderTopColorInternal(0);
-    SetBorderTopColorInternal(true);
+    SetBorderTopColorIsCurrentColor(true);
   }
   void ResetBorderRight() {
     SetBorderRightStyle(EBorderStyle::kNone);
     SetBorderRightWidth(3);
     SetBorderRightColorInternal(0);
-    SetBorderRightColorInternal(true);
+    SetBorderRightColorIsCurrentColor(true);
   }
   void ResetBorderBottom() {
     SetBorderBottomStyle(EBorderStyle::kNone);
     SetBorderBottomWidth(3);
     SetBorderBottomColorInternal(0);
-    SetBorderBottomColorInternal(true);
+    SetBorderBottomColorIsCurrentColor(true);
   }
   void ResetBorderLeft() {
     SetBorderLeftStyle(EBorderStyle::kNone);
     SetBorderLeftWidth(3);
     SetBorderLeftColorInternal(0);
-    SetBorderLeftColorInternal(true);
+    SetBorderLeftColorIsCurrentColor(true);
   }
 
   void SetBorderRadius(const LengthSize& s) {

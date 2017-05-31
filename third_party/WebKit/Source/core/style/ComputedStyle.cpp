@@ -2135,6 +2135,44 @@ float ComputedStyle::BorderUnderWidth() const {
   return IsHorizontalWritingMode() ? BorderBottomWidth() : BorderLeftWidth();
 }
 
+EBorderStyle ComputedStyle::BorderBeforeStyle() const {
+  switch (GetWritingMode()) {
+    case WritingMode::kHorizontalTb:
+      return BorderTopStyle();
+    case WritingMode::kVerticalLr:
+      return BorderLeftStyle();
+    case WritingMode::kVerticalRl:
+      return BorderRightStyle();
+  }
+  NOTREACHED();
+  return BorderTopStyle();
+}
+
+EBorderStyle ComputedStyle::BorderAfterStyle() const {
+  switch (GetWritingMode()) {
+    case WritingMode::kHorizontalTb:
+      return BorderBottomStyle();
+    case WritingMode::kVerticalLr:
+      return BorderRightStyle();
+    case WritingMode::kVerticalRl:
+      return BorderLeftStyle();
+  }
+  NOTREACHED();
+  return BorderBottomStyle();
+}
+
+EBorderStyle ComputedStyle::BorderStartStyle() const {
+  if (IsHorizontalWritingMode())
+    return IsLeftToRightDirection() ? BorderLeftStyle() : BorderRightStyle();
+  return IsLeftToRightDirection() ? BorderTopStyle() : BorderBottomStyle();
+}
+
+EBorderStyle ComputedStyle::BorderEndStyle() const {
+  if (IsHorizontalWritingMode())
+    return IsLeftToRightDirection() ? BorderRightStyle() : BorderLeftStyle();
+  return IsLeftToRightDirection() ? BorderBottomStyle() : BorderTopStyle();
+}
+
 void ComputedStyle::SetMarginStart(const Length& margin) {
   if (IsHorizontalWritingMode()) {
     if (IsLeftToRightDirection())
