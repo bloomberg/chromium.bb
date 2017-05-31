@@ -44,7 +44,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/display/display_switches.h"
 #else
 #include "chrome/browser/ui/webui/settings/system_handler.h"

@@ -19,7 +19,6 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

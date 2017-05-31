@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/app_sorting.h"

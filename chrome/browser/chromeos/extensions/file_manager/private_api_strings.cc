@@ -17,7 +17,6 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/strings/grit/app_locale_settings.h"
 
 namespace {
 

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/webapks_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/webapks_ui_resources.h"
-#include "components/grit/components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 

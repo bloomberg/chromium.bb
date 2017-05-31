@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"

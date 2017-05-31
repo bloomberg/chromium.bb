@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/resources/grit/ui_resources.h"

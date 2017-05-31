@@ -21,7 +21,6 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"

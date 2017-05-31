@@ -15,7 +15,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/resources/grit/ui_resources.h"
 
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;
