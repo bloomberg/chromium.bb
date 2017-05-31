@@ -42,7 +42,6 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/signalfd.h>
-#include <sys/sysmacros.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -91,6 +90,14 @@ drmSetMaster(int drm_fd)
 	return 0;
 }
 
+#endif
+
+/* major()/minor() */
+#ifdef MAJOR_IN_MKDEV
+#    include <sys/mkdev.h>
+#endif
+#ifdef MAJOR_IN_SYSMACROS
+#    include <sys/sysmacros.h>
 #endif
 
 struct weston_launch {

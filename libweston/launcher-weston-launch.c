@@ -34,7 +34,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/socket.h>
-#include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
@@ -75,6 +74,13 @@ drmSetMaster(int drm_fd)
 
 #endif
 
+/* major()/minor() */
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#endif
+#ifdef MAJOR_IN_SYSMACROS
+#include <sys/sysmacros.h>
+#endif
 
 union cmsg_data { unsigned char b[4]; int fd; };
 

@@ -34,6 +34,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
+AC_HEADER_MAJOR
 
 AM_INIT_AUTOMAKE([1.11 parallel-tests foreign no-dist-gzip dist-xz color-tests subdir-objects])
 

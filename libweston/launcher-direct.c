@@ -33,7 +33,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <sys/sysmacros.h>
 #include <sys/ioctl.h>
 #include <linux/vt.h>
 #include <linux/kd.h>
@@ -45,6 +44,14 @@
 
 #ifndef KDSKBMUTE
 #define KDSKBMUTE	0x4B51
+#endif
+
+/* major()/minor() */
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#endif
+#ifdef MAJOR_IN_SYSMACROS
+#include <sys/sysmacros.h>
 #endif
 
 #ifdef BUILD_DRM_COMPOSITOR

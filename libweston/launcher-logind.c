@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/sysmacros.h>
 #include <systemd/sd-login.h>
 #include <unistd.h>
 
@@ -44,6 +43,14 @@
 #include "launcher-impl.h"
 
 #define DRM_MAJOR 226
+
+/* major()/minor() */
+#ifdef MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#endif
+#ifdef MAJOR_IN_SYSMACROS
+#include <sys/sysmacros.h>
+#endif
 
 struct launcher_logind {
 	struct weston_launcher base;
