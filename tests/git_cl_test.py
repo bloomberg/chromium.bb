@@ -2671,7 +2671,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['try']))
     self.assertEqual(
         out.getvalue(),
-        'scheduled CQ Dry Run on https://codereview.chromium.org/123\n')
+        'Scheduling CQ dry run on: https://codereview.chromium.org/123\n')
 
   def test_git_cl_try_default_cq_dry_run_gerrit(self):
     self.mock(git_cl.Changelist, 'GetChange',
@@ -2723,7 +2723,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['try']))
     self.assertEqual(
         out.getvalue(),
-        'scheduled CQ Dry Run on '
+        'Scheduling CQ dry run on: '
         'https://chromium-review.googlesource.com/123456\n')
 
   def test_git_cl_try_buildbucket_with_properties_rietveld(self):

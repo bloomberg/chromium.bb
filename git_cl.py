@@ -1681,36 +1681,27 @@ class Changelist(object):
     return ret
 
   def SetCQState(self, new_state):
-    """Update the CQ state for latest patchset.
+    """Updates the CQ state for the latest patchset.
 
     Issue must have been already uploaded and known.
     """
     assert new_state in _CQState.ALL_STATES
     assert self.GetIssue()
-    return self._codereview_impl.SetCQState(new_state)
-
-  def TriggerDryRun(self):
-    """Triggers a dry run and prints a warning on failure."""
-    # TODO(qyearsley): Either re-use this method in CMDset_commit
-    # and CMDupload, or change CMDtry to trigger dry runs with
-    # just SetCQState, and catch keyboard interrupt and other
-    # errors in that method.
     try:
-      self.SetCQState(_CQState.DRY_RUN)
-      print('scheduled CQ Dry Run on %s' % self.GetIssueURL())
+      self._codereview_impl.SetCQState(new_state)
       return 0
     except KeyboardInterrupt:
       raise
     except:
-      print('WARNING: failed to trigger CQ Dry Run.\n'
+      print('WARNING: Failed to %s.\n'
             'Either:\n'
-            ' * your project has no CQ\n'
-            ' * you don\'t have permission to trigger Dry Run\n'
-            ' * bug in this code (see stack trace below).\n'
-            'Consider specifying which bots to trigger manually '
-            'or asking your project owners for permissions '
-            'or contacting Chrome Infrastructure team at '
-            'https://www.chromium.org/infra\n\n')
+            ' * Your project has no CQ,\n'
+            ' * You don\'t have permission to change the CQ state,\n'
+            ' * There\'s a bug in this code (see stack trace below).\n'
+            'Consider specifying which bots to trigger manually or asking your '
+            'project owners for permissions or contacting Chrome Infra at:\n'
+            'https://www.chromium.org/infra\n\n' %
+            ('cancel CQ' if new_state == _CQState.NONE else 'trigger CQ'))
       # Still raise exception so that stack trace is printed.
       raise
 
@@ -5400,8 +5391,9 @@ def CMDtry(parser, args):
   # then we default to triggering a CQ dry run (see http://crbug.com/625697).
   if not buckets:
     if options.verbose:
-      print('git cl try with no bots now defaults to CQ Dry Run.')
-    return cl.TriggerDryRun()
+      print('git cl try with no bots now defaults to CQ dry run.')
+    print('Scheduling CQ dry run on: %s' % cl.GetIssueURL())
+    return cl.SetCQState(_CQState.DRY_RUN)
 
   for builders in buckets.itervalues():
     if any('triggered' in b for b in builders):
@@ -5545,7 +5537,6 @@ def CMDset_commit(parser, args):
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
-      # TODO(qyearsley): Use cl.TriggerDryRun.
     state = _CQState.DRY_RUN
   else:
     state = _CQState.COMMIT
