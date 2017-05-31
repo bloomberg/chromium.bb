@@ -59,7 +59,8 @@ def RunSteps(api):
         root_solution_revision=root_solution_revision,
         suffix=suffix,
         gerrit_no_reset=gerrit_no_reset,
-        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
+        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
+        disable_syntax_validation=True)
     if patch:
       api.bot_update.deapply_patch(bot_update_step)
 

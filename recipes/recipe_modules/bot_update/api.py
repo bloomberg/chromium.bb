@@ -79,7 +79,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       use_site_config_creds=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
-                      gerrit_no_rebase_patch_ref=False, **kwargs):
+                      gerrit_no_rebase_patch_ref=False,
+                      disable_syntax_validation=False, **kwargs):
     """
     Args:
       use_site_config_creds: If the oauth2 credentials are in the buildbot
@@ -92,6 +93,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         the 'issue' property.
       patchset: The rietveld issue patchset to use. If omitted, will infer from
         the 'patchset' property.
+      disable_syntax_validation: (legacy) Disables syntax validation for DEPS.
+        Needed as migration paths for recipes dealing with older revisions,
+        such as bisect.
     """
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -239,6 +243,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_reset')
     if gerrit_no_rebase_patch_ref:
       cmd.append('--gerrit_no_rebase_patch_ref')
+    if disable_syntax_validation:
+      cmd.append('--disable-syntax-validation')
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name

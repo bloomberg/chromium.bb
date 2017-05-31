@@ -17,7 +17,8 @@
       "--revision",
       "src@HEAD",
       "--refs",
-      "+refs/change/1/2/333"
+      "+refs/change/1/2/333",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

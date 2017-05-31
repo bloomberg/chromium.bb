@@ -16,7 +16,8 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--with_tags"
+      "--with_tags",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

@@ -41,6 +41,7 @@ DEFAULT_PARAMS = {
     'refs': [],
     'git_cache_dir': '',
     'gerrit_reset': None,
+    'disable_syntax_validation': False,
 }
 
 

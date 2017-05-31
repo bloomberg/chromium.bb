@@ -21,7 +21,8 @@
       "--revision",
       "src@HEAD",
       "--revision",
-      "src/third_party/angle@HEAD"
+      "src/third_party/angle@HEAD",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

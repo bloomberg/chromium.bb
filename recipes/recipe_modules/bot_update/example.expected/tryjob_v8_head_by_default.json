@@ -23,7 +23,8 @@
       "--revision",
       "src@HEAD",
       "--revision",
-      "src/v8@HEAD"
+      "src/v8@HEAD",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

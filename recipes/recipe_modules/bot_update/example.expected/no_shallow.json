@@ -16,7 +16,8 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--no_shallow"
+      "--no_shallow",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

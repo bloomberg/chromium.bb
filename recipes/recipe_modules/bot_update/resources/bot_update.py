@@ -328,7 +328,8 @@ def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
 
 
 def gclient_sync(
-    with_branch_heads, with_tags, shallow, revisions, break_repo_locks):
+    with_branch_heads, with_tags, shallow, revisions, break_repo_locks,
+    disable_syntax_validation):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -344,6 +345,8 @@ def gclient_sync(
     args += ['--shallow']
   if break_repo_locks:
     args += ['--break_repo_locks']
+  if disable_syntax_validation:
+    args += ['--disable-syntax-validation']
   for name, revision in sorted(revisions.iteritems()):
     if revision.upper() == 'HEAD':
       revision = 'origin/master'
@@ -747,7 +750,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
                     apply_issue_email_file, apply_issue_key_file,
                     apply_issue_oauth2_file, shallow, refs, git_cache_dir,
-                    gerrit_reset):
+                    gerrit_reset, disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -802,7 +805,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       TAGS_REFSPEC in refs,
       shallow,
       gc_revisions,
-      break_repo_locks)
+      break_repo_locks,
+      disable_syntax_validation)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -928,7 +932,9 @@ def parse_args():
                     help='Always pass --with_tags to gclient.  This '
                           'does the same thing as --refs +refs/tags/*')
   parse.add_option('--git-cache-dir', help='Path to git cache directory.')
-
+  parse.add_option(
+      '--disable-syntax-validation', action='store_true',
+      help='Disable validation of .gclient and DEPS syntax.')
 
   options, args = parse.parse_args()
 
@@ -1037,7 +1043,8 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           shallow=shallow,
           refs=options.refs,
           git_cache_dir=options.git_cache_dir,
-          gerrit_reset=not options.gerrit_no_reset)
+          gerrit_reset=not options.gerrit_no_reset,
+          disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'

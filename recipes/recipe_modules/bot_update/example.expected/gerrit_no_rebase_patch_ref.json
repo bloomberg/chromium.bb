@@ -16,7 +16,8 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--gerrit_no_rebase_patch_ref"
+      "--gerrit_no_rebase_patch_ref",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",

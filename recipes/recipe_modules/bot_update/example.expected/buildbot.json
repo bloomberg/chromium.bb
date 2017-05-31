@@ -15,7 +15,8 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@abc"
+      "src@abc",
+      "--disable-syntax-validation"
     ],
     "env": {
       "GIT_HTTP_LOW_SPEED_LIMIT": "1000",
