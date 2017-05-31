@@ -33,6 +33,9 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
       const ConnectToServiceCB& connect_to_service_cb);
   ~MediaPermissionDispatcher() override;
 
+  // Called when the frame owning this MediaPermissionDispatcher is navigated.
+  void OnNavigation();
+
   // media::MediaPermission implementation.
   // Note: Can be called on any thread. The |permission_status_cb| will always
   // be fired on the thread where these methods are called.
@@ -52,9 +55,15 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
   // PermissionService calls.
   uint32_t RegisterCallback(const PermissionStatusCB& permission_status_cb);
 
+  // Ensure there is a connection to the permission service and return it.
+  blink::mojom::PermissionService* GetPermissionService();
+
   // Callback for |permission_service_| calls.
   void OnPermissionStatus(uint32_t request_id,
                           blink::mojom::PermissionStatus status);
+
+  // Callback for |permission_service_| connection errors.
+  void OnConnectionError();
 
   ConnectToServiceCB connect_to_service_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

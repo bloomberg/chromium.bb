@@ -3651,6 +3651,13 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
         is_new_navigation, navigation_state->WasWithinSameDocument());
   }
 
+  // Notify the MediaPermissionDispatcher that its connection will be closed
+  // due to a navigation to a different document.
+  if (media_permission_dispatcher_ &&
+      !navigation_state->WasWithinSameDocument()) {
+    media_permission_dispatcher_->OnNavigation();
+  }
+
   if (!frame_->Parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     if (render_thread_impl) {  // Can be NULL in tests.
