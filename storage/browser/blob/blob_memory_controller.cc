@@ -952,8 +952,10 @@ void BlobMemoryController::OnEvictionComplete(
 void BlobMemoryController::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   auto time_from_last_evicion = base::TimeTicks::Now() - last_eviction_time_;
-  if (time_from_last_evicion.InSeconds() < kMinSecondsForPressureEvictions)
+  if (last_eviction_time_ != base::TimeTicks() &&
+      time_from_last_evicion.InSeconds() < kMinSecondsForPressureEvictions) {
     return;
+  }
 
   MaybeScheduleEvictionUntilSystemHealthy(memory_pressure_level);
 }
