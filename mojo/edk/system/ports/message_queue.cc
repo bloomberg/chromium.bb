@@ -7,20 +7,16 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/message_filter.h"
 
 namespace mojo {
 namespace edk {
 namespace ports {
 
-inline uint64_t GetSequenceNum(const ScopedMessage& message) {
-  return GetEventData<UserEventData>(*message)->sequence_num;
-}
-
 // Used by std::{push,pop}_heap functions
-inline bool operator<(const ScopedMessage& a, const ScopedMessage& b) {
-  return GetSequenceNum(a) > GetSequenceNum(b);
+inline bool operator<(const std::unique_ptr<UserMessageEvent>& a,
+                      const std::unique_ptr<UserMessageEvent>& b) {
+  return a->sequence_num() > b->sequence_num();
 }
 
 MessageQueue::MessageQueue() : MessageQueue(kInitialSequenceNum) {}
@@ -42,12 +38,12 @@ MessageQueue::~MessageQueue() {
 }
 
 bool MessageQueue::HasNextMessage() const {
-  return !heap_.empty() && GetSequenceNum(heap_[0]) == next_sequence_num_;
+  return !heap_.empty() && heap_[0]->sequence_num() == next_sequence_num_;
 }
 
-void MessageQueue::GetNextMessage(ScopedMessage* message,
+void MessageQueue::GetNextMessage(std::unique_ptr<UserMessageEvent>* message,
                                   MessageFilter* filter) {
-  if (!HasNextMessage() || (filter && !filter->Match(*heap_[0].get()))) {
+  if (!HasNextMessage() || (filter && !filter->Match(*heap_[0]))) {
     message->reset();
     return;
   }
@@ -59,10 +55,8 @@ void MessageQueue::GetNextMessage(ScopedMessage* message,
   next_sequence_num_++;
 }
 
-void MessageQueue::AcceptMessage(ScopedMessage message,
+void MessageQueue::AcceptMessage(std::unique_ptr<UserMessageEvent> message,
                                  bool* has_next_message) {
-  DCHECK(GetEventHeader(*message)->type == EventType::kUser);
-
   // TODO: Handle sequence number roll-over.
 
   heap_.emplace_back(std::move(message));
@@ -71,7 +65,7 @@ void MessageQueue::AcceptMessage(ScopedMessage message,
   if (!signalable_) {
     *has_next_message = false;
   } else {
-    *has_next_message = (GetSequenceNum(heap_[0]) == next_sequence_num_);
+    *has_next_message = (heap_[0]->sequence_num() == next_sequence_num_);
   }
 }
 

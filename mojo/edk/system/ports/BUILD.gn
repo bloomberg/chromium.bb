@@ -8,8 +8,6 @@ source_set("ports") {
   sources = [
     "event.cc",
     "event.h",
-    "message.cc",
-    "message.h",
     "message_filter.h",
     "message_queue.cc",
     "message_queue.h",
@@ -23,6 +21,7 @@ source_set("ports") {
     "port_ref.cc",
     "port_ref.h",
     "user_data.h",
+    "user_message.h",
   ]
 
   public_deps = [
