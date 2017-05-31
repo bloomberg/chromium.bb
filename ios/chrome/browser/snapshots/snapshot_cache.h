@@ -25,7 +25,7 @@ typedef void (^GreyBlock)(UIImage*);
 + (SnapshotCache*)sharedInstance;
 
 // The scale that should be used for snapshots.
-+ (CGFloat)snapshotScaleForDevice;
+- (CGFloat)snapshotScaleForDevice;
 
 // Retrieve a cached snapshot for the |sessionID| and return it via the callback
 // if it exists. The callback is guaranteed to be called synchronously if the
