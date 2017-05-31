@@ -209,6 +209,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnEnteredFullscreen();
   void OnExitedFullscreen();
   void OnPanelKeypress();
+  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
 
   // Media control elements.
   Member<MediaControlOverlayEnclosureElement> overlay_enclosure_;

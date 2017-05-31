@@ -36,6 +36,7 @@
 #include "core/dom/ResizeObserver.h"
 #include "core/dom/ResizeObserverEntry.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -46,6 +47,7 @@
 #include "core/html/track/TextTrackList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/page/SpatialNavigation.h"
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
@@ -849,6 +851,24 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::focusin ||
       event->type() == EventTypeNames::input)
     ResetHideMediaControlsTimer();
+
+  if (event->IsKeyboardEvent() &&
+      !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
+    const String& key = ToKeyboardEvent(event)->key();
+    if (key == "Enter" || ToKeyboardEvent(event)->keyCode() == ' ') {
+      play_button_->OnMediaKeyboardEvent(event);
+      return;
+    }
+    if (key == "ArrowLeft" || key == "ArrowRight" || key == "Home" ||
+        key == "End") {
+      timeline_->OnMediaKeyboardEvent(event);
+      return;
+    }
+    if (key == "ArrowDown" || key == "ArrowUp") {
+      volume_slider_->OnMediaKeyboardEvent(event);
+      return;
+    }
+  }
 }
 
 void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {
