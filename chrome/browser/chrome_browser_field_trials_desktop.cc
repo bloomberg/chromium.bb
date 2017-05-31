@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/stability_paths.h"
+#include "components/metrics/persistent_system_profile.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
 #include "media/media_features.h"
@@ -191,6 +192,12 @@ void SetupStabilityDebugging() {
         browser_watcher::kInitFlushParam, false);
     if (should_flush)
       ::FlushViewOfFile(global_tracker->allocator()->data(), 0U);
+
+    // Store a copy of the system profile in this allocator. There will be some
+    // delay before this gets populated, perhaps as much as a minute. Because
+    // of this, there is no need to flush it here.
+    metrics::GlobalPersistentSystemProfile::GetInstance()
+        ->RegisterPersistentAllocator(global_tracker->allocator());
   }
 }
 #endif  // defined(OS_WIN)
