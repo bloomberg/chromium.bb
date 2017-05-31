@@ -30,11 +30,12 @@ extern const char kUKMEventsMetricName[];
 // of the Payment Request.
 class JourneyLogger {
  public:
-  // Note: These constants should always be in sync with their counterpart in
-  // components/payments/content/android/java/src/org/chromium/components/
-  // payments/JourneyLogger.java.
+  // Note: Java counterparts will be generated for these enums.
+
   // The different sections of a Payment Request. Used to record journey
   // stats.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Section
   enum Section {
     SECTION_CONTACT_INFO = 0,
     SECTION_CREDIT_CARDS = 1,
@@ -43,14 +44,51 @@ class JourneyLogger {
   };
 
   // For the CanMakePayment histograms.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CanMakePaymentUsage
   enum CanMakePaymentUsage {
     CAN_MAKE_PAYMENT_USED = 0,
     CAN_MAKE_PAYMENT_NOT_USED = 1,
     CAN_MAKE_PAYMENT_USE_MAX,
   };
 
+  // The information requested by the merchant.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: RequestedInformation
+  enum RequestedInformation {
+    REQUESTED_INFORMATION_NONE = 0,
+    REQUESTED_INFORMATION_EMAIL = 1 << 0,
+    REQUESTED_INFORMATION_PHONE = 1 << 1,
+    REQUESTED_INFORMATION_SHIPPING = 1 << 2,
+    REQUESTED_INFORMATION_NAME = 1 << 3,
+    REQUESTED_INFORMATION_MAX = 16,
+  };
+
+  // The payment method that was used by the user to complete the transaction.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SelectedPaymentMethod
+  enum SelectedPaymentMethod {
+    SELECTED_PAYMENT_METHOD_CREDIT_CARD = 0,
+    SELECTED_PAYMENT_METHOD_ANDROID_PAY = 1,
+    SELECTED_PAYMENT_METHOD_OTHER_PAYMENT_APP = 2,
+    SELECTED_PAYMENT_METHOD_MAX = 3,
+  };
+
+  // Used to mesure the impact of the CanMakePayment return value on whether the
+  // Payment Request is shown to the user.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CanMakePaymentEffectOnShow
+  enum CmpEffectOnShow {
+    CMP_EFFECT_ON_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0,
+    CMP_EFFECT_ON_SHOW_DID_SHOW = 1 << 0,
+    CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT = 1 << 1,
+    CMP_EFFECT_ON_SHOW_MAX = 4,
+  };
+
   // Used to log different parameters' effect on whether the transaction was
   // completed.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CompletionStatus
   enum CompletionStatus {
     COMPLETION_STATUS_COMPLETED = 0,
     COMPLETION_STATUS_USER_ABORTED = 1,
@@ -60,6 +98,8 @@ class JourneyLogger {
 
   // Used to record the different events that happened during the Payment
   // Request.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Event
   enum Event {
     EVENT_INITIATED = 0,
     EVENT_SHOWN = 1 << 0,
@@ -69,6 +109,9 @@ class JourneyLogger {
     EVENT_ENUM_MAX = 16,
   };
 
+  // The reason why the Payment Request was aborted.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AbortReason
   enum AbortReason {
     ABORT_REASON_ABORTED_BY_USER = 0,
     ABORT_REASON_ABORTED_BY_MERCHANT = 1,
@@ -83,21 +126,17 @@ class JourneyLogger {
   };
 
 #ifdef OS_ANDROID
+  // The reason why the Payment Request was not shown to the user.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotShownReason
   enum NotShownReason {
-    NOT_SHOWN_NO_MATCHING_PAYMENT_METHOD = 0,
-    NOT_SHOWN_NO_SUPPORTED_PAYMENT_METHOD = 1,
-    NOT_SHOWN_CONCURRENT_REQUESTS = 2,
+    NOT_SHOWN_REASON_NO_MATCHING_PAYMENT_METHOD = 0,
+    NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD = 1,
+    NOT_SHOWN_REASON_CONCURRENT_REQUESTS = 2,
     NOT_SHOWN_REASON_OTHER = 3,
     NOT_SHOWN_REASON_MAX = 4,
   };
 #endif
-
-  // Used to mesure the impact of the CanMakePayment return value on whether the
-  // Payment Request is shown to the user.
-  static const int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
-  static const int CMP_SHOW_DID_SHOW = 1 << 0;
-  static const int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
-  static const int CMP_SHOW_MAX = 4;
 
   JourneyLogger(bool is_incognito,
                 const GURL& url,

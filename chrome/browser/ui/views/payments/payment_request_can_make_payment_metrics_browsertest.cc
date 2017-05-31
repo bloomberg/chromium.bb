@@ -63,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
@@ -100,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
@@ -131,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_COMPLETED, 1);
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED, 1);
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
@@ -282,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                                      JourneyLogger::CAN_MAKE_PAYMENT_USED, 1);
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,

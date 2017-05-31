@@ -85,14 +85,9 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
-        for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
+        for (int i = 0; i < RequestedInformation.MAX; ++i) {
             Assert.assertEquals(
-                    (i
-                                            == (PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
-                                                       | PaymentRequestMetrics
-                                                                 .REQUESTED_INFORMATION_SHIPPING)
-                                    ? 1
-                                    : 0),
+                    (i == (RequestedInformation.EMAIL | RequestedInformation.SHIPPING) ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

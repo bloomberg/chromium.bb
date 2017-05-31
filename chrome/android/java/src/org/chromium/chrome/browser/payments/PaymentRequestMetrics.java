@@ -4,38 +4,12 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * A class used to record metrics for the Payment Request feature.
  */
 public final class PaymentRequestMetrics {
-
-    // PaymentRequestRequestedInformation defined in tools/metrics/histograms/histograms.xml.
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_NONE = 0;
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_EMAIL = 1 << 0;
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_PHONE = 1 << 1;
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_SHIPPING = 1 << 2;
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_NAME = 1 << 3;
-    @VisibleForTesting
-    public static final int REQUESTED_INFORMATION_MAX = 16;
-
-    // PaymentRequestPaymentMethods defined in tools/metrics/histograms/histograms.xml.
-    @VisibleForTesting
-    public static final int SELECTED_METHOD_CREDIT_CARD = 0;
-    @VisibleForTesting
-    public static final int SELECTED_METHOD_ANDROID_PAY = 1;
-    @VisibleForTesting
-    public static final int SELECTED_METHOD_OTHER_PAYMENT_APP = 2;
-    @VisibleForTesting
-    public static final int SELECTED_METHOD_MAX = 3;
-
     // There should be no instance of PaymentRequestMetrics created.
     private PaymentRequestMetrics() {}
 
@@ -50,13 +24,12 @@ public final class PaymentRequestMetrics {
      */
     public static void recordRequestedInformationHistogram(boolean requestEmail,
             boolean requestPhone, boolean requestShipping, boolean requestName) {
-        int requestInformation =
-                (requestEmail ? REQUESTED_INFORMATION_EMAIL : 0)
-                | (requestPhone ? REQUESTED_INFORMATION_PHONE : 0)
-                | (requestShipping ? REQUESTED_INFORMATION_SHIPPING : 0)
-                | (requestName ? REQUESTED_INFORMATION_NAME : 0);
+        int requestInformation = (requestEmail ? RequestedInformation.EMAIL : 0)
+                | (requestPhone ? RequestedInformation.PHONE : 0)
+                | (requestShipping ? RequestedInformation.SHIPPING : 0)
+                | (requestName ? RequestedInformation.NAME : 0);
         RecordHistogram.recordEnumeratedHistogram("PaymentRequest.RequestedInformation",
-                requestInformation, REQUESTED_INFORMATION_MAX);
+                requestInformation, RequestedInformation.MAX);
     }
 
     /*
@@ -66,8 +39,8 @@ public final class PaymentRequestMetrics {
      * @param paymentMethod The payment method that was used to complete the current transaction.
      */
     public static void recordSelectedPaymentMethodHistogram(int paymentMethod) {
-        assert paymentMethod < SELECTED_METHOD_MAX;
-        RecordHistogram.recordEnumeratedHistogram("PaymentRequest.SelectedPaymentMethod",
-                paymentMethod, SELECTED_METHOD_MAX);
+        assert paymentMethod < SelectedPaymentMethod.MAX;
+        RecordHistogram.recordEnumeratedHistogram(
+                "PaymentRequest.SelectedPaymentMethod", paymentMethod, SelectedPaymentMethod.MAX);
     }
 }

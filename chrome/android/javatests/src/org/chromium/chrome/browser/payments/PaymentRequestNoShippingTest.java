@@ -496,8 +496,8 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
-        for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            Assert.assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_NONE ? 1 : 0),
+        for (int i = 0; i < RequestedInformation.MAX; ++i) {
+            Assert.assertEquals((i == RequestedInformation.NONE ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -12,80 +11,6 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("payments")
 public class JourneyLogger {
-    // Note: The constants should always be in sync with those in the
-    // components/payments/core/journey_logger.h file.
-    // The index of the different sections of a Payment Request. Used to record journey stats.
-    public static final int SECTION_CONTACT_INFO = 0;
-    public static final int SECTION_CREDIT_CARDS = 1;
-    public static final int SECTION_SHIPPING_ADDRESS = 2;
-    public static final int SECTION_MAX = 3;
-
-    // For the CanMakePayment histograms.
-    public static final int CAN_MAKE_PAYMENT_USED = 0;
-    public static final int CAN_MAKE_PAYMENT_NOT_USED = 1;
-    public static final int CAN_MAKE_PAYMENT_USE_MAX = 2;
-
-    // Used to log different parameters' effect on whether the transaction was completed.
-    public static final int COMPLETION_STATUS_COMPLETED = 0;
-    public static final int COMPLETION_STATUS_USER_ABORTED = 1;
-    public static final int COMPLETION_STATUS_OTHER_ABORTED = 2;
-    public static final int COMPLETION_STATUS_MAX = 3;
-
-    // Used to mesure the impact of the CanMakePayment return value on whether the Payment Request
-    // is shown to the user.
-    public static final int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
-    public static final int CMP_SHOW_DID_SHOW = 1 << 0;
-    public static final int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
-    public static final int CMP_SHOW_MAX = 4;
-
-    // The events that can occur during a Payment Request.
-    public static final int EVENT_INITIATED = 0;
-    public static final int EVENT_SHOWN = 1 << 0;
-    public static final int EVENT_PAY_CLICKED = 1 << 1;
-    public static final int EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2;
-    public static final int EVENT_SKIPPED_SHOW = 1 << 3;
-    public static final int EVENT_MAX = 16;
-
-    // The minimum expected value of CustomCountHistograms is always set to 1. It is still possible
-    // to log the value 0 to that type of histogram.
-    private static final int MIN_EXPECTED_SAMPLE = 1;
-    private static final int MAX_EXPECTED_SAMPLE = 49;
-    private static final int NUMBER_BUCKETS = 50;
-
-    // PaymentRequestAbortReason defined in tools/metrics/histograms/histograms.xml.
-    @VisibleForTesting
-    public static final int ABORT_REASON_ABORTED_BY_USER = 0;
-    @VisibleForTesting
-    public static final int ABORT_REASON_ABORTED_BY_MERCHANT = 1;
-    @VisibleForTesting
-    public static final int ABORT_REASON_INVALID_DATA_FROM_RENDERER = 2;
-    @VisibleForTesting
-    public static final int ABORT_REASON_MOJO_CONNECTION_ERROR = 3;
-    @VisibleForTesting
-    public static final int ABORT_REASON_MOJO_RENDERER_CLOSING = 4;
-    @VisibleForTesting
-    public static final int ABORT_REASON_INSTRUMENT_DETAILS_ERROR = 5;
-    @VisibleForTesting
-    public static final int ABORT_REASON_NO_MATCHING_PAYMENT_METHOD = 6; // Deprecated.
-    @VisibleForTesting
-    public static final int ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD = 7; // Deprecated.
-    @VisibleForTesting
-    public static final int ABORT_REASON_OTHER = 8;
-    @VisibleForTesting
-    public static final int ABORT_REASON_MAX = 9;
-
-    // PaymentRequestNoShowReason defined in tools/metrics/histograms/histograms.xml
-    @VisibleForTesting
-    public static final int NO_SHOW_NO_MATCHING_PAYMENT_METHOD = 0;
-    @VisibleForTesting
-    public static final int NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD = 1;
-    @VisibleForTesting
-    public static final int NO_SHOW_CONCURRENT_REQUESTS = 2;
-    @VisibleForTesting
-    public static final int NO_SHOW_REASON_OTHER = 3;
-    @VisibleForTesting
-    public static final int NO_SHOW_REASON_MAX = 4;
-
     /**
      * Pointer to the native implementation.
      */
@@ -115,7 +40,7 @@ public class JourneyLogger {
      * @param number The number of suggestions.
      */
     public void setNumberOfSuggestionsShown(int section, int number) {
-        assert section < SECTION_MAX;
+        assert section < Section.MAX;
         nativeSetNumberOfSuggestionsShown(mJourneyLoggerAndroid, section, number);
     }
 
@@ -125,7 +50,7 @@ public class JourneyLogger {
      * @param section The section for which to log.
      */
     public void incrementSelectionChanges(int section) {
-        assert section < SECTION_MAX;
+        assert section < Section.MAX;
         nativeIncrementSelectionChanges(mJourneyLoggerAndroid, section);
     }
 
@@ -135,7 +60,7 @@ public class JourneyLogger {
      * @param section The section for which to log.
      */
     public void incrementSelectionEdits(int section) {
-        assert section < SECTION_MAX;
+        assert section < Section.MAX;
         nativeIncrementSelectionEdits(mJourneyLoggerAndroid, section);
     }
 
@@ -145,7 +70,7 @@ public class JourneyLogger {
      * @param section The section for which to log.
      */
     public void incrementSelectionAdds(int section) {
-        assert section < SECTION_MAX;
+        assert section < Section.MAX;
         nativeIncrementSelectionAdds(mJourneyLoggerAndroid, section);
     }
 
@@ -170,7 +95,7 @@ public class JourneyLogger {
      * Records that an event occurred.
      */
     public void setEventOccurred(int event) {
-        assert event < EVENT_MAX;
+        assert event < Event.ENUM_MAX;
         nativeSetEventOccurred(mJourneyLoggerAndroid, event);
     }
 
@@ -195,7 +120,7 @@ public class JourneyLogger {
      * @param reason An int indicating why the payment request was aborted.
      */
     public void setAborted(int reason) {
-        assert reason < ABORT_REASON_MAX;
+        assert reason < AbortReason.MAX;
         assert mWasShowCalled;
 
         // The abort reasons on Android cascade into each other, so only the first one should be
@@ -212,7 +137,7 @@ public class JourneyLogger {
      * @param reason An int indicating why the payment request was not shown.
      */
     public void setNotShown(int reason) {
-        assert reason < NO_SHOW_REASON_MAX;
+        assert reason < NotShownReason.MAX;
         assert !mWasShowCalled;
         assert !mHasRecorded;
 

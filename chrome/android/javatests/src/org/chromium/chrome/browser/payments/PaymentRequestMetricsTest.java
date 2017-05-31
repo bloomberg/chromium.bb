@@ -129,8 +129,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
+        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(AbortReason.ABORTED_BY_USER);
     }
 
     /**
@@ -151,8 +150,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
+        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(AbortReason.ABORTED_BY_USER);
     }
 
     /**
@@ -179,8 +177,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
+        mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(AbortReason.ABORTED_BY_USER);
     }
 
     /**
@@ -201,7 +198,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                 mPaymentRequestTestRule.getActivity());
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                JourneyLogger.ABORT_REASON_MOJO_RENDERER_CLOSING);
+                AbortReason.MOJO_RENDERER_CLOSING);
     }
 
     /**
@@ -220,7 +217,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.expectResultContains(new String[] {"Abort"});
 
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(
-                JourneyLogger.ABORT_REASON_ABORTED_BY_MERCHANT);
+                AbortReason.ABORTED_BY_MERCHANT);
     }
 
     /**
@@ -249,7 +246,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
-                        JourneyLogger.NO_SHOW_NO_MATCHING_PAYMENT_METHOD));
+                        NotShownReason.NO_MATCHING_PAYMENT_METHOD));
     }
 
     /**
@@ -274,7 +271,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.NoShow",
-                        JourneyLogger.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD));
+                        NotShownReason.NO_SUPPORTED_PAYMENT_METHOD));
     }
 
     /**
@@ -295,8 +292,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
 
-        assertOnlySpecificSelectedPaymentMethodMetricLogged(
-                PaymentRequestMetrics.SELECTED_METHOD_CREDIT_CARD);
+        assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.CREDIT_CARD);
     }
 
     /**
@@ -316,8 +312,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
 
-        assertOnlySpecificSelectedPaymentMethodMetricLogged(
-                PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
+        assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.ANDROID_PAY);
     }
 
     /**
@@ -416,7 +411,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
      *                      have a record.
      */
     private void assertOnlySpecificSelectedPaymentMethodMetricLogged(int paymentMethod) {
-        for (int i = 0; i < PaymentRequestMetrics.SELECTED_METHOD_MAX; ++i) {
+        for (int i = 0; i < SelectedPaymentMethod.MAX; ++i) {
             Assert.assertEquals((i == paymentMethod ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.SelectedPaymentMethod", i));

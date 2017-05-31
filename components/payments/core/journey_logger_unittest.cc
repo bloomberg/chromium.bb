@@ -149,7 +149,8 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW,
+      1);
 
   // There should be no completion stats since PR was not shown to the user.
   EXPECT_THAT(
@@ -182,7 +183,7 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT, 1);
 
   // There should be no completion stats since PR was not shown to the user.
   EXPECT_THAT(
@@ -216,7 +217,7 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
   // There should be a record for an abort when CanMakePayment is false but the
   // PR is shown to the user.
   histogram_tester.ExpectBucketCount(
@@ -249,7 +250,7 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
   // There should be a record for an abort when CanMakePayment is false but the
   // PR is shown to the user.
   histogram_tester.ExpectBucketCount(
@@ -282,7 +283,7 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW, 1);
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW, 1);
 
   // There should be a record for an completion when CanMakePayment is false but
   // the PR is shown to the user.
@@ -316,8 +317,8 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   // There should be a record for an abort when CanMakePayment is true and the
   // PR is shown to the user.
@@ -351,8 +352,8 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   // There should be a record for an abort when CanMakePayment is true and the
   // PR is shown to the user.
@@ -386,8 +387,8 @@ TEST(JourneyLoggerTest,
   // shown.
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.Used.EffectOnShow",
-      JourneyLogger::CMP_SHOW_DID_SHOW |
-          JourneyLogger::CMP_SHOW_COULD_MAKE_PAYMENT,
+      JourneyLogger::CMP_EFFECT_ON_SHOW_DID_SHOW |
+          JourneyLogger::CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT,
       1);
   // There should be a record for a completion when CanMakePayment is true and
   // the PR is shown to the user.

@@ -155,8 +155,8 @@ public class PaymentRequestPhoneTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
-        for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            Assert.assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE ? 1 : 0),
+        for (int i = 0; i < RequestedInformation.MAX; ++i) {
+            Assert.assertEquals((i == RequestedInformation.PHONE ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }
