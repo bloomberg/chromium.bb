@@ -28,6 +28,7 @@ public class CronetTestBaseTest extends CronetTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         mTestFramework = startCronetTestFramework();
     }
 
