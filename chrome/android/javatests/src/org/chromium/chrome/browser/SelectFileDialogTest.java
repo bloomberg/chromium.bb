@@ -210,6 +210,7 @@ public class SelectFileDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest
     public void testPhotoPickerLaunchAndMimeTypes() throws Throwable {
         assertEquals("", SelectFileDialog.ensureMimeType(""));
         assertEquals("image/jpeg", SelectFileDialog.ensureMimeType(".jpg"));
