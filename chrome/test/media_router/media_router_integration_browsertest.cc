@@ -163,12 +163,16 @@ void MediaRouterIntegrationBrowserTest::ExecuteJavaScriptAPI(
   ASSERT_TRUE(passed) << error_message;
 }
 
-WebContents* MediaRouterIntegrationBrowserTest::StartSessionWithTestPageNow() {
+void MediaRouterIntegrationBrowserTest::StartSessionAndAssertNotFoundError() {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   WebContents* web_contents = GetActiveWebContents();
   CHECK(web_contents);
   StartSession(web_contents);
-  return web_contents;
+
+  // Wait for any sinks to be displayed.
+  Wait(base::TimeDelta::FromSeconds(1));
+  GetControllerForShownDialog(web_contents)->HideMediaRouterDialog();
+  CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
 }
 
 WebContents*
@@ -632,18 +636,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_Fail_StartCancelledNoSinks) {
   SetTestData(FILE_PATH_LITERAL("no_sinks.json"));
-  WebContents* web_contents = StartSessionWithTestPageNow();
-  GetControllerForShownDialog(web_contents)->HideMediaRouterDialog();
-  CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
+  StartSessionAndAssertNotFoundError();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_Fail_StartCancelledNoSupportedSinks) {
   SetTestData(FILE_PATH_LITERAL("no_supported_sinks.json"));
-  WebContents* web_contents = StartSessionWithTestPageNow();
-  WaitUntilSinkDiscoveredOnUI();
-  GetControllerForShownDialog(web_contents)->HideMediaRouterDialog();
-  CheckStartFailed(web_contents, "NotFoundError", "No screens found.");
+  StartSessionAndAssertNotFoundError();
 }
 
 void MediaRouterIntegrationIncognitoBrowserTest::InstallAndEnableMRExtension() {

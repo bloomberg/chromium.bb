@@ -20,7 +20,7 @@ const char kInitiateCloseFromReceiverPageScript[] =
     "initiateCloseFromReceiverPage();";
 }
 
-class MediaRouterOneUAIntegrationBrowserTest
+class MediaRouterIntegrationOneUABrowserTest
     : public MediaRouterIntegrationBrowserTest {
  public:
   void SetUpOnMainThread() override {
@@ -42,38 +42,38 @@ class MediaRouterOneUAIntegrationBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest, MANUAL_Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_ReceiverCloseConnection) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUAIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
-class MediaRouterOneUANoReceiverIntegrationBrowserTest
+class MediaRouterIntegrationOneUANoReceiverBrowserTest
     : public MediaRouterIntegrationBrowserTest {
  public:
   GURL GetTestPageUrl(const base::FilePath& full_path) override {
@@ -82,22 +82,22 @@ class MediaRouterOneUANoReceiverIntegrationBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUANoReceiverIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
                        MANUAL_Basic) {
   RunBasicTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUANoReceiverIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
                        MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUANoReceiverIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
                        MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterOneUANoReceiverIntegrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
                        MANUAL_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
