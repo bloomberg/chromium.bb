@@ -2915,6 +2915,26 @@
             ]
         }
     ],
+    "SocketReadIfReady": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "ios",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SocketReadIfReady"
+                    ]
+                }
+            ]
+        }
+    ],
     "SpeculativeLaunchServiceWorker": [
         {
             "platforms": [
