@@ -651,15 +651,17 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  // TODO(mmenke):  It weird to combine state from
+  // TODO(mmenke):  It's weird to combine state from
   // main_request_context_storage() objects and the argumet to this method,
   // |main_context|.  Remove |main_context| as an argument, and just use
   // main_context() instead.
-  net::HttpNetworkSession::Params network_params =
-      main_request_context_storage()->http_network_session()->params();
-  network_params.channel_id_service = channel_id_service.get();
+  net::HttpNetworkSession::Context session_context =
+      main_request_context_storage()->http_network_session()->context();
+  session_context.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_params));
+      new net::HttpNetworkSession(
+          main_request_context_storage()->http_network_session()->params(),
+          session_context));
   std::unique_ptr<net::HttpCache> app_http_cache =
       CreateMainHttpFactory(http_network_session.get(), std::move(app_backend));
 

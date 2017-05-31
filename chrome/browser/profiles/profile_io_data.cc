@@ -1309,19 +1309,21 @@ ProfileIOData::CreateHttpNetworkSession(
 
   IOThread* const io_thread = profile_params.io_thread;
 
-  net::HttpNetworkSession::Params params(io_thread->NetworkSessionParams());
-  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
-                                                                 &params);
+  net::HttpNetworkSession::Context session_context;
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+      context, &session_context);
   if (!IsOffTheRecord() && io_thread->globals()->network_quality_estimator) {
-    params.socket_performance_watcher_factory =
+    session_context.socket_performance_watcher_factory =
         io_thread->globals()
             ->network_quality_estimator->GetSocketPerformanceWatcherFactory();
   }
-  if (data_reduction_proxy_io_data_.get())
-    params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
+  if (data_reduction_proxy_io_data_.get()) {
+    session_context.proxy_delegate =
+        data_reduction_proxy_io_data_->proxy_delegate();
+  }
 
-  return std::unique_ptr<net::HttpNetworkSession>(
-      new net::HttpNetworkSession(params));
+  return std::unique_ptr<net::HttpNetworkSession>(new net::HttpNetworkSession(
+      io_thread->NetworkSessionParams(), session_context));
 }
 
 std::unique_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(

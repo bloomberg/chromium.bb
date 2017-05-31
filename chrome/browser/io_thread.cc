@@ -618,10 +618,11 @@ void IOThread::Init() {
         command_line.GetSwitchValueASCII(switches::kHostRules));
     TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
-  params_.host_mapping_rules = *globals_->host_mapping_rules.get();
+
+  session_params_.host_mapping_rules = *globals_->host_mapping_rules.get();
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
-  params_.enable_token_binding =
+  session_params_.enable_token_binding =
       base::FeatureList::IsEnabled(features::kTokenBinding);
 
   // Check for OS support of TCP FastOpen, and turn it on for all connections if
@@ -635,7 +636,7 @@ void IOThread::Init() {
 
   ConfigureParamsFromFieldTrialsAndCommandLine(
       command_line, is_quic_allowed_by_policy_,
-      http_09_on_non_default_ports_enabled_, &params_);
+      http_09_on_non_default_ports_enabled_, &session_params_);
 
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
@@ -777,11 +778,11 @@ void IOThread::ClearHostCache(
 }
 
 const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
-  return params_;
+  return session_params_;
 }
 
 void IOThread::DisableQuic() {
-  params_.enable_quic = false;
+  session_params_.enable_quic = false;
 
   if (globals_->system_request_context_storage)
     globals_->system_request_context_storage->http_network_session()
@@ -877,6 +878,7 @@ void IOThread::ConstructSystemRequestContext() {
   context->set_cert_verifier(globals_->cert_verifier.get());
   context->set_cert_transparency_verifier(
       globals_->cert_transparency_verifier.get());
+
   context_storage->set_ct_policy_enforcer(
       base::MakeUnique<net::CTPolicyEnforcer>());
 
@@ -887,12 +889,13 @@ void IOThread::ConstructSystemRequestContext() {
       std::move(system_proxy_config_service_), command_line,
       WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled()));
 
-  net::HttpNetworkSession::Params system_params(params_);
+  net::HttpNetworkSession::Context session_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
-      context, &system_params);
+      context, &session_context);
 
   context_storage->set_http_network_session(
-      base::MakeUnique<net::HttpNetworkSession>(system_params));
+      base::MakeUnique<net::HttpNetworkSession>(session_params_,
+                                                session_context));
   context_storage->set_http_transaction_factory(
       base::MakeUnique<net::HttpNetworkLayer>(
           context_storage->http_network_session()));

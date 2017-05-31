@@ -191,27 +191,28 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             cache_path, 0,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
 
-    net::HttpNetworkSession::Params network_session_params;
-    network_session_params.cert_verifier =
+    net::HttpNetworkSession::Context network_session_context;
+    network_session_context.cert_verifier =
         url_request_context_->cert_verifier();
-    network_session_params.transport_security_state =
+    network_session_context.transport_security_state =
         url_request_context_->transport_security_state();
-    network_session_params.cert_transparency_verifier =
+    network_session_context.cert_transparency_verifier =
         url_request_context_->cert_transparency_verifier();
-    network_session_params.ct_policy_enforcer =
+    network_session_context.ct_policy_enforcer =
         url_request_context_->ct_policy_enforcer();
-    network_session_params.channel_id_service =
+    network_session_context.channel_id_service =
         url_request_context_->channel_id_service();
-    network_session_params.proxy_service =
+    network_session_context.proxy_service =
         url_request_context_->proxy_service();
-    network_session_params.ssl_config_service =
+    network_session_context.ssl_config_service =
         url_request_context_->ssl_config_service();
-    network_session_params.http_auth_handler_factory =
+    network_session_context.http_auth_handler_factory =
         url_request_context_->http_auth_handler_factory();
-    network_session_params.http_server_properties =
+    network_session_context.http_server_properties =
         url_request_context_->http_server_properties();
-    network_session_params.net_log =
-        url_request_context_->net_log();
+    network_session_context.net_log = url_request_context_->net_log();
+
+    net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors =
         ignore_certificate_errors_;
     if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
@@ -236,11 +237,12 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     // Give |storage_| ownership at the end in case it's |mapped_host_resolver|.
     storage_->set_host_resolver(std::move(host_resolver));
-    network_session_params.host_resolver =
+    network_session_context.host_resolver =
         url_request_context_->host_resolver();
 
     storage_->set_http_network_session(
-        base::MakeUnique<net::HttpNetworkSession>(network_session_params));
+        base::MakeUnique<net::HttpNetworkSession>(network_session_params,
+                                                  network_session_context));
     storage_->set_http_transaction_factory(base::MakeUnique<net::HttpCache>(
         storage_->http_network_session(), std::move(main_backend),
         true /* is_main_cache */));

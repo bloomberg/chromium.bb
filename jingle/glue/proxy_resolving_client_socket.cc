@@ -57,27 +57,31 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   DCHECK_GT(dest_host_port_pair_.port(), 0);
   DCHECK(proxy_url_.is_valid());
 
-  net::HttpNetworkSession::Params session_params;
-  session_params.client_socket_factory = socket_factory;
-  session_params.host_resolver = request_context->host_resolver();
-  session_params.cert_verifier = request_context->cert_verifier();
-  session_params.transport_security_state =
+  net::HttpNetworkSession::Context session_context;
+  session_context.client_socket_factory = socket_factory;
+  session_context.host_resolver = request_context->host_resolver();
+  session_context.cert_verifier = request_context->cert_verifier();
+  session_context.transport_security_state =
       request_context->transport_security_state();
-  session_params.cert_transparency_verifier =
+  session_context.cert_transparency_verifier =
       request_context->cert_transparency_verifier();
-  session_params.ct_policy_enforcer = request_context->ct_policy_enforcer();
+  session_context.ct_policy_enforcer = request_context->ct_policy_enforcer();
   // TODO(rkn): This is NULL because ChannelIDService is not thread safe.
-  session_params.channel_id_service = NULL;
-  session_params.proxy_service = request_context->proxy_service();
-  session_params.ssl_config_service = request_context->ssl_config_service();
-  session_params.http_auth_handler_factory =
+  // TODO(mmenke):  The above comment makes no sense, as not a single one of
+  // these classes is thread safe. Figure out if the comment's wrong, or if this
+  // entire class is badly broken.
+  session_context.channel_id_service = NULL;
+  session_context.proxy_service = request_context->proxy_service();
+  session_context.ssl_config_service = request_context->ssl_config_service();
+  session_context.http_auth_handler_factory =
       request_context->http_auth_handler_factory();
-  session_params.http_server_properties =
+  session_context.http_server_properties =
       request_context->http_server_properties();
-  session_params.net_log = request_context->net_log();
+  session_context.net_log = request_context->net_log();
 
   const net::HttpNetworkSession::Params* reference_params =
       request_context->GetNetworkSessionParams();
+  net::HttpNetworkSession::Params session_params;
   if (reference_params) {
     // TODO(mmenke):  Just copying specific parameters seems highly regression
     // prone.  Should have a better way to do this.
@@ -93,7 +97,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
         reference_params->enable_http2_alternative_service;
   }
 
-  network_session_.reset(new net::HttpNetworkSession(session_params));
+  network_session_.reset(
+      new net::HttpNetworkSession(session_params, session_context));
 
   net::HttpAuthCache* other_auth_cache =
       request_context->http_transaction_factory()

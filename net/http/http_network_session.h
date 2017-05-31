@@ -78,26 +78,15 @@ class NET_EXPORT HttpNetworkSession
     : NON_EXPORTED_BASE(public base::NonThreadSafe),
       public base::MemoryCoordinatorClient {
  public:
+  // Self-contained structure with all the simple configuration options
+  // supported by the HttpNetworkSession.
   struct NET_EXPORT Params {
     Params();
     Params(const Params& other);
     ~Params();
 
-    ClientSocketFactory* client_socket_factory;
-    HostResolver* host_resolver;
-    CertVerifier* cert_verifier;
     bool enable_server_push_cancellation;
-    ChannelIDService* channel_id_service;
-    TransportSecurityState* transport_security_state;
-    CTVerifier* cert_transparency_verifier;
-    CTPolicyEnforcer* ct_policy_enforcer;
-    ProxyService* proxy_service;
-    SSLConfigService* ssl_config_service;
-    HttpAuthHandlerFactory* http_auth_handler_factory;
-    HttpServerProperties* http_server_properties;
-    NetLog* net_log;
     HostMappingRules host_mapping_rules;
-    SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     bool ignore_certificate_errors;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
@@ -127,12 +116,6 @@ class NET_EXPORT HttpNetworkSession
     std::string quic_user_agent_id;
     // Limit on the size of QUIC packets.
     size_t quic_max_packet_length;
-    // Source of time for QUIC connections.
-    QuicClock* quic_clock;
-    // Source of entropy for QUIC connections.
-    QuicRandom* quic_random;
-    // Optional factory to use for creating QuicCryptoClientStreams.
-    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
     // Maximum number of server configs that are to be stored in
     // HttpServerProperties, instead of the disk cache.
     size_t quic_max_server_configs_stored_in_properties;
@@ -179,7 +162,6 @@ class NET_EXPORT HttpNetworkSession
     // If true, estimate the initial RTT for QUIC connections based on network.
     bool quic_estimate_initial_rtt;
 
-    ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.
     bool enable_token_binding;
 
@@ -188,13 +170,44 @@ class NET_EXPORT HttpNetworkSession
     bool http_09_on_non_default_ports_enabled;
   };
 
+  // Structure with pointers to the dependencies of the HttpNetworkSession.
+  // These objects must all outlive the HttpNetworkSession.
+  struct NET_EXPORT Context {
+    Context();
+    Context(const Context& other);
+    ~Context();
+
+    ClientSocketFactory* client_socket_factory;
+    HostResolver* host_resolver;
+    CertVerifier* cert_verifier;
+    ChannelIDService* channel_id_service;
+    TransportSecurityState* transport_security_state;
+    CTVerifier* cert_transparency_verifier;
+    CTPolicyEnforcer* ct_policy_enforcer;
+    ProxyService* proxy_service;
+    SSLConfigService* ssl_config_service;
+    HttpAuthHandlerFactory* http_auth_handler_factory;
+    HttpServerProperties* http_server_properties;
+    NetLog* net_log;
+    SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
+
+    // Source of time for QUIC connections.
+    QuicClock* quic_clock;
+    // Source of entropy for QUIC connections.
+    QuicRandom* quic_random;
+    // Optional factory to use for creating QuicCryptoClientStreams.
+    QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
+
+    ProxyDelegate* proxy_delegate;
+  };
+
   enum SocketPoolType {
     NORMAL_SOCKET_POOL,
     WEBSOCKET_SOCKET_POOL,
     NUM_SOCKET_POOL_TYPES
   };
 
-  explicit HttpNetworkSession(const Params& params);
+  HttpNetworkSession(const Params& params, const Context& context);
   ~HttpNetworkSession() override;
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
@@ -258,6 +271,8 @@ class NET_EXPORT HttpNetworkSession
 
   // Returns the original Params used to construct this session.
   const Params& params() const { return params_; }
+  // Returns the original Context used to construct this session.
+  const Context& context() const { return context_; }
 
   bool IsProtocolEnabled(NextProto protocol) const;
 
@@ -320,6 +335,7 @@ class NET_EXPORT HttpNetworkSession
   NextProtoVector next_protos_;
 
   Params params_;
+  Context context_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 };

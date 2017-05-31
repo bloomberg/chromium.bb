@@ -513,12 +513,12 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
 
   context->set_http_server_properties(globals->http_server_properties.get());
 
-  net::HttpNetworkSession::Params system_params(params);
+  net::HttpNetworkSession::Context system_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
-      context, &system_params);
+      context, &system_context);
 
   globals->system_http_network_session.reset(
-      new net::HttpNetworkSession(system_params));
+      new net::HttpNetworkSession(params, system_context));
   globals->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(globals->system_http_network_session.get()));
   context->set_http_transaction_factory(

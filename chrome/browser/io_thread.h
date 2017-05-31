@@ -291,7 +291,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   Globals* globals_;
 
-  net::HttpNetworkSession::Params params_;
+  net::HttpNetworkSession::Params session_params_;
 
   // Observer that logs network changes to the ChromeNetLog.
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;

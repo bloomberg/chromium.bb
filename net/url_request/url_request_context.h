@@ -73,6 +73,10 @@ class NET_EXPORT URLRequestContext
   // session.
   const HttpNetworkSession::Params* GetNetworkSessionParams() const;
 
+  // May return nullptr if this context doesn't have an associated network
+  // session.
+  const HttpNetworkSession::Context* GetNetworkSessionContext() const;
+
   // This function should not be used in Chromium, please use the version with
   // NetworkTrafficAnnotationTag in the future.
   std::unique_ptr<URLRequest> CreateRequest(

@@ -445,9 +445,9 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
   request_info->url = GURL("http://www.example.org/");
 
   TestDelegateBase delegate(nullptr, 0);
-  HttpNetworkSession::Params params =
-      SpdySessionDependencies::CreateSessionParams(&session_deps_);
-  std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
+  std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(
+      SpdySessionDependencies::CreateSessionParams(&session_deps_),
+      SpdySessionDependencies::CreateSessionContext(&session_deps_)));
   delegate.SetRunUntilCompletion(true);
   delegate.Start(std::move(request_info), session.get());
 
@@ -566,9 +566,9 @@ TEST_F(BidirectionalStreamTest,
   request_info->url = GURL("http://www.example.org/");
 
   std::unique_ptr<TestDelegateBase> delegate(new TestDelegateBase(nullptr, 0));
-  HttpNetworkSession::Params params =
-      SpdySessionDependencies::CreateSessionParams(&session_deps_);
-  std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
+  std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(
+      SpdySessionDependencies::CreateSessionParams(&session_deps_),
+      SpdySessionDependencies::CreateSessionContext(&session_deps_)));
   delegate->Start(std::move(request_info), session.get());
   // Reset stream right before the OnFailed task is executed.
   delegate.reset();

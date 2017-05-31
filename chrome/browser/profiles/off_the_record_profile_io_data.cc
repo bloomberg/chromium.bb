@@ -289,11 +289,13 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   context->SetCookieStore(std::move(cookie_store));
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  net::HttpNetworkSession::Params network_params =
-      main_request_context_storage()->http_network_session()->params();
-  network_params.channel_id_service = channel_id_service.get();
+  net::HttpNetworkSession::Context session_context =
+      main_request_context_storage()->http_network_session()->context();
+  session_context.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_params));
+      new net::HttpNetworkSession(
+          main_request_context_storage()->http_network_session()->params(),
+          session_context));
 
   // Use a separate in-memory cache for the app.
   std::unique_ptr<net::HttpCache> app_http_cache = CreateMainHttpFactory(

@@ -440,35 +440,40 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
                                          0,  // Default cache size.
                                          network_cache_thread_->task_runner()));
 
-  net::HttpNetworkSession::Params params;
-  params.host_resolver = main_context_->host_resolver();
-  params.cert_verifier = main_context_->cert_verifier();
-  params.cert_transparency_verifier =
-      main_context_->cert_transparency_verifier();
-  params.ct_policy_enforcer = main_context_->ct_policy_enforcer();
-  params.channel_id_service = main_context_->channel_id_service();
-  params.transport_security_state = main_context_->transport_security_state();
-  params.proxy_service = main_context_->proxy_service();
-  params.ssl_config_service = main_context_->ssl_config_service();
-  params.http_auth_handler_factory = main_context_->http_auth_handler_factory();
-  params.http_server_properties = main_context_->http_server_properties();
-  params.net_log = main_context_->net_log();
-  params.enable_http2 = spdy_enabled();
-  params.enable_quic = quic_enabled();
+  net::HttpNetworkSession::Params session_params;
+  session_params.enable_http2 = spdy_enabled();
+  session_params.enable_quic = quic_enabled();
 
-  if (!params.channel_id_service) {
+  net::HttpNetworkSession::Context session_context;
+  session_context.host_resolver = main_context_->host_resolver();
+  session_context.cert_verifier = main_context_->cert_verifier();
+  session_context.cert_transparency_verifier =
+      main_context_->cert_transparency_verifier();
+  session_context.ct_policy_enforcer = main_context_->ct_policy_enforcer();
+  session_context.channel_id_service = main_context_->channel_id_service();
+  session_context.transport_security_state =
+      main_context_->transport_security_state();
+  session_context.proxy_service = main_context_->proxy_service();
+  session_context.ssl_config_service = main_context_->ssl_config_service();
+  session_context.http_auth_handler_factory =
+      main_context_->http_auth_handler_factory();
+  session_context.http_server_properties =
+      main_context_->http_server_properties();
+  session_context.net_log = main_context_->net_log();
+
+  if (!session_context.channel_id_service) {
     // The main context may not have a ChannelIDService, since it is lazily
     // constructed. If not, build an ephemeral ChannelIDService with no backing
     // disk store.
     // TODO(ellyjones): support persisting ChannelID.
-    params.channel_id_service =
+    session_context.channel_id_service =
         new net::ChannelIDService(new net::DefaultChannelIDStore(NULL));
   }
 
   // TODO(mmenke):  These really shouldn't be leaked.
   //                See https://crbug.com/523858.
   net::HttpNetworkSession* http_network_session =
-      new net::HttpNetworkSession(params);
+      new net::HttpNetworkSession(session_params, session_context);
   net::HttpCache* main_cache =
       new net::HttpCache(http_network_session, std::move(main_backend),
                          true /* set_up_quic_server_info */);

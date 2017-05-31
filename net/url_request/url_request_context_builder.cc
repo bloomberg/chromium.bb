@@ -259,19 +259,23 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
-    const URLRequestContext* context,
-    HttpNetworkSession::Params* params) {
-  params->host_resolver = context->host_resolver();
-  params->cert_verifier = context->cert_verifier();
-  params->transport_security_state = context->transport_security_state();
-  params->cert_transparency_verifier = context->cert_transparency_verifier();
-  params->ct_policy_enforcer = context->ct_policy_enforcer();
-  params->proxy_service = context->proxy_service();
-  params->ssl_config_service = context->ssl_config_service();
-  params->http_auth_handler_factory = context->http_auth_handler_factory();
-  params->http_server_properties = context->http_server_properties();
-  params->net_log = context->net_log();
-  params->channel_id_service = context->channel_id_service();
+    const URLRequestContext* request_context,
+    HttpNetworkSession::Context* session_context) {
+  session_context->host_resolver = request_context->host_resolver();
+  session_context->cert_verifier = request_context->cert_verifier();
+  session_context->transport_security_state =
+      request_context->transport_security_state();
+  session_context->cert_transparency_verifier =
+      request_context->cert_transparency_verifier();
+  session_context->ct_policy_enforcer = request_context->ct_policy_enforcer();
+  session_context->proxy_service = request_context->proxy_service();
+  session_context->ssl_config_service = request_context->ssl_config_service();
+  session_context->http_auth_handler_factory =
+      request_context->http_auth_handler_factory();
+  session_context->http_server_properties =
+      request_context->http_server_properties();
+  session_context->net_log = request_context->net_log();
+  session_context->channel_id_service = request_context->channel_id_service();
 }
 
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
@@ -451,21 +455,22 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
   storage->set_proxy_service(std::move(proxy_service_));
 
+  HttpNetworkSession::Context network_session_context;
+  SetHttpNetworkSessionComponents(context.get(), &network_session_context);
   HttpNetworkSession::Params network_session_params;
-  SetHttpNetworkSessionComponents(context.get(), &network_session_params);
   http_network_session_params_.ConfigureSessionParams(&network_session_params);
 
   if (proxy_delegate_) {
-    network_session_params.proxy_delegate = proxy_delegate_.get();
+    network_session_context.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));
   }
   if (socket_performance_watcher_factory_) {
-    network_session_params.socket_performance_watcher_factory =
+    network_session_context.socket_performance_watcher_factory =
         socket_performance_watcher_factory_;
   }
 
-  storage->set_http_network_session(
-      base::MakeUnique<HttpNetworkSession>(network_session_params));
+  storage->set_http_network_session(base::MakeUnique<HttpNetworkSession>(
+      network_session_params, network_session_context));
 
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
