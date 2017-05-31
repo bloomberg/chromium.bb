@@ -109,6 +109,7 @@ SUBDIRS = \
 	$(TEGRA_SUBDIR) \
 	$(VC4_SUBDIR) \
 	$(ETNAVIV_SUBDIR) \
+	data \
 	tests \
 	$(MAN_SUBDIR)
 

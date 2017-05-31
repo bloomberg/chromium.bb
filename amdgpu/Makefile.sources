@@ -1,5 +1,5 @@
 LIBDRM_AMDGPU_FILES := \
-	amdgpu_asic_id.h \
+	amdgpu_asic_id.c \
 	amdgpu_bo.c \
 	amdgpu_cs.c \
 	amdgpu_device.c \

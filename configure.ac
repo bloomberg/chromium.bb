@@ -84,6 +84,9 @@ fi
 
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
+libdrmdatadir=${datadir}/libdrm
+AC_SUBST(libdrmdatadir)
+
 AC_ARG_ENABLE([udev],
               [AS_HELP_STRING([--enable-udev],
                               [Enable support for using udev instead of mknod (default: disabled)])],
@@ -527,6 +530,7 @@ fi
 AC_SUBST(WARN_CFLAGS)
 AC_CONFIG_FILES([
 	Makefile
+	data/Makefile
 	libkms/Makefile
 	libkms/libkms.pc
 	intel/Makefile
