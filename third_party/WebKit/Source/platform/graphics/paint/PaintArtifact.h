@@ -36,9 +36,7 @@ class PLATFORM_EXPORT PaintArtifact final {
 
  public:
   PaintArtifact();
-  PaintArtifact(DisplayItemList,
-                Vector<PaintChunk>,
-                bool is_suitable_for_gpu_rasterization);
+  PaintArtifact(DisplayItemList, Vector<PaintChunk>, int num_slow_paths);
   PaintArtifact(PaintArtifact&&);
   ~PaintArtifact();
 
@@ -59,9 +57,7 @@ class PLATFORM_EXPORT PaintArtifact final {
     return FindChunkInVectorByDisplayItemIndex(paint_chunks_, index);
   }
 
-  bool IsSuitableForGpuRasterization() const {
-    return is_suitable_for_gpu_rasterization_;
-  }
+  int NumSlowPaths() const { return num_slow_paths_; }
 
   // Resets to an empty paint artifact.
   void Reset();
@@ -90,7 +86,7 @@ class PLATFORM_EXPORT PaintArtifact final {
  private:
   DisplayItemList display_item_list_;
   Vector<PaintChunk> paint_chunks_;
-  bool is_suitable_for_gpu_rasterization_;
+  int num_slow_paths_ = 0;
 };
 
 }  // namespace blink

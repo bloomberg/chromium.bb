@@ -454,6 +454,10 @@ int ClipPathOp::CountSlowPaths() const {
   return antialias && !path.isConvex() ? 1 : 0;
 }
 
+int DrawDisplayItemListOp::CountSlowPaths() const {
+  return list->NumSlowPaths();
+}
+
 int DrawLineOp::CountSlowPaths() const {
   if (const SkPathEffect* effect = flags.getPathEffect()) {
     SkPathEffect::DashInfo info;

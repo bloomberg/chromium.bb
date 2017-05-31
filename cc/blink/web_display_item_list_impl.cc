@@ -148,8 +148,8 @@ void WebDisplayItemListImpl::AppendEndScrollItem() {
   AppendEndTransformItem();
 }
 
-void WebDisplayItemListImpl::SetIsSuitableForGpuRasterization(bool isSuitable) {
-  display_item_list_->SetIsSuitableForGpuRasterization(isSuitable);
+void WebDisplayItemListImpl::SetNumSlowPaths(int num_slow_paths) {
+  display_item_list_->SetNumSlowPaths(num_slow_paths);
 }
 
 WebDisplayItemListImpl::~WebDisplayItemListImpl() {

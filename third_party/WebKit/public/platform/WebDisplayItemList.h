@@ -67,7 +67,7 @@ class WebDisplayItemList {
                                 ScrollContainerId) {}
   virtual void AppendEndScrollItem() {}
 
-  virtual void SetIsSuitableForGpuRasterization(bool is_suitable) {}
+  virtual void SetNumSlowPaths(int num_slow_paths) {}
 };
 
 }  // namespace blink

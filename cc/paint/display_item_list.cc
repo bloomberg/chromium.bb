@@ -243,14 +243,6 @@ void DisplayItemList::Finalize() {
     std::vector<gfx::Rect>().swap(visual_rects_);
 }
 
-bool DisplayItemList::IsSuitableForGpuRasterization() const {
-  // TODO(wkorman): This is more permissive than Picture's implementation, since
-  // none of the items might individually trigger a veto even though they
-  // collectively have enough "bad" operations that a corresponding Picture
-  // would get vetoed. See crbug.com/513016.
-  return all_items_are_suitable_for_gpu_rasterization_;
-}
-
 size_t DisplayItemList::OpCount() const {
   return op_count_;
 }

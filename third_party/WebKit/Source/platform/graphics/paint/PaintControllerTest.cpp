@@ -1908,8 +1908,7 @@ TEST_F(PaintControllerTestBase, IsSuitableForGpuRasterizationSinglePath) {
   GraphicsContext context(GetPaintController());
   DrawPath(context, client, kBackgroundDrawingType, 1);
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_TRUE(
-      GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
+  EXPECT_EQ(1, GetPaintController().GetPaintArtifact().NumSlowPaths());
 }
 
 TEST_F(PaintControllerTestBase,
@@ -1919,8 +1918,7 @@ TEST_F(PaintControllerTestBase,
 
   DrawPath(context, client, kBackgroundDrawingType, 50);
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_FALSE(
-      GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
+  EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
 }
 
 TEST_F(PaintControllerTestBase,
@@ -1934,8 +1932,7 @@ TEST_F(PaintControllerTestBase,
 
   GetPaintController().EndSkippingCache();
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_FALSE(
-      GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
+  EXPECT_EQ(50 * 50, GetPaintController().GetPaintArtifact().NumSlowPaths());
 }
 
 TEST_F(PaintControllerTestBase,
@@ -1946,9 +1943,7 @@ TEST_F(PaintControllerTestBase,
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
     GetPaintController().CommitNewDisplayItems();
-    EXPECT_FALSE(GetPaintController()
-                     .GetPaintArtifact()
-                     .IsSuitableForGpuRasterization());
+    EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
   }
 
   client.SetDisplayItemsUncached();
@@ -1957,9 +1952,7 @@ TEST_F(PaintControllerTestBase,
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
     GetPaintController().CommitNewDisplayItems();
-    EXPECT_FALSE(GetPaintController()
-                     .GetPaintArtifact()
-                     .IsSuitableForGpuRasterization());
+    EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
   }
 }
 
@@ -1971,18 +1964,14 @@ TEST_F(PaintControllerTestBase,
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
     GetPaintController().CommitNewDisplayItems();
-    EXPECT_FALSE(GetPaintController()
-                     .GetPaintArtifact()
-                     .IsSuitableForGpuRasterization());
+    EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
   }
 
   {
     GraphicsContext context(GetPaintController());
     DrawPath(context, client, kBackgroundDrawingType, 50);
     GetPaintController().CommitNewDisplayItems();
-    EXPECT_FALSE(GetPaintController()
-                     .GetPaintArtifact()
-                     .IsSuitableForGpuRasterization());
+    EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
   }
 }
 
@@ -1998,14 +1987,12 @@ TEST_F(
     DrawPath(context, client, kBackgroundDrawingType, 50);
   }
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_FALSE(
-      GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
+  EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
 
   EXPECT_TRUE(
       SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, container));
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_FALSE(
-      GetPaintController().GetPaintArtifact().IsSuitableForGpuRasterization());
+  EXPECT_EQ(50, GetPaintController().GetPaintArtifact().NumSlowPaths());
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   DisplayItemClient::EndShouldKeepAliveAllClients();
@@ -2035,9 +2022,7 @@ TEST_F(PaintControllerTestBase,
     for (int j = 0; j < 50; ++j)
       GetPaintController().CreateAndAppend<EndClipPathDisplayItem>(client);
     GetPaintController().CommitNewDisplayItems();
-    EXPECT_FALSE(GetPaintController()
-                     .GetPaintArtifact()
-                     .IsSuitableForGpuRasterization());
+    EXPECT_EQ(50 * i, GetPaintController().GetPaintArtifact().NumSlowPaths());
   }
 }
 

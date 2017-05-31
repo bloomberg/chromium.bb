@@ -16,8 +16,6 @@
 #include <stdio.h>
 #endif
 
-static constexpr int kMaxNumberOfSlowPathsBeforeVeto = 5;
-
 namespace blink {
 
 void PaintController::SetTracksRasterInvalidations(bool value) {
@@ -591,9 +589,7 @@ void PaintController::CommitNewDisplayItems() {
 
   Vector<const DisplayItemClient*> skipped_cache_clients;
   for (const auto& item : new_display_item_list_) {
-    // No reason to continue the analysis once we have a veto.
-    if (num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto)
-      num_slow_paths += item.NumberOfSlowPaths();
+    num_slow_paths += item.NumberOfSlowPaths();
 
     if (item.IsCacheable()) {
       item.Client().SetDisplayItemsCached(current_cache_generation_);
@@ -615,9 +611,9 @@ void PaintController::CommitNewDisplayItems() {
     for (const auto& chunk : current_paint_artifact_.PaintChunks())
       raster_invalidation_tracking_info_->map.Remove(&chunk);
   }
-  current_paint_artifact_ = PaintArtifact(
-      std::move(new_display_item_list_), new_paint_chunks_.ReleasePaintChunks(),
-      num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto);
+  current_paint_artifact_ =
+      PaintArtifact(std::move(new_display_item_list_),
+                    new_paint_chunks_.ReleasePaintChunks(), num_slow_paths);
 
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();
