@@ -16,13 +16,28 @@ extern const char kBackgroundHistogramServiceWorkerParseStart[];
 extern const char kHistogramServiceWorkerFirstContentfulPaint[];
 extern const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[];
 extern const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[];
+extern const char kHistogramServiceWorkerFirstMeaningfulPaint[];
+extern const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaint[];
 extern const char kHistogramServiceWorkerDomContentLoaded[];
 extern const char kHistogramServiceWorkerLoad[];
+
 extern const char kHistogramServiceWorkerFirstContentfulPaintInbox[];
+extern const char kHistogramServiceWorkerFirstMeaningfulPaintInbox[];
+extern const char
+    kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox[];
 extern const char
     kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[];
 extern const char kHistogramServiceWorkerDomContentLoadedInbox[];
 extern const char kHistogramServiceWorkerLoadInbox[];
+
+extern const char kHistogramServiceWorkerFirstContentfulPaintSearch[];
+extern const char kHistogramServiceWorkerFirstMeaningfulPaintSearch[];
+extern const char
+    kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch[];
+extern const char
+    kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[];
+extern const char kHistogramServiceWorkerDomContentLoadedSearch[];
+extern const char kHistogramServiceWorkerLoadSearch[];
 
 }  // namespace internal
 
@@ -37,6 +52,9 @@ class ServiceWorkerPageLoadMetricsObserver
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFirstMeaningfulPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
