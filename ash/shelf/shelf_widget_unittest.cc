@@ -17,7 +17,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"

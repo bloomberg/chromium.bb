@@ -10,7 +10,6 @@
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/display.h"

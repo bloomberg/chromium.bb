@@ -27,7 +27,6 @@
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -1040,10 +1039,9 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   DCHECK_NE(-1, current_index);
   std::string dragged_app_id = model_->items()[current_index].id.app_id;
 
-  gfx::Point screen_location =
-      WmWindow::Get(GetWidget()->GetNativeWindow())
-          ->GetRootWindow()
-          ->ConvertPointToScreen(event.root_location());
+  gfx::Point screen_location = event.root_location();
+  ::wm::ConvertPointToScreen(GetWidget()->GetNativeWindow()->GetRootWindow(),
+                             &screen_location);
 
   // To avoid ugly forwards and backwards flipping we use different constants
   // for ripping off / re-inserting the items.

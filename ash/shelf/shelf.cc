@@ -16,7 +16,6 @@
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/display_constants.h"
