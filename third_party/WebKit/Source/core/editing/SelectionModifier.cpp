@@ -37,6 +37,24 @@
 
 namespace blink {
 
+namespace {
+
+VisiblePosition LeftBoundaryOfLine(const VisiblePosition& c,
+                                   TextDirection direction) {
+  DCHECK(c.IsValid()) << c;
+  return direction == TextDirection::kLtr ? LogicalStartOfLine(c)
+                                          : LogicalEndOfLine(c);
+}
+
+VisiblePosition RightBoundaryOfLine(const VisiblePosition& c,
+                                    TextDirection direction) {
+  DCHECK(c.IsValid()) << c;
+  return direction == TextDirection::kLtr ? LogicalEndOfLine(c)
+                                          : LogicalStartOfLine(c);
+}
+
+}  // namespace
+
 LayoutUnit NoXPosForVerticalArrowNavigation() {
   return LayoutUnit::Min();
 }
