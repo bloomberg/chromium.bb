@@ -5,6 +5,7 @@
 #ifndef InspectorEmulationAgent_h
 #define InspectorEmulationAgent_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
 
@@ -19,8 +20,9 @@ class RGBA;
 }  // namespace DOM
 }  // namespace protocol
 
-class InspectorEmulationAgent final
-    : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
+class CORE_EXPORT InspectorEmulationAgent final
+    : public NON_EXPORTED_BASE(
+          InspectorBaseAgent<protocol::Emulation::Metainfo>) {
   WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 
  public:

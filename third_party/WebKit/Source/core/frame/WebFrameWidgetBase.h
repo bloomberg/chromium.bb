@@ -38,6 +38,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
   virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
+  virtual GraphicsLayer* RootGraphicsLayer() const = 0;
 
   // Sets the root layer. |WebLayer| can be null when detaching the root layer.
   virtual void SetRootLayer(WebLayer*) = 0;

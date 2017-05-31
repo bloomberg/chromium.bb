@@ -233,6 +233,10 @@ void WebViewFrameWidget::SetRootGraphicsLayer(GraphicsLayer* layer) {
   web_view_->SetRootGraphicsLayer(layer);
 }
 
+GraphicsLayer* WebViewFrameWidget::RootGraphicsLayer() const {
+  return web_view_->RootGraphicsLayer();
+}
+
 void WebViewFrameWidget::SetRootLayer(WebLayer* layer) {
   web_view_->SetRootLayer(layer);
 }

@@ -100,6 +100,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
   AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
+  GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(WebLayer*) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;

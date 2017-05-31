@@ -31,6 +31,8 @@
 #include <memory>
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebFrameWidgetBase.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -41,7 +43,6 @@
 #include "public/platform/WebLayer.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
-#include "web/WebFrameWidgetImpl.h"
 
 namespace blink {
 
@@ -89,9 +90,7 @@ void PageOverlay::Update() {
       frame->GetPage()->GetVisualViewport().ContainerLayer()->AddChild(
           layer_.get());
     } else {
-      ToWebFrameWidgetImpl(frame_impl_->FrameWidget())
-          ->RootGraphicsLayer()
-          ->AddChild(layer_.get());
+      frame_impl_->FrameWidget()->RootGraphicsLayer()->AddChild(layer_.get());
     }
   }
 
