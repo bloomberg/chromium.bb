@@ -89,7 +89,6 @@ TEST_P(MaskedSubPixelVarianceTest, OperationCheck) {
       msk_ptr[j] = rnd(65);
     }
     for (int k = 0; k < 3; k++) {
-      xoffset = xoffsets[k];
       for (int l = 0; l < 3; l++) {
         xoffset = xoffsets[k];
         yoffset = yoffsets[l];

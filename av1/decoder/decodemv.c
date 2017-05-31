@@ -1029,7 +1029,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
                        xd->ref_mv_stack[INTRA_FRAME],
 #if CONFIG_EXT_INTER
-                       compound_inter_mode_ctx,
+                       NULL,
 #endif  // CONFIG_EXT_INTER
                        ref_mvs, mi_row, mi_col, NULL, NULL, inter_mode_ctx);
 

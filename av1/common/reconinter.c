@@ -2981,13 +2981,13 @@ void av1_build_inter_predictors_for_planes_single_buf(
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, &xd->plane[plane]);
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
       int x, y;
+      const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
+      const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
       assert(bsize == BLOCK_8X8);
       for (y = 0; y < num_4x4_h; ++y)
         for (x = 0; x < num_4x4_w; ++x)
@@ -3094,11 +3094,11 @@ void av1_build_wedge_inter_predictor_from_buf(
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, &xd->plane[plane]);
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
       int x, y;
+      const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
+      const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
       assert(bsize == BLOCK_8X8);
       for (y = 0; y < num_4x4_h; ++y)
         for (x = 0; x < num_4x4_w; ++x)
