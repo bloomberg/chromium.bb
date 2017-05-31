@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_MEDIATOR_H_
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_MEDIATOR_H_
 
-#import "ios/chrome/browser/ui/payments/credit_card_edit_view_controller_data_source.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
 
 class PaymentRequest;
 @protocol PaymentRequestEditConsumer;
@@ -16,7 +16,7 @@ class CreditCard;
 
 // Serves as data source for CreditCardEditViewController.
 @interface CreditCardEditViewControllerMediator
-    : NSObject<CreditCardEditViewControllerDataSource>
+    : NSObject<PaymentRequestEditViewControllerDataSource>
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.

@@ -102,6 +102,10 @@
   return NO;
 }
 
+- (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
+  return nil;
+}
+
 #pragma mark - PaymentRequestEditViewControllerValidator
 
 - (NSString*)paymentRequestEditViewController:

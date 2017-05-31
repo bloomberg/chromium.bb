@@ -16,7 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
-#import "ios/chrome/browser/ui/payments/address_edit_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,11 +178,11 @@ TEST_F(PaymentRequestAddressEditCoordinatorTest, DidFinishCreating) {
   EXPECT_CALL(personal_data_manager_, UpdateProfile(_)).Times(0);
 
   // Call the controller delegate method.
-  AddressEditViewController* view_controller =
-      base::mac::ObjCCastStrict<AddressEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator addressEditViewController:view_controller
-                  didFinishEditingFields:GetEditorFields()];
+  [coordinator paymentRequestEditViewController:view_controller
+                         didFinishEditingFields:GetEditorFields()];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
@@ -233,11 +233,11 @@ TEST_F(PaymentRequestAddressEditCoordinatorTest, DidFinishEditing) {
       .Times(1);
 
   // Call the controller delegate method.
-  AddressEditViewController* view_controller =
-      base::mac::ObjCCastStrict<AddressEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator addressEditViewController:view_controller
-                  didFinishEditingFields:GetEditorFields()];
+  [coordinator paymentRequestEditViewController:view_controller
+                         didFinishEditingFields:GetEditorFields()];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
@@ -269,10 +269,10 @@ TEST_F(PaymentRequestAddressEditCoordinatorTest, DidCancel) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  AddressEditViewController* view_controller =
-      base::mac::ObjCCastStrict<AddressEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator addressEditViewControllerDidCancel:view_controller];
+  [coordinator paymentRequestEditViewControllerDidCancel:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

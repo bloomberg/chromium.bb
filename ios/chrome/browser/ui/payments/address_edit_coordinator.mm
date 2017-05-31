@@ -31,7 +31,7 @@ using ::AutofillTypeFromAutofillUIType;
 @property(nonatomic, strong)
     CountrySelectionCoordinator* countrySelectionCoordinator;
 
-@property(nonatomic, strong) AddressEditViewController* viewController;
+@property(nonatomic, strong) PaymentRequestEditViewController* viewController;
 
 @property(nonatomic, strong) AddressEditMediator* mediator;
 
@@ -47,7 +47,7 @@ using ::AutofillTypeFromAutofillUIType;
 @synthesize mediator = _mediator;
 
 - (void)start {
-  self.viewController = [[AddressEditViewController alloc] init];
+  self.viewController = [[PaymentRequestEditViewController alloc] init];
   // TODO(crbug.com/602666): Title varies depending on what field is missing.
   // e.g., Add Email vs. Add Phone Number.
   NSString* title = self.address
@@ -88,7 +88,7 @@ using ::AutofillTypeFromAutofillUIType;
   return nil;
 }
 
-#pragma mark - AddressEditViewControllerDelegate
+#pragma mark - PaymentRequestEditViewControllerDelegate
 
 - (void)paymentRequestEditViewController:
             (PaymentRequestEditViewController*)controller
@@ -104,8 +104,9 @@ using ::AutofillTypeFromAutofillUIType;
   }
 }
 
-- (void)addressEditViewController:(AddressEditViewController*)controller
-           didFinishEditingFields:(NSArray<EditorField*>*)fields {
+- (void)paymentRequestEditViewController:
+            (PaymentRequestEditViewController*)controller
+                  didFinishEditingFields:(NSArray<EditorField*>*)fields {
   // Create an empty autofill profile. If an address is being edited, copy over
   // the information.
   autofill::AutofillProfile address =
@@ -136,8 +137,8 @@ using ::AutofillTypeFromAutofillUIType;
                 didFinishEditingAddress:self.address];
 }
 
-- (void)addressEditViewControllerDidCancel:
-    (AddressEditViewController*)controller {
+- (void)paymentRequestEditViewControllerDidCancel:
+    (PaymentRequestEditViewController*)controller {
   [self.delegate addressEditCoordinatorDidCancel:self];
 }
 

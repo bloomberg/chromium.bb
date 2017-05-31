@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
@@ -41,6 +42,10 @@
   return NO;
 }
 
+- (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
+  return nil;
+}
+
 - (void)setConsumer:(id<PaymentRequestEditConsumer>)consumer {
   _consumer = consumer;
   [self.consumer setEditorFields:@[
@@ -54,6 +59,12 @@
                                           label:@""
                                           value:@""
                                        required:YES],
+    [[EditorField alloc]
+        initWithAutofillUIType:AutofillUITypeCreditCardSaveToChrome
+                     fieldType:EditorFieldTypeSwitch
+                         label:@""
+                         value:@"YES"
+                      required:YES],
   ]];
 }
 
@@ -88,9 +99,9 @@ TEST_F(PaymentRequestEditViewControllerTest, TestModel) {
   [GetPaymentRequestEditViewController() loadModel];
 
   // There is one section containing the header item, In addition to that, there
-  // is one section for every form field (there are two fields in total) and one
-  // for the footer.
-  ASSERT_EQ(4, NumberOfSections());
+  // is one section for every form field (there are three fields in total) and
+  // one for the footer.
+  ASSERT_EQ(5, NumberOfSections());
 
   // The header section is the first section and has one item of the type
   // CollectionViewTextItem.
@@ -108,9 +119,14 @@ TEST_F(PaymentRequestEditViewControllerTest, TestModel) {
   item = GetCollectionViewItem(2, 0);
   EXPECT_TRUE([item isMemberOfClass:[PaymentsSelectorEditItem class]]);
 
+  // The next section has one item of the type CollectionViewSwitchItem.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
+  item = GetCollectionViewItem(3, 0);
+  EXPECT_TRUE([item isMemberOfClass:[CollectionViewSwitchItem class]]);
+
   // The footer section contains one item which is of the type
   // CollectionViewFooterItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
-  item = GetCollectionViewItem(3, 0);
+  item = GetCollectionViewItem(4, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
 }

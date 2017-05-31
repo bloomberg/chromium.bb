@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
-#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/cells/accepted_payment_methods_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
@@ -28,7 +27,6 @@
 #endif
 
 namespace {
-using ::AutofillUITypeFromAutofillType;
 using ::autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork;
 using ::autofill::data_util::GetPaymentRequestData;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
@@ -73,7 +71,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   [self.consumer setEditorFields:[self createEditorFields]];
 }
 
-#pragma mark - CreditCardEditViewControllerDataSource
+#pragma mark - PaymentRequestEditViewControllerDataSource
 
 - (CollectionViewItem*)headerItem {
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard)) {
@@ -118,9 +116,13 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   return !_creditCard || autofill::IsCreditCardLocal(*_creditCard);
 }
 
-- (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
+- (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
+  // Early return if the field is not the credit card number field.
+  if (field.autofillUIType != AutofillUITypeCreditCardNumber)
+    return nil;
+
   const char* issuerNetwork = autofill::CreditCard::GetCardNetwork(
-      base::SysNSStringToUTF16(cardNumber));
+      base::SysNSStringToUTF16(field.value));
   // This should not happen in Payment Request.
   if (issuerNetwork == autofill::kGenericCard)
     return nil;
@@ -186,40 +188,40 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
           ? [NSString stringWithFormat:@"%04d", _creditCard->expiration_year()]
           : nil;
 
-  NSMutableArray* editorFields = [[NSMutableArray alloc] init];
-  [editorFields addObjectsFromArray:@[
+  return @[
     [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeFromAutofillType(
-                                   autofill::CREDIT_CARD_NUMBER)
+        initWithAutofillUIType:AutofillUITypeCreditCardNumber
                      fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_CARD_NUMBER)
                          value:creditCardNumber
                       required:YES],
     [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeFromAutofillType(
-                                   autofill::CREDIT_CARD_NAME_FULL)
+        initWithAutofillUIType:AutofillUITypeCreditCardHolderFullName
                      fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_NAME_ON_CARD)
                          value:creditCardName
                       required:YES],
     [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeFromAutofillType(
-                                   autofill::CREDIT_CARD_EXP_MONTH)
+        initWithAutofillUIType:AutofillUITypeCreditCardExpMonth
                      fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_MONTH)
                          value:creditCardExpMonth
                       required:YES],
     [[EditorField alloc]
-        initWithAutofillUIType:AutofillUITypeFromAutofillType(
-                                   autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)
+        initWithAutofillUIType:AutofillUITypeCreditCardExpYear
                      fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_PAYMENTS_EXP_YEAR)
                          value:creditCardExpYear
-                      required:YES]
-  ]];
-  // The billing address field goes at the end.
-  [editorFields addObject:billingAddressEditorField];
-  return editorFields;
+                      required:YES],
+    billingAddressEditorField,
+    [[EditorField alloc]
+        initWithAutofillUIType:AutofillUITypeCreditCardSaveToChrome
+                     fieldType:EditorFieldTypeSwitch
+                         label:l10n_util::GetNSString(
+                                   IDS_PAYMENTS_SAVE_CARD_TO_DEVICE_CHECKBOX)
+                         value:@"YES"
+                      required:YES],
+  ];
 }
 
 @end

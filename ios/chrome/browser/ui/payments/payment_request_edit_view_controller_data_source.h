@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_VIEW_CONTROLLER_DATA_SOURCE_H_
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EDIT_VIEW_CONTROLLER_DATA_SOURCE_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @class EditorField;
 @class CollectionViewItem;
@@ -29,6 +29,9 @@ typedef NS_ENUM(NSInteger, EditViewControllerState) {
 
 // Returns whether the header item should hide its background.
 - (BOOL)shouldHideBackgroundForHeaderItem;
+
+// Returns an icon that identifies |field| or its current value. May be nil.
+- (UIImage*)iconIdentifyingEditorField:(EditorField*)field;
 
 @end
 
