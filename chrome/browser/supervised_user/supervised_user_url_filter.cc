@@ -243,12 +243,11 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
   DCHECK(amp_cache_path_regex_.ok());
   DCHECK(google_amp_viewer_path_regex_.ok());
   DCHECK(google_web_cache_query_regex_.ok());
-  // Detach from the current thread so we can be constructed on a different
-  // thread than the one where we're used.
-  DetachFromThread();
 }
 
-SupervisedUserURLFilter::~SupervisedUserURLFilter() {}
+SupervisedUserURLFilter::~SupervisedUserURLFilter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 // static
 SupervisedUserURLFilter::FilteringBehavior
@@ -337,7 +336,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     const GURL& url,
     bool manual_only,
     supervised_user_error_page::FilteringBehaviorReason* reason) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   GURL effective_url = GetEmbeddedURL(url);
   if (!effective_url.is_valid())
@@ -463,7 +462,7 @@ SupervisedUserURLFilter::GetMatchingWhitelistTitles(const GURL& url) const {
 
 void SupervisedUserURLFilter::SetDefaultFilteringBehavior(
     FilteringBehavior behavior) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   default_behavior_ = behavior;
 }
 
@@ -474,7 +473,7 @@ SupervisedUserURLFilter::GetDefaultFilteringBehavior() const {
 
 void SupervisedUserURLFilter::LoadWhitelists(
     const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -494,7 +493,7 @@ bool SupervisedUserURLFilter::HasBlacklist() const {
 
 void SupervisedUserURLFilter::SetFromPatternsForTesting(
     const std::vector<std::string>& patterns) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -505,7 +504,7 @@ void SupervisedUserURLFilter::SetFromPatternsForTesting(
 
 void SupervisedUserURLFilter::SetFromSiteListsForTesting(
     const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -516,12 +515,12 @@ void SupervisedUserURLFilter::SetFromSiteListsForTesting(
 
 void SupervisedUserURLFilter::SetManualHosts(
     std::map<std::string, bool> host_map) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_map_ = std::move(host_map);
 }
 
 void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   url_map_ = std::move(url_map);
 }
 
@@ -661,7 +660,7 @@ GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
 }
 
 void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   contents_ = std::move(contents);
   for (Observer& observer : observers_)
     observer.OnSiteListUpdated();

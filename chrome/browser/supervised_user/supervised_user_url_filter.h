@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/values.h"
 #include "chrome/browser/safe_search_api/safe_search_url_checker.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
@@ -41,7 +41,7 @@ class URLRequestContextGetter;
 //   * User-specified manual overrides (allow or block) for either sites
 //     (hostnames) or exact URLs, which take precedence over the previous
 //     sources.
-class SupervisedUserURLFilter : public base::NonThreadSafe {
+class SupervisedUserURLFilter {
  public:
   enum FilteringBehavior {
     ALLOW,
@@ -218,6 +218,8 @@ class SupervisedUserURLFilter : public base::NonThreadSafe {
   re2::RE2 google_web_cache_query_regex_;
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SupervisedUserURLFilter> weak_ptr_factory_;
 
