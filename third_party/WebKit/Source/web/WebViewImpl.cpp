@@ -2630,19 +2630,6 @@ WebFrame* WebViewImpl::MainFrame() {
   return WebFrame::FromFrame(page_ ? page_->MainFrame() : nullptr);
 }
 
-WebFrame* WebViewImpl::FindFrameByName(const WebString& name,
-                                       WebFrame* relative_to_frame) {
-  // FIXME: Either this should only deal with WebLocalFrames or it should move
-  // to WebFrame.
-  if (!relative_to_frame)
-    relative_to_frame = MainFrame();
-  Frame* frame = ToWebLocalFrameBase(relative_to_frame)->GetFrame();
-  frame = frame->Tree().Find(name);
-  if (!frame || !frame->IsLocalFrame())
-    return nullptr;
-  return WebLocalFrameBase::FromFrame(ToLocalFrame(frame));
-}
-
 WebLocalFrame* WebViewImpl::FocusedFrame() {
   Frame* frame = FocusedCoreFrame();
   // TODO(yabinh): focusedCoreFrame() should always return a local frame, and

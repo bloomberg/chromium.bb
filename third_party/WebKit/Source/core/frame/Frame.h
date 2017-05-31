@@ -108,8 +108,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual SecurityContext* GetSecurityContext() const = 0;
 
-  Frame* FindFrameForNavigation(const AtomicString& name,
-                                LocalFrame& active_frame);
   Frame* FindUnsafeParentScrollPropagationBoundary();
 
   // This prepares the Frame for the next commit. It will detach children,

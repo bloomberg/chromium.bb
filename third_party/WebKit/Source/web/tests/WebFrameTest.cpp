@@ -155,6 +155,7 @@
 #include "v8/include/v8.h"
 #include "web/TextFinder.h"
 #include "web/WebRemoteFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
@@ -4379,8 +4380,9 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect) {
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
 
-  WebFrame* iframe = web_view_helper.WebView()->FindFrameByName(
-      WebString::FromUTF8("ifr"), nullptr);
+  WebFrame* iframe =
+      web_view_helper.WebView()->MainFrameImpl()->FindFrameByName(
+          WebString::FromUTF8("ifr"));
   ASSERT_TRUE(iframe);
   WebDataSource* iframe_data_source = iframe->DataSource();
   ASSERT_TRUE(iframe_data_source);

@@ -248,6 +248,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetDevToolsAgentClient(WebDevToolsAgentClient*) override;
   WebDevToolsAgent* DevToolsAgent() override;
   WebLocalFrameImpl* LocalRoot() override;
+  WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;
   bool DispatchBeforeUnloadEvent(bool) override;
   WebURLRequest RequestFromHistoryItem(const WebHistoryItem&,

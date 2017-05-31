@@ -1718,7 +1718,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
 
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
-          view()->webview()->FindFrameByName("frame")));
+          frame()->GetWebFrame()->FindFrameByName("frame")));
   subframe->Navigate(common_params, StartNavigationParams(), request_params);
   FrameLoadWaiter(subframe).Wait();
 

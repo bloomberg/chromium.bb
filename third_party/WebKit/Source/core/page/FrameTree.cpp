@@ -155,6 +155,9 @@ unsigned FrameTree::ChildCount() const {
 }
 
 Frame* FrameTree::Find(const AtomicString& name) const {
+  // Named frame lookup should always be relative to a local frame.
+  DCHECK(this_frame_->IsLocalFrame());
+
   if (EqualIgnoringASCIICase(name, "_self") ||
       EqualIgnoringASCIICase(name, "_current") || name.IsEmpty())
     return this_frame_;

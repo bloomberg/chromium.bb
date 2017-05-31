@@ -42,6 +42,8 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebFrameClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
@@ -66,11 +68,12 @@ class LayoutGeometryMapTest
   static LayoutBox* GetFrameElement(const char* iframe_name,
                                     WebView* web_view,
                                     const WTF::AtomicString& element_id) {
-    WebLocalFrameBase* iframe = ToWebLocalFrameBase(
-        web_view->FindFrameByName(WebString::FromUTF8(iframe_name)));
-    if (!iframe)
+    WebFrame* iframe =
+        static_cast<WebViewImpl*>(web_view)->MainFrameImpl()->FindFrameByName(
+            WebString::FromUTF8(iframe_name));
+    if (!iframe || !iframe->IsWebLocalFrame())
       return nullptr;
-    LocalFrame* frame = iframe->GetFrame();
+    LocalFrame* frame = ToWebLocalFrameImpl(iframe)->GetFrame();
     Document* doc = frame->GetDocument();
     Element* element = doc->getElementById(element_id);
     if (!element)
