@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ui/arc/notification/arc_custom_notification_view.h"
+#include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"

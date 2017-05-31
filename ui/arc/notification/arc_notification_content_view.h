@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_CUSTOM_NOTIFICATION_VIEW_H_
-#define UI_ARC_NOTIFICATION_ARC_CUSTOM_NOTIFICATION_VIEW_H_
+#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
+#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
 
 #include <memory>
 #include <string>
@@ -37,10 +37,9 @@ class Widget;
 
 namespace arc {
 
-// ArcCustomNotificationView is a view to host NotificationSurface and show the
+// ArcNotificationContentView is a view to host NotificationSurface and show the
 // content in itself. This is implemented as a child of ArcNotificationView.
-// TODO(yoshiki): Rename this class to ArcNotificationContentsView.
-class ArcCustomNotificationView
+class ArcNotificationContentView
     : public views::NativeViewHost,
       public views::ButtonListener,
       public aura::WindowObserver,
@@ -48,8 +47,8 @@ class ArcCustomNotificationView
       public ArcNotificationSurfaceManager::Observer,
       public gfx::AnimationDelegate {
  public:
-  explicit ArcCustomNotificationView(ArcNotificationItem* item);
-  ~ArcCustomNotificationView() override;
+  explicit ArcNotificationContentView(ArcNotificationItem* item);
+  ~ArcNotificationContentView() override;
 
   std::unique_ptr<ArcNotificationContentViewDelegate>
   CreateContentViewDelegate();
@@ -65,12 +64,12 @@ class ArcCustomNotificationView
   // requires size of this class.
   class ControlButton : public message_center::PaddedButton {
    public:
-    explicit ControlButton(ArcCustomNotificationView* owner);
+    explicit ControlButton(ArcNotificationContentView* owner);
     void OnFocus() override;
     void OnBlur() override;
 
    private:
-    ArcCustomNotificationView* const owner_;
+    ArcNotificationContentView* const owner_;
 
     DISALLOW_COPY_AND_ASSIGN(ControlButton);
   };
@@ -158,9 +157,9 @@ class ArcCustomNotificationView
 
   base::string16 accessible_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcCustomNotificationView);
+  DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentView);
 };
 
 }  // namespace arc
 
-#endif  // UI_ARC_NOTIFICATION_ARC_CUSTOM_NOTIFICATION_VIEW_H_
+#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
