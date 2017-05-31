@@ -26,14 +26,13 @@
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
+#include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
-#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
-#include "mojo/edk/system/user_message_impl.h"
 #include "mojo/edk/system/watcher_dispatcher.h"
 
 namespace mojo {
@@ -436,18 +435,17 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
                               const MojoHandle* handles,
                               uint32_t num_handles,
                               MojoAllocMessageFlags flags,
-                              MojoMessageHandle* message_handle) {
-  if (!message_handle)
+                              MojoMessageHandle* message) {
+  if (!message)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (num_handles == 0) {  // Fast path: no handles.
-    std::unique_ptr<ports::UserMessageEvent> message;
-    MojoResult rv = UserMessageImpl::CreateEventForNewSerializedMessage(
-        num_bytes, nullptr, 0, &message);
+    std::unique_ptr<MessageForTransit> msg;
+    MojoResult rv = MessageForTransit::Create(&msg, num_bytes, nullptr, 0);
     if (rv != MOJO_RESULT_OK)
       return rv;
 
-    *message_handle = reinterpret_cast<MojoMessageHandle>(message.release());
+    *message = reinterpret_cast<MojoMessageHandle>(msg.release());
     return MOJO_RESULT_OK;
   }
 
@@ -472,15 +470,15 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
   }
   DCHECK_EQ(num_handles, dispatchers.size());
 
-  std::unique_ptr<ports::UserMessageEvent> message;
-  MojoResult rv = UserMessageImpl::CreateEventForNewSerializedMessage(
-      num_bytes, dispatchers.data(), num_handles, &message);
+  std::unique_ptr<MessageForTransit> msg;
+  MojoResult rv = MessageForTransit::Create(
+      &msg, num_bytes, dispatchers.data(), num_handles);
 
   {
     base::AutoLock lock(handles_lock_);
     if (rv == MOJO_RESULT_OK) {
       handles_.CompleteTransitAndClose(dispatchers);
-      *message_handle = reinterpret_cast<MojoMessageHandle>(message.release());
+      *message = reinterpret_cast<MojoMessageHandle>(msg.release());
     } else {
       handles_.CancelTransit(dispatchers);
     }
@@ -489,26 +487,22 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
   return rv;
 }
 
-MojoResult Core::FreeMessage(MojoMessageHandle message_handle) {
-  if (!message_handle)
+MojoResult Core::FreeMessage(MojoMessageHandle message) {
+  if (!message)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
-  delete reinterpret_cast<ports::UserMessageEvent*>(message_handle);
+  delete reinterpret_cast<MessageForTransit*>(message);
+
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::GetMessageBuffer(MojoMessageHandle message_handle,
-                                  void** buffer) {
-  if (!message_handle)
+MojoResult Core::GetMessageBuffer(MojoMessageHandle message, void** buffer) {
+  if (!message)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
-                      ->GetMessage<UserMessageImpl>();
-  if (!message->IsSerialized())
-    return MOJO_RESULT_NOT_FOUND;
+  *buffer = reinterpret_cast<MessageForTransit*>(message)->mutable_bytes();
 
-  *buffer = message->user_payload();
   return MOJO_RESULT_OK;
 }
 
@@ -531,8 +525,8 @@ MojoResult Core::CreateMessagePipe(
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
 
-  DCHECK(message_pipe_handle0);
-  DCHECK(message_pipe_handle1);
+  CHECK(message_pipe_handle0);
+  CHECK(message_pipe_handle1);
 
   uint64_t pipe_id = base::RandUint64();
 
@@ -581,15 +575,16 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
 }
 
 MojoResult Core::WriteMessageNew(MojoHandle message_pipe_handle,
-                                 MojoMessageHandle message_handle,
+                                 MojoMessageHandle message,
                                  MojoWriteMessageFlags flags) {
   RequestContext request_context;
-  auto message = base::WrapUnique(
-      reinterpret_cast<ports::UserMessageEvent*>(message_handle));
+  std::unique_ptr<MessageForTransit> message_for_transit(
+      reinterpret_cast<MessageForTransit*>(message));
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return dispatcher->WriteMessage(std::move(message), flags);
+
+  return dispatcher->WriteMessage(std::move(message_for_transit), flags);
 }
 
 MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
@@ -598,55 +593,44 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
                              MojoHandle* handles,
                              uint32_t* num_handles,
                              MojoReadMessageFlags flags) {
-  DCHECK((!num_handles || !*num_handles || handles) &&
-         (!num_bytes || !*num_bytes || bytes));
+  CHECK((!num_handles || !*num_handles || handles) &&
+        (!num_bytes || !*num_bytes || bytes));
   RequestContext request_context;
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  std::unique_ptr<ports::UserMessageEvent> message_event;
+  std::unique_ptr<MessageForTransit> message;
   MojoResult rv =
-      dispatcher->ReadMessage(&message_event, num_bytes, handles, num_handles,
-                              flags, false /* ignore_num_bytes */);
+      dispatcher->ReadMessage(&message, num_bytes, handles, num_handles, flags,
+                              false /* ignore_num_bytes */);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  // Some tests use fake message pipe dispatchers which return null events.
-  //
-  // TODO(rockot): Fix the tests, because this is weird.
-  if (!message_event)
-    return MOJO_RESULT_OK;
+  if (message && message->num_bytes())
+    memcpy(bytes, message->bytes(), message->num_bytes());
 
-  auto* message = message_event->GetMessage<UserMessageImpl>();
-  if (!message->IsSerialized())
-    return MOJO_RESULT_UNKNOWN;  // Maybe we need a better result code.
-
-  if (message->user_payload_size())
-    memcpy(bytes, message->user_payload(), message->user_payload_size());
   return MOJO_RESULT_OK;
 }
 
 MojoResult Core::ReadMessageNew(MojoHandle message_pipe_handle,
-                                MojoMessageHandle* message_handle,
+                                MojoMessageHandle* message,
                                 uint32_t* num_bytes,
                                 MojoHandle* handles,
                                 uint32_t* num_handles,
                                 MojoReadMessageFlags flags) {
-  DCHECK(message_handle);
-  DCHECK(!num_handles || !*num_handles || handles);
+  CHECK(message);
+  CHECK(!num_handles || !*num_handles || handles);
   RequestContext request_context;
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  std::unique_ptr<ports::UserMessageEvent> message_event;
+  std::unique_ptr<MessageForTransit> msg;
   MojoResult rv =
-      dispatcher->ReadMessage(&message_event, num_bytes, handles, num_handles,
-                              flags, true /* ignore_num_bytes */);
+      dispatcher->ReadMessage(&msg, num_bytes, handles, num_handles, flags,
+                              true /* ignore_num_bytes */);
   if (rv != MOJO_RESULT_OK)
     return rv;
-
-  *message_handle =
-      reinterpret_cast<MojoMessageHandle>(message_event.release());
+  *message = reinterpret_cast<MojoMessageHandle>(msg.release());
   return MOJO_RESULT_OK;
 }
 
@@ -685,16 +669,15 @@ MojoResult Core::FuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::NotifyBadMessage(MojoMessageHandle message_handle,
+MojoResult Core::NotifyBadMessage(MojoMessageHandle message,
                                   const char* error,
                                   size_t error_num_bytes) {
-  if (!message_handle)
+  if (!message)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  auto* message_event =
-      reinterpret_cast<ports::UserMessageEvent*>(message_handle);
-  auto* message = message_event->GetMessage<UserMessageImpl>();
-  if (message->source_node() == ports::kInvalidNodeName) {
+  const PortsMessage& ports_message =
+      reinterpret_cast<MessageForTransit*>(message)->ports_message();
+  if (ports_message.source_node() == ports::kInvalidNodeName) {
     DVLOG(1) << "Received invalid message from unknown node.";
     if (!default_process_error_callback_.is_null())
       default_process_error_callback_.Run(std::string(error, error_num_bytes));
@@ -702,7 +685,7 @@ MojoResult Core::NotifyBadMessage(MojoMessageHandle message_handle,
   }
 
   GetNodeController()->NotifyBadMessageFrom(
-      message->source_node(), std::string(error, error_num_bytes));
+      ports_message.source_node(), std::string(error, error_num_bytes));
   return MOJO_RESULT_OK;
 }
 
@@ -1008,12 +991,12 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
       static_cast<SharedBufferDispatcher*>(dispatcher.get());
   scoped_refptr<PlatformSharedBuffer> platform_shared_buffer =
       shm_dispatcher->PassPlatformSharedBuffer();
-  DCHECK(platform_shared_buffer);
+  CHECK(platform_shared_buffer);
 
-  DCHECK(size);
+  CHECK(size);
   *size = platform_shared_buffer->GetNumBytes();
 
-  DCHECK(flags);
+  CHECK(flags);
   *flags = MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
   if (platform_shared_buffer->IsReadOnly())
     *flags |= MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;

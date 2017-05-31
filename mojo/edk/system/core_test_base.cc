@@ -16,7 +16,7 @@
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/user_message_impl.h"
+#include "mojo/edk/system/message_for_transit.h"
 
 namespace mojo {
 namespace edk {
@@ -42,12 +42,11 @@ class MockDispatcher : public Dispatcher {
   }
 
   MojoResult WriteMessage(
-      std::unique_ptr<ports::UserMessageEvent> message_event,
+      std::unique_ptr<MessageForTransit> message,
       MojoWriteMessageFlags /*flags*/) override {
     info_->IncrementWriteMessageCallCount();
 
-    auto* message = message_event->GetMessage<UserMessageImpl>();
-    if (message->user_payload_size() > GetConfiguration().max_message_num_bytes)
+    if (message->num_bytes() > GetConfiguration().max_message_num_bytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
     if (message->num_handles())
@@ -56,13 +55,12 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_OK;
   }
 
-  MojoResult ReadMessage(
-      std::unique_ptr<ports::UserMessageEvent>* message_event,
-      uint32_t* num_bytes,
-      MojoHandle* handle,
-      uint32_t* num_handles,
-      MojoReadMessageFlags /*flags*/,
-      bool ignore_num_bytes) override {
+  MojoResult ReadMessage(std::unique_ptr<MessageForTransit>* message,
+                         uint32_t* num_bytes,
+                         MojoHandle* handle,
+                         uint32_t* num_handles,
+                         MojoReadMessageFlags /*flags*/,
+                         bool ignore_num_bytes) override {
     info_->IncrementReadMessageCallCount();
 
     if (num_handles)
