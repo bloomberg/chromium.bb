@@ -165,7 +165,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         CronetLibraryLoader.postToInitThread(new Runnable() {
             @Override
             public void run() {
-                CronetLibraryLoader.ensureInitializedOnInitThread(builder.getContext());
+                CronetLibraryLoader.ensureInitializedOnInitThread();
                 synchronized (mLock) {
                     // mUrlRequestContextAdapter is guaranteed to exist until
                     // initialization on init and network threads completes and

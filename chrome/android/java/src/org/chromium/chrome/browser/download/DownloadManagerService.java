@@ -221,7 +221,6 @@ public class DownloadManagerService
     @VisibleForTesting
     protected DownloadManagerService(Context context, DownloadNotifier downloadNotifier,
             Handler handler, long updateDelayInMillis) {
-        // TODO(wnwen): Remove mContext since it is always the application context.
         mContext = context;
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         // Clean up unused shared prefs. TODO(qinmin): remove this after M61.
