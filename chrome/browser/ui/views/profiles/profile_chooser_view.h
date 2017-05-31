@@ -50,7 +50,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // the existing bubble will auto-close due to focus loss.
   static void ShowBubble(
       profiles::BubbleViewMode view_mode,
-      profiles::TutorialMode tutorial_mode,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::View* anchor_view,
@@ -72,7 +71,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   ProfileChooserView(views::View* anchor_view,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
-                     profiles::TutorialMode tutorial_mode,
                      signin::GAIAServiceType service_type,
                      signin_metrics::AccessPoint access_point);
   ~ProfileChooserView() override;
@@ -152,40 +150,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Removes the currently selected account and attempts to restart Chrome.
   void RemoveAccount();
 
-  // Close the tutorial card.
-  void DismissTutorial();
-
-  // Creates a tutorial card to introduce an upgrade user to the new avatar
-  // menu. |avatar_item| refers to the current profile.
-  views::View* CreateWelcomeUpgradeTutorialView(
-      const AvatarMenu::Item& avatar_item);
-
-  // Creates a tutorial card to have the user confirm the last Chrome signin,
-  // Chrome sync will be delayed until the user either dismisses the tutorial,
-  // or configures sync through the "Settings" link.
-  views::View* CreateSigninConfirmationView();
-
-  // Creates a tutorial card to show the errors in the last Chrome signin.
-  views::View* CreateSigninErrorView();
-
-  views::View* CreateTutorialViewIfNeeded(const AvatarMenu::Item& item);
-
-  // Creates a tutorial card. If |stack_button| is true, places the button above
-  // the link otherwise places both on the same row with the link left aligned
-  // and button right aligned. The method sets |link| to point to the newly
-  // create link, |button| to the newly created button, and |tutorial_mode_| to
-  // the given |tutorial_mode|.
-  views::View*  CreateTutorialView(
-      profiles::TutorialMode tutorial_mode,
-      const base::string16& title_text,
-      const base::string16& content_text,
-      const base::string16& link_text,
-      const base::string16& button_text,
-      bool stack_button,
-      views::Link** link,
-      views::LabelButton** button,
-      views::ImageButton** close_button);
-
   // Creates a header for signin and sync error surfacing for the user menu.
   views::View* CreateSyncErrorViewIfNeeded();
 
@@ -207,14 +171,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Buttons associated with the current profile.
   AccountButtonIndexes delete_account_button_map_;
   AccountButtonIndexes reauth_account_button_map_;
-
-  // Links and buttons displayed in the tutorial card.
-  views::LabelButton* tutorial_sync_settings_ok_button_;
-  views::Link* tutorial_sync_settings_link_;
-  views::LabelButton* tutorial_see_whats_new_button_;
-  views::Link* tutorial_not_you_link_;
-  views::Link* tutorial_learn_more_link_;
-  views::ImageButton* tutorial_close_button_;
 
   // Buttons in the signin/sync error header on top of the desktop user menu.
   views::LabelButton* sync_error_signin_button_;
@@ -259,9 +215,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // Active view mode.
   profiles::BubbleViewMode view_mode_;
-
-  // The current tutorial mode.
-  profiles::TutorialMode tutorial_mode_;
 
   // The GAIA service type provided in the response header.
   signin::GAIAServiceType gaia_service_type_;

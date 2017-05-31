@@ -113,7 +113,6 @@ void AvatarMenu::SwitchToProfile(size_t index,
   // Don't open a browser window for signed-out profiles.
   if (item.signin_required) {
     UserManager::Show(item.profile_path,
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
   }

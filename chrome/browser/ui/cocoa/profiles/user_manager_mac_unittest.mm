@@ -57,7 +57,6 @@ TEST_F(UserManagerMacTest, ShowUserManager) {
 
   EXPECT_FALSE(UserManager::IsShowing());
   UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   EXPECT_TRUE(UserManager::IsShowing());
 

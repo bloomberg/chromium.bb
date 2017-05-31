@@ -474,7 +474,7 @@ void ChromeSigninClient::LockForceSigninProfile(
 
 void ChromeSigninClient::ShowUserManager(const base::FilePath& profile_path) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  UserManager::Show(profile_path, profiles::USER_MANAGER_NO_TUTORIAL,
+  UserManager::Show(profile_path,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif
 }

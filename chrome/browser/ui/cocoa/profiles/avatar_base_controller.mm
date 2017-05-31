@@ -133,14 +133,11 @@ bool ProfileUpdateObserver::HasAvatarError() {
                    fromAccessPoint:(signin_metrics::AccessPoint)accessPoint {
   if (menuController_) {
     profiles::BubbleViewMode viewMode;
-    profiles::TutorialMode tutorialMode;
-    profiles::BubbleViewModeFromAvatarBubbleMode(
-        mode, &viewMode, &tutorialMode);
-    if (tutorialMode != profiles::TUTORIAL_MODE_NONE) {
+    profiles::BubbleViewModeFromAvatarBubbleMode(mode, &viewMode);
+    if (viewMode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
       ProfileChooserController* profileChooserController =
           base::mac::ObjCCastStrict<ProfileChooserController>(
               menuController_);
-      [profileChooserController setTutorialMode:tutorialMode];
       [profileChooserController initMenuContentsWithView:viewMode];
     }
     return;
@@ -168,15 +165,12 @@ bool ProfileUpdateObserver::HasAvatarError() {
 
   // |menuController_| will automatically release itself on close.
   profiles::BubbleViewMode viewMode;
-  profiles::TutorialMode tutorialMode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(
-      mode, &viewMode, &tutorialMode);
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &viewMode);
 
   menuController_ =
       [[ProfileChooserController alloc] initWithBrowser:browser_
                                              anchoredAt:point
                                                viewMode:viewMode
-                                           tutorialMode:tutorialMode
                                             serviceType:serviceType
                                             accessPoint:accessPoint];
 
