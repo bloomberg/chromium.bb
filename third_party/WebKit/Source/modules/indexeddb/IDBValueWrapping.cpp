@@ -67,7 +67,8 @@ IDBValueWrapper::IDBValueWrapper(
 
   serialized_value_ = SerializedScriptValue::Serialize(isolate, value, options,
                                                        exception_state);
-
+  if (serialized_value_)
+    original_data_length_ = serialized_value_->DataLengthInBytes();
 #if DCHECK_IS_ON()
   if (exception_state.HadException())
     had_exception_ = true;

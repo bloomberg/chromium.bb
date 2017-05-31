@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_math.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -281,6 +282,7 @@ void DatabaseImpl::Put(
 
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles(
       value->blob_or_file_info.size());
+  base::CheckedNumeric<uint64_t> total_blob_size = 0;
   std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
     ::indexed_db::mojom::BlobInfoPtr& info = value->blob_or_file_info[i];
@@ -303,9 +305,9 @@ void DatabaseImpl::Put(
                                 base::Passed(&callbacks), error));
       return;
     }
-    UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB",
-                            handle->size() / 1024ull);
-
+    uint64_t size = handle->size();
+    UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB", size / 1024ull);
+    total_blob_size += size;
     handles[i] = std::move(handle);
 
     if (info->file) {
@@ -325,7 +327,15 @@ void DatabaseImpl::Put(
       blob_info[i] = IndexedDBBlobInfo(info->uuid, info->mime_type, info->size);
     }
   }
-
+  UMA_HISTOGRAM_COUNTS_1000("WebCore.IndexedDB.PutBlobsCount",
+                            blob_info.size());
+  uint64_t blob_size = 0;
+  total_blob_size.AssignIfValid(&blob_size);
+  if (blob_size != 0) {
+    // 1KB to 1GB.
+    UMA_HISTOGRAM_COUNTS_1M("WebCore.IndexedDB.PutBlobsTotalSize",
+                            blob_size / 1024);
+  }
   idb_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IDBThreadHelper::Put, base::Unretained(helper_),
@@ -665,7 +675,12 @@ void DatabaseImpl::IDBThreadHelper::Put(
   if (!transaction)
     return;
 
-  uint64_t commit_size = mojo_value->bits.size();
+  // Value size recorded in IDBObjectStore before we can auto-wrap in a blob.
+  // 1KB to 10MB.
+  UMA_HISTOGRAM_COUNTS_10000("WebCore.IndexedDB.PutKeySize",
+                             key.size_estimate() / 1024);
+
+  uint64_t commit_size = mojo_value->bits.size() + key.size_estimate();
   IndexedDBValue value;
   swap(value.bits, mojo_value->bits);
   swap(value.blob_info, blob_info);

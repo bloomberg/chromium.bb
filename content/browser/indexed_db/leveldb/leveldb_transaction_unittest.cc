@@ -106,6 +106,10 @@ class LevelDBTransactionTest : public testing::Test {
     return new LevelDBTransaction(db());
   }
 
+  static constexpr size_t SizeOfRecord() {
+    return sizeof(LevelDBTransaction::Record);
+  }
+
  private:
   base::ScopedTempDir temp_directory_;
   SimpleComparator comparator_;
@@ -114,7 +118,7 @@ class LevelDBTransactionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LevelDBTransactionTest);
 };
 
-TEST_F(LevelDBTransactionTest, GetAndPut) {
+TEST_F(LevelDBTransactionTest, GetPutDelete) {
   leveldb::Status status;
 
   const std::string key("key");
@@ -150,12 +154,19 @@ TEST_F(LevelDBTransactionTest, GetAndPut) {
 
   const std::string another_key("another key");
   const std::string another_value("another value");
+  EXPECT_EQ(0ull, transaction->GetTransactionSize());
   TransactionPut(transaction.get(), another_key, another_value);
+  EXPECT_EQ(SizeOfRecord() + another_key.size() * 2 + another_value.size(),
+            transaction->GetTransactionSize());
 
   status = transaction->Get(another_key, &got_value, &found);
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(found);
   EXPECT_EQ(Compare(got_value, another_value), 0);
+
+  transaction->Remove(another_key);
+  EXPECT_EQ(SizeOfRecord() + another_key.size() * 2,
+            transaction->GetTransactionSize());
 }
 
 TEST_F(LevelDBTransactionTest, Iterator) {
