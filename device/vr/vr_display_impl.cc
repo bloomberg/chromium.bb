@@ -59,26 +59,26 @@ void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {
 
 void VRDisplayImpl::RequestPresent(bool secure_origin,
                                    mojom::VRSubmitFrameClientPtr submit_client,
-                                   const RequestPresentCallback& callback) {
+                                   RequestPresentCallback callback) {
   if (!device_->IsAccessAllowed(this)) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  device_->RequestPresent(
-      std::move(submit_client),
-      base::Bind(&VRDisplayImpl::RequestPresentResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback, secure_origin));
+  device_->RequestPresent(std::move(submit_client),
+                          base::Bind(&VRDisplayImpl::RequestPresentResult,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     base::Passed(&callback), secure_origin));
 }
 
-void VRDisplayImpl::RequestPresentResult(const RequestPresentCallback& callback,
+void VRDisplayImpl::RequestPresentResult(RequestPresentCallback callback,
                                          bool secure_origin,
                                          bool success) {
   if (success) {
     device_->SetPresentingDisplay(this);
     device_->SetSecureOrigin(secure_origin);
   }
-  callback.Run(success);
+  std::move(callback).Run(success);
 }
 
 void VRDisplayImpl::ExitPresent() {

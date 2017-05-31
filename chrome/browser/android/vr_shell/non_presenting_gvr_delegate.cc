@@ -111,7 +111,7 @@ void NonPresentingGvrDelegate::OnVSync() {
   }
 }
 
-void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
+void NonPresentingGvrDelegate::GetVSync(GetVSyncCallback callback) {
   if (!pending_vsync_) {
     if (!callback_.is_null()) {
       mojo::ReportBadMessage(
@@ -119,11 +119,11 @@ void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
       binding_.Close();
       return;
     }
-    callback_ = callback;
+    callback_ = std::move(callback);
     return;
   }
   pending_vsync_ = false;
-  SendVSync(pending_time_, callback);
+  SendVSync(pending_time_, std::move(callback));
 }
 
 void NonPresentingGvrDelegate::UpdateVSyncInterval(int64_t timebase_nanos,
@@ -135,15 +135,16 @@ void NonPresentingGvrDelegate::UpdateVSyncInterval(int64_t timebase_nanos,
 }
 
 void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
-                                         const GetVSyncCallback& callback) {
+                                         GetVSyncCallback callback) {
   if (!gvr_api_) {
-    callback.Run(device::mojom::VRPosePtr(nullptr), time, -1,
-                 device::mojom::VRVSyncProvider::Status::SUCCESS);
+    std::move(callback).Run(device::mojom::VRPosePtr(nullptr), time, -1,
+                            device::mojom::VRVSyncProvider::Status::SUCCESS);
     return;
   }
 
-  callback.Run(GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr),
-               time, -1, device::mojom::VRVSyncProvider::Status::SUCCESS);
+  std::move(callback).Run(
+      GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr), time, -1,
+      device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void NonPresentingGvrDelegate::CreateVRDisplayInfo(

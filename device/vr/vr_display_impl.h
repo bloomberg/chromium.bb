@@ -45,7 +45,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
 
   void RequestPresent(bool secure_origin,
                       mojom::VRSubmitFrameClientPtr submit_client,
-                      const RequestPresentCallback& callback) override;
+                      RequestPresentCallback callback) override;
   void ExitPresent() override;
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox) override;
@@ -57,7 +57,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
                          int16_t source_height) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;
 
-  void RequestPresentResult(const RequestPresentCallback& callback,
+  void RequestPresentResult(RequestPresentCallback callback,
                             bool secure_origin,
                             bool success);
 

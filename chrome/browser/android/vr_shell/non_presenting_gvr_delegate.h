@@ -53,10 +53,10 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
   void StopVSyncLoop();
   void StartVSyncLoop();
   void OnVSync();
-  void SendVSync(base::TimeDelta time, const GetVSyncCallback& callback);
+  void SendVSync(base::TimeDelta time, GetVSyncCallback callback);
 
   // VRVSyncProvider implementation
-  void GetVSync(const GetVSyncCallback& callback) override;
+  void GetVSync(GetVSyncCallback callback) override;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

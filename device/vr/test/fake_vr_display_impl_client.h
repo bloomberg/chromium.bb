@@ -24,7 +24,7 @@ class FakeVRDisplayImplClient : public mojom::VRDisplayClient {
   void OnBlur() override {}
   void OnFocus() override {}
   void OnActivate(mojom::VRDisplayEventReason reason,
-                  const OnActivateCallback& callback) override {}
+                  OnActivateCallback callback) override {}
   void OnDeactivate(mojom::VRDisplayEventReason reason) override {}
 
  private:
