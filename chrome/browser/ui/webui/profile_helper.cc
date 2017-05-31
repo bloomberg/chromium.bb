@@ -27,7 +27,7 @@ namespace {
 
 void ShowUserManager(const ProfileManager::CreateCallback& callback) {
   if (!UserManager::IsShowing()) {
-    UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+    UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   }
 

@@ -821,9 +821,7 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool is_source_keyboard) {
   profiles::BubbleViewMode bubble_view_mode;
-  profiles::TutorialMode tutorial_mode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
-                                               &tutorial_mode);
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode);
 
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowModalSignin(bubble_view_mode,

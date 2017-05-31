@@ -508,22 +508,16 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 // static
 void ProfileChooserView::ShowBubble(
     profiles::BubbleViewMode view_mode,
-    profiles::TutorialMode tutorial_mode,
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
     Browser* browser,
     bool is_source_keyboard) {
-  if (IsShowing()) {
-    if (tutorial_mode != profiles::TUTORIAL_MODE_NONE) {
-      profile_bubble_->tutorial_mode_ = tutorial_mode;
-      profile_bubble_->ShowViewFromMode(view_mode);
-    }
+  if (IsShowing())
     return;
-  }
 
   profile_bubble_ =
-      new ProfileChooserView(anchor_view, browser, view_mode, tutorial_mode,
+      new ProfileChooserView(anchor_view, browser, view_mode,
                              manage_accounts_params.service_type, access_point);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
@@ -553,13 +547,11 @@ void ProfileChooserView::Hide() {
 ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
-                                       profiles::TutorialMode tutorial_mode,
                                        signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       view_mode_(view_mode),
-      tutorial_mode_(tutorial_mode),
       gaia_service_type_(service_type),
       access_point_(access_point) {
   // The sign in webview will be clipped on the bottom corners without these
@@ -580,12 +572,6 @@ void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
   delete_account_button_map_.clear();
   reauth_account_button_map_.clear();
-  tutorial_sync_settings_ok_button_ = nullptr;
-  tutorial_close_button_ = nullptr;
-  tutorial_sync_settings_link_ = nullptr;
-  tutorial_see_whats_new_button_ = nullptr;
-  tutorial_not_you_link_ = nullptr;
-  tutorial_learn_more_link_ = nullptr;
   sync_error_signin_button_ = nullptr;
   sync_error_passphrase_button_ = nullptr;
   sync_error_upgrade_button_ = nullptr;
@@ -739,9 +725,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
   }
-  // Clears tutorial mode for all non-profile-chooser views.
-  if (view_mode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
-    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
 
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
@@ -773,11 +756,6 @@ void ProfileChooserView::FocusFirstProfileButton() {
 void ProfileChooserView::WindowClosing() {
   DCHECK_EQ(profile_bubble_, this);
   profile_bubble_ = NULL;
-
-  if (tutorial_mode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
-    LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-  }
 }
 
 bool ProfileChooserView::AcceleratorPressed(
@@ -819,7 +797,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
       profiles::CloseGuestProfileWindows();
     } else {
       UserManager::Show(base::FilePath(),
-                        profiles::USER_MANAGER_NO_TUTORIAL,
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     }
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
@@ -849,22 +826,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == sync_error_signout_button_) {
     chrome::ShowSettingsSubPage(browser_, chrome::kSignOutSubPage);
-  } else if (sender == tutorial_sync_settings_ok_button_) {
-    LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-    DismissTutorial();
-    ProfileMetrics::LogProfileNewAvatarMenuSignin(
-        ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
-  } else if (sender == tutorial_close_button_) {
-    DCHECK(tutorial_mode_ != profiles::TUTORIAL_MODE_NONE &&
-           tutorial_mode_ != profiles::TUTORIAL_MODE_CONFIRM_SIGNIN);
-    DismissTutorial();
-  } else if (sender == tutorial_see_whats_new_button_) {
-    ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
-        ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
-    UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
-                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else if (sender == remove_account_button_) {
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
@@ -896,7 +857,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
         ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_ADD_PERSON);
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else if (sender == disconnect_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
@@ -957,19 +917,6 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   } else if (sender == add_account_link_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT);
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT);
-  } else if (sender == tutorial_sync_settings_link_) {
-    LoginUIServiceFactory::GetForProfile(browser_->profile())->
-        SyncConfirmationUIClosed(LoginUIService::CONFIGURE_SYNC_FIRST);
-    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
-    ProfileMetrics::LogProfileNewAvatarMenuSignin(
-        ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
-  } else if (sender == tutorial_not_you_link_) {
-    ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
-        ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
-    ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_SWITCH_USER);
-  } else {
-    DCHECK(sender == tutorial_learn_more_link_);
-    signin_ui_util::ShowSigninErrorLearnMorePage(browser_->profile());
   }
 }
 
@@ -985,7 +932,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   // Separate items into active and alternatives.
   Indexes other_profiles;
-  views::View* tutorial_view = NULL;
   views::View* sync_error_view = NULL;
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
@@ -1003,14 +949,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     } else {
       other_profiles.push_back(i);
     }
-  }
-
-  if (tutorial_view) {
-    // TODO(mlerman): update UMA stats for the new tutorial.
-    layout->StartRow(1, 0);
-    layout->AddView(tutorial_view);
-  } else {
-    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
   }
 
   if (sync_error_view) {
@@ -1049,171 +987,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     layout->StartRow(0, 0);
     layout->AddView(option_buttons_view);
   }
-  return view;
-}
-
-void ProfileChooserView::DismissTutorial() {
-  // Never shows the upgrade tutorial again if manually closed.
-  if (tutorial_mode_ == profiles::TUTORIAL_MODE_WELCOME_UPGRADE) {
-    browser_->profile()->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown,
-        signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
-  }
-
-  tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
-  ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
-}
-
-views::View* ProfileChooserView::CreateTutorialViewIfNeeded(
-    const AvatarMenu::Item& item) {
-  if (tutorial_mode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN)
-    return CreateSigninConfirmationView();
-
-  if (tutorial_mode_ == profiles::TUTORIAL_MODE_SHOW_ERROR)
-    return CreateSigninErrorView();
-
-  if (profiles::ShouldShowWelcomeUpgradeTutorial(
-      browser_->profile(), tutorial_mode_)) {
-    if (tutorial_mode_ != profiles::TUTORIAL_MODE_WELCOME_UPGRADE) {
-      Profile* profile = browser_->profile();
-      const int show_count = profile->GetPrefs()->GetInteger(
-          prefs::kProfileAvatarTutorialShown);
-      profile->GetPrefs()->SetInteger(
-          prefs::kProfileAvatarTutorialShown, show_count + 1);
-    }
-
-    return CreateWelcomeUpgradeTutorialView(item);
-  }
-
-  return nullptr;
-}
-
-views::View* ProfileChooserView::CreateTutorialView(
-    profiles::TutorialMode tutorial_mode,
-    const base::string16& title_text,
-    const base::string16& content_text,
-    const base::string16& link_text,
-    const base::string16& button_text,
-    bool stack_button,
-    views::Link** link,
-    views::LabelButton** button,
-    views::ImageButton** close_button) {
-  tutorial_mode_ = tutorial_mode;
-
-  // TODO(ananta)
-  // Use the dialog framework to create a dialog here instead of manually
-  // creating one.
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  views::View* view = new views::View();
-  view->set_background(views::Background::CreateSolidBackground(
-      profiles::kAvatarTutorialBackgroundColor));
-
-  gfx::Insets dialog_insets = provider->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS);
-
-  view->SetBorder(views::CreateEmptyBorder(dialog_insets));
-
-  // TODO(ananta)
-  // This seems to add a double margin at the side. Investigate and remove if
-  // so.
-  views::GridLayout* layout = CreateSingleColumnLayout(
-      view, kFixedMenuWidth - dialog_insets.width());
-
-  // Creates a second column set for buttons and links.
-  views::ColumnSet* button_columns = layout->AddColumnSet(1);
-  button_columns->AddColumn(views::GridLayout::LEADING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  button_columns->AddPaddingColumn(1,
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
-  button_columns->AddColumn(views::GridLayout::TRAILING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-
-  // Adds title and close button if needed.
-  const SkColor kTitleAndButtonTextColor = SK_ColorWHITE;
-  views::Label* title_label = new views::Label(title_text);
-  title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetAutoColorReadabilityEnabled(false);
-  title_label->SetEnabledColor(kTitleAndButtonTextColor);
-  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
-
-  if (close_button) {
-    layout->StartRow(1, 1);
-    layout->AddView(title_label);
-    *close_button = new views::ImageButton(this);
-    (*close_button)->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                                       views::ImageButton::ALIGN_MIDDLE);
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    (*close_button)->SetImage(views::ImageButton::STATE_NORMAL,
-                              rb->GetImageSkiaNamed(IDR_CLOSE_1));
-    (*close_button)->SetImage(views::ImageButton::STATE_HOVERED,
-                              rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
-    (*close_button)->SetImage(views::ImageButton::STATE_PRESSED,
-                              rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
-    layout->AddView(*close_button);
-  } else {
-    layout->StartRow(1, 0);
-    layout->AddView(title_label);
-  }
-
-  // Adds body content.
-  views::Label* content_label = new views::Label(content_text);
-  content_label->SetMultiLine(true);
-  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  content_label->SetAutoColorReadabilityEnabled(false);
-  content_label->SetEnabledColor(profiles::kAvatarTutorialContentTextColor);
-
-  const int related_control_vertical =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
-
-  layout->StartRowWithPadding(1, 0, 0, related_control_vertical);
-  layout->AddView(content_label);
-
-  // Adds links and buttons.
-  bool has_button = !button_text.empty();
-  if (has_button) {
-    *button = views::MdTextButton::CreateSecondaryUiButton(this, button_text);
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-      (*button)->SetEnabledTextColors(kTitleAndButtonTextColor);
-    else
-      (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  }
-
-  bool has_link = !link_text.empty();
-  if (has_link) {
-    *link = CreateLink(link_text, this);
-    (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    (*link)->SetAutoColorReadabilityEnabled(false);
-    (*link)->SetEnabledColor(kTitleAndButtonTextColor);
-  }
-
-  const int unrelated_control_vertical =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
-
-  if (stack_button) {
-    DCHECK(has_button);
-    layout->StartRowWithPadding(1, 0, 0, unrelated_control_vertical);
-    layout->AddView(*button);
-    if (has_link) {
-      layout->StartRowWithPadding(1, 0, 0, related_control_vertical);
-      (*link)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-      layout->AddView(*link);
-    }
-  } else {
-    DCHECK(has_link || has_button);
-    layout->StartRowWithPadding(1, 1, 0, unrelated_control_vertical);
-    if (has_link)
-      layout->AddView(*link);
-    else
-      layout->SkipColumns(1);
-    if (has_button)
-      layout->AddView(*button);
-    else
-      layout->SkipColumns(1);
-  }
-
   return view;
 }
 
@@ -1785,63 +1558,6 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
       this, &account_removal_cancel_button_);
   return TitleCard::AddPaddedTitleCard(view, title_card,
       kFixedAccountRemovalViewWidth);
-}
-
-views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialView(
-    const AvatarMenu::Item& avatar_item) {
-  ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
-      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW);
-
-  // For local profiles, the "Not you" link doesn't make sense.
-  base::string16 link_message = avatar_item.signed_in ?
-      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU, avatar_item.name) :
-      base::string16();
-
-  return CreateTutorialView(
-      profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT),
-      link_message,
-      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON),
-      true /* stack_button */,
-      &tutorial_not_you_link_,
-      &tutorial_see_whats_new_button_,
-      &tutorial_close_button_);
-}
-
-views::View* ProfileChooserView::CreateSigninConfirmationView() {
-  ProfileMetrics::LogProfileNewAvatarMenuSignin(
-      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_VIEW);
-
-  return CreateTutorialView(
-      profiles::TUTORIAL_MODE_CONFIRM_SIGNIN,
-      l10n_util::GetStringUTF16(IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT),
-      l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_SETTINGS_LINK),
-      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
-      false /* stack_button */,
-      &tutorial_sync_settings_link_,
-      &tutorial_sync_settings_ok_button_,
-      NULL /* close_button*/);
-}
-
-views::View* ProfileChooserView::CreateSigninErrorView() {
-  LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(browser_->profile());
-  base::string16 last_login_result(login_ui_service->GetLastLoginResult());
-  return CreateTutorialView(
-      profiles::TUTORIAL_MODE_SHOW_ERROR,
-      l10n_util::GetStringUTF16(IDS_PROFILES_ERROR_TUTORIAL_TITLE),
-      last_login_result,
-      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
-      base::string16(),
-      false /* stack_button */,
-      &tutorial_learn_more_link_,
-      NULL,
-      &tutorial_close_button_);
 }
 
 views::View* ProfileChooserView::CreateSwitchUserView() {

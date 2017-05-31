@@ -965,7 +965,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   // profile cannot have a browser.
   if (IsProfileSignedOut(lastProfile) || lastProfile->IsSystemProfile()) {
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
   }
@@ -1170,7 +1169,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile) ||
       lastProfile->IsSystemProfile()) {
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else {
     CreateBrowser(lastProfile);
@@ -1342,7 +1340,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   } else {
     // No way to create a browser, default to the User Manager.
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS);
   }
 }
@@ -1356,7 +1353,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   } else {
     // No way to create a browser, default to the User Manager.
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME);
   }
 }

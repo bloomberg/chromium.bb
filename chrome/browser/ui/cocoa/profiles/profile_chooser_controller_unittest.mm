@@ -89,18 +89,12 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   }
 
   void StartProfileChooserController() {
-    StartProfileChooserControllerWithTutorialMode(profiles::TUTORIAL_MODE_NONE);
-  }
-
-  void StartProfileChooserControllerWithTutorialMode(
-      profiles::TutorialMode mode) {
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
                viewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
-           tutorialMode:mode
             serviceType:signin::GAIA_SERVICE_TYPE_NONE
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN]);
@@ -192,29 +186,6 @@ TEST_F(ProfileChooserControllerTest, BubbleAlignment) {
           : info_bubble::kAlignLeadingEdgeToAnchorEdge;
   EXPECT_EQ(expected_alignment, [[controller() bubble] alignment]);
   [controller() close];
-}
-
-TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterWelcome) {
-  // The welcome upgrade tutorial takes precedence so show it then dismiss it.
-  // The right click tutorial should be shown right away.
-  StartProfileChooserControllerWithTutorialMode(
-      profiles::TUTORIAL_MODE_WELCOME_UPGRADE);
-
-  [controller() dismissTutorial:nil];
-}
-
-TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterReopen) {
-  // The welcome upgrade tutorial takes precedence so show it then close the
-  // menu. Reopening the menu should show the tutorial.
-  StartProfileChooserController();
-
-  [controller() close];
-  StartProfileChooserController();
-
-  // The tutorial must be manually dismissed so it should still be shown after
-  // closing and reopening the menu,
-  [controller() close];
-  StartProfileChooserController();
 }
 
 TEST_F(ProfileChooserControllerTest,

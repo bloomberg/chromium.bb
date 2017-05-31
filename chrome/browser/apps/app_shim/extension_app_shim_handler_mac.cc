@@ -240,7 +240,6 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(Profile* profile,
 
 void ExtensionAppShimHandler::Delegate::LaunchUserManager() {
   UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
 }
 

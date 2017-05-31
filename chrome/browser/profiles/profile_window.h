@@ -18,13 +18,6 @@ namespace base { class FilePath; }
 
 namespace profiles {
 
-// Different tutorials that can be displayed in the user manager.
-enum UserManagerTutorialMode {
-  USER_MANAGER_NO_TUTORIAL,        // Does not display a tutorial.
-  USER_MANAGER_TUTORIAL_OVERVIEW,  // Basic overview of new features.
-  USER_MANAGER_TUTORIAL_LOCK,      // TODO(noms): To be implemented.
-};
-
 // Different actions to perform after the user manager selects a profile as well
 // as actions to perform when user manager window opens. The former have a
 // USER_MANAGER_SELECT_PROFILE_ prefix and the later a USER_MANAGER_OPEN_
@@ -38,7 +31,6 @@ enum UserManagerAction {
   USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER,
 };
 
-extern const char kUserManagerDisplayTutorial[];
 extern const char kUserManagerOpenCreateUserPage[];
 extern const char kUserManagerSelectProfileTaskManager[];
 extern const char kUserManagerSelectProfileAboutChrome[];
@@ -117,9 +109,7 @@ void CloseProfileWindows(Profile* profile);
 // Returns whether lock is available to this profile.
 bool IsLockAvailable(Profile* profile);
 
-// Creates or reuses the system profile needed by the user manager. Based on
-// the value of |tutorial_mode|, the user manager can show a specific
-// tutorial, or no tutorial at all. If a tutorial is not shown, then
+// Creates or reuses the system profile needed by the user manager.
 // |profile_path_to_focus| could be used to specify which user should be
 // focused. Depending on the value of |user_manager_action|, executes an action
 // once the user manager displays or after a profile is opened. |callback| is
@@ -127,26 +117,13 @@ bool IsLockAvailable(Profile* profile);
 // profile.
 void CreateSystemProfileForUserManager(
     const base::FilePath& profile_path_to_focus,
-    profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerAction user_manager_action,
     const base::Callback<void(Profile*, const std::string&)>& callback);
 
-// Based on the |profile| preferences, determines whether a user manager
-// tutorial needs to be shown, and displays the user manager with or without
-// the tutorial.
-void ShowUserManagerMaybeWithTutorial(Profile* profile);
-
 // Converts from modes in the avatar menu to modes understood by
 // ProfileChooserView.
-void BubbleViewModeFromAvatarBubbleMode(
-    BrowserWindow::AvatarBubbleMode mode,
-    BubbleViewMode* bubble_view_mode,
-    TutorialMode* tutorial_mode);
-
-// Returns true if the Welcome/Upgrade tutorial bubble should be shown to the
-// user, false otherwise.
-bool ShouldShowWelcomeUpgradeTutorial(
-    Profile* profile, TutorialMode tutorial_mode);
+void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
+                                        BubbleViewMode* bubble_view_mode);
 
 }  // namespace profiles
 

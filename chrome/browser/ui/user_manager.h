@@ -25,12 +25,10 @@ class UserManager {
 
   // Shows the User Manager or re-activates an existing one, focusing the
   // profile given by |profile_path_to_focus|; passing an empty base::FilePath
-  // focuses no user pod. Based on the value of |tutorial_mode|, a tutorial
-  // could be shown, in which case |profile_path_to_focus| is ignored. Depending
-  // on the value of |user_manager_action|, executes an action once the user
-  // manager displays or after a profile is opened.
+  // focuses no user pod. Depending on the value of |user_manager_action|,
+  // executes an action once the user manager displays or after a profile is
+  // opened.
   static void Show(const base::FilePath& profile_path_to_focus,
-                   profiles::UserManagerTutorialMode tutorial_mode,
                    profiles::UserManagerAction user_manager_action);
 
   // Hides the User Manager.

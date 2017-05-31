@@ -36,7 +36,6 @@ void ProfileLoader::LoadProfileInvalidatingOtherLoads(
 
   if (profile_store_->IsProfileLocked(profile_file_path)) {
       UserManager::Show(base::FilePath(),
-                        profiles::USER_MANAGER_NO_TUTORIAL,
                         profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
       return;
   }

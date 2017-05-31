@@ -413,7 +413,6 @@ class UserManagerProfileDialogDelegate
 // static
 void UserManager::Show(
     const base::FilePath& profile_path_to_focus,
-    profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerAction user_manager_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
@@ -437,7 +436,6 @@ void UserManager::Show(
   // from the guest profile.
   profiles::CreateSystemProfileForUserManager(
       profile_path_to_focus,
-      tutorial_mode,
       user_manager_action,
       base::Bind(&UserManagerMac::OnSystemProfileCreated, base::Time::Now()));
 }

@@ -97,7 +97,7 @@ void OpenAppsPage(Profile* fallback_profile) {
   if (IsProfileSignedOut(app_list_profile) ||
       app_list_profile->IsSystemProfile() ||
       app_list_profile->IsGuestSession()) {
-    UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+    UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
   }

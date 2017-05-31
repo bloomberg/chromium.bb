@@ -2526,15 +2526,13 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     return;
 
   profiles::BubbleViewMode bubble_view_mode;
-  profiles::TutorialMode tutorial_mode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
-                                               &tutorial_mode);
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode);
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowModalSignin(
         bubble_view_mode, browser_.get(), access_point);
   } else {
-    ProfileChooserView::ShowBubble(bubble_view_mode, tutorial_mode,
-                                   manage_accounts_params, access_point,
+    ProfileChooserView::ShowBubble(bubble_view_mode, manage_accounts_params,
+                                   access_point,
                                    frame_->GetNewAvatarMenuButton(), browser(),
                                    focus_first_profile_button);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
