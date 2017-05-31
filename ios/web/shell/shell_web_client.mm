@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 
@@ -15,15 +16,16 @@
 
 namespace web {
 
-ShellWebClient::ShellWebClient() {
-}
+ShellWebClient::ShellWebClient() : web_main_parts_(nullptr) {}
 
 ShellWebClient::~ShellWebClient() {
 }
 
-WebMainParts* ShellWebClient::CreateWebMainParts() {
-  web_main_parts_.reset(new ShellWebMainParts);
-  return web_main_parts_.get();
+std::unique_ptr<web::WebMainParts> ShellWebClient::CreateWebMainParts() {
+  auto web_main_parts = base::MakeUnique<ShellWebMainParts>();
+  web_main_parts_ = web_main_parts.get();
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
+  return std::move(web_main_parts);
 }
 
 ShellBrowserState* ShellWebClient::browser_state() const {

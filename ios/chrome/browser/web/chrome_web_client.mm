@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -63,8 +64,9 @@ ChromeWebClient::ChromeWebClient() {}
 
 ChromeWebClient::~ChromeWebClient() {}
 
-web::WebMainParts* ChromeWebClient::CreateWebMainParts() {
-  return new IOSChromeMainParts(*base::CommandLine::ForCurrentProcess());
+std::unique_ptr<web::WebMainParts> ChromeWebClient::CreateWebMainParts() {
+  return base::MakeUnique<IOSChromeMainParts>(
+      *base::CommandLine::ForCurrentProcess());
 }
 
 void ChromeWebClient::PreWebViewCreation() const {

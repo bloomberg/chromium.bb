@@ -13,8 +13,18 @@ source_set("app") {
   deps = [
     "//base",
     "//ios/web/app",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 
-  allow_circular_includes_from = [ "//ios/web/app" ]
+    # TODO(crbug.com/728161): remove this dependency as it is not needed but
+    # is there just to allow adding the target to allow_circular_includes_from
+    # in order to fix a circular include issue.
+    "//ios/web:web_arc",
+  ]
+  allow_circular_includes_from = [
+    "//ios/web/app",
+
+    # TODO(crbug.com/728161): remove this exception.
+    "//ios/web:web_arc",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

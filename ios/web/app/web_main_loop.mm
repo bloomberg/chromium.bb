@@ -83,7 +83,7 @@ WebMainLoop::~WebMainLoop() {
 }
 
 void WebMainLoop::Init() {
-  parts_.reset(web::GetWebClient()->CreateWebMainParts());
+  parts_ = web::GetWebClient()->CreateWebMainParts();
 }
 
 void WebMainLoop::EarlyInitialization() {
