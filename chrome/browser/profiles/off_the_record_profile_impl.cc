@@ -19,6 +19,8 @@
 #include "chrome/browser/background_sync/background_sync_controller_factory.h"
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -412,6 +414,11 @@ content::PermissionManager* OffTheRecordProfileImpl::GetPermissionManager() {
 content::BackgroundSyncController*
 OffTheRecordProfileImpl::GetBackgroundSyncController() {
   return BackgroundSyncControllerFactory::GetForProfile(this);
+}
+
+content::BrowsingDataRemoverDelegate*
+OffTheRecordProfileImpl::GetBrowsingDataRemoverDelegate() {
+  return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

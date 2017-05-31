@@ -755,21 +755,6 @@ class RemoveDownloadsTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);
 };
 
-// TestingProfile does not contain ChromeBrowsingDataRemoverDelegate. Add it
-// for the purpose of this test.
-class TestingProfileWithDelegate : public TestingProfile {
- public:
-  TestingProfileWithDelegate() : delegate_(this) {}
-
-  content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
-      override {
-    return &delegate_;
-  }
-
- private:
-  ChromeBrowsingDataRemoverDelegate delegate_;
-};
-
 }  // namespace
 
 // RemoveAutofillTester is not a part of the anonymous namespace above, as
@@ -947,7 +932,7 @@ class ClearReportingCacheTester {
 class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
  public:
   ChromeBrowsingDataRemoverDelegateTest()
-      : profile_(new TestingProfileWithDelegate()),
+      : profile_(new TestingProfile()),
         clear_domain_reliability_tester_(profile_.get()) {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
 

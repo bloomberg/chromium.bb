@@ -320,6 +320,7 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetSSLHostStateDelegate, SSLHostStateDelegate*());
   MOCK_METHOD0(GetPermissionManager, PermissionManager*());
   MOCK_METHOD0(GetBackgroundSyncController, BackgroundSyncController*());
+  MOCK_METHOD0(GetBrowsingDataRemoverDelegate, BrowsingDataRemoverDelegate*());
   MOCK_METHOD0(CreateMediaRequestContext,
                net::URLRequestContextGetter*());
   MOCK_METHOD2(CreateMediaRequestContextForStoragePartition,

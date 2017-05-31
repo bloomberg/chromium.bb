@@ -237,6 +237,11 @@ HeadlessBrowserContextImpl::GetBackgroundSyncController() {
   return nullptr;
 }
 
+content::BrowsingDataRemoverDelegate*
+HeadlessBrowserContextImpl::GetBrowsingDataRemoverDelegate() {
+  return nullptr;
+}
+
 net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {

@@ -56,6 +56,7 @@ class ShellBrowserContext : public BrowserContext {
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   PermissionManager* GetPermissionManager() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
+  BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;

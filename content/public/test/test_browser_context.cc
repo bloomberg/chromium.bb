@@ -130,6 +130,13 @@ BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {
   return background_sync_controller_.get();
 }
 
+BrowsingDataRemoverDelegate*
+TestBrowserContext::GetBrowsingDataRemoverDelegate() {
+  // Most BrowsingDataRemover tests do not require a delegate
+  // (not even a mock one).
+  return nullptr;
+}
+
 net::URLRequestContextGetter* TestBrowserContext::CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) {
