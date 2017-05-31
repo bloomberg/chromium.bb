@@ -367,6 +367,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Adds the pending task to delayed_work_queue_.
   void AddToDelayedWorkQueue(PendingTask pending_task);
 
+  // Sweeps any cancelled tasks from the front of the delayed work queue and
+  // returns true if there is remaining work.
+  bool SweepDelayedWorkQueueAndReturnTrueIfStillHasWork();
+
   // Delete tasks that haven't run yet without running them.  Used in the
   // destructor to make sure all the task's destructors get called.  Returns
   // true if some work was done.
@@ -392,6 +396,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   TaskQueue work_queue_;
 
 #if defined(OS_WIN)
+  // Helper to decrement the high resolution task count if |pending_task| is a
+  // high resolution task.
+  void DecrementHighResTaskCountIfNeeded(const PendingTask& pending_Task);
+
   // How many high resolution tasks are in the pending task queue. This value
   // increases by N every time we call ReloadWorkQueue() and decreases by 1
   // every time we call RunTask() if the task needs a high resolution timer.
