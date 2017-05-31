@@ -215,10 +215,18 @@ bool SelectionController::HandleSingleClick(
       // Shift+Click deselects when selection was created right-to-left
       const PositionInFlatTree& start = selection.Start();
       const PositionInFlatTree& end = selection.end();
-      const int distance_to_start = TextDistance(start, pos);
-      const int distance_to_end = TextDistance(pos, end);
-      builder.SetBaseAndExtent(
-          distance_to_start <= distance_to_end ? end : start, pos);
+      if (pos < start) {
+        // |distance_to_start < distance_to_end|.
+        builder.SetBaseAndExtent(end, pos);
+      } else if (end < pos) {
+        // |distance_to_start > distance_to_end|.
+        builder.SetBaseAndExtent(start, pos);
+      } else {
+        const int distance_to_start = TextDistance(start, pos);
+        const int distance_to_end = TextDistance(pos, end);
+        builder.SetBaseAndExtent(
+            distance_to_start <= distance_to_end ? end : start, pos);
+      }
     }
 
     UpdateSelectionForMouseDownDispatchingSelectStart(
