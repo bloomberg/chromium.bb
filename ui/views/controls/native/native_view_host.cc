@@ -28,6 +28,9 @@ NativeViewHost::NativeViewHost()
 }
 
 NativeViewHost::~NativeViewHost() {
+  // As part of deleting NativeViewHostWrapper the native view is unparented.
+  // Make sure the FocusManager is updated.
+  ClearFocus();
 }
 
 void NativeViewHost::Attach(gfx::NativeView native_view) {
