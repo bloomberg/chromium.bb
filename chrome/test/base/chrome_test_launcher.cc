@@ -116,17 +116,15 @@ void ChromeTestLauncherDelegate::PreSharding() {
                                       install_static::GetRegistryPath().c_str(),
                                       KEY_SET_VALUE);
 
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    LOG(ERROR) << "Failed to open distribution key for cleanup: " << result;
+  if (result != ERROR_SUCCESS) {
+    LOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND)
+        << "Failed to open distribution key for cleanup: " << result;
     return;
   }
 
   result = distrubution_key.DeleteKey(L"PreferenceMACs");
-
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    LOG(ERROR) << "Failed to cleanup PreferenceMACs: " << result;
-    return;
-  }
+  LOG_IF(ERROR, result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
+      << "Failed to cleanup PreferenceMACs: " << result;
 #endif
 }
 
