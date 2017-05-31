@@ -507,10 +507,6 @@ const char kForceVariationIds[]             = "force-variation-ids";
 // http://google.com.
 const char kHomePage[]                      = "homepage";
 
-// The maximum number of retry attempts to resolve the host. Set this to zero
-// to disable host resolver retry attempts.
-const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
-
 // Comma-separated list of rules that control how hostnames are mapped.
 //
 // For example:

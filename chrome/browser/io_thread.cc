@@ -222,20 +222,6 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
       *base::CommandLine::ForCurrentProcess();
 
   net::HostResolver::Options options;
-
-  // Use the retry attempts override from the command-line, if any.
-  if (command_line.HasSwitch(switches::kHostResolverRetryAttempts)) {
-    std::string s =
-        command_line.GetSwitchValueASCII(switches::kHostResolverRetryAttempts);
-    // Parse the switch (it should be a non-negative integer).
-    int n;
-    if (base::StringToInt(s, &n) && n >= 0) {
-      options.max_retry_attempts = static_cast<size_t>(n);
-    } else {
-      LOG(ERROR) << "Invalid switch for host resolver retry attempts: " << s;
-    }
-  }
-
   std::unique_ptr<net::HostResolver> global_host_resolver;
 #if defined OS_CHROMEOS
   global_host_resolver =
