@@ -262,18 +262,8 @@ bool TextIteratorAlgorithm<Strategy>::IsInsideAtomicInlineElement() const {
 }
 
 template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::Advance() {
-  if (should_stop_)
-    return;
-
-  if (node_)
-    DCHECK(!node_->GetDocument().NeedsLayoutTreeUpdate()) << node_;
-
-  text_state_.ResetRunInformation();
-
-  // TODO(xiaochengh): Wrap the following code into HandleRememberedProgress().
-
-  // handle remembered node that needed a newline after the text node's newline
+bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
+  // Handle remembered node that needed a newline after the text node's newline
   if (needs_another_newline_) {
     // Emit the extra newline, and position it *inside* m_node, after m_node's
     // contents, in case it's a block, in the same way that we position the
@@ -285,10 +275,30 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     Node* base_node = last_child ? last_child : node_.Get();
     SpliceBuffer('\n', Strategy::Parent(*base_node), base_node, 1, 1);
     needs_another_newline_ = false;
-    return;
+    return true;
   }
 
-  if (text_node_handler_.HandleRemainingTextRuns())
+  // TODO(xiaochengh): When multiple text runs should be emitted from a replaced
+  // element or non-text node, we should handle it directly from here, instead
+  // of going into the main iteration of Advance() for multiple times. In this
+  // way, we can also remove the return values of HandleReplaceElement() and
+  // HandleNonTextNode(), and make the control flow cleaner.
+
+  // Try to emit more text runs if we are handling a text node.
+  return text_node_handler_.HandleRemainingTextRuns();
+}
+
+template <typename Strategy>
+void TextIteratorAlgorithm<Strategy>::Advance() {
+  if (should_stop_)
+    return;
+
+  if (node_)
+    DCHECK(!node_->GetDocument().NeedsLayoutTreeUpdate()) << node_;
+
+  text_state_.ResetRunInformation();
+
+  if (HandleRememberedProgress())
     return;
 
   while (node_ && (node_ != past_end_node_ || shadow_depth_ > 0)) {

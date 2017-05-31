@@ -137,6 +137,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool ShouldEmitSpaceBeforeAndAfterNode(Node*);
   void RepresentNodeOffsetZero();
 
+  // Returns true if text is emitted from the remembered progress (if any).
+  bool HandleRememberedProgress();
+
   // Return true if the iteration progress should advance to |kHandledNode|
   // after calling a |HandleXXX| function.
   // TODO(xiaochengh): The meaning of the return values is unclear, and they do
