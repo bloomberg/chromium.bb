@@ -481,14 +481,6 @@ cr.define('extensions', function() {
         e.preventDefault();
       });
 
-      // The 'Show Browser Action' button.
-      wrapper.setupColumn('showButton', '.show-button', 'click', function(e) {
-        chrome.developerPrivate.updateExtensionConfiguration({
-          extensionId: extension.id,
-          showActionButton: true
-        });
-      });
-
       // The 'allow in incognito' checkbox.
       wrapper.setupColumn('incognito', '.incognito-control input', 'change',
                           function(e) {
@@ -630,10 +622,6 @@ cr.define('extensions', function() {
       this.setText_(wrapper, '.location-text', extension.locationText || '');
       this.setText_(wrapper, '.blacklist-text', extension.blacklistText || '');
       this.setText_(wrapper, '.extension-description', extension.description);
-
-      // The 'Show Browser Action' button.
-      this.updateVisibility_(wrapper, '.show-button',
-                             isActive && extension.actionButtonHidden);
 
       // The 'allow in incognito' checkbox.
       this.updateVisibility_(wrapper, '.incognito-control',

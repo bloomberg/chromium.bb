@@ -171,8 +171,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
                         google_util::AppendGoogleLocaleParam(
                             GURL(chrome::kRemoveNonCWSExtensionURL),
                             g_browser_process->GetApplicationLocale()).spec()));
-  source->AddString("extensionSettingsShowButton",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
   source->AddString("extensionSettingsLoadUnpackedButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
   source->AddString("extensionSettingsPackButton",

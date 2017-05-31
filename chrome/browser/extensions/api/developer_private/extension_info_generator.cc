@@ -311,12 +311,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   std::unique_ptr<developer::ExtensionInfo> info(
       new developer::ExtensionInfo());
 
-  // Don't consider the button hidden with the redesign, because "hidden"
-  // buttons are now just hidden in the wrench menu.
-  info->action_button_hidden =
-      !extension_action_api_->GetBrowserActionVisibility(extension.id()) &&
-      !FeatureSwitch::extension_action_redesign()->IsEnabled();
-
   // Blacklist text.
   int blacklist_text = -1;
   switch (extension_prefs_->GetExtensionBlacklistState(extension.id())) {
