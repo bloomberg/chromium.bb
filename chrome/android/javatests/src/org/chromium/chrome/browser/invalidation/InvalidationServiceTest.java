@@ -50,7 +50,6 @@ public class InvalidationServiceTest {
         mAppContext = new IntentSavingContext(InstrumentationRegistry.getInstrumentation()
                                                       .getTargetContext()
                                                       .getApplicationContext());
-        // TODO(wnwen): Remove mAppContext and just use application context.
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
