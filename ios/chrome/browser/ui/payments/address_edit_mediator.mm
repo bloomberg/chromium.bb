@@ -118,6 +118,10 @@
   return NO;
 }
 
+- (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
+  return nil;
+}
+
 #pragma mark - RegionDataLoaderConsumer
 
 - (void)regionDataLoaderDidSucceedWithRegions:

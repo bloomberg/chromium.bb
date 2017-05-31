@@ -65,7 +65,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 }  // namespace
 
 @interface CreditCardEditCoordinator () {
-  CreditCardEditViewController* _viewController;
+  PaymentRequestEditViewController* _viewController;
 
   CreditCardEditViewControllerMediator* _mediator;
 }
@@ -79,7 +79,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 @synthesize delegate = _delegate;
 
 - (void)start {
-  _viewController = [[CreditCardEditViewController alloc] init];
+  _viewController = [[PaymentRequestEditViewController alloc] init];
   // TODO(crbug.com/602666): Title varies depending on the missing fields.
   NSString* title = _creditCard
                         ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
@@ -132,7 +132,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   return nil;
 }
 
-#pragma mark - CreditCardEditViewControllerDelegate
+#pragma mark - PaymentRequestEditViewControllerDelegate
 
 - (void)paymentRequestEditViewController:
             (PaymentRequestEditViewController*)controller
@@ -142,9 +142,10 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   }
 }
 
-- (void)creditCardEditViewController:(CreditCardEditViewController*)controller
-              didFinishEditingFields:(NSArray<EditorField*>*)fields
-                      saveCreditCard:(BOOL)saveCreditCard {
+- (void)paymentRequestEditViewController:
+            (PaymentRequestEditViewController*)controller
+                  didFinishEditingFields:(NSArray<EditorField*>*)fields {
+  BOOL saveCreditCard = NO;
   // Create an empty credit card. If a credit card is being edited, copy over
   // the information.
   autofill::CreditCard creditCard =
@@ -153,7 +154,9 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
                                          autofill::kSettingsOrigin);
 
   for (EditorField* field in fields) {
-    if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
+    if (field.autofillUIType == AutofillUITypeCreditCardSaveToChrome) {
+      saveCreditCard = [field.value boolValue];
+    } else if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
       creditCard.set_billing_address_id(base::SysNSStringToUTF8(field.value));
     } else {
       creditCard.SetRawInfo(
@@ -188,8 +191,8 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
             didFinishEditingCreditCard:_creditCard];
 }
 
-- (void)creditCardEditViewControllerDidCancel:
-    (CreditCardEditViewController*)controller {
+- (void)paymentRequestEditViewControllerDidCancel:
+    (PaymentRequestEditViewController*)controller {
   [_delegate creditCardEditCoordinatorDidCancel:self];
 }
 

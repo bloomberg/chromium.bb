@@ -15,6 +15,7 @@
 typedef NS_ENUM(NSInteger, EditorFieldType) {
   EditorFieldTypeTextField,
   EditorFieldTypeSelector,
+  EditorFieldTypeSwitch,
 };
 
 // Field definition for an editor field. Used for building the UI and

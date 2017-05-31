@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
-#import "ios/chrome/browser/ui/payments/credit_card_edit_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +60,7 @@ MATCHER_P5(CreditCardMatches,
          arg.billing_address_id() == billing_address_id;
 }
 
-NSArray<EditorField*>* GetEditorFields() {
+NSArray<EditorField*>* GetEditorFields(bool save_card) {
   return @[
     [[EditorField alloc] initWithAutofillUIType:AutofillUITypeCreditCardNumber
                                       fieldType:EditorFieldTypeTextField
@@ -89,6 +88,12 @@ NSArray<EditorField*>* GetEditorFields() {
                      fieldType:EditorFieldTypeSelector
                          label:@"Billing Address"
                          value:@"12345"
+                      required:YES],
+    [[EditorField alloc]
+        initWithAutofillUIType:AutofillUITypeCreditCardSaveToChrome
+                     fieldType:EditorFieldTypeSwitch
+                         label:@"Save Card"
+                         value:save_card ? @"YES" : @"NO"
                       required:YES],
   ];
 }
@@ -178,12 +183,11 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
   EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
 
   // Call the controller delegate method.
-  CreditCardEditViewController* view_controller =
-      base::mac::ObjCCastStrict<CreditCardEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator creditCardEditViewController:view_controller
-                     didFinishEditingFields:GetEditorFields()
-                             saveCreditCard:YES];
+  [coordinator paymentRequestEditViewController:view_controller
+                         didFinishEditingFields:GetEditorFields(true)];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
@@ -230,12 +234,11 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
   EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
 
   // Call the controller delegate method.
-  CreditCardEditViewController* view_controller =
-      base::mac::ObjCCastStrict<CreditCardEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator creditCardEditViewController:view_controller
-                     didFinishEditingFields:GetEditorFields()
-                             saveCreditCard:NO];
+  [coordinator paymentRequestEditViewController:view_controller
+                         didFinishEditingFields:GetEditorFields(false)];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
@@ -285,12 +288,11 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
       .Times(1);
 
   // Call the controller delegate method.
-  CreditCardEditViewController* view_controller =
-      base::mac::ObjCCastStrict<CreditCardEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator creditCardEditViewController:view_controller
-                     didFinishEditingFields:GetEditorFields()
-                             saveCreditCard:YES];
+  [coordinator paymentRequestEditViewController:view_controller
+                         didFinishEditingFields:GetEditorFields(true)];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
@@ -322,10 +324,10 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidCancel) {
   EXPECT_EQ(2u, navigation_controller.viewControllers.count);
 
   // Call the controller delegate method.
-  CreditCardEditViewController* view_controller =
-      base::mac::ObjCCastStrict<CreditCardEditViewController>(
+  PaymentRequestEditViewController* view_controller =
+      base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
           navigation_controller.visibleViewController);
-  [coordinator creditCardEditViewControllerDidCancel:view_controller];
+  [coordinator paymentRequestEditViewControllerDidCancel:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
