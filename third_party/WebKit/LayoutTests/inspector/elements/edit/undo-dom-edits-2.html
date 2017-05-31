@@ -20,10 +20,9 @@ function test()
     }
     testSuite.push(testSetUp);
 
-
     function testSetAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-set-attribute"); 
+        var node = InspectorTest.expandedNodeWithId("node-to-set-attribute");
         node.setAttribute("foo", "bar=\"edited attribute\"", callback);
     }
     testSuite.push(InspectorTest.generateUndoTest(testSetAttribute));
@@ -31,15 +30,15 @@ function test()
 
     function testRemoveAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-remove-attribute"); 
-        node.removeAttribute("foo", callback);
+        var node = InspectorTest.expandedNodeWithId("node-to-remove-attribute");
+        node.removeAttribute("foo").then(callback);
     }
     testSuite.push(InspectorTest.generateUndoTest(testRemoveAttribute));
 
 
     function testAddAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-add-attribute"); 
+        var node = InspectorTest.expandedNodeWithId("node-to-add-attribute");
         node.setAttribute("", "newattr=\"new-value\"", callback);
     }
     testSuite.push(InspectorTest.generateUndoTest(testAddAttribute));

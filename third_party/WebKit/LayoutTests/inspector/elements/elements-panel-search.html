@@ -16,32 +16,25 @@ function test()
 {
     var omitInnerHTML;
 
-    function searchCallback(next, resultCount)
+    async function searchCallback(next, resultCount)
     {
         if (resultCount == 0) {
             InspectorTest.addResult("Nothing found");
             SDK.DOMModel.cancelSearch();
             next();
+            return;
         }
 
-        for (var i = 0; i < resultCount; ++i)
-            InspectorTest.domModel.searchResult(i, searchResultCallback.bind(this, i + 1 === resultCount));
-
-        function searchResultCallback(isLastItem, node)
-        {
-            node.getOuterHTML(addSearchResult.bind(this, isLastItem));
-        }
-
-        function addSearchResult(isLastItem, error, markupVa_lue)
-        {
+        for (var i = 0; i < resultCount; ++i) {
+            var node = await InspectorTest.domModel.searchResult(i);
+            var markupVa_lue = await node.getOuterHTML();
             if (omitInnerHTML)
                 markupVa_lue = markupVa_lue.substr(0, markupVa_lue.indexOf(">") + 1);
             InspectorTest.addResult(markupVa_lue.split("").join(" "));
-            if (isLastItem) {
-                SDK.DOMModel.cancelSearch();
-                next();
-            }
         }
+
+        SDK.DOMModel.cancelSearch();
+        next();
     }
 
     function setUp(next)
