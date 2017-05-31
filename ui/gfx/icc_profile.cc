@@ -132,10 +132,11 @@ ICCProfile ICCProfile::GetForcedProfile() {
     ColorSpace generic_rgb_color_space(ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
                                        ColorSpace::TransferID::GAMMA18);
     generic_rgb_color_space.GetICCProfile(&icc_profile);
-  } else if (value == "bt2020-gamma18") {
-    ColorSpace generic_rgb_color_space(ColorSpace::PrimaryID::BT2020,
-                                       ColorSpace::TransferID::GAMMA18);
-    generic_rgb_color_space.GetICCProfile(&icc_profile);
+  } else if (value == "color-spin-gamma24") {
+    ColorSpace color_spin_color_space(
+        ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN,
+        ColorSpace::TransferID::GAMMA24);
+    color_spin_color_space.GetICCProfile(&icc_profile);
   } else {
     LOG(ERROR) << "Invalid forced color profile";
   }

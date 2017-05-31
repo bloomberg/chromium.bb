@@ -45,6 +45,8 @@ class GFX_EXPORT ColorSpace {
     // Corresponds the the primaries of the "Generic RGB" profile used in the
     // Apple ColorSync application, used by layout tests on Mac.
     APPLE_GENERIC_RGB,
+    // A very wide gamut space with rotated primaries. Used by layout tests.
+    WIDE_GAMUT_COLOR_SPIN,
     // Primaries defined by the primary matrix |custom_primary_matrix_|.
     CUSTOM,
     // For color spaces defined by an ICC profile which cannot be represented
