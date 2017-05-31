@@ -4610,6 +4610,80 @@
             "chrome_internal"
         ]
     },
+    "caroline-arc64-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-arc64-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "caroline-arc64"
+        ]
+    },
+    "caroline-arc64-full": {
+        "_template": "full",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-arc64-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "caroline-arc64"
+        ]
+    },
+    "caroline-arc64-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "caroline-arc64-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "caroline-arc64-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
+    },
+    "caroline-arc64-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "caroline-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-arc64-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "caroline-arc64"
+        ]
+    },
     "caroline-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
@@ -9687,11 +9761,9 @@
     },
     "glimmer-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "glimmer-cheets"
         ],
-        "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -15104,6 +15176,7 @@
             "buddy-release",
             "butterfly-release",
             "candy-release",
+            "caroline-arc64-release",
             "caroline-release",
             "caroline-userdebug-release",
             "cave-release",
@@ -15125,7 +15198,6 @@
             "fizz-release",
             "gale-release",
             "gandof-release",
-            "glimmer-cheets-release",
             "glimmer-release",
             "gnawty-release",
             "gru-release",
