@@ -181,10 +181,6 @@ enum class EUserModify { kReadOnly, kReadWrite, kReadWritePlaintextOnly };
 
 enum EUserDrag { DRAG_AUTO, DRAG_NONE, DRAG_ELEMENT };
 
-// CSS3 User Select Values
-
-enum class EUserSelect { kNone, kText, kAll };
-
 // CSS3 Image Values
 enum ObjectFit {
   kObjectFitFill,

@@ -2699,10 +2699,9 @@
     {
       name: "user-select",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "EUserSelect",
-      default_value: "EUserSelect::kText",
-      field_size: 2,
+      field_template: "keyword",
+      keywords: ["none", "text", "all"],
+      default_value: "text",
       field_group: "rare-inherited",
     },
     {

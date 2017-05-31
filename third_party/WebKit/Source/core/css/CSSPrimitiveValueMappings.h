@@ -1215,41 +1215,6 @@ inline EUserModify CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EUserSelect e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EUserSelect::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case EUserSelect::kText:
-      value_id_ = CSSValueText;
-      break;
-    case EUserSelect::kAll:
-      value_id_ = CSSValueAll;
-      break;
-  }
-}
-
-template <>
-inline EUserSelect CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return EUserSelect::kText;
-    case CSSValueNone:
-      return EUserSelect::kNone;
-    case CSSValueText:
-      return EUserSelect::kText;
-    case CSSValueAll:
-      return EUserSelect::kAll;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EUserSelect::kText;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EVerticalAlign a)
     : CSSValue(kIdentifierClass) {
   switch (a) {
