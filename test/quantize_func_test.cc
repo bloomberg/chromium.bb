@@ -215,7 +215,7 @@ using std::tr1::make_tuple;
 
 #if HAVE_SSE2
 const QuantizeParam kQParamArraySSE2[] = { make_tuple(
-    av1_quantize_fp_c, av1_quantize_fp_sse2, TX_16X16, AOM_BITS_8) };
+    &av1_quantize_fp_c, &av1_quantize_fp_sse2, TX_16X16, AOM_BITS_8) };
 
 INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
                         ::testing::ValuesIn(kQParamArraySSE2));
@@ -223,7 +223,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
 
 #if !CONFIG_HIGHBITDEPTH && HAVE_SSSE3 && ARCH_X86_64
 const QuantizeParam kQParamArraySSSE3[] = {
-  make_tuple(av1_quantize_fp_c, av1_quantize_fp_ssse3, TX_16X16, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_ssse3, TX_16X16, AOM_BITS_8),
   // TODO(any):
   //  The following test couldn't pass yet
   // make_tuple(av1_quantize_fp_c, av1_quantize_fp_32x32_ssse3, TX_32X32,
