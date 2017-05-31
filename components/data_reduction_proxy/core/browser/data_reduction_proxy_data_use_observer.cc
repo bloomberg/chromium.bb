@@ -85,8 +85,9 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (data_use->traffic_type() !=
-      data_use_measurement::DataUse::TrafficType::USER_TRAFFIC)
+      data_use_measurement::DataUse::TrafficType::USER_TRAFFIC) {
     return;
+  }
 
   if (!request.url().SchemeIs(url::kHttpsScheme) &&
       !request.url().SchemeIs(url::kHttpScheme)) {

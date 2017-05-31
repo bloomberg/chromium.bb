@@ -1172,6 +1172,7 @@ void DataReductionProxyCompressionStats::RecordDataUseByHost(
     int64_t data_used,
     int64_t original_size,
     const base::Time time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (current_data_usage_load_status_ != LOADED)
     return;
 
