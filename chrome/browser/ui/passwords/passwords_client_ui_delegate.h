@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -30,13 +31,13 @@ class PasswordsClientUIDelegate {
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to save the password.
   virtual void OnPasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      scoped_refptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when the user submits a new password for an existing credential.
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to update the password.
   virtual void OnUpdatePasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      scoped_refptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when the site asks user to choose from credentials. This triggers
   // the UI to prompt the user. |local_credentials| shouldn't be empty. |origin|
@@ -61,7 +62,7 @@ class PasswordsClientUIDelegate {
   // Called when the password will be saved automatically, but we still wish to
   // visually inform the user that the save has occured.
   virtual void OnAutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      scoped_refptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -184,7 +185,7 @@ class PasswordManager : public LoginModel {
 #if defined(UNIT_TEST)
   // TODO(crbug.com/639786): Replace using this by quering the factory for
   // mocked PasswordFormManagers.
-  const std::vector<std::unique_ptr<PasswordFormManager>>&
+  const std::vector<scoped_refptr<PasswordFormManager>>&
   pending_login_managers() {
     return pending_login_managers_;
   }
@@ -266,7 +267,7 @@ class PasswordManager : public LoginModel {
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
 
-  std::vector<std::unique_ptr<PasswordFormManager>> pending_login_managers_;
+  std::vector<scoped_refptr<PasswordFormManager>> pending_login_managers_;
 
   // When the user submits a password/credential, this contains the
   // PasswordFormManager for the form in question until we deem the login
@@ -274,7 +275,7 @@ class PasswordManager : public LoginModel {
   // send the PasswordFormManager back to the pending_login_managers_ set.
   // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
   // time a user submits a login form and gets to the next page.
-  std::unique_ptr<PasswordFormManager> provisional_save_manager_;
+  scoped_refptr<PasswordFormManager> provisional_save_manager_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;

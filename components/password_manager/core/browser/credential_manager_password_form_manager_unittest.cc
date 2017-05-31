@@ -50,12 +50,14 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
 TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   PasswordForm observed_form;
   MockDelegate delegate;
-  auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      &client_, driver_.AsWeakPtr(), observed_form,
-      base::MakeUnique<PasswordForm>(observed_form), &delegate,
-      base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
+  auto form_manager =
+      base::MakeRefCounted<CredentialManagerPasswordFormManager>(
+          &client_, driver_.AsWeakPtr(), observed_form,
+          base::MakeUnique<PasswordForm>(observed_form), &delegate,
+          base::MakeUnique<StubFormSaver>(),
+          base::MakeUnique<FakeFormFetcher>());
 
-  auto deleter = [&form_manager]() { form_manager.reset(); };
+  auto deleter = [&form_manager]() { form_manager = nullptr; };
 
   // Simulate that the PasswordStore responded to the FormFetcher. As a result,
   // |form_manager| should call the delegate's OnProvisionalSaveComplete, which

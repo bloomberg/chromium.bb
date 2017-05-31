@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/content/common/credential_manager.mojom.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
@@ -84,7 +85,7 @@ class CredentialManagerImpl
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
 
   PasswordManagerClient* client_;
-  std::unique_ptr<CredentialManagerPasswordFormManager> form_manager_;
+  scoped_refptr<CredentialManagerPasswordFormManager> form_manager_;
 
   // Set to false to disable automatic signing in.
   BooleanPrefMember auto_signin_enabled_;
