@@ -14,7 +14,6 @@ class AshNativeCursorManager;
 class DragDropController;
 class MaximizeModeWindowManager;
 class PaletteDelegate;
-class SessionStateDelegate;
 class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
@@ -36,7 +35,6 @@ class ShellTestApi {
   MaximizeModeWindowManager* maximize_mode_window_manager();
 
   void SetPaletteDelegate(std::unique_ptr<PaletteDelegate> palette_delegate);
-  void SetSessionStateDelegate(SessionStateDelegate* session_state_delegate);
 
  private:
   Shell* shell_;  // not owned

@@ -18,7 +18,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -48,7 +47,6 @@
 
 #if defined(USE_OZONE)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
-#include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -216,10 +214,6 @@ std::unique_ptr<KeyboardUI> ShellPortClassic::CreateKeyboardUI() {
 
 std::unique_ptr<KeyEventWatcher> ShellPortClassic::CreateKeyEventWatcher() {
   return base::MakeUnique<KeyEventWatcherAura>();
-}
-
-SessionStateDelegate* ShellPortClassic::GetSessionStateDelegate() {
-  return Shell::Get()->session_state_delegate();
 }
 
 void ShellPortClassic::AddDisplayObserver(WmDisplayObserver* observer) {

@@ -143,7 +143,6 @@ class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
 class SessionController;
-class SessionStateDelegate;
 class ShelfController;
 class ShelfModel;
 class ShelfWindowWatcher;
@@ -416,10 +415,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
 
-  SessionStateDelegate* session_state_delegate() {
-    return session_state_delegate_.get();
-  }
-
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -682,7 +677,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
 
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;

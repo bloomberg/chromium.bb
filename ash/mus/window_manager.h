@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "ash/root_window_controller.h"
 #include "ash/shell_delegate.h"
@@ -233,9 +236,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   // The ShellDelegate to install. This may be null, in which case
   // ShellDelegateMus is used.
   std::unique_ptr<ShellDelegate> shell_delegate_;
-
-  // See ShellPortMash's constructor for details. Tests may set to false.
-  bool create_session_state_delegate_stub_for_test_ = true;
 
   // State that is only valid during a drag.
   struct DragState;

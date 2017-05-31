@@ -7,7 +7,6 @@
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"

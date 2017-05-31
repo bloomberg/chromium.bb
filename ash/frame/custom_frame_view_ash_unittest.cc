@@ -12,8 +12,8 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -108,11 +108,6 @@ class CustomFrameViewAshTest : public test::AshTestBase {
     return widget;
   }
 
-  test::TestSessionStateDelegate* GetTestSessionStateDelegate() {
-    return static_cast<test::TestSessionStateDelegate*>(
-        ShellPort::Get()->GetSessionStateDelegate());
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshTest);
 };
@@ -179,7 +174,7 @@ TEST_F(CustomFrameViewAshTest, MinimumAndMaximumSize) {
 }
 
 // Verify that CustomFrameViewAsh updates the avatar icon based on the
-// state of the SessionStateDelegate after visibility change.
+// avatar icon window property.
 TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
@@ -188,17 +183,14 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
 
   // Avatar image becomes available.
-  GetTestSessionStateDelegate()->SetUserImage(
-      gfx::test::CreateImage(27, 27).AsImageSkia());
-  widget->Hide();
-  widget->Show();
+  widget->GetNativeWindow()->SetProperty(
+      aura::client::kAvatarIconKey,
+      new gfx::ImageSkia(gfx::test::CreateImage(27, 27).AsImageSkia()));
   EXPECT_TRUE(custom_frame_view->GetAvatarIconViewForTest());
 
   // Avatar image is gone; the ImageView for the avatar icon should be
   // removed.
-  GetTestSessionStateDelegate()->SetUserImage(gfx::ImageSkia());
-  widget->Hide();
-  widget->Show();
+  widget->GetNativeWindow()->ClearProperty(aura::client::kAvatarIconKey);
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
 }
 

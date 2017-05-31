@@ -213,7 +213,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     // marked as transparent content (see below in NonClientFrameController()
     // ctor). So, it is necessary to provide a texture-layer for the header
     // view.
-    views::View* header_view = custom_frame_view_->header_view();
+    views::View* header_view = custom_frame_view_->GetHeaderView();
     header_view->SetPaintToLayer(ui::LAYER_TEXTURED);
     header_view->layer()->SetFillsBoundsOpaquely(false);
 

@@ -10,14 +10,12 @@
 #include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/test/test_keyboard_ui.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
@@ -116,10 +114,6 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
 std::unique_ptr<WallpaperDelegate>
 TestShellDelegate::CreateWallpaperDelegate() {
   return base::MakeUnique<TestWallpaperDelegate>();
-}
-
-TestSessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
-  return new TestSessionStateDelegate();
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {

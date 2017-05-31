@@ -46,7 +46,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void ShelfShutdown() override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
-  ash::SessionStateDelegate* CreateSessionStateDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<ash::PaletteDelegate> CreatePaletteDelegate() override;
   ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,

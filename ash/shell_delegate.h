@@ -40,7 +40,6 @@ namespace ash {
 class AccessibilityDelegate;
 class GPUSupport;
 class PaletteDelegate;
-class SessionStateDelegate;
 class Shelf;
 struct ShelfItem;
 class SystemTrayDelegate;
@@ -101,9 +100,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a wallpaper delegate. Shell takes ownership of the delegate.
   virtual std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() = 0;
-
-  // Creates a session state delegate. Shell takes ownership of the delegate.
-  virtual SessionStateDelegate* CreateSessionStateDelegate() = 0;
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;

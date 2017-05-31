@@ -4,11 +4,13 @@
 
 #include "ash/system/tray_accessibility.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"

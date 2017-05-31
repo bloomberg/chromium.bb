@@ -40,12 +40,9 @@ class ShellPortMashTestApi;
 // ShellPort implementation for mash/mus. See ash/README.md for more.
 class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
  public:
-  // If |create_session_state_delegate_stub| is true SessionStateDelegateStub is
-  // created. If false, the SessionStateDelegate from Shell is used.
   ShellPortMash(aura::Window* primary_root_window,
                 WindowManager* window_manager,
-                views::PointerWatcherEventRouter* pointer_watcher_event_router,
-                bool create_session_state_delegate_stub);
+                views::PointerWatcherEventRouter* pointer_watcher_event_router);
   ~ShellPortMash() override;
 
   static ShellPortMash* Get();
@@ -100,7 +97,6 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   CreateImmersiveFullscreenController() override;
   std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() override;
-  SessionStateDelegate* GetSessionStateDelegate() override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
@@ -158,8 +154,6 @@ class ShellPortMash : public ShellPort, public WindowTreeHostManager::Observer {
   // Config.
   std::unique_ptr<MashSpecificState> mash_state_;
   std::unique_ptr<MusSpecificState> mus_state_;
-
-  std::unique_ptr<SessionStateDelegate> session_state_delegate_;
 
   std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
 

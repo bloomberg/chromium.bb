@@ -55,6 +55,10 @@ AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAppIconKey;
 // pointer metrics. See AppType in ash/shared/app_types.h for more details.
 AURA_EXPORT extern const WindowProperty<int>* const kAppType;
 
+// A property key to store the avatar icon that will be displayed on the window
+// frame to indicate the owner of the window when needed.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAvatarIconKey;
+
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 

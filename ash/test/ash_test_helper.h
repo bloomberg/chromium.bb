@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -58,7 +59,6 @@ class AshTestViewsDelegate;
 class TestScreenshotDelegate;
 class TestShellDelegate;
 class TestSessionControllerClient;
-class TestSessionStateDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
@@ -84,8 +84,6 @@ class AshTestHelper {
   aura::Window* CurrentContext();
 
   void RunAllPendingInMessageLoop();
-
-  static TestSessionStateDelegate* GetTestSessionStateDelegate();
 
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
   void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {

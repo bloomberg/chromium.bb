@@ -17,12 +17,14 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm_window.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -88,12 +90,14 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     }
     return true;
   }
+
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
     window->RemoveObserver(this);
     window_state_ = nullptr;
   }
+
   // Overridden from wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override {
@@ -116,6 +120,48 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 
 // static
 bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
+
+///////////////////////////////////////////////////////////////////////////////
+// CustomFrameViewAsh::AvatarObserver
+
+// AvatarObserver watches the frame window's avatar icon property and updates
+// HeaderView with it.
+class CustomFrameViewAsh::AvatarObserver : public aura::WindowObserver {
+ public:
+  AvatarObserver(views::Widget* frame, HeaderView* header_view)
+      : frame_window_(frame->GetNativeWindow()), header_view_(header_view) {
+    frame_window_->AddObserver(this);
+  }
+
+  ~AvatarObserver() override {
+    if (frame_window_)
+      frame_window_->RemoveObserver(this);
+  }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK_EQ(frame_window_, window);
+    if (key != aura::client::kAvatarIconKey)
+      return;
+
+    gfx::ImageSkia* const avatar_icon =
+        frame_window_->GetProperty(aura::client::kAvatarIconKey);
+    header_view_->SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
+  }
+
+  void OnWindowDestroyed(aura::Window* window) override {
+    DCHECK_EQ(frame_window_, window);
+    frame_window_ = nullptr;
+  }
+
+ private:
+  aura::Window* frame_window_;
+  HeaderView* const header_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AvatarObserver);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::OverlayView
@@ -213,7 +259,8 @@ CustomFrameViewAsh::CustomFrameViewAsh(
       header_view_(new HeaderView(frame, window_style)),
       overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
-                                             : header_view_) {
+                                             : header_view_),
+      avatar_observer_(base::MakeUnique<AvatarObserver>(frame_, header_view_)) {
   WmWindow* frame_window = WmWindow::Get(frame->GetNativeWindow());
   frame_window->InstallResizeHandleWindowTargeter(nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
@@ -252,7 +299,7 @@ void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
   overlay_view_->SetHeaderHeight(height);
 }
 
-views::View* CustomFrameViewAsh::header_view() {
+views::View* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;
 }
 
@@ -357,16 +404,6 @@ void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   } else {
     views::NonClientFrameView::SchedulePaintInRect(r);
   }
-}
-
-void CustomFrameViewAsh::VisibilityChanged(views::View* starting_from,
-                                           bool is_visible) {
-  if (is_visible)
-    header_view_->UpdateAvatarIcon();
-}
-
-views::View* CustomFrameViewAsh::GetHeaderView() {
-  return header_view_;
 }
 
 const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {

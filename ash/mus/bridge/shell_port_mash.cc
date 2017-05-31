@@ -30,7 +30,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -76,36 +75,6 @@
 namespace ash {
 namespace mus {
 
-namespace {
-
-// TODO(jamescook): After ShellDelegate is ported to ash/common use
-// ShellDelegate::CreateSessionStateDelegate() to construct the mus version
-// of SessionStateDelegate.
-class SessionStateDelegateStub : public SessionStateDelegate {
- public:
-  SessionStateDelegateStub() : user_info_(new user_manager::UserInfoImpl()) {}
-
-  ~SessionStateDelegateStub() override {}
-
-  // SessionStateDelegate:
-  bool ShouldShowAvatar(WmWindow* window) const override {
-    NOTIMPLEMENTED();
-    return !user_info_->GetImage().isNull();
-  }
-  gfx::ImageSkia GetAvatarImageForWindow(WmWindow* window) const override {
-    NOTIMPLEMENTED();
-    return gfx::ImageSkia();
-  }
-
- private:
-  // A pseudo user info.
-  std::unique_ptr<user_manager::UserInfo> user_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
-};
-
-}  // namespace
-
 ShellPortMash::MashSpecificState::MashSpecificState() = default;
 
 ShellPortMash::MashSpecificState::~MashSpecificState() = default;
@@ -117,13 +86,9 @@ ShellPortMash::MusSpecificState::~MusSpecificState() = default;
 ShellPortMash::ShellPortMash(
     aura::Window* primary_root_window,
     WindowManager* window_manager,
-    views::PointerWatcherEventRouter* pointer_watcher_event_router,
-    bool create_session_state_delegate_stub)
+    views::PointerWatcherEventRouter* pointer_watcher_event_router)
     : window_manager_(window_manager),
       primary_root_window_(primary_root_window) {
-  if (create_session_state_delegate_stub)
-    session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
-
   if (GetAshConfig() == Config::MASH) {
     mash_state_ = base::MakeUnique<MashSpecificState>();
     mash_state_->pointer_watcher_event_router = pointer_watcher_event_router;
@@ -427,11 +392,6 @@ std::unique_ptr<KeyEventWatcher> ShellPortMash::CreateKeyEventWatcher() {
   // TODO: needs implementation for mus, http://crbug.com/649600.
   NOTIMPLEMENTED();
   return std::unique_ptr<KeyEventWatcher>();
-}
-
-SessionStateDelegate* ShellPortMash::GetSessionStateDelegate() {
-  return session_state_delegate_ ? session_state_delegate_.get()
-                                 : Shell::Get()->session_state_delegate();
 }
 
 void ShellPortMash::AddDisplayObserver(WmDisplayObserver* observer) {

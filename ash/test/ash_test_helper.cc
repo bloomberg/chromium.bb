@@ -4,6 +4,9 @@
 
 #include "ash/test/ash_test_helper.h"
 
+#include <algorithm>
+#include <set>
+
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/shell_port_classic.h"
@@ -20,7 +23,6 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/display_configuration_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm_window.h"
@@ -266,13 +268,6 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
   run_loop.RunUntilIdle();
 }
 
-// static
-TestSessionStateDelegate* AshTestHelper::GetTestSessionStateDelegate() {
-  CHECK(ShellPort::HasInstance());
-  return static_cast<TestSessionStateDelegate*>(
-      ShellPort::Get()->GetSessionStateDelegate());
-}
-
 aura::Window* AshTestHelper::CurrentContext() {
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   if (!root_window)
@@ -332,8 +327,6 @@ void AshTestHelper::CreateMashWindowManager() {
       new mus::WindowManager(nullptr, config_, show_primary_root_on_connect));
   window_manager_app_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
-  window_manager_app_->window_manager()
-      ->create_session_state_delegate_stub_for_test_ = false;
 
   window_tree_client_setup_.InitForWindowManager(
       window_manager_app_->window_manager_.get(),

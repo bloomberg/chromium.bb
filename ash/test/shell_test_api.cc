@@ -4,9 +4,10 @@
 
 #include "ash/test/shell_test_api.h"
 
+#include <utility>
+
 #include "ash/palette_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 
 namespace ash {
@@ -39,11 +40,6 @@ DragDropController* ShellTestApi::drag_drop_controller() {
 void ShellTestApi::SetPaletteDelegate(
     std::unique_ptr<PaletteDelegate> palette_delegate) {
   shell_->palette_delegate_ = std::move(palette_delegate);
-}
-
-void ShellTestApi::SetSessionStateDelegate(
-    SessionStateDelegate* session_state_delegate) {
-  shell_->session_state_delegate_.reset(session_state_delegate);
 }
 
 }  // namespace test

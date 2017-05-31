@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <limits>
+#include <vector>
 
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
@@ -48,7 +49,6 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
-#include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -590,10 +590,6 @@ void ChromeShellDelegate::ToggleTouchpad() {
 
 keyboard::KeyboardUI* ChromeShellDelegate::CreateKeyboardUI() {
   return new ChromeKeyboardUI(ProfileManager::GetActiveUserProfile());
-}
-
-ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
-  return new SessionStateDelegateChromeos;
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
