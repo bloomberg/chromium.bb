@@ -1060,7 +1060,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'rietveld.tree-status-url'],), CERR1),
       ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
          'fake_ancestor_sha', 'feature'],),
-       # This command just prints smth like this:
+       # This command just prints something like this:
        # file1.cpp   |  53 ++++++--
        # 1 file changed, 33 insertions(+), 20 deletions(-)\n
        ''),
@@ -1778,7 +1778,7 @@ class TestGitCl(TestCase):
           issue=123456,
           other_cl_owner='other@example.com')
     self.assertIn(
-        'WARNING: change 123456 is owned by other@example.com, but you '
+        'WARNING: Change 123456 is owned by other@example.com, but you '
         'authenticate to Gerrit as yet-another@example.com.\n'
         'Uploading may fail due to lack of permissions',
         git_cl.sys.stdout.getvalue())
@@ -3029,7 +3029,7 @@ class TestGitCl(TestCase):
     self.mock(sys, 'stdout', out)
     self.assertEqual(0, cl.CMDLand(force=True, bypass_hooks=True, verbose=True))
     self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
-    self.assertRegexpMatches(out.getvalue(), 'Landed as .*deadbeef')
+    self.assertRegexpMatches(out.getvalue(), 'Landed as: .*deadbeef')
 
   BUILDBUCKET_BUILDS_MAP = {
         '9000': {
@@ -3320,7 +3320,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['creds-check']))
     self.assertRegexpMatches(
         sys.stdout.getvalue(),
-        'WARNING: you have configured custom path to .gitcookies: ')
+        'WARNING: You have configured custom path to .gitcookies: ')
     self.assertRegexpMatches(
         sys.stdout.getvalue(),
         'However, your configured .gitcookies file is missing.')
@@ -3489,6 +3489,7 @@ class TestGitCl(TestCase):
           u'approval': False,
           u'disapproval': False,
           u'sender': u'reviewer@example.com'})
+
 
 if __name__ == '__main__':
   logging.basicConfig(
