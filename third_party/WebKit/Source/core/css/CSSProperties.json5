@@ -2610,7 +2610,11 @@
     {
       name: "-webkit-text-emphasis-position",
       inherited: true,
+      field_template: "keyword",
       type_name: "TextEmphasisPosition",
+      default_value: "over",
+      keywords: ["over", "under"],
+      field_group: "rare-inherited",
     },
     {
       name: "-webkit-text-emphasis-style",
