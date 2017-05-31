@@ -178,12 +178,12 @@ class HostScannerOperationTest : public testing::Test {
         response_code ==
         TetherAvailabilityResponse_ResponseCode::
             TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE;
-    bool set_up_required =
+    bool setup_required =
         response_code ==
         TetherAvailabilityResponse_ResponseCode::
             TetherAvailabilityResponse_ResponseCode_SETUP_NEEDED;
-    if (tether_available || set_up_required) {
-      // If tether is available or set up is needed, the observer callback
+    if (tether_available || setup_required) {
+      // If tether is available or setup is required, the observer callback
       // should be invoked with an updated list.
       EXPECT_EQ(num_scanned_device_results_so_far + 1,
                 test_observer_->scanned_devices_so_far.size());
@@ -193,7 +193,7 @@ class HostScannerOperationTest : public testing::Test {
               [test_observer_->scanned_devices_so_far.size() - 1];
       EXPECT_EQ(cell_provider_name,
                 last_received_info.device_status.cell_provider());
-      EXPECT_EQ(set_up_required, last_received_info.set_up_required);
+      EXPECT_EQ(setup_required, last_received_info.setup_required);
     }
 
     EXPECT_EQ(expected_to_be_last_scan_result,
@@ -247,7 +247,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
           TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE);
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupNeeded) {
+TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupRequired) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
 
@@ -374,4 +374,4 @@ TEST_F(HostScannerOperationTest, TestMultipleDevices) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

@@ -55,7 +55,7 @@ class HostScannerOperation : public MessageTransferOperation {
   struct ScannedDeviceInfo {
     ScannedDeviceInfo(const cryptauth::RemoteDevice& remote_device,
                       const DeviceStatus& device_status,
-                      bool set_up_required);
+                      bool setup_required);
     ~ScannedDeviceInfo();
 
     friend bool operator==(const ScannedDeviceInfo& first,
@@ -63,7 +63,7 @@ class HostScannerOperation : public MessageTransferOperation {
 
     cryptauth::RemoteDevice remote_device;
     DeviceStatus device_status;
-    bool set_up_required;
+    bool setup_required;
   };
 
   class Observer {
