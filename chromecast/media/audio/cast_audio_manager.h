@@ -13,22 +13,19 @@ namespace chromecast {
 namespace media {
 
 class CastAudioMixer;
-class MediaPipelineBackend;
-class MediaPipelineBackendManager;
-struct MediaPipelineDeviceParams;
+class MediaPipelineBackendFactory;
 
 class CastAudioManager : public ::media::AudioManagerBase {
  public:
-  CastAudioManager(std::unique_ptr<::media::AudioThread> audio_thread,
-                   ::media::AudioLogFactory* audio_log_factory,
-                   MediaPipelineBackendManager* backend_manager);
-  CastAudioManager(std::unique_ptr<::media::AudioThread> audio_thread,
-                   ::media::AudioLogFactory* audio_log_factory,
-                   MediaPipelineBackendManager* backend_manager,
-                   CastAudioMixer* audio_mixer);
+  CastAudioManager(
+      std::unique_ptr<::media::AudioThread> audio_thread,
+      ::media::AudioLogFactory* audio_log_factory,
+      std::unique_ptr<MediaPipelineBackendFactory> backend_factory,
+      scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+      bool use_mixer);
   ~CastAudioManager() override;
 
-  // AudioManager implementation.
+  // AudioManagerBase implementation.
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
   void ShowAudioInputSettings() override;
@@ -37,15 +34,16 @@ class CastAudioManager : public ::media::AudioManagerBase {
   ::media::AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
   const char* GetName() override;
-
-  // AudioManagerBase implementation
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override;
 
-  // This must be called on audio thread.
-  virtual std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
-      const MediaPipelineDeviceParams& params);
+  MediaPipelineBackendFactory* backend_factory() {
+    return backend_factory_.get();
+  }
+  base::SingleThreadTaskRunner* backend_task_runner() {
+    return backend_task_runner_.get();
+  }
 
- private:
+ protected:
   // AudioManagerBase implementation.
   ::media::AudioOutputStream* MakeLinearOutputStream(
       const ::media::AudioParameters& params,
@@ -67,13 +65,16 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const ::media::AudioParameters& input_params) override;
 
   // Generates a CastAudioOutputStream for |mixer_|.
-  ::media::AudioOutputStream* MakeMixerOutputStream(
+  virtual ::media::AudioOutputStream* MakeMixerOutputStream(
       const ::media::AudioParameters& params);
 
-  MediaPipelineBackendManager* const backend_manager_;
+ private:
+  friend class CastAudioMixer;
+
+  std::unique_ptr<MediaPipelineBackendFactory> backend_factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;
-
   DISALLOW_COPY_AND_ASSIGN(CastAudioManager);
 };
 
