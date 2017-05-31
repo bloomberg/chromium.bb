@@ -178,10 +178,29 @@ class PLATFORM_EXPORT TaskQueueSelector {
   void TrySelectingBlockedQueueOverEnabledQueue(
       const WorkQueue& chosen_enabled_queue);
 
-  // Number of high priority tasks which can be run before a normal priority
-  // task should be selected to prevent starvation.
-  // TODO(rmcilroy): Check if this is a good value.
-  static const size_t kMaxHighPriorityStarvationTasks = 5;
+  // Maximum score to accumulate before normal priority tasks are run even in
+  // the presence of high priority tasks.
+  static const size_t kMaxNormalPriorityStarvationScore = 5;
+
+  // Increment to be applied to the normal priority starvation score when a task
+  // should have only a small effect on the score. E.g. A number of high
+  // priority tasks must run before the normal priority queue is considered
+  // starved.
+  static const size_t kSmallScoreIncrementForNormalPriorityStarvation = 1;
+
+  // Maximum score to accumulate before low priority tasks are run even in the
+  // presence of high or normal priority tasks.
+  static const size_t kMaxLowPriorityStarvationScore = 25;
+
+  // Increment to be applied to the low priority starvation score when a task
+  // should have a large effect on the score. E.g. Only a few normal priority
+  // tasks must run before the low priority queue is considered starved.
+  static const size_t kLargeScoreIncrementForLowPriorityStarvation = 5;
+
+  // Increment to be applied to the low priority starvation score when a task
+  // should have only a small effect on the score. E.g. A lot of high priority
+  // tasks must run before the low priority queue is considered starved.
+  static const size_t kSmallScoreIncrementForLowPriorityStarvation = 1;
 
   // Maximum number of delayed tasks tasks which can be run while there's a
   // waiting non-delayed task.
@@ -193,7 +212,8 @@ class PLATFORM_EXPORT TaskQueueSelector {
   PrioritizingSelector enabled_selector_;
   PrioritizingSelector blocked_selector_;
   size_t immediate_starvation_count_;
-  size_t high_priority_starvation_count_;
+  size_t normal_priority_starvation_score_;
+  size_t low_priority_starvation_score_;
   size_t num_blocked_queues_to_report_;
 
   Observer* task_queue_selector_observer_;  // NOT OWNED

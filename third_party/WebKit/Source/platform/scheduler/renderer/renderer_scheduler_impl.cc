@@ -1039,8 +1039,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
         // seem to be safe. Instead we do that by proxy by deprioritizing
         // compositor tasks. This should be safe since we've already gone to the
         // pain of fixing ordering issues with them.
-        new_policy.compositor_queue_policy.priority =
-            TaskQueue::BEST_EFFORT_PRIORITY;
+        new_policy.compositor_queue_policy.priority = TaskQueue::LOW_PRIORITY;
       }
       break;
 
