@@ -1742,16 +1742,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_non_inherited_data_, line_clamp_, c);
   }
 
-  // -webkit-ruby-position
-  static RubyPosition InitialRubyPosition() { return RubyPosition::kBefore; }
-  RubyPosition GetRubyPosition() const {
-    return static_cast<RubyPosition>(rare_inherited_data_->ruby_position_);
-  }
-  void SetRubyPosition(RubyPosition position) {
-    SET_VAR(rare_inherited_data_, ruby_position_,
-            static_cast<unsigned>(position));
-  }
-
   // -webkit-text-fill-color
   void SetTextFillColor(const StyleColor& color) {
     SET_VAR(rare_inherited_data_, text_fill_color_, color.Resolve(Color()));

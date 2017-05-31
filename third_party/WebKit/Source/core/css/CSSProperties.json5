@@ -2571,10 +2571,10 @@
     {
       name: "-webkit-ruby-position",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "keyword",
       type_name: "RubyPosition",
-      default_value: "RubyPosition::kBefore",
-      field_size: 1,
+      keywords: ["before", "after"],
+      default_value: "before",
       field_group: "rare-inherited",
     },
     {
