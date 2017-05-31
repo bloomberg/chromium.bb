@@ -107,10 +107,11 @@ void OnDBLoadComplete(
   }
 
   // Write all changes to the DB.
-  db->UpdateEntries(std::move(additions), std::move(deletes),
-                    base::BindOnce(&OnDBUpdateComplete, std::move(db),
-                                   std::move(on_loaded_callback),
-                                   std::move(feature_availabilities)));
+  auto* db_ptr = db.get();
+  db_ptr->UpdateEntries(std::move(additions), std::move(deletes),
+                        base::BindOnce(&OnDBUpdateComplete, std::move(db),
+                                       std::move(on_loaded_callback),
+                                       std::move(feature_availabilities)));
 }
 
 void OnDBInitComplete(
@@ -128,9 +129,10 @@ void OnDBInitComplete(
     return;
   }
 
-  db->LoadEntries(base::BindOnce(&OnDBLoadComplete, std::move(db),
-                                 std::move(feature_filter),
-                                 std::move(on_loaded_callback), current_day));
+  auto* db_ptr = db.get();
+  db_ptr->LoadEntries(base::BindOnce(
+      &OnDBLoadComplete, std::move(db), std::move(feature_filter),
+      std::move(on_loaded_callback), current_day));
 }
 
 }  // namespace
@@ -142,10 +144,11 @@ void AvailabilityStore::LoadAndUpdateStore(
     FeatureVector feature_filter,
     AvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day) {
-  db->Init(kDatabaseUMAName, storage_dir,
-           base::BindOnce(&OnDBInitComplete, std::move(db),
-                          std::move(feature_filter),
-                          std::move(on_loaded_callback), current_day));
+  auto* db_ptr = db.get();
+  db_ptr->Init(kDatabaseUMAName, storage_dir,
+               base::BindOnce(&OnDBInitComplete, std::move(db),
+                              std::move(feature_filter),
+                              std::move(on_loaded_callback), current_day));
 }
 
 }  // namespace feature_engagement_tracker
