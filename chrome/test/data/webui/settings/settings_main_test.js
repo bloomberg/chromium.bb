@@ -193,26 +193,29 @@ cr.define('settings_main_page', function() {
       /**
        * Asserts the visibility of the basic and advanced pages after exiting
        * search mode.
-       * @param {string} Expected 'display' value for the basic page.
        * @param {string} Expected 'display' value for the advanced page.
        * @return {!Promise}
        */
-      function assertPageVisibilityAfterSearch(
-          expectedBasic, expectedAdvanced) {
+      function assertAdvancedVisibilityAfterSearch(expectedAdvanced) {
         searchManager.setMatchesFound(true);
-        return settingsMain.searchContents('Query1').then(function() {
-          searchManager.setMatchesFound(false);
-          return settingsMain.searchContents('');
-        }).then(function() {
-          return assertPageVisibility(expectedBasic, expectedAdvanced);
-        });
+        return settingsMain.searchContents('Query1')
+            .then(function() {
+              searchManager.setMatchesFound(false);
+              return settingsMain.searchContents('');
+            })
+            .then(function() {
+              // Imitate behavior of clearing search.
+              settings.navigateTo(settings.Route.BASIC);
+              Polymer.dom.flush();
+              return assertPageVisibility('block', expectedAdvanced);
+            });
       }
 
       test('exiting search mode, advanced collapsed', function() {
         // Simulating searching while the advanced page is collapsed.
         settingsMain.currentRouteChanged(settings.Route.BASIC);
         Polymer.dom.flush();
-        return assertPageVisibilityAfterSearch('block', 'none');
+        return assertAdvancedVisibilityAfterSearch('none');
       });
 
       // Ensure that clearing the search results restores both "basic" and
@@ -221,7 +224,7 @@ cr.define('settings_main_page', function() {
       test('exiting search mode, advanced expanded', function() {
         settings.navigateTo(settings.Route.SITE_SETTINGS);
         Polymer.dom.flush();
-        return assertPageVisibilityAfterSearch('block', 'block');
+        return assertAdvancedVisibilityAfterSearch('block');
       });
 
       // Ensure that searching, then entering a subpage, then going back

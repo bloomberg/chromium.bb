@@ -99,6 +99,17 @@ var SettingsSectionElement = Polymer({
         !this.classList.contains('expanded') && this.$.card.clientHeight > 0;
   },
 
+  immediateExpand: function(container) {
+    // Target position is the container's top edge in the viewport.
+    var containerTop = container.getBoundingClientRect().top;
+
+    this.$.card.position = 'fixed';
+    this.$.card.top = containerTop + 'px';
+    this.$.card.height = 'calc(100% - ' + containerTop + 'px)';
+
+    this.classList.add('expanded');
+  },
+
   /**
    * Animates the section expanding to fill the container. The section is fixed
    * in the viewport during the animation, making it safe to adjust the rest of
