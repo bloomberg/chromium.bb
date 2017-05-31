@@ -79,6 +79,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::PrimaryID::XYZ_D50:
     case gfx::ColorSpace::PrimaryID::ADOBE_RGB:
     case gfx::ColorSpace::PrimaryID::APPLE_GENERIC_RGB:
+    case gfx::ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN:
     case gfx::ColorSpace::PrimaryID::ICC_BASED:
     case gfx::ColorSpace::PrimaryID::CUSTOM:
     case gfx::ColorSpace::PrimaryID::INVALID:
