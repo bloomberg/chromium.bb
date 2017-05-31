@@ -221,12 +221,11 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       is_audio_playing(false),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
-      task_duration_per_queue_type_histogram(base::Histogram::FactoryGet(
-          "RendererScheduler.TaskDurationPerQueueType2",
-          1,
-          static_cast<int>(TaskQueue::QueueType::COUNT),
-          static_cast<int>(TaskQueue::QueueType::COUNT) + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag)) {
+      task_duration_reporter("RendererScheduler.TaskDurationPerQueueType2"),
+      foreground_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType2.Foreground"),
+      background_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType2.Background") {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -1862,22 +1861,14 @@ void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
                             static_cast<int>(queue_type),
                             static_cast<int>(TaskQueue::QueueType::COUNT));
 
-  RecordTaskDurationPerQueueType(queue_type, duration);
-}
+  GetMainThreadOnly().task_duration_reporter.RecordTask(queue_type, duration);
 
-void RendererSchedulerImpl::RecordTaskDurationPerQueueType(
-    TaskQueue::QueueType queue_type,
-    base::TimeDelta duration) {
-  // Report only whole milliseconds to avoid overflow.
-  base::TimeDelta& unreported_duration =
-      GetMainThreadOnly()
-          .unreported_task_duration[static_cast<int>(queue_type)];
-  unreported_duration += duration;
-  int64_t milliseconds = unreported_duration.InMilliseconds();
-  if (milliseconds > 0) {
-    unreported_duration -= base::TimeDelta::FromMilliseconds(milliseconds);
-    GetMainThreadOnly().task_duration_per_queue_type_histogram->AddCount(
-        static_cast<int>(queue_type), static_cast<int>(milliseconds));
+  if (GetMainThreadOnly().renderer_backgrounded) {
+    GetMainThreadOnly().background_task_duration_reporter.RecordTask(queue_type,
+                                                                     duration);
+  } else {
+    GetMainThreadOnly().foreground_task_duration_reporter.RecordTask(queue_type,
+                                                                     duration);
   }
 }
 

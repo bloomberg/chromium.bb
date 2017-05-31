@@ -92685,6 +92685,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Memory.Experimental.Renderer.V8MainThreadIsolate"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="RendererScheduler.TaskDurationPerQueueTypeSplit"
+    separator=".">
+  <suffix name="Background"
+      label="Time spend in tasks of a particular type when the renderer is in
+             the background."/>
+  <suffix name="Foreground"
+      label="Time spent in tasks of a particular type when the renderer is in
+             the foreground. Please note that individual tabs in this
+             renderer can be backgrounded."/>
+  <affected-histogram name="RendererScheduler.TaskDurationPerQueueType2"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="RequestMediaKeySystemAccessKeySystems" separator=".">
   <suffix name="ClearKey" label="Requests for the Clear Key key system."/>
   <suffix name="Unknown"

@@ -24,6 +24,7 @@
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
+#include "platform/scheduler/renderer/task_duration_metric_reporter.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -32,7 +33,6 @@ namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
 }
-class HistogramBase;
 }
 
 namespace blink {
@@ -303,6 +303,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
+  class TaskDurationMetricTracker;
+
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
@@ -411,9 +413,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
-  void RecordTaskDurationPerQueueType(TaskQueue::QueueType queue_type,
-                                      base::TimeDelta duration);
-
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -496,10 +495,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
-    std::array<base::TimeDelta,
-               static_cast<size_t>(TaskQueue::QueueType::COUNT)>
-        unreported_task_duration;
-    base::HistogramBase* task_duration_per_queue_type_histogram;
+    TaskDurationMetricReporter task_duration_reporter;
+    TaskDurationMetricReporter foreground_task_duration_reporter;
+    TaskDurationMetricReporter background_task_duration_reporter;
   };
 
   struct AnyThread {
