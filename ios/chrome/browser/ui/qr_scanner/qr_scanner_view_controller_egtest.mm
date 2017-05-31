@@ -396,13 +396,11 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)swizzleCameraController:(id)cameraControllerMock {
   CameraController* (^swizzleCameraControllerBlock)(
       id<CameraControllerDelegate>) = ^(id<CameraControllerDelegate> delegate) {
-    // |initWithDelegate:| must return an object with a return count of 1
-    // because it is preceded by a call to |alloc|.
-    return [cameraControllerMock retain];
+    return cameraControllerMock;
   };
 
   camera_controller_swizzler_.reset(new ScopedBlockSwizzler(
-      [CameraController class], @selector(initWithDelegate:),
+      [CameraController class], @selector(cameraControllerWithDelegate:),
       swizzleCameraControllerBlock));
 }
 
