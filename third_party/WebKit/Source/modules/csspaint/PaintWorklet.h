@@ -5,7 +5,7 @@
 #ifndef PaintWorklet_h
 #define PaintWorklet_h
 
-#include "core/workers/MainThreadWorklet.h"
+#include "core/workers/Worklet.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
 #include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
@@ -18,7 +18,7 @@ class CSSPaintImageGeneratorImpl;
 
 // Manages a paint worklet:
 // https://drafts.css-houdini.org/css-paint-api/#dom-css-paintworklet
-class MODULES_EXPORT PaintWorklet final : public MainThreadWorklet {
+class MODULES_EXPORT PaintWorklet final : public Worklet {
   WTF_MAKE_NONCOPYABLE(PaintWorklet);
 
  public:
@@ -35,7 +35,7 @@ class MODULES_EXPORT PaintWorklet final : public MainThreadWorklet {
 
   explicit PaintWorklet(LocalFrame*);
 
-  // Implements MainThreadWorklet.
+  // Implements Worklet.
   bool NeedsToCreateGlobalScope() final;
   std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() final;
 
