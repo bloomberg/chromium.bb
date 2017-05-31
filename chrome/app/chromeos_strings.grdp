@@ -5889,6 +5889,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_CANCEL" desc="Cancel button of the opt-in dialog for Android apps.">
     Cancel
   </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_NEXT" desc="Next button of the opt-in dialog for Android apps.">
+    Next
+  </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY" desc="Retry button of the opt-in dialog for Android apps.">
     Try again
   </message>
@@ -5950,6 +5953,9 @@ All users must sign out to continue.
   </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
+  </message>
+  <message name="IDS_ARC_OPT_IN_AD_AUTH_NOTIFICATION" desc="Text displayed in opt-in dialog to inform an Active Directory user that they may have to enter their credentials in a browser window">
+    To enable your account to access the Google Play Store, you will need to authenticate with your Identity Provider. Please click Next to proceed.
   </message>
   <message name="IDS_ARC_OPT_OUT_TAB_TITLE" desc="Tab title when viewing opt-out setting dialog for android apps.">
     Settings - Remove Android apps
