@@ -860,6 +860,36 @@ TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
   }
 }
 
+TEST_F(DataReductionProxyDelegateTest, Holdback) {
+  const char kResponseHeaders[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy-Suffix\r\n"
+      "Content-Length: 10\r\n\r\n";
+
+  const struct {
+    bool holdback;
+  } tests[] = {
+      {
+          true,
+      },
+      {
+          false,
+      },
+  };
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "DataCompressionProxyHoldback", test.holdback ? "Enabled" : "Control"));
+
+    base::HistogramTester histogram_tester;
+    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
+                    10);
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.SuccessfulRequestCompletionCounts",
+        test.holdback ? 0 : 1);
+  }
+}
+
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
   int64_t baseline_received_bytes = total_received_bytes();
   int64_t baseline_original_received_bytes = total_original_received_bytes();

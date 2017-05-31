@@ -86,7 +86,9 @@ void DataReductionProxyDelegate::OnResolveProxy(
   }
 
   std::vector<DataReductionProxyServer> proxies_for_http =
-      config_->GetProxiesForHttp();
+      params::IsIncludedInHoldbackFieldTrial()
+          ? std::vector<DataReductionProxyServer>()
+          : config_->GetProxiesForHttp();
 
   // Remove the proxies that are unsupported for this request.
   proxies_for_http.erase(
