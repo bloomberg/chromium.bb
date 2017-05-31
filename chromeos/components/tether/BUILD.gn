@@ -65,6 +65,8 @@ static_library("tether") {
     "tether_host_response_recorder.h",
     "tether_network_disconnection_handler.cc",
     "tether_network_disconnection_handler.h",
+    "timer_factory.cc",
+    "timer_factory.h",
     "wifi_hotspot_connector.cc",
     "wifi_hotspot_connector.h",
   ]

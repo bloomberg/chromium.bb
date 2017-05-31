@@ -29,6 +29,8 @@ namespace chromeos {
 
 namespace tether {
 
+class TimerFactory;
+
 // Manages connections to remote devices. When a device is registered,
 // BleConnectionManager intiates a connection to that device. If the connection
 // succeeds and authenticates successfully, messages can be sent/received
@@ -109,11 +111,6 @@ class BleConnectionManager : public BleScanner::Observer {
       cryptauth::RemoteDevice remote_device) override;
 
  protected:
-  class TimerFactory {
-   public:
-    virtual std::unique_ptr<base::Timer> CreateTimer();
-  };
-
   BleConnectionManager(
       cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
