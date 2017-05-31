@@ -66,6 +66,7 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   void OnSearchEngineIsGoogleChanged(bool is_google) override;
 
  private:
+  bool IsCardSizeOk() const;
   void RecordReceivedAnswerFinalResult();
 
   // Unowned pointer to the associated profile.
@@ -99,9 +100,6 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   // When in the dark run mode, indicates whether we mimic that the server
   // response contains an answer.
   bool dark_run_received_answer_ = false;
-
-  // Whether the answer card dimensions are not too large.
-  bool is_card_size_ok_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebContentsDelegate);
 };
