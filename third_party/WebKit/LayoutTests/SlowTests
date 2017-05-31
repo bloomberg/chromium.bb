@@ -386,3 +386,5 @@ crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
 crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
+
+crbug.com/719298 fast/dnd/dropEffect-for-effectAllowed.html [ Slow ]
