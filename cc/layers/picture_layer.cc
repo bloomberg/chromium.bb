@@ -15,6 +15,8 @@
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+static constexpr int kMaxNumberOfSlowPathsBeforeVeto = 5;
+
 namespace cc {
 
 PictureLayer::PictureLayerInputs::PictureLayerInputs() = default;
@@ -188,7 +190,8 @@ bool PictureLayer::IsSuitableForGpuRasterization() const {
   // create a display list (e.g., if the size is empty). We return true in these
   // cases because the gpu suitability bit sticks false.
   return !picture_layer_inputs_.display_list ||
-         picture_layer_inputs_.display_list->IsSuitableForGpuRasterization();
+         picture_layer_inputs_.display_list->NumSlowPaths() <=
+             kMaxNumberOfSlowPathsBeforeVeto;
 }
 
 void PictureLayer::ClearClient() {

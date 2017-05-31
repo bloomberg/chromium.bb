@@ -375,7 +375,7 @@ struct CC_PAINT_EXPORT DrawDisplayItemListOp final : PaintOp {
                      const SkMatrix& original_ctm);
   size_t AdditionalBytesUsed() const;
   bool HasDiscardableImages() const;
-  // TODO(enne): DisplayItemList should know number of slow paths.
+  int CountSlowPaths() const;
 
   scoped_refptr<DisplayItemList> list;
 };

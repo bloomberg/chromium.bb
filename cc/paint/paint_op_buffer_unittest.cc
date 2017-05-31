@@ -497,7 +497,24 @@ TEST(PaintOpBufferTest, SlowPaths) {
   auto buffer2 = sk_make_sp<PaintOpBuffer>();
   EXPECT_EQ(buffer2->numSlowPaths(), 0);
   buffer2->push<DrawRecordOp>(buffer);
-  EXPECT_EQ(buffer->numSlowPaths(), buffer2->numSlowPaths());
+  EXPECT_EQ(buffer2->numSlowPaths(), 2);
+  buffer2->push<DrawRecordOp>(buffer);
+  EXPECT_EQ(buffer2->numSlowPaths(), 4);
+
+  // Drawing an empty display item list doesn't change anything.
+  auto empty_list = base::MakeRefCounted<DisplayItemList>();
+  buffer2->push<DrawDisplayItemListOp>(empty_list);
+  EXPECT_EQ(buffer2->numSlowPaths(), 4);
+
+  // Drawing a display item list adds the items from that list.
+  auto slow_path_list = base::MakeRefCounted<DisplayItemList>();
+  slow_path_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
+      gfx::Rect(1, 2, 3, 4), sk_make_sp<PaintOpBuffer>(),
+      SkRect::MakeXYWH(1, 2, 3, 4));
+  // Setting this properly is tested in PaintControllerTest.cpp.
+  slow_path_list->SetNumSlowPaths(50);
+  buffer2->push<DrawDisplayItemListOp>(slow_path_list);
+  EXPECT_EQ(buffer2->numSlowPaths(), 54);
 }
 
 TEST(PaintOpBufferTest, ContiguousRanges) {
