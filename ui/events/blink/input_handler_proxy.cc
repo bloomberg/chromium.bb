@@ -297,7 +297,7 @@ void InputHandlerProxy::WillShutdown() {
 void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     WebScopedInputEvent event,
     const LatencyInfo& latency_info,
-    const EventDispositionCallback& callback) {
+    EventDispositionCallback callback) {
   DCHECK(input_handler_);
 
   if (uma_latency_reporting_enabled_)
@@ -310,7 +310,8 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
 
   std::unique_ptr<EventWithCallback> event_with_callback =
       base::MakeUnique<EventWithCallback>(std::move(event), latency_info,
-                                          tick_clock_->NowTicks(), callback);
+                                          tick_clock_->NowTicks(),
+                                          std::move(callback));
 
   // Note: Other input can race ahead of gesture input as they don't have to go
   // through the queue, but we believe it's OK to do so.

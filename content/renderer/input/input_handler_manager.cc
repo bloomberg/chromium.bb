@@ -223,8 +223,8 @@ void InputHandlerManager::HandleInputEvent(
   InputHandlerProxy* proxy = it->second->input_handler_proxy();
   proxy->HandleInputEventWithLatencyInfo(
       std::move(input_event), latency_info,
-      base::Bind(&InputHandlerManager::DidHandleInputEventAndOverscroll,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&InputHandlerManager::DidHandleInputEventAndOverscroll,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void InputHandlerManager::QueueClosureForMainThreadEventQueue(

@@ -71,14 +71,13 @@ class InputHandlerProxy
     DROP_EVENT
   };
   using EventDispositionCallback =
-      base::Callback<void(EventDisposition,
-                          WebScopedInputEvent WebInputEvent,
-                          const LatencyInfo&,
-                          std::unique_ptr<ui::DidOverscrollParams>)>;
-  void HandleInputEventWithLatencyInfo(
-      WebScopedInputEvent event,
-      const LatencyInfo& latency_info,
-      const EventDispositionCallback& callback);
+      base::OnceCallback<void(EventDisposition,
+                              WebScopedInputEvent WebInputEvent,
+                              const LatencyInfo&,
+                              std::unique_ptr<ui::DidOverscrollParams>)>;
+  void HandleInputEventWithLatencyInfo(WebScopedInputEvent event,
+                                       const LatencyInfo& latency_info,
+                                       EventDispositionCallback callback);
   EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
