@@ -5,6 +5,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
+#include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -191,11 +192,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       TestControlledNewTabPageMessageBubbleLearnMore) {
-  TestControlledNewTabPageBubbleShown(true);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledHomeMessageBubble) {
   TestControlledHomeBubbleShown();
 }
@@ -260,4 +256,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        InvokeDialog_devmode_warning) {
   RunDialog();
+}
+
+class NtpExtensionBubbleViewBrowserTest
+    : public ExtensionMessageBubbleViewBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
+// The NTP bubble is disabled by default on non-windows platforms.
+#if !defined(OS_WIN)
+    extensions::SetNtpBubbleEnabledForTesting(true);
+#endif
+  }
+
+  void TearDownOnMainThread() override {
+#if !defined(OS_WIN)
+    extensions::SetNtpBubbleEnabledForTesting(false);
+#endif
+    ExtensionMessageBubbleViewBrowserTest::TearDownOnMainThread();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
+                       TestControlledNewTabPageMessageBubbleLearnMore) {
+  TestControlledNewTabPageBubbleShown(true);
 }

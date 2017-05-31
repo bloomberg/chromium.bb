@@ -13,6 +13,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +24,14 @@ namespace {
 // Whether the user has been notified about extension overriding the new tab
 // page.
 const char kNtpBubbleAcknowledged[] = "ack_ntp_bubble";
+
+// Whether existing NTP extensions have been automatically acknowledged.
+const char kDidAcknowledgeExistingNtpExtensions[] =
+    "ack_existing_ntp_extensions";
+
+// Whether to acknowledge existing extensions overriding the NTP for the active
+// profile. Currently disabled for all platforms and only available for testing.
+bool g_acknowledge_existing_extensions = false;
 
 }  // namespace
 
@@ -34,6 +44,36 @@ NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(
 }
 
 NtpOverriddenBubbleDelegate::~NtpOverriddenBubbleDelegate() {}
+
+// static
+void NtpOverriddenBubbleDelegate::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kDidAcknowledgeExistingNtpExtensions, false,
+                                PrefRegistry::NO_REGISTRATION_FLAGS);
+}
+
+// static
+void NtpOverriddenBubbleDelegate::MaybeAcknowledgeExistingNtpExtensions(
+    Profile* profile) {
+  if (!g_acknowledge_existing_extensions)
+    return;
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  PrefService* profile_prefs = profile->GetPrefs();
+  // Only acknowledge existing extensions once per profile.
+  if (profile_prefs->GetBoolean(kDidAcknowledgeExistingNtpExtensions))
+    return;
+
+  profile_prefs->SetBoolean(kDidAcknowledgeExistingNtpExtensions, true);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  for (const auto& extension : registry->enabled_extensions()) {
+    const URLOverrides::URLOverrideMap& overrides =
+        URLOverrides::GetChromeURLOverrides(extension.get());
+    if (overrides.find(chrome::kChromeUINewTabHost) != overrides.end()) {
+      prefs->UpdateExtensionPref(extension->id(), kNtpBubbleAcknowledged,
+                                 base::MakeUnique<base::Value>(true));
+    }
+  }
+}
 
 bool NtpOverriddenBubbleDelegate::ShouldIncludeExtension(
     const extensions::Extension* extension) {
@@ -141,6 +181,12 @@ const char* NtpOverriddenBubbleDelegate::GetKey() {
 
 bool NtpOverriddenBubbleDelegate::SupportsPolicyIndicator() {
   return true;
+}
+
+void NtpOverriddenBubbleDelegate::
+    set_acknowledge_existing_extensions_for_testing(
+        bool acknowledge_existing_extensions) {
+  g_acknowledge_existing_extensions = acknowledge_existing_extensions;
 }
 
 }  // namespace extensions

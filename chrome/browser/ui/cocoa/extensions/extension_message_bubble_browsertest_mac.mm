@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
+#include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
@@ -247,4 +248,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestControlledStartupNotShownOnRestart) {
   TestControlledStartupNotShownOnRestart();
+}
+
+// The NTP bubble is currently disabled on Mac. Enable it for testing purposes.
+class NtpBubbleBrowserTestMac : public ExtensionMessageBubbleBrowserTestMac {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionMessageBubbleBrowserTestMac::SetUpCommandLine(command_line);
+    extensions::SetNtpBubbleEnabledForTesting(true);
+  }
+
+  void TearDownOnMainThread() override {
+    extensions::SetNtpBubbleEnabledForTesting(false);
+    ExtensionMessageBubbleBrowserTestMac::TearDownOnMainThread();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NtpBubbleBrowserTestMac,
+                       TestControlledNewTabPageMessageBubble) {
+  TestControlledNewTabPageBubbleShown(false);
 }
