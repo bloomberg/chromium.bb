@@ -750,6 +750,8 @@ external/wpt/css/css-writing-modes-3/page-flow-direction-002.xht [ WontFix ]
 external/wpt/css/css-writing-modes-3/page-flow-direction-003.xht [ WontFix ]
 external/wpt/css/css-writing-modes-3/page-flow-direction-slr-005.xht [ WontFix ]
 external/wpt/css/css-writing-modes-3/page-flow-direction-srl-004.xht [ WontFix ]
+external/wpt/2dcontext/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ WontFix ]
+external/wpt/html/semantics/embedded-content/the-img-element/ismap/img-ismap-coordinates-manual.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
 # run-webkit-tests; see https://crbug.com/359838.
