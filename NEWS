@@ -6,6 +6,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Fix capsnocont opcode. Also mark capital letters with capsletter
   symbol when capsnocont is defined but no begcapsword indicator is
   defined. Thanks to Bue Vester-Andersen.
+- Fix the syllable opcode. It had been broken under some circumstances
+  since 3.0. Thanks to Bert Frees and Christian Egli.
 ** Other changes
 - Fix building of Python bindings when cross-compiling. Thanks to
   Chris Brannon
