@@ -71,7 +71,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
   const EphemeralRange& range =
       FirstEphemeralRangeOf(Selection().ComputeVisibleSelectionInDOMTree());
   EXPECT_EQ(Position(sample->nextSibling(), 0), range.StartPosition())
-      << "firstRagne() should return current selection value";
+      << "firstRange() should return current selection value";
   EXPECT_EQ(Position(sample->nextSibling(), 0), range.EndPosition());
 }
 
@@ -282,8 +282,8 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
   EXPECT_FALSE(Selection().IsHandleVisible());
   Selection().SelectAll();
   EXPECT_FALSE(Selection().IsHandleVisible())
-      << "If handles weren't present before"
-         "selectAll. Then they shouldn't be present"
+      << "If handles weren't present before "
+         "selectAll. Then they shouldn't be present "
          "after it.";
 
   Selection().SetSelection(SelectionInDOMTree::Builder()
@@ -293,9 +293,38 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
   EXPECT_TRUE(Selection().IsHandleVisible());
   Selection().SelectAll();
   EXPECT_TRUE(Selection().IsHandleVisible())
-      << "If handles were present before"
-         "selectAll. Then they should be present"
+      << "If handles were present before "
+         "selectAll. Then they should be present "
          "after it.";
+}
+
+TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
+  SetBodyContent("<div id=sample>abc</div>");
+  Element* sample = GetDocument().getElementById("sample");
+  const Position end_of_text(sample->firstChild(), 3);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(end_of_text)
+                               .SetIsHandleVisible(false)
+                               .Build());
+  EXPECT_FALSE(Selection().IsHandleVisible());
+  Selection().SelectAll();
+  GetDocument().execCommand("bold", false, "", ASSERT_NO_EXCEPTION);
+  EXPECT_FALSE(Selection().IsHandleVisible())
+      << "If handles weren't present before "
+         "bold command. Then they shouldn't "
+         "be present after it.";
+
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(end_of_text)
+                               .SetIsHandleVisible(true)
+                               .Build());
+  EXPECT_TRUE(Selection().IsHandleVisible());
+  Selection().SelectAll();
+  GetDocument().execCommand("bold", false, "", ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(Selection().IsHandleVisible())
+      << "If handles were present before "
+         "bold command. Then they should "
+         "be present after it.";
 }
 
 TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
