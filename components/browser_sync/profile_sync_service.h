@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/experiments.h"
@@ -170,7 +169,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
-                           public KeyedService,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public SigninManagerBase::Observer,

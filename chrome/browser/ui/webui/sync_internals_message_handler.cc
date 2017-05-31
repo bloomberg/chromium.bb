@@ -59,16 +59,11 @@ int64_t StringAtIndexToInt64(const base::ListValue* list, int index) {
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : SyncInternalsMessageHandler(
           base::BindRepeating(
-              &SyncInternalsMessageHandler::BindForSyncServiceProvider,
-              base::Unretained(this)),
-          base::BindRepeating(
               &syncer::sync_ui_util::ConstructAboutInformation)) {}
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
-    SyncServiceProvider sync_service_provider,
     AboutSyncDataDelegate about_sync_data_delegate)
-    : sync_service_provider_(std::move(sync_service_provider)),
-      about_sync_data_delegate_(std::move(about_sync_data_delegate)),
+    : about_sync_data_delegate_(std::move(about_sync_data_delegate)),
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
@@ -132,7 +127,7 @@ void SyncInternalsMessageHandler::HandleRegisterForEvents(
   // is_registered_ flag protects us from double-registering.  This could
   // happen on a page refresh, where the JavaScript gets re-run but the
   // message handler remains unchanged.
-  SyncService* service = sync_service_provider_.Run();
+  SyncService* service = GetSyncService();
   if (service && !is_registered_) {
     service->AddObserver(this);
     service->AddProtocolEventObserver(this);
@@ -147,7 +142,7 @@ void SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters(
   DCHECK(args->empty());
   AllowJavascript();
 
-  SyncService* service = sync_service_provider_.Run();
+  SyncService* service = GetSyncService();
   if (!service)
     return;
 
@@ -192,7 +187,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
   bool success = ExtractIntegerValue(args, &request_id);
   DCHECK(success);
 
-  SyncService* service = sync_service_provider_.Run();
+  SyncService* service = GetSyncService();
   if (service) {
     // This opens up the possibility of non-javascript code calling us
     // asynchronously, and potentially at times we're not allowed to call into
@@ -284,12 +279,12 @@ void SyncInternalsMessageHandler::HandleJsEvent(
 }
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
-  std::unique_ptr<DictionaryValue> value = about_sync_data_delegate_.Run(
-      sync_service_provider_.Run(), chrome::GetChannel());
+  std::unique_ptr<DictionaryValue> value =
+      about_sync_data_delegate_.Run(GetSyncService(), chrome::GetChannel());
   DispatchEvent(syncer::sync_ui_util::kOnAboutInfoUpdated, *value);
 }
 
-SyncService* SyncInternalsMessageHandler::BindForSyncServiceProvider() {
+SyncService* SyncInternalsMessageHandler::GetSyncService() {
   return ProfileSyncServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui())->GetOriginalProfile());
 }
@@ -301,7 +296,7 @@ void SyncInternalsMessageHandler::DispatchEvent(const std::string& name,
 }
 
 void SyncInternalsMessageHandler::UnregisterModelNotifications() {
-  SyncService* service = sync_service_provider_.Run();
+  SyncService* service = GetSyncService();
   if (!service)
     return;
 

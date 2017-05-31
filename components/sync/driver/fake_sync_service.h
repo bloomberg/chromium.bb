@@ -24,7 +24,7 @@ class FakeSyncService : public SyncService {
   ~FakeSyncService() override;
 
  private:
-  // SyncService:
+  // SyncService implementation.
   bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
@@ -85,9 +85,12 @@ class FakeSyncService : public SyncService {
                        callback) override;
   SigninManagerBase* signin() const override;
 
-  // DataTypeEncryptionHandler:
+  // DataTypeEncryptionHandler implementation.
   bool IsPassphraseRequired() const override;
   ModelTypeSet GetEncryptedDataTypes() const override;
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   GoogleServiceAuthError error_;
   GURL sync_service_url_;
