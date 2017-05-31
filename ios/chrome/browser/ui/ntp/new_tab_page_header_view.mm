@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/image_util.h"
@@ -17,6 +16,10 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ui/gfx/ios/uikit_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const CGFloat kOmniboxImageBottomInset = 1;
@@ -26,9 +29,9 @@ const CGFloat kMaxConstraintConstantDiff = 5;
 }  // namespace
 
 @interface NewTabPageHeaderView () {
-  base::scoped_nsobject<NewTabPageToolbarController> _toolbarController;
-  base::scoped_nsobject<UIImageView> _searchBoxBorder;
-  base::scoped_nsobject<UIImageView> _shadow;
+  NewTabPageToolbarController* _toolbarController;
+  UIImageView* _searchBoxBorder;
+  UIImageView* _shadow;
 }
 
 @end
@@ -43,9 +46,6 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   return self;
 }
 
-- (void)dealloc {
-  [super dealloc];
-}
 
 - (UIView*)toolBarView {
   return [_toolbarController view];
@@ -55,7 +55,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   ToolbarController* relinquishedToolbarController = nil;
   if ([[_toolbarController view] isDescendantOfView:self]) {
     // Only relinquish the toolbar controller if it's in the hierarchy.
-    relinquishedToolbarController = _toolbarController.get();
+    relinquishedToolbarController = _toolbarController;
   }
   return relinquishedToolbarController;
 }
@@ -69,9 +69,9 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   DCHECK(!_toolbarController);
   DCHECK(dataSource);
 
-  _toolbarController.reset([[NewTabPageToolbarController alloc] init]);
+  _toolbarController = [[NewTabPageToolbarController alloc] init];
   [_toolbarController setDispatcher:dispatcher];
-  _toolbarController.get().readingListModel = [dataSource readingListModel];
+  _toolbarController.readingListModel = [dataSource readingListModel];
 
   UIView* toolbarView = [_toolbarController view];
   CGRect toolbarFrame = self.bounds;
@@ -105,14 +105,14 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   [searchField setBackgroundColor:[UIColor whiteColor]];
   UIImage* searchBorderImage =
       StretchableImageNamed(@"ntp_google_search_box", 12, 12);
-  _searchBoxBorder.reset([[UIImageView alloc] initWithImage:searchBorderImage]);
+  _searchBoxBorder = [[UIImageView alloc] initWithImage:searchBorderImage];
   [_searchBoxBorder setFrame:[searchField bounds]];
   [_searchBoxBorder setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                         UIViewAutoresizingFlexibleHeight];
   [searchField insertSubview:_searchBoxBorder atIndex:0];
 
   UIImage* fullBleedShadow = NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
-  _shadow.reset([[UIImageView alloc] initWithImage:fullBleedShadow]);
+  _shadow = [[UIImageView alloc] initWithImage:fullBleedShadow];
   CGRect shadowFrame = [searchField bounds];
   shadowFrame.origin.y =
       searchField.bounds.size.height - kOmniboxImageBottomInset;
