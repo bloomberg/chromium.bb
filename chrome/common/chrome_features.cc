@@ -40,12 +40,6 @@ const base::Feature kArcMemoryManagement{
 const base::Feature kAssetDownloadSuggestionsFeature{
     "NTPAssetDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-// Enables auto-dismissing JavaScript dialogs.
-const base::Feature kAutoDismissingDialogs{"AutoDismissingDialogs",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
