@@ -144,6 +144,7 @@ bool IsRenderedAsTable(const Node* node) {
 
 }  // namespace
 
+// TODO(xiaochengh): Most members should be initialized in-place, not here.
 template <typename Strategy>
 TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
     const EphemeralRangeTemplate<Strategy>& range,
@@ -162,6 +163,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       end_container_(nullptr),
       end_offset_(0),
       needs_another_newline_(false),
+      needs_handle_replaced_element_(false),
       last_text_node_(nullptr),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
       should_stop_(false),
@@ -272,6 +274,12 @@ bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
   // of going into the main iteration of Advance() for multiple times. In this
   // way, we can also remove the return values of HandleReplaceElement() and
   // HandleNonTextNode(), and make the control flow cleaner.
+
+  if (needs_handle_replaced_element_) {
+    HandleReplacedElement();
+    if (text_state_.PositionNode())
+      return true;
+  }
 
   // Try to emit more text runs if we are handling a text node.
   return text_node_handler_.HandleRemainingTextRuns();
@@ -505,6 +513,8 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
+  needs_handle_replaced_element_ = false;
+
   if (fully_clipped_stack_.Top())
     return false;
 
@@ -522,8 +532,10 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   DCHECK_EQ(last_text_node_, text_node_handler_.GetNode());
   if (last_text_node_) {
     if (text_node_handler_.FixLeadingWhiteSpaceForReplacedElement(
-            Strategy::Parent(*last_text_node_)))
-      return false;
+            Strategy::Parent(*last_text_node_))) {
+      needs_handle_replaced_element_ = true;
+      return true;
+    }
   }
 
   if (EntersTextControls() && layout_object->IsTextControl()) {

@@ -217,8 +217,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   Member<Node> past_end_node_;
 
   // Used when there is still some pending text from the current node; when
-  // these are false and 0, we go back to normal iterating.
+  // these are false, we go back to normal iterating.
   bool needs_another_newline_;
+  bool needs_handle_replaced_element_;
 
   Member<Text> last_text_node_;
 
