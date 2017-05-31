@@ -38,6 +38,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/WTFString.h"
+#include "storage/public/interfaces/blobs.mojom-blink.h"
 
 namespace blink {
 
@@ -256,6 +257,7 @@ class PLATFORM_EXPORT BlobDataHandle
   const String type_;
   const long long size_;
   const bool is_single_unknown_size_file_;
+  storage::mojom::blink::BlobPtr blob_;
 };
 
 }  // namespace blink

@@ -46,6 +46,7 @@ CONTENT_EXPORT extern const base::Feature kMediaStreamOldVideoConstraints;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
+CONTENT_EXPORT extern const base::Feature kMojoBlobs;
 CONTENT_EXPORT extern const base::Feature kOffMainThreadFetch;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kParallelDownloading;

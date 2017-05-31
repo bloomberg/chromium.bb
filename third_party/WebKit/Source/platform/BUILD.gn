@@ -1555,6 +1555,7 @@ component("platform") {
     "//net",
     "//services/service_manager/public/interfaces:interfaces_blink",
     "//skia",
+    "//storage/public/interfaces:interfaces_blink",
     "//third_party:jpeg",
     "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/public:mojo_bindings_blink",
