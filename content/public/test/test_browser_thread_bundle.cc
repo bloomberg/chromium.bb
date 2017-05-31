@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_async_task_scheduler.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -79,12 +78,6 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // for DestructionObservers hooked to |message_loop_| to be able to invoke
   // BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
   message_loop_.reset();
-
-  // Disable redirection of SequencedWorkerPools to TaskScheduler. This is
-  // required in order to reset global state so that tests following this one in
-  // this process can still manage their own SequencedWorkerPool without using
-  // TestBrowserThreadBundle.
-  base::SequencedWorkerPool::EnableForProcess();
 }
 
 void TestBrowserThreadBundle::Init() {
@@ -129,9 +122,6 @@ void TestBrowserThreadBundle::CreateThreads() {
     scoped_async_task_scheduler_ =
         base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
   }
-
-  // Enable redirection of SequencedWorkerPools to TaskScheduler.
-  base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   if (options_ & REAL_DB_THREAD) {
     db_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::DB);
