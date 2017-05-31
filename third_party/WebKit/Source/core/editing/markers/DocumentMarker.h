@@ -142,8 +142,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
                  bool thick,
                  Color background_color);
 
-  DocumentMarker(const DocumentMarker&);
-
   MarkerType GetType() const { return type_; }
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
@@ -183,6 +181,8 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   unsigned start_offset_;
   unsigned end_offset_;
   Member<DocumentMarkerDetails> details_;
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentMarker);
 };
 
 using DocumentMarkerVector = HeapVector<Member<DocumentMarker>>;

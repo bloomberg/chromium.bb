@@ -70,9 +70,6 @@ class TextMatchMarker final : public DocumentMarker {
   bool IsValid() const { return state_ != State::kInvalid; }
 
  private:
-  explicit TextMatchMarker(const DocumentMarker& marker)
-      : DocumentMarker(marker), state_(State::kInvalid) {}
-
   LayoutRect rendered_rect_;
   State state_;
 };

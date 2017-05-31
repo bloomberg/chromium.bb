@@ -66,7 +66,7 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
         return start_offset < marker->EndOffset();
       });
   for (MarkerList::iterator i = start_pos; i != list->end();) {
-    DocumentMarker marker(*i->Get());
+    const DocumentMarker& marker = *i->Get();
 
     // markers are returned in order, so stop if we are now past the specified
     // range
