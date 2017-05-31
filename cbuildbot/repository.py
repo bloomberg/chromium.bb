@@ -275,12 +275,8 @@ class RepoRepository(object):
     self._referenced_repo = referenced_repo
     self._manifest = manifest
 
-    # If the repo exists already, force a selfupdate as the first step.
-    self._repo_update_needed = IsARepoRoot(self.directory)
-    if not self._repo_update_needed and git.FindRepoDir(self.directory):
-      raise ValueError('Given directory %s is not the root of a repository.'
-                       % self.directory)
-
+    # Use by Intialize to avoid updating more than once.
+    self._repo_update_needed = True
     self._depth = int(depth) if depth is not None else None
 
   def _SwitchToLocalManifest(self, local_manifest):
@@ -422,6 +418,18 @@ class RepoRepository(object):
     if deleted_objdirs.is_set():
       parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
+  def AssertNotNested(self):
+    """Assert that the current repository isn't inside another repository.
+
+    Since repo detects it's root by looking for .repo, it can't support having
+    one repo inside another.
+    """
+    if not IsARepoRoot(self.directory):
+      repo_root = git.FindRepoDir(self.directory)
+      if repo_root:
+        raise ValueError('%s is nested inside a repo at %s.' %
+                         (self.directory, repo_root))
+
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
                  extra_args=()):
     """Initializes a repository.  Optionally forces a local manifest.
@@ -432,6 +440,8 @@ class RepoRepository(object):
       manifest_repo_url: A new value for manifest_repo_url.
       extra_args: Extra args to pass to 'repo init'
     """
+    self.AssertNotNested()
+
     if manifest_repo_url:
       self.manifest_repo_url = manifest_repo_url
 
@@ -454,17 +464,11 @@ class RepoRepository(object):
     # we can destroy it.
     osutils.SafeUnlink(os.path.join(self.directory, 'local_manifest.xml'))
 
-    # Force a repo self update first; during reinit, repo doesn't do the
-    # update itself, but we could be doing the init on a repo version less
-    # then v1.9.4, which didn't have proper support for doing reinit that
-    # involved changing the manifest branch in use; thus selfupdate.
-    # Additionally, if the self update fails for *any* reason, wipe the repo
-    # innards and force repo init to redownload it; same end result, just
-    # less efficient.
-    # Additionally, note that this method may be called multiple times;
-    # thus code appropriately.
+    # Force a repo update the first time we initialize an old repo checkout.
+    # Don't update if there is nothing to update.
     if self._repo_update_needed:
-      self._RepoSelfupdate()
+      if IsARepoRoot(self.directory):
+        self._RepoSelfupdate()
       self._repo_update_needed = False
 
     # Use our own repo, in case android.kernel.org (the default location) is
