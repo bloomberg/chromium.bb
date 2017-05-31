@@ -255,10 +255,12 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
   threat_types_.assign(threat_types.begin(), threat_types.end());
 }
 
-V4GetHashProtocolManager::~V4GetHashProtocolManager() {}
+V4GetHashProtocolManager::~V4GetHashProtocolManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void V4GetHashProtocolManager::ClearCache() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   full_hash_cache_.clear();
 }
 
@@ -267,7 +269,7 @@ void V4GetHashProtocolManager::GetFullHashes(
         full_hash_to_store_and_hash_prefixes,
     FullHashCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!full_hash_to_store_and_hash_prefixes.empty());
 
   std::vector<HashPrefix> prefixes_to_request;
@@ -506,7 +508,7 @@ void V4GetHashProtocolManager::GetHashUrlAndHeaders(
 }
 
 void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TimeDelta next = V4ProtocolManagerUtil::GetNextBackOffInterval(
       &gethash_error_count_, &gethash_back_off_mult_);
   next_gethash_time_ = now + next;
@@ -738,7 +740,7 @@ void V4GetHashProtocolManager::MergeResults(
 // SafeBrowsing request responses are handled here.
 void V4GetHashProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   PendingHashRequests::iterator it = pending_hash_requests_.find(source);
