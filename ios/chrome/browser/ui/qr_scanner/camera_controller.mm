@@ -34,6 +34,10 @@
 @property(nonatomic, readwrite, assign, getter=isTorchAvailable)
     BOOL torchAvailable;
 
+// Initializes the controller with the |delegate|.
+- (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
+
 // YES if |cameraState| is CAMERA_AVAILABLE.
 - (BOOL)isCameraAvailable;
 // Starts receiving notfications about changes to the capture session and to the
@@ -57,6 +61,13 @@
 }
 
 #pragma mark lifecycle
+
++ (instancetype)cameraControllerWithDelegate:
+    (id<CameraControllerDelegate>)delegate {
+  CameraController* cameraController =
+      [[CameraController alloc] initWithDelegate:delegate];
+  return cameraController;
+}
 
 - (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate {
   self = [super init];

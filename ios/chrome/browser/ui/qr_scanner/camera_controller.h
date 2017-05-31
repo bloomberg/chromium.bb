@@ -67,9 +67,9 @@ enum CameraState {
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Initializes the controller with the |delegate|.
-- (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
+// Returns a new controller with the |delegate|.
++ (instancetype)cameraControllerWithDelegate:
+    (id<CameraControllerDelegate>)delegate;
 
 // Returns the app's authorization in regards to the camera.
 - (AVAuthorizationStatus)getAuthorizationStatus;

@@ -81,7 +81,7 @@ enum DismissalReason {
   if (self) {
     DCHECK(delegate);
     _delegate = delegate;
-    _cameraController = [[CameraController alloc] initWithDelegate:self];
+    _cameraController = [CameraController cameraControllerWithDelegate:self];
   }
   return self;
 }
