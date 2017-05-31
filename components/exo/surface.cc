@@ -145,6 +145,24 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   ~CustomWindowTargeter() override {}
 
   // Overridden from aura::WindowTargeter:
+  bool SubtreeCanAcceptEvent(aura::Window* window,
+                             const ui::LocatedEvent& event) const override {
+    Surface* surface = Surface::AsSurface(window);
+    if (!surface)
+      return false;
+
+    if (surface->IsStylusOnly()) {
+      ui::EventPointerType type = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+      if (event.IsTouchEvent()) {
+        auto* touch_event = static_cast<const ui::TouchEvent*>(&event);
+        type = touch_event->pointer_details().pointer_type;
+      }
+      if (type != ui::EventPointerType::POINTER_TYPE_PEN)
+        return false;
+    }
+    return aura::WindowTargeter::SubtreeCanAcceptEvent(window, event);
+  }
+
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override {
     Surface* surface = Surface::AsSurface(window);
