@@ -1,17 +1,17 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/webview/web_contents_set_background_color.h"
+#include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(views::WebContentsSetBackgroundColor);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(chromeos::WebContentsSetBackgroundColor);
 
-namespace views {
+namespace chromeos {
 
 // static
 void WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
@@ -54,4 +54,4 @@ void WebContentsSetBackgroundColor::RenderViewHostChanged(
   new_host->GetWidget()->GetView()->SetBackgroundColor(color_);
 }
 
-}  // namespace views
+}  // namespace chromeos
