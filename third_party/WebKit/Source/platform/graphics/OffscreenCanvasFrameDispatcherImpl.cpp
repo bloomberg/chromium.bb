@@ -219,6 +219,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
 void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     RefPtr<StaticBitmapImage> image,
     double commit_start_time,
+    const SkIRect& damage_rect,
     bool is_web_gl_software_rendering /* This flag is true when WebGL's commit
                                          is called on SwiftShader. */
     ) {
@@ -244,7 +245,10 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   const gfx::Rect bounds(width_, height_);
   const int kRenderPassId = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetNew(kRenderPassId, bounds, bounds, gfx::Transform());
+  pass->SetNew(kRenderPassId, bounds,
+               gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(),
+                         damage_rect.height()),
+               gfx::Transform());
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, false, 1.f,

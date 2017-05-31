@@ -747,16 +747,17 @@ ScriptPromise WebGLRenderingContextBase::commit(
     ExceptionState& exception_state) {
   UseCounter::Feature feature = UseCounter::kOffscreenCanvasCommitWebGL;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
+  int width = GetDrawingBuffer()->Size().Width();
+  int height = GetDrawingBuffer()->Size().Height();
   if (!GetDrawingBuffer()) {
     bool is_web_gl_software_rendering = false;
-    return host()->Commit(nullptr, is_web_gl_software_rendering, script_state,
+    return host()->Commit(nullptr, SkIRect::MakeWH(width, height),
+                          is_web_gl_software_rendering, script_state,
                           exception_state);
   }
 
   RefPtr<StaticBitmapImage> image;
   if (CreationAttributes().preserveDrawingBuffer()) {
-    int width = GetDrawingBuffer()->Size().Width();
-    int height = GetDrawingBuffer()->Size().Height();
     SkImageInfo image_info =
         SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                           CreationAttributes().alpha() ? kPremul_SkAlphaType
@@ -767,7 +768,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
   }
 
   return host()->Commit(
-      std::move(image),
+      std::move(image), SkIRect::MakeWH(width, height),
       GetDrawingBuffer()->ContextProvider()->IsSoftwareRendering(),
       script_state, exception_state);
 }
