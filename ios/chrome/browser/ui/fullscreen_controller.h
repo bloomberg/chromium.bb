@@ -119,8 +119,6 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // Enables/Disables the FullScreenController in tests. The unit tests do not set
 // the delegate which is crucial for methods to work on the controller.
 // This a temporary solution.
-// TODO(shreyasv): Find a better solution/remove this when FullScreenController
-// moves to Tab.
 + (void)setEnabledForTests:(BOOL)enabled;
 @end
 
