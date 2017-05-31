@@ -1715,54 +1715,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // Text emphasis properties.
-  static TextEmphasisFill InitialTextEmphasisFill() {
-    return TextEmphasisFill::kFilled;
-  }
   static TextEmphasisMark InitialTextEmphasisMark() {
     return TextEmphasisMark::kNone;
   }
-  static const AtomicString& InitialTextEmphasisCustomMark() {
-    return g_null_atom;
-  }
-  TextEmphasisFill GetTextEmphasisFill() const {
-    return static_cast<TextEmphasisFill>(
-        rare_inherited_data_->text_emphasis_fill_);
-  }
   TextEmphasisMark GetTextEmphasisMark() const;
-  const AtomicString& TextEmphasisCustomMark() const {
-    return rare_inherited_data_->text_emphasis_custom_mark_;
-  }
-  const AtomicString& TextEmphasisMarkString() const;
-  void SetTextEmphasisFill(TextEmphasisFill fill) {
-    SET_VAR(rare_inherited_data_, text_emphasis_fill_,
-            static_cast<unsigned>(fill));
-  }
   void SetTextEmphasisMark(TextEmphasisMark mark) {
     SET_VAR(rare_inherited_data_, text_emphasis_mark_,
             static_cast<unsigned>(mark));
   }
-  void SetTextEmphasisCustomMark(const AtomicString& mark) {
-    SET_VAR(rare_inherited_data_, text_emphasis_custom_mark_, mark);
-  }
+  const AtomicString& TextEmphasisMarkString() const;
 
   // -webkit-text-emphasis-color (aka -epub-text-emphasis-color)
   void SetTextEmphasisColor(const StyleColor& color) {
     SET_VAR(rare_inherited_data_, text_emphasis_color_, color.Resolve(Color()));
     SET_VAR(rare_inherited_data_, text_emphasis_color_is_current_color_,
             color.IsCurrentColor());
-  }
-
-  // -webkit-text-emphasis-position
-  static TextEmphasisPosition InitialTextEmphasisPosition() {
-    return TextEmphasisPosition::kOver;
-  }
-  TextEmphasisPosition GetTextEmphasisPosition() const {
-    return static_cast<TextEmphasisPosition>(
-        rare_inherited_data_->text_emphasis_position_);
-  }
-  void SetTextEmphasisPosition(TextEmphasisPosition position) {
-    SET_VAR(rare_inherited_data_, text_emphasis_position_,
-            static_cast<unsigned>(position));
   }
 
   // -webkit-line-clamp

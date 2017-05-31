@@ -265,8 +265,6 @@ enum EBackfaceVisibility {
 
 enum ELineClampType { kLineClampLineCount, kLineClampPercentage };
 
-enum class TextEmphasisFill { kFilled, kOpen };
-
 enum class TextEmphasisMark {
   kNone,
   kAuto,
@@ -277,8 +275,6 @@ enum class TextEmphasisMark {
   kSesame,
   kCustom
 };
-
-enum class TextEmphasisPosition { kOver, kUnder };
 
 enum class TextOrientation { kMixed, kUpright, kSideways };
 
