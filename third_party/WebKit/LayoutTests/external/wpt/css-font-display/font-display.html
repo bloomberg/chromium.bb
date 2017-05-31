@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+<html class="reftest-wait">
 <title>Test for font-display @font-face descriptor</title>
+<link rel="match" href="font-display-ref.html">
 <style>
 .hidden { display: none; }
 </style>
@@ -16,9 +18,6 @@
  </tr>
 </table>
 <script>
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
 var fontDisplayValues = ['auto', 'block', 'swap', 'fallback', 'optional'];
 var configs = [{time: 0, delay: 1000},
                {time: 1000, delay: 0},
@@ -29,9 +28,7 @@ var configs = [{time: 0, delay: 1000},
                {time: 5000, delay: 8000}];
 
 function makeFontFaceDeclaration(family, config, display) {
-    var url = '/resources/Ahem.ttf';
-    if (config.delay > 0)
-        url = 'slow-ahem-loading.cgi?delay=' + config.delay + '&t=' + config.time;
+    url = 'resources/slow-ahem-loading.py?ms=' + config.delay;
     return '@font-face { font-family: ' + family + '; src: url(' + url + '); font-display: ' + display + '; }';
 }
 
@@ -63,8 +60,7 @@ window.onload = function() {
         if (config.time == 0) {
             setTimeout((function(tr){
                 tr.classList.remove('hidden');
-                if (window.testRunner)
-                    testRunner.notifyDone();
+                document.documentElement.classList.remove("reftest-wait");
             }).bind(null, tr), maxTime);
         } else {
             setTimeout((function(tr){tr.classList.remove('hidden')}).bind(null, tr), maxTime - config.time);
@@ -73,3 +69,4 @@ window.onload = function() {
 }
 
 </script>
+</html>
