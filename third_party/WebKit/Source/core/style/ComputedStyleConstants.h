@@ -194,8 +194,6 @@ enum ObjectFit {
   kObjectFitScaleDown
 };
 
-enum class LineBreak { kAuto, kLoose, kNormal, kStrict, kAfterWhiteSpace };
-
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };
 
 enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };

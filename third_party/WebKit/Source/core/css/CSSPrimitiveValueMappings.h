@@ -874,49 +874,6 @@ inline EFloat CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(LineBreak e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case LineBreak::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case LineBreak::kLoose:
-      value_id_ = CSSValueLoose;
-      break;
-    case LineBreak::kNormal:
-      value_id_ = CSSValueNormal;
-      break;
-    case LineBreak::kStrict:
-      value_id_ = CSSValueStrict;
-      break;
-    case LineBreak::kAfterWhiteSpace:
-      value_id_ = CSSValueAfterWhiteSpace;
-      break;
-  }
-}
-
-template <>
-inline LineBreak CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return LineBreak::kAuto;
-    case CSSValueLoose:
-      return LineBreak::kLoose;
-    case CSSValueNormal:
-      return LineBreak::kNormal;
-    case CSSValueStrict:
-      return LineBreak::kStrict;
-    case CSSValueAfterWhiteSpace:
-      return LineBreak::kAfterWhiteSpace;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return LineBreak::kAuto;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EMarginCollapse e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

@@ -2435,10 +2435,10 @@
     {
       name: "-webkit-line-break",
       inherited: true,
-      field_template: "storage_only",
+      field_template: "keyword",
       type_name: "LineBreak",
-      default_value: "LineBreak::kAuto",
-      field_size: 3,
+      keywords: ["auto", "loose", "normal", "strict", "after-white-space"],
+      default_value: "auto",
       field_group: "rare-inherited",
     },
     {
