@@ -25,6 +25,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "dbus/bus.h"
@@ -402,16 +403,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void StartArcInstance(const cryptohome::Identification& cryptohome_id,
-                        bool disable_boot_completed_broadcast,
-                        bool enable_vendor_privileged,
+                        bool skip_boot_completed_broadcast,
+                        bool scan_vendor_priv_app,
                         const StartArcInstanceCallback& callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerStartArcInstance);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
-    writer.AppendBool(disable_boot_completed_broadcast);
-    writer.AppendBool(enable_vendor_privileged);
+
+    login_manager::StartArcInstanceRequest request;
+    request.set_account_id(cryptohome_id.id());
+    request.set_skip_boot_completed_broadcast(skip_boot_completed_broadcast);
+    request.set_scan_vendor_priv_app(scan_vendor_priv_app);
+    writer.AppendProtoAsArrayOfBytes(request);
+
     session_manager_proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnStartArcInstanceSucceeded,
