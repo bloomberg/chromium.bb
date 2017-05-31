@@ -334,9 +334,9 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
       pref_file, message_loop_.task_runner(), std::unique_ptr<PrefFilter>());
 
   // Set some keys with empty values.
-  pref_store->SetValue("list", base::WrapUnique(new base::ListValue),
+  pref_store->SetValue("list", base::MakeUnique<base::ListValue>(),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  pref_store->SetValue("dict", base::WrapUnique(new base::DictionaryValue),
+  pref_store->SetValue("dict", base::MakeUnique<base::DictionaryValue>(),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Write to file.

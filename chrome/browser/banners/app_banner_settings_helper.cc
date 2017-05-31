@@ -92,9 +92,8 @@ base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
   if (!origin_dict->GetDictionaryWithoutPathExpansion(key_name, &app_dict)) {
     // Don't allow more than kMaxAppsPerSite dictionaries.
     if (origin_dict->size() < kMaxAppsPerSite) {
-      app_dict = new base::DictionaryValue();
-      origin_dict->SetWithoutPathExpansion(key_name,
-                                           base::WrapUnique(app_dict));
+      app_dict = origin_dict->SetDictionaryWithoutPathExpansion(
+          key_name, base::MakeUnique<base::DictionaryValue>());
     }
   }
 

@@ -280,8 +280,8 @@ void SupervisedUserSyncService::UpdateSupervisedUserImpl(
       name, master_key, signature_key, encryption_key, avatar_index);
 
   DCHECK_EQ(add_user, !dict->HasKey(id));
-  base::DictionaryValue* entry = value.get();
-  dict->SetWithoutPathExpansion(id, std::move(value));
+  base::DictionaryValue* entry =
+      dict->SetDictionaryWithoutPathExpansion(id, std::move(value));
 
   if (!sync_processor_)
     return;

@@ -537,10 +537,9 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
   const bool newly_added = !pref_dict->GetDictionaryWithoutPathExpansion(
       crx_id, &whitelist_dict_weak);
   if (newly_added) {
-    auto whitelist_dict = base::MakeUnique<base::DictionaryValue>();
-    whitelist_dict_weak = whitelist_dict.get();
-    whitelist_dict->SetString(kName, name);
-    pref_dict->SetWithoutPathExpansion(crx_id, std::move(whitelist_dict));
+    whitelist_dict_weak = pref_dict->SetDictionaryWithoutPathExpansion(
+        crx_id, base::MakeUnique<base::DictionaryValue>());
+    whitelist_dict_weak->SetString(kName, name);
   }
 
   if (!client_id.empty()) {

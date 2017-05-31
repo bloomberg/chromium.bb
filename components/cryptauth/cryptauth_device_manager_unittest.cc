@@ -411,8 +411,7 @@ class CryptAuthDeviceManagerTest
                                      bluetooth_address_b64);
     device_dictionary->SetBoolean("unlock_key", kStoredUnlockKey);
     device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    device_dictionary->Set("beacon_seeds",
-                               base::WrapUnique(new base::ListValue()));
+    device_dictionary->Set("beacon_seeds", base::MakeUnique<base::ListValue>());
     device_dictionary->SetBoolean("mobile_hotspot_supported",
                                   kStoredMobileHotspotSupported);
     {

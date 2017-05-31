@@ -114,10 +114,10 @@ bool CreateFiles(const std::string& lockfile_path,
   std::unique_ptr<base::DictionaryValue> metadata =
       base::MakeUnique<base::DictionaryValue>();
 
-  base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
-  metadata->Set(kRatelimitKey, base::WrapUnique(ratelimit_fields));
+  auto ratelimit_fields = base::MakeUnique<base::DictionaryValue>();
   ratelimit_fields->SetDouble(kRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
+  metadata->Set(kRatelimitKey, std::move(ratelimit_fields));
 
   std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 

@@ -17,11 +17,8 @@ void SetValue(base::DictionaryValue* dictionary_value,
   for (size_t i = 0; i < path_components.size() - 1; ++i) {
     if (!dictionary_value->GetDictionaryWithoutPathExpansion(
             path_components[i], &dictionary_value)) {
-      auto new_dict_value_owner = base::MakeUnique<base::DictionaryValue>();
-      auto* new_dict_value = new_dict_value_owner.get();
-      dictionary_value->SetWithoutPathExpansion(
-          path_components[i], std::move(new_dict_value_owner));
-      dictionary_value = new_dict_value;
+      dictionary_value = dictionary_value->SetDictionaryWithoutPathExpansion(
+          path_components[i], base::MakeUnique<base::DictionaryValue>());
     }
   }
   const auto& key = path_components.back();

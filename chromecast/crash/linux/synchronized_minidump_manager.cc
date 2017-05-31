@@ -285,10 +285,10 @@ bool SynchronizedMinidumpManager::InitializeFiles() {
   std::unique_ptr<base::DictionaryValue> metadata =
       base::MakeUnique<base::DictionaryValue>();
 
-  base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
-  metadata->Set(kLockfileRatelimitKey, base::WrapUnique(ratelimit_fields));
+  auto ratelimit_fields = base::MakeUnique<base::DictionaryValue>();
   ratelimit_fields->SetDouble(kLockfileRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
+  metadata->Set(kLockfileRatelimitKey, std::move(ratelimit_fields));
 
   std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 
