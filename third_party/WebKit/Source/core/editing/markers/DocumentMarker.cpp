@@ -30,6 +30,7 @@
 
 #include "core/editing/markers/DocumentMarker.h"
 
+#include "core/editing/markers/TextMatchMarker.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
@@ -59,43 +60,6 @@ inline DocumentMarkerDescription* ToDocumentMarkerDescription(
     DocumentMarkerDetails* details) {
   if (details && details->IsDescription())
     return static_cast<DocumentMarkerDescription*>(details);
-  return 0;
-}
-
-class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
- public:
-  static DocumentMarkerTextMatch* Create(DocumentMarker::MatchStatus);
-
-  bool IsActiveMatch() const {
-    return match_status_ == DocumentMarker::MatchStatus::kActive;
-  }
-
-  bool IsTextMatch() const override { return true; }
-
- private:
-  explicit DocumentMarkerTextMatch(DocumentMarker::MatchStatus match_status)
-      : match_status_(match_status) {}
-
-  DocumentMarker::MatchStatus match_status_;
-};
-
-DocumentMarkerTextMatch* DocumentMarkerTextMatch::Create(
-    DocumentMarker::MatchStatus match_status) {
-  DEFINE_STATIC_LOCAL(
-      DocumentMarkerTextMatch, active_instance,
-      (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kActive)));
-  DEFINE_STATIC_LOCAL(
-      DocumentMarkerTextMatch, inactive_instance,
-      (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kInactive)));
-  return match_status == DocumentMarker::MatchStatus::kActive
-             ? &active_instance
-             : &inactive_instance;
-}
-
-inline DocumentMarkerTextMatch* ToDocumentMarkerTextMatch(
-    DocumentMarkerDetails* details) {
-  if (details && details->IsTextMatch())
-    return static_cast<DocumentMarkerTextMatch*>(details);
   return 0;
 }
 
@@ -140,6 +104,13 @@ inline TextCompositionMarkerDetails* ToTextCompositionMarkerDetails(
 
 DocumentMarker::DocumentMarker(MarkerType type,
                                unsigned start_offset,
+                               unsigned end_offset)
+    : type_(type), start_offset_(start_offset), end_offset_(end_offset) {
+  DCHECK_LT(start_offset, end_offset);
+}
+
+DocumentMarker::DocumentMarker(MarkerType type,
+                               unsigned start_offset,
                                unsigned end_offset,
                                const String& description)
     : type_(type),
@@ -148,14 +119,6 @@ DocumentMarker::DocumentMarker(MarkerType type,
       details_(description.IsEmpty()
                    ? nullptr
                    : DocumentMarkerDescription::Create(description)) {}
-
-DocumentMarker::DocumentMarker(unsigned start_offset,
-                               unsigned end_offset,
-                               DocumentMarker::MatchStatus match_status)
-    : type_(DocumentMarker::kTextMatch),
-      start_offset_(start_offset),
-      end_offset_(end_offset),
-      details_(DocumentMarkerTextMatch::Create(match_status)) {}
 
 DocumentMarker::DocumentMarker(unsigned start_offset,
                                unsigned end_offset,
@@ -219,11 +182,10 @@ void DocumentMarker::ShiftOffsets(int delta) {
   start_offset_ += delta;
   end_offset_ += delta;
 }
-
 void DocumentMarker::SetIsActiveMatch(bool active) {
-  details_ = DocumentMarkerTextMatch::Create(
-      active ? DocumentMarker::MatchStatus::kActive
-             : DocumentMarker::MatchStatus::kInactive);
+  if (GetType() != DocumentMarker::kTextMatch)
+    return;
+  ToTextMatchMarker(this)->SetIsActiveMatch(active);
 }
 
 const String& DocumentMarker::Description() const {
@@ -234,10 +196,9 @@ const String& DocumentMarker::Description() const {
 }
 
 bool DocumentMarker::IsActiveMatch() const {
-  if (DocumentMarkerTextMatch* details =
-          ToDocumentMarkerTextMatch(details_.Get()))
-    return details->IsActiveMatch();
-  return false;
+  if (GetType() != DocumentMarker::kTextMatch)
+    return false;
+  return ToTextMatchMarker(this)->IsActiveMatch();
 }
 
 Color DocumentMarker::UnderlineColor() const {

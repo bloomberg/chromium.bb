@@ -174,10 +174,10 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   DECLARE_TRACE();
 
  protected:
-  DocumentMarker(unsigned start_offset, unsigned end_offset, MatchStatus);
+  DocumentMarker(MarkerType, unsigned start_offset, unsigned end_offset);
 
  private:
-  MarkerType type_;
+  const MarkerType type_;
   unsigned start_offset_;
   unsigned end_offset_;
   Member<DocumentMarkerDetails> details_;
@@ -197,7 +197,6 @@ class DocumentMarkerDetails
   DocumentMarkerDetails() {}
   virtual ~DocumentMarkerDetails();
   virtual bool IsDescription() const { return false; }
-  virtual bool IsTextMatch() const { return false; }
   virtual bool IsComposition() const { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
