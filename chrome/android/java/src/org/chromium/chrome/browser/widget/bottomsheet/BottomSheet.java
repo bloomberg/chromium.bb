@@ -326,22 +326,15 @@ public class BottomSheet
             // Allow the bottom sheet's content to be scrolled up without dragging the sheet down.
             if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && mSheetContent != null
                     && mSheetContent.getVerticalScrollOffset() > 0) {
-                mIsScrolling = false;
                 return false;
             }
 
             // If the sheet is in the max position, don't move the sheet if the scroll is upward.
             // Instead, allow the sheet's content to handle it if it needs to.
-            if (isSheetInMaxPosition && distanceY > 0) {
-                mIsScrolling = false;
-                return false;
-            }
+            if (isSheetInMaxPosition && distanceY > 0) return false;
 
             // Similarly, if the sheet is in the min position, don't move if the scroll is downward.
-            if (currentShownRatio <= getPeekRatio() && distanceY < 0) {
-                mIsScrolling = false;
-                return false;
-            }
+            if (currentShownRatio <= getPeekRatio() && distanceY < 0) return false;
 
             float newOffset = getSheetOffsetFromBottom() + distanceY;
             boolean wasOpenBeforeSwipe = mIsSheetOpen;
