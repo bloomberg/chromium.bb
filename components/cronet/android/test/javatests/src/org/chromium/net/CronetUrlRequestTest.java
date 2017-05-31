@@ -2118,4 +2118,39 @@ public class CronetUrlRequestTest extends CronetTestBase {
                     ((NetworkException) callback.mError).getCronetInternalErrorCode());
         }
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    /**
+     * Open many connections and cancel them right away. This test verifies all internal
+     * sockets and other Closeables are properly closed. See crbug.com/726193.
+     */
+    public void testGzipCancel() throws Exception {
+        String url = NativeTestServer.getFileURL("/gzipped.html");
+        for (int i = 0; i < 100; i++) {
+            TestUrlRequestCallback callback = new TestUrlRequestCallback();
+            callback.setAutoAdvance(false);
+            UrlRequest urlRequest =
+                    mTestFramework.mCronetEngine
+                            .newUrlRequestBuilder(url, callback, callback.getExecutor())
+                            .build();
+            urlRequest.start();
+            urlRequest.cancel();
+            // If the test blocks until each UrlRequest finishes before starting the next UrlRequest
+            // then it never catches the leak. If it starts all UrlRequests and then blocks until
+            // all UrlRequests finish, it only catches the leak ~10% of the time. In its current
+            // form it appears to catch the leak ~70% of the time.
+            // Catching the leak may require a lot of busy threads so that the cancel() happens
+            // before the UrlRequest has made much progress (and set mCurrentUrlConnection and
+            // mResponseChannel).  This may be why blocking until each UrlRequest finishes doesn't
+            // catch the leak.
+            // The other quirk of this is that from teardown(), JavaCronetEngine.shutdown() is
+            // called which calls ExecutorService.shutdown() which doesn't wait for the thread to
+            // finish running tasks, and then teardown() calls GC looking for leaks. One possible
+            // modification would be to expose the ExecutorService and then have tests call
+            // awaitTermination() but this would complicate things, and adding a 1s sleep() to
+            // allow the ExecutorService to terminate did not increase the chances of catching the
+            // leak.
+        }
+    }
 }
