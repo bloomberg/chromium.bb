@@ -277,36 +277,19 @@ QUnit.test('logStatistics()', function(assert) {
   logger.setConnectionType('direct');
   logger.setHost(fakeHost);
 
-  // Log the statistics.
-  logger.logStatistics({
-    videoBandwidth: 1.0,
-    captureLatency: 1.0,
-    encodeLatency: 1.0,
-    decodeLatency: 0.0,
-    renderLatency: 1.0,
-    roundtripLatency: 1.0
-  });
-
-  logger.logStatistics({
-    videoBandwidth: 2.0,
-    captureLatency: 2.0,
-    encodeLatency: 1.0,
-    decodeLatency: 0.0,
-    renderLatency: 2.0,
-    roundtripLatency: 2.0
-  });
-
-  sinon.assert.notCalled(logWriterSpy);
-  // Stats should only be accumulated at |CONNECTION_STATS_ACCUMULATE_TIME|.
-  clock.tick(remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
-
+  // Log the statistics
   logger.logStatistics({
     videoBandwidth: 3.0,
-    captureLatency: 3.0,
-    encodeLatency: 1.0,
-    decodeLatency: 0.0,
-    renderLatency: 0.0,
-    roundtripLatency: 0.0
+    captureLatency: 1.0,
+    maxCaptureLatency: 3.0,
+    encodeLatency: 2.0,
+    maxEncodeLatency: 4.0,
+    decodeLatency: 3.0,
+    maxDecodeLatency: 5.0,
+    renderLatency: 4.0,
+    maxRenderLatency: 6.0,
+    roundtripLatency: 5.0,
+    maxRoundtripLatency: 7.0
   });
 
   verifyEvent(assert, 0, {
@@ -323,12 +306,17 @@ QUnit.test('logStatistics()', function(assert) {
     host_os: remoting.ChromotingEvent.Os.OTHER,
     host_os_version: 'host_os_version',
     session_id: logger.getSessionId(),
-    video_bandwidth: 2.0,
-    capture_latency: 2.0,
-    encode_latency: 1.0,
-    decode_latency: 0.0,
-    render_latency: 1.0,
-    roundtrip_latency: 1.0
+    video_bandwidth: 3.0,
+    capture_latency: 1.0,
+    encode_latency: 2.0,
+    decode_latency: 3.0,
+    render_latency: 4.0,
+    roundtrip_latency: 5.0,
+    max_capture_latency: 3.0,
+    max_encode_latency: 4.0,
+    max_decode_latency: 5.0,
+    max_render_latency: 6.0,
+    max_roundtrip_latency: 7.0
   });
 });
 
@@ -339,17 +327,6 @@ QUnit.test('logStatistics() should not log if all stats are zeros ',
 
   // Creates the logger.
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
-
-  logger.logStatistics({
-    videoBandwidth: 0.0,
-    captureLatency: 0.0,
-    encodeLatency: 0.0,
-    decodeLatency: 0.0,
-    renderLatency: 0.0,
-    roundtripLatency: 0.0
-  });
-
-  clock.tick(remoting.SessionLogger.CONNECTION_STATS_ACCUMULATE_TIME + 10);
 
   logger.logStatistics({
     videoBandwidth: 0.0,

@@ -278,10 +278,16 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     base.getNumberAttr(message.data, 'videoBandwidth');
     base.getNumberAttr(message.data, 'videoFrameRate');
     base.getNumberAttr(message.data, 'captureLatency');
+    base.getNumberAttr(message.data, 'maxCaptureLatency');
     base.getNumberAttr(message.data, 'encodeLatency');
+    base.getNumberAttr(message.data, 'maxEncodeLatency');
     base.getNumberAttr(message.data, 'decodeLatency');
+    base.getNumberAttr(message.data, 'maxDecodeLatency');
     base.getNumberAttr(message.data, 'renderLatency');
+    base.getNumberAttr(message.data, 'maxRenderLatency');
     base.getNumberAttr(message.data, 'roundtripLatency');
+    base.getNumberAttr(message.data, 'maxRoundtripLatency');
+
     this.perfStats_ =
         /** @type {remoting.ClientSession.PerfStats} */ (message.data);
 

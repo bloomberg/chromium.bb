@@ -207,7 +207,6 @@ remoting_webapp_shared_js_host_files = [
 remoting_webapp_shared_js_logging_files = [
   "base/js/format_iq.js",
   "base/js/session_logger.js",
-  "base/js/stats_accumulator.js",
 ]
 
 # Remoting signaling files.

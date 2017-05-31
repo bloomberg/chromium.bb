@@ -83,7 +83,7 @@ template("build_webapp_html") {
                 "--out_file",
                 rebase_path(target_jscompile_stamp, root_build_dir),
                 "--closure_args",
-              ] + closure_args + extra_closure_args
+              ] + default_closure_args + extra_closure_args
       args += [ "--externs" ] + rebase_path(externs, root_build_dir)
     }
   }
