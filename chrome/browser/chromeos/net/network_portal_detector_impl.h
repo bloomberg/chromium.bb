@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -42,7 +42,6 @@ class NetworkState;
 // NetworkStateHandler and delegates portal detection for the default
 // network to CaptivePortalService.
 class NetworkPortalDetectorImpl : public NetworkPortalDetector,
-                                  public base::NonThreadSafe,
                                   public chromeos::NetworkStateHandlerObserver,
                                   public content::NotificationObserver,
                                   public PortalDetectorStrategy::Delegate {
@@ -258,6 +257,11 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   // Number of detection attempts in a row with NO RESPONSE result.
   int no_response_result_count_ = 0;
+
+  // Must be declared before |notification_controller_| as
+  // ~NetworkPortalNotificationController() calls
+  // NetworkPortalDetectorImpl::RemoveObserver() which uses this.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // UI notification controller about captive portal state.
   std::unique_ptr<NetworkPortalNotificationController> notification_controller_;
