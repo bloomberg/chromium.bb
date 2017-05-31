@@ -330,19 +330,9 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
 SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : task_tracker_(task_tracker),
-      delayed_task_manager_(delayed_task_manager),
-      shared_scheduler_workers_ {}
-#if defined(OS_WIN)
-      ,
-      shared_com_scheduler_workers_ {}
-#endif  // defined(OS_WIN)
-{
+    : task_tracker_(task_tracker), delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
-  static_assert(
-      arraysize(shared_scheduler_workers_) == ENVIRONMENT_COUNT,
-      "The size of |shared_scheduler_workers_| must match ENVIRONMENT_COUNT");
 #if defined(OS_WIN)
   static_assert(arraysize(shared_com_scheduler_workers_) ==
                     arraysize(shared_scheduler_workers_),
@@ -427,7 +417,8 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   DCHECK(thread_mode != SingleThreadTaskRunnerThreadMode::SHARED ||
          !traits.with_base_sync_primitives())
       << "Using WithBaseSyncPrimitives() on a shared SingleThreadTaskRunner "
-         "may cause deadlocks. Either reevaluate your usage pattern or use "
+         "may cause deadlocks. Either reevaluate your usage (e.g. use "
+         "SequencedTaskRunner) or use "
          "SingleThreadTaskRunnerThreadMode::DEDICATED.";
   // To simplify the code, |dedicated_worker| is a local only variable that
   // allows the code to treat both the DEDICATED and SHARED cases similarly for
@@ -460,7 +451,8 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   if (new_worker && started)
     worker->Start();
 
-  return new SchedulerSingleThreadTaskRunner(this, traits, worker, thread_mode);
+  return MakeRefCounted<SchedulerSingleThreadTaskRunner>(this, traits, worker,
+                                                         thread_mode);
 }
 
 void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
@@ -569,8 +561,10 @@ void SchedulerSingleThreadTaskRunnerManager::ReleaseSharedSchedulerWorkers() {
     AutoSchedulerLock auto_lock(lock_);
     for (size_t i = 0; i < arraysize(shared_scheduler_workers_); ++i) {
       local_shared_scheduler_workers[i] = shared_scheduler_workers_[i];
+      shared_scheduler_workers_[i] = nullptr;
 #if defined(OS_WIN)
       local_shared_com_scheduler_workers[i] = shared_com_scheduler_workers_[i];
+      shared_com_scheduler_workers_[i] = nullptr;
 #endif
     }
   }

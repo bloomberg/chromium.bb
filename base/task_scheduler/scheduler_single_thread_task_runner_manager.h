@@ -40,9 +40,10 @@ class SchedulerWorkerDelegate;
 // Manages a pool of threads which are each associated with one or more
 // SingleThreadTaskRunners.
 //
-// SingleThreadTaskRunners using SingleThreadTaskRunnerThreadMode::SHARED, are
+// SingleThreadTaskRunners using SingleThreadTaskRunnerThreadMode::SHARED are
 // backed by shared SchedulerWorkers for each COM+task environment combination.
-// These workers are only reclaimed during JoinForTesting().
+// These workers are lazily instantiated and then only reclaimed during
+// JoinForTesting()
 //
 // No threads are created (and hence no tasks can run) before Start() is called.
 //
@@ -61,9 +62,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a thread
   // named "TaskSchedulerSingleThread[Shared]" + |name| +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +
-  // index. "Shared" will be in the thread name when |thread_mode| is SHARED. If
-  // |thread_mode| is DEDICATED, a thread will be dedicated to the returned task
-  // runner, otherwise it could be shared with other SingleThreadTaskRunners.
+  // index.
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       const std::string& name,
       const TaskTraits& traits,
@@ -73,9 +72,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a COM
   // STA thread named "TaskSchedulerSingleThreadCOMSTA[Shared]" + |name| +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +
-  // index. "Shared" will be in the thread name when |thread_mode| is SHARED. If
-  // |thread_mode| is DEDICATED, a thread will be dedicated to the returned task
-  // runner, otherwise it could be shared with other SingleThreadTaskRunners.
+  // index.
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
       const std::string& name,
       const TaskTraits& traits,
@@ -122,10 +119,10 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
   int next_worker_id_ = 0;
 
-  SchedulerWorker* shared_scheduler_workers_[4];
+  SchedulerWorker* shared_scheduler_workers_[ENVIRONMENT_COUNT] = {};
 
 #if defined(OS_WIN)
-  SchedulerWorker* shared_com_scheduler_workers_[4];
+  SchedulerWorker* shared_com_scheduler_workers_[ENVIRONMENT_COUNT] = {};
 #endif  // defined(OS_WIN)
 
   // Set to true when Start() is called.

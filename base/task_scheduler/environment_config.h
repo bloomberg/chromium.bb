@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/base_export.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread.h"
 
