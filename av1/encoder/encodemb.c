@@ -803,13 +803,21 @@ static int optimize_b_org(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif  // USE_GREEDY_OPTIMIZE_B
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
-                   TX_SIZE tx_size, int ctx) {
+                   BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                   const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   const int eob = p->eobs[block];
   assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
   if (eob == 0) return eob;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return eob;
+
+#if CONFIG_VAR_TX
+  int ctx = get_entropy_context(tx_size, a, l);
+#else
+  int ctx = combine_entropy_contexts(*a, *l);
+#endif
+
 #if CONFIG_PVQ
   (void)cm;
   (void)tx_size;
@@ -817,6 +825,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   return eob;
 #endif
 
+  (void)plane_bsize;
 #if USE_GREEDY_OPTIMIZE_B
   return optimize_b_greedy(cm, mb, plane, block, tx_size, ctx);
 #else   // USE_GREEDY_OPTIMIZE_B
@@ -1113,7 +1122,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #endif
 
 #if !CONFIG_PVQ
-  av1_optimize_b(cm, x, plane, block, tx_size, ctx);
+  av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -1734,7 +1743,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (args->enable_optimize_b) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
-    av1_optimize_b(cm, x, plane, block, tx_size, ctx);
+    av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_B);
