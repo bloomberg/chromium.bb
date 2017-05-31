@@ -28,7 +28,6 @@ class ModelImpl : public Model {
 
   // Model implementation.
   void Initialize() override;
-  void Destroy() override;
   void Add(const Entry& entry) override;
   void Update(const Entry& entry) override;
   void Remove(const std::string& guid) override;
@@ -40,7 +39,6 @@ class ModelImpl : public Model {
 
   void OnInitializedFinished(bool success,
                              std::unique_ptr<std::vector<Entry>> entries);
-  void OnDestroyFinished(bool success);
   void OnAddFinished(DownloadClient client,
                      const std::string& guid,
                      bool success);

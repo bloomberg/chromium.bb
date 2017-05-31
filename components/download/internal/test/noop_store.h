@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_NOOP_STORE_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_NOOP_STORE_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_TEST_NOOP_STORE_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_TEST_NOOP_STORE_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,7 +25,6 @@ class NoopStore : public Store {
   // Store implementation.
   bool IsInitialized() override;
   void Initialize(InitCallback callback) override;
-  void Destroy(StoreCallback callback) override;
   void Update(const Entry& entry, StoreCallback callback) override;
   void Remove(const std::string& guid, StoreCallback callback) override;
 
@@ -43,4 +42,4 @@ class NoopStore : public Store {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_NOOP_STORE_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_TEST_NOOP_STORE_H_

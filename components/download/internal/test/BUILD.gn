@@ -12,6 +12,8 @@ source_set("test_support") {
     "entry_utils.h",
     "mock_model_client.cc",
     "mock_model_client.h",
+    "noop_store.cc",
+    "noop_store.h",
     "test_download_driver.cc",
     "test_download_driver.h",
     "test_store.cc",
