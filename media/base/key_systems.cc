@@ -440,7 +440,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
 #endif  // defined(OS_ANDROID)
 
     DVLOG(1) << __func__
-             << " Adding key system:" << properties->GetKeySystemName();
+             << ": Adding key system:" << properties->GetKeySystemName();
     key_system_properties_map_[properties->GetKeySystemName()] =
         std::move(properties);
   }
@@ -510,7 +510,7 @@ bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {
   KeySystemPropertiesMap::const_iterator key_system_iter =
       key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
-    DLOG(ERROR) << key_system << " is not a known system";
+    DLOG(ERROR) << key_system << " is not a known key system";
     return false;
   }
   return key_system_iter->second->UseAesDecryptor();
