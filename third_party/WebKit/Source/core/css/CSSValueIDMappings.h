@@ -83,6 +83,13 @@ inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
   return detail::cssValueIDToPlatformEnumGenerated<EDisplay>(v);
 }
 
+template <>
+inline EUserSelect CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueAuto)
+    return EUserSelect::kText;
+  return detail::cssValueIDToPlatformEnumGenerated<EUserSelect>(v);
+}
+
 }  // namespace blink
 
 #endif

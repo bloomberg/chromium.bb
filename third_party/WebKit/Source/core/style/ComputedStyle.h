@@ -1765,15 +1765,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_inherited_data_, user_modify_, static_cast<unsigned>(u));
   }
 
-  // -webkit-user-select
-  static EUserSelect InitialUserSelect() { return EUserSelect::kText; }
-  EUserSelect UserSelect() const {
-    return static_cast<EUserSelect>(rare_inherited_data_->user_select_);
-  }
-  void SetUserSelect(EUserSelect s) {
-    SET_VAR(rare_inherited_data_, user_select_, static_cast<unsigned>(s));
-  }
-
   // caret-color
   void SetCaretColor(const StyleAutoColor& color) {
     SET_VAR(rare_inherited_data_, caret_color_, color.Resolve(Color()));
