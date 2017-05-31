@@ -2022,9 +2022,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       !is_external_protocol;
 
   if (is_shutdown_ || non_web_url_in_guest ||
-      // TODO(davidben): Check ShouldServiceRequest here. This is important; it
-      // needs to be checked relative to the child that /requested/ the
-      // navigation. It's where file upload checks, etc., come in.
       (delegate_ && !delegate_->ShouldBeginRequest(
           info.common_params.method,
           info.common_params.url,
