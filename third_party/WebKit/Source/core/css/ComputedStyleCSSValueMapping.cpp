@@ -3304,10 +3304,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyWebkitWritingMode:
       return CSSIdentifierValue::Create(style.GetWritingMode());
     case CSSPropertyWebkitTextCombine:
-      if (style.GetTextCombine() == TextCombine::kAll)
+      if (style.TextCombine() == ETextCombine::kAll)
         return CSSIdentifierValue::Create(CSSValueHorizontal);
     case CSSPropertyTextCombineUpright:
-      return CSSIdentifierValue::Create(style.GetTextCombine());
+      return CSSIdentifierValue::Create(style.TextCombine());
     case CSSPropertyWebkitTextOrientation:
       if (style.GetTextOrientation() == TextOrientation::kMixed)
         return CSSIdentifierValue::Create(CSSValueVerticalRight);
