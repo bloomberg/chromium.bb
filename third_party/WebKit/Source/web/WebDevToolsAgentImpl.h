@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "core/inspector/InspectorEmulationAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -42,7 +43,6 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
-#include "web/InspectorEmulationAgent.h"
 
 namespace blink {
 

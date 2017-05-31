@@ -149,7 +149,9 @@ class WebFrameWidgetImpl final
   void MouseContextMenu(const WebMouseEvent&);
 
   WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
-  GraphicsLayer* RootGraphicsLayer() const { return root_graphics_layer_; };
+  GraphicsLayer* RootGraphicsLayer() const override {
+    return root_graphics_layer_;
+  };
 
   Color BaseBackgroundColor() const;
 

@@ -39,6 +39,8 @@ blink_core_sources("inspector") {
     "InspectorDOMAgent.h",
     "InspectorDOMDebuggerAgent.cpp",
     "InspectorDOMDebuggerAgent.h",
+    "InspectorEmulationAgent.cpp",
+    "InspectorEmulationAgent.h",
     "InspectorFrontendClient.h",
     "InspectorHighlight.cpp",
     "InspectorHighlight.h",

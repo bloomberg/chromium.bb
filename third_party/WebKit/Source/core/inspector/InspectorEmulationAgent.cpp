@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/InspectorEmulationAgent.h"
+#include "core/inspector/InspectorEmulationAgent.h"
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
@@ -14,6 +14,7 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
@@ -169,8 +170,8 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
   web_local_frame_->View()->Scheduler()->EnableVirtualTime();
 
   if (budget.isJust()) {
-    base::TimeDelta budget_amount =
-        base::TimeDelta::FromMilliseconds(budget.fromJust());
+    WTF::TimeDelta budget_amount =
+        WTF::TimeDelta::FromMilliseconds(budget.fromJust());
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
         budget_amount,
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
