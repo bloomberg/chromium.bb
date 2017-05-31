@@ -512,7 +512,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 }
 
 GpuProcessHost::~GpuProcessHost() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SendOutstandingReplies();
 
@@ -659,7 +659,7 @@ bool GpuProcessHost::Init() {
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (process_->GetHost()->IsChannelOpening()) {
     queued_messages_.push(msg);
     return true;
@@ -676,7 +676,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if defined(USE_OZONE)
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&RouteMessageToOzoneOnUI, message));
@@ -700,7 +700,7 @@ void GpuProcessHost::EstablishGpuChannel(
     bool allow_view_command_buffers,
     bool allow_real_time_streams,
     const EstablishChannelCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuProcessHost::EstablishGpuChannel");
 
   // If GPU features are already blacklisted, no need to establish the channel.
@@ -737,7 +737,7 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   create_gpu_memory_buffer_requests_.push(callback);
   gpu_service_ptr_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle,
