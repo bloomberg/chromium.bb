@@ -27,6 +27,11 @@ public class NotificationBuilderForO extends NotificationBuilder {
             ChannelsInitializer channelsInitializer) {
         super(context);
         assert BuildInfo.isAtLeastO();
+        if (channelId == null) {
+            // The channelId may be null if the notification will be posted by another app that
+            // does not target O or sets its own channels. E.g. Web apk notifications.
+            return;
+        }
         channelsInitializer.ensureInitialized(channelId);
         // TODO(crbug.com/707804) Stop using reflection once compileSdkVersion is high enough.
         try {
