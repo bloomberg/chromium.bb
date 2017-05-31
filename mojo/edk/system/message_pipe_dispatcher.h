@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/edk/system/watcher_set.h"
 
@@ -48,9 +47,9 @@ class MessagePipeDispatcher : public Dispatcher {
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
-  MojoResult WriteMessage(std::unique_ptr<MessageForTransit> message,
+  MojoResult WriteMessage(std::unique_ptr<ports::UserMessageEvent> message,
                           MojoWriteMessageFlags flags) override;
-  MojoResult ReadMessage(std::unique_ptr<MessageForTransit>* message,
+  MojoResult ReadMessage(std::unique_ptr<ports::UserMessageEvent>* message,
                          uint32_t* num_bytes,
                          MojoHandle* handles,
                          uint32_t* num_handles,
