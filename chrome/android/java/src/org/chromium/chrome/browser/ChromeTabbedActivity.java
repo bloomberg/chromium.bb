@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
+import org.chromium.chrome.browser.browseractions.BrowserActionsContextMenuItemDelegate;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -616,10 +617,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        // If we don't have a current tab, show the overview mode.
-        if (getActivityTab() == null && !mLayoutManager.overviewVisible()) {
-            mLayoutManager.showOverview(false);
-        }
+
+        setInitialOverviewState();
+        BrowserActionsContextMenuItemDelegate.cancelBrowserActionsNotification();
 
         resetSavedInstanceState();
     }
@@ -670,6 +670,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } else if (MemoryPressureListener.handleDebugIntent(ChromeTabbedActivity.this,
                 intent.getAction())) {
             // Handled.
+        }
+    }
+
+    private void setInitialOverviewState() {
+        boolean isOverviewVisible = mLayoutManager.overviewVisible();
+        if (getActivityTab() == null && !isOverviewVisible) {
+            toggleOverview();
+        }
+
+        if (BrowserActionsContextMenuItemDelegate.toggleOverviewByBrowserActions(
+                    getIntent(), isOverviewVisible)) {
+            toggleOverview();
         }
     }
 
@@ -1823,8 +1835,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private void toggleOverview() {
         Tab currentTab = getActivityTab();
-        ContentViewCore contentViewCore =
-                currentTab != null ? currentTab.getContentViewCore() : null;
+        // If we don't have a current tab, show the overview mode.
+        if (currentTab == null) {
+            mLayoutManager.showOverview(false);
+            return;
+        }
+        ContentViewCore contentViewCore = currentTab.getContentViewCore();
 
         if (!mLayoutManager.overviewVisible()) {
             getCompositorViewHolder().hideKeyboard(new Runnable() {
