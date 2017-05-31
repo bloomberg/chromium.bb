@@ -1153,16 +1153,11 @@ public class LocationBarLayout extends FrameLayout
                     mRequestSuggestions = null;
 
                     if (getCurrentTab() == null
-                            && (mBottomSheet == null || mToolbarDataProvider.isIncognito())) {
+                            && (mBottomSheet == null || !mBottomSheet.isShowingNewTab())) {
                         return;
                     }
 
-                    // If the bottom sheet is not null, the current tab will be null when the
-                    // NTP UI is showing. Use the original profile rather than the tab profile
-                    // in that scenario.
-                    Profile profile = getCurrentTab() != null
-                            ? getCurrentTab().getProfile()
-                            : Profile.getLastUsedProfile().getOriginalProfile();
+                    Profile profile = getToolbarDataProvider().getProfile();
                     String url = getCurrentTab() != null ? getCurrentTab().getUrl()
                                                          : UrlConstants.NTP_URL;
                     mAutocomplete.start(profile, url, textWithoutAutocomplete, preventAutocomplete);
