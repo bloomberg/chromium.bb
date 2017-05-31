@@ -323,19 +323,26 @@ class ServiceManager::Instance
 
   class InterfaceProviderImpl : public mojom::InterfaceProvider {
    public:
-    InterfaceProviderImpl(const std::string& spec,
+    InterfaceProviderImpl(Instance* instance,
+                          const std::string& spec,
                           const Identity& source_identity,
                           const Identity& target_identity,
                           service_manager::ServiceManager* service_manager,
                           mojom::InterfaceProviderPtr target,
                           mojom::InterfaceProviderRequest source_request)
-        : spec_(spec),
+        : instance_(instance),
+          spec_(spec),
           source_identity_(source_identity),
           target_identity_(target_identity),
           service_manager_(service_manager),
           target_(std::move(target)),
           source_binding_(this, std::move(source_request)) {}
-    ~InterfaceProviderImpl() override {}
+    ~InterfaceProviderImpl() override {
+      target_.set_connection_error_handler(base::Bind(
+          &InterfaceProviderImpl::OnConnectionError, base::Unretained(this)));
+      source_binding_.set_connection_error_handler(base::Bind(
+          &InterfaceProviderImpl::OnConnectionError, base::Unretained(this)));
+    }
 
    private:
     // mojom::InterfaceProvider:
@@ -366,6 +373,12 @@ class ServiceManager::Instance
       return true;
     }
 
+    void OnConnectionError() {
+      // Deletes |this|.
+      instance_->filters_.erase(this);
+    }
+
+    Instance* const instance_;
     const std::string spec_;
     const Identity source_identity_;
     const Identity target_identity_;
@@ -449,9 +462,10 @@ class ServiceManager::Instance
                         const Identity& source,
                         mojom::InterfaceProviderRequest source_request,
                         mojom::InterfaceProviderPtr target) override {
-    filters_.push_back(base::MakeUnique<InterfaceProviderImpl>(
-        spec, source, identity_, service_manager_, std::move(target),
-        std::move(source_request)));
+    auto* filter = new InterfaceProviderImpl(
+        this, spec, source, identity_, service_manager_, std::move(target),
+        std::move(source_request));
+    filters_[filter] = base::WrapUnique(filter);
   }
 
   // mojom::PIDReceiver:
@@ -633,7 +647,8 @@ class ServiceManager::Instance
   base::ProcessId pid_ = base::kNullProcessId;
   State state_;
 
-  std::vector<std::unique_ptr<InterfaceProviderImpl>> filters_;
+  std::map<InterfaceProviderImpl*, std::unique_ptr<InterfaceProviderImpl>>
+      filters_;
 
   // The number of outstanding OnBindInterface requests which are in flight.
   int pending_service_connections_ = 0;
