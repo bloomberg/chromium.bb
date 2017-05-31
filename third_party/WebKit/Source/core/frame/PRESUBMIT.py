@@ -52,50 +52,13 @@ def _RunUseCounterChecks(input_api, output_api):
     return []
 
 
-def _RunUmaHistogramChecks(input_api, output_api):
-    import sys
-
-    original_sys_path = sys.path
-    try:
-        sys.path = sys.path + [input_api.os_path.join(
-            input_api.PresubmitLocalPath(), '..', '..', '..', '..', '..',
-            'tools', 'metrics', 'histograms')]
-        import update_histogram_enum
-    finally:
-        sys.path = original_sys_path
-
-    source_path = ''
-    for f in input_api.AffectedFiles():
-        if f.LocalPath().endswith('UseCounter.h'):
-            source_path = f.LocalPath()
-            break
-    else:
-        return []
-
-    start_marker = '^enum Feature : uint32_t {'
-    end_marker = '^kNumberOfFeatures'
-    presubmit_error = update_histogram_enum.CheckPresubmitErrors(
-        histogram_enum_name='FeatureObserver',
-        update_script_name='update_use_counter_feature_enum.py',
-        source_enum_path=source_path,
-        start_marker=start_marker,
-        end_marker=end_marker,
-        strip_k_prefix=True)
-    if presubmit_error:
-        return [output_api.PresubmitPromptWarning(presubmit_error,
-                                                  items=[source_path])]
-    return []
-
-
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_RunUseCounterChecks(input_api, output_api))
-    results.extend(_RunUmaHistogramChecks(input_api, output_api))
     return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_RunUseCounterChecks(input_api, output_api))
-    results.extend(_RunUmaHistogramChecks(input_api, output_api))
     return results

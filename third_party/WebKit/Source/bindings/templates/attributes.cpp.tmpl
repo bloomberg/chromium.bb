@@ -217,11 +217,11 @@ v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% if attribute.deprecate_as %}
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.deprecate_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.measure_as('AttributeGetter')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('AttributeGetter')}});
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
@@ -262,11 +262,11 @@ v8::Local<v8::Private> {{v8_class_or_partial}}::{{attribute.name}}CachedProperty
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if attribute.deprecate_as %}
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.deprecate_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.measure_as('ConstructorGetter')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
   {% endif %}
 
   V8ConstructorAttributeGetter(property, info);
@@ -438,11 +438,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.deprecate_as %}
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.deprecate_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{attribute.measure_as('AttributeSetter')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('AttributeSetter')}});
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
