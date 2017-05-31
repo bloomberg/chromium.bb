@@ -35,13 +35,14 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options(
-        chrome_trace_category_filter.ChromeTraceCategoryFilter())
-    options.config.chrome_trace_config.category_filter.AddFilterString('rail')
+        chrome_trace_category_filter.ChromeTraceCategoryFilter(
+            filter_string='rail,toplevel'))
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
     options.SetTimelineBasedMetrics([
         'clockSyncLatencyMetric',
+        'cpuTimeMetric',
         'powerMetric',
         'tracingMetric'
     ])
