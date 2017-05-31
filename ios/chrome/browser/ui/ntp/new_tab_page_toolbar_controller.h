@@ -22,7 +22,7 @@
 // ToolbarControllerStyleLightMode.
 - (instancetype)init;
 
-@property(nonatomic, assign) id<UrlLoader, OmniboxFocuser, WebToolbarDelegate>
+@property(nonatomic, weak) id<UrlLoader, OmniboxFocuser, WebToolbarDelegate>
     dispatcher;
 
 // |YES| if the toolbar can show the forward arrow.
