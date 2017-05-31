@@ -19,14 +19,15 @@ class WebViewClient;
 // This class will be removed once all implementations are in core/ or modules/.
 class CORE_EXPORT WebFactory {
  public:
-  // Takes ownership of |factory|.
-  // TODO(sashab): Make this method private to WebKit.cpp.
-  static void SetInstance(WebFactory&);
   static WebFactory& GetInstance();
 
   virtual ChromeClient* CreateChromeClient(WebViewBase*) const = 0;
   virtual WebViewBase* CreateWebViewBase(WebViewClient*,
                                          WebPageVisibilityState) const = 0;
+
+ protected:
+  // Takes ownership of |factory|.
+  static void SetInstance(WebFactory&);
 
  private:
   static WebFactory* factory_instance_;

@@ -14,6 +14,9 @@ class WebFactoryImpl : public WebFactory {
   WebFactoryImpl() {}
   ~WebFactoryImpl() {}
 
+  // Sets WebFactory to have a new instance of WebFactoryImpl.
+  static void Initialize();
+
   ChromeClient* CreateChromeClient(WebViewBase*) const override;
   WebViewBase* CreateWebViewBase(WebViewClient*,
                                  WebPageVisibilityState) const override;
