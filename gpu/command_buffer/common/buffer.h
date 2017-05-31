@@ -17,8 +17,11 @@
 #include "gpu/gpu_export.h"
 
 namespace base {
-  class SharedMemory;
-}
+
+class SharedMemory;
+class SharedMemoryHandle;
+
+}  // namespace base
 
 namespace gpu {
 
@@ -26,6 +29,7 @@ class GPU_EXPORT BufferBacking {
  public:
   virtual ~BufferBacking() {}
   virtual bool is_shared() const;
+  virtual base::SharedMemoryHandle shared_memory_handle() const;
   virtual void* GetMemory() const = 0;
   virtual size_t GetSize() const = 0;
 };
@@ -36,6 +40,7 @@ class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
                             size_t size);
   ~SharedMemoryBufferBacking() override;
   bool is_shared() const override;
+  base::SharedMemoryHandle shared_memory_handle() const override;
   void* GetMemory() const override;
   size_t GetSize() const override;
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
