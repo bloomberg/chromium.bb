@@ -8,9 +8,10 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.TestFileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,24 +25,26 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
         ContextUtils.initApplicationContextForTests(
                 getInstrumentation().getTargetContext().getApplicationContext());
-        mTempDir = new File(ContextUtils.getApplicationContext().getCacheDir(), "crash-dump-test");
-        if (mTempDir.exists()) {
-            FileUtils.recursivelyDeleteFile(mTempDir);
-        }
-        assert mTempDir.mkdirs();
+        mTempDir = ContextUtils.getApplicationContext().getCacheDir();
+        assert mTempDir.exists();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        FileUtils.recursivelyDeleteFile(mTempDir);
         super.tearDown();
+        File[] files = mTempDir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            TestFileUtil.deleteFile(file);
+        }
     }
 
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_NoCallback() throws IOException {
         File minidump = new File(mTempDir, "mini.dmp");
         assertTrue(minidump.createNewFile());
@@ -51,6 +54,7 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_NullMinidumpPath() {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
@@ -62,8 +66,9 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
         CrashDumpManager.tryToUploadMinidump(null);
     }
 
-    @SmallTest
-    @Feature({"Android-AppBase"})
+    // @SmallTest
+    // @Feature({"Android-AppBase"})
+    @DisabledTest // Flaky, crbug.com/726976.
     public void testUploadMinidump_FileDoesntExist() {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
