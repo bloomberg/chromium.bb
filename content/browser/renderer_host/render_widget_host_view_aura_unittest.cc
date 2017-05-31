@@ -1568,15 +1568,12 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
 
   EXPECT_FALSE(view_->has_composition_text_);
 
-  EXPECT_EQ(2U, sink_->message_count());
+  ASSERT_EQ(2U, sink_->message_count());
 
-  if (sink_->message_count() == 2) {
-    // Verify mouse event happens after the finish composing text event.
-    EXPECT_EQ(InputMsg_ImeFinishComposingText::ID,
-              sink_->GetMessageAt(0)->type());
-    EXPECT_EQ(InputMsg_HandleInputEvent::ID,
-              sink_->GetMessageAt(1)->type());
-  }
+  // Verify mouse event happens after the finish composing text event.
+  EXPECT_EQ(InputMsg_ImeFinishComposingText::ID,
+            sink_->GetMessageAt(0)->type());
+  EXPECT_EQ(InputMsg_HandleInputEvent::ID, sink_->GetMessageAt(1)->type());
 }
 
 // Checks that touch-event state is maintained correctly.
