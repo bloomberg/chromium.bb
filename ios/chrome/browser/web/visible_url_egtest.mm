@@ -402,8 +402,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
+  // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
+  // request here.
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -432,8 +432,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // even though URL1 is a pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
+  // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
+  // request here.
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
 
