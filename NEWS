@@ -27,12 +27,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Appendix 3 (Symbols List) from the Rules of Unified English Braille
   Second Edition 2013 document thanks to Victor Montalvão.
 ** Backwards incompatible changes
-None
+- The old greek table gr-gr-g1.utb is gone. Use el.ctb instead
 
 ** New, renamed or removed tables
 - sin.cti (new)
 - sin.utb (new)
 - hu-hu-g2.ctb (new)
+- gr-gr-g1.utb (removed and replaced by el.ctb)
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 An influx of new contributors have made sure that liblouis continues

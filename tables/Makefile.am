@@ -158,7 +158,6 @@ table_files = \
 	gon.ctb \
 	gon.tbl \
 	gr-bb.ctb \
-	gr-gr-g1.utb \
 	gr-pl-comp8.uti \
 	gu-in-g1.utb \
 	gujarati.cti \

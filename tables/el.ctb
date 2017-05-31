@@ -21,19 +21,6 @@
 #
 # Created and maintained by Dave Mielke: <dave@mielke.cc>, [http://mielke.cc/]
 
-#+copyright: 2017, Dave Mielke
-#+license: LGPLv2.1
-
-#+author-name: Dave Mielke
-#+author-email: dave@mielke.cc
-#+author-url: http://mielke.cc/
-
-#+locale: el
-#+type: literary
-#+dots: 6
-#+contraction: no
-#+direction: both
-
 ##########
 # Spaces #
 ##########
