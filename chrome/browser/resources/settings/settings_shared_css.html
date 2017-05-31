@@ -27,6 +27,18 @@
        --iron-icon-fill-color: var(--google-green-500);
       }
 
+      paper-icon-button {
+        -webkit-margin-end: var(--cr-icon-ripple-margin);
+        -webkit-margin-start: 16px;
+        color: var(--paper-grey-600);
+        flex-shrink: 0;
+      }
+
+      .separator + button[is='paper-icon-button-light'],
+      .separator + paper-icon-button {
+        -webkit-margin-start: var(--cr-icon-ripple-margin));
+      }
+
       /* See notes in .primary-button.
        * TODO(dschuyler): Remove unnecessary .secondary-button references. */
       paper-button {
@@ -50,8 +62,19 @@
         background-color: var(--paper-grey-300);
       }
 
-      .settings-box paper-button {
+      /* If a button is at the end of the row, shift it to overlap the end of
+       * the row. */
+      .settings-box paper-button:last-of-type {
         -webkit-margin-end: calc(var(--settings-button-edge-spacing) * -1);
+      }
+
+      /* Space out multiple buttons in the same row. */
+      .settings-box paper-button + paper-button {
+        -webkit-margin-start: 16px;
+      }
+
+      /* Adjust the margin between the separator and the first button. */
+      .settings-box .separator + paper-button {
         -webkit-margin-start: calc(var(--settings-button-edge-spacing) * -1);
       }
 
