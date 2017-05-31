@@ -205,6 +205,7 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
     }
     overlay_damage_rect->Union(quad_rectangle);
 
+    RecordDCLayerResult(DC_LAYER_SUCCESS);
     ca_layer_overlays->push_back(ca_layer);
     // Only allow one overlay for now.
     break;
