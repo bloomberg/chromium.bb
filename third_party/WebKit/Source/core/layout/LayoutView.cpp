@@ -903,6 +903,13 @@ LayoutRect LayoutView::DebugRect() const {
   return rect;
 }
 
+bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
+  bool relayout_children = LayoutBlockFlow::UpdateLogicalWidthAndColumnWidth();
+  // When we're printing, the size of LayoutView is changed outside of layout,
+  // so we'll fail to detect any changes here. Just return true.
+  return relayout_children || ShouldUsePrintingLayout();
+}
+
 bool LayoutView::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // Frame scroll corner is painted using LayoutView as the display item client.
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
