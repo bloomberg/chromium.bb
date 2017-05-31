@@ -36,8 +36,11 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 #include "internal.h"
 
-/*additional bits in typebuf*/
-#define CAPSEMPH 0x8000
+/* additional bits in typebuf */
+#define SYLLABLE_MARKER_1 0x2000
+#define SYLLABLE_MARKER_2 0x4000
+#define CAPSEMPH          0x8000
+
 #define EMPHASIS 0x3fff // all typeform bits that can be used
 
 /*   bits for wordBuffer   */
@@ -2978,8 +2981,10 @@ markSyllables (const TranslationTableHeader *table,
 {
   int src;
   int k;
-  int syllableMarker = 0;
   int currentMark = 0;
+  int const syllable_marks[] = {SYLLABLE_MARKER_1, SYLLABLE_MARKER_2};
+  int syllable_mark_selector = 0;
+
   if (typebuf == NULL || !table->syllables)
     return 1;
   src = 0;
@@ -3044,14 +3049,14 @@ markSyllables (const TranslationTableHeader *table,
 	case CTO_Always:
 	  if (src >= srcmax)
 	    return 0;
-   typebuf[src++] |= currentMark;
+	  typebuf[src++] |= currentMark;
 	  break;
 	case CTO_Syllable:
-	  syllableMarker++;
-	  if (syllableMarker > 2)
-	    syllableMarker = 1;
-	  currentMark = syllableMarker << 14;
-	  /*The syllable marker is bits 14 and 15 of typebuf. */
+	  /* cycle between SYLLABLE_MARKER_1 and SYLLABLE_MARKER_2 so
+	     we can distinguinsh two consequtive syllables */
+	  currentMark = syllable_marks[syllable_mark_selector];
+	  syllable_mark_selector = (syllable_mark_selector + 1) % 2;
+
 	  if ((src + *transCharslen) > srcmax)
 	    return 0;
 	  for (k = 0; k < *transCharslen; k++)

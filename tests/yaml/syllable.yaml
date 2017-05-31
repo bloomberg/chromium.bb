@@ -18,26 +18,22 @@ tests:
   - # translating the word the third time results in an wrong translation
     - abhörauftrag abhörauftrag abhörauftrag
     - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
-    - {xfail: true}
+
   - # the fourth translation is correct again
     # (but the third is of course still wrong)
     - abhörauftrag abhörauftrag abhörauftrag abhörauftrag
     - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
-    - {xfail: true}
 
   - # the fifth translation is wrong again
     - abhörauftrag abhörauftrag abhörauftrag abhörauftrag abhörauftrag
     - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
-    - {xfail: true}
 
   - # ... and the sixth is correct
     - abhörauftrag abhörauftrag abhörauftrag abhörauftrag abhörauftrag abhörauftrag
     - ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛ ⠁⠃⠓⠪⠗⠂⠡⠞⠛
-    - {xfail: true}
 
-# Now let's see if the bug is also exposed when using no umlauts. No.
-# Apparently this bug is only triggered for umlauts
-  -
+  - # Now let's see if the bug is also exposed when using no umlauts.
+    # No. Apparently this bug is only triggered for umlauts
     - lehrauftrag
     - ⠇⠶⠗⠂⠡⠞⠛
   -
@@ -49,3 +45,13 @@ tests:
   -
     - lehrauftrag lehrauftrag lehrauftrag lehrauftrag
     - ⠇⠶⠗⠂⠡⠞⠛ ⠇⠶⠗⠂⠡⠞⠛ ⠇⠶⠗⠂⠡⠞⠛ ⠇⠶⠗⠂⠡⠞⠛
+
+  - # let's also test some consequtive syllables
+    - aufbauschreibangebotsemester
+    - ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻
+  -
+    - aufbauschreibangebotsemester aufbauschreibangebotsemester
+    - ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻ ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻
+  -
+    - aufbauschreibangebotsemester aufbauschreibangebotsemester aufbauschreibangebotsemester
+    - ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻ ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻ ⠂⠡⠃⠡⠱⠃⠖⠯⠃⠕⠞⠎⠷⠑⠾⠻
