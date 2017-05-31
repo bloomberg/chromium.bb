@@ -1234,11 +1234,13 @@
     ],
 
     'gpu_tests_deqp_gles_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot',
+      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
+      'gpu_fyi_tests', 'release_trybot', 'no_clang',
     ],
 
     'gpu_tests_deqp_gles_release_trybot_x86': [
-      'gpu_fyi_tests', 'release_trybot', 'x86',
+      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
+      'gpu_fyi_tests', 'release_trybot', 'x86', 'no_clang',
     ],
 
     'gpu_tests_debug_trybot': [
@@ -1593,6 +1595,10 @@
 
     'clang': {
       'gn_args': 'is_clang=true',
+    },
+
+    'no_clang': {
+      'gn_args': 'is_clang=false',
     },
 
     'cronet': {
