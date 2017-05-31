@@ -18,7 +18,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -47,8 +47,7 @@ typedef base::Callback<void(std::unique_ptr<ParsedServerResponse>)>
 
 typedef base::Callback<ExtendedReportingLevel()> ExtendedReportingLevelCallback;
 
-class V4UpdateProtocolManager : public net::URLFetcherDelegate,
-                                public base::NonThreadSafe {
+class V4UpdateProtocolManager : public net::URLFetcherDelegate {
  public:
   ~V4UpdateProtocolManager() override;
 
@@ -191,6 +190,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   base::OneShotTimer timeout_timer_;
 
   ExtendedReportingLevelCallback extended_reporting_level_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(V4UpdateProtocolManager);
 };
