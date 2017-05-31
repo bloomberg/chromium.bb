@@ -384,38 +384,8 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
                                   static_cast<int>(cache->max_entries()));
       cache_info_dict->SetInteger("network_changes", cache->network_changes());
 
-      base::ListValue* entry_list = new base::ListValue();
-
-      for (const auto& pair : cache->entries()) {
-        const HostCache::Key& key = pair.first;
-        const HostCache::Entry& entry = pair.second;
-
-        std::unique_ptr<base::DictionaryValue> entry_dict(
-            new base::DictionaryValue());
-
-        entry_dict->SetString("hostname", key.hostname);
-        entry_dict->SetInteger("address_family",
-                               static_cast<int>(key.address_family));
-        entry_dict->SetString("expiration",
-                              NetLog::TickCountToString(entry.expires()));
-        entry_dict->SetInteger("ttl", entry.ttl().InMilliseconds());
-        entry_dict->SetInteger("network_changes", entry.network_changes());
-
-        if (entry.error() != OK) {
-          entry_dict->SetInteger("error", entry.error());
-        } else {
-          const AddressList& addresses = entry.addresses();
-          // Append all of the resolved addresses.
-          base::ListValue* address_list = new base::ListValue();
-          for (size_t i = 0; i < addresses.size(); ++i)
-            address_list->AppendString(addresses[i].ToStringWithoutPort());
-          entry_dict->Set("addresses", address_list);
-        }
-
-        entry_list->Append(std::move(entry_dict));
-      }
-
-      cache_info_dict->Set("entries", entry_list);
+      cache_info_dict->Set("entries",
+                           cache->GetAsListValue(/*include_staleness=*/true));
       dict->Set("cache", cache_info_dict);
       net_info_dict->Set(NetInfoSourceToString(NET_INFO_HOST_RESOLVER),
                          std::move(dict));
