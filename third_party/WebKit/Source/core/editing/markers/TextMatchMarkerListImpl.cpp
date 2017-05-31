@@ -22,8 +22,8 @@ bool TextMatchMarkerListImpl::IsEmpty() const {
 }
 
 void TextMatchMarkerListImpl::Add(DocumentMarker* marker) {
-  DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
-      &markers_, TextMatchMarker::Create(*marker));
+  DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
+                                                               marker);
 }
 
 void TextMatchMarkerListImpl::Clear() {
