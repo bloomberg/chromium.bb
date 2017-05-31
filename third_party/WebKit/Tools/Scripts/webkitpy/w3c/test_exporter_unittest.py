@@ -254,9 +254,16 @@ class TestExporterTest(unittest.TestCase):
 
     def test_attempts_to_merge_landed_gerrit_cl(self):
         host = MockHost()
-        host.executive = mock_git_commands({
-            'footers': 'decafbad',
-        })
+
+        def mock_command(args):
+            if args[1] != 'footers':
+                return ''
+            if args[2] == '--key':
+                return 'decafbad\n'
+            elif args[2] == '--position':
+                return 'refs/heads/master@{#475994}'
+
+        host.executive = MockExecutive(run_command_fn=mock_command)
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
@@ -273,6 +280,7 @@ class TestExporterTest(unittest.TestCase):
 
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_with_position',
+            'pr_with_change_id',
             'get_pr_branch',
             'merge_pull_request',
             'delete_remote_branch',
