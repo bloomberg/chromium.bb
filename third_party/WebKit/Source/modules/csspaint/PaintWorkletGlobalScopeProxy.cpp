@@ -40,13 +40,6 @@ void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
                                       pending_tasks);
 }
 
-void PaintWorkletGlobalScopeProxy::EvaluateScript(
-    const ScriptSourceCode& script_source_code) {
-  // This should be called only for threaded worklets that still use classic
-  // script loading.
-  NOTREACHED();
-}
-
 void PaintWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
   DCHECK(IsMainThread());
   global_scope_->Terminate();

@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class ScriptSourceCode;
 class WorkletPendingTasks;
 
 // Abstracts communication from (Main/Threaded)Worklet on the main thread to
@@ -29,10 +28,6 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
       WebURLRequest::FetchCredentialsMode,
       RefPtr<WebTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) {}
-
-  // Evaluates the given script source code. This should be called only for
-  // threaded worklets that still use classic script loading.
-  virtual void EvaluateScript(const ScriptSourceCode&) = 0;
 
   // Terminates the worklet global scope from the main thread.
   virtual void TerminateWorkletGlobalScope() = 0;
