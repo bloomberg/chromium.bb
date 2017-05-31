@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "core/CoreExport.h"
+#include "core/editing/spellcheck/SpellCheckerClient.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
@@ -39,7 +40,6 @@
 #include "core/page/ContextMenuClient.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Page.h"
-#include "core/page/SpellCheckerClient.h"
 #include "platform/DragImage.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/geometry/FloatPoint.h"
