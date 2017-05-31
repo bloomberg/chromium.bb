@@ -1089,10 +1089,8 @@ bool Editor::InsertLineBreak() {
   if (!CanEdit())
     return false;
 
-  VisiblePosition caret = GetFrame()
-                              .Selection()
-                              .ComputeVisibleSelectionInDOMTreeDeprecated()
-                              .VisibleStart();
+  VisiblePosition caret =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().VisibleStart();
   bool align_to_edge = IsEndOfEditableOrNonEditableContent(caret);
   DCHECK(GetFrame().GetDocument());
   if (!TypingCommand::InsertLineBreak(*GetFrame().GetDocument()))
@@ -1111,10 +1109,8 @@ bool Editor::InsertParagraphSeparator() {
   if (!CanEditRichly())
     return InsertLineBreak();
 
-  VisiblePosition caret = GetFrame()
-                              .Selection()
-                              .ComputeVisibleSelectionInDOMTreeDeprecated()
-                              .VisibleStart();
+  VisiblePosition caret =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().VisibleStart();
   bool align_to_edge = IsEndOfEditableOrNonEditableContent(caret);
   DCHECK(GetFrame().GetDocument());
   EditingState editing_state;
