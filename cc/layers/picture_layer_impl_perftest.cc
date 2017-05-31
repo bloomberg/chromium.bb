@@ -134,7 +134,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     do {
       int count = num_tiles;
       std::unique_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-          pending_layer_->picture_layer_tiling_set()));
+          pending_layer_->picture_layer_tiling_set(),
+          pending_layer_->contributes_to_drawn_render_surface()));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top().tile()) << "count: " << count;
@@ -162,7 +163,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     timer_.Reset();
     do {
       std::unique_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-          pending_layer_->picture_layer_tiling_set()));
+          pending_layer_->picture_layer_tiling_set(),
+          pending_layer_->contributes_to_drawn_render_surface()));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -11,8 +11,11 @@
 namespace cc {
 
 TilingSetEvictionQueue::TilingSetEvictionQueue(
-    PictureLayerTilingSet* tiling_set)
-    : tree_(tiling_set->tree()), phase_(EVENTUALLY_RECT) {
+    PictureLayerTilingSet* tiling_set,
+    bool is_drawing_layer)
+    : tree_(tiling_set->tree()),
+      phase_(EVENTUALLY_RECT),
+      is_drawing_layer_(is_drawing_layer) {
   // Early out if the layer has no tilings.
   if (!tiling_set->num_tilings())
     return;

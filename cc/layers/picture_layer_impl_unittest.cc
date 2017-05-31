@@ -2961,8 +2961,9 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
   // Tiles don't have resources yet.
-  std::unique_ptr<TilingSetEvictionQueue> queue(
-      new TilingSetEvictionQueue(pending_layer()->picture_layer_tiling_set()));
+  std::unique_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+      pending_layer()->picture_layer_tiling_set(),
+      pending_layer()->contributes_to_drawn_render_surface()));
   EXPECT_TRUE(queue->IsEmpty());
 
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
@@ -2975,8 +2976,9 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   PrioritizedTile last_tile;
   size_t distance_decreasing = 0;
   size_t distance_increasing = 0;
-  queue.reset(
-      new TilingSetEvictionQueue(pending_layer()->picture_layer_tiling_set()));
+  queue.reset(new TilingSetEvictionQueue(
+      pending_layer()->picture_layer_tiling_set(),
+      pending_layer()->contributes_to_drawn_render_surface()));
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -3660,8 +3662,9 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
     size_t occluded_tile_count = 0u;
     PrioritizedTile last_tile;
 
-    std::unique_ptr<TilingSetEvictionQueue> queue(
-        new TilingSetEvictionQueue(layer->picture_layer_tiling_set()));
+    std::unique_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+        layer->picture_layer_tiling_set(),
+        layer->contributes_to_drawn_render_surface()));
     while (!queue->IsEmpty()) {
       PrioritizedTile prioritized_tile = queue->Top();
       Tile* tile = prioritized_tile.tile();
