@@ -2056,6 +2056,11 @@ const char kMessageCenterAlwaysScrollUpUponRemovalDescription[] =
     "Enables experiment that message center always scroll up when a "
     "notification is removed.";
 
+const char kMessageCenterNewStyleNotificationName[] = "New style notification";
+
+const char kMessageCenterNewStyleNotificationDescription[] =
+    "Enables the experiment style of material-design notification";
+
 const char kCastStreamingHwEncodingName[] =
     "Cast Streaming hardware video encoding";
 

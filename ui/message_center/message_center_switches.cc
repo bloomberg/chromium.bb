@@ -17,4 +17,11 @@ const char kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval[] =
 const char kMessageCenterChangesWhileOpen[] =
     "message-center-changes-while-open";
 
+// Flag to enable or disable new-style notification. This flag will be removed
+// once the feature gets stable.
+const char kEnableMessageCenterNewStyleNotification[] =
+    "enabled-new-style-notification";
+const char kDisableMessageCenterNewStyleNotification[] =
+    "disabled-new-style-notification";
+
 }  // namespace switches

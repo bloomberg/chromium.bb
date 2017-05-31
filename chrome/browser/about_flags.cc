@@ -1851,6 +1851,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(
          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
+    {"enable-message-center-new-style-notification",
+     flag_descriptions::kMessageCenterNewStyleNotificationName,
+     flag_descriptions::kMessageCenterNewStyleNotificationDescription,
+     kOsDesktop,
+     ENABLE_DISABLE_VALUE_TYPE(
+         switches::kEnableMessageCenterNewStyleNotification,
+         switches::kDisableMessageCenterNewStyleNotification)},
 #endif  // !OS_ANDROID
     {"enable-md-policy-page",
      flag_descriptions::kEnableMaterialDesignPolicyPageName,

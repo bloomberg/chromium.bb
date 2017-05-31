@@ -440,6 +440,9 @@ extern const char kMemoryAblationDescription[];
 extern const char kMemoryCoordinatorName[];
 extern const char kMemoryCoordinatorDescription[];
 
+extern const char kMessageCenterNewStyleNotificationName[];
+extern const char kMessageCenterNewStyleNotificationDescription[];
+
 extern const char kMessageCenterAlwaysScrollUpUponRemovalName[];
 extern const char kMessageCenterAlwaysScrollUpUponRemovalDescription[];
 
