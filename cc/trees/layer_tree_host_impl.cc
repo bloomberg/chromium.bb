@@ -2243,12 +2243,12 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   if (use_gpu_rasterization_) {
     image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
         compositor_frame_sink_->worker_context_provider(),
-        settings_.renderer_settings.preferred_tile_format,
+        settings_.preferred_tile_format,
         settings_.decoded_image_working_set_budget_bytes,
         settings_.decoded_image_cache_budget_bytes);
   } else {
     image_decode_cache_ = base::MakeUnique<SoftwareImageDecodeCache>(
-        settings_.renderer_settings.preferred_tile_format,
+        settings_.preferred_tile_format,
         settings_.decoded_image_working_set_budget_bytes);
   }
 
@@ -2310,7 +2310,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
-        msaa_sample_count, settings_.renderer_settings.preferred_tile_format,
+        msaa_sample_count, settings_.preferred_tile_format,
         settings_.async_worker_context_enabled);
     return;
   }
@@ -2332,8 +2332,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
         settings_.disallow_non_exact_resource_reuse);
 
     *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
-        resource_provider_.get(),
-        settings_.renderer_settings.preferred_tile_format);
+        resource_provider_.get(), settings_.preferred_tile_format);
     return;
   }
 
@@ -2351,8 +2350,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
-      settings_.renderer_settings.preferred_tile_format,
-      settings_.async_worker_context_enabled);
+      settings_.preferred_tile_format, settings_.async_worker_context_enabled);
 }
 
 void LayerTreeHostImpl::SetLayerTreeMutator(

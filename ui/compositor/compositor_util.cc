@@ -28,8 +28,6 @@ cc::RendererSettings CreateRendererSettings(uint32_t (
       command_line->HasSwitch(cc::switches::kGlCompositedTextureQuadBorder);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
-  if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
-    renderer_settings.preferred_tile_format = cc::RGBA_4444;
   renderer_settings.enable_color_correct_rendering =
       command_line->HasSwitch(switches::kEnableColorCorrectRendering) ||
       command_line->HasSwitch(switches::kEnableHDR);

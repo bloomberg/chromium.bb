@@ -142,6 +142,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.buffer_to_texture_target_map =
       context_factory_->GetRendererSettings().buffer_to_texture_target_map;
+  if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
+    settings.preferred_tile_format = cc::RGBA_4444;
 
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
