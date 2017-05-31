@@ -15,8 +15,8 @@ namespace blink {
 
 void ResizeViewportAnchor::ResizeFrameView(IntSize size) {
   LocalFrameView* frame_view = RootFrameView();
-  // TODO(szager): Remove this CHECK if it doesn't show up in crash reports.
-  CHECK(frame_view);
+  if (!frame_view)
+    return;
 
   ScrollableArea* root_viewport = frame_view->GetScrollableArea();
   ScrollOffset offset = root_viewport->GetScrollOffset();
