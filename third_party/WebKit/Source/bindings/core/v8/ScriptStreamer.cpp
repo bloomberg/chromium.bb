@@ -420,8 +420,8 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       // understanding of the data encoding.
       constexpr size_t kMaximumLengthOfBOM = 4;
       char maybe_bom[kMaximumLengthOfBOM] = {};
-      if (!resource->ResourceBuffer()->GetPartAsBytes(
-              maybe_bom, static_cast<size_t>(0), kMaximumLengthOfBOM)) {
+      if (!resource->ResourceBuffer()->GetBytes(maybe_bom,
+                                                kMaximumLengthOfBOM)) {
         NOTREACHED();
         return;
       }

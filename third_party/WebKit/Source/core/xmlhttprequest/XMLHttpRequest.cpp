@@ -394,8 +394,9 @@ DOMArrayBuffer* XMLHttpRequest::ResponseArrayBuffer() {
       DOMArrayBuffer* buffer = DOMArrayBuffer::CreateUninitializedOrNull(
           binary_response_builder_->size(), 1);
       if (buffer) {
-        binary_response_builder_->GetAsBytes(
+        bool result = binary_response_builder_->GetBytes(
             buffer->Data(), static_cast<size_t>(buffer->ByteLength()));
+        DCHECK(result);
         response_array_buffer_ = buffer;
       }
       // https://xhr.spec.whatwg.org/#arraybuffer-response allows clearing

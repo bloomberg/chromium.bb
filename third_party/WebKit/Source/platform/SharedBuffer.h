@@ -112,26 +112,14 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     return GetSomeDataInternal(data, position);
   }
 
-  // Returns the content data into "dest" as a flat buffer. "byteLength" must
-  // exactly match with size(). |dest| must not be null even if |bytesLength|
-  // is 0.
+  // Copies |byteLength| bytes from the beginning of the content data into
+  // |dest| as a flat buffer. Returns true on success, otherwise the content of
+  // |dest| is not guaranteed.
   HAS_STRICTLY_TYPED_ARG
-  void GetAsBytes(void* dest, STRICTLY_TYPED_ARG(byte_length)) const {
+  WARN_UNUSED_RESULT
+  bool GetBytes(void* dest, STRICTLY_TYPED_ARG(byte_length)) const {
     STRICT_ARG_TYPE(size_t);
-    DCHECK_EQ(byte_length, size());
-    auto result = GetAsBytesInternal(dest, 0, byte_length);
-    DCHECK(result);
-  }
-
-  // Copies "byteLength" bytes from "position"-th bytes (0 origin) of the
-  // content data into "dest" as a flat buffer, Returns true on success,
-  // otherwise the content of "dest" is not guaranteed.
-  HAS_STRICTLY_TYPED_ARG
-  bool GetPartAsBytes(void* dest,
-                      STRICTLY_TYPED_ARG(position),
-                      STRICTLY_TYPED_ARG(byte_length)) const {
-    STRICT_ARG_TYPE(size_t);
-    return GetAsBytesInternal(dest, position, byte_length);
+    return GetBytesInternal(dest, byte_length);
   }
 
   // Creates an SkData and copies this SharedBuffer's contents to that
@@ -150,7 +138,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   void MergeSegmentsIntoBuffer() const;
 
   void AppendInternal(const char* data, size_t);
-  bool GetAsBytesInternal(void* dest, size_t, size_t) const;
+  bool GetBytesInternal(void* dest, size_t) const;
   size_t GetSomeDataInternal(const char*& data, size_t position) const;
 
   size_t size_;
