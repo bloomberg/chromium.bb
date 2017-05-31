@@ -94,6 +94,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     // timer).
     private static final int TAP_NEAR_PREVIOUS_DETECTION_DELAY_MS = 100;
 
+    private static final int NANOSECONDS_IN_A_MILLISECOND = 1000000;
+
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
 
@@ -101,6 +103,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
     private final TabModelObserver mTabModelObserver;
+
+    // The Ranker logger to use to write Tap Suppression Ranker logs to UMA.
+    private final ContextualSearchRankerLogger mTapSuppressionRankerLogger;
 
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
@@ -224,15 +229,12 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         };
 
         mSelectionController = new ContextualSearchSelectionController(activity, this);
-
         mNetworkCommunicator = this;
-
         mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
-
         mTranslateController = new ContextualSearchTranslateController(activity, mPolicy, this);
-
         mInternalStateController = new ContextualSearchInternalStateController(
                 mPolicy, getContextualSearchInternalStateHandler());
+        mTapSuppressionRankerLogger = new ContextualSearchRankerLoggerImpl();
     }
 
     /**
@@ -783,6 +785,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         // Notify the UI of the caption.
         mSearchPanel.setCaption(caption);
+        System.out.println("ctxs checking mQuickAnswersHeuristic " + mQuickAnswersHeuristic);
         if (mQuickAnswersHeuristic != null) {
             mQuickAnswersHeuristic.setConditionSatisfied(true);
             mQuickAnswersHeuristic.setDoesAnswer(doesAnswer);
@@ -1291,10 +1294,40 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     @Override
-    public void handleNonSuppressedTap() {
+    public void handleNonSuppressedTap(long tapTimeNanoseconds) {
         if (mIsAccessibilityModeEnabled) return;
 
-        mInternalStateController.notifyFinishedWorkOn(InternalState.DECIDING_SUPPRESSION);
+        // If there's a wait-after-tap experiment then we may want to delay a bit longer for
+        // the user to take an action like scrolling that will reset our internal state.
+        long delayBeforeFinishingWorkMs = 0;
+        if (ContextualSearchFieldTrial.getWaitAfterTapDelayMs() > 0 && tapTimeNanoseconds > 0) {
+            delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getWaitAfterTapDelayMs()
+                    - (System.nanoTime() - tapTimeNanoseconds) / NANOSECONDS_IN_A_MILLISECOND;
+        }
+
+        // Finish work on the current state, either immediately or with a delay.
+        if (delayBeforeFinishingWorkMs <= 0) {
+            finishSuppressionDecision();
+        } else {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finishSuppressionDecision();
+                }
+            }, delayBeforeFinishingWorkMs);
+        }
+    }
+
+    /**
+     * Finishes work on the suppression decision if that work is still in progress.
+     * If no longer working on the suppression decision then resets the Ranker-logger.
+     */
+    private void finishSuppressionDecision() {
+        if (mInternalStateController.isStillWorkingOn(InternalState.DECIDING_SUPPRESSION)) {
+            mInternalStateController.notifyFinishedWorkOn(InternalState.DECIDING_SUPPRESSION);
+        } else {
+            mTapSuppressionRankerLogger.reset();
+        }
     }
 
     @Override
@@ -1308,7 +1341,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         mHeuristics.add(mQuickAnswersHeuristic);
 
         mSearchPanel.getPanelMetrics().setResultsSeenExperiments(mHeuristics);
-        mSearchPanel.getPanelMetrics().setRankerLogExperiments(mHeuristics, getBasePageUrl());
+        mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
     }
 
     @Override
@@ -1442,7 +1475,13 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             @Override
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
-                mSelectionController.handleShouldSuppressTap();
+                // Ranker will handle the suppression, but our legacy implementation uses
+                // TapSuppressionHeuristics (run from the ContextualSearchSelectionConroller).
+                // Usage includes tap-far-from-previous suppression.
+                mTapSuppressionRankerLogger.setupLoggingForPage(getBasePageUrl());
+
+                // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
+                mSelectionController.handleShouldSuppressTap(mTapSuppressionRankerLogger);
             }
 
             /** Starts showing the Tap UI by selecting a word around the current caret. */
