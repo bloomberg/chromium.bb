@@ -71,10 +71,6 @@ void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  // These tests are deliberately testing behavior without the redesign.
-  // Forcefully disable it.
-  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), true));
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
@@ -112,40 +108,24 @@ void BrowserActionsBarBrowserTest::LoadExtensions() {
   }
 }
 
-// BrowserActionsBarLegacyBrowserTest:
-
-BrowserActionsBarLegacyBrowserTest::BrowserActionsBarLegacyBrowserTest() {
-}
-
-BrowserActionsBarLegacyBrowserTest::~BrowserActionsBarLegacyBrowserTest() {
-}
-
-void BrowserActionsBarLegacyBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-  // Override to force the redesign. Completely clear the previous override
-  // first, since doing so resets the value of the switch.
-  override_redesign_.reset();
-  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), false));
-}
-
 // Test the basic functionality.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarLegacyBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Basic) {
   // Load an extension with no browser action.
   extension_service()->AddExtension(CreateExtension("alpha", false).get());
-  // This extension should not be in the model (has no browser action).
-  EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
-
-  // Load an extension with a browser action.
-  extension_service()->AddExtension(CreateExtension("beta", true).get());
+  // This extension should be present in the model (it will receive a
+  // synthesized action).
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
 
-  // Unload the extension.
-  std::string id = browser_actions_bar()->GetExtensionId(0);
+  // Load an extension with a browser action; it will also be in the toolbar.
+  extension_service()->AddExtension(CreateExtension("beta", true).get());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(1));
+
+  // Unload the extension; the icon should be removed.
+  std::string id = browser_actions_bar()->GetExtensionId(1);
   UnloadExtension(id);
-  EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
 }
 
 // Test moving various browser actions. This is not to check the logic of the
@@ -178,21 +158,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));
-}
-
-// Test that explicitly hiding an extension action results in it disappearing
-// from the browser actions bar.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarLegacyBrowserTest, ForceHide) {
-  LoadExtensions();
-
-  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
-  // Force hide one of the extensions' browser action.
-  extensions::ExtensionActionAPI::Get(browser()->profile())->
-      SetBrowserActionVisibility(extension_a()->id(), false);
-  // The browser action for Extension A should be removed.
-  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {

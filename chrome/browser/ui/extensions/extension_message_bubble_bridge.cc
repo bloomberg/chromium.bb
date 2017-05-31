@@ -52,10 +52,13 @@ base::string16 ExtensionMessageBubbleBridge::GetItemListText() {
 base::string16 ExtensionMessageBubbleBridge::GetActionButtonText() {
   const extensions::ExtensionIdList& list = controller_->GetExtensionIdList();
   DCHECK(!list.empty());
+  // Normally, the extension is enabled, but this might not be the case (such as
+  // for the SuspiciousExtensionBubbleDelegate, which warns the user about
+  // disabled extensions).
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(controller_->profile())
-          ->enabled_extensions()
-          .GetByID(list[0]);
+          ->GetExtensionById(list[0],
+                             extensions::ExtensionRegistry::EVERYTHING);
 
   DCHECK(extension);
   // An empty string is returned so that we don't display the button prompting

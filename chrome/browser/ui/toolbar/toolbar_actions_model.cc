@@ -36,7 +36,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -53,8 +52,6 @@ ToolbarActionsModel::ToolbarActionsModel(
       component_actions_factory_(
           base::MakeUnique<ComponentToolbarActionsFactory>(profile_)),
       actions_initialized_(false),
-      use_redesign_(
-          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       highlight_type_(HIGHLIGHT_NONE),
       has_active_bubble_(false),
       extension_action_observer_(this),
@@ -191,7 +188,6 @@ ToolbarActionsModel::CreateActionForItem(Browser* browser,
       break;
     }
     case COMPONENT_ACTION: {
-      DCHECK(use_redesign_);
       result = component_actions_factory_->GetComponentToolbarActionForId(
           item.id, browser, bar);
       break;
@@ -201,18 +197,6 @@ ToolbarActionsModel::CreateActionForItem(Browser* browser,
       break;
   }
   return result;
-}
-
-void ToolbarActionsModel::OnExtensionActionVisibilityChanged(
-    const std::string& extension_id,
-    bool is_now_visible) {
-  if (use_redesign_)
-    return;
-  const extensions::Extension* extension = GetExtensionById(extension_id);
-  if (is_now_visible)
-    AddExtension(extension);
-  else
-    RemoveExtension(extension);
 }
 
 void ToolbarActionsModel::OnExtensionLoaded(
@@ -271,11 +255,9 @@ void ToolbarActionsModel::OnReady() {
   for (Observer& observer : observers_)
     observer.OnToolbarModelInitialized();
 
-  if (use_redesign_) {
-    component_actions_factory_->UnloadMigratedExtensions(
-        extensions::ExtensionSystem::Get(profile_)->extension_service(),
-        extension_registry_);
-  }
+  component_actions_factory_->UnloadMigratedExtensions(
+      extensions::ExtensionSystem::Get(profile_)->extension_service(),
+      extension_registry_);
 }
 
 size_t ToolbarActionsModel::FindNewPositionFromLastKnownGood(
@@ -308,14 +290,9 @@ bool ToolbarActionsModel::ShouldAddExtension(
       !extensions::util::IsIncognitoEnabled(extension->id(), profile_))
     return false;
 
-  if (use_redesign_) {
-    // In this case, we don't care about the browser action visibility, because
-    // we want to show each extension regardless.
-    return extension_action_manager_->GetExtensionAction(*extension) != nullptr;
-  }
-
-  return extension_action_manager_->GetBrowserAction(*extension) &&
-         extension_action_api_->GetBrowserActionVisibility(extension->id());
+  // In this case, we don't care about the browser action visibility, because
+  // we want to show each extension regardless.
+  return extension_action_manager_->GetExtensionAction(*extension) != nullptr;
 }
 
 void ToolbarActionsModel::AddExtension(const extensions::Extension* extension) {
@@ -608,14 +585,10 @@ void ToolbarActionsModel::Populate() {
             ? base::HistogramBase::kSampleType_MAX
             : visible_icon_count_ - component_actions_count);
 
-    if (use_redesign_) {
-      // The only time this will useful and possibly vary from
-      // BrowserActionsVisible is when the redesign has been enabled.
-      UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.ToolbarActionsVisible",
-                               visible_icon_count_ == -1
-                                   ? base::HistogramBase::kSampleType_MAX
-                                   : visible_icon_count_);
-    }
+    UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.ToolbarActionsVisible",
+                             visible_icon_count_ == -1
+                                 ? base::HistogramBase::kSampleType_MAX
+                                 : visible_icon_count_);
   }
 }
 
@@ -625,12 +598,10 @@ bool ToolbarActionsModel::HasItem(const ToolbarItem& item) const {
 
 bool ToolbarActionsModel::HasComponentAction(
     const std::string& action_id) const {
-  DCHECK(use_redesign_);
   return HasItem(ToolbarItem(action_id, COMPONENT_ACTION));
 }
 
 void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
-  DCHECK(use_redesign_);
   if (!actions_initialized_) {
     component_actions_factory_->OnAddComponentActionBeforeInit(action_id);
     return;
@@ -642,7 +613,6 @@ void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
 }
 
 void ToolbarActionsModel::RemoveComponentAction(const std::string& action_id) {
-  DCHECK(use_redesign_);
   if (!actions_initialized_) {
     component_actions_factory_->OnRemoveComponentActionBeforeInit(action_id);
     return;
@@ -715,35 +685,26 @@ void ToolbarActionsModel::UpdatePrefs() {
 void ToolbarActionsModel::SetActionVisibility(const std::string& action_id,
                                               bool is_now_visible) {
   // Hiding works differently with the new and old toolbars.
-  if (use_redesign_) {
-    DCHECK(HasItem(ToolbarItem(action_id, EXTENSION_ACTION)));
+  DCHECK(HasItem(ToolbarItem(action_id, EXTENSION_ACTION)));
 
-    int new_size = 0;
-    int new_index = 0;
-    if (is_now_visible) {
-      // If this action used to be hidden, we can't possibly be showing all.
-      DCHECK_LT(visible_icon_count(), toolbar_items_.size());
-      // Grow the bar by one and move the action to the end of the visibles.
-      new_size = visible_icon_count() + 1;
-      new_index = new_size - 1;
-    } else {
-      // If we're hiding one, we must be showing at least one.
-      DCHECK_GE(visible_icon_count(), 0u);
-      // Shrink the bar by one and move the action to the beginning of the
-      // overflow menu.
-      new_size = visible_icon_count() - 1;
-      new_index = new_size;
-    }
-    SetVisibleIconCount(new_size);
-    MoveActionIcon(action_id, new_index);
-  } else {  // Legacy toolbar; hiding removes it from the toolbar.
-    if (!profile_->IsOffTheRecord()) {
-      extension_action_api_->SetBrowserActionVisibility(action_id,
-                                                        is_now_visible);
-    } else {
-      OnExtensionActionVisibilityChanged(action_id, is_now_visible);
-    }
+  int new_size = 0;
+  int new_index = 0;
+  if (is_now_visible) {
+    // If this action used to be hidden, we can't possibly be showing all.
+    DCHECK_LT(visible_icon_count(), toolbar_items_.size());
+    // Grow the bar by one and move the action to the end of the visibles.
+    new_size = visible_icon_count() + 1;
+    new_index = new_size - 1;
+  } else {
+    // If we're hiding one, we must be showing at least one.
+    DCHECK_GE(visible_icon_count(), 0u);
+    // Shrink the bar by one and move the action to the beginning of the
+    // overflow menu.
+    new_size = visible_icon_count() - 1;
+    new_index = new_size;
   }
+  SetVisibleIconCount(new_size);
+  MoveActionIcon(action_id, new_index);
 }
 
 void ToolbarActionsModel::OnActionToolbarPrefChange() {
