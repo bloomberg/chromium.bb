@@ -42,8 +42,6 @@ class StyleAdjuster {
                                   const ComputedStyle& layout_parent_style,
                                   Element*);
   static void AdjustStyleForEditing(ComputedStyle&);
-  static void AdjustStyleForAlignment(ComputedStyle&,
-                                      const ComputedStyle& parent_style);
 };
 
 }  // namespace blink

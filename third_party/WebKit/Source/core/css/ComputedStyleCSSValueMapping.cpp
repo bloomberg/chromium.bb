@@ -503,13 +503,7 @@ static CSSValueList* ValueForItemPositionWithOverflowAlignment(
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
   if (data.PositionType() == kLegacyPosition)
     result->Append(*CSSIdentifierValue::Create(CSSValueLegacy));
-  if (data.GetPosition() == kItemPositionAuto) {
-    // To avoid needing to copy the RareNonInheritedData, we repurpose the
-    // 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster
-    // but also mean 'normal' after running it.
-    result->Append(*CSSIdentifierValue::Create(
-        ComputedStyle::InitialDefaultAlignment().GetPosition()));
-  } else if (data.GetPosition() == kItemPositionBaseline) {
+  if (data.GetPosition() == kItemPositionBaseline) {
     result->Append(
         *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueBaseline),
                               CSSIdentifierValue::Create(CSSValueBaseline),
@@ -2613,7 +2607,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyIsolation:
       return CSSIdentifierValue::Create(style.Isolation());
     case CSSPropertyJustifyItems:
-      return ValueForItemPositionWithOverflowAlignment(style.JustifyItems());
+      return ValueForItemPositionWithOverflowAlignment(
+          style.JustifyItems().GetPosition() == kItemPositionAuto
+              ? ComputedStyle::InitialDefaultAlignment()
+              : style.JustifyItems());
     case CSSPropertyJustifySelf:
       return ValueForItemPositionWithOverflowAlignment(style.JustifySelf());
     case CSSPropertyLeft:

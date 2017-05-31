@@ -49,6 +49,9 @@
 #placeContentStartSafe {
     place-content: start safe;
 }
+#placeContentBaselineSafe {
+    place-content: baseline safe;
+}
 #placeContentStartEndLeft {
     place-content: start end left;
 }
@@ -204,8 +207,8 @@ test(function() {
 }, "Test setting 'start safe' as incorrect value through CSS.");
 
 test(function() {
-    checkValues(placeContentStartSafe, "placeContent", "place-content", "", "normal normal");
-    checkPlaceContentValues(placeContentStartSafe, "", "normal", "normal");
+    checkValues(placeContentBaselineSafe, "placeContent", "place-content", "", "normal normal");
+    checkPlaceContentValues(placeContentBaselineSafe, "", "normal", "normal");
 }, "Test setting 'baseline safe' as incorrect value through CSS.");
 
 test(function() {
