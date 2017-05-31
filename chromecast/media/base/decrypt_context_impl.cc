@@ -37,7 +37,7 @@ bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
   bool called = false;
   bool success = false;
   DecryptAsync(buffer, output, data_offset,
-               base::Bind(&BufferDecryptCB, &called, &success));
+               base::BindOnce(&BufferDecryptCB, &called, &success));
   CHECK(called) << "Sync Decrypt isn't supported";
 
   return success;
@@ -46,8 +46,8 @@ bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
 void DecryptContextImpl::DecryptAsync(CastDecoderBuffer* buffer,
                                       uint8_t* output,
                                       size_t data_offset,
-                                      const DecryptCB& decrypt_cb) {
-  decrypt_cb.Run(false);
+                                      DecryptCB decrypt_cb) {
+  std::move(decrypt_cb).Run(false);
 }
 
 bool DecryptContextImpl::CanDecryptToBuffer() const {

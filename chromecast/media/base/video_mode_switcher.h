@@ -24,14 +24,14 @@ class VideoModeSwitcher {
 
   // Input parameter is true if mode switch succeeded (or wasn't needed) and
   // playback should proceed. False indicates failed mode switch.
-  using CompletionCB = base::Callback<void(bool)>;
+  using CompletionCB = base::OnceCallback<void(bool)>;
 
   // The |video_configs| describe input streams (potentially multiple streams in
   // case of dual layer content). The |mode_switch_completion_cb| will be
   // invoked to notify the caller about mode switch result.
   virtual void SwitchMode(
       const std::vector<::media::VideoDecoderConfig>& video_configs,
-      const CompletionCB& mode_switch_completion_cb) = 0;
+      CompletionCB mode_switch_completion_cb) = 0;
 };
 
 }  // namespace media

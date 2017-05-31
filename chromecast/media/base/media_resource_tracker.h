@@ -62,7 +62,7 @@ class MediaResourceTracker {
   // (3) Calls completion_cb
   // Must be called on UI thread.  Only one Finalize request may be in flight
   // at a time. |completion_cb| must not be null.
-  void FinalizeMediaLib(const base::Closure& completion_cb);
+  void FinalizeMediaLib(base::OnceClosure completion_cb);
 
   // Shutdown process:
   // (1) Waits for usage count to drop to zero
@@ -84,7 +84,7 @@ class MediaResourceTracker {
 
   // Tasks posted to media thread
   void CallInitializeOnMediaThread();
-  void MaybeCallFinalizeOnMediaThread(const base::Closure& completion_cb);
+  void MaybeCallFinalizeOnMediaThread(base::OnceClosure completion_cb);
   void MaybeCallFinalizeOnMediaThreadAndDeleteSelf();
   void CallFinalizeOnMediaThread();
 
@@ -95,7 +95,7 @@ class MediaResourceTracker {
   // Accessed on media thread + ctor
   size_t media_use_count_;
   bool media_lib_initialized_;
-  base::Closure finalize_completion_cb_;
+  base::OnceClosure finalize_completion_cb_;
   bool delete_on_finalize_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

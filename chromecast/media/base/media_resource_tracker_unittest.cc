@@ -119,8 +119,8 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceNotInUse) {
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(0);
   EXPECT_CALL(*test_mocks_, FinalizeCallback()).Times(1);
   resource_tracker_->FinalizeMediaLib(
-      base::Bind(&MediaResourceTrackerTestMocks::FinalizeCallback,
-                 base::Unretained(test_mocks_.get())));
+      base::BindOnce(&MediaResourceTrackerTestMocks::FinalizeCallback,
+                     base::Unretained(test_mocks_.get())));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
@@ -138,8 +138,8 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceInUse) {
   EXPECT_CALL(*test_mocks_, Finalize()).Times(0);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(0);
   resource_tracker_->FinalizeMediaLib(
-      base::Bind(&MediaResourceTrackerTestMocks::FinalizeCallback,
-                 base::Unretained(test_mocks_.get())));
+      base::BindOnce(&MediaResourceTrackerTestMocks::FinalizeCallback,
+                     base::Unretained(test_mocks_.get())));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);

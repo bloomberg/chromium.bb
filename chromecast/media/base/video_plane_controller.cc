@@ -73,7 +73,7 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
 
         task_runner_->PostDelayedTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &RateLimitedSetVideoPlaneGeometry::ApplyPendingSetGeometry,
                 this),
             base::TimeDelta::FromMilliseconds(2 * min_calling_interval_ms_));
@@ -240,9 +240,9 @@ void VideoPlaneController::MaybeRunSetGeometry() {
   }
 
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RateLimitedSetVideoPlaneGeometry::SetGeometry,
-                 video_plane_wrapper_, scaled_rect, video_plane_transform_));
+      FROM_HERE, base::BindOnce(&RateLimitedSetVideoPlaneGeometry::SetGeometry,
+                                video_plane_wrapper_, scaled_rect,
+                                video_plane_transform_));
 }
 
 bool VideoPlaneController::HaveDataForSetGeometry() const {
