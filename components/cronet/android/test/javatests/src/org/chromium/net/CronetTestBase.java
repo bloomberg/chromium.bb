@@ -8,6 +8,7 @@ import android.content.Context;
 import android.test.AndroidTestCase;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.impl.CronetEngineBase;
@@ -16,6 +17,7 @@ import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.UserAgent;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -42,6 +44,8 @@ public class CronetTestBase extends AndroidTestCase {
             mCronetEngine.getGlobalMetricsDeltas();
         }
     }
+
+    private static final String TAG = CronetTestBase.class.getSimpleName();
 
     /**
      * Name of the file that contains the test server certificate in PEM format.
@@ -94,14 +98,42 @@ public class CronetTestBase extends AndroidTestCase {
         return mTestingJavaImpl;
     }
 
+    private int getMaximumAvailableApiLevel() {
+        // Prior to M59 the ApiVersion.getMaximumAvailableApiLevel API didn't exist
+        if (ApiVersion.getCronetVersion().compareTo("59") < 0) {
+            return 3;
+        }
+        return ApiVersion.getMaximumAvailableApiLevel();
+    }
+
     @Override
     protected void runTest() throws Throwable {
         mTestingSystemHttpURLConnection = false;
         mTestingJavaImpl = false;
         String packageName = getClass().getPackage().getName();
-        if (packageName.equals("org.chromium.net.urlconnection")) {
+
+        // Find the API version required by the test.
+        int requiredApiVersion = getMaximumAvailableApiLevel();
+        for (Annotation a : getClass().getAnnotations()) {
+            if (a instanceof RequiresMinApi) {
+                requiredApiVersion = ((RequiresMinApi) a).value();
+            }
+        }
+        AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
+        for (Annotation a : method.getAnnotations()) {
+            if (a instanceof RequiresMinApi) {
+                // Method scoped requirements take precedence over class scoped
+                // requirements.
+                requiredApiVersion = ((RequiresMinApi) a).value();
+            }
+        }
+
+        if (requiredApiVersion > getMaximumAvailableApiLevel()) {
+            Log.i(TAG,
+                    getName() + " skipped because it requires API " + requiredApiVersion
+                            + " but only API " + getMaximumAvailableApiLevel() + " is present.");
+        } else if (packageName.equals("org.chromium.net.urlconnection")) {
             try {
-                AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
                 if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
                     // Run with the default HttpURLConnection implementation first.
                     mTestingSystemHttpURLConnection = true;
@@ -123,7 +155,6 @@ public class CronetTestBase extends AndroidTestCase {
             }
         } else if (packageName.equals("org.chromium.net")) {
             try {
-                AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
                 super.runTest();
                 if (!method.isAnnotationPresent(OnlyRunNativeCronet.class)) {
                     if (mCronetTestFramework != null) {
@@ -193,19 +224,47 @@ public class CronetTestBase extends AndroidTestCase {
         mStreamHandlerFactory = cronetEngine.createURLStreamHandlerFactory();
     }
 
+    /**
+     * Annotation for test methods in org.chromium.net.urlconnection pacakage that runs them
+     * against both Cronet's HttpURLConnection implementation, and against the system's
+     * HttpURLConnection implementation.
+     */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface CompareDefaultWithCronet {
     }
 
+    /**
+     * Annotation for test methods in org.chromium.net.urlconnection pacakage that runs them
+     * only against Cronet's HttpURLConnection implementation, and not against the system's
+     * HttpURLConnection implementation.
+     */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface OnlyRunCronetHttpURLConnection {
     }
 
+    /**
+     * Annotation for test methods in org.chromium.net package that disables rerunning the test
+     * against the Java-only implementation. When this annotation is present the test is only run
+     * against the native implementation.
+     */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface OnlyRunNativeCronet {}
+
+    /**
+     * Annotation allowing classes or individual tests to be skipped based on the version of the
+     * Cronet API present. Takes the minimum API version upon which the test should be run.
+     * For example if a test should only be run with API version 2 or greater:
+     *   @RequiresMinApi(2)
+     *   public void testFoo() {}
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface RequiresMinApi {
+        int value();
+    }
 
     /**
      * Prepares the path for the test storage (http cache, QUIC server info).
