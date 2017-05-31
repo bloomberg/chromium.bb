@@ -30,7 +30,6 @@ const char kPostXml[] =
 "    appid=\"{8A69D345-D564-463C-AFF1-A69D9E530F96}\"\n"
 "    version=\"0.0.0.0\"\n"
 "      >\n"
-"    <updatecheck />\n"
 "    <data name=\"install\" "
     "index=\"__BRANDCODE_PLACEHOLDER__\" />\n"
 "  </app>\n"
