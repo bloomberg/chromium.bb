@@ -1218,6 +1218,11 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     return true;
   }
 
+  if (data.action == ui::AX_ACTION_FOCUS) {
+    manager_->SetFocus(*this);
+    return true;
+  }
+
   return false;
 }
 

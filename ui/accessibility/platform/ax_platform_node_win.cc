@@ -550,8 +550,6 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
   return E_FAIL;
 }
 
-// IAccessible functions not supported.
-
 STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   COM_OBJECT_VALIDATE_1_ARG(selected);
   if (selected)
@@ -561,7 +559,17 @@ STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
 
 STDMETHODIMP AXPlatformNodeWin::accSelect(
     LONG flagsSelect, VARIANT var_id) {
-  return E_NOTIMPL;
+  AXPlatformNodeWin* target;
+  COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target);
+
+  if (flagsSelect & SELFLAG_TAKEFOCUS) {
+    ui::AXActionData action_data;
+    action_data.action = ui::AX_ACTION_FOCUS;
+    target->delegate_->AccessibilityPerformAction(action_data);
+    return S_OK;
+  }
+
+  return S_FALSE;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accHelpTopic(

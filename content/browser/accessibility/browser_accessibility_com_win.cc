@@ -780,16 +780,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accSelect(LONG flags_sel,
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (flags_sel & SELFLAG_TAKEFOCUS) {
-    manager->SetFocus(*owner());
-    return S_OK;
-  }
-
-  return S_FALSE;
+  return AXPlatformNodeWin::accSelect(flags_sel, var_id);
 }
 
 STDMETHODIMP
