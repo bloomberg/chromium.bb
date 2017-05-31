@@ -1022,7 +1022,12 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
 #if defined(USE_AURA)
 // Tests that the acked events have correct state. (ui::Events are used only on
 // windows and aura)
-TEST_F(InputRouterImplTest, AckedTouchEventState) {
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_AckedTouchEventState DISABLED_AckedTouchEventState
+#else
+#define MAYBE_AckedTouchEventState AckedTouchEventState
+#endif
+TEST_F(InputRouterImplTest, MAYBE_AckedTouchEventState) {
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(TouchEventQueueEmpty());
