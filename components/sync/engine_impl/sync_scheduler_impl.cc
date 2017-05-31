@@ -774,14 +774,15 @@ void SyncSchedulerImpl::OnTypesUnblocked() {
 void SyncSchedulerImpl::PerformDelayedNudge() {
   // Circumstances may have changed since we scheduled this delayed nudge.
   // We must check to see if it's OK to run the job before we do so.
-  if (CanRunNudgeJobNow(NORMAL_PRIORITY))
+  if (CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     TrySyncCycleJob();
-
-  // We're not responsible for setting up any retries here.  The functions that
-  // first put us into a state that prevents successful sync cycles (eg. global
-  // throttling, type throttling, network errors, transient errors) will also
-  // setup the appropriate retry logic (eg. retry after timeout, exponential
-  // backoff, retry when the network changes).
+  } else {
+    // If we set |waiting_interal_| while this PerformDelayedNudge was pending
+    // callback scheduled to |retry_timer_|, it's possible we didn't re-schedule
+    // because this PerformDelayedNudge was going to execute sooner. If that's
+    // the case, we need to make sure we setup to waiting callback now.
+    RestartWaiting();
+  }
 }
 
 void SyncSchedulerImpl::ExponentialBackoffRetry() {

@@ -83,7 +83,7 @@ void PumpLoop() {
   RunLoop();
 }
 
-void PumpLoopFor(base::TimeDelta time) {
+void PumpLoopFor(TimeDelta time) {
   // Allow the loop to run for the specified amount of time.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&QuitLoopNow), time);
@@ -245,7 +245,7 @@ class SyncSchedulerImplTest : public testing::Test {
     return scheduler_->nudge_tracker_.IsAnyTypeBlocked();
   }
 
-  base::TimeDelta GetRetryTimerDelay() {
+  TimeDelta GetRetryTimerDelay() {
     EXPECT_TRUE(scheduler_->retry_timer_.IsRunning());
     return scheduler_->retry_timer_.GetCurrentDelay();
   }
@@ -256,7 +256,7 @@ class SyncSchedulerImplTest : public testing::Test {
     return MockInvalidation::Build(version, payload);
   }
 
-  base::TimeDelta GetTypeBlockingTime(ModelType type) {
+  TimeDelta GetTypeBlockingTime(ModelType type) {
     NudgeTracker::TypeTrackerMap::const_iterator tracker_it =
         scheduler_->nudge_tracker_.type_trackers_.find(type);
     DCHECK(tracker_it != scheduler_->nudge_tracker_.type_trackers_.end());
@@ -283,6 +283,11 @@ class SyncSchedulerImplTest : public testing::Test {
 
   bool BlockTimerIsRunning() const {
     return scheduler_->pending_wakeup_timer_.IsRunning();
+  }
+
+  TimeDelta GetPendingWakeupTimerDelay() {
+    EXPECT_TRUE(scheduler_->pending_wakeup_timer_.IsRunning());
+    return scheduler_->pending_wakeup_timer_.GetCurrentDelay();
   }
 
  private:
@@ -714,7 +719,7 @@ TEST_F(SyncSchedulerImplTest, PollingPersistenceBadClock) {
 
   // Set the start time to |poll_interval| in the future.
   TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
-  StartSyncScheduler(base::Time::Now() + base::TimeDelta::FromMinutes(10));
+  StartSyncScheduler(base::Time::Now() + TimeDelta::FromMinutes(10));
 
   // Run again to wait for polling.
   RunLoop();
@@ -1448,7 +1453,7 @@ TEST_F(SyncSchedulerImplTest, BackoffRelief) {
 
   // The new optimal time is now, since the desired poll should have happened
   // in the past.
-  optimal_job_time = base::TimeTicks::Now();
+  optimal_job_time = TimeTicks::Now();
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
   ASSERT_EQ(kMinNumSamples, times.size());
@@ -1627,7 +1632,7 @@ TEST_F(SyncSchedulerImplTest, SuccessfulRetry) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  TimeDelta delay = TimeDelta::FromMilliseconds(10);
   scheduler()->OnReceivedGuRetryDelay(delay);
   EXPECT_EQ(delay, GetRetryTimerDelay());
 
@@ -1650,7 +1655,7 @@ TEST_F(SyncSchedulerImplTest, FailedRetry) {
 
   StartSyncScheduler(base::Time());
 
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  TimeDelta delay = TimeDelta::FromMilliseconds(10);
   scheduler()->OnReceivedGuRetryDelay(delay);
 
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
@@ -1679,8 +1684,8 @@ TEST_F(SyncSchedulerImplTest, ReceiveNewRetryDelay) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
-  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(100);
-  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(200);
+  TimeDelta delay1 = TimeDelta::FromMilliseconds(100);
+  TimeDelta delay2 = TimeDelta::FromMilliseconds(200);
 
   scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   scheduler()->OnReceivedGuRetryDelay(delay1);
@@ -1761,14 +1766,14 @@ TEST_F(SyncSchedulerImplTest, PartialFailureWillExponentialBackoff) {
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_FALSE(scheduler()->IsBackingOff());
   EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
-  base::TimeDelta first_blocking_time = GetTypeBlockingTime(THEMES);
+  TimeDelta first_blocking_time = GetTypeBlockingTime(THEMES);
 
   SetTypeBlockingMode(THEMES, WaitInterval::EXPONENTIAL_BACKOFF_RETRYING);
   // This won't cause a sync cycle because the types are backed off.
   scheduler()->ScheduleLocalNudge(types, FROM_HERE);
   PumpLoop();
   PumpLoop();
-  base::TimeDelta second_blocking_time = GetTypeBlockingTime(THEMES);
+  TimeDelta second_blocking_time = GetTypeBlockingTime(THEMES);
 
   // The Exponential backoff should be between previous backoff 1.5 and 2.5
   // times.
@@ -1898,6 +1903,50 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndFailureSync) {
   EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
 
   StopSyncScheduler();
+}
+
+TEST_F(SyncSchedulerImplTest, InterleavedNudgesStillRestart) {
+  UseMockDelayProvider();
+  EXPECT_CALL(*delay(), GetDelay(_))
+      .WillOnce(Return(long_delay()))
+      .RetiresOnSaturation();
+  TimeDelta poll(TimeDelta::FromDays(1));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  StartSyncScheduler(base::Time());
+  scheduler()->ScheduleLocalNudge({THEMES}, FROM_HERE);
+  PumpLoop();  // To get PerformDelayedNudge called.
+  EXPECT_FALSE(BlockTimerIsRunning());
+  EXPECT_FALSE(scheduler()->IsBackingOff());
+
+  // This is the tricky piece. We have a gap while the sync job is bouncing to
+  // get onto the |pending_wakeup_timer_|, should be scheduled with no delay.
+  scheduler()->ScheduleLocalNudge({TYPED_URLS}, FROM_HERE);
+  EXPECT_TRUE(BlockTimerIsRunning());
+  EXPECT_EQ(TimeDelta(), GetPendingWakeupTimerDelay());
+  EXPECT_FALSE(scheduler()->IsBackingOff());
+
+  // Setup mock as we're about to attempt to sync.
+  SyncShareTimes times;
+  EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
+      .WillOnce(DoAll(Invoke(test_util::SimulateCommitFailed),
+                      RecordSyncShare(&times, false)));
+  // Triggers the THEMES TrySyncCycleJobImpl(), which we've setup to fail. Its
+  // RestartWaiting won't schedule a delayed retry, as the TYPED_URLS nudge has
+  // a smaller delay. We verify this by making sure the delay is still zero.
+  PumpLoop();
+  EXPECT_TRUE(BlockTimerIsRunning());
+  EXPECT_EQ(TimeDelta(), GetPendingWakeupTimerDelay());
+  EXPECT_TRUE(scheduler()->IsBackingOff());
+
+  // Triggers TYPED_URLS PerformDelayedNudge(), which should no-op, because
+  // we're no long healthy, and normal priorities shouldn't go through, but it
+  // does need to setup the |pending_wakeup_timer_|. The delay should be ~60
+  // seconds, so verifying it's greater than 50 should be safe.
+  PumpLoop();
+  EXPECT_TRUE(BlockTimerIsRunning());
+  EXPECT_LT(TimeDelta::FromSeconds(50), GetPendingWakeupTimerDelay());
+  EXPECT_TRUE(scheduler()->IsBackingOff());
 }
 
 }  // namespace syncer
