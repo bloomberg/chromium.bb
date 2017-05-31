@@ -127,7 +127,7 @@
         {
           "builder": "RELEASE",
           "experimental": false,
-          "leader_board": false,
+          "leader_board": true,
           "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }
@@ -751,7 +751,7 @@
         {
           "builder": "RELEASE",
           "experimental": false,
-          "leader_board": false,
+          "leader_board": true,
           "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }
@@ -775,7 +775,7 @@
         {
           "builder": "RELEASE",
           "experimental": true,
-          "leader_board": false,
+          "leader_board": true,
           "board_group": "VM Builds",
           "arch": "X86_INTERNAL"
         }

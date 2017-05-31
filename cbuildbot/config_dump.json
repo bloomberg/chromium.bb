@@ -3706,9 +3706,11 @@
         "boards": [
             "betty"
         ],
-        "chrome_sdk_build_chrome": false,
+        "buildslave_type": "baremetal",
         "important": true,
-        "vm_tests": [],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "betty-release-afdo": {
@@ -15965,9 +15967,11 @@
         "boards": [
             "newbie"
         ],
-        "chrome_sdk_build_chrome": false,
+        "buildslave_type": "baremetal",
         "important": true,
-        "vm_tests": [],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "newbie-release-afdo": {
@@ -16388,8 +16392,10 @@
         "boards": [
             "novato"
         ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": [],
+        "buildslave_type": "baremetal",
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
     },
     "novato-release-afdo": {
