@@ -1158,7 +1158,6 @@
                   '|ios/chrome/app/strings/ios(_.+)*_strings.grd'\
                   '|ui/strings/ui_strings.grd',
     },
-    {
     'use_counter_features': {
       'filepath': 'third_party/WebKit/public/platform/UseCounterFeature.def',
     },
