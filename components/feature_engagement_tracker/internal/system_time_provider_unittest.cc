@@ -23,7 +23,7 @@ base::Time GetTime(int year, int month, int day) {
   exploded_time.millisecond = 0;
 
   base::Time out_time;
-  EXPECT_TRUE(base::Time::FromLocalExploded(exploded_time, &out_time));
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded_time, &out_time));
   return out_time;
 }
 
