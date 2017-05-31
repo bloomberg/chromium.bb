@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Run a cast v2 mirroring session for 10 seconds.
+// Run a cast v2 mirroring session for 15 seconds.
 
 chrome.test.runTests([
   function sendTestPatterns() {
+    const kMaxFrameRate = 30;
+    const kCallbackTimeoutMillis = 10000;
+    const kTestRunTimeMillis = 15000;
+
+    const rtpStream = chrome.cast.streaming.rtpStream;
+
     // The receive port changes between browser_test invocations, and is passed
     // as an query parameter in the URL.
     let recvPort;
@@ -25,67 +31,114 @@ chrome.test.runTests([
       return;
     }
 
-    const kMaxFrameRate = 30;
-    chrome.tabCapture.capture(
-        { video: true,
-          audio: true,
-          videoConstraints: {
-              mandatory: autoThrottling ? ({
-                  minWidth: 320,
-                  minHeight: 180,
-                  maxWidth: 1920,
-                  maxHeight: 1080,
-                  maxFrameRate: kMaxFrameRate,
-                  enableAutoThrottling: true
-              }) : ({
-                  minWidth: 1920,
-                  minHeight: 1080,
-                  maxWidth: 1920,
-                  maxHeight: 1080,
-                  maxFrameRate: kMaxFrameRate,
-              })
+    // Start capture and wait up to kCallbackTimeoutMillis for it to start.
+    const startCapturePromise = new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(Error('chrome.tabCapture.capture() did not call back'));
+      }, kCallbackTimeoutMillis);
+
+      const captureOptions = {
+        video: true,
+        audio: true,
+        videoConstraints: {
+          mandatory: {
+            minWidth: autoThrottling ? 320 : 1920,
+            minHeight: autoThrottling ? 180 : 1080,
+            maxWidth: 1920,
+            maxHeight: 1080,
+            maxFrameRate: kMaxFrameRate,
+            enableAutoThrottling: autoThrottling,
           }
-        },
-        captureStream => {
-          if (!captureStream) {
-            chrome.test.fail(chrome.runtime.lastError.message || 'null stream');
-            return;
+        }
+      };
+      chrome.tabCapture.capture(captureOptions, captureStream => {
+        clearTimeout(timeoutId);
+        if (captureStream) {
+          console.log('Started tab capture.');
+          resolve(captureStream);
+        } else {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            reject(Error('null stream'));
           }
+        }
+      });
+    });
 
-          chrome.cast.streaming.session.create(
-              captureStream.getAudioTracks()[0],
-              captureStream.getVideoTracks()[0],
-              (audioId, videoId, udpId) => {
-                chrome.cast.streaming.udpTransport.setDestination(
-                    udpId, { address: "127.0.0.1", port: recvPort } );
-                const rtpStream = chrome.cast.streaming.rtpStream;
-                rtpStream.onError.addListener(() => {
-                  chrome.test.fail('RTP stream error');
-                });
-                const audioParams = rtpStream.getSupportedParams(audioId)[0];
-                audioParams.payload.aesKey = aesKey;
-                audioParams.payload.aesIvMask = aesIvMask;
-                rtpStream.start(audioId, audioParams);
-                const videoParams = rtpStream.getSupportedParams(videoId)[0];
-                videoParams.payload.clockRate = kMaxFrameRate;
-                videoParams.payload.aesKey = aesKey;
-                videoParams.payload.aesIvMask = aesIvMask;
-                rtpStream.start(videoId, videoParams);
-                setTimeout(() => {
-                  chrome.test.succeed();
+    // Then, start Cast Streaming and wait up to kCallbackTimeoutMillis for it
+    // to start.
+    const startStreamingPromise = startCapturePromise.then(captureStream => {
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(Error(
+            'chrome.cast.streaming.session.create() did not call back'));
+        }, kCallbackTimeoutMillis);
 
-                  rtpStream.stop(audioId);
-                  rtpStream.stop(videoId);
-                  rtpStream.destroy(audioId);
-                  rtpStream.destroy(videoId);
+        chrome.cast.streaming.session.create(
+            captureStream.getAudioTracks()[0],
+            captureStream.getVideoTracks()[0],
+            (audioId, videoId, udpId) => {
+          clearTimeout(timeoutId);
 
-                  const tracks = captureStream.getTracks();
-                  for (let i = 0; i < tracks.length; ++i) {
-                    tracks[i].stop();
-                  }
-                  chrome.test.assertFalse(captureStream.active);
-                }, 15000);  // 15 seconds
-              });
+          try {
+            chrome.cast.streaming.udpTransport.setDestination(
+                udpId, { address: "127.0.0.1", port: recvPort } );
+            rtpStream.onError.addListener(() => {
+              chrome.test.fail('RTP stream error');
+            });
+            const audioParams = rtpStream.getSupportedParams(audioId)[0];
+            audioParams.payload.aesKey = aesKey;
+            audioParams.payload.aesIvMask = aesIvMask;
+            rtpStream.start(audioId, audioParams);
+            const videoParams = rtpStream.getSupportedParams(videoId)[0];
+            videoParams.payload.clockRate = kMaxFrameRate;
+            videoParams.payload.aesKey = aesKey;
+            videoParams.payload.aesIvMask = aesIvMask;
+            rtpStream.start(videoId, videoParams);
+
+            console.log('Started Cast Streaming.');
+            resolve([captureStream, audioId, videoId, udpId]);
+          } catch (error) {
+            reject(error);
+          }
         });
+      });
+    });
+
+    // Then, let the test run for kTestRunTimeMillis, and then shut down the RTP
+    // streams and MediaStreamTracks.
+    const doneTestingPromise = startStreamingPromise.then(
+        ([captureStream, audioId, videoId, udpId]) => {
+      return new Promise(resolve => {
+        console.log(`Running test for ${kTestRunTimeMillis} ms.`);
+        setTimeout(resolve, kTestRunTimeMillis);
+      }).then(() => {
+        rtpStream.stop(audioId);
+        rtpStream.stop(videoId);
+        rtpStream.destroy(audioId);
+        rtpStream.destroy(videoId);
+
+        chrome.cast.streaming.udpTransport.destroy(udpId);
+
+        const tracks = captureStream.getTracks();
+        for (let i = 0; i < tracks.length; ++i) {
+          tracks[i].stop();
+        }
+      });
+    });
+
+    // If all of the above completed without error, the test run has succeeded.
+    // Otherwise, flag that the test has failed with the cause.
+    doneTestingPromise.then(() => {
+      chrome.test.succeed();
+    }).catch(error => {
+      if (typeof error === 'object' &&
+          ('stack' in error || 'message' in error)) {
+        chrome.test.fail(error.stack || error.message);
+      } else {
+        chrome.test.fail(String(error));
+      }
+    });
   }
 ]);
