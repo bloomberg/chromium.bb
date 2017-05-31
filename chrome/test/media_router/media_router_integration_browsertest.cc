@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -283,8 +284,12 @@ void MediaRouterIntegrationBrowserTest::SetTestData(
   JSONFileValueDeserializer deserializer(full_path);
   int error_code = 0;
   std::string error_message;
-  std::unique_ptr<base::Value> value =
-      deserializer.Deserialize(&error_code, &error_message);
+  std::unique_ptr<base::Value> value;
+  {
+    // crbug.com/724573
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    value = deserializer.Deserialize(&error_code, &error_message);
+  }
   CHECK(value.get()) << "Deserialize failed: " << error_message;
   std::string test_data_str;
   ASSERT_TRUE(base::JSONWriter::Write(*value, &test_data_str));
@@ -318,7 +323,11 @@ base::FilePath MediaRouterIntegrationBrowserTest::GetResourceFile(
   CHECK(PathService::Get(base::DIR_MODULE, &base_dir));
   base::FilePath full_path =
       base_dir.Append(kResourcePath).Append(relative_path);
-  CHECK(PathExists(full_path));
+  {
+    // crbug.com/724573
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    CHECK(PathExists(full_path));
+  }
   return full_path;
 }
 
