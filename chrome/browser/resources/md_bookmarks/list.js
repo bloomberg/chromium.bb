@@ -73,7 +73,9 @@ Polymer({
         return {id: id};
       });
     } else {
-      var splices = Polymer.ArraySplice.calculateSplices(newValue, oldValue);
+      var splices = Polymer.ArraySplice.calculateSplices(
+          /** @type {!Array<string>} */ (newValue),
+          /** @type {!Array<string>} */ (oldValue));
       splices.forEach(function(splice) {
         // TODO(calamity): Could use notifySplices to improve performance here.
         var additions =
