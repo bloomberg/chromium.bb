@@ -484,8 +484,10 @@ void LayoutListMarker::SetSelectionState(SelectionState state) {
   // base class call.
   LayoutBox::SetSelectionState(state);
 
-  if (InlineBoxWrapper() && CanUpdateSelectionOnRootLineBoxes())
-    InlineBoxWrapper()->Root().SetHasSelectedChildren(state != SelectionNone);
+  if (InlineBoxWrapper() && CanUpdateSelectionOnRootLineBoxes()) {
+    InlineBoxWrapper()->Root().SetHasSelectedChildren(state !=
+                                                      SelectionState::kNone);
+  }
 }
 
 void LayoutListMarker::ListItemStyleDidChange() {

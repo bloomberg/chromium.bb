@@ -2592,7 +2592,8 @@ inline LayoutObject* LayoutObject::ParentCrossingFrames() const {
 
 bool LayoutObject::IsSelectionBorder() const {
   SelectionState st = GetSelectionState();
-  return st == SelectionStart || st == SelectionEnd || st == SelectionBoth;
+  return st == SelectionState::kStart || st == SelectionState::kEnd ||
+         st == SelectionState::kStartAndEnd;
 }
 
 inline void LayoutObject::ClearLayoutRootIfNeeded() const {
@@ -3609,7 +3610,7 @@ void LayoutObject::InvalidatePaintForSelection() {
        child = child->NextSibling()) {
     if (!child->CanBeSelectionLeaf())
       continue;
-    if (child->GetSelectionState() == SelectionNone)
+    if (child->GetSelectionState() == SelectionState::kNone)
       continue;
     child->SetShouldInvalidateSelection();
   }

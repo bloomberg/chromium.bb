@@ -75,7 +75,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     return;
 
   if (paint_info.phase == kPaintPhaseSelection)
-    if (layout_replaced_.GetSelectionState() == SelectionNone)
+    if (layout_replaced_.GetSelectionState() == SelectionState::kNone)
       return;
 
   {
@@ -119,7 +119,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
   // want it to run right up to the edges of surrounding content.
   bool draw_selection_tint =
       paint_info.phase == kPaintPhaseForeground &&
-      layout_replaced_.GetSelectionState() != SelectionNone &&
+      layout_replaced_.GetSelectionState() != SelectionState::kNone &&
       !paint_info.IsPrinting();
   if (draw_selection_tint &&
       !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(

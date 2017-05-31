@@ -303,7 +303,7 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
       continue;
 
     if (!root_has_selected_children &&
-        box->GetLineLayoutItem().GetSelectionState() != SelectionNone)
+        box->GetLineLayoutItem().GetSelectionState() != SelectionState::kNone)
       root_has_selected_children = true;
 
     // If we have no parent box yet, or if the run is not simply a sibling,

@@ -928,7 +928,7 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
   int selection_start = static_cast<int>(selection_offsets.Start());
   int selection_end = static_cast<int>(selection_offsets.end());
 
-  // Select the text to be deleted before selectionStart.
+  // Select the text to be deleted before SelectionState::kStart.
   if (before > 0 && selection_start > 0) {
     // In case of exceeding the left boundary.
     const int start = std::max(selection_start - before, 0);
@@ -952,7 +952,7 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
     selection_start = adjusted_start;
   }
 
-  // Select the text to be deleted after selectionEnd.
+  // Select the text to be deleted after SelectionState::kEnd.
   if (after > 0) {
     // Adjust the deleted range in case of exceeding the right boundary.
     const PlainTextRange range(0, selection_end + after);

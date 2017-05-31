@@ -70,7 +70,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
   // Selection may extend beyond visual overflow, so this optimization is
   // invalid if selection is present.
   if (contents_clip_behavior == kSkipContentsClipIfPossible &&
-      box.GetSelectionState() == SelectionNone) {
+      box.GetSelectionState() == SelectionState::kNone) {
     LayoutRect contents_visual_overflow = box_.ContentsVisualOverflowRect();
     if (contents_visual_overflow.IsEmpty())
       return;

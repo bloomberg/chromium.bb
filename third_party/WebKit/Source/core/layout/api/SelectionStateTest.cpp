@@ -13,12 +13,12 @@ TEST(SelectionStateTest, StreamOutput) {
   // Just explicitly sanity check a couple of values.
   {
     std::stringstream string_stream;
-    string_stream << SelectionNone;
+    string_stream << SelectionState::kNone;
     EXPECT_EQ("None", string_stream.str());
   }
   {
     std::stringstream string_stream;
-    string_stream << SelectionBoth;
+    string_stream << SelectionState::kStartAndEnd;
     EXPECT_EQ("Both", string_stream.str());
   }
 }

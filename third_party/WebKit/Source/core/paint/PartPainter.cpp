@@ -21,22 +21,22 @@ namespace blink {
 
 bool PartPainter::IsSelected() const {
   SelectionState s = layout_part_.GetSelectionState();
-  if (s == SelectionNone)
+  if (s == SelectionState::kNone)
     return false;
-  if (s == SelectionInside)
+  if (s == SelectionState::kInside)
     return true;
 
   int selection_start, selection_end;
   std::tie(selection_start, selection_end) = layout_part_.SelectionStartEnd();
-  if (s == SelectionStart)
+  if (s == SelectionState::kStart)
     return selection_start == 0;
 
   int end = layout_part_.GetNode()->hasChildren()
                 ? layout_part_.GetNode()->CountChildren()
                 : 1;
-  if (s == SelectionEnd)
+  if (s == SelectionState::kEnd)
     return selection_end == end;
-  if (s == SelectionBoth)
+  if (s == SelectionState::kStartAndEnd)
     return selection_start == 0 && selection_end == end;
 
   DCHECK(0);

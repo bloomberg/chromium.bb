@@ -1444,17 +1444,17 @@ void LayoutText::SetSelectionState(SelectionState state) {
   LayoutObject::SetSelectionState(state);
 
   if (CanUpdateSelectionOnRootLineBoxes()) {
-    if (state == SelectionStart || state == SelectionEnd ||
-        state == SelectionBoth) {
+    if (state == SelectionState::kStart || state == SelectionState::kEnd ||
+        state == SelectionState::kStartAndEnd) {
       int start_pos, end_pos;
       std::tie(start_pos, end_pos) = SelectionStartEnd();
-      if (GetSelectionState() == SelectionStart) {
+      if (GetSelectionState() == SelectionState::kStart) {
         end_pos = TextLength();
 
         // to handle selection from end of text to end of line
         if (start_pos && start_pos == end_pos)
           start_pos = end_pos - 1;
-      } else if (GetSelectionState() == SelectionEnd) {
+      } else if (GetSelectionState() == SelectionState::kEnd) {
         start_pos = 0;
       }
 
@@ -1465,7 +1465,7 @@ void LayoutText::SetSelectionState(SelectionState state) {
       }
     } else {
       for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox()) {
-        box->Root().SetHasSelectedChildren(state == SelectionInside);
+        box->Root().SetHasSelectedChildren(state == SelectionState::kInside);
       }
     }
   }
@@ -1899,7 +1899,7 @@ LayoutRect LayoutText::LocalVisualRect() const {
 LayoutRect LayoutText::LocalSelectionRect() const {
   DCHECK(!NeedsLayout());
 
-  if (GetSelectionState() == SelectionNone)
+  if (GetSelectionState() == SelectionState::kNone)
     return LayoutRect();
   LayoutBlock* cb = ContainingBlock();
   if (!cb)
@@ -1908,15 +1908,15 @@ LayoutRect LayoutText::LocalSelectionRect() const {
   // Now calculate startPos and endPos for painting selection.
   // We include a selection while endPos > 0
   int start_pos, end_pos;
-  if (GetSelectionState() == SelectionInside) {
+  if (GetSelectionState() == SelectionState::kInside) {
     // We are fully selected.
     start_pos = 0;
     end_pos = TextLength();
   } else {
     std::tie(start_pos, end_pos) = SelectionStartEnd();
-    if (GetSelectionState() == SelectionStart)
+    if (GetSelectionState() == SelectionState::kStart)
       end_pos = TextLength();
-    else if (GetSelectionState() == SelectionEnd)
+    else if (GetSelectionState() == SelectionState::kEnd)
       start_pos = 0;
   }
 

@@ -1485,7 +1485,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual bool CanBeSelectionLeaf() const { return false; }
   bool HasSelectedChildren() const {
-    return GetSelectionState() != SelectionNone;
+    return GetSelectionState() != SelectionState::kNone;
   }
 
   bool IsSelectable() const;
@@ -2303,7 +2303,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
           positioned_state_(kIsStaticallyPositioned),
-          selection_state_(SelectionNone),
+          selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
           full_paint_invalidation_reason_(
               static_cast<unsigned>(PaintInvalidationReason::kNone)) {}
@@ -2567,7 +2567,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       return static_cast<SelectionState>(selection_state_);
     }
     ALWAYS_INLINE void SetSelectionState(SelectionState selection_state) {
-      selection_state_ = selection_state;
+      selection_state_ = static_cast<unsigned>(selection_state);
     }
 
     ALWAYS_INLINE BackgroundObscurationState

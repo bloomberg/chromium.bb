@@ -181,7 +181,7 @@ static SelectedMap CollectSelectedMap(const SelectionPaintRange& range,
     if (!runner->CanBeSelectionLeaf() && runner != range.StartLayoutObject() &&
         runner != range.EndLayoutObject())
       continue;
-    if (runner->GetSelectionState() == SelectionNone)
+    if (runner->GetSelectionState() == SelectionState::kNone)
       continue;
 
     // Blocks are responsible for painting line gaps and margin gaps.  They
@@ -207,10 +207,12 @@ static void SetSelectionState(const SelectionPaintRange& range) {
     return;
 
   if (range.StartLayoutObject() == range.EndLayoutObject()) {
-    range.StartLayoutObject()->SetSelectionStateIfNeeded(SelectionBoth);
+    range.StartLayoutObject()->SetSelectionStateIfNeeded(
+        SelectionState::kStartAndEnd);
   } else {
-    range.StartLayoutObject()->SetSelectionStateIfNeeded(SelectionStart);
-    range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionEnd);
+    range.StartLayoutObject()->SetSelectionStateIfNeeded(
+        SelectionState::kStart);
+    range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionState::kEnd);
   }
 
   LayoutObject* const stop =
@@ -219,7 +221,7 @@ static void SetSelectionState(const SelectionPaintRange& range) {
        runner && runner != stop; runner = runner->NextInPreOrder()) {
     if (runner != range.StartLayoutObject() &&
         runner != range.EndLayoutObject() && runner->CanBeSelectionLeaf())
-      runner->SetSelectionStateIfNeeded(SelectionInside);
+      runner->SetSelectionStateIfNeeded(SelectionState::kInside);
   }
 }
 
@@ -232,7 +234,7 @@ static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
 
   // Now clear the selection.
   for (auto layout_object : old_selected_map.object_map.Keys())
-    layout_object->SetSelectionStateIfNeeded(SelectionNone);
+    layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
 
   SetSelectionState(new_range);
 
@@ -303,7 +305,7 @@ void LayoutSelection::ClearSelection() {
   // Clear SelectionState and invalidation.
   for (auto layout_object : old_selected_map.object_map.Keys()) {
     const SelectionState old_state = layout_object->GetSelectionState();
-    layout_object->SetSelectionStateIfNeeded(SelectionNone);
+    layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
     if (layout_object->GetSelectionState() == old_state)
       continue;
     layout_object->SetShouldInvalidateSelection();
@@ -407,7 +409,7 @@ IntRect LayoutSelection::SelectionBounds() {
   while (os && os != stop) {
     if ((os->CanBeSelectionLeaf() || os == paint_range_.StartLayoutObject() ||
          os == paint_range_.EndLayoutObject()) &&
-        os->GetSelectionState() != SelectionNone) {
+        os->GetSelectionState() != SelectionState::kNone) {
       // Blocks are responsible for painting line gaps and margin gaps. They
       // must be examined as well.
       sel_rect.Unite(SelectionRectForLayoutObject(os));
@@ -439,7 +441,7 @@ void LayoutSelection::InvalidatePaintForSelection() {
     if (!o->CanBeSelectionLeaf() && o != paint_range_.StartLayoutObject() &&
         o != paint_range_.EndLayoutObject())
       continue;
-    if (o->GetSelectionState() == SelectionNone)
+    if (o->GetSelectionState() == SelectionState::kNone)
       continue;
 
     o->SetShouldInvalidateSelection();

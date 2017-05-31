@@ -173,8 +173,8 @@ bool InlineTextBox::IsSelected(int start_pos, int end_pos) const {
 
 SelectionState InlineTextBox::GetSelectionState() const {
   SelectionState state = GetLineLayoutItem().GetSelectionState();
-  if (state == SelectionStart || state == SelectionEnd ||
-      state == SelectionBoth) {
+  if (state == SelectionState::kStart || state == SelectionState::kEnd ||
+      state == SelectionState::kStartAndEnd) {
     int start_pos, end_pos;
     std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
     // The position after a hard line break is considered to be past its end.
@@ -187,38 +187,38 @@ SelectionState InlineTextBox::GetSelectionState() const {
                 LineBreak::kAfterWhiteSpace
             ? -1
             : 0;
-    bool start = (state != SelectionEnd && start_pos >= start_ &&
+    bool start = (state != SelectionState::kEnd && start_pos >= start_ &&
                   start_pos <= start_ + len_ +
                                    end_of_line_adjustment_for_css_line_break);
-    bool end = (state != SelectionStart && end_pos > start_ &&
+    bool end = (state != SelectionState::kStart && end_pos > start_ &&
                 end_pos <= last_selectable);
     if (start && end)
-      state = SelectionBoth;
+      state = SelectionState::kStartAndEnd;
     else if (start)
-      state = SelectionStart;
+      state = SelectionState::kStart;
     else if (end)
-      state = SelectionEnd;
-    else if ((state == SelectionEnd || start_pos < start_) &&
-             (state == SelectionStart || end_pos > last_selectable))
-      state = SelectionInside;
-    else if (state == SelectionBoth)
-      state = SelectionNone;
+      state = SelectionState::kEnd;
+    else if ((state == SelectionState::kEnd || start_pos < start_) &&
+             (state == SelectionState::kStart || end_pos > last_selectable))
+      state = SelectionState::kInside;
+    else if (state == SelectionState::kStartAndEnd)
+      state = SelectionState::kNone;
   }
 
   // If there are ellipsis following, make sure their selection is updated.
   if (truncation_ != kCNoTruncation && Root().GetEllipsisBox()) {
     EllipsisBox* ellipsis = Root().GetEllipsisBox();
-    if (state != SelectionNone) {
+    if (state != SelectionState::kNone) {
       int start, end;
       SelectionStartEnd(start, end);
       // The ellipsis should be considered to be selected if the end of the
       // selection is past the beginning of the truncation and the beginning of
       // the selection is before or at the beginning of the truncation.
       ellipsis->SetSelectionState(end >= truncation_ && start <= truncation_
-                                      ? SelectionInside
-                                      : SelectionNone);
+                                      ? SelectionState::kInside
+                                      : SelectionState::kNone);
     } else {
-      ellipsis->SetSelectionState(SelectionNone);
+      ellipsis->SetSelectionState(SelectionState::kNone);
     }
   }
 
@@ -229,7 +229,7 @@ bool InlineTextBox::HasWrappedSelectionNewline() const {
   DCHECK(!GetLineLayoutItem().NeedsLayout());
 
   SelectionState state = GetSelectionState();
-  if (state != SelectionStart && state != SelectionInside)
+  if (state != SelectionState::kStart && state != SelectionState::kInside)
     return false;
 
   // Checking last leaf child can be slow, so we make sure to do this
@@ -251,8 +251,9 @@ bool InlineTextBox::HasWrappedSelectionNewline() const {
   if (NextTextBox())
     return true;
   auto root_block = Root().Block();
-  if (root_block.IsInline() && root_block.GetSelectionState() != SelectionEnd &&
-      root_block.GetSelectionState() != SelectionBoth &&
+  if (root_block.IsInline() &&
+      root_block.GetSelectionState() != SelectionState::kEnd &&
+      root_block.GetSelectionState() != SelectionState::kStartAndEnd &&
       root_block.InlineBoxWrapper() &&
       ((is_ltr && root_block.InlineBoxWrapper()->NextOnLine()) ||
        (!is_ltr && root_block.InlineBoxWrapper()->PrevOnLine()))) {
@@ -524,14 +525,14 @@ void InlineTextBox::Paint(const PaintInfo& paint_info,
 
 void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
   int start_pos, end_pos;
-  if (GetLineLayoutItem().GetSelectionState() == SelectionInside) {
+  if (GetLineLayoutItem().GetSelectionState() == SelectionState::kInside) {
     start_pos = 0;
     end_pos = GetLineLayoutItem().TextLength();
   } else {
     std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
-    if (GetLineLayoutItem().GetSelectionState() == SelectionStart)
+    if (GetLineLayoutItem().GetSelectionState() == SelectionState::kStart)
       end_pos = GetLineLayoutItem().TextLength();
-    else if (GetLineLayoutItem().GetSelectionState() == SelectionEnd)
+    else if (GetLineLayoutItem().GetSelectionState() == SelectionState::kEnd)
       start_pos = 0;
   }
 

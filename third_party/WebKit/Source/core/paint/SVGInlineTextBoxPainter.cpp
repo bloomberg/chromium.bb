@@ -45,7 +45,7 @@ bool SVGInlineTextBoxPainter::ShouldPaintSelection(
   // pattern or feImage (element reference.)
   if (paint_info.IsRenderingResourceSubtree())
     return false;
-  return svg_inline_text_box_.GetSelectionState() != SelectionNone;
+  return svg_inline_text_box_.GetSelectionState() != SelectionState::kNone;
 }
 
 static bool HasShadow(const PaintInfo& paint_info, const ComputedStyle& style) {

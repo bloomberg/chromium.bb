@@ -76,7 +76,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
                           ->GetImage(layout_list_marker_, marker.Size())
                           .Get(),
                       marker);
-    if (layout_list_marker_.GetSelectionState() != SelectionNone) {
+    if (layout_list_marker_.GetSelectionState() != SelectionState::kNone) {
       LayoutRect sel_rect = layout_list_marker_.LocalSelectionRect();
       sel_rect.MoveBy(box_origin);
       context.FillRect(

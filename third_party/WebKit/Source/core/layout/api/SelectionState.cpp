@@ -9,16 +9,20 @@
 namespace blink {
 
 std::ostream& operator<<(std::ostream& out, const SelectionState state) {
-  static const char* const kText[] = {
-#define V(state) #state,
-      FOR_EACH_SELECTION_STATE(V)
-#undef V
-  };
-
-  const auto& it = std::begin(kText) + static_cast<size_t>(state);
-  DCHECK_GE(it, std::begin(kText)) << "Unknown state value";
-  DCHECK_LT(it, std::end(kText)) << "Unknown state value";
-  return out << *it;
+  switch (state) {
+    case SelectionState::kNone:
+      return out << "None";
+    case SelectionState::kStart:
+      return out << "Start";
+    case SelectionState::kInside:
+      return out << "Inside";
+    case SelectionState::kEnd:
+      return out << "End";
+    case SelectionState::kStartAndEnd:
+      return out << "Both";
+  }
+  NOTREACHED();
+  return out;
 }
 
 }  // namespace blink
