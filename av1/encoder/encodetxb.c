@@ -896,6 +896,93 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   return accu_cost_diff;
 }
 
+static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
+                              const TxbProbs *txb_probs,
+                              const TxbInfo *txb_info) {
+  const tran_low_t qc = txb_info->qcoeff[coeff_idx];
+  const int abs_qc = abs(qc);
+  assert(abs_qc <= 1);
+  int cost = 0;
+  const int scan_idx = txb_info->scan_order->iscan[coeff_idx];
+  if (scan_idx < txb_info->seg_eob) {
+    const aom_prob level_prob =
+        get_level_prob(0, coeff_idx, txb_cache, txb_probs);
+    cost += av1_cost_bit(level_prob, qc != 0);
+  }
+
+  if (qc != 0) {
+    const int base_idx = 0;
+    const int ctx = txb_cache->base_ctx_arr[base_idx][coeff_idx][0];
+    cost += get_base_cost(abs_qc, ctx, txb_probs->coeff_base, base_idx);
+    if (scan_idx < txb_info->seg_eob) {
+      const int eob_ctx =
+          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->bwl);
+      cost += av1_cost_bit(txb_probs->eob_flag[eob_ctx],
+                           scan_idx == (txb_info->eob - 1));
+    }
+    cost += get_sign_bit_cost(qc, coeff_idx, txb_probs->dc_sign_prob,
+                              txb_info->txb_ctx->dc_sign_ctx);
+  }
+  return cost;
+}
+
+static INLINE void set_eob(TxbInfo *txb_info, int eob) {
+  txb_info->eob = eob;
+  txb_info->seg_eob = AOMMIN(eob, tx_size_2d[txb_info->tx_size] - 1);
+}
+
+// TODO(angiebird): add static to this function once it's called
+int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
+                   const TxbProbs *txb_probs, TxbInfo *txb_info) {
+  assert(txb_info->eob > 0);
+  const tran_low_t qc = txb_info->qcoeff[coeff_idx];
+  const int abs_qc = abs(qc);
+  if (abs_qc != 1) {
+    *new_eob = -1;
+    return 0;
+  }
+  const int16_t *iscan = txb_info->scan_order->iscan;
+  const int16_t *scan = txb_info->scan_order->scan;
+  const int scan_idx = iscan[coeff_idx];
+  *new_eob = 0;
+  int cost_diff = 0;
+  cost_diff -= get_low_coeff_cost(coeff_idx, txb_cache, txb_probs, txb_info);
+  // int coeff_cost =
+  //     av1_get_coeff_cost(qc, scan_idx, txb_info, txb_probs, txb_cache);
+  // if (-cost_diff != coeff_cost) {
+  //   printf("-cost_diff %d coeff_cost %d\n", -cost_diff, coeff_cost);
+  //   get_low_coeff_cost(coeff_idx, txb_cache, txb_probs, txb_info);
+  //   av1_get_coeff_cost(qc, scan_idx, txb_info, txb_probs, txb_cache);
+  // }
+  for (int si = scan_idx - 1; si >= 0; --si) {
+    const int ci = scan[si];
+    if (txb_info->qcoeff[ci] != 0) {
+      *new_eob = si + 1;
+      break;
+    } else {
+      cost_diff -= get_low_coeff_cost(ci, txb_cache, txb_probs, txb_info);
+    }
+  }
+
+  const int org_eob = txb_info->eob;
+  set_eob(txb_info, *new_eob);
+  cost_diff += try_level_down(coeff_idx, txb_cache, txb_probs, txb_info, NULL);
+  set_eob(txb_info, org_eob);
+
+  if (*new_eob > 0) {
+    // Note that get_eob_ctx does NOT actually account for qcoeff, so we don't
+    // need to lower down the qcoeff here
+    const int eob_ctx =
+        get_eob_ctx(txb_info->qcoeff, scan[*new_eob - 1], txb_info->bwl);
+    cost_diff -= av1_cost_bit(txb_probs->eob_flag[eob_ctx], 0);
+    cost_diff += av1_cost_bit(txb_probs->eob_flag[eob_ctx], 1);
+  } else {
+    const int txb_skip_ctx = txb_info->txb_ctx->txb_skip_ctx;
+    cost_diff -= av1_cost_bit(txb_probs->txb_skip[txb_skip_ctx], 0);
+    cost_diff += av1_cost_bit(txb_probs->txb_skip[txb_skip_ctx], 1);
+  }
+  return cost_diff;
+}
 static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
                           TxbProbs *txb_probs) {
   const TXB_CTX *txb_ctx = txb_info->txb_ctx;
