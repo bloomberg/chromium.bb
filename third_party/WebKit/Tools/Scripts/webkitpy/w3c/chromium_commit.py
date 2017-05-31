@@ -93,7 +93,7 @@ class ChromiumCommit(object):
     def change_id(self):
         return self.host.executive.run_command([
             'git', 'footers', '--key', 'Change-Id', self.sha
-        ], cwd=self.absolute_chromium_dir)
+        ], cwd=self.absolute_chromium_dir).strip()
 
     def filtered_changed_files(self):
         """Makes a patch with just changes in files in the WPT dir for a given commit."""
