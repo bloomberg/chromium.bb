@@ -49,6 +49,8 @@ class AXMenuList final : public AXLayoutObject {
   void DidHidePopup();
 
  private:
+  friend class AXMenuListOption;
+
   AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
 
   bool IsMenuList() const override { return true; }

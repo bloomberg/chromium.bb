@@ -28,6 +28,7 @@
 #include "SkMatrix44.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/html/HTMLSelectElement.h"
+#include "modules/accessibility/AXMenuList.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -46,6 +47,12 @@ AXMenuListOption::~AXMenuListOption() {
 void AXMenuListOption::Detach() {
   element_ = nullptr;
   AXMockObject::Detach();
+}
+
+LocalFrameView* AXMenuListOption::DocumentFrameView() const {
+  if (IsDetached())
+    return nullptr;
+  return element_->GetDocument().View();
 }
 
 AccessibilityRole AXMenuListOption::RoleValue() const {
@@ -72,14 +79,21 @@ AXObjectImpl* AXMenuListOption::ComputeParent() const {
   if (!select)
     return nullptr;
   AXObjectImpl* select_ax_object = AxObjectCache().GetOrCreate(select);
-  if (select_ax_object->HasChildren()) {
-    const auto& child_objects = select_ax_object->Children();
-    DCHECK(!child_objects.IsEmpty());
+
+  // This happens if the <select> is not rendered. Return it and move on.
+  if (!select_ax_object->IsMenuList())
+    return select_ax_object;
+
+  AXMenuList* menu_list = ToAXMenuList(select_ax_object);
+  if (menu_list->HasChildren()) {
+    const auto& child_objects = menu_list->Children();
+    if (child_objects.IsEmpty())
+      return nullptr;
     DCHECK_EQ(child_objects.size(), 1UL);
     DCHECK(child_objects[0]->IsMenuListPopup());
     ToAXMenuListPopup(child_objects[0].Get())->UpdateChildrenIfNecessary();
   } else {
-    select_ax_object->UpdateChildrenIfNecessary();
+    menu_list->UpdateChildrenIfNecessary();
   }
   return parent_.Get();
 }

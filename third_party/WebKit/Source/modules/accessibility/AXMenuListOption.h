@@ -52,6 +52,7 @@ class AXMenuListOption final : public AXMockObject {
   Node* GetNode() const override { return element_; }
   void Detach() override;
   bool IsDetached() const override { return !element_; }
+  LocalFrameView* DocumentFrameView() const override;
   AccessibilityRole RoleValue() const override;
   bool CanHaveChildren() const override { return false; }
   AXObjectImpl* ComputeParent() const override;
