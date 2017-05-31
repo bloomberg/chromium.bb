@@ -11,7 +11,16 @@ module.exports = {
   'rules': {
     // Enabled checks.
     'no-extra-semi': 'error',
+    'no-restricted-properties': ['error', {
+      'object': 'document',
+      'property': 'getElementById',
+      'message': 'Use $(\'id\') or getSVGElement(\'id\') ' +
+          'from chrome://resources/js/util.js instead of ' +
+          'document.getElementById(\'id\')',
+      },
+    ],
     'semi': ['error', 'always'],
+
     // TODO(dpapad): Add more checks according to our styleguide.
   },
 };
