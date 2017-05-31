@@ -29,7 +29,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -290,7 +289,8 @@ bool ScriptContext::IsAnyFeatureAvailableToContext(
 }
 
 // static
-GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
+GURL ScriptContext::GetDataSourceURLForFrame(
+    const blink::WebLocalFrame* frame) {
   // Normally we would use frame->document().url() to determine the document's
   // URL, but to decide whether to inject a content script, we use the URL from
   // the data source. This "quirk" helps prevents content scripts from
@@ -306,7 +306,8 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
 }
 
 // static
-GURL ScriptContext::GetAccessCheckedFrameURL(const blink::WebFrame* frame) {
+GURL ScriptContext::GetAccessCheckedFrameURL(
+    const blink::WebLocalFrame* frame) {
   const blink::WebURL& weburl = frame->GetDocument().Url();
   if (weburl.IsEmpty()) {
     blink::WebDataSource* data_source = frame->ProvisionalDataSource()
@@ -322,7 +323,7 @@ GURL ScriptContext::GetAccessCheckedFrameURL(const blink::WebFrame* frame) {
 }
 
 // static
-GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
+GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebLocalFrame* frame,
                                             const GURL& document_url,
                                             bool match_about_blank) {
   // Common scenario. If |match_about_blank| is false (as is the case in most

@@ -10,14 +10,14 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 
 namespace extensions {
 namespace {
 
 class ScriptContextTest : public ChromeRenderViewTest {
  protected:
-  GURL GetEffectiveDocumentURL(const WebFrame* frame) {
+  GURL GetEffectiveDocumentURL(const WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURL(
         frame, frame->GetDocument().Url(), true);
   }
@@ -41,28 +41,28 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
 
   const char frame3_html[] = "<iframe name='frame3_1'></iframe>";
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   ASSERT_TRUE(frame);
 
   frame->LoadHTMLString(frame_html, top_url);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame)).Wait();
 
-  WebFrame* frame1 = frame->FirstChild();
+  WebLocalFrame* frame1 = frame->FirstChild()->ToWebLocalFrame();
   ASSERT_TRUE(frame1);
   ASSERT_EQ("frame1", frame1->AssignedName());
-  WebFrame* frame1_1 = frame1->FirstChild();
+  WebLocalFrame* frame1_1 = frame1->FirstChild()->ToWebLocalFrame();
   ASSERT_TRUE(frame1_1);
   ASSERT_EQ("frame1_1", frame1_1->AssignedName());
-  WebFrame* frame1_2 = frame1_1->NextSibling();
+  WebLocalFrame* frame1_2 = frame1_1->NextSibling()->ToWebLocalFrame();
   ASSERT_TRUE(frame1_2);
   ASSERT_EQ("frame1_2", frame1_2->AssignedName());
-  WebFrame* frame2 = frame1->NextSibling();
+  WebLocalFrame* frame2 = frame1->NextSibling()->ToWebLocalFrame();
   ASSERT_TRUE(frame2);
   ASSERT_EQ("frame2", frame2->AssignedName());
-  WebFrame* frame2_1 = frame2->FirstChild();
+  WebLocalFrame* frame2_1 = frame2->FirstChild()->ToWebLocalFrame();
   ASSERT_TRUE(frame2_1);
   ASSERT_EQ("frame2_1", frame2_1->AssignedName());
-  WebFrame* frame3 = frame2->NextSibling();
+  WebLocalFrame* frame3 = frame2->NextSibling()->ToWebLocalFrame();
   ASSERT_TRUE(frame3);
   ASSERT_EQ("frame3", frame3->AssignedName());
 
@@ -70,7 +70,7 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   frame3->LoadHTMLString(frame3_html, different_url);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame3)).Wait();
 
-  WebFrame* frame3_1 = frame3->FirstChild();
+  WebLocalFrame* frame3_1 = frame3->FirstChild()->ToWebLocalFrame();
   ASSERT_TRUE(frame3_1);
   ASSERT_EQ("frame3_1", frame3_1->AssignedName());
 
