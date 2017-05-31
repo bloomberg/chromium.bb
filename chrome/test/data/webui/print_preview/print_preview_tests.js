@@ -737,35 +737,302 @@ cr.define('print_preview_test', function() {
     // Page layout has half-inch margins. Show header and footer option.
     test('PageLayoutHasMarginsShowHeaderFooter', function() {
       setInitialSettings();
-      nativeLayer.whenCalled('getInitialSettings').then(
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        setCapabilities(getCddTemplate('FooDevice'));
+
+        var otherOptions = $('other-options-settings');
+        var headerFooter =
+            otherOptions.querySelector('#header-footer-container');
+
+        // Check that options are collapsed (section is visible, because
+        // duplex is available).
+        checkSectionVisible(otherOptions, true);
+        checkElementDisplayed(headerFooter, false);
+
+        expandMoreSettings();
+
+        checkElementDisplayed(headerFooter, true);
+
+        printPreview.printTicketStore_.marginsType.updateValue(
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+        printPreview.printTicketStore_.customMargins.updateValue(
+            new print_preview.Margins(36, 36, 36, 36));
+
+        checkElementDisplayed(headerFooter, true);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+
+    // Page layout has zero top and bottom margins. Hide header and footer
+    // option.
+    test('ZeroTopAndBottomMarginsHideHeaderFooter', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        setCapabilities(getCddTemplate('FooDevice'));
+
+        var otherOptions = $('other-options-settings');
+        var headerFooter =
+            otherOptions.querySelector('#header-footer-container');
+
+        // Check that options are collapsed (section is visible, because duplex
+        // is available).
+        checkSectionVisible(otherOptions, true);
+        checkElementDisplayed(headerFooter, false);
+
+        expandMoreSettings();
+
+        checkElementDisplayed(headerFooter, true);
+
+        printPreview.printTicketStore_.marginsType.updateValue(
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+        printPreview.printTicketStore_.customMargins.updateValue(
+            new print_preview.Margins(0, 36, 0, 36));
+
+        checkElementDisplayed(headerFooter, false);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Page layout has zero top and half-inch bottom margin. Show header and
+    // footer option.
+    test('ZeroTopAndNonZeroBottomMarginShowHeaderFooter', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        setCapabilities(getCddTemplate('FooDevice'));
+
+        var otherOptions = $('other-options-settings');
+        var headerFooter =
+            otherOptions.querySelector('#header-footer-container');
+
+        // Check that options are collapsed (section is visible, because duplex
+        // is available).
+        checkSectionVisible(otherOptions, true);
+        checkElementDisplayed(headerFooter, false);
+
+        expandMoreSettings();
+
+        checkElementDisplayed(headerFooter, true);
+
+        printPreview.printTicketStore_.marginsType.updateValue(
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+        printPreview.printTicketStore_.customMargins.updateValue(
+            new print_preview.Margins(0, 36, 36, 36));
+
+        checkElementDisplayed(headerFooter, true);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Check header footer availability with small (label) page size.
+    test('SmallPaperSizeHeaderFooter', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.media_size = {
+          'option': [
+            {'name': 'SmallLabel', 'width_microns': 38100,
+              'height_microns': 12700, 'is_default': false},
+            {'name': 'BigLabel', 'width_microns': 50800,
+              'height_microns': 76200, 'is_default': true}
+          ]
+        };
+        setCapabilities(device);
+
+        var otherOptions = $('other-options-settings');
+        var headerFooter =
+            otherOptions.querySelector('#header-footer-container');
+
+        // Check that options are collapsed (section is visible, because duplex
+        // is available).
+        checkSectionVisible(otherOptions, true);
+        checkElementDisplayed(headerFooter, false);
+
+        expandMoreSettings();
+
+        // Big label should have header/footer
+        checkElementDisplayed(headerFooter, true);
+
+        // Small label should not
+        printPreview.printTicketStore_.mediaSize.updateValue(
+            device.capabilities.printer.media_size.option[0]);
+        checkElementDisplayed(headerFooter, false);
+
+        // Oriented in landscape, there should be enough space for
+        // header/footer.
+        printPreview.printTicketStore_.landscape.updateValue(true);
+        checkElementDisplayed(headerFooter, true);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, one option, standard monochrome.
+    test('TestColorSettingsMonochrome', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        // Only one option, standard monochrome.
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'is_default': true, 'type': 'STANDARD_MONOCHROME'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), false);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, one option, custom monochrome.
+    test('TestColorSettingsCustomMonochrome', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        // Only one option, standard monochrome.
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'is_default': true, 'type': 'CUSTOM_MONOCHROME',
+             'vendor_id': '42'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), false);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, one option, standard color.
+    test('TestColorSettingsColor', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'is_default': true, 'type': 'STANDARD_COLOR'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), false);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, one option, custom color.
+    test('TestColorSettingsCustomColor', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'is_default': true, 'type': 'CUSTOM_COLOR', 'vendor_id': '42'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), false);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, two options, both standard, defaults to
+    // color.
+    test('TestColorSettingsBothStandardDefaultColor', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'type': 'STANDARD_MONOCHROME'},
+            {'is_default': true, 'type': 'STANDARD_COLOR'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), true);
+        expectEquals(
+            'color',
+            $('color-settings').querySelector('.color-settings-select').value);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, two options, both standard, defaults to
+    // monochrome.
+    test('TestColorSettingsBothStandardDefaultMonochrome', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        setLocalDestinations();
+
+        var device = getCddTemplate('FooDevice');
+        device.capabilities.printer.color = {
+          'option': [
+            {'is_default': true, 'type': 'STANDARD_MONOCHROME'},
+            {'type': 'STANDARD_COLOR'}
+          ]
+        };
+        setCapabilities(device);
+
+        checkSectionVisible($('color-settings'), true);
+        expectEquals(
+            'bw',
+            $('color-settings').querySelector('.color-settings-select').value);
+
+        return whenAnimationDone('more-settings');
+      });
+    });
+
+    // Test that the color settings, two options, both custom, defaults to
+    // color.
+    test('TestColorSettingsBothCustomDefaultColor', function() {
+      setInitialSettings();
+      return nativeLayer.whenCalled('getInitialSettings').then(
           function() {
             setLocalDestinations();
-            setCapabilities(getCddTemplate('FooDevice'));
 
-            var otherOptions = $('other-options-settings');
-            var headerFooter =
-                otherOptions.querySelector('#header-footer-container');
+            var device = getCddTemplate('FooDevice');
+            device.capabilities.printer.color = {
+              'option': [
+                {'type': 'CUSTOM_MONOCHROME', 'vendor_id': '42'},
+                {'is_default': true, 'type': 'CUSTOM_COLOR', 'vendor_id': '43'}
+              ]
+            };
+            setCapabilities(device);
 
-            // Check that options are collapsed (section is visible, because
-            // duplex is available).
-            checkSectionVisible(otherOptions, true);
-            checkElementDisplayed(headerFooter, false);
-
-            expandMoreSettings();
-
-            checkElementDisplayed(headerFooter, true);
-
-            printPreview.printTicketStore_.marginsType.updateValue(
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
-            printPreview.printTicketStore_.customMargins.updateValue(
-                new print_preview.Margins(36, 36, 36, 36));
-
-            checkElementDisplayed(headerFooter, true);
+            checkSectionVisible($('color-settings'), true);
+            expectEquals(
+                'color',
+                $('color-settings').querySelector(
+                    '.color-settings-select').value);
 
             return whenAnimationDone('more-settings');
           });
-    });
-
+        });
 
   });
 });

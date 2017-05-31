@@ -61,71 +61,36 @@ PrintPreviewUIBrowserTest.prototype = {
   ],
 };
 
-TEST_F('PrintPreviewUIBrowserTest', 'PrinterList', function() {
-  mocha.grep(/PrinterList\b/).run();
+// Run each mocha test in isolation (within a new TEST_F() call).
+[
+  'PrinterList',
+  'PrinterListCloudEmpty',
+  'RestoreLocalDestination',
+  'RestoreMultipleDestinations',
+  'DefaultDestinationSelectionRules',
+  'SystemDialogLinkIsHiddenInAppKioskMode',
+  'SectionsDisabled',
+  'PrintToPDFSelectedCapabilities',
+  'SourceIsHTMLCapabilities',
+  'SourceIsPDFCapabilities',
+  'ScalingUnchecksFitToPage',
+  'CheckNumCopiesPrintPreset',
+  'CheckDuplexPrintPreset',
+  'CustomMarginsControlsCheck',
+  'PageLayoutHasNoMarginsHideHeaderFooter',
+  'PageLayoutHasMarginsShowHeaderFooter',
+  'ZeroTopAndBottomMarginsHideHeaderFooter',
+  'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
+  'SmallPaperSizeHeaderFooter',
+  'TestColorSettingsMonochrome',
+  'TestColorSettingsCustomMonochrome',
+  'TestColorSettingsColor',
+  'TestColorSettingsCustomColor',
+  'TestColorSettingsBothStandardDefaultColor',
+  'TestColorSettingsBothStandardDefaultMonochrome',
+  'TestColorSettingsBothCustomDefaultColor',
+].forEach(function(testName) {
+  TEST_F('PrintPreviewUIBrowserTest', testName, function() {
+    mocha.grep(new RegExp(testName + '\\b')).run();
+  });
 });
-
-TEST_F('PrintPreviewUIBrowserTest', 'PrinterListCloudEmpty', function() {
-  mocha.grep(/PrinterListCloudEmpty\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'RestoreLocalDestination', function() {
-  mocha.grep(/RestoreLocalDestination\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'RestoreMultipleDestinations', function() {
-  mocha.grep(/RestoreMultipleDestinations\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'DefaultDestinationSelectionRules',
-    function() {
-      mocha.grep(/DefaultDestinationSelectionRules\b/).run();
-    });
-
-TEST_F('PrintPreviewUIBrowserTest', 'SystemDialogLinkIsHiddenInAppKioskMode',
-    function() {
-      mocha.grep(/SystemDialogLinkIsHiddenInAppKioskMode\b/).run();
-    });
-
-TEST_F('PrintPreviewUIBrowserTest', 'SectionsDisabled', function() {
-  mocha.grep(/SectionsDisabled\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'PrintToPDFSelectedCapabilities',
-    function() {
-      mocha.grep(/PrintToPDFSelectedCapabilities\b/).run();
-    });
-
-TEST_F('PrintPreviewUIBrowserTest', 'SourceIsHTMLCapabilities', function() {
-  mocha.grep(/SourceIsHTMLCapabilities\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'SourceIsPDFCapabilities', function() {
-  mocha.grep(/SourceIsPDFCapabilities\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'ScalingUnchecksFitToPage', function() {
-  mocha.grep(/ScalingUnchecksFitToPage\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'CheckNumCopiesPrintPreset', function() {
-  mocha.grep(/CheckNumCopiesPrintPreset\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'CheckDuplexPrintPreset', function() {
-  mocha.grep(/CheckDuplexPrintPreset\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'CustomMarginsControlsCheck', function() {
-  mocha.grep(/CustomMarginsControlsCheck\b/).run();
-});
-
-TEST_F('PrintPreviewUIBrowserTest', 'PageLayoutHasNoMarginsHideHeaderFooter',
-    function() {
-      mocha.grep(/PageLayoutHasNoMarginsHideHeaderFooter\b/).run();
-    });
-
-TEST_F('PrintPreviewUIBrowserTest', 'PageLayoutHasMarginsShowHeaderFooter',
-    function() {
-      mocha.grep(/PageLayoutHasMarginsShowHeaderFooter\b/).run();
-    });
