@@ -285,6 +285,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
  public:
   // Specifies in which callback the stream can be deleted.
   enum Phase {
+    ON_STREAM_READY,
     ON_HEADERS_RECEIVED,
     ON_DATA_READ,
     ON_TRAILERS_RECEIVED,
@@ -295,13 +296,18 @@ class DeleteStreamDelegate : public TestDelegateBase {
       : TestDelegateBase(buf, buf_len), phase_(phase) {}
   ~DeleteStreamDelegate() override {}
 
+  void OnStreamReady(bool request_headers_sent) override {
+    TestDelegateBase::OnStreamReady(request_headers_sent);
+    if (phase_ == ON_STREAM_READY)
+      DeleteStream();
+  }
+
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     // Make a copy of |response_headers| before the stream is deleted, since
     // the headers are owned by the stream.
     SpdyHeaderBlock headers_copy = response_headers.Clone();
-    if (phase_ == ON_HEADERS_RECEIVED) {
+    if (phase_ == ON_HEADERS_RECEIVED)
       DeleteStream();
-    }
     TestDelegateBase::OnHeadersReceived(headers_copy);
   }
 
@@ -396,6 +402,11 @@ class BidirectionalStreamQuicImplTest
   // Adds a packet to the list of expected writes.
   void AddWrite(std::unique_ptr<QuicReceivedPacket> packet) {
     writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
+  }
+
+  // Adds a write error to the list of expected writes.
+  void AddWriteError(IoMode mode, int rv) {
+    writes_.push_back(PacketToWrite(mode, rv));
   }
 
   void ProcessPacket(std::unique_ptr<QuicReceivedPacket> packet) {
@@ -594,20 +605,29 @@ class BidirectionalStreamQuicImplTest
 
   std::unique_ptr<QuicReceivedPacket> ConstructClientRstStreamPacket(
       QuicPacketNumber packet_number) {
-    return ConstructRstStreamCancelledPacket(packet_number, 0, &client_maker_);
+    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
+                                             &client_maker_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructServerRstStreamPacket(
       QuicPacketNumber packet_number) {
-    return ConstructRstStreamCancelledPacket(packet_number, 0, &server_maker_);
+    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
+                                             &server_maker_);
+  }
+
+  std::unique_ptr<QuicReceivedPacket> ConstructClientEarlyRstStreamPacket(
+      QuicPacketNumber packet_number) {
+    return ConstructRstStreamCancelledPacket(packet_number, kIncludeVersion, 0,
+                                             &client_maker_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructRstStreamCancelledPacket(
       QuicPacketNumber packet_number,
+      bool include_version,
       size_t bytes_written,
       QuicTestPacketMaker* maker) {
     std::unique_ptr<QuicReceivedPacket> packet(
-        maker->MakeRstPacket(packet_number, !kIncludeVersion, stream_id_,
+        maker->MakeRstPacket(packet_number, include_version, stream_id_,
                              QUIC_STREAM_CANCELLED, bytes_written));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicTextUtils::HexDump(packet->AsStringPiece());
@@ -1607,6 +1627,61 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
             delegate->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length),
             delegate->GetTotalReceivedBytes());
+}
+
+TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
+  AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize, DeleteStreamDelegate::ON_FAILED));
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback();  // OnStreamReady
+
+  EXPECT_EQ(0, delegate->on_data_read_count());
+  EXPECT_EQ(0, delegate->on_data_sent_count());
+}
+
+TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
+  AddWrite(ConstructRequestHeadersPacketInner(
+      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      &spdy_request_headers_frame_length, &header_stream_offset));
+  AddWrite(ConstructClientEarlyRstStreamPacket(3));
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<DeleteStreamDelegate> delegate(
+      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
+                               DeleteStreamDelegate::ON_STREAM_READY));
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback();  // OnStreamReady
+
+  EXPECT_EQ(0, delegate->on_data_read_count());
+  EXPECT_EQ(0, delegate->on_data_sent_count());
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {

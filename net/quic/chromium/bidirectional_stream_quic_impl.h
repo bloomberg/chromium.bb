@@ -63,6 +63,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
   void OnStreamReady(int rv);
   void OnSendDataComplete(int rv);
+  void ReadInitialHeaders();
   void OnReadInitialHeadersComplete(int rv);
   void ReadTrailingHeaders();
   void OnReadTrailingHeadersComplete(int rv);
