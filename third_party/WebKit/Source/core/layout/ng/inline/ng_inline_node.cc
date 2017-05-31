@@ -425,11 +425,13 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
   for (const auto& container_child : box_fragment->Children()) {
     NGPhysicalLineBoxFragment* physical_line_box =
         ToNGPhysicalLineBoxFragment(container_child.Get());
+    NGLineBoxFragment line_box(constraint_space.WritingMode(),
+                               physical_line_box);
 
     // Create a BidiRunList for this line.
     CreateBidiRuns(&bidi_runs, physical_line_box->Children(), constraint_space,
-                   NGLogicalOffset(), items, text_offsets,
-                   &positions_for_bidi_runs, &positions);
+                   {line_box.InlineOffset(), LayoutUnit(0)}, items,
+                   text_offsets, &positions_for_bidi_runs, &positions);
     // TODO(kojii): bidi needs to find the logical last run.
     bidi_runs.SetLogicallyLastRun(bidi_runs.LastRun());
 
@@ -444,8 +446,7 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     PlaceInlineBoxChildren(root_line_box, positions_for_bidi_runs, positions);
 
     // Copy to RootInlineBox.
-    NGLineBoxFragment line_box(constraint_space.WritingMode(),
-                               physical_line_box);
+    root_line_box->SetLogicalLeft(line_box.InlineOffset());
     root_line_box->SetLogicalWidth(line_box.InlineSize());
     LayoutUnit line_top = line_box.BlockOffset();
     NGLineHeightMetrics line_metrics(Style(), baseline_type);

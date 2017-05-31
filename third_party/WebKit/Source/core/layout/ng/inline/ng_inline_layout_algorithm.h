@@ -75,6 +75,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                       NGLineBoxFragmentBuilder*,
                                       NGTextFragmentBuilder*);
 
+  void ApplyTextAlign(LayoutUnit* line_left,
+                      LayoutUnit inline_size,
+                      LayoutUnit available_width);
+
   // Finds the next layout opportunity for the next text fragment.
   void FindNextLayoutOpportunity();
 
