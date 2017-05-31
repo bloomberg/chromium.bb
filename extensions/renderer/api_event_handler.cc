@@ -116,6 +116,7 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
     const std::string& event_name,
     bool supports_filters,
     int max_listeners,
+    bool notify_on_change,
     v8::Local<v8::Context> context) {
   // We need a context scope since gin::CreateHandle only takes the isolate
   // and infers the context from that.
@@ -127,7 +128,8 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
   DCHECK(data->emitters.find(event_name) == data->emitters.end());
 
   APIEventListeners::ListenersUpdated updated =
-      base::Bind(listeners_changed_, event_name);
+      notify_on_change ? base::Bind(listeners_changed_, event_name)
+                       : base::Bind(&DoNothingOnListenersChanged);
   std::unique_ptr<APIEventListeners> listeners;
   if (supports_filters) {
     listeners = base::MakeUnique<FilteredEventListeners>(

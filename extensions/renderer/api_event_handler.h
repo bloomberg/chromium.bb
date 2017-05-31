@@ -42,10 +42,12 @@ class APIEventHandler {
                   const EventListenersChangedMethod& listeners_changed);
   ~APIEventHandler();
 
-  // Returns a new v8::Object for an event with the given |event_name|.
+  // Returns a new v8::Object for an event with the given |event_name|. If
+  // |notify_on_change| is true, notifies whenever listeners state is changed.
   v8::Local<v8::Object> CreateEventInstance(const std::string& event_name,
                                             bool supports_filters,
                                             int max_listeners,
+                                            bool notify_on_change,
                                             v8::Local<v8::Context> context);
 
   // Creates a new event without any name. This is used by custom bindings when
