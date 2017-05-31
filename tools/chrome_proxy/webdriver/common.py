@@ -742,6 +742,8 @@ class IntegrationTest(unittest.TestCase):
     Args:
       run_all_tests: If True, all tests in the directory will be run, Otherwise
         only the tests in the file given on the command line will be run.
+    Returns:
+      the TestResult object from the test runner
     """
     flags = ParseFlags()
     logger = GetLogger()
@@ -767,4 +769,4 @@ class IntegrationTest(unittest.TestCase):
             tests.addTest(test)
     testRunner = unittest.runner.TextTestRunner(verbosity=2,
       failfast=flags.failfast, buffer=(not flags.disable_buffer))
-    testRunner.run(tests)
+    return testRunner.run(tests)
