@@ -9,6 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/about_sync_util.h"
@@ -34,10 +36,8 @@ class TestableSyncInternalsMessageHandler : public SyncInternalsMessageHandler {
  public:
   TestableSyncInternalsMessageHandler(
       content::WebUI* web_ui,
-      SyncServiceProvider sync_service_provider,
       AboutSyncDataDelegate about_sync_data_delegate)
-      : SyncInternalsMessageHandler(std::move(sync_service_provider),
-                                    std::move(about_sync_data_delegate)) {
+      : SyncInternalsMessageHandler(std::move(about_sync_data_delegate)) {
     set_web_ui(web_ui);
   }
 };
@@ -92,6 +92,11 @@ class TestSyncService : public syncer::FakeSyncService {
       get_all_nodes_callback_;
 };
 
+static std::unique_ptr<KeyedService> BuildTestSyncService(
+    content::BrowserContext* context) {
+  return base::MakeUnique<TestSyncService>();
+}
+
 class SyncInternalsMessageHandlerTest : public ::testing::Test {
  protected:
   SyncInternalsMessageHandlerTest() {
@@ -99,11 +104,11 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
     web_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(&profile_, site_instance_.get())));
     web_ui_.set_web_contents(web_contents_.get());
-    test_sync_service_ = base::MakeUnique<TestSyncService>();
+    test_sync_service_ = static_cast<TestSyncService*>(
+        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, &BuildTestSyncService));
     handler_.reset(new TestableSyncInternalsMessageHandler(
         &web_ui_,
-        base::BindRepeating(&SyncInternalsMessageHandlerTest::sync_service,
-                            base::Unretained(this)),
         base::BindRepeating(
             &SyncInternalsMessageHandlerTest::ConstructAboutInformation,
             base::Unretained(this))));
@@ -149,7 +154,9 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
     EXPECT_TRUE(web_ui_.call_data().empty());
   }
 
-  TestSyncService* test_sync_service() { return test_sync_service_.get(); }
+  TestingProfile* profile() { return &profile_; }
+
+  TestSyncService* test_sync_service() { return test_sync_service_; }
 
   TestableSyncInternalsMessageHandler* handler() { return handler_.get(); }
 
@@ -171,19 +178,15 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
     return last_delegate_sync_service_;
   }
 
-  void ResetSyncService() { test_sync_service_.reset(); }
-
   void ResetHandler() { handler_.reset(); }
 
  private:
-  SyncService* sync_service() { return test_sync_service_.get(); }
-
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  content::TestWebUI web_ui_;
   scoped_refptr<content::SiteInstance> site_instance_;
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<TestSyncService> test_sync_service_;
+  content::TestWebUI web_ui_;
+  TestSyncService* test_sync_service_;
   std::unique_ptr<TestableSyncInternalsMessageHandler> handler_;
   int about_sync_data_delegate_call_count_ = 0;
   SyncService* last_delegate_sync_service_ = nullptr;
@@ -238,7 +241,8 @@ TEST_F(SyncInternalsMessageHandlerTest, AddRemoveObserversDisallowJavascript) {
 
 TEST_F(SyncInternalsMessageHandlerTest, AddRemoveObserversSyncDisabled) {
   // Simulate completely disabling sync by flag or other mechanism.
-  ResetSyncService();
+  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),
+                                                              nullptr);
 
   ListValue empty_list;
   handler()->HandleRegisterForEvents(&empty_list);
@@ -301,7 +305,8 @@ TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfo) {
 
 TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoSyncDisabled) {
   // Simulate completely disabling sync by flag or other mechanism.
-  ResetSyncService();
+  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),
+                                                              nullptr);
 
   handler()->AllowJavascriptForTesting();
   handler()->OnStateChanged(nullptr);
