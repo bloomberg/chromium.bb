@@ -151,6 +151,8 @@ static void LogRendererCrash(JNIEnv*, const JavaParamRef<jclass>&) {
   DCHECK(pref);
   int value = pref->GetInteger(metrics::prefs::kStabilityRendererCrashCount);
   pref->SetInteger(metrics::prefs::kStabilityRendererCrashCount, value + 1);
+  // Migrate proto to histogram to repurpose proto count.
+  UMA_HISTOGRAM_BOOLEAN("Stability.Android.RendererCrash", true);
 }
 
 static void RegisterExternalExperiment(
