@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -40,9 +42,8 @@ class MultizoneBackendTest;
 
 namespace {
 
-const int64_t kMicrosecondsPerSecond = 1000 * 1000;
 // Total length of test, in microseconds.
-const int64_t kPushTimeUs = 2 * kMicrosecondsPerSecond;
+const int64_t kPushTimeUs = 2 * base::Time::kMicrosecondsPerSecond;
 const int64_t kStartPts = 0;
 const int64_t kMaxRenderingDelayErrorUs = 200;
 const int kNumEffectsStreams = 1;
@@ -54,27 +55,23 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
  public:
   BufferFeeder(const AudioConfig& config,
                bool effects_only,
-               const base::Closure& eos_cb);
+               base::OnceClosure eos_cb,
+               int playback_rate_change_count);
   ~BufferFeeder() override {}
 
-  void Initialize(float playback_rate);
-  void Start();
+  void Initialize();
+  void Start(float playback_rate);
   void Stop();
 
-  int64_t max_rendering_delay_error_us() {
-    return max_rendering_delay_error_us_;
-  }
-
-  int64_t max_positive_rendering_delay_error_us() {
-    return max_positive_rendering_delay_error_us_;
-  }
-
-  int64_t max_negative_rendering_delay_error_us() {
-    return max_negative_rendering_delay_error_us_;
-  }
-
-  int64_t average_rendering_delay_error_us() {
-    return total_rendering_delay_error_us_ / sample_count_;
+  int64_t GetMaxRenderingDelayErrorUs() {
+    int64_t max = 0;
+    for (int64_t error : errors_) {
+      if (error == kNoTimestamp) {
+        continue;
+      }
+      max = std::max(max, std::abs(error));
+    }
+    return max;
   }
 
  private:
@@ -103,21 +100,19 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
 
   const AudioConfig config_;
   const bool effects_only_;
-  const base::Closure eos_cb_;
-  double original_playback_rate_;
-  double playback_rate_;
-  int64_t max_rendering_delay_error_us_;
-  int64_t max_positive_rendering_delay_error_us_;
-  int64_t max_negative_rendering_delay_error_us_;
-  int64_t total_rendering_delay_error_us_;
-  size_t sample_count_;
+  base::OnceClosure eos_cb_;
+  const int64_t push_limit_us_;
+  const int64_t playback_rate_change_interval_us_;
+  float original_playback_rate_;
+  float playback_rate_;
+  std::vector<int64_t> errors_;
   bool feeding_completed_;
-  std::unique_ptr<TaskRunnerImpl> task_runner_;
+  TaskRunnerImpl task_runner_;
   std::unique_ptr<MediaPipelineBackend> backend_;
   MediaPipelineBackend::AudioDecoder* decoder_;
-  int64_t push_limit_us_;
   int64_t last_push_length_us_;
   int64_t pushed_us_;
+  int64_t pushed_us_when_rate_changed_;
   int64_t next_push_playback_timestamp_;
   scoped_refptr<DecoderBufferBase> pending_buffer_;
   base::ThreadChecker thread_checker_;
@@ -127,8 +122,8 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
 
 }  // namespace
 
-using TestParams = std::tr1::tuple<int,     // sample rate
-                                   float>;  // playback rate
+using TestParams =
+    std::tr1::tuple<int /* sample rate */, float /* playback rate */>;
 
 class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
  public:
@@ -155,11 +150,12 @@ class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
 
   void AddEffectsStreams();
 
-  void Initialize(int sample_rate, float playback_rate);
-  void Start();
+  void Initialize(int sample_rate, int playback_rate_change_count);
+  void Start(float playback_rate);
   void OnEndOfStream();
 
  private:
+  base::MessageLoop message_loop_;
   std::vector<std::unique_ptr<BufferFeeder>> effects_feeders_;
   std::unique_ptr<BufferFeeder> audio_feeder_;
 
@@ -170,34 +166,31 @@ namespace {
 
 BufferFeeder::BufferFeeder(const AudioConfig& config,
                            bool effects_only,
-                           const base::Closure& eos_cb)
+                           base::OnceClosure eos_cb,
+                           int playback_rate_change_count)
     : config_(config),
       effects_only_(effects_only),
-      eos_cb_(eos_cb),
-      original_playback_rate_(1.0),
-      playback_rate_(1.0),
-      max_rendering_delay_error_us_(0),
-      max_positive_rendering_delay_error_us_(0),
-      max_negative_rendering_delay_error_us_(0),
-      total_rendering_delay_error_us_(0),
-      sample_count_(0),
-      feeding_completed_(false),
-      task_runner_(new TaskRunnerImpl()),
-      decoder_(nullptr),
+      eos_cb_(std::move(eos_cb)),
       push_limit_us_(effects_only_ ? 0 : kPushTimeUs),
+      playback_rate_change_interval_us_(push_limit_us_ /
+                                        (playback_rate_change_count + 1)),
+      original_playback_rate_(1.0f),
+      playback_rate_(1.0f),
+      feeding_completed_(false),
+      decoder_(nullptr),
       last_push_length_us_(0),
       pushed_us_(0),
+      pushed_us_when_rate_changed_(0),
       next_push_playback_timestamp_(kNoTimestamp) {
-  CHECK(!eos_cb_.is_null());
+  CHECK(eos_cb_);
 }
 
-void BufferFeeder::Initialize(float playback_rate) {
-  original_playback_rate_ = playback_rate_ = playback_rate;
+void BufferFeeder::Initialize() {
   MediaPipelineDeviceParams params(
       MediaPipelineDeviceParams::kModeIgnorePts,
       effects_only_ ? MediaPipelineDeviceParams::kAudioStreamSoundEffects
                     : MediaPipelineDeviceParams::kAudioStreamNormal,
-      task_runner_.get(), AudioContentType::kMedia,
+      &task_runner_, AudioContentType::kMedia,
       ::media::AudioDeviceDescription::kDefaultDeviceId);
   backend_.reset(CastMediaShlib::CreateMediaPipelineBackend(params));
   CHECK(backend_);
@@ -208,13 +201,18 @@ void BufferFeeder::Initialize(float playback_rate) {
   decoder_->SetDelegate(this);
 
   ASSERT_TRUE(backend_->Initialize());
-  ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate));
 }
 
-void BufferFeeder::Start() {
+void BufferFeeder::Start(float playback_rate) {
+  // AMP devices only support playback rates between 0.5 and 2.0.
+  ASSERT_GE(playback_rate, 0.5f);
+  ASSERT_LE(playback_rate, 2.0f);
+  original_playback_rate_ = playback_rate_ = playback_rate;
   ASSERT_TRUE(backend_->Start(kStartPts));
+  ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BufferFeeder::FeedBuffer, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BufferFeeder::FeedBuffer, base::Unretained(this)));
 }
 
 void BufferFeeder::Stop() {
@@ -227,15 +225,21 @@ void BufferFeeder::FeedBuffer() {
   if (feeding_completed_)
     return;
 
-  if (!effects_only_ && pushed_us_ >= push_limit_us_ / 2 &&
-      playback_rate_ == original_playback_rate_) {
-    if (original_playback_rate_ < 1.0) {
+  if (!effects_only_ && pushed_us_ > pushed_us_when_rate_changed_ +
+                                         playback_rate_change_interval_us_) {
+    pushed_us_when_rate_changed_ = pushed_us_;
+    if (playback_rate_ != original_playback_rate_) {
+      playback_rate_ = original_playback_rate_;
+    } else if (original_playback_rate_ < 1.0) {
       playback_rate_ = original_playback_rate_ * 2;
-      ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate_));
     } else {
       playback_rate_ = original_playback_rate_ / 2;
-      ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate_));
     }
+    ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate_));
+    // Changing the playback rate will change the rendering delay on devices
+    // where playback rate changes apply to audio that has already been pushed.
+    // Ignore the next rendering delay.
+    next_push_playback_timestamp_ = kNoTimestamp;
   }
 
   if (!effects_only_ && pushed_us_ >= push_limit_us_) {
@@ -247,7 +251,7 @@ void BufferFeeder::FeedBuffer() {
     int size_bytes = (rand() % 96 + 32) * 16;
     int num_samples =
         size_bytes / (config_.bytes_per_channel * config_.channel_number);
-    last_push_length_us_ = num_samples * kMicrosecondsPerSecond /
+    last_push_length_us_ = num_samples * base::Time::kMicrosecondsPerSecond /
                            (config_.samples_per_second * playback_rate_);
     scoped_refptr<::media::DecoderBuffer> silence_buffer(
         new ::media::DecoderBuffer(size_bytes));
@@ -265,7 +269,7 @@ void BufferFeeder::FeedBuffer() {
 
 void BufferFeeder::OnEndOfStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  eos_cb_.Run();
+  std::move(eos_cb_).Run();
 }
 
 void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
@@ -277,6 +281,7 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
     MediaPipelineBackend::AudioDecoder::RenderingDelay delay =
         decoder_->GetRenderingDelay();
 
+    int64_t error = kNoTimestamp;
     if (delay.timestamp_microseconds == kNoTimestamp) {
       next_push_playback_timestamp_ = kNoTimestamp;
     } else {
@@ -288,22 +293,11 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
             next_push_playback_timestamp_ + last_push_length_us_;
         next_push_playback_timestamp_ =
             delay.timestamp_microseconds + delay.delay_microseconds;
-        int64_t error = next_push_playback_timestamp_ -
-                        expected_next_push_playback_timestamp;
-
-        max_rendering_delay_error_us_ =
-            std::max(max_rendering_delay_error_us_, std::abs(error));
-        total_rendering_delay_error_us_ += std::abs(error);
-        if (error >= 0) {
-          max_positive_rendering_delay_error_us_ =
-              std::max(max_positive_rendering_delay_error_us_, error);
-        } else {
-          max_negative_rendering_delay_error_us_ =
-              std::min(max_negative_rendering_delay_error_us_, error);
-        }
-        sample_count_++;
+        error = next_push_playback_timestamp_ -
+                expected_next_push_playback_timestamp;
       }
     }
+    errors_.push_back(error);
   }
   pushed_us_ += last_push_length_us_;
 
@@ -311,7 +305,8 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BufferFeeder::FeedBuffer, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BufferFeeder::FeedBuffer, base::Unretained(this)));
 }
 
 }  // namespace
@@ -320,19 +315,21 @@ MultizoneBackendTest::MultizoneBackendTest() {}
 
 MultizoneBackendTest::~MultizoneBackendTest() {}
 
-void MultizoneBackendTest::Initialize(int sample_rate, float playback_rate) {
+void MultizoneBackendTest::Initialize(int sample_rate,
+                                      int playback_rate_change_count) {
   AudioConfig config;
   config.codec = kCodecPCM;
-  config.sample_format = kSampleFormatS32;
+  config.sample_format = kSampleFormatPlanarF32;
   config.channel_number = 2;
   config.bytes_per_channel = 4;
   config.samples_per_second = sample_rate;
 
-  audio_feeder_.reset(
-      new BufferFeeder(config, false /* effects_only */,
-                       base::Bind(&MultizoneBackendTest::OnEndOfStream,
-                                  base::Unretained(this))));
-  audio_feeder_->Initialize(playback_rate);
+  audio_feeder_ = base::MakeUnique<BufferFeeder>(
+      config, false /* effects_only */,
+      base::BindOnce(&MultizoneBackendTest::OnEndOfStream,
+                     base::Unretained(this)),
+      playback_rate_change_count);
+  audio_feeder_->Initialize();
 }
 
 void MultizoneBackendTest::AddEffectsStreams() {
@@ -344,18 +341,19 @@ void MultizoneBackendTest::AddEffectsStreams() {
   effects_config.samples_per_second = 48000;
 
   for (int i = 0; i < kNumEffectsStreams; ++i) {
-    std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(
-        effects_config, true /* effects_only */, base::Bind(&IgnoreEos)));
-    feeder->Initialize(1.0f);
+    auto feeder = base::MakeUnique<BufferFeeder>(
+        effects_config, true /* effects_only */, base::BindOnce(&IgnoreEos), 0);
+    feeder->Initialize();
     effects_feeders_.push_back(std::move(feeder));
   }
 }
 
-void MultizoneBackendTest::Start() {
+void MultizoneBackendTest::Start(float playback_rate) {
   for (auto& feeder : effects_feeders_)
-    feeder->Start();
+    feeder->Start(1.0f);
   CHECK(audio_feeder_);
-  audio_feeder_->Start();
+  audio_feeder_->Start(playback_rate);
+  base::RunLoop().Run();
 }
 
 void MultizoneBackendTest::OnEndOfStream() {
@@ -365,26 +363,24 @@ void MultizoneBackendTest::OnEndOfStream() {
 
   base::MessageLoop::current()->QuitWhenIdle();
 
-  EXPECT_LT(audio_feeder_->max_rendering_delay_error_us(),
-            kMaxRenderingDelayErrorUs)
-      << "Max positive rendering delay error: "
-      << audio_feeder_->max_positive_rendering_delay_error_us()
-      << "\nMax negative rendering delay error: "
-      << audio_feeder_->max_negative_rendering_delay_error_us()
-      << "\nAverage rendering delay error: "
-      << audio_feeder_->average_rendering_delay_error_us();
+  EXPECT_LT(audio_feeder_->GetMaxRenderingDelayErrorUs(),
+            kMaxRenderingDelayErrorUs);
 }
 
 TEST_P(MultizoneBackendTest, RenderingDelay) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   const TestParams& params = GetParam();
   int sample_rate = testing::get<0>(params);
   float playback_rate = testing::get<1>(params);
 
-  Initialize(sample_rate, playback_rate);
+  Initialize(sample_rate, 1 /* playback_rate_change_count */);
   AddEffectsStreams();
-  Start();
-  base::RunLoop().Run();
+  Start(playback_rate);
+}
+
+TEST_F(MultizoneBackendTest, RenderingDelayWithMultipleRateChanges) {
+  Initialize(48000 /* sample_rate */, 10 /* playback_rate_change_count */);
+  AddEffectsStreams();
+  Start(1.0f /* playback_rate */);
 }
 
 INSTANTIATE_TEST_CASE_P(
