@@ -25,13 +25,13 @@ namespace {
 class MachPortsTest : public InProcessBrowserTest {
  public:
   MachPortsTest() {
-    server_.ServeFilesFromSourceDirectory("data/mach_ports/moz");
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "data/mach_ports/moz");
   }
 
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-
-    ASSERT_TRUE(server_.Start());
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDown() override {
@@ -72,12 +72,12 @@ class MachPortsTest : public InProcessBrowserTest {
 
   // Adds a tab from the page cycler data at the specified domain.
   void AddTab(const std::string& domain) {
-    GURL url = server_.GetURL("/" + domain + "/").Resolve("?skip");
-    AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(
+        0, embedded_test_server()->GetURL("/" + domain + "/").Resolve("?skip"),
+        ui::PAGE_TRANSITION_TYPED);
   }
 
  private:
-  net::EmbeddedTestServer server_;
   std::vector<int> port_counts_;
 };
 
