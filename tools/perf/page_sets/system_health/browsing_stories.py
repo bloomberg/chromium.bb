@@ -562,6 +562,7 @@ class BrowseAvitoMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 4
 
 
+@decorators.Disabled('android')  # crbug.com/728081
 class BrowseTOIMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:news:toi'
   URL = 'http://m.timesofindia.com'
