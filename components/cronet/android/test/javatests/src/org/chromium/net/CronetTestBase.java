@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.os.StrictMode;
 import android.test.AndroidTestCase;
 
 import org.chromium.base.ContextUtils;
@@ -66,6 +67,7 @@ public class CronetTestBase extends AndroidTestCase {
     // {@code true} when test is being run against system HttpURLConnection implementation.
     private boolean mTestingSystemHttpURLConnection;
     private boolean mTestingJavaImpl = false;
+    private StrictMode.VmPolicy mOldVmPolicy;
 
     @Override
     protected void setUp() throws Exception {
@@ -74,6 +76,29 @@ public class CronetTestBase extends AndroidTestCase {
         ContextUtils.initApplicationContext(getContext().getApplicationContext());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         prepareTestStorage(getContext());
+        mOldVmPolicy = StrictMode.getVmPolicy();
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                                       .detectLeakedClosableObjects()
+                                       .penaltyLog()
+                                       .penaltyDeath()
+                                       .build());
+    }
+
+    @SuppressFBWarnings("DM_GC") // Used to trigger strictmode detecting leaked closeables
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            // Run GC and finalizers a few times to pick up leaked closeables
+            for (int i = 0; i < 10; i++) {
+                System.gc();
+                System.runFinalization();
+            }
+            System.gc();
+            System.runFinalization();
+            super.tearDown();
+        } finally {
+            StrictMode.setVmPolicy(mOldVmPolicy);
+        }
     }
 
     /**
