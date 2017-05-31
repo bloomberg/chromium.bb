@@ -30,6 +30,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/win/jumplist_file_util.h"
+#include "chrome/browser/win/jumplist_update_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,7 +99,7 @@ void AppendCommonSwitches(ShellLinkItem* shell_link) {
 
 // Creates a ShellLinkItem preloaded with common switches.
 scoped_refptr<ShellLinkItem> CreateShellLink() {
-  scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
+  auto link = base::MakeRefCounted<ShellLinkItem>();
   AppendCommonSwitches(link.get());
   return link;
 }
@@ -292,6 +293,14 @@ void JumpList::OnMostVisitedURLsAvailable(
   {
     JumpListData* data = &jumplist_data_->data;
     base::AutoLock auto_lock(data->list_lock_);
+
+    // There is no need to update the JumpList if the top most visited sites in
+    // display have not changed.
+    if (MostVisitedItemsUnchanged(data->most_visited_pages_, urls,
+                                  kMostVisitedItems)) {
+      return;
+    }
+
     data->most_visited_pages_.clear();
 
     for (size_t i = 0; i < urls.size() && i < kMostVisitedItems; i++) {
