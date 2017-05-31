@@ -241,6 +241,12 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
              base::MakeUnique<base::Value>(true), nullptr);
   expected_values[kUnknownPolicy] = "true";
+  const std::string kUnknownPolicyWithDots = "no.such.thing";
+  values.Set(kUnknownPolicyWithDots, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
+             base::MakeUnique<base::Value>("blub"), nullptr);
+  expected_values[kUnknownPolicyWithDots] = "blub";
+
   UpdateProviderPolicy(values);
 
   // Expect that the policy table contains, in order:
@@ -273,6 +279,11 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
                              "Platform",
                              values.Get(kUnknownPolicy),
                              true));
+  expected_policies.insert(
+      expected_policies.begin() + first_unset_position++,
+      PopulateExpectedPolicy(
+          kUnknownPolicyWithDots, expected_values[kUnknownPolicyWithDots],
+          "Platform", values.Get(kUnknownPolicyWithDots), true));
 
   // Retrieve the contents of the policy table from the UI and verify that it
   // matches the expectation.

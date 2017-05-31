@@ -79,7 +79,7 @@ void PolicyMaterialDesignUIHandler::AddPolicyName(
     if (tags[i] != policy::RISK_TAG_NONE)
       list->AppendString(kPolicyRiskTags[tags[i]].key);
   }
-  names->Set(name, std::move(list));
+  names->SetWithoutPathExpansion(name, std::move(list));
 }
 
 void PolicyMaterialDesignUIHandler::SendPolicyNames() const {

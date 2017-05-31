@@ -631,7 +631,7 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
 void PolicyUIHandler::AddPolicyName(const std::string& name,
                                     base::DictionaryValue* names) const {
-    names->SetBoolean(name, true);
+  names->SetBooleanWithoutPathExpansion(name, true);
 }
 
 void PolicyUIHandler::SendPolicyNames() const {
@@ -738,7 +738,7 @@ void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
     base::string16 error = errors->GetErrors(entry.first);
     if (!error.empty())
       value->SetString("error", error);
-    values->Set(entry.first, std::move(value));
+    values->SetWithoutPathExpansion(entry.first, std::move(value));
   }
 }
 
