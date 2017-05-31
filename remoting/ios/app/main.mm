@@ -10,6 +10,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #import "remoting/ios/app/app_delegate.h"
 
 int main(int argc, char* argv[]) {
@@ -19,6 +20,9 @@ int main(int argc, char* argv[]) {
 
   // Publicize the CommandLine.
   base::CommandLine::Init(argc, argv);
+
+  // Required to find the ICU data file, used by some file_util routines.
+  base::i18n::InitializeICU();
 
 #ifdef DEBUG
   // Set min log level for debug builds.  For some reason this has to be

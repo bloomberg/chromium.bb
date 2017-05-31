@@ -51,21 +51,6 @@ bool HostInfo::ParseHostInfo(const base::DictionaryValue& host_info) {
     return false;
   }
 
-  if (!host_info.GetString("hostOS", &host_os)) {
-    LOG(ERROR) << "hostOS was not found in host_info";
-    return false;
-  }
-
-  if (!host_info.GetString("hostOsVersion", &host_os_version)) {
-    LOG(ERROR) << "hostOsVersion was not found in host_info";
-    return false;
-  }
-
-  if (!host_info.GetString("hostVersion", &host_version)) {
-    LOG(ERROR) << "hostVersion was not found in host_info";
-    return false;
-  }
-
   if (!host_info.GetString("publicKey", &public_key)) {
     LOG(ERROR) << "publicKey was not found for " << host_name;
     return false;
@@ -78,6 +63,17 @@ bool HostInfo::ParseHostInfo(const base::DictionaryValue& host_info) {
     LOG(ERROR) << host_name << " is online but is missing a jabberId";
     return false;
   }
+
+  std::string updated_time_iso;
+  if (host_info.GetString("updatedTime", &updated_time_iso)) {
+    if (!base::Time::FromString(updated_time_iso.c_str(), &updated_time)) {
+      LOG(WARNING) << "Failed to parse updatedTime";
+    }
+  }
+
+  host_info.GetString("hostOs", &host_os);
+  host_info.GetString("hostOsVersion", &host_os_version);
+  host_info.GetString("hostVersion", &host_version);
 
   host_info.GetString("hostOfflineReason", &offline_reason);
 

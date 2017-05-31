@@ -56,12 +56,12 @@
     host.publicKey = [svr objectForKey:@"publicKey"];
     host.status = [svr objectForKey:@"status"];
 
-    NSString* ISO8601DateString = [svr objectForKey:@"updatedTime"];
-    if (ISO8601DateString != nil) {
-      NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
-      [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSz"];
-      host.updatedTime = [dateFormatter dateFromString:ISO8601DateString];
-    }
+    //    NSString* ISO8601DateString = [svr objectForKey:@"updatedTime"];
+    //    if (ISO8601DateString != nil) {
+    //      NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+    //      [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSz"];
+    //      host.updatedTime = [dateFormatter dateFromString:ISO8601DateString];
+    //    }
 
     [hostList addObject:host];
   }

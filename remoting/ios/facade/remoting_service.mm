@@ -21,6 +21,7 @@
 #import "remoting/ios/facade/remoting_service.h"
 #import "remoting/ios/keychain_wrapper.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -109,6 +110,8 @@ NSString* const kUserInfo = @"kUserInfo";
           host.jabberId = base::SysUTF8ToNSString(host_info.host_jid);
           host.publicKey = base::SysUTF8ToNSString(host_info.public_key);
           host.status = base::SysUTF8ToNSString(status);
+          host.updatedTime = base::SysUTF16ToNSString(
+              base::TimeFormatShortDateAndTime(host_info.updated_time));
           [hosts addObject:host];
         }
         _hosts = hosts;
