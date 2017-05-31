@@ -104,8 +104,8 @@ void WakeLockServiceImpl::CancelWakeLock() {
 }
 
 void WakeLockServiceImpl::HasWakeLockForTests(
-    const HasWakeLockForTestsCallback& callback) {
-  callback.Run(!!wake_lock_);
+    HasWakeLockForTestsCallback callback) {
+  std::move(callback).Run(!!wake_lock_);
 }
 void WakeLockServiceImpl::UpdateWakeLock() {
   DCHECK(num_lock_requests_ >= 0);

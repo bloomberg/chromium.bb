@@ -55,8 +55,7 @@ class MockWakeLockService : public device::mojom::WakeLockService {
   void RequestWakeLock() override { has_wakelock_ = true; }
   void CancelWakeLock() override { has_wakelock_ = false; }
   void AddClient(device::mojom::WakeLockServiceRequest request) override {}
-  void HasWakeLockForTests(
-      const HasWakeLockForTestsCallback& callback) override {}
+  void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
 
   bool HasWakeLock() {
     base::RunLoop().RunUntilIdle();
