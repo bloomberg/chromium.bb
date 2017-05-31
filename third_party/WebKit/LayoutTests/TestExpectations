@@ -1985,6 +1985,10 @@ crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-3.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-4.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/specifier-error.html [ Failure ]
+crbug.com/721070 http/tests/htmlimports/import-and-script-module-inline.html [ Crash ]
+crbug.com/721070 http/tests/htmlimports/import-and-script-module-external.html [ Crash ]
+crbug.com/721070 virtual/mojo-loading/http/tests/htmlimports/import-and-script-module-inline.html [ Crash ]
+crbug.com/721070 virtual/mojo-loading/http/tests/htmlimports/import-and-script-module-external.html [ Crash ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
