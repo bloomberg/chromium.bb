@@ -327,6 +327,22 @@ def SuccessCounter(name, fields=None):
     c.increment(fields=f)
 
 
+@contextlib.contextmanager
+def Presence(name, fields=None):
+  """A counter of 'active' things.
+
+  This keeps track of how many name's are active at any given time. However,
+  it's only suitable for long running tasks, since the initial true value may
+  never be written out if the task doesn't run for at least a minute.
+  """
+  b = Boolean(name)
+  b.set(True, fields=fields)
+  try:
+    yield
+  finally:
+    b.set(False, fields=fields)
+
+
 class RuntimeBreakdownTimer(object):
   """Record the time of an operation and the breakdown into sub-steps.
 

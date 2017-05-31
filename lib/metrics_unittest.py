@@ -224,6 +224,49 @@ class TestSuccessCounter(cros_test_lib.MockTestCase):
     self._mockMetric.increment.assert_called_with(
         fields={'foo': 'bar', 'success': True})
 
+
+class TestPresence(cros_test_lib.MockTestCase):
+  """Tests the behavior of SecondsTimer."""
+
+  def setUp(self):
+    self._mockMetric = mock.MagicMock()
+    self.PatchObject(metrics, 'Boolean',
+                     return_value=self._mockMetric)
+
+  def testContextManager(self):
+    """Test that timing context manager emits a metric."""
+    with metrics.Presence('fooname'):
+      self.assertEquals(self._mockMetric.mock_calls, [
+          mock.call.set(True, fields=None),
+      ])
+
+    self.assertEquals(self._mockMetric.mock_calls, [
+        mock.call.set(True, fields=None),
+        mock.call.set(False, fields=None),
+    ])
+
+  def testContextManagerException(self):
+    """Test that we fail when an exception is raised."""
+    with self.assertRaises(FakeException):
+      with metrics.Presence('fooname'):
+        raise FakeException
+
+    self.assertEquals(self._mockMetric.mock_calls, [
+        mock.call.set(True, fields=None),
+        mock.call.set(False, fields=None),
+    ])
+
+  def testContextManagerFields(self):
+    """Test that we fail when an exception is raised."""
+    with metrics.Presence('fooname', {'foo': 'bar', 'c': 3}):
+      pass
+
+    self.assertEquals(self._mockMetric.mock_calls, [
+        mock.call.set(True, fields={'c': 3, 'foo': 'bar'}),
+        mock.call.set(False, fields={'c': 3, 'foo': 'bar'}),
+    ])
+
+
 class ClientException(Exception):
   """An exception that client of the metrics module raises."""
 
