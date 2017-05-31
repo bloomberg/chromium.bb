@@ -36,8 +36,10 @@ public class WebApkDisclosureNotificationManager {
         Context context = ContextUtils.getApplicationContext();
         String title = webappInfo.shortName();
 
+        // It's okay to not set a valid channelId for web apk notifications because web apks don't
+        // target O yet.
         StandardNotificationBuilder builder =
-                new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                new StandardNotificationBuilder(context, null /* channelId */);
         builder.setTitle(title)
                 .setPriority(Notification.PRIORITY_MIN)
                 .setLargeIcon(BitmapFactory.decodeResource(
