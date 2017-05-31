@@ -222,7 +222,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::vector<uint8_t>* property_data) override;
   void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
   const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
-      const gfx::Size& surface_size) override;
+      const gfx::Size& surface_size_in_pixels) override;
   void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
@@ -281,7 +281,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
-  gfx::Size last_surface_size_;
+  gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;
 

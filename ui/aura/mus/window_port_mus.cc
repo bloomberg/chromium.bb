@@ -17,6 +17,7 @@
 #include "ui/base/class_property.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace aura {
 
@@ -230,7 +231,9 @@ void WindowPortMus::SetBoundsFromServer(
   ServerChangeData data;
   data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
-  last_surface_size_ = bounds.size();
+  float device_scale_factor = ScaleFactorForDisplay(window_);
+  last_surface_size_in_pixels_ =
+      gfx::ConvertSizeToPixel(device_scale_factor, bounds.size());
   if (local_surface_id)
     local_surface_id_ = *local_surface_id;
   else
@@ -284,12 +287,14 @@ void WindowPortMus::SetFrameSinkIdFromServer(
 }
 
 const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
-    const gfx::Size& surface_size) {
-  if (last_surface_size_ == surface_size && local_surface_id_.is_valid())
+    const gfx::Size& surface_size_in_pixels) {
+  if (last_surface_size_in_pixels_ == surface_size_in_pixels &&
+      local_surface_id_.is_valid()) {
     return local_surface_id_;
+  }
 
   local_surface_id_ = local_surface_id_allocator_.GenerateId();
-  last_surface_size_ = surface_size;
+  last_surface_size_in_pixels_ = surface_size_in_pixels;
 
   // If the FrameSinkId is available, then immediately embed the SurfaceId.
   // The newly generated frame by the embedder will block in the display
@@ -533,9 +538,9 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
   if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
-  SetPrimarySurfaceInfo(
-      cc::SurfaceInfo(cc::SurfaceId(frame_sink_id_, local_surface_id_),
-                      ScaleFactorForDisplay(window_), last_surface_size_));
+  SetPrimarySurfaceInfo(cc::SurfaceInfo(
+      cc::SurfaceId(frame_sink_id_, local_surface_id_),
+      ScaleFactorForDisplay(window_), last_surface_size_in_pixels_));
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {
