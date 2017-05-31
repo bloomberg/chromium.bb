@@ -314,9 +314,7 @@ extern const char kMakeChromeDefault[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-extern const char kDisablePerMonitorDpi[];
 extern const char kEnableCloudPrintXps[];
-extern const char kEnablePerMonitorDpi[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kHideIcons[];
 extern const char kNoNetworkProfileWarning[];
