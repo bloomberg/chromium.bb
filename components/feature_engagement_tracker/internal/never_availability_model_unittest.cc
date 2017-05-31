@@ -4,8 +4,11 @@
 
 #include "components/feature_engagement_tracker/internal/never_availability_model.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
@@ -21,10 +24,15 @@ class NeverAvailabilityModelTest : public ::testing::Test {
  public:
   NeverAvailabilityModelTest() = default;
 
+  void OnInitializedCallback(bool success) { success_ = success; }
+
  protected:
   NeverAvailabilityModel availability_model_;
+  base::Optional<bool> success_;
 
  private:
+  base::MessageLoop message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(NeverAvailabilityModelTest);
 };
 
@@ -35,6 +43,31 @@ TEST_F(NeverAvailabilityModelTest, ShouldNeverHaveData) {
             availability_model_.GetAvailability(kTestFeatureFoo));
   EXPECT_EQ(base::nullopt,
             availability_model_.GetAvailability(kTestFeatureBar));
+
+  availability_model_.Initialize(
+      base::BindOnce(&NeverAvailabilityModelTest::OnInitializedCallback,
+                     base::Unretained(this)),
+      14u);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(base::nullopt,
+            availability_model_.GetAvailability(kTestFeatureFoo));
+  EXPECT_EQ(base::nullopt,
+            availability_model_.GetAvailability(kTestFeatureBar));
+}
+
+TEST_F(NeverAvailabilityModelTest, ShouldBeReadyAfterInitialization) {
+  EXPECT_FALSE(availability_model_.IsReady());
+  availability_model_.Initialize(
+      base::BindOnce(&NeverAvailabilityModelTest::OnInitializedCallback,
+                     base::Unretained(this)),
+      14u);
+  EXPECT_FALSE(availability_model_.IsReady());
+  EXPECT_FALSE(success_.has_value());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(availability_model_.IsReady());
+  ASSERT_TRUE(success_.has_value());
+  EXPECT_TRUE(success_.value());
 }
 
 }  // namespace feature_engagement_tracker
