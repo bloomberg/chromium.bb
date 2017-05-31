@@ -122,4 +122,4 @@ AutomationPredicate.isInteresting = function(node) {
 
   // The general rule that applies to everything.
   return state[chrome.automation.StateType.FOCUSABLE] === true;
-}
+};

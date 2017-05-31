@@ -51,7 +51,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     isCancelDisabled_: null,
 
-    get isCancelDisabled() { return this.isCancelDisabled_ },
+    get isCancelDisabled() { return this.isCancelDisabled_; },
     set isCancelDisabled(disabled) {
       this.isCancelDisabled_ = disabled;
     },

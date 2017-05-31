@@ -44,7 +44,7 @@ TaskLog.onTaskLogRecorded = function(taskLog) {
   tr.appendChild(details);
 
   $('task-log-entries').appendChild(tr);
-}
+};
 
 /**
  * Get initial sync service values and set listeners to get updated values.

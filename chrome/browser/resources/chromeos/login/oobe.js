@@ -239,7 +239,7 @@ cr.define('cr.ui.Oobe', function() {
         return;
 
       // Simulate click on the checkbox.
-      e.target.click()
+      e.target.click();
     },
 
     /**

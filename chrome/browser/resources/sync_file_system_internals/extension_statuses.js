@@ -48,7 +48,7 @@ ExtensionStatuses.onGetExtensionStatuses = function(extensionStatuses) {
     tr.appendChild(createElementFromText('td', originEntry.status));
     itemContainer.appendChild(tr);
   }
-}
+};
 
 function main() {
   getExtensionStatuses();

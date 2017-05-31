@@ -11,6 +11,7 @@ module.exports = {
   'rules': {
     // Enabled checks.
     'no-extra-semi': 'error',
+    'semi': ['error', 'always'],
     // TODO(dpapad): Add more checks according to our styleguide.
   },
 };

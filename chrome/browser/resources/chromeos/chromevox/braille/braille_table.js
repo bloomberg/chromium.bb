@@ -76,7 +76,7 @@ cvox.BrailleTable.getAll = function(callback) {
  * @return {cvox.BrailleTable.Table} The found table, or null if not found.
  */
 cvox.BrailleTable.forId = function(tables, id) {
-  return tables.filter(function(table) { return table.id === id })[0] || null;
+  return tables.filter(function(table) { return table.id === id; })[0] || null;
 };
 
 

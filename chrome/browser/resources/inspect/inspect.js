@@ -225,7 +225,7 @@ function populateRemoteTargets(devices) {
       section.remove();
   }
 
-  var newDeviceIds = devices.map(function(d) { return d.id });
+  var newDeviceIds = devices.map(function(d) { return d.id; });
   Array.prototype.forEach.call(
       deviceList.querySelectorAll('.device'),
       removeObsolete.bind(null, newDeviceIds));
@@ -282,7 +282,7 @@ function populateRemoteTargets(devices) {
 
     var browserList = deviceSection.querySelector('.browsers');
     var newBrowserIds =
-        device.browsers.map(function(b) { return b.id });
+        device.browsers.map(function(b) { return b.id; });
     Array.prototype.forEach.call(
         browserList.querySelectorAll('.browser'),
         removeObsolete.bind(null, newBrowserIds));

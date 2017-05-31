@@ -74,5 +74,5 @@ cr.define('cleanup', function() {
   return {
     CleanupBrowserProxy: CleanupBrowserProxy,
     CleanupBrowserProxyImpl: CleanupBrowserProxyImpl,
-  }
+  };
 });

@@ -213,7 +213,7 @@ Gnubbies.prototype.enumerate = function(cb, opt_type) {
   function makeEnumerateCb(namespace) {
     return function(devs) {
       enumerated(namespace, deviceIds, devs);
-    }
+    };
   }
 
   this.pendingEnumerate.push(cb);

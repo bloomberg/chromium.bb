@@ -626,7 +626,7 @@ cr.define('bookmarks', function() {
       if (getBookmarkNode(overElement).url)
         return false;
 
-      return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId)
+      return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId);
     },
 
     disableTimeoutsForTesting: function() {

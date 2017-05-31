@@ -428,7 +428,7 @@ var serializableSpansByConstructor = new Map();
 function spanInstanceOf(constructor) {
   return function(span) {
     return span.value instanceof constructor;
-  }
+  };
 }
 
 /**
@@ -438,7 +438,7 @@ function spanInstanceOf(constructor) {
 function spanCoversPosition(position) {
   return function(span) {
     return span.start <= position && position < span.end;
-  }
+  };
 }
 
 /**
@@ -448,7 +448,7 @@ function spanCoversPosition(position) {
 function spanValueIs(value) {
   return function(span) {
     return span.value === value;
-  }
+  };
 }
 
 /**

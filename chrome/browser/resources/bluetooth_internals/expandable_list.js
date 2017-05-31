@@ -137,5 +137,5 @@ cr.define('expandable_list', function() {
   return {
     ExpandableListItem: ExpandableListItem,
     ExpandableList: ExpandableList,
-  }
+  };
 });
