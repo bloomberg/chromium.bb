@@ -34,8 +34,8 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.Get()));
 
   Vector<char> wrapped_marker_bytes(wrapped_marker_buffer->size());
-  wrapped_marker_buffer->GetAsBytes(wrapped_marker_bytes.data(),
-                                    wrapped_marker_bytes.size());
+  ASSERT_TRUE(wrapped_marker_buffer->GetBytes(wrapped_marker_bytes.data(),
+                                              wrapped_marker_bytes.size()));
 
   // IsWrapped() looks at the first 3 bytes in the value's byte array.
   // Truncating the array to fewer than 3 bytes should cause IsWrapped() to

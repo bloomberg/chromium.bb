@@ -204,13 +204,12 @@ size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
   return 0;
 }
 
-bool SharedBuffer::GetAsBytesInternal(void* dest,
-                                      size_t load_position,
-                                      size_t byte_length) const {
+bool SharedBuffer::GetBytesInternal(void* dest, size_t byte_length) const {
   if (!dest)
     return false;
 
   const char* segment = nullptr;
+  size_t load_position = 0;
   size_t write_position = 0;
   while (byte_length > 0) {
     size_t load_size = GetSomeDataInternal(segment, load_position);

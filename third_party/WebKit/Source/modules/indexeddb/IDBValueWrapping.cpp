@@ -157,10 +157,9 @@ bool IDBValueUnwrapper::IsWrapped(IDBValue* value) {
   DCHECK(value);
 
   uint8_t header[3];
-  if (!value->data_ || value->data_->size() < sizeof(header))
+  if (!value->data_ || !value->data_->GetBytes(header, sizeof(header)))
     return false;
 
-  value->data_->GetPartAsBytes(header, static_cast<size_t>(0), sizeof(header));
   return header[0] == kVersionTag &&
          header[1] == kRequiresProcessingSSVPseudoVersion &&
          header[2] == kBlobWrappedValue;
