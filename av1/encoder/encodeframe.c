@@ -5199,6 +5199,11 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       ++counts->filter_intra[0][use_filter_intra_mode];
     }
     if (mbmi->uv_mode == DC_PRED
+#if CONFIG_CB4X4
+        &&
+        is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                            xd->plane[1].subsampling_y)
+#endif
 #if CONFIG_PALETTE
         && mbmi->palette_mode_info.palette_size[1] == 0
 #endif  // CONFIG_PALETTE
