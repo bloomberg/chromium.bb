@@ -24,11 +24,7 @@ from chromite.lib import cros_logging as logging
 
 try:
   from infra_libs import ts_mon
-# TODO(akeshet): AttributeError only needs to be caught while landing
-# https://chromium-review.googlesource.com/#/c/359447/ , due to some issues in
-# cbuildbot bootstrapping and backwards compatibility of ts_mon. I believe that
-# after it lands, we no longer need to catch AttributeError here.
-except (ImportError, RuntimeError, AttributeError):
+except (ImportError, RuntimeError):
   ts_mon = None
 
 
