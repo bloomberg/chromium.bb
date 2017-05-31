@@ -409,6 +409,25 @@
             ]
         }
     ],
+    "CheckerImaging": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "CheckerImaging",
+                    "enable_features": [
+                        "CheckerImaging"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChildAccountDetection": [
         {
             "platforms": [
