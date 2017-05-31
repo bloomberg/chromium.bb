@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace gfx {
 class Path;
@@ -15,7 +15,7 @@ class Path;
 
 namespace wm {
 
-class WM_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
+class WM_CORE_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
  public:
   explicit MaskedWindowTargeter(aura::Window* masked_window);
   ~MaskedWindowTargeter() override;

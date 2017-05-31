@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
 class Window;
@@ -25,19 +25,19 @@ class LayerTreeOwner;
 
 namespace wm {
 
-WM_EXPORT void ActivateWindow(aura::Window* window);
-WM_EXPORT void DeactivateWindow(aura::Window* window);
-WM_EXPORT bool IsActiveWindow(const aura::Window* window);
-WM_EXPORT bool CanActivateWindow(aura::Window* window);
-WM_EXPORT void SetWindowFullscreen(aura::Window* window, bool fullscreen);
+WM_CORE_EXPORT void ActivateWindow(aura::Window* window);
+WM_CORE_EXPORT void DeactivateWindow(aura::Window* window);
+WM_CORE_EXPORT bool IsActiveWindow(const aura::Window* window);
+WM_CORE_EXPORT bool CanActivateWindow(aura::Window* window);
+WM_CORE_EXPORT void SetWindowFullscreen(aura::Window* window, bool fullscreen);
 
 // Retrieves the activatable window for |window|. The ActivationClient makes
 // this determination.
-WM_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+WM_CORE_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
 // Retrieves the toplevel window for |window|. The ActivationClient makes this
 // determination.
-WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
+WM_CORE_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 
 // Returns the existing Layer for |root| (and all its descendants) and creates
 // a new layer for |root| and all its descendants. This is intended for
@@ -45,7 +45,7 @@ WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 //
 // As a result of this |root| has freshly created layers, meaning the layers
 // have not yet been painted to.
-WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
+WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
     ui::LayerOwner* root);
 
 using MapLayerFunc =
@@ -55,31 +55,34 @@ using MapLayerFunc =
 // layer tree. The recursion stops at the level when |map_func| returns nullptr
 // on the owner's layer. MapLayers might return nullptr when |map_func| returns
 // nullptr on the root layer's owner.
-WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
+WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
     ui::LayerOwner* root,
     const MapLayerFunc& map_func);
 
 // Returns a layer tree that mirrors |root|. Used for live window previews. If
 // |sync_bounds| is true, the bounds of all mirror layers except the root are
 // synchronized. See |sync_bounds_| in ui::Layer.
-WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
-    ui::LayerOwner* root, bool sync_bounds);
+WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
+    ui::LayerOwner* root,
+    bool sync_bounds);
 
 // Convenience functions that get the TransientWindowManager for the window and
 // redirect appropriately. These are preferable to calling functions on
 // TransientWindowManager as they handle the appropriate NULL checks.
-WM_EXPORT aura::Window* GetTransientParent(aura::Window* window);
-WM_EXPORT const aura::Window* GetTransientParent(
+WM_CORE_EXPORT aura::Window* GetTransientParent(aura::Window* window);
+WM_CORE_EXPORT const aura::Window* GetTransientParent(
     const aura::Window* window);
-WM_EXPORT const std::vector<aura::Window*>& GetTransientChildren(
+WM_CORE_EXPORT const std::vector<aura::Window*>& GetTransientChildren(
     const aura::Window* window);
-WM_EXPORT void AddTransientChild(aura::Window* parent, aura::Window* child);
-WM_EXPORT void RemoveTransientChild(aura::Window* parent, aura::Window* child);
+WM_CORE_EXPORT void AddTransientChild(aura::Window* parent,
+                                      aura::Window* child);
+WM_CORE_EXPORT void RemoveTransientChild(aura::Window* parent,
+                                         aura::Window* child);
 
 // Returns true if |window| has |ancestor| as a transient ancestor. A transient
 // ancestor is found by following the transient parent chain of the window.
-WM_EXPORT bool HasTransientAncestor(const aura::Window* window,
-                                    const aura::Window* ancestor);
+WM_CORE_EXPORT bool HasTransientAncestor(const aura::Window* window,
+                                         const aura::Window* ancestor);
 
 }  // namespace wm
 

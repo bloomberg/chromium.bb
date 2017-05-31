@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace ui {
 class AcceleratorHistory;
@@ -20,7 +20,7 @@ class AcceleratorDelegate;
 
 // AcceleratorFilter filters key events for AcceleratorControler handling global
 // keyboard accelerators.
-class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
+class WM_CORE_EXPORT AcceleratorFilter : public ui::EventHandler {
  public:
   // AcceleratorFilter doesn't own |accelerator_history|, it's owned by
   // AcceleratorController.

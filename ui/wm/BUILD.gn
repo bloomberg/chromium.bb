@@ -54,15 +54,15 @@ component("wm") {
     "core/window_modality_controller.h",
     "core/window_util.cc",
     "core/window_util.h",
+    "core/wm_core_export.h",
     "core/wm_core_switches.cc",
     "core/wm_core_switches.h",
     "core/wm_state.cc",
     "core/wm_state.h",
-    "wm_export.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
-  defines = [ "WM_IMPLEMENTATION" ]
+  defines = [ "WM_CORE_IMPLEMENTATION" ]
 
   deps = [
     "//base",
