@@ -449,6 +449,30 @@ const IDNTestCase idn_cases[] = {
   // Small Em Dash
   {"xn--abcdef-5g0c.com", L"abc\xfe58" L"def.com", false},
 
+  // Block NV8 (Not valid in IDN 2008) characters.
+  // U+058A (֊)
+  {"xn--ab-vfd.com", L"a\x058a" L"b.com", false},
+  {"xn--y9ac3j.com", L"\x0561\x058a\x0562.com", false},
+  // U+2019 (’)
+  {"xn--ab-n2t.com", L"a\x2019" L"b.com", false},
+  // U+2027 (‧)
+  {"xn--ab-u3t.com", L"a\x2027" L"b.com", false},
+  // U+30A0 (゠)
+  {"xn--ab-bg4a.com", L"a\x30a0" L"b.com", false},
+  {"xn--9bk3828aea.com", L"\xac00\x30a0\xac01.com", false},
+  {"xn--9bk279fba.com", L"\x4e00\x30a0\x4e00.com", false},
+  {"xn--n8jl2x.com", L"\x304a\x30a0\x3044.com", false},
+  {"xn--fbke7f.com", L"\x3082\x30a0\x3084.com", false},
+
+  // Block single/double-quote-like characters.
+  // U+02BB (ʻ)
+  {"xn--ab-8nb.com", L"a\x02bb" L"b.com", false},
+  // U+02BC (ʼ)
+  {"xn--ab-cob.com", L"a\x02bc" L"b.com", false},
+  // U+144A: Not allowed to mix with scripts other than Canadian Syllabics.
+  {"xn--ab-jom.com", L"a\x144a" L"b.com", false},
+  {"xn--xcec9s.com", L"\x1401\x144a\x1402.com", true},
+
   // Custom dangerous patterns
   // Two Katakana-Hiragana combining mark in a row
   {"google.xn--com-oh4ba.evil.jp", L"google.com\x309a\x309a.evil.jp", false},

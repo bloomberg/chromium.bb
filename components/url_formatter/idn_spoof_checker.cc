@@ -368,14 +368,26 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   // blacklisted by Mozilla. We keep it, even though it can look like a double
   // quotation mark. Using it in Hebrew should be safe. When used with a
   // non-Hebrew script, it'd be filtered by other checks in place.
-  //
+
+  // The following 5 characters are disallowed because they're in NV8 (invalid
+  // in IDNA 2008).
+  allowed_set.remove(0x58au);  // Armenian Hyphen
   // U+2010 (Hyphen) is in the inclusion set, but we drop it because it can be
   // confused with an ASCII U+002D (Hyphen-Minus).
   allowed_set.remove(0x2010u);
+  // U+2019 is hard to notice when sitting next to a regular character.
+  allowed_set.remove(0x2019u);  // Right Single Quotation Mark
   // U+2027 (Hyphenation Point) is in the inclusion set, but is blacklisted by
   // Mozilla. It is dropped, as it can be confused with U+30FB (Katakana Middle
   // Dot).
   allowed_set.remove(0x2027u);
+  allowed_set.remove(0x30a0u);  // Katakana-Hiragana Double Hyphen
+
+  // Block {Single,double}-quotation-mark look-alikes.
+  allowed_set.remove(0x2bbu);  // Modifier Letter Turned Comma
+  allowed_set.remove(0x2bcu);  // Modifier Letter Apostrophe
+  // No need to block U+144A (Canadian Syllabics West-Cree P) separately
+  // because it's blocked from mixing with other scripts including Latin.
 
 #if defined(OS_MACOSX)
   // The following characters are reported as present in the default macOS
