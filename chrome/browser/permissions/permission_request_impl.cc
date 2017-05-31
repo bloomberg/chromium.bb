@@ -172,3 +172,7 @@ PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
     const {
   return PermissionUtil::GetGestureType(has_gesture_);
 }
+
+ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {
+  return content_settings_type_;
+}
