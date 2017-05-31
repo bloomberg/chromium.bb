@@ -23,8 +23,14 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Different autoplay policy types.
   enum class Type {
     kNoUserGestureRequired = 0,
+    // A local user gesture on the element is required.
     kUserGestureRequired,
+    // A local user gesture on the element is required when it is in a cross
+    // origin iframe.
     kUserGestureRequiredForCrossOrigin,
+    // The document needs to have received a user activation or received one
+    // before navigating.
+    kDocumentUserActivationRequired,
   };
 
   CORE_EXPORT static Type GetAutoplayPolicyForDocument(const Document&);
