@@ -35,6 +35,9 @@ void MediaControlsMediaEventListener::Attach() {
   GetMediaElement().addEventListener(EventTypeNames::error, this, false);
   GetMediaElement().addEventListener(EventTypeNames::loadedmetadata, this,
                                      false);
+  GetMediaElement().addEventListener(EventTypeNames::keypress, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::keydown, this, false);
+  GetMediaElement().addEventListener(EventTypeNames::keyup, this, false);
 
   // Listen to two different fullscreen events in order to make sure the new and
   // old APIs are handled.
@@ -181,8 +184,16 @@ void MediaControlsMediaEventListener::handleEvent(
 
   // Keypress events.
   if (event->type() == EventTypeNames::keypress) {
-    if (event->currentTarget() == media_controls_->PanelElement())
+    if (event->currentTarget() == media_controls_->PanelElement()) {
       media_controls_->OnPanelKeypress();
+      return;
+    }
+  }
+
+  if (event->type() == EventTypeNames::keypress ||
+      event->type() == EventTypeNames::keydown ||
+      event->type() == EventTypeNames::keyup) {
+    media_controls_->OnMediaKeyboardEvent(event);
     return;
   }
 
