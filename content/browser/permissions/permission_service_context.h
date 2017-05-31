@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_PERMISSIONS_PERMISSION_SERVICE_CONTEXT_H_
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -29,7 +30,7 @@ class RenderProcessHost;
 // There is one PermissionServiceContext per RenderFrameHost/RenderProcessHost
 // which owns it. It then owns all PermissionServiceImpl associated to their
 // owner.
-class PermissionServiceContext : public WebContentsObserver {
+class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
  public:
   explicit PermissionServiceContext(RenderFrameHost* render_frame_host);
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
