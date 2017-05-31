@@ -1621,6 +1621,7 @@ class CORE_EXPORT UseCounter {
     // The above items are available in M60 branch.
 
     kClientHintsDeviceRAM = 2017,
+    kCSSRegisterProperty = 2018,
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
     // Also, run update_use_counter_feature_enum.py in

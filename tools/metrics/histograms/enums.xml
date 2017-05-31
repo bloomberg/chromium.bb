@@ -15093,6 +15093,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2015" label="TableRowDirectionDifferentFromTable"/>
   <int value="2016" label="TableSectionDirectionDifferentFromTable"/>
   <int value="2017" label="ClientHintsDeviceRAM"/>
+  <int value="2018" label="CSSRegisterProperty"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
