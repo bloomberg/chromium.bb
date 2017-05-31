@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/attachments/attachment_uploader.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -27,8 +27,7 @@ class URLRequestContextGetter;
 namespace syncer {
 
 // An implementation of AttachmentUploader.
-class AttachmentUploaderImpl : public AttachmentUploader,
-                               public base::NonThreadSafe {
+class AttachmentUploaderImpl : public AttachmentUploader {
  public:
   // |sync_service_url| is the URL of the sync service.
   //
@@ -95,6 +94,8 @@ class AttachmentUploaderImpl : public AttachmentUploader,
   std::string raw_store_birthday_;
   StateMap state_map_;
   ModelType model_type_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentUploaderImpl> weak_ptr_factory_;

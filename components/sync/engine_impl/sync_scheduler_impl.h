@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/sync/engine/polling_constants.h"
@@ -32,7 +32,7 @@ namespace syncer {
 class BackoffDelayProvider;
 struct ModelNeutralState;
 
-class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
+class SyncSchedulerImpl : public SyncScheduler {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of |syncer| and |delay_provider|.
@@ -293,6 +293,8 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
 
   // Dictates if the scheduler should wait for authentication to happen or not.
   bool ignore_auth_credentials_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 

@@ -28,14 +28,16 @@ InMemoryAttachmentStore::InMemoryAttachmentStore(
     const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner)
     : AttachmentStoreBackend(callback_task_runner) {
   // Object is created on one thread but used on another.
-  DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-InMemoryAttachmentStore::~InMemoryAttachmentStore() {}
+InMemoryAttachmentStore::~InMemoryAttachmentStore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void InMemoryAttachmentStore::Init(
     const AttachmentStore::InitCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
 }
 
@@ -43,7 +45,7 @@ void InMemoryAttachmentStore::Read(
     AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   std::unique_ptr<AttachmentMap> result_map(new AttachmentMap);
   std::unique_ptr<AttachmentIdList> unavailable_attachments(
@@ -70,7 +72,7 @@ void InMemoryAttachmentStore::Write(
     AttachmentStore::Component component,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& attachment : attachments) {
     attachments_.insert(std::make_pair(attachment.GetId(),
                                        AttachmentEntry(attachment, component)));
@@ -80,7 +82,7 @@ void InMemoryAttachmentStore::Write(
 
 void InMemoryAttachmentStore::SetReference(AttachmentStore::Component component,
                                            const AttachmentIdList& ids) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& id : ids) {
     AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
     if (attachments_iter != attachments_.end()) {
@@ -93,7 +95,7 @@ void InMemoryAttachmentStore::DropReference(
     AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AttachmentStore::Result result = AttachmentStore::SUCCESS;
   for (const auto& id : ids) {
     AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
@@ -112,7 +114,7 @@ void InMemoryAttachmentStore::ReadMetadataById(
     AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadMetadataCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
@@ -136,7 +138,7 @@ void InMemoryAttachmentStore::ReadMetadataById(
 void InMemoryAttachmentStore::ReadMetadata(
     AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   std::unique_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());

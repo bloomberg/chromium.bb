@@ -47,7 +47,7 @@
 //   const WeakHandle<Foo> foo_;
 // };
 //
-// class Foo : public SupportsWeakPtr<Foo>, public NonThreadSafe {
+// class Foo : public SupportsWeakPtr<Foo> {
 //  public:
 //   Foo() {
 //     SpawnFooIOWorkerOnIOThread(base::MakeWeakHandle(AsWeakPtr()));
@@ -58,6 +58,9 @@
 //   void OnIOStart() { DCHECK(CalledOnValidThread(); ... }
 //   void OnIOEvent(IOEvent e) { DCHECK(CalledOnValidThread(); ... }
 //   void OnIOError(IOError err) { DCHECK(CalledOnValidThread(); ... }
+//
+//  private:
+//   SEQUENCE_CHECKER(sequence_checker_);
 // };
 
 namespace tracked_objects {

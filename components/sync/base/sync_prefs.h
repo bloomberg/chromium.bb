@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
@@ -53,8 +53,7 @@ class SyncPrefObserver {
 //   sync_setup_wizard.cc
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
-class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
-                  public base::SupportsWeakPtr<SyncPrefs> {
+class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs> {
  public:
   // |pref_service| may not be null.
   // Does not take ownership of |pref_service|.
@@ -219,6 +218,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // etc.
   using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
   PrefGroupsMap pref_groups_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);
 };

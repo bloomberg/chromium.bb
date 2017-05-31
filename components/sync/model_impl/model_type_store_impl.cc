@@ -119,7 +119,7 @@ ModelTypeStoreImpl::ModelTypeStoreImpl(
 }
 
 ModelTypeStoreImpl::~ModelTypeStoreImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&NoOpForBackendDtor, base::Passed(&backend_)));
 }
@@ -196,7 +196,7 @@ void ModelTypeStoreImpl::BackendInitDone(
 
 void ModelTypeStoreImpl::ReadData(const IdList& id_list,
                                   const ReadDataCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
   std::unique_ptr<RecordList> record_list(new RecordList());
   std::unique_ptr<IdList> missing_id_list(new IdList());
@@ -216,12 +216,12 @@ void ModelTypeStoreImpl::ReadDataDone(const ReadDataCallback& callback,
                                       std::unique_ptr<RecordList> record_list,
                                       std::unique_ptr<IdList> missing_id_list,
                                       Result result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callback.Run(result, std::move(record_list), std::move(missing_id_list));
 }
 
 void ModelTypeStoreImpl::ReadAllData(const ReadAllDataCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
   std::unique_ptr<RecordList> record_list(new RecordList());
   auto task = base::Bind(&ModelTypeStoreBackend::ReadAllRecordsWithPrefix,
@@ -238,12 +238,12 @@ void ModelTypeStoreImpl::ReadAllDataDone(
     const ReadAllDataCallback& callback,
     std::unique_ptr<RecordList> record_list,
     Result result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callback.Run(result, std::move(record_list));
 }
 
 void ModelTypeStoreImpl::ReadAllMetadata(const ReadMetadataCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
   // ReadAllMetadata performs two steps sequentially: read all metadata records
@@ -265,7 +265,7 @@ void ModelTypeStoreImpl::ReadMetadataRecordsDone(
     const ReadMetadataCallback& callback,
     std::unique_ptr<RecordList> metadata_records,
     Result result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != Result::SUCCESS) {
     callback.Run(ModelError(FROM_HERE, "Reading metadata failed."),
                  base::MakeUnique<MetadataBatch>());
@@ -295,7 +295,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
     std::unique_ptr<RecordList> global_metadata_records,
     std::unique_ptr<IdList> missing_id_list,
     Result result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != Result::SUCCESS) {
     callback.Run(ModelError(FROM_HERE, "Reading metadata failed."),
@@ -349,14 +349,14 @@ void ModelTypeStoreImpl::DeserializeMetadata(
 
 std::unique_ptr<ModelTypeStore::WriteBatch>
 ModelTypeStoreImpl::CreateWriteBatch() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::MakeUnique<WriteBatchImpl>(this);
 }
 
 void ModelTypeStoreImpl::CommitWriteBatch(
     std::unique_ptr<WriteBatch> write_batch,
     const CallbackWithResult& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
   WriteBatchImpl* write_batch_impl =
       static_cast<WriteBatchImpl*>(write_batch.get());
@@ -372,44 +372,44 @@ void ModelTypeStoreImpl::CommitWriteBatch(
 void ModelTypeStoreImpl::WriteModificationsDone(
     const CallbackWithResult& callback,
     Result result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callback.Run(result);
 }
 
 void ModelTypeStoreImpl::WriteData(WriteBatch* write_batch,
                                    const std::string& id,
                                    const std::string& value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Put(FormatDataKey(id), value);
 }
 
 void ModelTypeStoreImpl::WriteMetadata(WriteBatch* write_batch,
                                        const std::string& id,
                                        const std::string& value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Put(FormatMetadataKey(id), value);
 }
 
 void ModelTypeStoreImpl::WriteGlobalMetadata(WriteBatch* write_batch,
                                              const std::string& value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Put(global_metadata_key_, value);
 }
 
 void ModelTypeStoreImpl::DeleteData(WriteBatch* write_batch,
                                     const std::string& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Delete(FormatDataKey(id));
 }
 
 void ModelTypeStoreImpl::DeleteMetadata(WriteBatch* write_batch,
                                         const std::string& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Delete(FormatMetadataKey(id));
 }
 
 void ModelTypeStoreImpl::DeleteGlobalMetadata(WriteBatch* write_batch) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetLeveldbWriteBatch(write_batch)->Delete(global_metadata_key_);
 }
 

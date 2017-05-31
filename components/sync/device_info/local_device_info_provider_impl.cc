@@ -42,30 +42,32 @@ LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
       version_(version),
       is_tablet_(is_tablet),
       weak_factory_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {}
+LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return local_device_info_.get();
 }
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return MakeUserAgentForSync(channel_, is_tablet_);
 }
 
 std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return cache_guid_;
 }
 
 std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!local_device_info_.get());
   return callback_list_.Add(callback);
 }
@@ -74,7 +76,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
     const std::string& signin_scoped_device_id,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
@@ -89,7 +91,7 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     const std::string& guid,
     const std::string& signin_scoped_device_id,
     const std::string& session_name) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (guid != cache_guid_) {
     // Clear() happened before this callback; abort.
     return;
@@ -104,7 +106,7 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
 }
 
 void LocalDeviceInfoProviderImpl::Clear() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_guid_ = "";
   local_device_info_.reset();
 }

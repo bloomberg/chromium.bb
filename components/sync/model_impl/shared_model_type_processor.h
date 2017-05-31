@@ -12,7 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/model_type_processor.h"
@@ -36,8 +36,7 @@ class ProcessorEntityTracker;
 // model type threads. See //docs/sync/uss/shared_model_type_processor.md for a
 // more thorough description.
 class SharedModelTypeProcessor : public ModelTypeProcessor,
-                                 public ModelTypeChangeProcessor,
-                                 base::NonThreadSafe {
+                                 public ModelTypeChangeProcessor {
  public:
   SharedModelTypeProcessor(ModelType type,
                            ModelTypeSyncBridge* bridge,
@@ -210,6 +209,8 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // use client tag hash. This mapping allows us to convert from storage key to
   // client tag hash. The other direction can use |entities_|.
   std::map<std::string, std::string> storage_key_to_tag_hash_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
