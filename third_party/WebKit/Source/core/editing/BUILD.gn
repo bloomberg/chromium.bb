@@ -308,6 +308,7 @@ source_set("unit_tests") {
     "iterators/TextSearcherICUTest.cpp",
     "markers/CompositionMarkerListImplTest.cpp",
     "markers/DocumentMarkerControllerTest.cpp",
+    "markers/DocumentMarkerListEditorTest.cpp",
     "markers/DocumentMarkerTest.cpp",
     "markers/GrammarMarkerListImplTest.cpp",
     "markers/SpellingMarkerListImplTest.cpp",
