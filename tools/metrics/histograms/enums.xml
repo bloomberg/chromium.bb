@@ -23693,9 +23693,16 @@ from previous Chrome versions.
   <int value="0" label="Neutral (deprecated February 2017)"/>
   <int value="1" label="Non-Secure"/>
   <int value="2" label="Neutral with a verbose warning on sensitive fields"/>
+  <int value="3" label="Neutral with a verbose warning after editing a form"/>
+  <int value="4" label="Neutral with a verbose warning in Incognito mode"/>
+  <int value="5" label="Neutral with a verbose warning after editing a form or
+      in Incognito mode"/>
 </enum>
 
 <enum name="MarkNonSecureAsStatus" type="int">
+  <obsolete>
+    Deprecated 09/2016 and replaced with MarkHttpAsStatus.
+  </obsolete>
   <int value="0" label="Neutral"/>
   <int value="1" label="Dubious (deprecated August 2015)"/>
   <int value="2" label="Non-Secure"/>
