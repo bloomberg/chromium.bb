@@ -32,12 +32,4 @@ bool operator==(const CounterDirectives& a, const CounterDirectives& b) {
          a.IsReset() == b.IsReset() && a.ResetValue() == b.ResetValue();
 }
 
-std::unique_ptr<CounterDirectiveMap> Clone(
-    const CounterDirectiveMap& counter_directives) {
-  std::unique_ptr<CounterDirectiveMap> result =
-      WTF::WrapUnique(new CounterDirectiveMap);
-  *result = counter_directives;
-  return result;
-}
-
 }  // namespace blink
