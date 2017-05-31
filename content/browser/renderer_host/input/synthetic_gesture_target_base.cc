@@ -57,8 +57,8 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     // Check that all touch pointers are within the content bounds.
     for (unsigned i = 0; i < web_touch.touches_length; i++)
       CHECK(web_touch.touches[i].state != WebTouchPoint::kStatePressed ||
-            PointIsWithinContents(web_touch.touches[i].position.x,
-                                  web_touch.touches[i].position.y))
+            PointIsWithinContents(web_touch.touches[i].PositionInWidget().x,
+                                  web_touch.touches[i].PositionInWidget().y))
           << "Touch coordinates are not within content bounds on TouchStart.";
 
     DispatchWebTouchEventToPlatform(web_touch, latency_info);

@@ -22,8 +22,9 @@ namespace {
 void TransformEventTouchPositions(blink::WebTouchEvent* event,
                                   const gfx::Vector2d& delta) {
   for (unsigned i = 0; i < event->touches_length; ++i) {
-    event->touches[i].position.x += delta.x();
-    event->touches[i].position.y += delta.y();
+    event->touches[i].SetPositionInWidget(
+        event->touches[i].PositionInWidget().x + delta.x(),
+        event->touches[i].PositionInWidget().y + delta.y());
   }
 }
 
@@ -370,8 +371,8 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         // of this sequence.
         DCHECK(!touch_target_.target);
         gfx::Point transformed_point;
-        gfx::Point original_point(event->touches[0].position.x,
-                                  event->touches[0].position.y);
+        gfx::Point original_point(event->touches[0].PositionInWidget().x,
+                                  event->touches[0].PositionInWidget().y);
         touch_target_.target =
             FindEventTarget(root_view, original_point, &transformed_point);
 

@@ -543,8 +543,10 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
 
     EXPECT_EQ(kEvents[3].size(), event.size());
     EXPECT_EQ(1u, kEvents[3].touches_length);
-    EXPECT_EQ(kEvents[3].touches[0].position.x, event.touches[0].position.x);
-    EXPECT_EQ(kEvents[3].touches[0].position.y, event.touches[0].position.y);
+    EXPECT_EQ(kEvents[3].touches[0].PositionInWidget().x,
+              event.touches[0].PositionInWidget().x);
+    EXPECT_EQ(kEvents[3].touches[0].PositionInWidget().y,
+              event.touches[0].PositionInWidget().y);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }

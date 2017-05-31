@@ -470,10 +470,10 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   point.radius_y = 0.5f * cursor_size_.height();
   point.force = eventType == WebInputEvent::kTouchEnd ? 0.f : 1.f;
   point.rotation_angle = 0.f;
-  point.position.x = mouse_event.PositionInWidget().x;
-  point.screen_position.x = mouse_event.PositionInScreen().x;
-  point.position.y = mouse_event.PositionInWidget().y;
-  point.screen_position.y = mouse_event.PositionInScreen().y;
+  point.SetPositionInWidget(mouse_event.PositionInWidget().x,
+                            mouse_event.PositionInWidget().y);
+  point.SetPositionInScreen(mouse_event.PositionInScreen().x,
+                            mouse_event.PositionInScreen().y);
   point.tilt_x = 0;
   point.tilt_y = 0;
   point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;

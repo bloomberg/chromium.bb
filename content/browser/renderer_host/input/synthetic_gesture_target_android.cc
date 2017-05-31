@@ -74,7 +74,8 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
   const unsigned num_touches = web_touch.touches_length;
   for (unsigned i = 0; i < num_touches; ++i) {
     const blink::WebTouchPoint* point = &web_touch.touches[i];
-    TouchSetPointer(env, i, point->position.x, point->position.y, point->id);
+    TouchSetPointer(env, i, point->PositionInWidget().x,
+                    point->PositionInWidget().y, point->id);
   }
 
   TouchInject(env, action, num_touches,

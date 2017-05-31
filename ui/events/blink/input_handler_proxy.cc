@@ -1049,8 +1049,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
       continue;
     cc::InputHandler::TouchStartEventListenerType event_listener_type =
         input_handler_->EventListenerTypeForTouchStartAt(
-            gfx::Point(touch_event.touches[i].position.x,
-                       touch_event.touches[i].position.y));
+            gfx::Point(touch_event.touches[i].PositionInWidget().x,
+                       touch_event.touches[i].PositionInWidget().y));
     if (event_listener_type !=
         cc::InputHandler::TouchStartEventListenerType::NO_HANDLER) {
       is_touching_scrolling_layer =

@@ -341,8 +341,8 @@ void PointerEventManager::ComputeTouchTargets(
       HitTestRequest::HitTestRequestType hit_type =
           HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
           HitTestRequest::kActive;
-      LayoutPoint page_point = LayoutPoint(
-          frame_->View()->RootFrameToContents(touch_info.point.position));
+      LayoutPoint page_point = LayoutPoint(frame_->View()->RootFrameToContents(
+          touch_info.point.PositionInWidget()));
       HitTestResult hit_test_tesult =
           frame_->GetEventHandler().HitTestResultAtPoint(page_point, hit_type);
       Node* node = hit_test_tesult.InnerNode();

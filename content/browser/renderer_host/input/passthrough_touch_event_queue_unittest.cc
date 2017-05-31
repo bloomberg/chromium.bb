@@ -116,9 +116,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     if (slop_length_dips_) {
       event.moved_beyond_slop_region = false;
       if (WebTouchEventTraits::IsTouchSequenceStart(event))
-        anchor_ = event.touches[0].position;
+        anchor_ = event.touches[0].PositionInWidget();
       if (event.GetType() == WebInputEvent::kTouchMove) {
-        gfx::Vector2dF delta = anchor_ - event.touches[0].position;
+        gfx::Vector2dF delta = anchor_ - event.touches[0].PositionInWidget();
         if (delta.LengthSquared() > slop_length_dips_ * slop_length_dips_)
           event.moved_beyond_slop_region = true;
       }

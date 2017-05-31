@@ -37,9 +37,11 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                       type_param,
                       modifiers_param,
                       time_stamp_seconds_param),
-        WebPointerProperties(id_param),
-        position_in_widget_(x_param, y_param),
-        position_in_screen_(global_x_param, global_y_param) {}
+        WebPointerProperties(id_param,
+                             PointerType::kUnknown,
+                             Button::kNoButton,
+                             WebFloatPoint(x_param, y_param),
+                             WebFloatPoint(global_x_param, global_y_param)) {}
 
   WebMouseEvent(Type type_param,
                 WebFloatPoint position,
@@ -53,11 +55,13 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                       type_param,
                       modifiers_param,
                       time_stamp_seconds_param),
-        WebPointerProperties(id_param, button_param, PointerType::kMouse),
-        click_count(click_count_param),
-        position_in_widget_(floor(position.x), floor(position.y)),
-        position_in_screen_(floor(global_position.x),
-                            floor(global_position.y)) {}
+        WebPointerProperties(
+            id_param,
+            PointerType::kMouse,
+            button_param,
+            WebFloatPoint(floor(position.x), floor(position.y)),
+            WebFloatPoint(floor(global_position.x), floor(global_position.y))),
+        click_count(click_count_param) {}
 
   WebMouseEvent(Type type_param,
                 int modifiers_param,
@@ -92,12 +96,10 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   BLINK_PLATFORM_EXPORT WebMouseEvent FlattenTransform() const;
 #endif
 
-  WebFloatPoint PositionInWidget() const { return position_in_widget_; }
   void SetPositionInWidget(float x, float y) {
     position_in_widget_ = WebFloatPoint(floor(x), floor(y));
   }
 
-  WebFloatPoint PositionInScreen() const { return position_in_screen_; }
   void SetPositionInScreen(float x, float y) {
     position_in_screen_ = WebFloatPoint(floor(x), floor(y));
   }
@@ -115,15 +117,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
         WebPointerProperties(id_param) {}
 
   void FlattenTransformSelf();
-
- private:
-  // Widget coordinate, which is relative to the bound of current RenderWidget
-  // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
-  // coordinates but without DevTools emulation transform or overscroll applied.
-  WebFloatPoint position_in_widget_;
-
-  // Screen coordinate
-  WebFloatPoint position_in_screen_;
 };
 
 #pragma pack(pop)

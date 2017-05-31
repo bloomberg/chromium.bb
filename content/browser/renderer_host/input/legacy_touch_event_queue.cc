@@ -32,8 +32,8 @@ const double kAsyncTouchMoveIntervalSec = .2;
 bool HasPointChanged(const WebTouchPoint& point_1,
                      const WebTouchPoint& point_2) {
   DCHECK_EQ(point_1.id, point_2.id);
-  if (point_1.screen_position != point_2.screen_position ||
-      point_1.position != point_2.position ||
+  if (point_1.PositionInScreen() != point_2.PositionInScreen() ||
+      point_1.PositionInWidget() != point_2.PositionInWidget() ||
       point_1.radius_x != point_2.radius_x ||
       point_1.radius_y != point_2.radius_y ||
       point_1.rotation_angle != point_2.rotation_angle ||

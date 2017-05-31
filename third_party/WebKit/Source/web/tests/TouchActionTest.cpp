@@ -391,10 +391,10 @@ void TouchActionTest::SendTouchEvent(WebView* web_view,
       (type == WebInputEvent::kTouchStart ? WebTouchPoint::kStatePressed
                                           : WebTouchPoint::kStateCancelled);
   web_touch_event.touches[0].id = kKfakeTouchId;
-  web_touch_event.touches[0].screen_position.x = client_point.X();
-  web_touch_event.touches[0].screen_position.y = client_point.Y();
-  web_touch_event.touches[0].position.x = client_point.X();
-  web_touch_event.touches[0].position.y = client_point.Y();
+  web_touch_event.touches[0].SetPositionInScreen(client_point.X(),
+                                                 client_point.Y());
+  web_touch_event.touches[0].SetPositionInWidget(client_point.X(),
+                                                 client_point.Y());
   web_touch_event.touches[0].radius_x = 10;
   web_touch_event.touches[0].radius_y = 10;
   web_touch_event.touches[0].force = 1.0;

@@ -72,9 +72,9 @@ void PrintTouchList(WebTestDelegate* delegate,
                     const blink::WebTouchPoint* points,
                     int length) {
   for (int i = 0; i < length; ++i) {
-    delegate->PrintMessage(
-        base::StringPrintf("* %.2f, %.2f: %s\n", points[i].position.x,
-                           points[i].position.y, PointState(points[i].state)));
+    delegate->PrintMessage(base::StringPrintf(
+        "* %.2f, %.2f: %s\n", points[i].PositionInWidget().x,
+        points[i].PositionInWidget().y, PointState(points[i].state)));
   }
 }
 

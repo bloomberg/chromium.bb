@@ -149,10 +149,10 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
       0 /* no button changed */, event.GetToolType(pointer_index));
 
   touch.state = ToWebTouchPointState(event, pointer_index);
-  touch.position.x = event.GetX(pointer_index);
-  touch.position.y = event.GetY(pointer_index);
-  touch.screen_position.x = event.GetRawX(pointer_index);
-  touch.screen_position.y = event.GetRawY(pointer_index);
+  touch.SetPositionInWidget(event.GetX(pointer_index),
+                            event.GetY(pointer_index));
+  touch.SetPositionInScreen(event.GetRawX(pointer_index),
+                            event.GetRawY(pointer_index));
 
   // A note on touch ellipse specifications:
   //
@@ -783,10 +783,9 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     scaled_event.reset(touch_event);
     *touch_event = static_cast<const blink::WebTouchEvent&>(event);
     for (unsigned i = 0; i < touch_event->touches_length; i++) {
-      touch_event->touches[i].position.x += delta.x();
-      touch_event->touches[i].position.y += delta.y();
-      touch_event->touches[i].position.x *= scale;
-      touch_event->touches[i].position.y *= scale;
+      touch_event->touches[i].SetPositionInWidget(
+          (touch_event->touches[i].PositionInWidget().x + delta.x()) * scale,
+          (touch_event->touches[i].PositionInWidget().y + delta.y()) * scale);
       touch_event->touches[i].radius_x *= scale;
       touch_event->touches[i].radius_y *= scale;
     }

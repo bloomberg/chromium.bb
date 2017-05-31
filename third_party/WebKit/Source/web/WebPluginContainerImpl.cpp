@@ -849,7 +849,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
   WebTouchEvent transformed_event = touch_event->FlattenTransform();
 
   for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
-    WebFloatPoint absolute_location = transformed_event.touches[i].position;
+    WebFloatPoint absolute_location =
+        transformed_event.touches[i].PositionInWidget();
 
     // Translate the root frame position to content coordinates.
     if (LocalFrameView* parent = ParentFrameView())
@@ -858,8 +859,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     IntPoint local_point =
         RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
             absolute_location, kUseTransforms));
-    transformed_event.touches[i].position.x = local_point.X();
-    transformed_event.touches[i].position.y = local_point.Y();
+    transformed_event.touches[i].SetPositionInWidget(local_point.X(),
+                                                     local_point.Y());
   }
   return transformed_event;
 }

@@ -87,14 +87,14 @@ class SyntheticInspectorTouchPoint : public blink::WebTouchPoint {
   SyntheticInspectorTouchPoint(int idParam,
                                State stateParam,
                                const blink::IntPoint& screenPos,
-                               const blink::IntPoint& pos,
+                               const blink::IntPoint& widgetPos,
                                int radiusXParam,
                                int radiusYParam,
                                double rotationAngleParam,
                                double forceParam) {
     id = idParam;
-    screen_position = screenPos;
-    position = pos;
+    SetPositionInScreen(screenPos.X(), screenPos.Y());
+    SetPositionInWidget(widgetPos.X(), widgetPos.Y());
     state = stateParam;
     radius_x = radiusXParam;
     radius_y = radiusYParam;
