@@ -86,7 +86,7 @@ class CORE_EXPORT StyleRareNonInheritedData
     return !(*this == o);
   }
 
-  float opacity;  // Whether or not we're transparent.
+  float opacity_;  // Whether or not we're transparent.
 
   float perspective_;
   float shape_image_threshold_;
@@ -96,7 +96,7 @@ class CORE_EXPORT StyleRareNonInheritedData
   LengthPoint perspective_origin_;
   LengthPoint object_position_;
 
-  LineClampValue line_clamp;  // An Apple extension.
+  LineClampValue line_clamp_;           // An Apple extension.
   unsigned draggable_region_mode_ : 2;  // DraggableRegionMode
 
   DataRef<StyleDeprecatedFlexibleBoxData>
@@ -159,14 +159,14 @@ class CORE_EXPORT StyleRareNonInheritedData
   StyleSelfAlignmentData justify_self_;
 
   unsigned page_size_type_ : 2;       // PageSizeType
-  unsigned transform_style3d_ : 1;    // ETransformStyle3D
+  unsigned transform_style_3d_ : 1;   // ETransformStyle3D
   unsigned backface_visibility_ : 1;  // EBackfaceVisibility
 
-  unsigned user_drag : 2;      // EUserDrag
-  unsigned text_overflow : 1;  // Whether or not lines that spill out should be
-                               // truncated with "..."
-  unsigned margin_before_collapse : 2;  // EMarginCollapse
-  unsigned margin_after_collapse : 2;   // EMarginCollapse
+  unsigned user_drag_ : 2;      // EUserDrag
+  unsigned text_overflow_ : 1;  // Whether or not lines that spill out should be
+                                // truncated with "..."
+  unsigned margin_before_collapse_ : 2;  // EMarginCollapse
+  unsigned margin_after_collapse_ : 2;   // EMarginCollapse
   unsigned appearance_ : 6;             // EAppearance
 
   unsigned text_decoration_style_ : 3;  // TextDecorationStyle

@@ -71,13 +71,13 @@ static_assert(sizeof(StyleRareNonInheritedData) ==
               "StyleRareNonInheritedData_should_stay_small");
 
 StyleRareNonInheritedData::StyleRareNonInheritedData()
-    : opacity(ComputedStyle::InitialOpacity()),
+    : opacity_(ComputedStyle::InitialOpacity()),
       perspective_(ComputedStyle::InitialPerspective()),
       shape_image_threshold_(ComputedStyle::InitialShapeImageThreshold()),
       order_(ComputedStyle::InitialOrder()),
       perspective_origin_(ComputedStyle::InitialPerspectiveOrigin()),
       object_position_(ComputedStyle::InitialObjectPosition()),
-      line_clamp(ComputedStyle::InitialLineClamp()),
+      line_clamp_(ComputedStyle::InitialLineClamp()),
       draggable_region_mode_(static_cast<unsigned>(kDraggableRegionNone)),
       shape_outside_(ComputedStyle::InitialShapeOutside()),
       clip_path_(ComputedStyle::InitialClipPath()),
@@ -101,12 +101,12 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       justify_items_(ComputedStyle::InitialSelfAlignment()),
       justify_self_(ComputedStyle::InitialSelfAlignment()),
       page_size_type_(static_cast<unsigned>(PageSizeType::kAuto)),
-      transform_style3d_(ComputedStyle::InitialTransformStyle3D()),
+      transform_style_3d_(ComputedStyle::InitialTransformStyle3D()),
       backface_visibility_(ComputedStyle::InitialBackfaceVisibility()),
-      user_drag(ComputedStyle::InitialUserDrag()),
-      text_overflow(ComputedStyle::InitialTextOverflow()),
-      margin_before_collapse(kMarginCollapseCollapse),
-      margin_after_collapse(kMarginCollapseCollapse),
+      user_drag_(ComputedStyle::InitialUserDrag()),
+      text_overflow_(ComputedStyle::InitialTextOverflow()),
+      margin_before_collapse_(kMarginCollapseCollapse),
+      margin_after_collapse_(kMarginCollapseCollapse),
       appearance_(ComputedStyle::InitialAppearance()),
       text_decoration_style_(ComputedStyle::InitialTextDecorationStyle()),
       has_current_opacity_animation_(false),
@@ -135,13 +135,13 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
 StyleRareNonInheritedData::StyleRareNonInheritedData(
     const StyleRareNonInheritedData& o)
     : RefCounted<StyleRareNonInheritedData>(),
-      opacity(o.opacity),
+      opacity_(o.opacity_),
       perspective_(o.perspective_),
       shape_image_threshold_(o.shape_image_threshold_),
       order_(o.order_),
       perspective_origin_(o.perspective_origin_),
       object_position_(o.object_position_),
-      line_clamp(o.line_clamp),
+      line_clamp_(o.line_clamp_),
       draggable_region_mode_(o.draggable_region_mode_),
       deprecated_flexible_box_(o.deprecated_flexible_box_),
       flexible_box_(o.flexible_box_),
@@ -184,12 +184,12 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       justify_items_(o.justify_items_),
       justify_self_(o.justify_self_),
       page_size_type_(o.page_size_type_),
-      transform_style3d_(o.transform_style3d_),
+      transform_style_3d_(o.transform_style_3d_),
       backface_visibility_(o.backface_visibility_),
-      user_drag(o.user_drag),
-      text_overflow(o.text_overflow),
-      margin_before_collapse(o.margin_before_collapse),
-      margin_after_collapse(o.margin_after_collapse),
+      user_drag_(o.user_drag_),
+      text_overflow_(o.text_overflow_),
+      margin_before_collapse_(o.margin_before_collapse_),
+      margin_after_collapse_(o.margin_after_collapse_),
       appearance_(o.appearance_),
       text_decoration_style_(o.text_decoration_style_),
       has_current_opacity_animation_(o.has_current_opacity_animation_),
@@ -225,10 +225,11 @@ StyleRareNonInheritedData::~StyleRareNonInheritedData() {}
 
 bool StyleRareNonInheritedData::operator==(
     const StyleRareNonInheritedData& o) const {
-  return opacity == o.opacity && perspective_ == o.perspective_ &&
+  return opacity_ == o.opacity_ && perspective_ == o.perspective_ &&
          shape_image_threshold_ == o.shape_image_threshold_ &&
          order_ == o.order_ && perspective_origin_ == o.perspective_origin_ &&
-         object_position_ == o.object_position_ && line_clamp == o.line_clamp &&
+         object_position_ == o.object_position_ &&
+         line_clamp_ == o.line_clamp_ &&
          draggable_region_mode_ == o.draggable_region_mode_ &&
          deprecated_flexible_box_ == o.deprecated_flexible_box_ &&
          flexible_box_ == o.flexible_box_ && multi_col_ == o.multi_col_ &&
@@ -265,11 +266,11 @@ bool StyleRareNonInheritedData::operator==(
          justify_items_ == o.justify_items_ &&
          justify_self_ == o.justify_self_ &&
          page_size_type_ == o.page_size_type_ &&
-         transform_style3d_ == o.transform_style3d_ &&
+         transform_style_3d_ == o.transform_style_3d_ &&
          backface_visibility_ == o.backface_visibility_ &&
-         user_drag == o.user_drag && text_overflow == o.text_overflow &&
-         margin_before_collapse == o.margin_before_collapse &&
-         margin_after_collapse == o.margin_after_collapse &&
+         user_drag_ == o.user_drag_ && text_overflow_ == o.text_overflow_ &&
+         margin_before_collapse_ == o.margin_before_collapse_ &&
+         margin_after_collapse_ == o.margin_after_collapse_ &&
          appearance_ == o.appearance_ &&
          text_decoration_style_ == o.text_decoration_style_ &&
          has_current_opacity_animation_ == o.has_current_opacity_animation_ &&
