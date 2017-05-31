@@ -35,12 +35,18 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     device_version = Java_ChromeUsbDevice_getDeviceVersion(env, wrapper);
   base::string16 manufacturer_string, product_string, serial_number;
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
-    manufacturer_string = ConvertJavaStringToUTF16(
-        env, Java_ChromeUsbDevice_getManufacturerName(env, wrapper));
-    product_string = ConvertJavaStringToUTF16(
-        env, Java_ChromeUsbDevice_getProductName(env, wrapper));
-    serial_number = ConvertJavaStringToUTF16(
-        env, Java_ChromeUsbDevice_getSerialNumber(env, wrapper));
+    ScopedJavaLocalRef<jstring> manufacturer_jstring =
+        Java_ChromeUsbDevice_getManufacturerName(env, wrapper);
+    if (!manufacturer_jstring.is_null())
+      manufacturer_string = ConvertJavaStringToUTF16(env, manufacturer_jstring);
+    ScopedJavaLocalRef<jstring> product_jstring =
+        Java_ChromeUsbDevice_getProductName(env, wrapper);
+    if (!product_jstring.is_null())
+      product_string = ConvertJavaStringToUTF16(env, product_jstring);
+    ScopedJavaLocalRef<jstring> serial_jstring =
+        Java_ChromeUsbDevice_getSerialNumber(env, wrapper);
+    if (!serial_jstring.is_null())
+      serial_number = ConvertJavaStringToUTF16(env, serial_jstring);
   }
   return make_scoped_refptr(new UsbDeviceAndroid(
       env, service,
