@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PASSWORD_FORM_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 
@@ -46,11 +47,13 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       CredentialManagerPasswordFormManagerDelegate* delegate,
       std::unique_ptr<FormSaver> form_saver,
       std::unique_ptr<FormFetcher> form_fetcher);
-  ~CredentialManagerPasswordFormManager() override;
 
   void ProcessMatches(
       const std::vector<const autofill::PasswordForm*>& non_federated,
       size_t filtered_count) override;
+
+ protected:
+  ~CredentialManagerPasswordFormManager() override;
 
  private:
   // Calls OnProvisionalSaveComplete on |delegate_|.

@@ -16,7 +16,7 @@ StubPasswordManagerClient::StubPasswordManagerClient() {}
 StubPasswordManagerClient::~StubPasswordManagerClient() {}
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    std::unique_ptr<PasswordFormManager> form_to_save,
+    scoped_refptr<PasswordFormManager> form_to_save,
     bool update_password) {
   return false;
 }
@@ -41,7 +41,7 @@ void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
 void StubPasswordManagerClient::NotifyStorePasswordCalled() {}
 
 void StubPasswordManagerClient::AutomaticPasswordSave(
-    std::unique_ptr<PasswordFormManager> saved_manager) {}
+    scoped_refptr<PasswordFormManager> saved_manager) {}
 
 PrefService* StubPasswordManagerClient::GetPrefs() {
   return nullptr;

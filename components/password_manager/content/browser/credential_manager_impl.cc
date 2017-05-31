@@ -83,7 +83,7 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   // is only available on HTTPS origins.
   auto form_fetcher = base::MakeUnique<FormFetcherImpl>(
       PasswordStore::FormDigest(*observed_form), client_, false, false);
-  form_manager_ = base::MakeUnique<CredentialManagerPasswordFormManager>(
+  form_manager_ = base::MakeRefCounted<CredentialManagerPasswordFormManager>(
       client_, GetDriver(), *observed_form, std::move(form), this, nullptr,
       std::move(form_fetcher));
 }

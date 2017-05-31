@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
@@ -26,7 +27,7 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
       bool is_smart_lock_branding_enabled,
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
+      scoped_refptr<password_manager::PasswordFormManager> form_manager);
 
   password_manager::PasswordFormManager* form_to_save() const {
     return form_to_save_.get();
@@ -50,7 +51,7 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The password_manager::PasswordFormManager managing the form we're asking
   // the user about, and should save as per their decision.
-  std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
+  scoped_refptr<password_manager::PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;

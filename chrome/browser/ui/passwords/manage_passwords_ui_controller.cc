@@ -69,7 +69,7 @@ ManagePasswordsUIController::ManagePasswordsUIController(
 ManagePasswordsUIController::~ManagePasswordsUIController() {}
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
-    std::unique_ptr<PasswordFormManager> form_manager) {
+    scoped_refptr<PasswordFormManager> form_manager) {
   bool show_bubble = !form_manager->IsBlacklisted();
   DestroyAccountChooser();
   passwords_data_.OnPendingPassword(std::move(form_manager));
@@ -87,7 +87,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 }
 
 void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
-    std::unique_ptr<PasswordFormManager> form_manager) {
+    scoped_refptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnUpdatePassword(std::move(form_manager));
   bubble_status_ = SHOULD_POP_UP;
@@ -142,7 +142,7 @@ void ManagePasswordsUIController::OnPromptEnableAutoSignin() {
 }
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
-    std::unique_ptr<PasswordFormManager> form_manager) {
+    scoped_refptr<PasswordFormManager> form_manager) {
   DestroyAccountChooser();
   passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
   bubble_status_ = SHOULD_POP_UP;

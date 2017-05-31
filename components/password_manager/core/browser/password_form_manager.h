@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -38,7 +39,8 @@ using FieldTypeMap = std::map<base::string16, autofill::ServerFieldType>;
 
 // This class helps with filling the observed form (both HTML and from HTTP
 // auth) and with saving/updating the stored information about it.
-class PasswordFormManager : public FormFetcher::Consumer {
+class PasswordFormManager : public FormFetcher::Consumer,
+                            public base::RefCounted<PasswordFormManager> {
  public:
   // |password_manager| owns |this|, |client| and |driver| serve to
   // communicate with embedder, |observed_form| is the associated form |this|
@@ -56,7 +58,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
                       const autofill::PasswordForm& observed_form,
                       std::unique_ptr<FormSaver> form_saver,
                       FormFetcher* form_fetcher);
-  ~PasswordFormManager() override;
 
   // Flags describing the result of comparing two forms as performed by
   // DoesMatch. Individual flags are only relevant for HTML forms, but
@@ -255,12 +256,16 @@ class PasswordFormManager : public FormFetcher::Consumer {
   void GrabFetcher(std::unique_ptr<FormFetcher> fetcher);
 
  protected:
+  ~PasswordFormManager() override;
+
   // FormFetcher::Consumer:
   void ProcessMatches(
       const std::vector<const autofill::PasswordForm*>& non_federated,
       size_t filtered_count) override;
 
  private:
+  friend class base::RefCounted<PasswordFormManager>;
+
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
   // because it has no match or it is disabled via the AUTOCOMPLETE=off
