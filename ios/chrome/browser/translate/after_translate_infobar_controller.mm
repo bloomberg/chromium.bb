@@ -15,8 +15,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
+namespace {
+enum AlwaysTranslateSwitchState {
+  ALWAYS_TRANSLATE_SWITCH_NOT_CHANGED,
+  ALWAYS_TRANSLATE_SWITCH_SET_TO_ENABLED,
+  ALWAYS_TRANSLATE_SWITCH_SET_TO_DISABLED,
+};
+}  // namespace
+
 @interface AfterTranslateInfoBarController () {
   translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;  // weak
+  AlwaysTranslateSwitchState _alwaysTranslateSwitchState;
 }
 
 // Action for any of the user defined buttons.
@@ -77,6 +86,7 @@
                    target:self
                    action:@selector(infoBarButtonDidPress:)];
   // Always translate switch.
+  _alwaysTranslateSwitchState = ALWAYS_TRANSLATE_SWITCH_NOT_CHANGED;
   if (_translateInfoBarDelegate->ShouldShowAlwaysTranslateShortcut()) {
     base::string16 alwaysTranslate = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, stdOriginal);
@@ -107,6 +117,8 @@
     } else {
       DCHECK(buttonId == TranslateInfoBarIOSTag::AFTER_REVERT ||
              buttonId == TranslateInfoBarIOSTag::AFTER_DONE);
+      if (buttonId == TranslateInfoBarIOSTag::AFTER_DONE)
+        [self saveAlwaysTranslateState];
       self.delegate->InfoBarButtonDidPress(buttonId);
     }
   }
@@ -115,8 +127,23 @@
 - (void)infoBarSwitchDidPress:(id)sender {
   DCHECK_EQ(TranslateInfoBarIOSTag::ALWAYS_TRANSLATE_SWITCH, [sender tag]);
   DCHECK([sender respondsToSelector:@selector(isOn)]);
-  if (_translateInfoBarDelegate->ShouldAlwaysTranslate() != [sender isOn])
-    _translateInfoBarDelegate->ToggleAlwaysTranslate();
+  _alwaysTranslateSwitchState = [sender isOn]
+                                    ? ALWAYS_TRANSLATE_SWITCH_SET_TO_ENABLED
+                                    : ALWAYS_TRANSLATE_SWITCH_SET_TO_DISABLED;
+}
+
+#pragma mark - Private methods
+
+- (void)saveAlwaysTranslateState {
+  if (_alwaysTranslateSwitchState == ALWAYS_TRANSLATE_SWITCH_NOT_CHANGED)
+    return;
+
+  const bool alwaysTranslate =
+      _alwaysTranslateSwitchState == ALWAYS_TRANSLATE_SWITCH_SET_TO_ENABLED;
+  if (alwaysTranslate == _translateInfoBarDelegate->ShouldAlwaysTranslate())
+    return;
+
+  _translateInfoBarDelegate->ToggleAlwaysTranslate();
 }
 
 @end
