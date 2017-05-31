@@ -50,6 +50,15 @@ inline ETextAlign CssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
+inline ETextOrientation CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueSidewaysRight)  // Legacy -webkit-auto. Eqiuvalent to start.
+    return ETextOrientation::kSideways;
+  if (v == CSSValueVerticalRight)
+    return ETextOrientation::kMixed;
+  return detail::cssValueIDToPlatformEnumGenerated<ETextOrientation>(v);
+}
+
+template <>
 inline WritingMode CssValueIDToPlatformEnum(CSSValueID v) {
   switch (v) {
     case CSSValueHorizontalTb:

@@ -1415,41 +1415,6 @@ inline TextEmphasisMark CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(TextOrientation e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case TextOrientation::kSideways:
-      value_id_ = CSSValueSideways;
-      break;
-    case TextOrientation::kMixed:
-      value_id_ = CSSValueMixed;
-      break;
-    case TextOrientation::kUpright:
-      value_id_ = CSSValueUpright;
-      break;
-  }
-}
-
-template <>
-inline TextOrientation CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueSideways:
-    case CSSValueSidewaysRight:
-      return TextOrientation::kSideways;
-    case CSSValueMixed:
-    case CSSValueVerticalRight:  // -webkit-text-orientation
-      return TextOrientation::kMixed;
-    case CSSValueUpright:
-      return TextOrientation::kUpright;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return TextOrientation::kMixed;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(FontDescription::Kerning kerning)
     : CSSValue(kIdentifierClass) {
   switch (kerning) {

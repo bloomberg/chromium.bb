@@ -268,8 +268,6 @@ enum class TextEmphasisMark {
   kCustom
 };
 
-enum class TextOrientation { kMixed, kUpright, kSideways };
-
 enum TextOverflow { kTextOverflowClip = 0, kTextOverflowEllipsis };
 
 enum class EImageRendering {
