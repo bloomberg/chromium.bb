@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import hashlib
 import logging
 import re
 
@@ -178,23 +179,23 @@ class SingleTestRunner(object):
                                              self._test_name, driver_output, None, failures)
         # FIXME: It the test crashed or timed out, it might be better to avoid
         # to write new baselines.
-        self._overwrite_baselines(driver_output)
+        self._update_or_add_new_baselines(driver_output)
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
                           pid=driver_output.pid)
 
     _render_tree_dump_pattern = re.compile(r"^layer at \(\d+,\d+\) size \d+x\d+\n")
 
     def _add_missing_baselines(self, test_result, driver_output):
-        missingImage = test_result.has_failure_matching_types(
+        missing_image = test_result.has_failure_matching_types(
             test_failures.FailureMissingImage, test_failures.FailureMissingImageHash)
         if test_result.has_failure_matching_types(test_failures.FailureMissingResult):
-            self._save_baseline_data(driver_output.text, '.txt', self._location_for_new_baseline(driver_output.text, '.txt'))
+            self._save_baseline_data(driver_output.text, '.txt', self._location_for_missing_baseline(driver_output.text, '.txt'))
         if test_result.has_failure_matching_types(test_failures.FailureMissingAudio):
-            self._save_baseline_data(driver_output.audio, '.wav', self._location_for_new_baseline(driver_output.audio, '.wav'))
-        if missingImage:
-            self._save_baseline_data(driver_output.image, '.png', self._location_for_new_baseline(driver_output.image, '.png'))
+            self._save_baseline_data(driver_output.audio, '.wav', self._location_for_missing_baseline(driver_output.audio, '.wav'))
+        if missing_image:
+            self._save_baseline_data(driver_output.image, '.png', self._location_for_missing_baseline(driver_output.image, '.png'))
 
-    def _location_for_new_baseline(self, data, extension):
+    def _location_for_missing_baseline(self, data, extension):
         if self._options.add_platform_exceptions:
             return self.VERSION_DIR
         if extension == '.png':
@@ -205,7 +206,7 @@ class SingleTestRunner(object):
             return self.PLATFORM_DIR
         return self.ALONGSIDE_TEST
 
-    def _overwrite_baselines(self, driver_output):
+    def _update_or_add_new_baselines(self, driver_output):
         location = self.VERSION_DIR if self._options.add_platform_exceptions else self.UPDATE
         self._save_baseline_data(driver_output.text, '.txt', location)
         self._save_baseline_data(driver_output.audio, '.wav', location)
@@ -217,6 +218,7 @@ class SingleTestRunner(object):
             return
         port = self._port
         fs = self._filesystem
+
         if location == self.ALONGSIDE_TEST:
             output_dir = fs.dirname(port.abspath_for_test(self._test_name))
         elif location == self.VERSION_DIR:
@@ -231,6 +233,14 @@ class SingleTestRunner(object):
         fs.maybe_make_directory(output_dir)
         output_basename = fs.basename(fs.splitext(self._test_name)[0] + '-expected' + extension)
         output_path = fs.join(output_dir, output_basename)
+
+        if location == self.VERSION_DIR:
+            fallback_path = port.expected_filename(self._test_name, extension)
+            if fallback_path != output_path and fs.sha1(fallback_path) == hashlib.sha1(data).hexdigest():
+                _log.info('Not writing new expected result "%s" because it is the same as "%s"',
+                          port.relative_test_filename(output_path), port.relative_test_filename(fallback_path))
+                return
+
         _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
         port.update_baseline(output_path, data)
 
