@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/web/public/app/web_main_parts.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -28,7 +30,7 @@ WebClient::WebClient() {
 WebClient::~WebClient() {
 }
 
-WebMainParts* WebClient::CreateWebMainParts() {
+std::unique_ptr<WebMainParts> WebClient::CreateWebMainParts() {
   return nullptr;
 }
 

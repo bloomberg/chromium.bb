@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_WEB_CHROME_WEB_CLIENT_H_
 #define IOS_CHROME_BROWSER_WEB_CHROME_WEB_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ios/web/public/web_client.h"
 
@@ -15,7 +17,7 @@ class ChromeWebClient : public web::WebClient {
   ~ChromeWebClient() override;
 
   // WebClient implementation.
-  web::WebMainParts* CreateWebMainParts() override;
+  std::unique_ptr<web::WebMainParts> CreateWebMainParts() override;
   void PreWebViewCreation() const override;
   void AddAdditionalSchemes(std::vector<url::SchemeWithType>*
                                 additional_standard_schemes) const override;
