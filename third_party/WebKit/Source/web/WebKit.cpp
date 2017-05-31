@@ -85,7 +85,7 @@ void Initialize(Platform* platform) {
 
   GetModulesInitializer().Initialize();
 
-  WebFactory::SetInstance(*(new WebFactoryImpl()));
+  WebFactoryImpl::Initialize();
 
   // currentThread is null if we are running on a thread without a message loop.
   if (WebThread* current_thread = platform->CurrentThread()) {

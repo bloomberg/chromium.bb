@@ -8,6 +8,10 @@
 
 namespace blink {
 
+void WebFactoryImpl::Initialize() {
+  WebFactory::SetInstance(*(new WebFactoryImpl()));
+}
+
 ChromeClient* WebFactoryImpl::CreateChromeClient(WebViewBase* view) const {
   return ChromeClientImpl::Create(view);
 }
