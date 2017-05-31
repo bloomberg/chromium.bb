@@ -32,7 +32,7 @@ public class ContextualSearchFieldTrial {
     private static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
 
     private static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
-    private static final String ENABLE_BLACKLIST = "enable_blacklist";
+    private static final String WAIT_AFTER_TAP_DELAY_MS = "wait_after_tap_delay_ms";
 
     // Translation.  All these members are private, except for usage by testing.
     // Master switch, needed to disable all translate code for Contextual Search in case of an
@@ -86,6 +86,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sContextualSearchUrlActionsEnabled;
     private static Boolean sIsRankerLoggingEnabled;
+    private static Integer sWaitAfterTapDelayMs;
 
     /**
      * Don't instantiate.
@@ -179,13 +180,6 @@ public class ContextualSearchFieldTrial {
             sIsPeekPromoEnabled = getBooleanParam(PEEK_PROMO_ENABLED);
         }
         return sIsPeekPromoEnabled.booleanValue();
-    }
-
-    /**
-     * @return Whether the blacklist is enabled.
-     */
-    static boolean isBlacklistEnabled() {
-        return getBooleanParam(ENABLE_BLACKLIST);
     }
 
     /**
@@ -316,9 +310,23 @@ public class ContextualSearchFieldTrial {
         return sIsRankerLoggingEnabled;
     }
 
-    // ---------------
-    // Features.
-    // ---------------
+    /**
+     * Gets an amount to delay after a Tap gesture is recognized, in case some user gesture
+     * immediately follows that would prevent the UI from showing.
+     * The classic example is a scroll, which might be a signal that the previous tap was
+     * accidental.
+     * @return The delay in MS after the Tap before showing any UI.
+     */
+    static int getWaitAfterTapDelayMs() {
+        if (sWaitAfterTapDelayMs == null) {
+            sWaitAfterTapDelayMs = getIntParamValueOrDefault(WAIT_AFTER_TAP_DELAY_MS, 0);
+        }
+        return sWaitAfterTapDelayMs.intValue();
+    }
+
+    // ---------------------------
+    // Feature-controlled Switches
+    // ---------------------------
 
     /**
      * @return Whether or not single actions based on Contextual Cards is enabled.

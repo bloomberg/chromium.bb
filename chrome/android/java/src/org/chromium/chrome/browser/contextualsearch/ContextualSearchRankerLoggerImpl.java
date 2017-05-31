@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import org.chromium.base.Log;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchRankerLogger.Feature;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements the UMA logging for Ranker that's used for Contextual Search Tap Suppression.
@@ -14,17 +17,41 @@ import java.net.URL;
 public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerLogger {
     private static final String TAG = "ContextualSearch";
 
+    // Names for our features.
+    private static final Map<Feature, String> FEATURE_NAMES;
+    static {
+        Map<Feature, String> names = new HashMap<Feature, String>();
+        names.put(Feature.OUTCOME_WAS_PANEL_OPENED, "OutcomeWasPanelOpened");
+        names.put(Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, "OutcomeWasQuickActionClicked");
+        names.put(Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN, "OutcomeWasQuickAnswerSeen");
+        names.put(Feature.DURATION_AFTER_SCROLL_MS, "DurationAfterScrollMs");
+        names.put(Feature.SCREEN_TOP_DPS, "ScreenTopDps");
+        names.put(Feature.WAS_SCREEN_BOTTOM, "WasScreenBottom");
+        names.put(Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT, "PreviousWeekImpressionsCount");
+        names.put(Feature.PREVIOUS_WEEK_CTR_PERCENT, "PreviousWeekCtrPercent");
+        names.put(Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT, "Previous28DayImpressionsCount");
+        names.put(Feature.PREVIOUS_28DAY_CTR_PERCENT, "Previous28DayCtrPercent");
+        FEATURE_NAMES = Collections.unmodifiableMap(names);
+    }
+
     // Pointer to the native instance of this class.
     private long mNativePointer;
 
-    // Whether logging for the current URL is currently setup.
-    private boolean mIsLoggingSetup;
+    // Whether logging for the current URL has been setup.
+    private boolean mIsLoggingReadyForUrl;
 
-    // Whether the service is ready to actually record log data.
-    private boolean mCanServiceActuallyRecord;
+    // URL of the base page that the log data is associated with.
+    private URL mBasePageUrl;
 
-    // Whether any data has been written to the log since calling setupLoggingForPage().
-    private boolean mDidLog;
+    // Whether inference has already occurred for this interaction (and calling #logFeature is no
+    // longer allowed).
+    private boolean mHasInferenceOccurred;
+
+    // Whether the UI was suppressed.
+    private boolean mWasUiSuppressionInfered;
+
+    // Map that accumulates all of the Features to log for a specific user-interaction.
+    private Map<Feature, Object> mFeaturesToLog;
 
     /**
      * Constructs a Ranker Logger and associated native implementation to write Contextual Search
@@ -44,74 +71,107 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
             writeLogAndReset();
             nativeDestroy(mNativePointer);
             mNativePointer = 0;
-            mCanServiceActuallyRecord = false;
-            mDidLog = false;
         }
-        mIsLoggingSetup = false;
+        mIsLoggingReadyForUrl = false;
     }
 
     @Override
     public void setupLoggingForPage(URL basePageUrl) {
-        mIsLoggingSetup = true;
-        if (isEnabled()) {
-            // The URL may be null for custom Chrome URIs like chrome://flags.
-            if (basePageUrl != null) {
-                nativeSetupLoggingAndRanker(mNativePointer, basePageUrl.toString());
-                mCanServiceActuallyRecord = true;
-            }
-        }
+        mIsLoggingReadyForUrl = true;
+        mBasePageUrl = basePageUrl;
+        mHasInferenceOccurred = false;
     }
 
     @Override
-    public void log(Feature feature, Object value) {
-        assert mIsLoggingSetup;
+    public void logFeature(Feature feature, Object value) {
+        assert mIsLoggingReadyForUrl : "mIsLoggingReadyForUrl false.";
+        assert !mHasInferenceOccurred;
         if (!isEnabled()) return;
 
-        // TODO(donnd): Add some enforcement that log() calls are done before inference time.
         logInternal(feature, value);
     }
 
     @Override
     public void logOutcome(Feature feature, Object value) {
-        assert mIsLoggingSetup;
         if (!isEnabled()) return;
+
+        // Since the panel can be closed at any time, we might try to log that outcome immediately.
+        if (!mIsLoggingReadyForUrl) return;
 
         logInternal(feature, value);
     }
 
     @Override
-    public void writeLogAndReset() {
-        if (isEnabled()) {
-            if (mDidLog) nativeWriteLogAndReset(mNativePointer);
-            mCanServiceActuallyRecord = false;
-            mDidLog = false;
-        }
-        mIsLoggingSetup = false;
+    public boolean inferUiSuppression() {
+        mHasInferenceOccurred = true;
+        // TODO(donnd): actually run the Ranker model and register its recommendation here!
+        mWasUiSuppressionInfered = false;
+        // TODO(donnd): actually return the recommendation so it can be acted upon!
+        return false;
     }
 
-    /** Whether actually writing data is enabled.  If not, we may do nothing or print. */
+    @Override
+    public boolean wasUiSuppressionInfered() {
+        return mWasUiSuppressionInfered;
+    }
+
+    @Override
+    public void reset() {
+        mIsLoggingReadyForUrl = false;
+        mHasInferenceOccurred = false;
+        mFeaturesToLog = null;
+        mBasePageUrl = null;
+        mWasUiSuppressionInfered = false;
+    }
+
+    @Override
+    public void writeLogAndReset() {
+        // The URL may be null for custom Chrome URIs like chrome://flags.
+        if (isEnabled() && mBasePageUrl != null && mFeaturesToLog != null) {
+            assert mIsLoggingReadyForUrl;
+            nativeSetupLoggingAndRanker(mNativePointer, mBasePageUrl.toString());
+            for (Map.Entry<Feature, Object> entry : mFeaturesToLog.entrySet()) {
+                logObject(entry.getKey(), entry.getValue());
+            }
+            nativeWriteLogAndReset(mNativePointer);
+        }
+        reset();
+    }
+
+    /**
+     * Logs the given feature/value to the internal map that accumulates an entire record (which can
+     * be logged by calling writeLogAndReset).
+     * @param feature The feature to log.
+     * @param value The value to log.
+     */
+    private void logInternal(Feature feature, Object value) {
+        if (mFeaturesToLog == null) mFeaturesToLog = new HashMap<Feature, Object>();
+        mFeaturesToLog.put(feature, value);
+    }
+
+    /** Whether actually writing data is enabled.  If not, we may do nothing, or just print. */
     private boolean isEnabled() {
         return ContextualSearchFieldTrial.isRankerLoggingEnabled();
     }
 
     /**
-     * Logs the given feature/value after checking that logging has been set up.
+     * Logs the given {@link ContextualSearchRankerLogger.Feature} with the given value
+     * {@link Object}.
      * @param feature The feature to log.
-     * @param value The value to log.
+     * @param value An {@link Object} value to log (must be convertible to a {@code long}).
      */
-    private void logInternal(Feature feature, Object value) {
+    private void logObject(Feature feature, Object value) {
         if (value instanceof Boolean) {
-            logToNative(feature.toString(), ((boolean) value ? 1 : 0));
+            logToNative(feature, ((boolean) value ? 1 : 0));
         } else if (value instanceof Integer) {
-            logToNative(feature.toString(), Long.valueOf((int) value));
+            logToNative(feature, Long.valueOf((int) value));
         } else if (value instanceof Long) {
-            logToNative(feature.toString(), (long) value);
+            logToNative(feature, (long) value);
         } else if (value instanceof Character) {
-            logToNative(feature.toString(), Character.getNumericValue((char) value));
+            logToNative(feature, Character.getNumericValue((char) value));
         } else {
-            Log.w(TAG,
-                    "Could not log feature to Ranker: " + feature.toString() + " of class "
-                            + value.getClass());
+            assert false : "Could not log feature to Ranker: " + feature.toString() + " of class "
+                           + value.getClass();
         }
     }
 
@@ -120,11 +180,15 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
      * @param feature The feature to log.
      * @param value The value to log.
      */
-    private void logToNative(String feature, long value) {
-        if (mCanServiceActuallyRecord) {
-            nativeLogLong(mNativePointer, feature, value);
-            mDidLog = true;
-        }
+    private void logToNative(Feature feature, long value) {
+        nativeLogLong(mNativePointer, getFeatureName(feature), value);
+    }
+
+    /**
+     * @return The name of the given feature.
+     */
+    private String getFeatureName(Feature feature) {
+        return FEATURE_NAMES.get(feature);
     }
 
     // ============================================================================================
