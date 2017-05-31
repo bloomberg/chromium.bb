@@ -101,6 +101,7 @@ class CORE_EXPORT OffscreenCanvas final
   }
 
   ScriptPromise Commit(RefPtr<StaticBitmapImage>,
+                       const SkIRect& damage_rect,
                        bool is_web_gl_software_rendering,
                        ScriptState*,
                        ExceptionState&) override;
@@ -158,7 +159,7 @@ class CORE_EXPORT OffscreenCanvas final
  private:
   explicit OffscreenCanvas(const IntSize&);
   OffscreenCanvasFrameDispatcher* GetOrCreateFrameDispatcher();
-  void DoCommit(RefPtr<StaticBitmapImage>, bool is_web_gl_software_rendering);
+  void DoCommit();
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
@@ -182,6 +183,7 @@ class CORE_EXPORT OffscreenCanvas final
   Member<ScriptPromiseResolver> commit_promise_resolver_;
   RefPtr<StaticBitmapImage> current_frame_;
   bool current_frame_is_web_gl_software_rendering_ = false;
+  SkIRect current_frame_damage_rect_;
 
   std::unique_ptr<ImageBuffer> image_buffer_;
   bool needs_matrix_clip_restore_ = false;

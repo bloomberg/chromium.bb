@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 
@@ -24,6 +25,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
   virtual ~OffscreenCanvasFrameDispatcher() {}
   virtual void DispatchFrame(RefPtr<StaticBitmapImage>,
                              double commit_start_time,
+                             const SkIRect& damage_rect,
                              bool is_web_gl_software_rendering) = 0;
   virtual void SetNeedsBeginFrame(bool) = 0;
   virtual void ReclaimResource(unsigned resource_id) = 0;

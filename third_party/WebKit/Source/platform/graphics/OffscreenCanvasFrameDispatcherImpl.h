@@ -35,6 +35,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void SetNeedsBeginFrame(bool) final;
   void DispatchFrame(RefPtr<StaticBitmapImage>,
                      double commit_start_time,
+                     const SkIRect& damage_rect,
                      bool is_web_gl_software_rendering = false) final;
   void ReclaimResource(unsigned resource_id) final;
   void Reshape(int width, int height) final;
