@@ -8,10 +8,20 @@ import("//build/toolchain/toolchain.gni")
 # Used by libc++ and libc++abi.
 config("config") {
   defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
+  if (!is_component_build && !using_sanitizer) {
+    # Don't leak any symbols on a release build.  Component builds
+    # need default symbol visibility for linking against libc++.so.
+    # Sanitizer builds need to override operator new, operator delete,
+    # and some exception handling symbols, and will complain if those
+    # symbols do not have default visibility.
+    defines += [
+      "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS",
+      "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS",
+    ]
+  }
   cflags = [
     "-fPIC",
     "-fstrict-aliasing",
-    "-pthread",
   ]
   cflags_cc = [
     "-nostdinc++",
@@ -21,7 +31,14 @@ config("config") {
   ]
 }
 
-shared_library("libc++") {
+# libc++ cannot be a component because that would add a circular
+# dependency created from depending on //build/config:exe_and_shlib_deps
+if (is_component_build) {
+  link_target_type = "shared_library"
+} else {
+  link_target_type = "source_set"
+}
+target(link_target_type, "libc++") {
   sources = [
     "trunk/src/algorithm.cpp",
     "trunk/src/any.cpp",
@@ -68,27 +85,16 @@ shared_library("libc++") {
 
   ldflags = [ "-nodefaultlibs" ]
 
-  # Remove "-pthread" from ldflags.
-  # -nodefaultlibs turns -pthread into a no-op, causing an unused argument
-  # warning. Explicitly link with -lpthread instead.
-  configs -= [ "//build/config/compiler:pthread" ]
-
-  libs = [
-    "m",
-  ]
+  libs = [ "m" ]
 
   if (!is_mac) {
     libs += [
       "c",
       "gcc_s",
-      "pthread",
       "rt",
     ]
   }
 
-  # libc++abi is linked statically into libc++.so. This allows us to get both
-  # libc++ and libc++abi by passing '-stdlib=libc++'. If libc++abi was a
-  # separate DSO, we'd have to link against it explicitly.
   deps = [
     "//buildtools/third_party/libc++abi",
   ]
@@ -115,9 +121,7 @@ group("libcxx_proxy") {
 # //build/config/sanitizers:default_sanitizer_flags sets the include paths for
 # everything else.
 config("link_helper") {
-  ldflags = [
-    "-stdlib=libc++",
-  ]
+  ldflags = [ "-nodefaultlibs" ]
 
   if (!is_mac) {
     ldflags += [
