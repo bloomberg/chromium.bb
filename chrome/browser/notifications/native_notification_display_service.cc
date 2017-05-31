@@ -171,11 +171,6 @@ void NativeNotificationDisplayService::AddNotificationHandler(
   notification_handlers_[notification_type] = std::move(handler);
 }
 
-void NativeNotificationDisplayService::RemoveNotificationHandler(
-    NotificationCommon::Type notification_type) {
-  notification_handlers_.erase(notification_type);
-}
-
 NotificationHandler* NativeNotificationDisplayService::GetNotificationHandler(
     NotificationCommon::Type notification_type) {
   DCHECK(notification_handlers_.find(notification_type) !=

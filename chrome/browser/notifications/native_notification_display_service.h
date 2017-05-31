@@ -56,10 +56,6 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   // for |notification_type|.
   void AddNotificationHandler(NotificationCommon::Type notification_type,
                               std::unique_ptr<NotificationHandler> handler);
-
-  // Removes an implementation added via |AddNotificationHandler|.
-  void RemoveNotificationHandler(NotificationCommon::Type notification_type);
-
  private:
   NotificationHandler* GetNotificationHandler(
       NotificationCommon::Type notification_type);
