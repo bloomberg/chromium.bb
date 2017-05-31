@@ -10,7 +10,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"

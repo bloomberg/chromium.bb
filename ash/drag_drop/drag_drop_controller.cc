@@ -10,7 +10,6 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"

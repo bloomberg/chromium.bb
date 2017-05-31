@@ -10,7 +10,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

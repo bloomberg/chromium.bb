@@ -7,7 +7,6 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 

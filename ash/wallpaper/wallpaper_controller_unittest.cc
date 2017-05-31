@@ -18,7 +18,6 @@
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

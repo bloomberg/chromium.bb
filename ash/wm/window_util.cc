@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -195,6 +196,13 @@ void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
 void RemoveLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
                                             aura::Window* window) {
   window->RemovePreTargetHandler(handler);
+}
+
+void InstallResizeHandleWindowTargeterForWindow(
+    aura::Window* window,
+    ImmersiveFullscreenController* immersive_fullscreen_controller) {
+  window->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
+      window, immersive_fullscreen_controller));
 }
 
 }  // namespace wm

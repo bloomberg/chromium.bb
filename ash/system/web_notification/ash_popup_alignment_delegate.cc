@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

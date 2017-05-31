@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

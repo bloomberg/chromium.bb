@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/app_list/presenter/app_list.h"

@@ -24,7 +24,6 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

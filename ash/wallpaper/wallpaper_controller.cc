@@ -327,7 +327,7 @@ bool WallpaperController::ReparentWallpaper(int container) {
         root_window_controller->wallpaper_widget_controller();
     if (wallpaper_widget_controller) {
       moved |= wallpaper_widget_controller->Reparent(
-          root_window_controller->GetWindow(), container);
+          root_window_controller->GetRootWindow(), container);
     }
     // During wallpaper show animations the controller lives in
     // AnimatingWallpaperWidgetController owned by RootWindowController.
@@ -341,7 +341,7 @@ bool WallpaperController::ReparentWallpaper(int container) {
             : nullptr;
     if (animating_controller) {
       moved |= animating_controller->Reparent(
-          root_window_controller->GetWindow(), container);
+          root_window_controller->GetRootWindow(), container);
     }
   }
   return moved;

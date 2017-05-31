@@ -25,6 +25,9 @@ class EventHandler;
 }
 
 namespace ash {
+
+class ImmersiveFullscreenController;
+
 namespace wm {
 
 // Utility functions for window activation.
@@ -98,6 +101,12 @@ ASH_EXPORT void AddLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
 ASH_EXPORT void RemoveLimitedPreTargetHandlerForWindow(
     ui::EventHandler* handler,
     aura::Window* window);
+
+// Installs a resize handler on the window that makes it easier to resize
+// the window. See ResizeHandleWindowTargeter for the specifics.
+ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
+    aura::Window* window,
+    ImmersiveFullscreenController* immersive_fullscreen_controller);
 
 }  // namespace wm
 }  // namespace ash

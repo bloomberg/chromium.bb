@@ -10,7 +10,6 @@
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

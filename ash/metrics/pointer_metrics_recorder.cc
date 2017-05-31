@@ -8,8 +8,9 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -39,9 +40,9 @@ int GetDestination(views::Widget* target) {
   if (!target)
     return static_cast<int>(AppType::OTHERS);
 
-  WmWindow* window = WmWindow::Get(target->GetNativeWindow());
+  aura::Window* window = target->GetNativeWindow();
   DCHECK(window);
-  return window->GetAppType();
+  return window->GetProperty(aura::client::kAppType);
 }
 
 void RecordUMA(ui::EventPointerType type, views::Widget* target) {

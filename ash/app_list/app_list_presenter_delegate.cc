@@ -16,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -28,6 +27,7 @@
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -36,11 +36,11 @@ namespace {
 // This calculation excludes the virtual keyboard area. If the height of the
 // display area is less than |minimum_height|, its bottom will be extended to
 // that height (so that the app list never starts above the top of the screen).
-gfx::Point GetCenterOfDisplayForWindow(WmWindow* window, int minimum_height) {
+gfx::Point GetCenterOfDisplayForWindow(aura::Window* window,
+                                       int minimum_height) {
   DCHECK(window);
-  gfx::Rect bounds =
-      ScreenUtil::GetDisplayBoundsWithShelf(window->aura_window());
-  bounds = window->GetRootWindow()->ConvertRectToScreen(bounds);
+  gfx::Rect bounds = ScreenUtil::GetDisplayBoundsWithShelf(window);
+  ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
 
   // If the virtual keyboard is active, subtract it from the display bounds, so
   // that the app list is centered in the non-keyboard area of the display.
@@ -102,7 +102,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 
   if (!app_list::features::IsFullscreenAppListEnabled()) {
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
-        WmWindow::Get(root_window), GetMinimumBoundsHeightForAppList(view)));
+        root_window, GetMinimumBoundsHeightForAppList(view)));
   }
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
@@ -146,9 +146,9 @@ void AppListPresenterDelegate::UpdateBounds() {
     return;
 
   view_->UpdateBounds();
-  view_->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
-      WmWindow::Get(view_->GetWidget()->GetNativeWindow()),
-      GetMinimumBoundsHeightForAppList(view_)));
+  view_->MaybeSetAnchorPoint(
+      GetCenterOfDisplayForWindow(view_->GetWidget()->GetNativeWindow(),
+                                  GetMinimumBoundsHeightForAppList(view_)));
 }
 
 gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(

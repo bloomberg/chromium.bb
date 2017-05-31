@@ -12,7 +12,7 @@
 namespace aura {
 namespace {
 
-client::WindowType UiWindowTypeToWmWindowType(ui::mojom::WindowType type) {
+client::WindowType UiWindowTypeToWindowType(ui::mojom::WindowType type) {
   switch (type) {
     case ui::mojom::WindowType::WINDOW:
       return client::WINDOW_TYPE_NORMAL;
@@ -40,7 +40,7 @@ client::WindowType UiWindowTypeToWmWindowType(ui::mojom::WindowType type) {
 
 void SetWindowType(Window* window, ui::mojom::WindowType window_type) {
   window->SetProperty(client::kWindowTypeKey, window_type);
-  window->SetType(UiWindowTypeToWmWindowType(window_type));
+  window->SetType(UiWindowTypeToWindowType(window_type));
 }
 
 }  // namespace aura

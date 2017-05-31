@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/audio/chromeos_sounds.h"
@@ -104,8 +103,10 @@ void AshTouchExplorationManager::HandleAccessibilityGesture(
 void AshTouchExplorationManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (root_window_controller_->GetWindow()->GetDisplayNearestWindow().id() ==
-      display.id())
+  const display::Display this_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          root_window_controller_->GetRootWindow());
+  if (this_display.id() == display.id())
     UpdateTouchExplorationState();
 }
 
@@ -190,9 +191,10 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
               touch_accessibility_enabler_.get());
     }
     if (pass_through_surface) {
-      const gfx::Rect work_area = root_window_controller_->GetWindow()
-                                      ->GetDisplayNearestWindow()
-                                      .work_area();
+      const display::Display display =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(
+              root_window_controller_->GetRootWindow());
+      const gfx::Rect work_area = display.work_area();
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
       Shell::Get()->accessibility_delegate()->ClearFocusHighlight();

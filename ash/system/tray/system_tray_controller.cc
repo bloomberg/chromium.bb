@@ -10,7 +10,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/update/tray_update.h"
-#include "ash/wm_window.h"
 
 namespace ash {
 
@@ -217,8 +216,8 @@ void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
 
 void SystemTrayController::ShowUpdateOverCellularAvailableIcon() {
   // Show the icon on all displays.
-  for (WmWindow* root : ShellPort::Get()->GetAllRootWindows()) {
-    ash::SystemTray* tray = root->GetRootWindowController()->GetSystemTray();
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+    ash::SystemTray* tray = root_window_controller->GetSystemTray();
     // External monitors might not have a tray yet.
     if (!tray)
       continue;

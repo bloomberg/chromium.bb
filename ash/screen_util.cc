@@ -8,7 +8,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"

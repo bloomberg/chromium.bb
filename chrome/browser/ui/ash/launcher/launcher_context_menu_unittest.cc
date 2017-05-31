@@ -13,7 +13,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/app/chrome_command_ids.h"

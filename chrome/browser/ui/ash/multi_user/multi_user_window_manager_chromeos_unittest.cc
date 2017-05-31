@@ -22,7 +22,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_window.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"

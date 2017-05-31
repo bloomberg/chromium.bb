@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm_window.h"
 #include "ui/app_list/presenter/app_list.h"
 
 namespace ash {

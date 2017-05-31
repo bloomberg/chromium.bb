@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
