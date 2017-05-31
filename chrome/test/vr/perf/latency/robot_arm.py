@@ -44,3 +44,7 @@ class RobotArm():
     if not self._connection:
       return
     self._connection.write('0\n')
+    # The manual usage instructions are printed over the serial connection
+    # every time we send a command - long test runs can result in the buffer
+    # filling up and causing the arm to hang, so periodically clear the buffer.
+    self._connection.flushInput()

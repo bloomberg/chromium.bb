@@ -18,11 +18,6 @@ import logging
 import os
 import sys
 
-# TODO(bsheedy): See about having versioned copies of the flicker app
-# instead of using personal github.
-DEFAULT_FLICKER_APP_URL = ('https://weableandbob.github.io/Motopho/'
-                           'flicker_apps/webvr/webvr-flicker-app-klaus.html?'
-                           'polyfill=0\&canvasClickPresents=1')
 DEFAULT_ADB_PATH = os.path.realpath('../../third_party/android_tools/sdk/'
                                     'platform-tools/adb')
 # TODO(bsheedy): See about adding tool via DEPS instead of relying on it
@@ -64,11 +59,15 @@ def GetParsedArgs():
                            'saved to')
   parser.add_argument('--num-samples',
                       default=DEFAULT_NUM_SAMPLES,
+                      type=int,
                       help='The number of times to run the test before '
                            'the results are averaged')
   parser.add_argument('--url',
-                      default=DEFAULT_FLICKER_APP_URL,
-                      help='The URL of the flicker app to use')
+                      action='append',
+                      default=[],
+                      dest='urls',
+                      help='The URL of a flicker app to use. Defaults to a '
+                           'set of URLs with various CPU and GPU loads')
   parser.add_argument('-v', '--verbose',
                       dest='verbose_count', default=0, action='count',
                       help='Verbose level (multiple times for more)')
@@ -103,7 +102,7 @@ def main():
     raise NotImplementedError('WebVR not currently supported on Windows')
   else:
     raise RuntimeError('Given platform %s not recognized' % args.platform)
-  latency_test.RunTest()
+  latency_test.RunTests()
 
 
 if __name__ == '__main__':
