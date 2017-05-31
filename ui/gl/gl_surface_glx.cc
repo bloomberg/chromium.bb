@@ -18,8 +18,8 @@ extern "C" {
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -171,7 +171,6 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 };
 
 class SGIVideoSyncThread : public base::Thread,
-                           public base::NonThreadSafe,
                            public base::RefCounted<SGIVideoSyncThread> {
  public:
   static scoped_refptr<SGIVideoSyncThread> Create() {
@@ -186,16 +185,18 @@ class SGIVideoSyncThread : public base::Thread,
   friend class base::RefCounted<SGIVideoSyncThread>;
 
   SGIVideoSyncThread() : base::Thread("SGI_video_sync") {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
 
   ~SGIVideoSyncThread() override {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     g_video_sync_thread = nullptr;
     Stop();
   }
 
   static SGIVideoSyncThread* g_video_sync_thread;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncThread);
 };
