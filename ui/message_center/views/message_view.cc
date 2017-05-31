@@ -171,6 +171,8 @@ void MessageView::OnBlur() {
 }
 
 void MessageView::Layout() {
+  views::View::Layout();
+
   gfx::Rect content_bounds = GetContentsBounds();
 
   // Background.

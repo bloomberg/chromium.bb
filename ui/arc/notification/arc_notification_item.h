@@ -77,6 +77,8 @@ class ArcNotificationItem {
   virtual const std::string& GetNotificationKey() const = 0;
   // Returns the notification ID used in the Chrome message center.
   virtual const std::string& GetNotificationId() const = 0;
+  // Returnes the accessible name of the notification.
+  virtual const base::string16& GetAccessibleName() const = 0;
 };
 
 }  // namespace arc

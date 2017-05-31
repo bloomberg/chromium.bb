@@ -18,6 +18,11 @@ MESSAGE_CENTER_EXPORT extern const char
 // This flag will be removed once the feature gets stable.
 MESSAGE_CENTER_EXPORT extern const char kMessageCenterChangesWhileOpen[];
 
+MESSAGE_CENTER_EXPORT extern const char
+    kEnableMessageCenterNewStyleNotification[];
+MESSAGE_CENTER_EXPORT extern const char
+    kDisableMessageCenterNewStyleNotification[];
+
 }  // namespace switches
 
 #endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_SWITCHES_H_

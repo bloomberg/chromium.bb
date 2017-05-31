@@ -15,6 +15,8 @@ aggregate_vector_icons("message_center_vector_icons") {
     "notification_settings_button.icon",
     "notification_close_button.1x.icon",
     "notification_close_button.icon",
+    "product.1x.icon",
+    "product.icon",
   ]
 }
 
@@ -138,6 +140,8 @@ component("message_center") {
         "views/notification_button.h",
         "views/notification_view.cc",
         "views/notification_view.h",
+        "views/notification_view_md.cc",
+        "views/notification_view_md.h",
         "views/notifier_settings_view.cc",
         "views/notifier_settings_view.h",
         "views/padded_button.cc",
