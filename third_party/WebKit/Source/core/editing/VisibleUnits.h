@@ -248,8 +248,6 @@ CORE_EXPORT VisiblePositionInFlatTree
 LogicalEndOfLine(const VisiblePositionInFlatTree&);
 CORE_EXPORT bool IsLogicalEndOfLine(const VisiblePosition&);
 CORE_EXPORT bool IsLogicalEndOfLine(const VisiblePositionInFlatTree&);
-VisiblePosition LeftBoundaryOfLine(const VisiblePosition&, TextDirection);
-VisiblePosition RightBoundaryOfLine(const VisiblePosition&, TextDirection);
 
 // paragraphs (perhaps a misnomer, can be divided by line break elements)
 // TODO(yosin) Since return value of |startOfParagraph()| with |VisiblePosition|
