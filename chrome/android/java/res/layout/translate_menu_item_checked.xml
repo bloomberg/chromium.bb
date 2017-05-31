@@ -14,6 +14,16 @@
         android:layout_width="match_parent"
         android:layout_height="?android:attr/listPreferredItemHeightSmall" >
 
+        <TextView
+            android:id="@+id/menu_item_text"
+            android:textAppearance="?android:attr/textAppearanceLargePopupMenu"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="start"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:paddingEnd="16dp" />
         <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/menu_item_icon"
             android:src="@drawable/ic_check_googblue_24dp"
@@ -22,15 +32,6 @@
             android:layout_gravity="end"
             android:gravity="center_vertical"
             chrome:chrometint="@color/dark_mode_tint" />
-        <TextView
-            android:id="@+id/menu_item_text"
-            android:textAppearance="?android:attr/textAppearanceLargePopupMenu"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:paddingStart="16dp" />
 
     </LinearLayout>
 
