@@ -292,7 +292,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     fetch_context->ModifyRequestForCSP(resource_request);
 
     EXPECT_EQ(expected_required_csp,
-              resource_request.HttpHeaderField(HTTPNames::Required_CSP));
+              resource_request.HttpHeaderField(HTTPNames::Sec_Required_CSP));
   }
 
   void SetFrameOwnerBasedOnFrameType(WebURLRequest::FrameType frame_type,
