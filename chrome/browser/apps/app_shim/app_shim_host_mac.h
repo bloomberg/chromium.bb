@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -28,8 +28,7 @@ class Message;
 // connected to the app shim is closed.
 class AppShimHost : public IPC::Listener,
                     public IPC::Sender,
-                    public apps::AppShimHandler::Host,
-                    public base::NonThreadSafe {
+                    public apps::AppShimHandler::Host {
  public:
   AppShimHost();
   ~AppShimHost() override;
@@ -83,6 +82,8 @@ class AppShimHost : public IPC::Listener,
   std::string app_id_;
   base::FilePath profile_path_;
   bool initial_launch_finished_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 #endif  // CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MAC_H_
