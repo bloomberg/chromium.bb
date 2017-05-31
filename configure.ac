@@ -301,6 +301,14 @@ AC_DEFINE_UNQUOTED(USE_ICONV,$use_iconv,[Use iconv.])
 PKG_CHECK_MODULES(FREETYPE, freetype2)
 PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES freetype2"
 
+AC_SUBST(FREETYPE_LIBS)
+AC_SUBST(FREETYPE_CFLAGS)
+
+fontconfig_save_libs="$LIBS"
+fontconfig_save_cflags="$CFLAGS"
+LIBS="$LIBS $FREETYPE_LIBS"
+CFLAGS="$CFLAGS $FREETYPE_CFLAGS"
+
 dnl See http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/docs/VERSIONS.TXT for versioning in freetype
 dnl
 dnl The outcome of the family property has been changed in freetype-2.7.1.
@@ -319,13 +327,6 @@ PKG_CHECK_EXISTS([freetype2 >= 20.0.14],
 	[have_pcf_long_family_names=no])
 AM_CONDITIONAL(FREETYPE_PCF_LONG_FAMILY_NAMES, test "x$have_freetype_2_7_1" = xyes -o "x$have_pcf_long_family_names" = xyes)
 
-AC_SUBST(FREETYPE_LIBS)
-AC_SUBST(FREETYPE_CFLAGS)
-
-fontconfig_save_libs="$LIBS"
-fontconfig_save_cflags="$CFLAGS"
-LIBS="$LIBS $FREETYPE_LIBS"
-CFLAGS="$CFLAGS $FREETYPE_CFLAGS"
 AC_CHECK_FUNCS(FT_Get_Next_Char FT_Get_BDF_Property FT_Get_PS_Font_Info FT_Has_PS_Glyph_Names FT_Get_X11_Font_Format FT_Select_Size)
 AC_CHECK_MEMBER(FT_Bitmap_Size.y_ppem,
 		HAVE_FT_BITMAP_SIZE_Y_PPEM=1,
@@ -338,6 +339,7 @@ AC_CHECK_MEMBERS([TT_OS2.usLowerOpticalPointSize, TT_OS2.usUpperOpticalPointSize
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TRUETYPE_TABLES_H]])
+
 CFLAGS="$fontconfig_save_cflags"
 LIBS="$fontconfig_save_libs"
 
