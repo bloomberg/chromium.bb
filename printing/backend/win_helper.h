@@ -141,6 +141,8 @@ class PRINTING_EXPORT ScopedXPSInitializer {
 
  private:
   bool initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedXPSInitializer);
 };
 
 // Wrapper class to wrap the XPS Print APIs (these are different from the PTxxx
