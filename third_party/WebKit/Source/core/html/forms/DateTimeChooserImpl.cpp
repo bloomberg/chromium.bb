@@ -125,10 +125,10 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
-  data->Append(Platform::Current()->LoadResource("pickerButton.css"));
-  data->Append(Platform::Current()->LoadResource("suggestionPicker.css"));
-  data->Append(Platform::Current()->LoadResource("calendarPicker.css"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
+  data->Append(Platform::Current()->GetDataResource("pickerButton.css"));
+  data->Append(Platform::Current()->GetDataResource("suggestionPicker.css"));
+  data->Append(Platform::Current()->GetDataResource("calendarPicker.css"));
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
@@ -208,9 +208,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
   AddString("}\n", data);
 
-  data->Append(Platform::Current()->LoadResource("pickerCommon.js"));
-  data->Append(Platform::Current()->LoadResource("suggestionPicker.js"));
-  data->Append(Platform::Current()->LoadResource("calendarPicker.js"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
+  data->Append(Platform::Current()->GetDataResource("suggestionPicker.js"));
+  data->Append(Platform::Current()->GetDataResource("calendarPicker.js"));
   AddString("</script></body>\n", data);
 }
 

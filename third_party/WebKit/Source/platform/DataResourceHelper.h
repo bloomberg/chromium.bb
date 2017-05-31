@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformResourceLoader_h
-#define PlatformResourceLoader_h
+#ifndef DataResourceHelper_h
+#define DataResourceHelper_h
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-PLATFORM_EXPORT String LoadResourceAsASCIIString(const char* resource);
+PLATFORM_EXPORT String GetDataResourceAsASCIIString(const char* resource);
 
 }  // namespace blink
 
-#endif  // PlatformResourceLoader_h
+#endif  // DataResourceHelper_h

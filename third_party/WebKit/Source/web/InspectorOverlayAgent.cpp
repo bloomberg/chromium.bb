@@ -835,7 +835,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
   const WebData& overlay_page_html_resource =
-      Platform::Current()->LoadResource("InspectorOverlayPage.html");
+      Platform::Current()->GetDataResource("InspectorOverlayPage.html");
   loader.Load(
       FrameLoadRequest(0, ResourceRequest(BlankURL()),
                        SubstituteData(overlay_page_html_resource, "text/html",

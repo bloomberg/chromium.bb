@@ -218,7 +218,7 @@ void PpapiBlinkPlatformImpl::GetPluginList(
   NOTREACHED();
 }
 
-blink::WebData PpapiBlinkPlatformImpl::LoadResource(const char* name) {
+blink::WebData PpapiBlinkPlatformImpl::GetDataResource(const char* name) {
   NOTREACHED();
   return blink::WebData();
 }

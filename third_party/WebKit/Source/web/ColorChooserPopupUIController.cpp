@@ -93,8 +93,9 @@ void ColorChooserPopupUIController::WriteDocument(SharedBuffer* data) {
 
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
-  data->Append(Platform::Current()->LoadResource("colorSuggestionPicker.css"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
+  data->Append(
+      Platform::Current()->GetDataResource("colorSuggestionPicker.css"));
   PagePopupClient::AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
@@ -106,8 +107,9 @@ void ColorChooserPopupUIController::WriteDocument(SharedBuffer* data) {
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
   AddProperty("zoomFactor", ZoomFactor(), data);
   PagePopupClient::AddString("};\n", data);
-  data->Append(Platform::Current()->LoadResource("pickerCommon.js"));
-  data->Append(Platform::Current()->LoadResource("colorSuggestionPicker.js"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
+  data->Append(
+      Platform::Current()->GetDataResource("colorSuggestionPicker.js"));
   PagePopupClient::AddString("</script></body>\n", data);
 }
 

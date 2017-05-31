@@ -740,14 +740,14 @@ void AudioBus::ClearSilentFlag() {
 
 PassRefPtr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
   WebAudioBus web_audio_bus;
-  if (Platform::Current()->LoadAudioResource(&web_audio_bus, data, size))
+  if (Platform::Current()->DecodeAudioFileData(&web_audio_bus, data, size))
     return web_audio_bus.Release();
   return nullptr;
 }
 
-PassRefPtr<AudioBus> AudioBus::LoadPlatformResource(const char* name,
-                                                    float sample_rate) {
-  const WebData& resource = Platform::Current()->LoadResource(name);
+PassRefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
+                                               float sample_rate) {
+  const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return nullptr;
 

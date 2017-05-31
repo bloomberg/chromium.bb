@@ -65,7 +65,7 @@ Image* Image::NullImage() {
 }
 
 PassRefPtr<Image> Image::LoadPlatformResource(const char* name) {
-  const WebData& resource = Platform::Current()->LoadResource(name);
+  const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return Image::NullImage();
 

@@ -267,8 +267,8 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
   float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->LoadResource("pickerCommon.css"));
-  data->Append(Platform::Current()->LoadResource("listPicker.css"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
+  data->Append(Platform::Current()->GetDataResource("listPicker.css"));
   if (!RuntimeEnabledFeatures::forceTallerSelectPopupEnabled())
     PagePopupClient::AddString("@media (any-pointer:coarse) {", data);
   int padding = static_cast<int>(roundf(4 * scale_factor));
@@ -323,8 +323,8 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
                      : owner_element.ClientPaddingLeft().ToDouble(),
               data);
   PagePopupClient::AddString("};\n", data);
-  data->Append(Platform::Current()->LoadResource("pickerCommon.js"));
-  data->Append(Platform::Current()->LoadResource("listPicker.js"));
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
+  data->Append(Platform::Current()->GetDataResource("listPicker.js"));
   PagePopupClient::AddString("</script></body>\n", data);
 }
 

@@ -9,15 +9,16 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/PlatformResourceLoader.h"
+#include "platform/DataResourceHelper.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 
 void TransformDocumentToXMLTreeView(Document& document) {
-  String script_string = LoadResourceAsASCIIString("DocumentXMLTreeViewer.js");
-  String css_string = LoadResourceAsASCIIString("DocumentXMLTreeViewer.css");
+  String script_string =
+      GetDataResourceAsASCIIString("DocumentXMLTreeViewer.js");
+  String css_string = GetDataResourceAsASCIIString("DocumentXMLTreeViewer.css");
 
   HeapVector<ScriptSourceCode> sources;
   sources.push_back(ScriptSourceCode(script_string));

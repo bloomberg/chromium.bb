@@ -169,8 +169,8 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   // Makes maximum absolute value == 1.0 (if possible).
   void Normalize();
 
-  static PassRefPtr<AudioBus> LoadPlatformResource(const char* name,
-                                                   float sample_rate);
+  static PassRefPtr<AudioBus> GetDataResource(const char* name,
+                                              float sample_rate);
 
  protected:
   AudioBus() {}

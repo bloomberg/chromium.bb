@@ -194,8 +194,8 @@ std::unique_ptr<WebURLLoader> TestingPlatformSupport::CreateURLLoader() {
   return old_platform_ ? old_platform_->CreateURLLoader() : nullptr;
 }
 
-WebData TestingPlatformSupport::LoadResource(const char* name) {
-  return old_platform_ ? old_platform_->LoadResource(name) : WebData();
+WebData TestingPlatformSupport::GetDataResource(const char* name) {
+  return old_platform_ ? old_platform_->GetDataResource(name) : WebData();
 }
 
 WebURLError TestingPlatformSupport::CancelledError(const WebURL& url) const {

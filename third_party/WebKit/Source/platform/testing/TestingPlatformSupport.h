@@ -113,7 +113,7 @@ class TestingPlatformSupport : public Platform {
   WebIDBFactory* IdbFactory() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override;
-  WebData LoadResource(const char* name) override;
+  WebData GetDataResource(const char* name) override;
   WebURLError CancelledError(const WebURL&) const override;
   InterfaceProvider* GetInterfaceProvider() override;
 

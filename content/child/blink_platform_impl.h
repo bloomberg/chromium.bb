@@ -84,7 +84,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebThread* CurrentThread() override;
   void RecordAction(const blink::UserMetricsAction&) override;
 
-  blink::WebData LoadResource(const char* name) override;
+  blink::WebData GetDataResource(const char* name) override;
   blink::WebString QueryLocalizedString(
       blink::WebLocalizedString::Name name) override;
   virtual blink::WebString queryLocalizedString(
