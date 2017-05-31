@@ -1247,11 +1247,8 @@ public class LocationBarLayout extends FrameLayout
         mUrlFocusChangeListener = listener;
     }
 
-    /**
-     * @return The toolbar data provider.
-     */
-    @VisibleForTesting
-    protected ToolbarDataProvider getToolbarDataProvider() {
+    @Override
+    public ToolbarDataProvider getToolbarDataProvider() {
         return mToolbarDataProvider;
     }
 
