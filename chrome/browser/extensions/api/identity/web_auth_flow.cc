@@ -36,6 +36,7 @@
 #include "extensions/browser/extension_system.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::RenderViewHost;
 using content::ResourceRedirectDetails;
@@ -207,10 +208,30 @@ void WebAuthFlow::DidFinishNavigation(
   bool failed = false;
 
   if (navigation_handle->GetNetErrorCode() != net::OK) {
-    failed = true;
-    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "WebAuthFlow", this,
-                                 "DidFinishNavigationFailure", "error_code",
-                                 navigation_handle->GetNetErrorCode());
+    if (navigation_handle->GetURL().spec() == url::kAboutBlankURL) {
+      // As part of the OAUth 2.0 protocol with GAIA, at the end of the web
+      // authorization flow, GAIA redirects to a custom scheme URL of type
+      // |com.googleusercontent.apps.123:/<extension_id>|, where
+      // |com.googleusercontent.apps.123| is the reverse DNS notation of the
+      // client ID of the extension that started the web sign-in flow. (The
+      // intent of this weird URL scheme was to make sure it couldn't be loaded
+      // anywhere at all as this makes it much harder to pull off a cross-site
+      // attack that could leak the returned oauth token to a malicious script
+      // or site.)
+      //
+      // This URL is not an accessible URL from within a Guest WebView, so
+      // during its load of this URL, Chrome changes it to |about:blank| and
+      // then the Identity Scope Approval Dialog extension fails to load it.
+      // Failing to load |about:blank| must not be treated as a failure of
+      // the web auth flow.
+      DCHECK_EQ(net::ERR_UNKNOWN_URL_SCHEME,
+                navigation_handle->GetNetErrorCode());
+    } else {
+      failed = true;
+      TRACE_EVENT_ASYNC_STEP_PAST1("identity", "WebAuthFlow", this,
+                                   "DidFinishNavigationFailure", "error_code",
+                                   navigation_handle->GetNetErrorCode());
+    }
   } else if (navigation_handle->IsInMainFrame() &&
              navigation_handle->GetResponseHeaders() &&
              navigation_handle->GetResponseHeaders()->response_code() >= 400) {
