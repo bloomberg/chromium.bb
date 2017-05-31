@@ -155,12 +155,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
   auto* line_box_fragments_wrapper =
       ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].Get());
-  Vector<NGPhysicalTextFragment*> text_fragments;
+  Vector<NGPhysicalLineBoxFragment*> line_boxes;
   for (const auto& child : line_box_fragments_wrapper->Children()) {
-    auto* line_box = ToNGPhysicalLineBoxFragment(child.Get());
-    EXPECT_EQ(1u, line_box->Children().size());
-    for (const auto& text : line_box->Children())
-      text_fragments.push_back(ToNGPhysicalTextFragment(text.Get()));
+    line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.Get()));
   }
 
   LayoutText* layout_text =
@@ -170,22 +167,22 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   // Line break points may vary by minor differences in fonts.
   // The test is valid as long as we have 3 or more lines and their positions
   // are correct.
-  EXPECT_GE(text_fragments.size(), 3UL);
+  EXPECT_GE(line_boxes.size(), 3UL);
 
-  auto* text_fragment1 = text_fragments[0];
+  auto* line_box1 = line_boxes[0];
   // 40 = #left-float1' width 30 + #left-float2 10
-  EXPECT_EQ(LayoutUnit(40), text_fragment1->Offset().left);
+  EXPECT_EQ(LayoutUnit(40), line_box1->Offset().left);
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   EXPECT_EQ(LayoutUnit(40), inline_text_box1->X());
 
-  auto* text_fragment2 = text_fragments[1];
+  auto* line_box2 = line_boxes[1];
   // 40 = #left-float1' width 30
-  EXPECT_EQ(LayoutUnit(30), text_fragment2->Offset().left);
+  EXPECT_EQ(LayoutUnit(30), line_box2->Offset().left);
   InlineTextBox* inline_text_box2 = inline_text_box1->NextTextBox();
   EXPECT_EQ(LayoutUnit(30), inline_text_box2->X());
 
-  auto* text_fragment3 = text_fragments[2];
-  EXPECT_EQ(LayoutUnit(), text_fragment3->Offset().left);
+  auto* line_box3 = line_boxes[2];
+  EXPECT_EQ(LayoutUnit(), line_box3->Offset().left);
   InlineTextBox* inline_text_box3 = inline_text_box2->NextTextBox();
   EXPECT_EQ(LayoutUnit(), inline_text_box3->X());
 }

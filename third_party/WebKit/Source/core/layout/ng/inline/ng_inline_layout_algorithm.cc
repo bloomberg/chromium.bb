@@ -232,8 +232,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   // Place items from line-left to line-right along with the baseline.
   // Items are already bidi-reordered to the visual order.
-  LayoutUnit line_left_position = LogicalLeftOffset();
-  LayoutUnit position = line_left_position;
+  LayoutUnit position;
 
   for (auto& item_result : *line_items) {
     const NGInlineItem& item = items[item_result.item_index];
@@ -327,19 +326,14 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
 
-  DCHECK_EQ(line_left_position, LogicalLeftOffset());
-  LayoutUnit inline_size = position - line_left_position;
+  LayoutUnit inline_size = position;
+  NGLogicalOffset offset(LogicalLeftOffset(),
+                         baseline - box_states_.LineBoxState().metrics.ascent);
+  ApplyTextAlign(&offset.inline_offset, inline_size,
+                 current_opportunity_.size.inline_size);
+
   line_box.SetInlineSize(inline_size);
-
-  // Account for text align property.
-  if (Node()->Style().GetTextAlign() == ETextAlign::kRight) {
-    line_box.MoveChildrenInInlineDirection(
-        current_opportunity_.size.inline_size - inline_size);
-  }
-
-  container_builder_.AddChild(
-      line_box.ToLineBoxFragment(),
-      {LayoutUnit(), baseline - box_states_.LineBoxState().metrics.ascent});
+  container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
 
   max_inline_size_ = std::max(max_inline_size_, inline_size);
   content_size_ = line_bottom;
@@ -395,6 +389,29 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
 
   return box_states_.OnCloseTag(item, line_box, box, baseline_type_,
                                 LayoutUnit(0));
+}
+
+void NGInlineLayoutAlgorithm::ApplyTextAlign(LayoutUnit* line_left,
+                                             LayoutUnit inline_size,
+                                             LayoutUnit available_width) {
+  // TODO(kojii): Implement text-align-last.
+  ETextAlign text_align = LineStyle().GetTextAlign();
+  switch (text_align) {
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+      // Wide lines spill out of the block based off direction.
+      // So even if text-align is right, if direction is LTR, wide lines should
+      // overflow out of the right side of the block.
+      // TODO(kojii): Investigate how to handle trailing spaces.
+      if (inline_size < available_width ||
+          !LineStyle().IsLeftToRightDirection())
+        *line_left += available_width - inline_size;
+      break;
+    default:
+      // TODO(layout-dev): Implement.
+      // Refer to LayoutBlockFlow::UpdateLogicalWidthForAlignment().
+      break;
+  }
 }
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
