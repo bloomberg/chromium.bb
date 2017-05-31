@@ -7,10 +7,12 @@ package org.chromium.net;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.RequiresMinApi;
 
 /**
  * Simple test for Brotli support.
  */
+@RequiresMinApi(5) // Brotli support added in API version 5: crrev.com/465216
 public class BrotliTest extends CronetTestBase {
     private CronetEngine mCronetEngine;
 
