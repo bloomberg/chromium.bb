@@ -258,50 +258,6 @@ TEST_F(CoreTest, InvalidArguments) {
   }
 }
 
-// These test invalid arguments that should cause death if we're being paranoid
-// about checking arguments (which we would want to do if, e.g., we were in a
-// true "kernel" situation, but we might not want to do otherwise for
-// performance reasons). Probably blatant errors like passing in null pointers
-// (for required pointer arguments) will still cause death, but perhaps not
-// predictably.
-TEST_F(CoreTest, InvalidArgumentsDeath) {
-#if defined(OFFICIAL_BUILD)
-  const char kMemoryCheckFailedRegex[] = "";
-#else
-  const char kMemoryCheckFailedRegex[] = "Check failed";
-#endif
-
-  // |CreateMessagePipe()|:
-  {
-    MojoHandle h;
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(nullptr, nullptr, nullptr),
-        kMemoryCheckFailedRegex);
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(nullptr, &h, nullptr),
-        kMemoryCheckFailedRegex);
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(nullptr, nullptr, &h),
-        kMemoryCheckFailedRegex);
-  }
-
-  // |ReadMessage()|:
-  // Only check arguments checked by |Core|, namely |handle|, |handles|, and
-  // |num_handles|.
-  {
-    MockHandleInfo info;
-    MojoHandle h = CreateMockHandle(&info);
-
-    uint32_t handle_count = 1;
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->ReadMessage(h, nullptr, nullptr, nullptr, &handle_count,
-                            MOJO_READ_MESSAGE_FLAG_NONE),
-        kMemoryCheckFailedRegex);
-
-    ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
-  }
-}
-
 TEST_F(CoreTest, MessagePipe) {
   MojoHandle h[2];
   MojoHandleSignalsState hss[2];
