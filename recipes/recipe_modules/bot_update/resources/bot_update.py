@@ -858,10 +858,9 @@ def parse_revisions(revisions, root):
       parsed_root = urlparse.urlparse(current_root)
       if parsed_root.scheme in ['http', 'https']:
         # We want to normalize git urls into .git urls.
-        normalized_root = 'https://%s/%s' % (parsed_root.netloc,
-                                             parsed_root.path)
+        normalized_root = 'https://' + parsed_root.netloc + parsed_root.path
         if not normalized_root.endswith('.git'):
-          normalized_root = '%s.git' % normalized_root
+          normalized_root += '.git'
       elif parsed_root.scheme:
         print 'WARNING: Unrecognized scheme %s, ignoring' % parsed_root.scheme
         continue
