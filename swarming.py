@@ -835,7 +835,7 @@ def add_filter_options(parser):
 def add_sharding_options(parser):
   parser.sharding_group = optparse.OptionGroup(parser, 'Sharding options')
   parser.sharding_group.add_option(
-      '--shards', type='int', default=1,
+      '--shards', type='int', default=1, metavar='NUMBER',
       help='Number of shards to trigger and collect.')
   parser.add_option_group(parser.sharding_group)
 
@@ -847,7 +847,7 @@ def add_trigger_options(parser):
 
   group = optparse.OptionGroup(parser, 'Task properties')
   group.add_option(
-      '-s', '--isolated',
+      '-s', '--isolated', metavar='HASH',
       help='Hash of the .isolated to grab from the isolate server')
   group.add_option(
       '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
@@ -857,25 +857,26 @@ def add_trigger_options(parser):
       help='When set, the server will actively try to find a previous task '
            'with the same parameter and return this result instead if possible')
   group.add_option(
-      '--secret-bytes-path',
+      '--secret-bytes-path', metavar='FILE',
       help='The optional path to a file containing the secret_bytes to use with'
            'this task.')
   group.add_option(
-      '--hard-timeout', type='int', default=60*60,
+      '--hard-timeout', type='int', default=60*60, metavar='SECS',
       help='Seconds to allow the task to complete.')
   group.add_option(
-      '--io-timeout', type='int', default=20*60,
+      '--io-timeout', type='int', default=20*60, metavar='SECS',
       help='Seconds to allow the task to be silent.')
   group.add_option(
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
            'In this case, the .isolated file is expected to not have a command')
   group.add_option(
-      '--cipd-package', action='append', default=[],
-      help='CIPD packages to install on the Swarming bot.  Uses the format: '
+      '--cipd-package', action='append', default=[], metavar='PKG',
+      help='CIPD packages to install on the Swarming bot. Uses the format: '
            'path:package_name:version')
   group.add_option(
       '--named-cache', action='append', nargs=2, default=[],
+      metavar='NAME RELPATH',
       help='"<name> <relpath>" items to keep a persistent bot managed cache')
   group.add_option(
       '--service-account',
@@ -884,10 +885,10 @@ def add_trigger_options(parser):
            'account). Don\'t use task service accounts if not given '
            '(default).')
   group.add_option(
-      '-o', '--output', action='append', default=[],
-      help='A list of files to return in addition to those written to'
-           '$(ISOLATED_OUTDIR). An error will occur if a file specified by'
-           'this option is also written directly to $(ISOLATED_OUTDIR).')
+      '-o', '--output', action='append', default=[], metavar='PATH',
+      help='A list of files to return in addition to those written to '
+           '${ISOLATED_OUTDIR}. An error will occur if a file specified by'
+           'this option is also written directly to ${ISOLATED_OUTDIR}.')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Task request')
@@ -895,20 +896,20 @@ def add_trigger_options(parser):
       '--priority', type='int', default=100,
       help='The lower value, the more important the task is')
   group.add_option(
-      '-T', '--task-name',
+      '-T', '--task-name', metavar='NAME',
       help='Display name of the task. Defaults to '
            '<base_name>/<dimensions>/<isolated hash>/<timestamp> if an '
            'isolated file is provided, if a hash is provided, it defaults to '
            '<user>/<dimensions>/<isolated hash>/<timestamp>')
   group.add_option(
-      '--tags', action='append', default=[],
+      '--tags', action='append', default=[], metavar='FOO:BAR',
       help='Tags to assign to the task.')
   group.add_option(
       '--user', default='',
       help='User associated with the task. Defaults to authenticated user on '
            'the server.')
   group.add_option(
-      '--expiration', type='int', default=6*60*60,
+      '--expiration', type='int', default=6*60*60, metavar='SECS',
       help='Seconds to allow the task to be pending for a bot to run before '
            'this task request expires.')
   group.add_option(
