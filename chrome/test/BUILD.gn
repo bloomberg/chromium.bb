@@ -3303,6 +3303,7 @@ test("unit_tests") {
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/enumerate_modules_model_unittest.cc",
     "../browser/win/jumplist_file_util_unittest.cc",
+    "../browser/win/jumplist_update_util_unittest.cc",
     "../browser/win/taskbar_icon_finder_unittest.cc",
     "../common/chrome_constants_win_unittest.cc",
     "../common/chrome_content_client_unittest.cc",
