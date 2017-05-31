@@ -64,6 +64,7 @@ class ToolbarActionView : public views::MenuButton,
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
+  bool ShouldUseFloodFillInkDrop() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   // ToolbarActionViewDelegateViews:
