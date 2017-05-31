@@ -39,6 +39,7 @@
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/WebFeature.h"
 
 namespace blink {
 
@@ -2163,7 +2164,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 } // namespace TestInterfaceImplementationV8Internal
 
 void V8TestInterface::testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestInterface_TestInterfaceAttribute_AttributeGetter);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeGetter);
 
   TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
@@ -2171,7 +2172,7 @@ void V8TestInterface::testInterfaceAttributeAttributeGetterCallback(const v8::Fu
 void V8TestInterface::testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestInterface_TestInterfaceAttribute_AttributeSetter);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeSetter);
 
   TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
 }

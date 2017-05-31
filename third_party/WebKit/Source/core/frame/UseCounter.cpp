@@ -1114,39 +1114,40 @@ void UseCounter::UnmuteForInspector() {
   mute_count_--;
 }
 
-void UseCounter::RecordMeasurement(Feature feature) {
+void UseCounter::RecordMeasurement(WebFeature feature) {
   if (mute_count_)
     return;
 
   // PageDestruction is reserved as a scaling factor.
-  DCHECK_NE(kOBSOLETE_PageDestruction, feature);
-  DCHECK_NE(kPageVisits, feature);
-  DCHECK_GE(kNumberOfFeatures, feature);
+  DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
+  DCHECK_NE(WebFeature::kPageVisits, feature);
+  DCHECK_GE(WebFeature::kNumberOfFeatures, feature);
 
-  if (!features_recorded_.QuickGet(feature)) {
+  int feature_id = static_cast<int>(feature);
+  if (!features_recorded_.QuickGet(feature_id)) {
     // Note that HTTPArchive tooling looks specifically for this event - see
     // https://github.com/HTTPArchive/httparchive/issues/59
     if (context_ != kDisabledContext) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                   "FeatureFirstUsed", "feature", feature);
-      FeaturesHistogram().Count(feature);
+                   "FeatureFirstUsed", "feature", feature_id);
+      FeaturesHistogram().Count(feature_id);
       NotifyFeatureCounted(feature);
     }
-    features_recorded_.QuickSet(feature);
+    features_recorded_.QuickSet(feature_id);
   }
   legacy_counter_.CountFeature(feature);
 }
 
-bool UseCounter::HasRecordedMeasurement(Feature feature) const {
+bool UseCounter::HasRecordedMeasurement(WebFeature feature) const {
   if (mute_count_)
     return false;
 
   // PageDestruction is reserved as a scaling factor.
-  DCHECK_NE(kOBSOLETE_PageDestruction, feature);
-  DCHECK_NE(kPageVisits, feature);
-  DCHECK_GE(kNumberOfFeatures, feature);
+  DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
+  DCHECK_NE(WebFeature::kPageVisits, feature);
+  DCHECK_GE(WebFeature::kNumberOfFeatures, feature);
 
-  return features_recorded_.QuickGet(feature);
+  return features_recorded_.QuickGet(static_cast<int>(feature));
 }
 
 DEFINE_TRACE(UseCounter) {
@@ -1181,7 +1182,7 @@ void UseCounter::DidCommitLoad(KURL url) {
   }
 }
 
-void UseCounter::Count(const LocalFrame* frame, Feature feature) {
+void UseCounter::Count(const LocalFrame* frame, WebFeature feature) {
   if (!frame)
     return;
   Page* page = frame->GetPage();
@@ -1191,7 +1192,7 @@ void UseCounter::Count(const LocalFrame* frame, Feature feature) {
   page->GetUseCounter().Count(feature, frame);
 }
 
-void UseCounter::Count(const Document& document, Feature feature) {
+void UseCounter::Count(const Document& document, WebFeature feature) {
   Count(document.GetFrame(), feature);
 }
 
@@ -1222,15 +1223,17 @@ bool UseCounter::IsCounted(Document& document, const String& string) {
   return page->GetUseCounter().IsCounted(unresolved_property);
 }
 
-void UseCounter::Count(ExecutionContext* context, Feature feature) {
+void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
   if (!context)
     return;
   if (context->IsDocument()) {
     Count(*ToDocument(context), feature);
     return;
   }
-  if (context->IsWorkerOrWorkletGlobalScope())
-    ToWorkerOrWorkletGlobalScope(context)->CountFeature(feature);
+  if (context->IsWorkerOrWorkletGlobalScope()) {
+    ToWorkerOrWorkletGlobalScope(context)->CountFeature(
+        static_cast<Feature>(feature));
+  }
 }
 
 void UseCounter::CountCrossOriginIframe(const Document& document,
@@ -1260,7 +1263,7 @@ void UseCounter::Count(CSSParserMode css_parser_mode, CSSPropertyID property) {
   legacy_counter_.CountCSS(property);
 }
 
-void UseCounter::Count(Feature feature, const LocalFrame* source_frame) {
+void UseCounter::Count(WebFeature feature, const LocalFrame* source_frame) {
   // TODO(rbyers): Report UseCounter to browser process along with page
   // load metrics for sourceFrame  crbug.com/716565
   RecordMeasurement(feature);
@@ -1308,7 +1311,7 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property) {
   }
 }
 
-void UseCounter::NotifyFeatureCounted(Feature feature) {
+void UseCounter::NotifyFeatureCounted(WebFeature feature) {
   DCHECK(!mute_count_);
   DCHECK_NE(kDisabledContext, context_);
   HeapHashSet<Member<Observer>> to_be_removed;
@@ -1395,8 +1398,8 @@ UseCounter::LegacyCounter::~LegacyCounter() {
   UpdateMeasurements();
 }
 
-void UseCounter::LegacyCounter::CountFeature(Feature feature) {
-  feature_bits_.QuickSet(feature);
+void UseCounter::LegacyCounter::CountFeature(WebFeature feature) {
+  feature_bits_.QuickSet(static_cast<int>(feature));
 }
 
 void UseCounter::LegacyCounter::CountCSS(CSSPropertyID property) {

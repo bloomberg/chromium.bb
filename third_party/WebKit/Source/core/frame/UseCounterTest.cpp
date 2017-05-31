@@ -153,16 +153,14 @@ void HistogramBasicTest(const std::string& histogram,
 
 TEST(UseCounterTest, RecordingFeatures) {
   UseCounter use_counter;
-  HistogramBasicTest<UseCounter::Feature>(
-      kFeaturesHistogramName, kLegacyFeaturesHistogramName, UseCounter::kFetch,
-      UseCounter::kFetchBodyStream,
-      [&](UseCounter::Feature feature) -> bool {
+  HistogramBasicTest<WebFeature>(
+      kFeaturesHistogramName, kLegacyFeaturesHistogramName, WebFeature::kFetch,
+      WebFeature::kFetchBodyStream,
+      [&](WebFeature feature) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
-      [&](UseCounter::Feature feature) {
-        use_counter.RecordMeasurement(feature);
-      },
-      [](UseCounter::Feature feature) -> int { return feature; },
+      [&](WebFeature feature) { use_counter.RecordMeasurement(feature); },
+      [](WebFeature feature) -> int { return static_cast<int>(feature); },
       [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kHttpsUrl);
 }
 
@@ -199,32 +197,28 @@ TEST(UseCounterTest, RecordingAnimatedCSSProperties) {
 
 TEST(UseCounterTest, RecordingExtensions) {
   UseCounter use_counter(UseCounter::kExtensionContext);
-  HistogramBasicTest<UseCounter::Feature>(
+  HistogramBasicTest<WebFeature>(
       kExtensionFeaturesHistogramName, kLegacyFeaturesHistogramName,
-      UseCounter::kFetch, UseCounter::kFetchBodyStream,
-      [&](UseCounter::Feature feature) -> bool {
+      WebFeature::kFetch, WebFeature::kFetchBodyStream,
+      [&](WebFeature feature) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
-      [&](UseCounter::Feature feature) {
-        use_counter.RecordMeasurement(feature);
-      },
-      [](UseCounter::Feature feature) -> int { return feature; },
+      [&](WebFeature feature) { use_counter.RecordMeasurement(feature); },
+      [](WebFeature feature) -> int { return static_cast<int>(feature); },
       [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kExtensionUrl);
 }
 
 TEST(UseCounterTest, SVGImageContextFeatures) {
   UseCounter use_counter(UseCounter::kSVGImageContext);
-  HistogramBasicTest<UseCounter::Feature>(
+  HistogramBasicTest<WebFeature>(
       kSVGFeaturesHistogramName, kLegacyFeaturesHistogramName,
-      UseCounter::kSVGSMILAdditiveAnimation,
-      UseCounter::kSVGSMILAnimationElementTiming,
-      [&](UseCounter::Feature feature) -> bool {
+      WebFeature::kSVGSMILAdditiveAnimation,
+      WebFeature::kSVGSMILAnimationElementTiming,
+      [&](WebFeature feature) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
-      [&](UseCounter::Feature feature) {
-        use_counter.RecordMeasurement(feature);
-      },
-      [](UseCounter::Feature feature) -> int { return feature; },
+      [&](WebFeature feature) { use_counter.RecordMeasurement(feature); },
+      [](WebFeature feature) -> int { return static_cast<int>(feature); },
       [&](KURL kurl) { use_counter.DidCommitLoad(kurl); }, kSvgUrl);
 }
 

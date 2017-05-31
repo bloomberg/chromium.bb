@@ -39,9 +39,22 @@ class CORE_EXPORT Deprecation {
   //
   // For shared workers and service workers, the ExecutionContext* overload
   // doesn't count the usage but only sends a console warning.
+  // TODO(lunalu): Deprecate UseCounter::Feature by WebFeature
   static void CountDeprecation(const LocalFrame*, UseCounter::Feature);
   static void CountDeprecation(ExecutionContext*, UseCounter::Feature);
   static void CountDeprecation(const Document&, UseCounter::Feature);
+  static void CountDeprecation(const LocalFrame* frame, WebFeature feature) {
+    return CountDeprecation(frame, static_cast<UseCounter::Feature>(feature));
+  }
+  static void CountDeprecation(ExecutionContext* exec_context,
+                               WebFeature feature) {
+    return CountDeprecation(exec_context,
+                            static_cast<UseCounter::Feature>(feature));
+  }
+  static void CountDeprecation(const Document& document, WebFeature feature) {
+    return CountDeprecation(document,
+                            static_cast<UseCounter::Feature>(feature));
+  }
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
@@ -50,6 +63,19 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecationCrossOriginIframe(const Document&,
                                                 UseCounter::Feature);
   static String DeprecationMessage(UseCounter::Feature);
+  static void CountDeprecationCrossOriginIframe(const LocalFrame* frame,
+                                                WebFeature feature) {
+    return CountDeprecationCrossOriginIframe(
+        frame, static_cast<UseCounter::Feature>(feature));
+  }
+  static void CountDeprecationCrossOriginIframe(const Document& document,
+                                                WebFeature feature) {
+    return CountDeprecationCrossOriginIframe(
+        document, static_cast<UseCounter::Feature>(feature));
+  }
+  static String DeprecationMessage(WebFeature feature) {
+    return DeprecationMessage(static_cast<UseCounter::Feature>(feature));
+  }
 
   // Note: this is only public for tests.
   bool IsSuppressed(CSSPropertyID unresolved_property);

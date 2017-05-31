@@ -340,10 +340,10 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
   {% set fall_through_to_partial_overloads = not is_partial and overloads.has_partial_overloads %}
 
   {% if overloads.measure_all_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{overloads.measure_all_as}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{overloads.measure_all_as}});
   {% endif %}
   {% if overloads.deprecate_all_as %}
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{overloads.deprecate_all_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{overloads.deprecate_all_as}});
   {% endif %}
 
   {# First resolve by length #}
@@ -362,10 +362,10 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
       {% filter runtime_enabled(not overloads.runtime_enabled_all and method.runtime_enabled_feature_name) %}
       if ({{test}}) {
         {% if method.measure_as and not overloads.measure_all_as %}
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.measure_as('Method')}});
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
         {% endif %}
         {% if method.deprecate_as and not overloads.deprecate_all_as %}
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.deprecate_as}});
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
         {% endif %}
         {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
         return;
@@ -481,10 +481,10 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
   {% if method.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.measure_as('Method')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
   {% endif %}
   {% if method.deprecate_as %}
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.deprecate_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
   {% endif %}
   {% endif %}{# not method.overloads #}
   {% if world_suffix in method.activity_logging_world_list %}

@@ -164,14 +164,13 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
   WTF_MAKE_NONCOPYABLE(UseCounterObserverImpl);
 
  public:
-  UseCounterObserverImpl(ScriptPromiseResolver* resolver,
-                         UseCounter::Feature feature)
+  UseCounterObserverImpl(ScriptPromiseResolver* resolver, WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
 
-  bool OnCountFeature(UseCounter::Feature feature) final {
+  bool OnCountFeature(WebFeature feature) final {
     if (feature_ != feature)
       return false;
-    resolver_->Resolve(feature);
+    resolver_->Resolve(static_cast<int>(feature));
     return true;
   }
 
@@ -182,7 +181,7 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
 
  private:
   Member<ScriptPromiseResolver> resolver_;
-  UseCounter::Feature feature_;
+  WebFeature feature_;
 };
 
 }  // namespace
@@ -3217,8 +3216,8 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  page->GetUseCounter().AddObserver(
-      new UseCounterObserverImpl(resolver, use_counter_feature));
+  page->GetUseCounter().AddObserver(new UseCounterObserverImpl(
+      resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }
 

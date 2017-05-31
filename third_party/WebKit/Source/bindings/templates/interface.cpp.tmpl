@@ -632,7 +632,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {% if constructors or has_custom_constructor or has_html_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{measure_as('Constructor')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});
   {% endif %}
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("{{interface_name}}"));

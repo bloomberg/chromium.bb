@@ -77,6 +77,7 @@
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/WebFeature.h"
 
 namespace blink {
 
@@ -8162,14 +8163,14 @@ static void measureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestObject_MeasureOverloadedMethod_Method);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
         measureOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestObject_MeasureOverloadedMethod_Method);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
         measureOverloadedMethod2Method(info);
         return;
       }
@@ -8209,14 +8210,14 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureA);
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
         DeprecateAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         DeprecateAsOverloadedMethod2Method(info);
         return;
       }
@@ -8252,7 +8253,7 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
@@ -8303,14 +8304,14 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureA);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
         measureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         measureAsOverloadedMethod2Method(info);
         return;
       }
@@ -8350,14 +8351,14 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
         measureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
         measureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -8397,16 +8398,16 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureA);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
         deprecateAsMeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         deprecateAsMeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -8442,20 +8443,20 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureA);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
         deprecateAsSameValueMeasureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         deprecateAsSameValueMeasureAsOverloadedMethod2Method(info);
         return;
       }
@@ -8491,20 +8492,20 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureA);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeatureB);
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -10264,13 +10265,13 @@ void V8TestObject::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterC
 }
 
 void V8TestObject::testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kdeprecatedTestInterfaceEmptyConstructorAttribute);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kdeprecatedTestInterfaceEmptyConstructorAttribute);
 
   V8ConstructorAttributeGetter(property, info);
 }
 
 void V8TestObject::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kFeatureName);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kFeatureName);
 
   V8ConstructorAttributeGetter(property, info);
 }
@@ -10310,7 +10311,7 @@ void V8TestObject::customSetterLongAttributeAttributeSetterCallback(const v8::Fu
 }
 
 void V8TestObject::deprecatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kLongAttribute);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kLongAttribute);
 
   TestObjectV8Internal::deprecatedLongAttributeAttributeGetter(info);
 }
@@ -10318,7 +10319,7 @@ void V8TestObject::deprecatedLongAttributeAttributeGetterCallback(const v8::Func
 void V8TestObject::deprecatedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kLongAttribute);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kLongAttribute);
 
   TestObjectV8Internal::deprecatedLongAttributeAttributeSetter(v8Value, info);
 }
@@ -10374,7 +10375,7 @@ void V8TestObject::customSetterImplementedAsLongAttributeAttributeSetterCallback
 }
 
 void V8TestObject::measureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   TestObjectV8Internal::measureAsLongAttributeAttributeGetter(info);
 }
@@ -10382,7 +10383,7 @@ void V8TestObject::measureAsLongAttributeAttributeGetterCallback(const v8::Funct
 void V8TestObject::measureAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   TestObjectV8Internal::measureAsLongAttributeAttributeSetter(v8Value, info);
 }
@@ -11026,7 +11027,7 @@ void V8TestObject::unforgeableLongAttributeAttributeSetterCallback(const v8::Fun
 }
 
 void V8TestObject::measuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestObject_MeasuredLongAttribute_AttributeGetter);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeGetter);
 
   TestObjectV8Internal::measuredLongAttributeAttributeGetter(info);
 }
@@ -11034,7 +11035,7 @@ void V8TestObject::measuredLongAttributeAttributeGetterCallback(const v8::Functi
 void V8TestObject::measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestObject_MeasuredLongAttribute_AttributeSetter);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeSetter);
 
   TestObjectV8Internal::measuredLongAttributeAttributeSetter(v8Value, info);
 }
@@ -11887,7 +11888,7 @@ void V8TestObject::customCallEpilogueVoidMethodMethodCallback(const v8::Function
 }
 
 void V8TestObject::deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kvoidMethod);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kvoidMethod);
   TestObjectV8Internal::deprecatedVoidMethodMethod(info);
 }
 
@@ -11896,12 +11897,12 @@ void V8TestObject::implementedAsVoidMethodMethodCallback(const v8::FunctionCallb
 }
 
 void V8TestObject::measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kTestFeature);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
   TestObjectV8Internal::measureAsVoidMethodMethod(info);
 }
 
 void V8TestObject::measureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kV8TestObject_MeasureMethod_Method);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureMethod_Method);
   TestObjectV8Internal::measureMethodMethod(info);
 }
 
