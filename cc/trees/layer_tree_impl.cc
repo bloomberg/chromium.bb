@@ -669,10 +669,14 @@ void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
   ElementId new_element_id = node ? node->element_id : ElementId();
 
 #if DCHECK_IS_ON()
-  int old_layer_id = old_node ? old_node->owning_layer_id : Layer::INVALID_ID;
-  int new_layer_id = node ? node->owning_layer_id : Layer::INVALID_ID;
-  DCHECK(old_layer_id == LayerIdByElementId(old_element_id));
-  DCHECK(new_layer_id == LayerIdByElementId(new_element_id));
+  // In SPv2 scrolling is driven solely by element id and
+  // layer/element-id maps should not be required.
+  if (!settings().use_layer_lists) {
+    int old_layer_id = old_node ? old_node->owning_layer_id : Layer::INVALID_ID;
+    int new_layer_id = node ? node->owning_layer_id : Layer::INVALID_ID;
+    DCHECK(old_layer_id == LayerIdByElementId(old_element_id));
+    DCHECK(new_layer_id == LayerIdByElementId(new_element_id));
+  }
 #endif
 
   if (old_element_id == new_element_id)
