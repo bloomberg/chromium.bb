@@ -76,12 +76,14 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
   DCHECK(!raw_store_birthday_.empty());
 }
 
-AttachmentDownloaderImpl::~AttachmentDownloaderImpl() {}
+AttachmentDownloaderImpl::~AttachmentDownloaderImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void AttachmentDownloaderImpl::DownloadAttachment(
     const AttachmentId& attachment_id,
     const DownloadCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AttachmentUrl url = AttachmentUploaderImpl::GetURLForAttachmentId(
                           sync_service_url_, attachment_id)
@@ -107,7 +109,7 @@ void AttachmentDownloaderImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(request == access_token_request_.get());
   access_token_request_.reset();
   StateList::const_iterator iter;
@@ -127,7 +129,7 @@ void AttachmentDownloaderImpl::OnGetTokenSuccess(
 void AttachmentDownloaderImpl::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(request == access_token_request_.get());
   access_token_request_.reset();
   StateList::const_iterator iter;
@@ -149,7 +151,7 @@ void AttachmentDownloaderImpl::OnGetTokenFailure(
 
 void AttachmentDownloaderImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Find DownloadState by url.
   AttachmentUrl url = source->GetOriginalURL().spec();

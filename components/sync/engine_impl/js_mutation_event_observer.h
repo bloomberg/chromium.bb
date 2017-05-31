@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/syncable/transaction_observer.h"
@@ -29,8 +29,7 @@ class JsEventHandler;
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
 class JsMutationEventObserver : public SyncManager::ChangeObserver,
-                                public syncable::TransactionObserver,
-                                public base::NonThreadSafe {
+                                public syncable::TransactionObserver {
  public:
   JsMutationEventObserver();
 
@@ -59,6 +58,8 @@ class JsMutationEventObserver : public SyncManager::ChangeObserver,
   void HandleJsEvent(const tracked_objects::Location& from_here,
                      const std::string& name,
                      const JsEventDetails& details);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;
 

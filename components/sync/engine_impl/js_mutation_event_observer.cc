@@ -18,7 +18,7 @@ namespace syncer {
 JsMutationEventObserver::JsMutationEventObserver() : weak_ptr_factory_(this) {}
 
 JsMutationEventObserver::~JsMutationEventObserver() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 base::WeakPtr<JsMutationEventObserver> JsMutationEventObserver::AsWeakPtr() {
@@ -82,7 +82,7 @@ void JsMutationEventObserver::OnChangesComplete(ModelType model_type) {
 void JsMutationEventObserver::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
     ModelTypeSet models_with_changes) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!event_handler_.IsInitialized()) {
     return;
   }

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/engine/attachments/attachment_store_backend.h"
 #include "components/sync/model/attachments/attachment.h"
 #include "components/sync/model/attachments/attachment_id.h"
@@ -25,8 +25,7 @@ namespace syncer {
 // An in-memory implementation of AttachmentStore used for testing.
 // InMemoryAttachmentStore is not threadsafe, it lives on backend thread and
 // posts callbacks with results on |callback_task_runner|.
-class InMemoryAttachmentStore : public AttachmentStoreBackend,
-                                public base::NonThreadSafe {
+class InMemoryAttachmentStore : public AttachmentStoreBackend {
  public:
   InMemoryAttachmentStore(
       const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner);
@@ -66,6 +65,8 @@ class InMemoryAttachmentStore : public AttachmentStoreBackend,
 
   using AttachmentEntryMap = std::map<AttachmentId, AttachmentEntry>;
   AttachmentEntryMap attachments_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryAttachmentStore);
 };

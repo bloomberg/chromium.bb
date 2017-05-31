@@ -41,9 +41,9 @@ const char kSyncDataTypeId[] = "X-Sync-Data-Type-Id";
 namespace syncer {
 
 // Encapsulates all the state associated with a single upload.
-class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
-                                            public OAuth2TokenService::Consumer,
-                                            public base::NonThreadSafe {
+class AttachmentUploaderImpl::UploadState
+    : public net::URLFetcherDelegate,
+      public OAuth2TokenService::Consumer {
  public:
   // Construct an UploadState.
   //
@@ -117,6 +117,8 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   std::unique_ptr<OAuth2TokenServiceRequest> access_token_request_;
   ModelType model_type_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(UploadState);
 };
 
@@ -156,25 +158,25 @@ AttachmentUploaderImpl::UploadState::UploadState(
 AttachmentUploaderImpl::UploadState::~UploadState() {}
 
 bool AttachmentUploaderImpl::UploadState::IsStopped() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_stopped_;
 }
 
 void AttachmentUploaderImpl::UploadState::AddUserCallback(
     const UploadCallback& user_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_stopped_);
   user_callbacks_.push_back(user_callback);
 }
 
 const Attachment& AttachmentUploaderImpl::UploadState::GetAttachment() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return attachment_;
 }
 
 void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_stopped_) {
     return;
   }
@@ -207,7 +209,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_stopped_) {
     return;
   }
@@ -266,7 +268,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
 void AttachmentUploaderImpl::UploadState::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_stopped_) {
     return;
   }
@@ -319,7 +321,7 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
       raw_store_birthday_(store_birthday),
       model_type_(model_type),
       weak_ptr_factory_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
   DCHECK(token_service_provider_.get());
@@ -327,12 +329,12 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
 }
 
 AttachmentUploaderImpl::~AttachmentUploaderImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
                                               const UploadCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const AttachmentId attachment_id = attachment.GetId();
   const std::string unique_id = attachment_id.GetProto().unique_id();
   DCHECK(!unique_id.empty());

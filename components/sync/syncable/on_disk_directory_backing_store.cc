@@ -35,7 +35,7 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
     JournalIndex* delete_journals,
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsOpen()) {
     if (!Open(backing_file_path_))
@@ -62,7 +62,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
     JournalIndex* delete_journals,
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DirOpenResult result = TryLoad(handles_map, delete_journals,
                                  metahandles_to_purge, kernel_load_info);
   if (result == OPENED) {
@@ -108,7 +108,7 @@ void OnDiskDirectoryBackingStore::ReportFirstTryOpenFailure() {
 }
 
 const base::FilePath& OnDiskDirectoryBackingStore::backing_file_path() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return backing_file_path_;
 }
 

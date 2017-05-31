@@ -283,6 +283,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool DirectoryBackingStore::DeleteEntries(EntryTable from,
@@ -316,7 +317,7 @@ bool DirectoryBackingStore::DeleteEntries(EntryTable from,
 
 bool DirectoryBackingStore::SaveChanges(
     const Directory::SaveChangesSnapshot& snapshot) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_->is_open());
 
   // Back out early if there is nothing to write.
@@ -1804,7 +1805,7 @@ void DirectoryBackingStore::ResetAndCreateConnection() {
 
 void DirectoryBackingStore::SetCatastrophicErrorHandler(
     const base::Closure& catastrophic_error_handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!catastrophic_error_handler.is_null());
   catastrophic_error_handler_ = catastrophic_error_handler;
   sql::Connection::ErrorCallback error_callback =

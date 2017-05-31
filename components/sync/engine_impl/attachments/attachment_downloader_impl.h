@@ -14,7 +14,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/attachments/attachment_downloader.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -31,8 +31,7 @@ namespace syncer {
 // An implementation of AttachmentDownloader.
 class AttachmentDownloaderImpl : public AttachmentDownloader,
                                  public OAuth2TokenService::Consumer,
-                                 public net::URLFetcherDelegate,
-                                 public base::NonThreadSafe {
+                                 public net::URLFetcherDelegate {
  public:
   // |sync_service_url| is the URL of the sync service.
   //
@@ -121,6 +120,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   StateList requests_waiting_for_access_token_;
 
   ModelType model_type_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentDownloaderImpl);
 };

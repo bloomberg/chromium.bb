@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/engine/attachments/attachment_downloader.h"
 #include "components/sync/engine/attachments/attachment_uploader.h"
 #include "components/sync/model/attachments/attachment_service.h"
@@ -25,8 +25,7 @@ namespace syncer {
 // Implementation of AttachmentService.
 class AttachmentServiceImpl
     : public AttachmentService,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
-      public base::NonThreadSafe {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // |attachment_store| is required. UploadAttachments reads attachment data
   // from it. Downloaded attachments will be written into it.
@@ -109,6 +108,8 @@ class AttachmentServiceImpl
   Delegate* delegate_;
 
   std::unique_ptr<TaskQueue<AttachmentId>> upload_task_queue_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;
