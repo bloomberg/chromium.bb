@@ -43,7 +43,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebAddressSpace.h"
-#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -65,7 +64,7 @@ WorkerScriptLoader::~WorkerScriptLoader() {
 void WorkerScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
-    CrossOriginRequestPolicy cross_origin_request_policy,
+    WebURLRequest::FetchRequestMode fetch_request_mode,
     WebAddressSpace creation_address_space) {
   url_ = url;
   execution_context_ = &execution_context;
@@ -74,7 +73,7 @@ void WorkerScriptLoader::LoadSynchronously(
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
   ThreadableLoaderOptions options;
-  options.cross_origin_request_policy = cross_origin_request_policy;
+  options.fetch_request_mode = fetch_request_mode;
   // FIXME: Should we add EnforceScriptSrcDirective here?
   options.content_security_policy_enforcement =
       kDoNotEnforceContentSecurityPolicy;
@@ -90,7 +89,7 @@ void WorkerScriptLoader::LoadSynchronously(
 void WorkerScriptLoader::LoadAsynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
-    CrossOriginRequestPolicy cross_origin_request_policy,
+    WebURLRequest::FetchRequestMode fetch_request_mode,
     WebAddressSpace creation_address_space,
     std::unique_ptr<WTF::Closure> response_callback,
     std::unique_ptr<WTF::Closure> finished_callback) {
@@ -102,7 +101,7 @@ void WorkerScriptLoader::LoadAsynchronously(
 
   ResourceRequest request(CreateResourceRequest(creation_address_space));
   ThreadableLoaderOptions options;
-  options.cross_origin_request_policy = cross_origin_request_policy;
+  options.fetch_request_mode = fetch_request_mode;
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.allow_credentials = kAllowStoredCredentials;

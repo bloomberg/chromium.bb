@@ -331,7 +331,8 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
       WebURLRequest::kRequestContextServiceWorker);
   main_script_loader_->LoadAsynchronously(
       *main_frame_->GetFrame()->GetDocument(), worker_start_data_.script_url,
-      kDenyCrossOriginRequests, worker_start_data_.address_space, nullptr,
+      WebURLRequest::kFetchRequestModeSameOrigin,
+      worker_start_data_.address_space, nullptr,
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already

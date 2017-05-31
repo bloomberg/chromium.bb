@@ -1015,9 +1015,9 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
     request.AddHTTPHeaderFields(request_headers_);
 
   ThreadableLoaderOptions options;
-  options.preflight_policy =
-      upload_events ? kForcePreflight : kConsiderPreflight;
-  options.cross_origin_request_policy = kUseAccessControl;
+  options.fetch_request_mode =
+      upload_events ? WebURLRequest::kFetchRequestModeCORSWithForcedPreflight
+                    : WebURLRequest::kFetchRequestModeCORS;
   options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
   options.content_security_policy_enforcement =
       ContentSecurityPolicy::ShouldBypassMainWorld(&execution_context)

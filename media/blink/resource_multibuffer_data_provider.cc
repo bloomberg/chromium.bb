@@ -115,15 +115,13 @@ void ResourceMultiBufferDataProvider::Start() {
     WebAssociatedURLLoaderOptions options;
     if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
       options.allow_credentials = true;
-      options.cross_origin_request_policy =
-          WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
+      options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
     } else {
       options.expose_all_response_headers = true;
       // The author header set is empty, no preflight should go ahead.
       options.preflight_policy =
           WebAssociatedURLLoaderOptions::kPreventPreflight;
-      options.cross_origin_request_policy = WebAssociatedURLLoaderOptions::
-          kCrossOriginRequestPolicyUseAccessControl;
+      options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
       if (url_data_->cors_mode() == UrlData::CORS_USE_CREDENTIALS)
         options.allow_credentials = true;
     }

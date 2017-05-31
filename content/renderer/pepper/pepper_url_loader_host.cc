@@ -268,8 +268,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   WebAssociatedURLLoaderOptions options;
   if (has_universal_access_) {
     options.allow_credentials = true;
-    options.cross_origin_request_policy =
-        WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
+    options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   } else {
     // All other HTTP requests are untrusted.
     options.untrusted_http = true;
@@ -277,8 +276,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
       // Allow cross-origin requests with access control. The request specifies
       // if credentials are to be sent.
       options.allow_credentials = filled_in_request_data.allow_credentials;
-      options.cross_origin_request_policy = WebAssociatedURLLoaderOptions::
-          kCrossOriginRequestPolicyUseAccessControl;
+      options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
     } else {
       // Same-origin requests can always send credentials.
       options.allow_credentials = true;

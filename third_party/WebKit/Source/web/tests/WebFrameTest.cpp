@@ -9780,7 +9780,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
   ThreadableLoaderOptions options;
 
   // First try to load the request with regular access. Should fail.
-  options.cross_origin_request_policy = kUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   ResourceLoaderOptions resource_loader_options;
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
@@ -9788,7 +9788,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
 
   client.Reset();
   // Try to load the request with cross origin access. Should succeed.
-  options.cross_origin_request_policy = kAllowCrossOriginRequests;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_FALSE(client.Failed());

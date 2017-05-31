@@ -225,8 +225,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
         url, expected_response_, frame_file_path_);
 
     WebAssociatedURLLoaderOptions options;
-    options.cross_origin_request_policy = WebAssociatedURLLoaderOptions::
-        kCrossOriginRequestPolicyUseAccessControl;
+    options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
     expected_loader_ = CreateAssociatedURLLoader(options);
     EXPECT_TRUE(expected_loader_);
     expected_loader_->LoadAsynchronously(request, this);
@@ -303,8 +302,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -329,8 +327,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -359,8 +356,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   // credentials can't be sent to a server which returns the header
   // "access-control-allow-origin" with "*" as its value.
   options.allow_credentials = true;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -389,8 +385,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -499,8 +494,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -550,8 +544,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -664,8 +657,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   WebAssociatedURLLoaderOptions options;
   options.expose_all_response_headers =
       true;  // This turns off response whitelisting.
-  options.cross_origin_request_policy =
-      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);

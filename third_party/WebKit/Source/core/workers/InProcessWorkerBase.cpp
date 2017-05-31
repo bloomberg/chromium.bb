@@ -50,13 +50,13 @@ bool InProcessWorkerBase::Initialize(ExecutionContext* context,
   if (script_url.IsEmpty())
     return false;
 
-  CrossOriginRequestPolicy cross_origin_request_policy =
-      script_url.ProtocolIsData() ? kAllowCrossOriginRequests
-                                  : kDenyCrossOriginRequests;
+  WebURLRequest::FetchRequestMode fetch_request_mode =
+      script_url.ProtocolIsData() ? WebURLRequest::kFetchRequestModeNoCORS
+                                  : WebURLRequest::kFetchRequestModeSameOrigin;
 
   script_loader_ = WorkerScriptLoader::Create();
   script_loader_->LoadAsynchronously(
-      *context, script_url, cross_origin_request_policy,
+      *context, script_url, fetch_request_mode,
       context->GetSecurityContext().AddressSpace(),
       WTF::Bind(&InProcessWorkerBase::OnResponse, WrapPersistent(this)),
       WTF::Bind(&InProcessWorkerBase::OnFinished, WrapPersistent(this)));
