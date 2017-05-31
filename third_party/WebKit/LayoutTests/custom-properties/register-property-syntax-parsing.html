@@ -146,6 +146,7 @@ assert_invalid("<integer>", "1.0");
 assert_invalid("<integer>", "1e0");
 assert_invalid("<number>|foo", "foo var(--foo, bla)");
 
+assert_invalid("<angle>", "0");
 assert_invalid("<angle>", "10%");
 assert_invalid("<time>", "2px");
 assert_invalid("<resolution>", "10");
