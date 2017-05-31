@@ -23,8 +23,8 @@ InspectorTest.dumpIndexedDBTree = function()
                 InspectorTest.addResult("            (no indexes)");
                 continue;
             }
-            for (var j = 0; j < objectStoreTreeElement.childCount(); ++j) {
-                var indexTreeElement = objectStoreTreeElement.childAt(j);
+            for (var k = 0; k < objectStoreTreeElement.childCount(); ++k) {
+                var indexTreeElement = objectStoreTreeElement.childAt(k);
                 InspectorTest.addResult("            Index: " + indexTreeElement.title);
             }
         }
