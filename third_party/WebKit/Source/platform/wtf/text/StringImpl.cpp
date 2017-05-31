@@ -651,7 +651,7 @@ PassRefPtr<StringImpl> StringImpl::LowerUnicode(
     return LowerUnicode();
 
   if (length_ > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-    CRASH();
+    IMMEDIATE_CRASH();
   int length = length_;
 
   RefPtr<StringImpl> upconverted = UpconvertedString();
@@ -677,7 +677,7 @@ PassRefPtr<StringImpl> StringImpl::UpperUnicode(
     return UpperUnicode();
 
   if (length_ > static_cast<unsigned>(numeric_limits<int32_t>::max()))
-    CRASH();
+    IMMEDIATE_CRASH();
   int length = length_;
 
   RefPtr<StringImpl> upconverted = UpconvertedString();

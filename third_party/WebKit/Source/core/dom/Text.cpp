@@ -176,7 +176,7 @@ String Text::wholeText() const {
       continue;
     const String& data = ToText(n)->data();
     if (std::numeric_limits<unsigned>::max() - data.length() < result_length)
-      CRASH();
+      IMMEDIATE_CRASH();
     result_length += data.length();
   }
   StringBuilder result;

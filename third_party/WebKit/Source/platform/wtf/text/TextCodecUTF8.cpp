@@ -464,7 +464,7 @@ CString TextCodecUTF8::EncodeCommon(const CharType* characters, size_t length) {
   // Non-BMP characters take two UTF-16 code units and can take up to 4 bytes
   // (2x).
   if (length > std::numeric_limits<size_t>::max() / 3)
-    CRASH();
+    IMMEDIATE_CRASH();
   Vector<uint8_t> bytes(length * 3);
 
   size_t i = 0;
