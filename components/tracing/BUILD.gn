@@ -37,6 +37,10 @@ component("tracing") {
     "//ipc",
   ]
 
+  if (is_win) {
+    deps += [ "//base/win:pe_image" ]
+  }
+
   public_deps = [
     "//components/tracing/proto:protos",
   ]
