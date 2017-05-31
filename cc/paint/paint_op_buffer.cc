@@ -616,43 +616,47 @@ static const PaintOp* NextOp(const std::vector<size_t>& range_starts,
   if (!*iter)
     return nullptr;
 
+  const size_t active_range = range_indices[*range_index];
+  DCHECK_GE(iter->op_idx(), range_starts[active_range]);
+
   // This grabs the PaintOp from the current iterator position, and advances it
   // to the next position immediately. We'll see we reached the end of the
   // buffer on the next call to this method.
   const PaintOp* op = **iter;
-
-  size_t active_range = range_indices[*range_index];
-  DCHECK_GE(iter->op_idx(), range_starts[active_range]);
+  ++*iter;
 
   if (active_range + 1 == range_starts.size()) {
-    // In the last possible range, so go right to the end of the buffer.
-    ++*iter;
-  } else {
-    size_t range_end = range_starts[active_range + 1];
-    DCHECK_LE(iter->op_idx(), range_end);
-
-    ++*iter;
-    if (iter->op_idx() == range_end) {
-      if (*range_index + 1 == range_indices.size()) {
-        // Leaving the last range that we want to iterate.
-        *iter = iter->end();
-      } else {
-        // Move to the next range.
-        ++(*range_index);
-        size_t next_range_start = range_starts[range_indices[*range_index]];
-        while (iter->op_idx() < next_range_start)
-          ++(*iter);
-      }
-    }
+    // In the last possible range, so let the iter go right to the end of the
+    // buffer.
+    return op;
   }
 
+  const size_t range_end = range_starts[active_range + 1];
+  DCHECK_LE(iter->op_idx(), range_end);
+  if (iter->op_idx() < range_end) {
+    // Still inside the range, so let the iter be.
+    return op;
+  }
+
+  if (*range_index + 1 == range_indices.size()) {
+    // We're now past the last range that we want to iterate.
+    *iter = iter->end();
+    return op;
+  }
+
+  // Move to the next range.
+  ++(*range_index);
+  size_t next_range_start = range_starts[range_indices[*range_index]];
+  while (iter->op_idx() < next_range_start)
+    ++(*iter);
   return op;
 }
 
 void PaintOpBuffer::playback(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
+  static auto* zero = new std::vector<size_t>({0});
   // Treats the entire PaintOpBuffer as a single range.
-  PlaybackRanges({0}, {0}, canvas, callback);
+  PlaybackRanges(*zero, *zero, canvas, callback);
 }
 
 void PaintOpBuffer::PlaybackRanges(const std::vector<size_t>& range_starts,
