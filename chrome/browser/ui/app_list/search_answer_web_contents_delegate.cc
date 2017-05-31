@@ -21,6 +21,7 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -105,6 +106,11 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
     web_view_->SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   model->AddObserver(this);
+
+  // Make the webview transparent since it's going to be shown on top of a
+  // highlightable button.
+  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+      web_contents_.get(), SK_ColorTRANSPARENT);
 }
 
 SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {
@@ -168,8 +174,7 @@ void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
       IsCardSizeOk(pref_size) || features::IsAnswerCardDarkRunEnabled();
   model_->SetSearchAnswerAvailable(is_card_size_ok_ && received_answer_ &&
                                    !web_contents_->IsLoading());
-  if (!features::IsAnswerCardDarkRunEnabled())
-    web_view_->SetPreferredSize(pref_size);
+  web_view_->SetPreferredSize(pref_size);
   if (!answer_loaded_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("SearchAnswer.ResizeAfterLoadTime",
                         base::TimeTicks::Now() - answer_loaded_time_);
