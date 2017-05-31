@@ -138,31 +138,19 @@ void DocumentMarkerController::AddSpellCheckMarker(
     const String& description) {
   DCHECK(type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar)
       << type;
-  // Use a TextIterator to visit the potentially multiple nodes the range
-  // covers.
-  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
-       !marked_text.AtEnd(); marked_text.Advance()) {
-    AddMarker(marked_text.CurrentContainer(),
-              new DocumentMarker(
-                  type, marked_text.StartOffsetInCurrentContainer(),
-                  marked_text.EndOffsetInCurrentContainer(), description));
-  }
+  AddMarkerInternal(
+      range, [type, &description](int start_offset, int end_offset) {
+        return new DocumentMarker(type, start_offset, end_offset, description);
+      });
 }
 
 void DocumentMarkerController::AddTextMatchMarker(
     const EphemeralRange& range,
     DocumentMarker::MatchStatus match_status) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-
-  // Use a TextIterator to visit the potentially multiple nodes the range
-  // covers.
-  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
-       !marked_text.AtEnd(); marked_text.Advance()) {
-    AddMarker(marked_text.CurrentContainer(),
-              new TextMatchMarker(marked_text.StartOffsetInCurrentContainer(),
-                                  marked_text.EndOffsetInCurrentContainer(),
-                                  match_status));
-  }
+  AddMarkerInternal(range, [match_status](int start_offset, int end_offset) {
+    return new TextMatchMarker(start_offset, end_offset, match_status);
+  });
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.
 }
@@ -172,14 +160,11 @@ void DocumentMarkerController::AddCompositionMarker(const EphemeralRange& range,
                                                     bool thick,
                                                     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-
-  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
-       !marked_text.AtEnd(); marked_text.Advance()) {
-    AddMarker(marked_text.CurrentContainer(),
-              new DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
-                                 marked_text.EndOffsetInCurrentContainer(),
-                                 underline_color, thick, background_color));
-  }
+  AddMarkerInternal(range, [underline_color, thick, background_color](
+                               int start_offset, int end_offset) {
+    return new DocumentMarker(start_offset, end_offset, underline_color, thick,
+                              background_color);
+  });
 }
 
 void DocumentMarkerController::PrepareForDestruction() {
@@ -210,15 +195,41 @@ void DocumentMarkerController::RemoveMarkersInRange(
   DocumentMarkerController::RemoveMarkers(marked_text, marker_types);
 }
 
+void DocumentMarkerController::AddMarkerInternal(
+    const EphemeralRange& range,
+    std::function<DocumentMarker*(int, int)> create_marker_from_offsets) {
+  for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
+       !marked_text.AtEnd(); marked_text.Advance()) {
+    const int start_offset_in_current_container =
+        marked_text.StartOffsetInCurrentContainer();
+    const int end_offset_in_current_container =
+        marked_text.EndOffsetInCurrentContainer();
+
+    DCHECK_GE(end_offset_in_current_container,
+              start_offset_in_current_container);
+
+    // TODO(editing-dev): TextIterator sometimes emits ranges where the start
+    // and end offsets are the same. Investigate if TextIterator should be
+    // changed to not do this. See crbug.com/727929
+    if (end_offset_in_current_container == start_offset_in_current_container)
+      continue;
+
+    // Ignore text emitted by TextIterator for non-text nodes (e.g. implicit
+    // newlines)
+    Node* const node = marked_text.CurrentContainer();
+    if (!node->IsTextNode())
+      continue;
+
+    DocumentMarker* const new_marker = create_marker_from_offsets(
+        start_offset_in_current_container, end_offset_in_current_container);
+    AddMarkerToNode(node, new_marker);
+  }
+}
+
 // Markers are stored in order sorted by their start offset.
 // Markers of the same type do not overlap each other.
-
-void DocumentMarkerController::AddMarker(Node* node,
-                                         DocumentMarker* new_marker) {
-  DCHECK_GE(new_marker->EndOffset(), new_marker->StartOffset());
-  if (new_marker->EndOffset() == new_marker->StartOffset())
-    return;
-
+void DocumentMarkerController::AddMarkerToNode(Node* node,
+                                               DocumentMarker* new_marker) {
   possibly_existing_marker_types_.Add(new_marker->GetType());
 
   Member<MarkerLists>& markers =
