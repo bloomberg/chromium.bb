@@ -45,6 +45,7 @@
 #include <windows.h>
 
 #include <base/strings/sys_string_conversions.h>
+#include <base/win/pe_image.h>
 #include <base/win/win_util.h>
 #endif  // defined(OS_WIN)
 
@@ -273,6 +274,12 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
     region.size_in_bytes = module_info.SizeOfImage;
     region.mapped_file = base::SysWideToNativeMB(module_name);
     region.start_address = reinterpret_cast<uint64_t>(module_info.lpBaseOfDll);
+
+    // The PE header field |TimeDateStamp| is required to build the PE code
+    // identifier which is used as a key to query symbols servers.
+    base::win::PEImage pe_image(module_info.lpBaseOfDll);
+    region.module_timestamp = pe_image.GetNTHeaders()->FileHeader.TimeDateStamp;
+
     pmd->process_mmaps()->AddVMRegion(region);
   }
   if (!pmd->process_mmaps()->vm_regions().empty())
