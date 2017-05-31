@@ -31,14 +31,14 @@
 #ifndef WebTouchPoint_h
 #define WebTouchPoint_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebPointerProperties.h"
+#include "WebCommon.h"
+#include "WebFloatPoint.h"
+#include "WebPointerProperties.h"
 
 namespace blink {
 
-// TODO(e_hakkinen): Replace WebTouchEvent with WebPointerEvent and remove
-// WebTouchEvent and this.
+// TODO(mustaq): Unify WebTouchPoint & WebMouseEvent into WebPointerEvent.
+// crbug.com/508283
 class WebTouchPoint : public WebPointerProperties {
  public:
   WebTouchPoint()
@@ -47,6 +47,14 @@ class WebTouchPoint : public WebPointerProperties {
         radius_x(0),
         radius_y(0),
         rotation_angle(0) {}
+
+  void SetPositionInWidget(float x, float y) {
+    position_in_widget_ = WebFloatPoint(x, y);
+  }
+
+  void SetPositionInScreen(float x, float y) {
+    position_in_screen_ = WebFloatPoint(x, y);
+  }
 
   enum State {
     kStateUndefined,
@@ -59,11 +67,6 @@ class WebTouchPoint : public WebPointerProperties {
   };
 
   State state;
-
-  // TODO(mustaq): Move these coordinates to WebPointerProperties as private
-  // class members, as in WebMouseEvent.h now. crbug.com/508283
-  WebFloatPoint screen_position;
-  WebFloatPoint position;
 
   float radius_x;
   float radius_y;

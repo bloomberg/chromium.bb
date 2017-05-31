@@ -208,16 +208,16 @@ class MockMoveTouchTarget : public MockMoveGestureTarget {
 
     if (!started_) {
       ASSERT_EQ(touch_event.GetType(), WebInputEvent::kTouchStart);
-      start_.SetPoint(touch_event.touches[0].position.x,
-                      touch_event.touches[0].position.y);
+      start_.SetPoint(touch_event.touches[0].PositionInWidget().x,
+                      touch_event.touches[0].PositionInWidget().y);
       last_touch_point_ = gfx::PointF(start_);
       started_ = true;
     } else {
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchStart);
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchCancel);
 
-      gfx::PointF touch_point(touch_event.touches[0].position.x,
-                              touch_event.touches[0].position.y);
+      gfx::PointF touch_point(touch_event.touches[0].PositionInWidget().x,
+                              touch_event.touches[0].PositionInWidget().y);
       gfx::Vector2dF delta = touch_point - last_touch_point_;
       total_abs_move_distance_length_ += delta.Length();
 
@@ -292,8 +292,8 @@ class MockSyntheticTouchscreenPinchTouchTarget
     if (!started_) {
       ASSERT_EQ(touch_event.GetType(), WebInputEvent::kTouchStart);
 
-      start_0_ = gfx::PointF(touch_event.touches[0].position);
-      start_1_ = gfx::PointF(touch_event.touches[1].position);
+      start_0_ = gfx::PointF(touch_event.touches[0].PositionInWidget());
+      start_1_ = gfx::PointF(touch_event.touches[1].PositionInWidget());
       last_pointer_distance_ = (start_0_ - start_1_).Length();
       initial_pointer_distance_ = last_pointer_distance_;
       EXPECT_GE(initial_pointer_distance_, GetMinScalingSpanInDips());
@@ -303,8 +303,10 @@ class MockSyntheticTouchscreenPinchTouchTarget
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchStart);
       ASSERT_NE(touch_event.GetType(), WebInputEvent::kTouchCancel);
 
-      gfx::PointF current_0 = gfx::PointF(touch_event.touches[0].position);
-      gfx::PointF current_1 = gfx::PointF(touch_event.touches[1].position);
+      gfx::PointF current_0 =
+          gfx::PointF(touch_event.touches[0].PositionInWidget());
+      gfx::PointF current_1 =
+          gfx::PointF(touch_event.touches[1].PositionInWidget());
 
       float pointer_distance = (current_0 - current_1).Length();
 
@@ -457,14 +459,15 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
     switch (state_) {
       case NOT_STARTED:
         EXPECT_EQ(touch_event.GetType(), WebInputEvent::kTouchStart);
-        position_ = gfx::PointF(touch_event.touches[0].position);
+        position_ = gfx::PointF(touch_event.touches[0].PositionInWidget());
         start_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64_t>(touch_event.TimeStampSeconds() * 1000));
         state_ = STARTED;
         break;
       case STARTED:
         EXPECT_EQ(touch_event.GetType(), WebInputEvent::kTouchEnd);
-        EXPECT_EQ(position_, gfx::PointF(touch_event.touches[0].position));
+        EXPECT_EQ(position_,
+                  gfx::PointF(touch_event.touches[0].PositionInWidget()));
         stop_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64_t>(touch_event.TimeStampSeconds() * 1000));
         state_ = FINISHED;
@@ -537,7 +540,7 @@ class MockSyntheticPointerTouchActionTarget
     type_ = touch_event.GetType();
     for (size_t i = 0; i < WebTouchEvent::kTouchesLengthCap; ++i) {
       indexes_[i] = touch_event.touches[i].id;
-      positions_[i] = gfx::PointF(touch_event.touches[i].position);
+      positions_[i] = gfx::PointF(touch_event.touches[i].PositionInWidget());
       states_[i] = touch_event.touches[i].state;
     }
     touch_length_ = touch_event.touches_length;

@@ -157,7 +157,7 @@ WebInputEventResult TouchEventManager::DispatchTouchEvents(
 
     Touch* touch = Touch::Create(
         touch_info.target_frame.Get(), touch_info.touch_node.Get(), point.id,
-        point.screen_position, touch_info.content_point,
+        point.PositionInScreen(), touch_info.content_point,
         touch_info.adjusted_radius, point.rotation_angle, point.force,
         touch_info.region);
 
@@ -334,7 +334,7 @@ void TouchEventManager::UpdateTargetAndRegionMapsForTouchStarts(
         if (touch_sequence_document_->GetFrame()) {
           LayoutPoint frame_point = LayoutPoint(
               touch_sequence_document_->GetFrame()->View()->RootFrameToContents(
-                  touch_info.point.position));
+                  touch_info.point.PositionInWidget()));
           result = EventHandlingUtil::HitTestResultInFrame(
               touch_sequence_document_->GetFrame(), frame_point, hit_type);
           Node* node = result.InnerNode();
@@ -443,8 +443,8 @@ void TouchEventManager::SetAllPropertiesOfTouchInfos(
     DCHECK(target_frame);
 
     // pagePoint should always be in the target element's document coordinates.
-    FloatPoint page_point =
-        target_frame->View()->RootFrameToContents(touch_info.point.position);
+    FloatPoint page_point = target_frame->View()->RootFrameToContents(
+        touch_info.point.PositionInWidget());
     float scale_factor = 1.0f / target_frame->PageZoomFactor();
 
     touch_info.touch_node = touch_node;

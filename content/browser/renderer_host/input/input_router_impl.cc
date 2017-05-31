@@ -628,11 +628,11 @@ void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
     if (touch_point->state == blink::WebTouchPoint::kStateMoved) {
       const gfx::Point& last_position = global_touch_position_[touch_point->id];
       touch_point->movement_x =
-          touch_point->screen_position.x - last_position.x();
+          touch_point->PositionInScreen().x - last_position.x();
       touch_point->movement_y =
-          touch_point->screen_position.y - last_position.y();
+          touch_point->PositionInScreen().y - last_position.y();
       global_touch_position_[touch_point->id].SetPoint(
-          touch_point->screen_position.x, touch_point->screen_position.y);
+          touch_point->PositionInScreen().x, touch_point->PositionInScreen().y);
     } else {
       touch_point->movement_x = 0;
       touch_point->movement_y = 0;
@@ -642,8 +642,9 @@ void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
       } else if (touch_point->state == blink::WebTouchPoint::kStatePressed) {
         DCHECK(global_touch_position_.find(touch_point->id) ==
                global_touch_position_.end());
-        global_touch_position_[touch_point->id] = gfx::Point(
-            touch_point->screen_position.x, touch_point->screen_position.y);
+        global_touch_position_[touch_point->id] =
+            gfx::Point(touch_point->PositionInScreen().x,
+                       touch_point->PositionInScreen().y);
       }
     }
   }

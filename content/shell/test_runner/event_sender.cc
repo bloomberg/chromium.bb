@@ -1875,8 +1875,8 @@ void EventSender::UpdateTouchPoint(unsigned index,
 
   WebTouchPoint* touch_point = &touch_points_[index];
   touch_point->state = WebTouchPoint::kStateMoved;
-  touch_point->position = WebFloatPoint(x, y);
-  touch_point->screen_position = touch_point->position;
+  touch_point->SetPositionInWidget(x, y);
+  touch_point->SetPositionInScreen(x, y);
 
   InitPointerProperties(args, touch_point, &touch_point->radius_x,
                         &touch_point->radius_y);
@@ -2082,8 +2082,8 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   WebTouchPoint touch_point;
   touch_point.pointer_type = WebPointerProperties::PointerType::kTouch;
   touch_point.state = WebTouchPoint::kStatePressed;
-  touch_point.position = WebFloatPoint(x, y);
-  touch_point.screen_position = touch_point.position;
+  touch_point.SetPositionInWidget(x, y);
+  touch_point.SetPositionInScreen(x, y);
 
   int highest_id = -1;
   for (size_t i = 0; i < touch_points_.size(); i++) {

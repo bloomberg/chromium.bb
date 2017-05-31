@@ -28,10 +28,11 @@ WebTouchPoint WebTouchEvent::TouchPointInRootFrame(unsigned point) const {
   transformed_point.radius_y /= frame_scale_;
   transformed_point.movement_x /= frame_scale_;
   transformed_point.movement_y /= frame_scale_;
-  transformed_point.position.x =
-      (transformed_point.position.x / frame_scale_) + frame_translate_.x;
-  transformed_point.position.y =
-      (transformed_point.position.y / frame_scale_) + frame_translate_.y;
+  transformed_point.SetPositionInWidget(
+      (transformed_point.PositionInWidget().x / frame_scale_) +
+          frame_translate_.x,
+      (transformed_point.PositionInWidget().y / frame_scale_) +
+          frame_translate_.y);
   return transformed_point;
 }
 

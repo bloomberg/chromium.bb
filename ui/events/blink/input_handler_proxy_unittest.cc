@@ -337,8 +337,8 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
                                   float y) {
   WebTouchPoint point;
   point.state = state;
-  point.screen_position = WebFloatPoint(x, y);
-  point.position = WebFloatPoint(x, y);
+  point.SetPositionInScreen(x, y);
+  point.SetPositionInWidget(x, y);
   return point;
 }
 

@@ -17,11 +17,11 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
                              PointerId id_param)
     : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, time_stamp_seconds),
       WebPointerProperties(id_param,
-                           button_param,
-                           WebPointerProperties::PointerType::kMouse),
-      click_count(click_count_param),
-      position_in_widget_(gesture_event.x, gesture_event.y),
-      position_in_screen_(gesture_event.global_x, gesture_event.global_y) {
+                           WebPointerProperties::PointerType::kMouse,
+                           button_param),
+      click_count(click_count_param) {
+  SetPositionInWidget(gesture_event.x, gesture_event.y);
+  SetPositionInScreen(gesture_event.global_x, gesture_event.global_y);
   SetFrameScale(gesture_event.FrameScale());
   SetFrameTranslate(gesture_event.FrameTranslate());
 }

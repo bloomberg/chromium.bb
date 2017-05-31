@@ -2093,33 +2093,33 @@ class InputRouterImplScaleTouchEventTest
     const WebTouchEvent* sent_event = GetSentWebInputEvent<WebTouchEvent>();
     ASSERT_EQ(2u, sent_event->touches_length);
     EXPECT_EQ(state, sent_event->touches[0].state);
-    EXPECT_EQ(20, sent_event->touches[0].position.x);
-    EXPECT_EQ(40, sent_event->touches[0].position.y);
-    EXPECT_EQ(10, sent_event->touches[0].screen_position.x);
-    EXPECT_EQ(20, sent_event->touches[0].screen_position.y);
+    EXPECT_EQ(20, sent_event->touches[0].PositionInWidget().x);
+    EXPECT_EQ(40, sent_event->touches[0].PositionInWidget().y);
+    EXPECT_EQ(10, sent_event->touches[0].PositionInScreen().x);
+    EXPECT_EQ(20, sent_event->touches[0].PositionInScreen().y);
     EXPECT_EQ(2, sent_event->touches[0].radius_x);
     EXPECT_EQ(2, sent_event->touches[0].radius_y);
 
-    EXPECT_EQ(200, sent_event->touches[1].position.x);
-    EXPECT_EQ(400, sent_event->touches[1].position.y);
-    EXPECT_EQ(100, sent_event->touches[1].screen_position.x);
-    EXPECT_EQ(200, sent_event->touches[1].screen_position.y);
+    EXPECT_EQ(200, sent_event->touches[1].PositionInWidget().x);
+    EXPECT_EQ(400, sent_event->touches[1].PositionInWidget().y);
+    EXPECT_EQ(100, sent_event->touches[1].PositionInScreen().x);
+    EXPECT_EQ(200, sent_event->touches[1].PositionInScreen().y);
     EXPECT_EQ(2, sent_event->touches[1].radius_x);
     EXPECT_EQ(2, sent_event->touches[1].radius_y);
 
     const WebTouchEvent* filter_event = GetFilterWebInputEvent<WebTouchEvent>();
     ASSERT_EQ(2u, filter_event->touches_length);
-    EXPECT_EQ(10, filter_event->touches[0].position.x);
-    EXPECT_EQ(20, filter_event->touches[0].position.y);
-    EXPECT_EQ(10, filter_event->touches[0].screen_position.x);
-    EXPECT_EQ(20, filter_event->touches[0].screen_position.y);
+    EXPECT_EQ(10, filter_event->touches[0].PositionInWidget().x);
+    EXPECT_EQ(20, filter_event->touches[0].PositionInWidget().y);
+    EXPECT_EQ(10, filter_event->touches[0].PositionInScreen().x);
+    EXPECT_EQ(20, filter_event->touches[0].PositionInScreen().y);
     EXPECT_EQ(1, filter_event->touches[0].radius_x);
     EXPECT_EQ(1, filter_event->touches[0].radius_y);
 
-    EXPECT_EQ(100, filter_event->touches[1].position.x);
-    EXPECT_EQ(200, filter_event->touches[1].position.y);
-    EXPECT_EQ(100, filter_event->touches[1].screen_position.x);
-    EXPECT_EQ(200, filter_event->touches[1].screen_position.y);
+    EXPECT_EQ(100, filter_event->touches[1].PositionInWidget().x);
+    EXPECT_EQ(200, filter_event->touches[1].PositionInWidget().y);
+    EXPECT_EQ(100, filter_event->touches[1].PositionInScreen().x);
+    EXPECT_EQ(200, filter_event->touches[1].PositionInScreen().y);
     EXPECT_EQ(1, filter_event->touches[1].radius_x);
     EXPECT_EQ(1, filter_event->touches[1].radius_y);
   }

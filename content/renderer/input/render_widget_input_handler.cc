@@ -368,7 +368,7 @@ InputEventAckState RenderWidgetInputHandler::HandleInputEvent(
     for (size_t i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].state == WebTouchPoint::kStatePressed &&
           delegate_->HasTouchEventHandlersAt(
-              gfx::ToFlooredPoint(touch_event.touches[i].position))) {
+              gfx::ToFlooredPoint(touch_event.touches[i].PositionInWidget()))) {
         ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
         break;
       }

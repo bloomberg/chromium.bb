@@ -125,8 +125,9 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
   if (!event.touches_length)
     return nullptr;
   WebTouchPoint transformed_point = event.TouchPointInRootFrame(0);
-  return HoveredNodeForPoint(frame, RoundedIntPoint(transformed_point.position),
-                             ignore_pointer_events_none);
+  return HoveredNodeForPoint(
+      frame, RoundedIntPoint(transformed_point.PositionInWidget()),
+      ignore_pointer_events_none);
 }
 
 bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,

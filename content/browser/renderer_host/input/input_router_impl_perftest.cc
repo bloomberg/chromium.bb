@@ -160,19 +160,19 @@ Touches BuildTouchSequence(size_t steps,
   touch.touches_length = 1;
   touch.touches[0].id = 0;
   touch.touches[0].state = WebTouchPoint::kStatePressed;
-  touch.touches[0].position.x = origin.x();
-  touch.touches[0].position.y = origin.y();
-  touch.touches[0].screen_position.x = origin.x();
-  touch.touches[0].screen_position.y = origin.y();
+  touch.touches[0].SetPositionInWidget(origin.x(), origin.y());
+  touch.touches[0].SetPositionInScreen(origin.x(), origin.y());
   touches.push_back(touch);
 
   touch.SetType(WebInputEvent::kTouchMove);
   touch.touches[0].state = WebTouchPoint::kStateMoved;
   for (size_t i = 0; i < steps; ++i) {
-    touch.touches[0].position.x += delta.x();
-    touch.touches[0].position.y += delta.y();
-    touch.touches[0].screen_position.x += delta.x();
-    touch.touches[0].screen_position.y += delta.y();
+    touch.touches[0].SetPositionInWidget(
+        touch.touches[0].PositionInWidget().x + delta.x(),
+        touch.touches[0].PositionInWidget().y + delta.y());
+    touch.touches[0].SetPositionInScreen(
+        touch.touches[0].PositionInScreen().x + delta.x(),
+        touch.touches[0].PositionInScreen().y + delta.y());
     touches.push_back(touch);
   }
 

@@ -108,8 +108,8 @@ void UpdateTouchPointerEventInit(const WebTouchPoint& touch_point,
   // dispatched event.
 
   if (target_frame) {
-    FloatPoint page_point =
-        target_frame->View()->RootFrameToContents(touch_point.position);
+    FloatPoint page_point = target_frame->View()->RootFrameToContents(
+        touch_point.PositionInWidget());
     float scale_factor = 1.0f / target_frame->PageZoomFactor();
     FloatPoint scroll_position(target_frame->View()->GetScrollOffset());
     FloatPoint client_point = page_point.ScaledBy(scale_factor);
@@ -130,8 +130,8 @@ void UpdateTouchPointerEventInit(const WebTouchPoint& touch_point,
     pointer_event_init->setHeight(point_radius.Height());
   }
 
-  pointer_event_init->setScreenX(touch_point.screen_position.x);
-  pointer_event_init->setScreenY(touch_point.screen_position.y);
+  pointer_event_init->setScreenX(touch_point.PositionInScreen().x);
+  pointer_event_init->setScreenY(touch_point.PositionInScreen().y);
   pointer_event_init->setPressure(GetPointerEventPressure(
       touch_point.force, pointer_event_init->buttons()));
   pointer_event_init->setTiltX(touch_point.tilt_x);

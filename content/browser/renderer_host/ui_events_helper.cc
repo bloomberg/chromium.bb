@@ -74,9 +74,9 @@ bool MakeUITouchEventsFromWebTouchEvents(
     // ui events start in the co-ordinate space of the EventDispatcher.
     gfx::PointF location;
     if (coordinate_system == LOCAL_COORDINATES)
-      location = point.position;
+      location = point.PositionInWidget();
     else
-      location = point.screen_position;
+      location = point.PositionInScreen();
     auto uievent = base::MakeUnique<ui::TouchEvent>(
         type, gfx::Point(), timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, point.id,

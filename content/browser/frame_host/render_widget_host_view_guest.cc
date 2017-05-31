@@ -203,8 +203,8 @@ void RenderWidgetHostViewGuest::ProcessTouchEvent(
     // touch. Sends a synthetic event for the focusing side effect.
     // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
     // http://crbug.com/533069
-    MaybeSendSyntheticTapGesture(event.touches[0].position,
-                                 event.touches[0].screen_position);
+    MaybeSendSyntheticTapGesture(event.touches[0].PositionInWidget(),
+                                 event.touches[0].PositionInScreen());
   }
 
   host_->ForwardTouchEventWithLatencyInfo(event, latency);

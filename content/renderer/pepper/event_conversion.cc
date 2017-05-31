@@ -260,8 +260,8 @@ void SetPPTouchPoints(const WebTouchPoint* touches,
     }
     PP_TouchPoint pp_pt;
     pp_pt.id = touch_point.id;
-    pp_pt.position.x = touch_point.position.x;
-    pp_pt.position.y = touch_point.position.y;
+    pp_pt.position.x = touch_point.PositionInWidget().x;
+    pp_pt.position.y = touch_point.PositionInWidget().y;
     pp_pt.radius.x = touch_point.radius_x;
     pp_pt.radius.y = touch_point.radius_y;
     pp_pt.rotation_angle = touch_point.rotation_angle;
@@ -306,11 +306,9 @@ WebTouchPoint CreateWebTouchPoint(const PP_TouchPoint& pp_pt,
   WebTouchPoint pt;
   pt.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
   pt.id = pp_pt.id;
-  pt.position.x = pp_pt.position.x;
-  pt.position.y = pp_pt.position.y;
+  pt.SetPositionInWidget(pp_pt.position.x, pp_pt.position.y);
   // TODO(crbug.com/93902): Add screen coordinate calculation.
-  pt.screen_position.x = 0;
-  pt.screen_position.y = 0;
+  pt.SetPositionInScreen(0, 0);
   pt.force = pp_pt.pressure;
   pt.radius_x = pp_pt.radius.x;
   pt.radius_y = pp_pt.radius.y;

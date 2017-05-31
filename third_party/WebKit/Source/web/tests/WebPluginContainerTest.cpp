@@ -467,8 +467,9 @@ class EventTestPlugin : public FakeWebPlugin {
       const WebTouchEvent& touch_event =
           static_cast<const WebTouchEvent&>(event);
       if (touch_event.touches_length == 1) {
-        last_event_location_ = IntPoint(touch_event.touches[0].position.x,
-                                        touch_event.touches[0].position.y);
+        last_event_location_ =
+            IntPoint(touch_event.touches[0].PositionInWidget().x,
+                     touch_event.touches[0].PositionInWidget().y);
       } else {
         last_event_location_ = IntPoint();
       }
@@ -606,8 +607,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
   event.touches_length = 1;
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].position =
-      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
+                                       rect.y + rect.height / 2);
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -648,8 +649,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.touches_length = 1;
   event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].position =
-      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
+                                       rect.y + rect.height / 2);
 
   WebCoalescedInputEvent coalesced_event(event);
 
@@ -657,12 +658,12 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
                         WebInputEvent::kTimeStampForTesting);
   c_event.touches_length = 1;
   c_event.touches[0].state = WebTouchPoint::kStatePressed;
-  c_event.touches[0].position =
-      WebFloatPoint(rect.x + rect.width / 2 + 1, rect.y + rect.height / 2 + 1);
+  c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 1,
+                                         rect.y + rect.height / 2 + 1);
 
   coalesced_event.AddCoalescedEvent(c_event);
-  c_event.touches[0].position =
-      WebFloatPoint(rect.x + rect.width / 2 + 2, rect.y + rect.height / 2 + 2);
+  c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 2,
+                                         rect.y + rect.height / 2 + 2);
   coalesced_event.AddCoalescedEvent(c_event);
 
   web_view->HandleInputEvent(coalesced_event);
@@ -870,8 +871,8 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
 
   event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].position =
-      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
+                                       rect.y + rect.height / 2);
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();

@@ -30,8 +30,10 @@ class EventConversionTest : public ::testing::Test {
       ASSERT_NE(j, actual.touches_length);
       EXPECT_EQ(expected.touches[i].id, actual.touches[j].id);
       EXPECT_EQ(expected.touches[i].state, actual.touches[j].state);
-      EXPECT_EQ(expected.touches[i].position.x, actual.touches[j].position.x);
-      EXPECT_EQ(expected.touches[i].position.y, actual.touches[j].position.y);
+      EXPECT_EQ(expected.touches[i].PositionInWidget().x,
+                actual.touches[j].PositionInWidget().x);
+      EXPECT_EQ(expected.touches[i].PositionInWidget().y,
+                actual.touches[j].PositionInWidget().y);
       EXPECT_EQ(expected.touches[i].radius_x, actual.touches[j].radius_x);
       EXPECT_EQ(expected.touches[i].radius_y, actual.touches[j].radius_y);
       EXPECT_EQ(expected.touches[i].rotation_angle,
