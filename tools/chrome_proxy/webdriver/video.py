@@ -152,12 +152,24 @@ class Video(IntegrationTest):
     self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_video.html')
 
   # Check the audio volume of a compressed video.
-  @NotAndroid
+  #
+  # This test makes some assumptions about the way audio is decoded and
+  # processed in JavaScript on different platforms. Despite getting the same
+  # video bytes from the proxy across all platforms, different data is generated
+  # out of the window.AudioContext object. As of May 2017, there were only two
+  # known datasets, the second occuring on all tested Android devices. If this
+  # test fails on a new or different platform, examine whether the expected data
+  # is drastically different. See crbug.com/723031 for more information.
   @Slow
   def testVideoAudio(self):
-    self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_audio.html')
+    alt_data = None
+    is_android = ParseFlags().android
+    if is_android:
+      alt_data = 'data/buck_bunny_640x360_24fps.mp4.expected_volume_alt.json'
+    self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_audio.html',
+      alt_data=alt_data, needs_click=is_android)
 
-  def instrumentedVideoTest(self, url):
+  def instrumentedVideoTest(self, url, alt_data=None, needs_click=False):
     """Run an instrumented video test. The given page is reloaded up to some
     maximum number of times until a compressed video is seen by ChromeDriver by
     inspecting the network logs. Once that happens, test.ready is set and that
@@ -184,7 +196,11 @@ class Video(IntegrationTest):
             time.sleep(1)
       if attempts >= max_attempts:
         self.fail('Could not get a compressed video after %d tries' % attempts)
+      if alt_data != None:
+        t.ExecuteJavascriptStatement('test.expectedVolumeSrc = "%s"' % alt_data)
       t.ExecuteJavascriptStatement('test.ready = true')
+      if needs_click:
+        t.FindElement(By.ID, 'video').click()
       waitTimeQuery = 'test.waitTime'
       if ParseFlags().android:
         waitTimeQuery = 'test.androidWaitTime'
@@ -192,9 +208,9 @@ class Video(IntegrationTest):
       t.WaitForJavascriptExpression('test.metrics.complete', wait_time)
       metrics = t.ExecuteJavascriptStatement('test.metrics')
       if not metrics['complete']:
-        raise Exception('Test not complete after %d seconds.' % wait_time)
+        self.fail('Test not complete after %d seconds.' % wait_time)
       if metrics['failed']:
-        raise Exception('Test failed!')
+        self.fail('Test failed! ' + metrics['detailedStatus'])
 
   # Make sure YouTube autoplays.
   def testYoutube(self):
