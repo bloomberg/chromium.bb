@@ -30,8 +30,10 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -103,13 +105,15 @@ public class AccountManagementFragment extends PreferenceFragment
     private static String sChildAccountId;
     private static Bitmap sCachedBadgedPicture;
 
-    public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_ADD_ACCOUNT = "add_account";
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
     public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
     public static final String PREF_CHILD_CONTENT = "child_content";
+    public static final String PREF_CHILD_CONTENT_DIVIDER = "child_content_divider";
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     public static final String PREF_SYNC_SETTINGS = "sync_settings";
+    public static final String PREF_SIGN_OUT = "sign_out";
+    public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
     private int mGaiaServiceType;
 
@@ -142,6 +146,14 @@ public class AccountManagementFragment extends PreferenceFragment
                 mGaiaServiceType);
 
         startFetchingAccountsInformation(getActivity(), mProfile);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        ListView list = (ListView) getView().findViewById(android.R.id.list);
+        list.setDivider(null);
     }
 
     @Override
@@ -238,6 +250,7 @@ public class AccountManagementFragment extends PreferenceFragment
         Preference signOutSwitch = findPreference(PREF_SIGN_OUT);
         if (mProfile.isChild()) {
             getPreferenceScreen().removePreference(signOutSwitch);
+            getPreferenceScreen().removePreference(findPreference(PREF_SIGN_OUT_DIVIDER));
         } else {
             signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue());
             signOutSwitch.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -385,9 +398,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 childContentSummary = R.string.account_management_child_content_all;
             }
             childContent.setSummary(childContentSummary);
-            // TODO(dgn): made selectable to show the dividers. Find a way to avoid this. A side
-            // effect is that it shows a tap ripple on an item that is not interactive.
-            // childContent.setSelectable(false);
+            childContent.setSelectable(false);
 
             Drawable newIcon = ApiCompatibilityUtils.getDrawable(
                     getResources(), R.drawable.ic_drive_site_white_24dp);
@@ -400,6 +411,7 @@ public class AccountManagementFragment extends PreferenceFragment
             prefScreen.removePreference(findPreference(PREF_PARENTAL_SETTINGS));
             prefScreen.removePreference(parentAccounts);
             prefScreen.removePreference(childContent);
+            prefScreen.removePreference(findPreference(PREF_CHILD_CONTENT_DIVIDER));
         }
     }
 
