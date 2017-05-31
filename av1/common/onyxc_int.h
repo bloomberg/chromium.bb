@@ -892,7 +892,7 @@ static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
 
 #if CONFIG_VAR_TX
 static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
-  if (tx_size >= TX_SIZES_ALL) assert(0);
+  assert(tx_size < TX_SIZES_ALL);
   return txsize_sqr_map[tx_size];
 }
 
