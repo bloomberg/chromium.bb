@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
@@ -148,6 +149,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             @Override
             public boolean isIncognito() {
                 return false;
+            }
+
+            @Override
+            public Profile getProfile() {
+                return null;
             }
 
             @Override

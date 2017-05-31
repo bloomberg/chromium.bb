@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
@@ -143,8 +144,9 @@ public class UrlBar extends AutocompleteEditText {
      */
     public interface UrlBarDelegate {
         /**
-         * @return The current active {@link Tab}.
+         * @return The current active {@link Tab}. May be null.
          */
+        @Nullable
         Tab getCurrentTab();
 
         /**
@@ -377,7 +379,7 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public View focusSearch(int direction) {
-        if (direction == View.FOCUS_BACKWARD
+        if (direction == View.FOCUS_BACKWARD && mUrlBarDelegate.getCurrentTab() != null
                 && mUrlBarDelegate.getCurrentTab().getView() != null) {
             return mUrlBarDelegate.getCurrentTab().getView();
         } else {

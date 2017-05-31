@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -139,6 +140,16 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     @Override
     public boolean isIncognito() {
         return mIsIncognito;
+    }
+
+    @Override
+    public Profile getProfile() {
+        Profile lastUsedProfile = Profile.getLastUsedProfile();
+        if (mIsIncognito) {
+            assert lastUsedProfile.hasOffTheRecordProfile();
+            return lastUsedProfile.getOffTheRecordProfile();
+        }
+        return lastUsedProfile.getOriginalProfile();
     }
 
     /**
