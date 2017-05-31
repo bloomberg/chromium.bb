@@ -31,8 +31,8 @@
 #import "core/layout/LayoutView.h"
 #import "core/paint/MediaControlsPainter.h"
 #import "core/style/ShadowList.h"
+#import "platform/DataResourceHelper.h"
 #import "platform/LayoutTestSupport.h"
-#import "platform/PlatformResourceLoader.h"
 #import "platform/RuntimeEnabledFeatures.h"
 #import "platform/Theme.h"
 #import "platform/graphics/BitmapImage.h"
@@ -1083,8 +1083,8 @@ String LayoutThemeMac::ExtraFullscreenStyleSheet() {
 
 String LayoutThemeMac::ExtraDefaultStyleSheet() {
   return LayoutTheme::ExtraDefaultStyleSheet() +
-         LoadResourceAsASCIIString("themeInputMultipleFields.css") +
-         LoadResourceAsASCIIString("themeMac.css");
+         GetDataResourceAsASCIIString("themeInputMultipleFields.css") +
+         GetDataResourceAsASCIIString("themeMac.css");
 }
 
 bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {

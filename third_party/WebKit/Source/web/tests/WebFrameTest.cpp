@@ -90,7 +90,6 @@
 #include "platform/Cursor.h"
 #include "platform/DragImage.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsLayer.h"

@@ -146,8 +146,8 @@ action("instrumentation_probes") {
 
   outputs = [
     "$blink_platform_output_dir/PlatformProbeSink.h",
-    "$blink_platform_output_dir/PlatformProbesInl.h",
     "$blink_platform_output_dir/PlatformProbesImpl.cpp",
+    "$blink_platform_output_dir/PlatformProbesInl.h",
   ]
 
   args = [
@@ -244,6 +244,8 @@ component("platform") {
     "CryptoResult.h",
     "Cursor.cpp",
     "Cursor.h",
+    "DataResourceHelper.cpp",
+    "DataResourceHelper.h",
     "DateComponents.cpp",
     "DateComponents.h",
     "Decimal.cpp",
@@ -297,8 +299,6 @@ component("platform") {
     "PlatformChromeClient.h",
     "PlatformExport.h",
     "PlatformFrameView.h",
-    "PlatformResourceLoader.cpp",
-    "PlatformResourceLoader.h",
     "PluginScriptForbiddenScope.cpp",
     "PluginScriptForbiddenScope.h",
     "PopupMenu.h",

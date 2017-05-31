@@ -75,9 +75,8 @@ static PassRefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
   RefPtr<AudioBus> bus;
   AudioBusMap::iterator iterator = audio_bus_map.find(subject_name);
   if (iterator == audio_bus_map.end()) {
-    RefPtr<AudioBus> concatenated_impulse_responses(
-        AudioBus::LoadPlatformResource(subject_name.Utf8().data(),
-                                       kResponseSampleRate));
+    RefPtr<AudioBus> concatenated_impulse_responses(AudioBus::GetDataResource(
+        subject_name.Utf8().data(), kResponseSampleRate));
     DCHECK(concatenated_impulse_responses);
     if (!concatenated_impulse_responses)
       return nullptr;

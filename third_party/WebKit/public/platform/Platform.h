@@ -403,15 +403,15 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Resources -----------------------------------------------------------
 
   // Returns a blob of data corresponding to the named resource.
-  virtual WebData LoadResource(const char* name) { return WebData(); }
+  virtual WebData GetDataResource(const char* name) { return WebData(); }
 
   // Decodes the in-memory audio file data and returns the linear PCM audio data
   // in the destinationBus.  A sample-rate conversion to sampleRate will occur
   // if the file data is at a different sample-rate.
   // Returns true on success.
-  virtual bool LoadAudioResource(WebAudioBus* destination_bus,
-                                 const char* audio_file_data,
-                                 size_t data_size) {
+  virtual bool DecodeAudioFileData(WebAudioBus* destination_bus,
+                                   const char* audio_file_data,
+                                   size_t data_size) {
     return false;
   }
 

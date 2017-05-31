@@ -151,9 +151,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& input_device_id,
       const blink::WebSecurityOrigin& security_origin) override;
 
-  bool LoadAudioResource(blink::WebAudioBus* destination_bus,
-                         const char* audio_file_data,
-                         size_t data_size) override;
+  bool DecodeAudioFileData(blink::WebAudioBus* destination_bus,
+                           const char* audio_file_data,
+                           size_t data_size) override;
 
   std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
