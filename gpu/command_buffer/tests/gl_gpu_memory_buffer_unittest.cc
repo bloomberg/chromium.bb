@@ -227,7 +227,8 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
       glCreateImageCHROMIUM(buffer->AsClientBuffer(), kImageWidth, kImageHeight,
                             InternalFormat(GetParam()));
   ASSERT_NE(0u, image_id);
-  ASSERT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
+  ASSERT_TRUE(gl_.decoder()->GetImageManagerForTest()->LookupImage(image_id) !=
+              NULL);
 
   // Bind the image.
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);

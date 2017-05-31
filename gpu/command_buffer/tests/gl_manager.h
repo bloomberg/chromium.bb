@@ -15,6 +15,8 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -34,7 +36,6 @@ namespace gpu {
 
 class CommandBufferDirect;
 class ImageFactory;
-class ServiceDiscardableManager;
 class SyncPointManager;
 class TransferBuffer;
 
@@ -157,7 +158,6 @@ class GLManager : private GpuControl {
 
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gl::GLShareGroup> share_group_;
-  std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
   std::unique_ptr<CommandBufferDirect> command_buffer_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gl::GLSurface> surface_;
@@ -165,6 +165,9 @@ class GLManager : private GpuControl {
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
+
+  gles2::ImageManager image_manager_;
+  ServiceDiscardableManager discardable_manager_;
 
   uint64_t next_fence_sync_release_ = 1;
 

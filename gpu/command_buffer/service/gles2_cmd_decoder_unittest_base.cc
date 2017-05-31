@@ -196,12 +196,13 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     feature_info = new FeatureInfo(*command_line, gpu_driver_bug_workaround);
   }
 
-  group_ = scoped_refptr<ContextGroup>(
-      new ContextGroup(gpu_preferences_, NULL, memory_tracker_,
-                       new ShaderTranslatorCache(gpu_preferences_),
-                       new FramebufferCompletenessCache, feature_info,
-                       normalized_init.bind_generates_resource, nullptr,
-                       nullptr, GpuFeatureInfo(), &discardable_manager_));
+  group_ = scoped_refptr<ContextGroup>(new ContextGroup(
+      gpu_preferences_, nullptr /* mailbox_manager */, memory_tracker_,
+      new ShaderTranslatorCache(gpu_preferences_),
+      new FramebufferCompletenessCache, feature_info,
+      normalized_init.bind_generates_resource, &image_manager_,
+      nullptr /* image_factory */, nullptr /* progress_reporter */,
+      GpuFeatureInfo(), &discardable_manager_));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
   InSequence sequence;

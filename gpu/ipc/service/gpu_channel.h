@@ -116,6 +116,8 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   GpuWatchdogThread* watchdog() const { return watchdog_; }
 
+  gles2::ImageManager* image_manager() const { return image_manager_.get(); }
+
   const scoped_refptr<gles2::MailboxManager>& mailbox_manager() const {
     return mailbox_manager_;
   }
@@ -274,6 +276,8 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   scoped_refptr<gl::GLShareGroup> share_group_;
 
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+
+  std::unique_ptr<gles2::ImageManager> image_manager_;
 
   GpuWatchdogThread* const watchdog_;
 

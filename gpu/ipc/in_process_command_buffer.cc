@@ -178,6 +178,12 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
   return program_cache_.get();
 }
 
+gles2::ImageManager* InProcessCommandBuffer::Service::image_manager() {
+  if (!image_manager_)
+    image_manager_.reset(new gles2::ImageManager());
+  return image_manager_.get();
+}
+
 ServiceDiscardableManager*
 InProcessCommandBuffer::Service::discardable_manager() {
   if (!discardable_manager_) {
@@ -300,11 +306,13 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       params.context_group
           ? params.context_group->decoder_->GetContextGroup()
           : new gles2::ContextGroup(
-                service_->gpu_preferences(), service_->mailbox_manager(), NULL,
+                service_->gpu_preferences(), service_->mailbox_manager(),
+                nullptr /* memory_tracker */,
                 service_->shader_translator_cache(),
                 service_->framebuffer_completeness_cache(), feature_info,
-                bind_generates_resource, nullptr, nullptr, GpuFeatureInfo(),
-                service_->discardable_manager());
+                bind_generates_resource, service_->image_manager(),
+                nullptr /* image_factory */, nullptr /* progress_reporter */,
+                GpuFeatureInfo(), service_->discardable_manager());
 
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
 
@@ -772,10 +780,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     gfx::BufferFormat format,
     uint32_t internalformat,
     uint64_t fence_sync) {
-  if (!decoder_)
-    return;
-
-  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  gles2::ImageManager* image_manager = service_->image_manager();
   DCHECK(image_manager);
   if (image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image already exists with same ID.";
@@ -834,10 +839,7 @@ void InProcessCommandBuffer::DestroyImage(int32_t id) {
 }
 
 void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
-  if (!decoder_)
-    return;
-
-  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  gles2::ImageManager* image_manager = service_->image_manager();
   DCHECK(image_manager);
   if (!image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image with ID doesn't exist.";

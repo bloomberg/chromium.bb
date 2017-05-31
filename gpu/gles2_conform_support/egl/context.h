@@ -15,6 +15,8 @@
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
@@ -103,7 +105,6 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool is_current_in_some_thread_;
   bool is_destroyed_;
   gpu::GpuPreferences gpu_preferences_;
-  std::unique_ptr<gpu::ServiceDiscardableManager> discardable_manager_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
   std::unique_ptr<gpu::TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<gpu::CommandBufferDirect> command_buffer_;
@@ -114,6 +115,10 @@ class Context : public base::RefCountedThreadSafe<Context>,
   scoped_refptr<gl::GLContext> gl_context_;
 
   std::unique_ptr<gpu::gles2::GLES2Interface> client_gl_context_;
+
+  gpu::gles2::ImageManager image_manager_;
+  gpu::ServiceDiscardableManager discardable_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 

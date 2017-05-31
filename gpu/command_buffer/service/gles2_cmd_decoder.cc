@@ -576,7 +576,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   VertexArrayManager* GetVertexArrayManager() override {
     return vertex_array_manager_.get();
   }
-  ImageManager* GetImageManager() override { return image_manager_.get(); }
+  ImageManager* GetImageManagerForTest() override {
+    return group_->image_manager();
+  }
 
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -755,7 +757,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return group_->mailbox_manager();
   }
 
-  ImageManager* image_manager() { return image_manager_.get(); }
+  ImageManager* image_manager() { return group_->image_manager(); }
 
   VertexArrayManager* vertex_array_manager() {
     return vertex_array_manager_.get();
@@ -2340,8 +2342,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
 
-  std::unique_ptr<ImageManager> image_manager_;
-
   FenceSyncReleaseCallback fence_sync_release_callback_;
   WaitSyncTokenCallback wait_sync_token_callback_;
   NoParamCallback deschedule_until_finished_callback_;
@@ -3278,8 +3278,6 @@ bool GLES2DecoderImpl::Initialize(
   group_->texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
 
   query_manager_.reset(new QueryManager(this, feature_info_.get()));
-
-  image_manager_.reset(new ImageManager);
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -4886,8 +4884,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     transform_feedback_manager_->Destroy();
     transform_feedback_manager_.reset();
   }
-
-  image_manager_.reset();
 
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();

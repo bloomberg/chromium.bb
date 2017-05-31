@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -89,7 +90,6 @@ class CommandBufferSetup {
  public:
   CommandBufferSetup()
       : atexit_manager_(),
-        sync_point_manager_(new SyncPointManager()),
         mailbox_manager_(new gles2::MailboxManagerImpl),
         share_group_(new gl::GLShareGroup) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
@@ -136,8 +136,9 @@ class CommandBufferSetup {
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo();
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
-        gpu_preferences_, mailbox_manager_.get(), nullptr, translator_cache_,
-        completeness_cache_, feature_info, true /* bind_generates_resource */,
+        gpu_preferences_, mailbox_manager_.get(), nullptr /* memory_tracker */,
+        translator_cache_, completeness_cache_, feature_info,
+        true /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         GpuFeatureInfo(), &discardable_manager_);
     decoder_.reset(gles2::GLES2Decoder::Create(context_group.get()));
@@ -145,7 +146,7 @@ class CommandBufferSetup {
         context_group->transfer_buffer_manager(), decoder_.get(),
         base::Bind(&gles2::GLES2Decoder::MakeCurrent,
                    base::Unretained(decoder_.get())),
-        sync_point_manager_.get()));
+        &sync_point_manager_));
     InitializeInitialCommandBuffer();
 
     decoder_->set_command_buffer_service(command_buffer_->service());
@@ -252,9 +253,10 @@ class CommandBufferSetup {
 
   GpuPreferences gpu_preferences_;
 
-  std::unique_ptr<SyncPointManager> sync_point_manager_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gl::GLShareGroup> share_group_;
+  SyncPointManager sync_point_manager_;
+  gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
 
   bool recreate_context_ = false;
