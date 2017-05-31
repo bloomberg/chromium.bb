@@ -278,7 +278,7 @@ BlinkTestController::BlinkTestController()
 }
 
 BlinkTestController::~BlinkTestController() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(instance_ == this);
   CHECK(test_phase_ == BETWEEN_TESTS);
   GpuDataManager::GetInstance()->RemoveObserver(this);
@@ -291,7 +291,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     const base::FilePath& current_working_directory,
     bool enable_pixel_dumping,
     const std::string& expected_pixel_hash) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   test_phase_ = DURING_TEST;
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
@@ -366,7 +366,7 @@ bool BlinkTestController::PrepareForLayoutTest(
 }
 
 bool BlinkTestController::ResetAfterLayoutTest() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
   printer_->CloseStderr();
@@ -393,7 +393,7 @@ void BlinkTestController::SetTempPath(const base::FilePath& temp_path) {
 }
 
 void BlinkTestController::RendererUnresponsive() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LOG(WARNING) << "renderer unresponsive";
 }
 
@@ -443,7 +443,7 @@ std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
 }
 
 bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
@@ -501,7 +501,7 @@ bool BlinkTestController::OnMessageReceived(
 
 void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
                                         base::ProcessId plugin_pid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage(
       base::StringPrintf("#CRASHED - plugin (pid %d)", plugin_pid));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -512,12 +512,12 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
 
 void BlinkTestController::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   HandleNewRenderFrameHost(render_frame_host);
 }
 
 void BlinkTestController::DevToolsProcessCrashed() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("#CRASHED - devtools");
   devtools_bindings_.reset();
   if (devtools_window_)
@@ -526,7 +526,7 @@ void BlinkTestController::DevToolsProcessCrashed() {
 }
 
 void BlinkTestController::WebContentsDestroyed() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("FAIL: main window was destroyed");
   DiscardMainWindow();
 }
@@ -542,7 +542,7 @@ void BlinkTestController::RenderProcessExited(
     RenderProcessHost* render_process_host,
     base::TerminationStatus status,
     int exit_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (status) {
     case base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING:
@@ -571,7 +571,7 @@ void BlinkTestController::RenderProcessExited(
 void BlinkTestController::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (type) {
     case NOTIFICATION_RENDERER_PROCESS_CREATED: {
       if (!main_window_)
@@ -594,7 +594,7 @@ void BlinkTestController::Observe(int type,
 
 void BlinkTestController::OnGpuProcessCrashed(
     base::TerminationStatus exit_code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("#CRASHED - gpu");
   DiscardMainWindow();
 }
