@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/navigation_item.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
@@ -215,9 +216,13 @@ const int kNumberOfURLsToSend = 1;
     didChangeActiveTab:(Tab*)newTab
            previousTab:(Tab*)previousTab
                atIndex:(NSUInteger)modelIndex {
-  [self recordURL:base::SysUTF8ToNSString(newTab.url.spec())
+  web::NavigationItem* pendingItem =
+      newTab.webState->GetNavigationManager()->GetPendingItem();
+  const GURL& URL =
+      pendingItem ? pendingItem->GetURL() : newTab.lastCommittedURL;
+  [self recordURL:base::SysUTF8ToNSString(URL.spec())
          forTabId:newTab.tabId
-          pending:NO];
+          pending:pendingItem ? YES : NO];
 }
 
 // Empty method left in place in case jailbreakers are swizzling this.
