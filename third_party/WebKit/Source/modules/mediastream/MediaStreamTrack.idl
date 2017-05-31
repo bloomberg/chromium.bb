@@ -53,5 +53,8 @@ enum MediaStreamTrackState {
     [RuntimeEnabled=MediaTrackCapabilities] MediaTrackCapabilities getCapabilities();
     MediaTrackConstraints getConstraints();
     MediaTrackSettings getSettings();
-    [RuntimeEnabled=MediaTrackApplyConstraints, CallWith=ScriptState] Promise<void> applyConstraints(optional MediaTrackConstraints constraints);
+    // Spec resolves applyConstraints() with void, here we resolve with the
+    // applied MediaTrackConstraints instead:
+    // https://github.com/w3c/mediacapture-main/issues/462
+    [RuntimeEnabled=MediaTrackApplyConstraints, CallWith=ScriptState] Promise<MediaTrackConstraints> applyConstraints(optional MediaTrackConstraints constraints);
 };

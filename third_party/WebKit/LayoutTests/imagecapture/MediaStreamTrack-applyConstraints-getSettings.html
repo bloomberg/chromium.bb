@@ -2,6 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
+<script src="resources/imagecapture-helpers.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
@@ -59,10 +60,8 @@ async_test(function(t) {
       // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
       return new Promise(resolve => setTimeout(resolve, 100));
     })
-    .then(function() {
-      return videoTrack.applyConstraints(constraints);
-    })
-    .then(function() {
+    .then(() => videoTrack.applyConstraints(constraints))
+    .then(appliedConstraints => {
 
       settings = videoTrack.getSettings();
       assert_equals(typeof settings, 'object');
@@ -74,16 +73,9 @@ async_test(function(t) {
       assert_equals(constraints.advanced[0].focusMode, settings.focusMode,
                     'focusMode');
 
-      assert_equals(constraints.advanced[0].pointsOfInterest.length,
-                    settings.pointsOfInterest.length, 'pointsOfInterest');
-      for (i = 0; i < constraints.advanced[0].pointsOfInterest.length; ++i) {
-        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].x,
-                             settings.pointsOfInterest[i].x, 0.01,
-                             'pointsOfInterest x');
-        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].y,
-                             settings.pointsOfInterest[i].y, 0.01,
-                             'pointsOfInterest y');
-      }
+      assert_point2d_array_approx_equals(
+          constraints.advanced[0].pointsOfInterest, settings.pointsOfInterest,
+          0.01);
 
       assert_equals(constraints.advanced[0].exposureCompensation,
                     settings.exposureCompensation, 'exposureCompensation');
