@@ -31,18 +31,13 @@
 #ifndef WebAssociatedURLLoaderOptions_h
 #define WebAssociatedURLLoaderOptions_h
 
+#include "public/platform/WebURLRequest.h"
+
 namespace blink {
 
 struct WebAssociatedURLLoaderOptions {
-  enum CrossOriginRequestPolicy {
-    kCrossOriginRequestPolicyDeny,
-    kCrossOriginRequestPolicyUseAccessControl,
-    kCrossOriginRequestPolicyAllow
-  };
-
   enum PreflightPolicy {
     kConsiderPreflight,
-    kForcePreflight,
     kPreventPreflight
   };
 
@@ -51,7 +46,7 @@ struct WebAssociatedURLLoaderOptions {
         allow_credentials(false),
         expose_all_response_headers(false),
         preflight_policy(kConsiderPreflight),
-        cross_origin_request_policy(kCrossOriginRequestPolicyDeny) {}
+        fetch_request_mode(WebURLRequest::kFetchRequestModeSameOrigin) {}
 
   // Whether to validate the method and headers as if this was an
   // XMLHttpRequest.
@@ -62,7 +57,7 @@ struct WebAssociatedURLLoaderOptions {
   // response headers to the client.
   bool expose_all_response_headers;
   PreflightPolicy preflight_policy;
-  CrossOriginRequestPolicy cross_origin_request_policy;
+  WebURLRequest::FetchRequestMode fetch_request_mode;
 };
 
 }  // namespace blink

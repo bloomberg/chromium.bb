@@ -189,12 +189,13 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad() {
       WebURLRequest::kRequestContextSharedWorker);
   loading_document_ = main_frame_->GetFrame()->GetDocument();
 
-  CrossOriginRequestPolicy cross_origin_request_policy =
-      (static_cast<KURL>(url_)).ProtocolIsData() ? kAllowCrossOriginRequests
-                                                 : kDenyCrossOriginRequests;
+  WebURLRequest::FetchRequestMode fetch_request_mode =
+      (static_cast<KURL>(url_)).ProtocolIsData()
+          ? WebURLRequest::kFetchRequestModeNoCORS
+          : WebURLRequest::kFetchRequestModeSameOrigin;
 
   main_script_loader_->LoadAsynchronously(
-      *loading_document_.Get(), url_, cross_origin_request_policy,
+      *loading_document_.Get(), url_, fetch_request_mode,
       creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),

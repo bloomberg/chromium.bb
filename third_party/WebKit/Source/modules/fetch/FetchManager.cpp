@@ -803,26 +803,29 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
       ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
           ? kDoNotEnforceContentSecurityPolicy
           : kEnforceContentSecurityPolicy;
-  if (cors_preflight_flag)
-    threadable_loader_options.preflight_policy = kForcePreflight;
   switch (request_->Mode()) {
     case WebURLRequest::kFetchRequestModeSameOrigin:
-      threadable_loader_options.cross_origin_request_policy =
-          kDenyCrossOriginRequests;
-      break;
     case WebURLRequest::kFetchRequestModeNoCORS:
-      threadable_loader_options.cross_origin_request_policy =
-          kAllowCrossOriginRequests;
+      threadable_loader_options.fetch_request_mode = request_->Mode();
       break;
     case WebURLRequest::kFetchRequestModeCORS:
     case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
-      threadable_loader_options.cross_origin_request_policy = kUseAccessControl;
+      // TODO(tyoshino): Use only the flag or the mode enum inside the
+      // FetchManager. Currently both are used due to ongoing refactoring.
+      // See http://crbug.com/727596.
+      if (cors_preflight_flag) {
+        threadable_loader_options.fetch_request_mode =
+            WebURLRequest::kFetchRequestModeCORSWithForcedPreflight;
+      } else {
+        threadable_loader_options.fetch_request_mode =
+            WebURLRequest::kFetchRequestModeCORS;
+      }
       break;
     case WebURLRequest::kFetchRequestModeNavigate:
-      // Using DenyCrossOriginRequests here to reduce the security risk.
+      // Using kFetchRequestModeSameOrigin here to reduce the security risk.
       // "navigate" request is only available in ServiceWorker.
-      threadable_loader_options.cross_origin_request_policy =
-          kDenyCrossOriginRequests;
+      threadable_loader_options.fetch_request_mode =
+          WebURLRequest::kFetchRequestModeSameOrigin;
       break;
   }
   probe::willStartFetch(execution_context_, this);
@@ -856,8 +859,8 @@ void FetchManager::Loader::PerformDataFetch() {
       ContentSecurityPolicy::ShouldBypassMainWorld(execution_context_)
           ? kDoNotEnforceContentSecurityPolicy
           : kEnforceContentSecurityPolicy;
-  threadable_loader_options.cross_origin_request_policy =
-      kAllowCrossOriginRequests;
+  threadable_loader_options.fetch_request_mode =
+      WebURLRequest::kFetchRequestModeNoCORS;
 
   probe::willStartFetch(execution_context_, this);
   loader_ = ThreadableLoader::Create(*execution_context_, this,

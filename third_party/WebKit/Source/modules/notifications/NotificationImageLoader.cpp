@@ -105,9 +105,8 @@ void NotificationImageLoader::Start(
   image_callback_ = std::move(image_callback);
 
   ThreadableLoaderOptions threadable_loader_options;
-  threadable_loader_options.preflight_policy = kPreventPreflight;
-  threadable_loader_options.cross_origin_request_policy =
-      kAllowCrossOriginRequests;
+  threadable_loader_options.fetch_request_mode =
+      WebURLRequest::kFetchRequestModeNoCORS;
   threadable_loader_options.timeout_milliseconds = kImageFetchTimeoutInMs;
 
   // TODO(mvanouwerkerk): Add an entry for notifications to

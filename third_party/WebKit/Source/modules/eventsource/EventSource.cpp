@@ -150,7 +150,7 @@ void EventSource::Connect() {
 
   ThreadableLoaderOptions options;
   options.preflight_policy = kPreventPreflight;
-  options.cross_origin_request_policy = kUseAccessControl;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   options.content_security_policy_enforcement =
       ContentSecurityPolicy::ShouldBypassMainWorld(&execution_context)
           ? kDoNotEnforceContentSecurityPolicy

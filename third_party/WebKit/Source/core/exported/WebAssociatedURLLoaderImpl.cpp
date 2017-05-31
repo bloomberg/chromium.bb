@@ -207,9 +207,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
 
   if (options_.expose_all_response_headers ||
-      options_.cross_origin_request_policy !=
-          WebAssociatedURLLoaderOptions::
-              kCrossOriginRequestPolicyUseAccessControl) {
+      (options_.fetch_request_mode != WebURLRequest::kFetchRequestModeCORS &&
+       options_.fetch_request_mode !=
+           WebURLRequest::kFetchRequestModeCORSWithForcedPreflight)) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
@@ -351,19 +351,8 @@ WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)
 
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyDeny,
-                   kDenyCrossOriginRequests);
-STATIC_ASSERT_ENUM(
-    WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl,
-    kUseAccessControl);
-STATIC_ASSERT_ENUM(
-    WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow,
-    kAllowCrossOriginRequests);
-
 STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kConsiderPreflight,
                    kConsiderPreflight);
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kForcePreflight,
-                   kForcePreflight);
 STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kPreventPreflight,
                    kPreventPreflight);
 
@@ -401,8 +390,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     ThreadableLoaderOptions options;
     options.preflight_policy =
         static_cast<PreflightPolicy>(options_.preflight_policy);
-    options.cross_origin_request_policy = static_cast<CrossOriginRequestPolicy>(
-        options_.cross_origin_request_policy);
+    options.fetch_request_mode = options_.fetch_request_mode;
 
     ResourceLoaderOptions resource_loader_options;
     resource_loader_options.allow_credentials =

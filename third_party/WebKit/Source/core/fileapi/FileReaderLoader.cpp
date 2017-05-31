@@ -96,8 +96,7 @@ void FileReaderLoader::Start(ExecutionContext* execution_context,
         AtomicString(String::Format("bytes=%d-%d", range_start_, range_end_)));
 
   ThreadableLoaderOptions options;
-  options.preflight_policy = kConsiderPreflight;
-  options.cross_origin_request_policy = kDenyCrossOriginRequests;
+  options.fetch_request_mode = WebURLRequest::kFetchRequestModeSameOrigin;
   // FIXME: Is there a directive to which this load should be subject?
   options.content_security_policy_enforcement =
       kDoNotEnforceContentSecurityPolicy;

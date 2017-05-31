@@ -62,13 +62,13 @@ class CORE_EXPORT WorkerScriptLoader final
 
   void LoadSynchronously(ExecutionContext&,
                          const KURL&,
-                         CrossOriginRequestPolicy,
+                         WebURLRequest::FetchRequestMode,
                          WebAddressSpace);
 
   // Note that callbacks could be invoked before loadAsynchronously() returns.
   void LoadAsynchronously(ExecutionContext&,
                           const KURL&,
-                          CrossOriginRequestPolicy,
+                          WebURLRequest::FetchRequestMode,
                           WebAddressSpace,
                           std::unique_ptr<WTF::Closure> response_callback,
                           std::unique_ptr<WTF::Closure> finished_callback);
