@@ -169,12 +169,6 @@ DocumentMarker::DocumentMarker(unsigned start_offset,
                                                     thick,
                                                     background_color)) {}
 
-DocumentMarker::DocumentMarker(const DocumentMarker& marker)
-    : type_(marker.GetType()),
-      start_offset_(marker.StartOffset()),
-      end_offset_(marker.EndOffset()),
-      details_(marker.Details()) {}
-
 Optional<DocumentMarker::MarkerOffsets>
 DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
                                          unsigned old_length,
