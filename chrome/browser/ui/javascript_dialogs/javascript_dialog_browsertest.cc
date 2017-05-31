@@ -5,11 +5,9 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,9 +18,6 @@
 using JavaScriptDialogTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kAutoDismissingDialogs);
-
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   JavaScriptDialogTabHelper* js_helper =
@@ -44,9 +39,6 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
 
 IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
                        ClosingPageSharingRendererDoesntHang) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kAutoDismissingDialogs);
-
   // Turn off popup blocking.
   base::test::ScopedCommandLine scoped_command_line;
   scoped_command_line.GetProcessCommandLine()->AppendSwitch(
@@ -85,9 +77,6 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
 
 IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
                        ClosingPageWithSubframeAlertingDoesntCrash) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kAutoDismissingDialogs);
-
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   JavaScriptDialogTabHelper* js_helper =
