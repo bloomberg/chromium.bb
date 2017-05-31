@@ -35,8 +35,7 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
   void RequestWakeLock() override;
   void CancelWakeLock() override;
   void AddClient(mojom::WakeLockServiceRequest request) override;
-  void HasWakeLockForTests(
-      const HasWakeLockForTestsCallback& callback) override;
+  void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override;
 
  private:
   void UpdateWakeLock();
