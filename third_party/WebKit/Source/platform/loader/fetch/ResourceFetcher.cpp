@@ -70,14 +70,13 @@ enum SriResourceIntegrityMismatchEvent {
   kSriResourceIntegrityMismatchEventCount
 };
 
-#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                         \
-  case Resource::k##name: {                                                    \
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                           \
-        EnumerationHistogram, resource_histogram,                              \
-        new EnumerationHistogram(                                              \
-            "Blink.MemoryCache.RevalidationPolicy." prefix #name, kLoad + 1)); \
-    resource_histogram.Count(policy);                                          \
-    break;                                                                     \
+#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
+  case Resource::k##name: {                                                 \
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                        \
+        EnumerationHistogram, resource_histogram,                           \
+        ("Blink.MemoryCache.RevalidationPolicy." prefix #name, kLoad + 1)); \
+    resource_histogram.Count(policy);                                       \
+    break;                                                                  \
   }
 
 #define DEFINE_RESOURCE_HISTOGRAM(prefix)                    \
@@ -113,10 +112,9 @@ void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
 
 void RecordSriResourceIntegrityMismatchEvent(
     SriResourceIntegrityMismatchEvent event) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, integrity_histogram,
-      new EnumerationHistogram("sri.resource_integrity_mismatch_event",
-                               kSriResourceIntegrityMismatchEventCount));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, integrity_histogram,
+                                  ("sri.resource_integrity_mismatch_event",
+                                   kSriResourceIntegrityMismatchEventCount));
   integrity_histogram.Count(event);
 }
 

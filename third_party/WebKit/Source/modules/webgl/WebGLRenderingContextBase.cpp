@@ -128,9 +128,8 @@ unsigned CurrentMaxGLContexts() {
 using WebGLRenderingContextBaseSet =
     PersistentHeapHashSet<WeakMember<WebGLRenderingContextBase>>;
 WebGLRenderingContextBaseSet& ActiveContexts() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<WebGLRenderingContextBaseSet>, active_contexts,
-      new ThreadSpecific<WebGLRenderingContextBaseSet>());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebGLRenderingContextBaseSet>,
+                                  active_contexts, ());
   if (!active_contexts.IsSet())
     active_contexts->RegisterAsStaticReference();
   return *active_contexts;
@@ -139,9 +138,8 @@ WebGLRenderingContextBaseSet& ActiveContexts() {
 using WebGLRenderingContextBaseMap =
     PersistentHeapHashMap<WeakMember<WebGLRenderingContextBase>, int>;
 WebGLRenderingContextBaseMap& ForciblyEvictedContexts() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<WebGLRenderingContextBaseMap>, forcibly_evicted_contexts,
-      new ThreadSpecific<WebGLRenderingContextBaseMap>());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebGLRenderingContextBaseMap>,
+                                  forcibly_evicted_contexts, ());
   if (!forcibly_evicted_contexts.IsSet())
     forcibly_evicted_contexts->RegisterAsStaticReference();
   return *forcibly_evicted_contexts;

@@ -27,12 +27,12 @@
 namespace WTF {
 
 static Mutex& hashTableStatsMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 
 HashTableStats& HashTableStats::instance() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(HashTableStats, stats, new HashTableStats);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(HashTableStats, stats, ());
   return stats;
 }
 

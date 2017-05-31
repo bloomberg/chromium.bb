@@ -16,8 +16,7 @@ namespace blink {
 
 SharedGpuContext* SharedGpuContext::GetInstanceForCurrentThread() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<SharedGpuContext>,
-                                  thread_specific_instance,
-                                  new ThreadSpecific<SharedGpuContext>);
+                                  thread_specific_instance, ());
   return thread_specific_instance;
 }
 

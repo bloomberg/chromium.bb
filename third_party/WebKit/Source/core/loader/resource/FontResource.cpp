@@ -69,7 +69,7 @@ static FontPackageFormat PackageFormatOf(SharedBuffer* buffer) {
 static void RecordPackageFormatHistogram(FontPackageFormat format) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, package_format_histogram,
-      new EnumerationHistogram("WebFont.PackageFormat", kPackageFormatEnumMax));
+      ("WebFont.PackageFormat", kPackageFormatEnumMax));
   package_format_histogram.Count(format);
 }
 

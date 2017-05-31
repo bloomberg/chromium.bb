@@ -45,7 +45,7 @@ namespace blink {
 
 #if DCHECK_IS_ON()
 static Mutex& ActiveIteratorCountMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 

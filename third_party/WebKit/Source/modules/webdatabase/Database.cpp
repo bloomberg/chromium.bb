@@ -167,7 +167,7 @@ static bool SetTextValueInDatabase(SQLiteDatabase& db,
 
 // FIXME: move all guid-related functions to a DatabaseVersionTracker class.
 static RecursiveMutex& GuidMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, new RecursiveMutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, ());
   return mutex;
 }
 

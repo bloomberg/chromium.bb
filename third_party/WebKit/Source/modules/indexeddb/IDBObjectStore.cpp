@@ -300,9 +300,8 @@ static void GenerateIndexKeysForValue(v8::Isolate* isolate,
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, key_type_histogram,
-      new EnumerationHistogram(
-          "WebCore.IndexedDB.ObjectStore.IndexEntry.KeyType",
-          static_cast<int>(IDBKey::kTypeEnumMax)));
+      ("WebCore.IndexedDB.ObjectStore.IndexEntry.KeyType",
+       static_cast<int>(IDBKey::kTypeEnumMax)));
 
   if (!index_metadata.multi_entry ||
       index_key->GetType() != IDBKey::kArrayType) {
@@ -479,8 +478,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   if (key && uses_in_line_keys) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, key_type_histogram,
-        new EnumerationHistogram("WebCore.IndexedDB.ObjectStore.Record.KeyType",
-                                 static_cast<int>(IDBKey::kTypeEnumMax)));
+        ("WebCore.IndexedDB.ObjectStore.Record.KeyType",
+         static_cast<int>(IDBKey::kTypeEnumMax)));
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 

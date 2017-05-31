@@ -264,8 +264,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   OffscreenCanvasCommitType commit_type;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, commit_type_histogram,
-      new EnumerationHistogram("OffscreenCanvas.CommitType",
-                               kOffscreenCanvasCommitTypeCount));
+      ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
   if (image->IsTextureBacked()) {
     if (Platform::Current()->IsGPUCompositingEnabled() &&
         !is_web_gl_software_rendering) {
@@ -341,9 +340,8 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_gpu_canvas_gpu_compositing_worker_timer,
-            new CustomCountHistogram(
-                "Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
-                10000000, 50));
+            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
+             10000000, 50));
         commit_gpu_canvas_gpu_compositing_worker_timer.Count(elapsed_time *
                                                              1000000.0);
       }
@@ -361,9 +359,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_gpu_canvas_software_compositing_worker_timer,
-            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
-                                     "GPUCanvasSoftwareCompositingWorker",
-                                     0, 10000000, 50));
+            ("Blink.Canvas.OffscreenCommit."
+             "GPUCanvasSoftwareCompositingWorker",
+             0, 10000000, 50));
         commit_gpu_canvas_software_compositing_worker_timer.Count(elapsed_time *
                                                                   1000000.0);
       }
@@ -381,9 +379,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_software_canvas_gpu_compositing_worker_timer,
-            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
-                                     "SoftwareCanvasGPUCompositingWorker",
-                                     0, 10000000, 50));
+            ("Blink.Canvas.OffscreenCommit."
+             "SoftwareCanvasGPUCompositingWorker",
+             0, 10000000, 50));
         commit_software_canvas_gpu_compositing_worker_timer.Count(elapsed_time *
                                                                   1000000.0);
       }
@@ -402,9 +400,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_software_canvas_software_compositing_worker_timer,
-            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
-                                     "SoftwareCanvasSoftwareCompositingWorker",
-                                     0, 10000000, 50));
+            ("Blink.Canvas.OffscreenCommit."
+             "SoftwareCanvasSoftwareCompositingWorker",
+             0, 10000000, 50));
         commit_software_canvas_software_compositing_worker_timer.Count(
             elapsed_time * 1000000.0);
       }

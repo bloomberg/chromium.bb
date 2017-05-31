@@ -42,7 +42,7 @@ struct CrossThreadCopier<NetworkStateNotifier::NetworkState>
 
 NetworkStateNotifier& GetNetworkStateNotifier() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(NetworkStateNotifier, network_state_notifier,
-                                  new NetworkStateNotifier);
+                                  ());
   return network_state_notifier;
 }
 

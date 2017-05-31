@@ -68,9 +68,8 @@ const int kElevationIndexTable[kElevationIndexTableSize] = {
 static PassRefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
     const String& subject_name) {
   typedef HashMap<String, RefPtr<AudioBus>> AudioBusMap;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map,
-                                  new AudioBusMap());
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
 
   MutexLocker locker(mutex);
   RefPtr<AudioBus> bus;

@@ -41,38 +41,34 @@ namespace {
 
 using RestrictedKeyMap = HashMap<String, NavigationTimingFunction>;
 
-RestrictedKeyMap* CreateRestrictedKeyMap() {
-  RestrictedKeyMap* map = new RestrictedKeyMap();
-  map->insert("navigationStart", &PerformanceTiming::navigationStart);
-  map->insert("unloadEventStart", &PerformanceTiming::unloadEventStart);
-  map->insert("unloadEventEnd", &PerformanceTiming::unloadEventEnd);
-  map->insert("redirectStart", &PerformanceTiming::redirectStart);
-  map->insert("redirectEnd", &PerformanceTiming::redirectEnd);
-  map->insert("fetchStart", &PerformanceTiming::fetchStart);
-  map->insert("domainLookupStart", &PerformanceTiming::domainLookupStart);
-  map->insert("domainLookupEnd", &PerformanceTiming::domainLookupEnd);
-  map->insert("connectStart", &PerformanceTiming::connectStart);
-  map->insert("connectEnd", &PerformanceTiming::connectEnd);
-  map->insert("secureConnectionStart",
-              &PerformanceTiming::secureConnectionStart);
-  map->insert("requestStart", &PerformanceTiming::requestStart);
-  map->insert("responseStart", &PerformanceTiming::responseStart);
-  map->insert("responseEnd", &PerformanceTiming::responseEnd);
-  map->insert("domLoading", &PerformanceTiming::domLoading);
-  map->insert("domInteractive", &PerformanceTiming::domInteractive);
-  map->insert("domContentLoadedEventStart",
-              &PerformanceTiming::domContentLoadedEventStart);
-  map->insert("domContentLoadedEventEnd",
-              &PerformanceTiming::domContentLoadedEventEnd);
-  map->insert("domComplete", &PerformanceTiming::domComplete);
-  map->insert("loadEventStart", &PerformanceTiming::loadEventStart);
-  map->insert("loadEventEnd", &PerformanceTiming::loadEventEnd);
-  return map;
-}
-
 const RestrictedKeyMap& GetRestrictedKeyMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RestrictedKeyMap, map,
-                                  CreateRestrictedKeyMap());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      RestrictedKeyMap, map,
+      ({
+          {"navigationStart", &PerformanceTiming::navigationStart},
+          {"unloadEventStart", &PerformanceTiming::unloadEventStart},
+          {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
+          {"redirectStart", &PerformanceTiming::redirectStart},
+          {"redirectEnd", &PerformanceTiming::redirectEnd},
+          {"fetchStart", &PerformanceTiming::fetchStart},
+          {"domainLookupStart", &PerformanceTiming::domainLookupStart},
+          {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
+          {"connectStart", &PerformanceTiming::connectStart},
+          {"connectEnd", &PerformanceTiming::connectEnd},
+          {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
+          {"requestStart", &PerformanceTiming::requestStart},
+          {"responseStart", &PerformanceTiming::responseStart},
+          {"responseEnd", &PerformanceTiming::responseEnd},
+          {"domLoading", &PerformanceTiming::domLoading},
+          {"domInteractive", &PerformanceTiming::domInteractive},
+          {"domContentLoadedEventStart",
+           &PerformanceTiming::domContentLoadedEventStart},
+          {"domContentLoadedEventEnd",
+           &PerformanceTiming::domContentLoadedEventEnd},
+          {"domComplete", &PerformanceTiming::domComplete},
+          {"loadEventStart", &PerformanceTiming::loadEventStart},
+          {"loadEventEnd", &PerformanceTiming::loadEventEnd},
+      }));
   return map;
 }
 
@@ -118,9 +114,9 @@ PerformanceEntry* UserTiming::Mark(const String& mark_name,
   double start_time = performance_->now();
   PerformanceEntry* entry = PerformanceMark::Create(mark_name, start_time);
   InsertPerformanceEntry(marks_map_, *entry);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, user_timing_mark_histogram,
-      new CustomCountHistogram("PLT.UserTiming_Mark", 0, 600000, 100));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
+                                  user_timing_mark_histogram,
+                                  ("PLT.UserTiming_Mark", 0, 600000, 100));
   user_timing_mark_histogram.Count(static_cast<int>(start_time));
   return entry;
 }
@@ -198,8 +194,7 @@ PerformanceEntry* UserTiming::Measure(const String& measure_name,
   if (end_time >= start_time) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, measure_duration_histogram,
-        new CustomCountHistogram("PLT.UserTiming_MeasureDuration", 0, 600000,
-                                 100));
+        ("PLT.UserTiming_MeasureDuration", 0, 600000, 100));
     measure_duration_histogram.Count(static_cast<int>(end_time - start_time));
   }
   return entry;

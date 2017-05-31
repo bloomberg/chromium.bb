@@ -82,24 +82,21 @@ V8CompileHistogram::~V8CompileHistogram() {
     case kCacheable: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, compile_cacheable_histogram,
-          new CustomCountHistogram("V8.CompileCacheableMicroSeconds", 0,
-                                   1000000, 50));
+          ("V8.CompileCacheableMicroSeconds", 0, 1000000, 50));
       compile_cacheable_histogram.Count(elapsed_micro_seconds);
       break;
     }
     case kNoncacheable: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, compile_non_cacheable_histogram,
-          new CustomCountHistogram("V8.CompileNoncacheableMicroSeconds", 0,
-                                   1000000, 50));
+          ("V8.CompileNoncacheableMicroSeconds", 0, 1000000, 50));
       compile_non_cacheable_histogram.Count(elapsed_micro_seconds);
       break;
     }
     case kInlineScript: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, compile_inline_histogram,
-          new CustomCountHistogram("V8.CompileInlineScriptMicroSeconds", 0,
-                                   1000000, 50));
+          ("V8.CompileInlineScriptMicroSeconds", 0, 1000000, 50));
       compile_inline_histogram.Count(elapsed_micro_seconds);
       break;
     }
@@ -194,9 +191,9 @@ v8::MaybeLocal<v8::Script> CompileAndProduceCache(
     if (length > 1024) {
       // Omit histogram samples for small cache data to avoid outliers.
       int cache_size_ratio = static_cast<int>(100.0 * length / code->Length());
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, code_cache_size_histogram,
-          new CustomCountHistogram("V8.CodeCacheSizeRatio", 0, 10000, 50));
+      DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
+                                      code_cache_size_histogram,
+                                      ("V8.CodeCacheSizeRatio", 0, 10000, 50));
       code_cache_size_histogram.Count(cache_size_ratio);
     }
     cache_handler->ClearCachedMetadata(CachedMetadataHandler::kCacheLocally);

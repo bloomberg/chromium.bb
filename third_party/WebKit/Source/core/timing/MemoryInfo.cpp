@@ -68,8 +68,7 @@ class HeapSizeCache {
 
   static HeapSizeCache& ForCurrentThread() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<HeapSizeCache>,
-                                    heap_size_cache,
-                                    new ThreadSpecific<HeapSizeCache>);
+                                    heap_size_cache, ());
     return *heap_size_cache;
   }
 

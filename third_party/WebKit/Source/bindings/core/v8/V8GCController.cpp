@@ -553,8 +553,7 @@ bool V8GCController::HasPendingActivity(v8::Isolate* isolate,
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, scan_pending_activity_histogram,
-      new CustomCountHistogram("Blink.ScanPendingActivityDuration", 1, 1000,
-                               50));
+      ("Blink.ScanPendingActivityDuration", 1, 1000, 50));
   double start_time = WTF::CurrentTimeMS();
   v8::HandleScope scope(isolate);
   PendingActivityVisitor visitor(isolate, execution_context);

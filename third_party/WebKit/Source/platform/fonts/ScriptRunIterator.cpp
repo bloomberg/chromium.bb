@@ -109,7 +109,7 @@ PairedBracketType ICUScriptData::GetPairedBracketType(UChar32 ch) const {
 
 const ICUScriptData* ICUScriptData::Instance() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const ICUScriptData, icu_script_data_instance,
-                                  (new ICUScriptData()));
+                                  ());
   return &icu_script_data_instance;
 }
 

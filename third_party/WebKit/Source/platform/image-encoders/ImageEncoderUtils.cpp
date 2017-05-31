@@ -54,24 +54,22 @@ String ImageEncoderUtils::ToEncodingMimeType(const String& mime_type,
   }
 
   if (encode_reason == kEncodeReasonToDataURL) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, to_data_url_image_format_histogram,
-        new EnumerationHistogram("Canvas.RequestedImageMimeTypes_toDataURL",
-                                 kNumberOfRequestedImageMimeTypes));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram,
+                                    to_data_url_image_format_histogram,
+                                    ("Canvas.RequestedImageMimeTypes_toDataURL",
+                                     kNumberOfRequestedImageMimeTypes));
     to_data_url_image_format_histogram.Count(image_format);
   } else if (encode_reason == kEncodeReasonToBlobCallback) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, to_blob_callback_image_format_histogram,
-        new EnumerationHistogram(
-            "Canvas.RequestedImageMimeTypes_toBlobCallback",
-            kNumberOfRequestedImageMimeTypes));
+        ("Canvas.RequestedImageMimeTypes_toBlobCallback",
+         kNumberOfRequestedImageMimeTypes));
     to_blob_callback_image_format_histogram.Count(image_format);
   } else if (encode_reason == kEncodeReasonConvertToBlobPromise) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, convert_to_blob_promise_image_format_histogram,
-        new EnumerationHistogram(
-            "Canvas.RequestedImageMimeTypes_convertToBlobPromise",
-            kNumberOfRequestedImageMimeTypes));
+        ("Canvas.RequestedImageMimeTypes_convertToBlobPromise",
+         kNumberOfRequestedImageMimeTypes));
     convert_to_blob_promise_image_format_histogram.Count(image_format);
   }
 

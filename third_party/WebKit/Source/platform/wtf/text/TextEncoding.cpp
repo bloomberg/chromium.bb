@@ -38,7 +38,7 @@ namespace WTF {
 
 static const TextEncoding& UTF7Encoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_utf7_encoding,
-                                  new TextEncoding("UTF-7"));
+                                  ("UTF-7"));
   return global_utf7_encoding;
 }
 
@@ -132,62 +132,57 @@ const TextEncoding& TextEncoding::EncodingForFormSubmission() const {
 
 const TextEncoding& ASCIIEncoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_ascii_encoding,
-                                  new TextEncoding("ASCII"));
+                                  ("ASCII"));
   return global_ascii_encoding;
 }
 
 const TextEncoding& Latin1Encoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_latin1_encoding,
-                                  new TextEncoding("latin1"));
+                                  ("latin1"));
   return global_latin1_encoding;
 }
 
 const TextEncoding& UTF16BigEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
-                                  global_utf16_big_endian_encoding,
-                                  new TextEncoding("UTF-16BE"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      const TextEncoding, global_utf16_big_endian_encoding, ("UTF-16BE"));
   return global_utf16_big_endian_encoding;
 }
 
 const TextEncoding& UTF16LittleEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
-                                  global_utf16_little_endian_encoding,
-                                  new TextEncoding("UTF-16LE"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      const TextEncoding, global_utf16_little_endian_encoding, ("UTF-16LE"));
   return global_utf16_little_endian_encoding;
 }
 
 // UTF-32 is UTF-32LE with an implicit BOM.
 const TextEncoding& UTF32Encoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_utf32_encoding,
-                                  new TextEncoding("UTF-32"));
+                                  ("UTF-32"));
   return global_utf32_encoding;
 }
 
 const TextEncoding& UTF32BigEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
-                                  global_utf32_big_endian_encoding,
-                                  new TextEncoding("UTF-32BE"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      const TextEncoding, global_utf32_big_endian_encoding, ("UTF-32BE"));
   return global_utf32_big_endian_encoding;
 }
 
 const TextEncoding& UTF32LittleEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
-                                  global_utf32_little_endian_encoding,
-                                  new TextEncoding("UTF-32LE"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      const TextEncoding, global_utf32_little_endian_encoding, ("UTF-32LE"));
   return global_utf32_little_endian_encoding;
 }
 
 const TextEncoding& UTF8Encoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_utf8_encoding,
-                                  new TextEncoding("UTF-8"));
+                                  ("UTF-8"));
   DCHECK(global_utf8_encoding.IsValid());
   return global_utf8_encoding;
 }
 
 const TextEncoding& WindowsLatin1Encoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
-                                  global_windows_latin1_encoding,
-                                  new TextEncoding("WinLatin1"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      const TextEncoding, global_windows_latin1_encoding, ("WinLatin1"));
   return global_windows_latin1_encoding;
 }
 

@@ -198,10 +198,9 @@ void RecordResponseTypeForAdd(const Member<Response>& response) {
       type = ResponseType::kOpaqueRedirectType;
       break;
   }
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, response_type_histogram,
-      new EnumerationHistogram("ServiceWorkerCache.Cache.AddResponseType",
-                               static_cast<int>(ResponseType::kEnumMax)));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, response_type_histogram,
+                                  ("ServiceWorkerCache.Cache.AddResponseType",
+                                   static_cast<int>(ResponseType::kEnumMax)));
   response_type_histogram.Count(static_cast<int>(type));
 };
 

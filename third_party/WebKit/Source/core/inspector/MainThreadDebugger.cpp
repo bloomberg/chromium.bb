@@ -78,7 +78,7 @@ int FrameId(LocalFrame& frame) {
 }
 
 Mutex& CreationMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, (new Mutex));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 

@@ -24,8 +24,7 @@ namespace {
 // associated interfaces, ensuring proper message ordering.
 mojom::blink::BroadcastChannelProviderPtr& GetThreadSpecificProvider() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>, provider,
-      new ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>);
+      ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>, provider, ());
   if (!provider.IsSet()) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&*provider));

@@ -155,8 +155,7 @@ void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, content_type_parseable_histogram,
-      new EnumerationHistogram("Media.MediaElement.ContentTypeParseable",
-                               kContentTypeParseableMax));
+      ("Media.MediaElement.ContentTypeParseable", kContentTypeParseableMax));
   ParsedContentType parsed_content_type(content_type);
   ContentTypeParseableResult uma_result = kIsNotSupportedNotParseable;
   switch (result) {

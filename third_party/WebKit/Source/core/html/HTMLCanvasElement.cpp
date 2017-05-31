@@ -680,20 +680,17 @@ String HTMLCanvasElement::ToDataURLInternal(
   if (encoding_mime_type == "image/png") {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_png,
-        new CustomCountHistogram("Blink.Canvas.ToDataURL.PNG", 0, 10000000,
-                                 50));
+        ("Blink.Canvas.ToDataURL.PNG", 0, 10000000, 50));
     timer.emplace(scoped_us_counter_png);
   } else if (encoding_mime_type == "image/jpeg") {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_jpeg,
-        new CustomCountHistogram("Blink.Canvas.ToDataURL.JPEG", 0, 10000000,
-                                 50));
+        ("Blink.Canvas.ToDataURL.JPEG", 0, 10000000, 50));
     timer.emplace(scoped_us_counter_jpeg);
   } else if (encoding_mime_type == "image/webp") {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter_webp,
-        new CustomCountHistogram("Blink.Canvas.ToDataURL.WEBP", 0, 10000000,
-                                 50));
+        ("Blink.Canvas.ToDataURL.WEBP", 0, 10000000, 50));
     timer.emplace(scoped_us_counter_webp);
   } else {
     // Currently we only support three encoding types.

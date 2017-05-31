@@ -92,8 +92,7 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, canvas_fallback_histogram,
-      new EnumerationHistogram("Canvas.DisplayListFallbackReason",
-                               kFallbackReasonCount));
+      ("Canvas.DisplayListFallbackReason", kFallbackReasonCount));
   canvas_fallback_histogram.Count(reason);
 
   fallback_surface_ = WTF::WrapUnique(new UnacceleratedImageBufferSurface(

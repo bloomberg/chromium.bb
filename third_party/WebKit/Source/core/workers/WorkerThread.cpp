@@ -67,7 +67,7 @@ using ExitCode = WorkerThread::ExitCode;
 const long long kForcibleTerminationDelayInMs = 2000;  // 2 secs
 
 static Mutex& ThreadSetMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 
@@ -102,8 +102,7 @@ WorkerThread::~WorkerThread() {
   DCHECK_NE(ExitCode::kNotTerminated, exit_code_);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, exit_code_histogram,
-      new EnumerationHistogram("WorkerThread.ExitCode",
-                               static_cast<int>(ExitCode::kLastEnum)));
+      ("WorkerThread.ExitCode", static_cast<int>(ExitCode::kLastEnum)));
   exit_code_histogram.Count(static_cast<int>(exit_code_));
 }
 
@@ -583,8 +582,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(
   {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scoped_us_counter,
-        new CustomCountHistogram("WorkerThread.DebuggerTask.Time", 0, 10000000,
-                                 50));
+        ("WorkerThread.DebuggerTask.Time", 0, 10000000, 50));
     ScopedUsHistogramTimer timer(scoped_us_counter);
     (*task)();
   }
