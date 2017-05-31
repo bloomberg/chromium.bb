@@ -108,17 +108,23 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (component != HTNOWHERE && component != HTCLIENT)
       return true;
 
-    // If there is an underlay, test against it's bounds instead since it will
-    // be equal or larger than the surface's bounds.
+    // If there is an underlay, test against it first as it's bounds may be
+    // larger than the surface's bounds.
     aura::Window* shadow_underlay =
         static_cast<ShellSurface*>(
             widget_->widget_delegate()->GetContentsView())
             ->shadow_underlay();
     if (shadow_underlay) {
-      aura::Window::ConvertPointToTarget(window, shadow_underlay, &local_point);
-      return gfx::Rect(shadow_underlay->layer()->size()).Contains(local_point);
+      gfx::Point local_point_in_shadow_underlay = local_point;
+      aura::Window::ConvertPointToTarget(window, shadow_underlay,
+                                         &local_point_in_shadow_underlay);
+      if (gfx::Rect(shadow_underlay->layer()->size())
+              .Contains(local_point_in_shadow_underlay)) {
+        return true;
+      }
     }
 
+    // Otherwise, fallback to hit test on the surface.
     aura::Window::ConvertPointToTarget(window, surface->window(), &local_point);
     return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
   }
@@ -128,7 +134,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     aura::Window* window = static_cast<aura::Window*>(root);
     Surface* surface = ShellSurface::GetMainSurface(window);
 
-    // Send events which are outside of the surface's bounds to the underlay.
+    // Send events which wouldn't be handled by the surface, to the shadow
+    // underlay.
     aura::Window* shadow_underlay =
         static_cast<ShellSurface*>(
             widget_->widget_delegate()->GetContentsView())
@@ -136,8 +143,12 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (surface && event->IsLocatedEvent() && shadow_underlay) {
       gfx::Point local_point = event->AsLocatedEvent()->location();
       int component = widget_->non_client_view()->NonClientHitTest(local_point);
-      if (component == HTNOWHERE)
-        return shadow_underlay;
+      if (component == HTNOWHERE) {
+        aura::Window::ConvertPointToTarget(window, surface->window(),
+                                           &local_point);
+        if (!surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1))))
+          return shadow_underlay;
+      }
     }
     return aura::WindowTargeter::FindTargetForEvent(root, event);
   }
