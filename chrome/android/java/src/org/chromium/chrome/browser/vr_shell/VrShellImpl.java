@@ -287,13 +287,7 @@ public class VrShellImpl
                 inCct, getGvrApi().getNativeGvrContext(), mReprojectedRendering);
 
         // Set the UI and content sizes before we load the UI.
-        if (forWebVr) {
-            DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
-            setContentCssSize(
-                    primaryDisplay.getDisplayWidth(), primaryDisplay.getDisplayHeight(), WEBVR_DPR);
-        } else {
-            setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
-        }
+        updateWebVrDisplaySize(forWebVr);
 
         swapToForegroundTab();
         createTabList();
@@ -487,6 +481,18 @@ public class VrShellImpl
     public void setWebVrModeEnabled(boolean enabled) {
         mContentVrWindowAndroid.setVSyncPaused(enabled);
         nativeSetWebVrMode(mNativeVrShell, enabled);
+
+        updateWebVrDisplaySize(enabled);
+    }
+
+    private void updateWebVrDisplaySize(boolean inWebVr) {
+        if (inWebVr) {
+            DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
+            setContentCssSize(
+                    primaryDisplay.getDisplayWidth(), primaryDisplay.getDisplayHeight(), WEBVR_DPR);
+        } else {
+            setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
+        }
     }
 
     @Override
