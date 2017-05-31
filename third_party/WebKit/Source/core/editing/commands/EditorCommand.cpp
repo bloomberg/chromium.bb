@@ -2855,6 +2855,7 @@ Editor::Command Editor::CreateCommand(const String& command_name,
 bool Editor::ExecuteCommand(const String& command_name) {
   // Specially handling commands that Editor::execCommand does not directly
   // support.
+  DCHECK(GetFrame().GetDocument()->IsActive());
   if (command_name == "DeleteToEndOfParagraph") {
     if (!DeleteWithDirection(DeleteDirection::kForward, kParagraphBoundary,
                              true, false))
@@ -2891,6 +2892,7 @@ bool Editor::ExecuteCommand(const String& command_name) {
 bool Editor::ExecuteCommand(const String& command_name, const String& value) {
   // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit
   // for editable nodes.
+  DCHECK(GetFrame().GetDocument()->IsActive());
   if (!CanEdit() && command_name == "moveToBeginningOfDocument")
     return GetFrame().GetEventHandler().BubblingScroll(
         kScrollUpIgnoringWritingMode, kScrollByDocument);
