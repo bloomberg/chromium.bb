@@ -286,6 +286,7 @@ void MdTextButton::UpdateColors() {
   set_background(Background::CreateBackgroundPainter(
       Painter::CreateRoundRectWith1PxBorderPainter(bg_color, stroke_color,
                                                    kInkDropSmallCornerRadius)));
+  SchedulePaint();
 }
 
 }  // namespace views
