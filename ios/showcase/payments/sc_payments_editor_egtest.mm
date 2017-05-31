@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,6 +109,12 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
                                           nil)]
       assertWithMatcher:grey_notNil()];
 
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Province*")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Province_textField")]
+      assertWithMatcher:grey_text(@"Quebec")];
+
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Address*")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
@@ -119,6 +126,28 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Postal Code_textField")]
       assertWithMatcher:grey_text(@"")];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Save"),
+                                          grey_accessibilityValue(
+                                              l10n_util::GetNSString(
+                                                  IDS_IOS_SETTING_ON)),
+                                          nil)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests if the expected input view for the province field is displaying, when
+// the field is focused, and that the expected row is selected.
+- (void)testVerifyProvinceFieldInputView {
+  // Tap the province textfield.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Province_textField")]
+      performAction:grey_tap()];
+
+  // Assert that a UIPicker view is displaying and the expected row is selected.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Province_pickerView")]
+      assertWithMatcher:grey_pickerColumnSetToValue(0, @"Quebec")];
 }
 
 // Tests if tapping the selector field notifies the delegate.
@@ -193,6 +222,16 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   [[[EarlGrey selectElementWithMatcher:InputAccessoryViewNextButton()]
       assertWithMatcher:grey_enabled()] performAction:grey_tap()];
 
+  // Assert the province textfield is focused.
+  AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Province_textField");
+
+  // Assert the input accessory view's previous button is enabled.
+  [[EarlGrey selectElementWithMatcher:InputAccessoryViewPreviousButton()]
+      assertWithMatcher:grey_enabled()];
+  // Assert the input accessory view's next button is enabled and tap it.
+  [[[EarlGrey selectElementWithMatcher:InputAccessoryViewNextButton()]
+      assertWithMatcher:grey_enabled()] performAction:grey_tap()];
+
   // Assert the address textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Address_textField");
 
@@ -239,12 +278,12 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
                                           kWarningMessageAccessibilityID)]
       assertWithMatcher:grey_notVisible()];
 
-  // Assert the name textfield is focused.
-  AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Name_textField");
+  // Assert the province textfield is focused.
+  AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Province_textField");
 
-  // Assert the input accessory view's previous button is disabled.
+  // Assert the input accessory view's previous button is enabled.
   [[EarlGrey selectElementWithMatcher:InputAccessoryViewPreviousButton()]
-      assertWithMatcher:grey_not(grey_enabled())];
+      assertWithMatcher:grey_enabled()];
   // Assert the input accessory view's next button is enabled.
   [[EarlGrey selectElementWithMatcher:InputAccessoryViewNextButton()]
       assertWithMatcher:grey_enabled()];
@@ -264,6 +303,15 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   // Press the return key on the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_typeText(@"\n")];
+
+  // Assert the province textfield is focused.
+  AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Province_textField");
+
+  // The standard keyboard does not display for the province field. Instead, tap
+  // the address textfield.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Address_textField")]
+      performAction:grey_tap()];
 
   // Assert the address textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Address_textField");
