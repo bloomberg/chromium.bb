@@ -207,9 +207,16 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   active_texture_unit_ = 0;
   bound_textures_[GL_TEXTURE_2D].resize(num_texture_units, 0);
   bound_textures_[GL_TEXTURE_CUBE_MAP].resize(num_texture_units, 0);
-  if (feature_info_->IsWebGL2OrES3Context()) {
+  if (feature_info_->gl_version_info().IsAtLeastGLES(3, 0)) {
     bound_textures_[GL_TEXTURE_2D_ARRAY].resize(num_texture_units, 0);
     bound_textures_[GL_TEXTURE_3D].resize(num_texture_units, 0);
+  }
+  if (feature_info_->gl_version_info().IsAtLeastGLES(3, 1)) {
+    bound_textures_[GL_TEXTURE_2D_MULTISAMPLE].resize(num_texture_units, 0);
+  }
+  if (feature_info_->feature_flags().oes_egl_image_external ||
+      feature_info_->feature_flags().nv_egl_stream_consumer_external) {
+    bound_textures_[GL_TEXTURE_EXTERNAL_OES].resize(num_texture_units, 0);
   }
 
   if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
