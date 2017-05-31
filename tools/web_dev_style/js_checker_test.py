@@ -203,49 +203,6 @@ class JsCheckerTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldFailExtraDotInGenericCheck(line)
 
-  def ShouldFailGetElementByIdCheck(self, line):
-    """Checks that the 'getElementById' checker flags |line| as a style
-       error.
-    """
-    error = self.checker.GetElementByIdCheck(1, line)
-    self.assertNotEqual('', error,
-        'Should be flagged as style error: ' + line)
-    self.assertEqual(test_util.GetHighlight(line, error),
-                     'document.getElementById')
-
-  def ShouldPassGetElementByIdCheck(self, line):
-    """Checks that the 'getElementById' checker doesn't flag |line| as a style
-       error.
-    """
-    self.assertEqual('', self.checker.GetElementByIdCheck(1, line),
-        'Should not be flagged as style error: ' + line)
-
-  def testGetElementByIdFails(self):
-    lines = [
-        "document.getElementById('foo');",
-        "  document.getElementById('foo');",
-        "var x = document.getElementById('foo');",
-        "if (document.getElementById('foo').hidden) {",
-    ]
-    for line in lines:
-      self.ShouldFailGetElementByIdCheck(line)
-
-  def testGetElementByIdPasses(self):
-    lines = [
-        "elem.ownerDocument.getElementById('foo');",
-        "  elem.ownerDocument.getElementById('foo');",
-        "var x = elem.ownerDocument.getElementById('foo');",
-        "if (elem.ownerDocument.getElementById('foo').hidden) {",
-        "doc.getElementById('foo');",
-        "  doc.getElementById('foo');",
-        "cr.doc.getElementById('foo');",
-        "  cr.doc.getElementById('foo');",
-        "var x = doc.getElementById('foo');",
-        "if (doc.getElementById('foo').hidden) {",
-    ]
-    for line in lines:
-      self.ShouldPassGetElementByIdCheck(line)
-
   def ShouldFailInheritDocCheck(self, line):
     """Checks that the '@inheritDoc' checker flags |line| as a style error."""
     error = self.checker.InheritDocCheck(1, line)

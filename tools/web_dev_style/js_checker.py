@@ -52,12 +52,6 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r"((?:Array|Object|Promise)\.<)",
         "Don't use a dot after generics (Object.<T> should be Object<T>).")
 
-  def GetElementByIdCheck(self, i, line):
-    """Checks for use of 'document.getElementById' instead of '$'."""
-    return self.RegexCheck(i, line, r"(document\.getElementById)\('",
-        "Use $('id') or getSVGElement('id') from chrome://resources/js/util.js "
-        "instead of document.getElementById('id')")
-
   def InheritDocCheck(self, i, line):
     """Checks for use of '@inheritDoc' instead of '@override'."""
     return self.RegexCheck(i, line, r"\* (@inheritDoc)",
@@ -141,7 +135,6 @@ class JSChecker(object):
             self.ChromeSendCheck(i, line),
             self.CommentIfAndIncludeCheck(i, line),
             self.ConstCheck(i, line),
-            self.GetElementByIdCheck(i, line),
             self.EndJsDocCommentCheck(i, line),
             self.ExtraDotInGenericCheck(i, line),
             self.InheritDocCheck(i, line),
