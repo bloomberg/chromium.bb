@@ -375,4 +375,32 @@ TEST_F(PowerPolicyControllerTest, DoNothingOnLidClosedWhileSigningOut) {
                 fake_power_client_->policy()));
 }
 
+TEST_F(PowerPolicyControllerTest, SuspendOnLidClosedWhileSignedOut) {
+  PowerPolicyController::PrefValues prefs;
+  policy_controller_->ApplyPrefs(prefs);
+  const power_manager::PowerManagementPolicy kDefaultPolicy =
+      fake_power_client_->policy();
+
+  prefs.lid_closed_action = PowerPolicyController::ACTION_SHUT_DOWN;
+  policy_controller_->ApplyPrefs(prefs);
+
+  power_manager::PowerManagementPolicy expected_policy;
+  expected_policy = kDefaultPolicy;
+  expected_policy.set_lid_closed_action(
+      power_manager::PowerManagementPolicy_Action_SHUT_DOWN);
+  // Sanity check
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  policy_controller_->SetEncryptionMigrationActive(true);
+  expected_policy.set_lid_closed_action(
+      power_manager::PowerManagementPolicy_Action_SUSPEND);
+  expected_policy.set_reason("Prefs, encryption migration");
+  // Lid-closed action successfully changed to "suspend".
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+}
+
 }  // namespace chromeos

@@ -276,12 +276,21 @@ void PowerPolicyController::NotifyChromeIsExiting() {
   SendCurrentPolicy();
 }
 
+void PowerPolicyController::SetEncryptionMigrationActive(bool active) {
+  if (encryption_migration_active_ == active)
+    return;
+
+  encryption_migration_active_ = active;
+  SendCurrentPolicy();
+}
+
 PowerPolicyController::PowerPolicyController(PowerManagerClient* client)
     : client_(client),
       prefs_were_set_(false),
       honor_screen_wake_locks_(true),
       next_wake_lock_id_(1),
-      chrome_is_exiting_(false) {
+      chrome_is_exiting_(false),
+      encryption_migration_active_(false) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -365,6 +374,15 @@ void PowerPolicyController::SendCurrentPolicy() {
       policy.set_battery_idle_action(
           power_manager::PowerManagementPolicy_Action_DO_NOTHING);
     }
+  }
+
+  if (encryption_migration_active_ &&
+      policy.lid_closed_action() !=
+          power_manager::PowerManagementPolicy_Action_DO_NOTHING) {
+    policy.set_lid_closed_action(
+        power_manager::PowerManagementPolicy_Action_SUSPEND);
+    causes +=
+        std::string((causes.empty() ? "" : ", ")) + "encryption migration";
   }
 
   // To avoid a race in the case where the user asks Chrome to sign out
