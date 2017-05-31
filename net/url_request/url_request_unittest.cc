@@ -9506,20 +9506,23 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 
   // Now create a new HttpCache with a different ssl_session_cache_shard value.
-  HttpNetworkSession::Params params;
-  params.host_resolver = default_context_.host_resolver();
-  params.cert_verifier = default_context_.cert_verifier();
-  params.transport_security_state = default_context_.transport_security_state();
-  params.cert_transparency_verifier =
+  HttpNetworkSession::Context session_context;
+  session_context.host_resolver = default_context_.host_resolver();
+  session_context.cert_verifier = default_context_.cert_verifier();
+  session_context.transport_security_state =
+      default_context_.transport_security_state();
+  session_context.cert_transparency_verifier =
       default_context_.cert_transparency_verifier();
-  params.ct_policy_enforcer = default_context_.ct_policy_enforcer();
-  params.proxy_service = default_context_.proxy_service();
-  params.ssl_config_service = default_context_.ssl_config_service();
-  params.http_auth_handler_factory =
+  session_context.ct_policy_enforcer = default_context_.ct_policy_enforcer();
+  session_context.proxy_service = default_context_.proxy_service();
+  session_context.ssl_config_service = default_context_.ssl_config_service();
+  session_context.http_auth_handler_factory =
       default_context_.http_auth_handler_factory();
-  params.http_server_properties = default_context_.http_server_properties();
+  session_context.http_server_properties =
+      default_context_.http_server_properties();
 
-  HttpNetworkSession network_session(params);
+  HttpNetworkSession network_session(HttpNetworkSession::Params(),
+                                     session_context);
   std::unique_ptr<HttpCache> cache(
       new HttpCache(&network_session, HttpCache::DefaultBackend::InMemory(0),
                     false /* is_main_cache */));

@@ -566,12 +566,12 @@ void CompareURLRequestContexts(
   // the one directly on the URLRequestContext.
   EXPECT_EQ(extension_context->http_transaction_factory()
                 ->GetSession()
-                ->params()
+                ->context()
                 .channel_id_service,
             extension_context->channel_id_service());
   EXPECT_EQ(main_context->http_transaction_factory()
                 ->GetSession()
-                ->params()
+                ->context()
                 .channel_id_service,
             main_context->channel_id_service());
 }

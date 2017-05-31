@@ -325,7 +325,11 @@ void GCMClientImpl::Initialize(
       url_request_context_getter_->GetURLRequestContext()->
           GetNetworkSessionParams();
   DCHECK(network_session_params);
-  network_session_.reset(new net::HttpNetworkSession(*network_session_params));
+  const net::HttpNetworkSession::Context* network_session_context =
+      url_request_context_getter_->GetURLRequestContext()
+          ->GetNetworkSessionContext();
+  network_session_.reset(new net::HttpNetworkSession(*network_session_params,
+                                                     *network_session_context));
 
   chrome_build_info_ = chrome_build_info;
 

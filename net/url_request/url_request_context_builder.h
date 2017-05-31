@@ -130,12 +130,12 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   // Extracts the component pointers required to construct an HttpNetworkSession
-  // and copies them into the Params used to create the session. This function
-  // should be used to ensure that a context and its associated
-  // HttpNetworkSession are consistent.
+  // and copies them into the HttpNetworkSession::Context used to create the
+  // session. This function should be used to ensure that a context and its
+  // associated HttpNetworkSession are consistent.
   static void SetHttpNetworkSessionComponents(
-      const URLRequestContext* context,
-      HttpNetworkSession::Params* params);
+      const URLRequestContext* request_context,
+      HttpNetworkSession::Context* session_context);
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ProxyService.

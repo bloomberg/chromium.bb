@@ -101,6 +101,17 @@ const HttpNetworkSession::Params* URLRequestContext::GetNetworkSessionParams(
   return &network_session->params();
 }
 
+const HttpNetworkSession::Context* URLRequestContext::GetNetworkSessionContext()
+    const {
+  HttpTransactionFactory* transaction_factory = http_transaction_factory();
+  if (!transaction_factory)
+    return nullptr;
+  HttpNetworkSession* network_session = transaction_factory->GetSession();
+  if (!network_session)
+    return nullptr;
+  return &network_session->context();
+}
+
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,
     RequestPriority priority,

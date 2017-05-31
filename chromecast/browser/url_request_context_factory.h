@@ -82,8 +82,10 @@ class URLRequestContextFactory {
       content::URLRequestInterceptorScopedVector request_interceptors);
   void InitializeMediaContextDependencies(net::HttpTransactionFactory* factory);
 
-  void PopulateNetworkSessionParams(bool ignore_certificate_errors,
-                                    net::HttpNetworkSession::Params* params);
+  void PopulateNetworkSessionParams(
+      bool ignore_certificate_errors,
+      net::HttpNetworkSession::Params* session_params,
+      net::HttpNetworkSession::Context* session_context);
   void DisableQuicOnBrowserIOThread();
 
   // These are called by the RequestContextGetters to create each

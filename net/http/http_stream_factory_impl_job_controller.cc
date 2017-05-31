@@ -869,7 +869,7 @@ void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
   }
 
   if (failed_alternative_proxy_server_.is_valid()) {
-    ProxyDelegate* proxy_delegate = session_->params().proxy_delegate;
+    ProxyDelegate* proxy_delegate = session_->context().proxy_delegate;
     if (proxy_delegate) {
       proxy_delegate->OnAlternativeProxyBroken(
           failed_alternative_proxy_server_);
@@ -1081,7 +1081,7 @@ bool HttpStreamFactoryImpl::JobController::
     return false;
   }
 
-  ProxyDelegate* proxy_delegate = session_->params().proxy_delegate;
+  ProxyDelegate* proxy_delegate = session_->context().proxy_delegate;
   if (!proxy_delegate)
     return false;
 

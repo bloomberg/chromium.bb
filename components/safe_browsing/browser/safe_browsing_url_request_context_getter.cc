@@ -78,13 +78,18 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
     if (safe_browsing_request_context_->http_transaction_factory() &&
         safe_browsing_request_context_->http_transaction_factory()
             ->GetSession()) {
-      net::HttpNetworkSession::Params safe_browsing_params =
+      net::HttpNetworkSession::Params safe_browsing_session_params =
           safe_browsing_request_context_->http_transaction_factory()
               ->GetSession()
               ->params();
-      safe_browsing_params.channel_id_service = channel_id_service_.get();
-      http_network_session_.reset(
-          new net::HttpNetworkSession(safe_browsing_params));
+      net::HttpNetworkSession::Context safe_browsing_session_context =
+          safe_browsing_request_context_->http_transaction_factory()
+              ->GetSession()
+              ->context();
+      safe_browsing_session_context.channel_id_service =
+          channel_id_service_.get();
+      http_network_session_.reset(new net::HttpNetworkSession(
+          safe_browsing_session_params, safe_browsing_session_context));
       http_transaction_factory_.reset(
           new net::HttpNetworkLayer(http_network_session_.get()));
       safe_browsing_request_context_->set_http_transaction_factory(

@@ -409,22 +409,26 @@ void MCSProbe::InitializeNetworkState() {
 
 void MCSProbe::BuildNetworkSession() {
   net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = host_resolver_.get();
-  session_params.cert_verifier = cert_verifier_.get();
-  session_params.channel_id_service = system_channel_id_service_.get();
-  session_params.transport_security_state = transport_security_state_.get();
-  session_params.cert_transparency_verifier = cert_transparency_verifier_.get();
-  session_params.ct_policy_enforcer = ct_policy_enforcer_.get();
-  session_params.ssl_config_service = new net::SSLConfigServiceDefaults();
-  session_params.http_auth_handler_factory = http_auth_handler_factory_.get();
-  session_params.http_server_properties = http_server_properties_.get();
   session_params.ignore_certificate_errors = true;
   session_params.testing_fixed_http_port = 0;
   session_params.testing_fixed_https_port = 0;
-  session_params.net_log = &net_log_;
-  session_params.proxy_service = proxy_service_.get();
 
-  network_session_.reset(new net::HttpNetworkSession(session_params));
+  net::HttpNetworkSession::Context session_context;
+  session_context.host_resolver = host_resolver_.get();
+  session_context.cert_verifier = cert_verifier_.get();
+  session_context.channel_id_service = system_channel_id_service_.get();
+  session_context.transport_security_state = transport_security_state_.get();
+  session_context.cert_transparency_verifier =
+      cert_transparency_verifier_.get();
+  session_context.ct_policy_enforcer = ct_policy_enforcer_.get();
+  session_context.ssl_config_service = new net::SSLConfigServiceDefaults();
+  session_context.http_auth_handler_factory = http_auth_handler_factory_.get();
+  session_context.http_server_properties = http_server_properties_.get();
+  session_context.net_log = &net_log_;
+  session_context.proxy_service = proxy_service_.get();
+
+  network_session_.reset(
+      new net::HttpNetworkSession(session_params, session_context));
 }
 
 void MCSProbe::ErrorCallback() {

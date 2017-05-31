@@ -785,7 +785,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
 
   return session_->proxy_service()->ResolveProxy(
       origin_url_, request_info_.method, &proxy_info_, io_callback_,
-      &pac_request_, session_->params().proxy_delegate, net_log_);
+      &pac_request_, session_->context().proxy_delegate, net_log_);
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
@@ -1213,7 +1213,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   if (using_ssl_ && connection_->socket()) {
     SSLClientSocket* ssl_socket =
         static_cast<SSLClientSocket*>(connection_->socket());
-    RecordChannelIDKeyMatch(ssl_socket, session_->params().channel_id_service,
+    RecordChannelIDKeyMatch(ssl_socket, session_->context().channel_id_service,
                             destination_.HostForURL());
   }
 
@@ -1305,7 +1305,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {
     return result;
 
   session_->proxy_service()->ReportSuccess(proxy_info_,
-                                           session_->params().proxy_delegate);
+                                           session_->context().proxy_delegate);
   next_state_ = STATE_NONE;
   return OK;
 }
@@ -1485,7 +1485,8 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
 
   int rv = session_->proxy_service()->ReconsiderProxyAfterError(
       request_info_.url, request_info_.method, error, &proxy_info_,
-      io_callback_, &pac_request_, session_->params().proxy_delegate, net_log_);
+      io_callback_, &pac_request_, session_->context().proxy_delegate,
+      net_log_);
   if (rv == OK || rv == ERR_IO_PENDING) {
     // If the error was during connection setup, there is no socket to
     // disconnect.

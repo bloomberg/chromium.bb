@@ -305,11 +305,12 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  net::HttpNetworkSession::Params network_params =
-      http_network_session_->params();
-  network_params.channel_id_service = channel_id_service.get();
+  net::HttpNetworkSession::Context session_context =
+      http_network_session_->context();
+  session_context.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_params));
+      new net::HttpNetworkSession(http_network_session_->params(),
+                                  session_context));
 
   // Use a separate HTTP disk cache for isolated apps.
   std::unique_ptr<net::HttpCache::BackendFactory> app_backend =
