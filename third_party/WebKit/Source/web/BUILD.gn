@@ -83,8 +83,6 @@ component("web") {
     "OpenedFrameTracker.h",
     "PageOverlay.cpp",
     "PageOverlay.h",
-    "PageWidgetDelegate.cpp",
-    "PageWidgetDelegate.h",
     "PopupMenuImpl.cpp",
     "PopupMenuImpl.h",
     "PrerendererClientImpl.cpp",

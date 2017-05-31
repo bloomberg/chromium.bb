@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/PageWidgetDelegate.h"
+#include "core/page/PageWidgetDelegate.h"
 
 #include "core/events/WebInputEventConversion.h"
 #include "core/frame/LocalFrame.h"
@@ -135,9 +135,10 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
       Document* document = result.InnerNodeFrame()->GetDocument();
       if (document) {
         AXObjectCache* cache = document->ExistingAXObjectCache();
-        if (cache)
+        if (cache) {
           cache->OnTouchAccessibilityHover(
               result.RoundedPointInInnerNodeFrame());
+        }
       }
     }
   }

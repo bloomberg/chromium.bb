@@ -31,10 +31,10 @@
 #ifndef PageWidgetDelegate_h
 #define PageWidgetDelegate_h
 
+#include "core/CoreExport.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/web/WebWidget.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebTouchEvent;
 
-class WEB_EXPORT PageWidgetEventHandler {
+class CORE_EXPORT PageWidgetEventHandler {
  public:
   virtual void HandleMouseMove(LocalFrame& main_frame,
                                const WebMouseEvent&,
@@ -68,7 +68,7 @@ class WEB_EXPORT PageWidgetEventHandler {
 };
 
 // Common implementation of WebViewImpl and WebPagePopupImpl.
-class PageWidgetDelegate {
+class CORE_EXPORT PageWidgetDelegate {
  public:
   static void Animate(Page&, double monotonic_frame_begin_time);
 

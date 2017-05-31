@@ -32,9 +32,9 @@
 #define WebPagePopupImpl_h
 
 #include "core/page/PagePopup.h"
+#include "core/page/PageWidgetDelegate.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/web/WebPagePopup.h"
-#include "web/PageWidgetDelegate.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef PostMessage

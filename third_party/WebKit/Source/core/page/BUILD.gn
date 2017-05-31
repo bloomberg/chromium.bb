@@ -49,6 +49,8 @@ blink_core_sources("page") {
     "PageVisibilityObserver.h",
     "PageVisibilityState.cpp",
     "PageVisibilityState.h",
+    "PageWidgetDelegate.cpp",
+    "PageWidgetDelegate.h",
     "PointerLockController.cpp",
     "PointerLockController.h",
     "PopupOpeningObserver.h",
