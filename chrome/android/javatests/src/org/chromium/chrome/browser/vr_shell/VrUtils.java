@@ -5,12 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,8 +15,6 @@ import org.chromium.chrome.browser.infobar.InfoBarLayout;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,20 +27,6 @@ public class VrUtils {
     public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
     public static final int POLL_TIMEOUT_SHORT_MS = 1000;
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
-
-    private static final String DETECTION_ACTIVITY =
-            ".nfc.ViewerDetectionActivity";
-    // TODO(bsheedy): Use constants from VrCore if ever exposed
-    private static final String APPLICATION_RECORD_STRING = "com.google.vr.vrcore";
-    private static final String RESERVED_KEY = "google.vr/rsvd";
-    private static final String VERSION_KEY =  "google.vr/ver";
-    private static final String DATA_KEY =     "google.vr/data";
-    private static final ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN;
-    // Hard coded viewer ID (0x03) instead of using NfcParams and converting
-    // to a byte array because NfcParams were removed from the GVR SDK
-    private static final byte[] PROTO_BYTES = new byte[] {(byte) 0x08, (byte) 0x03};
-    private static final int VERSION = 123;
-    private static final int RESERVED = 456;
 
     /**
      * Gets the VrShellDelegate instance on the UI thread, as otherwise the
@@ -91,37 +71,12 @@ public class VrUtils {
         });
     }
 
-    private static byte[] intToByteArray(int i) {
-        final ByteBuffer bb = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE);
-        bb.order(BYTE_ORDER);
-        bb.putInt(i);
-        return bb.array();
-    }
-
-    /**
-     * Makes an Intent that triggers VrCore as if the Daydream headset's NFC
-     * tag was scanned.
-     * @return The intent to send to VrCore to simulate an NFC scan.
-     */
-    public static Intent makeNfcIntent() {
-        Intent nfcIntent = new Intent(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        NdefMessage[] messages = new NdefMessage[] {new NdefMessage(
-                new NdefRecord[] {NdefRecord.createMime(RESERVED_KEY, intToByteArray(RESERVED)),
-                        NdefRecord.createMime(VERSION_KEY, intToByteArray(VERSION)),
-                        NdefRecord.createMime(DATA_KEY, PROTO_BYTES),
-                        NdefRecord.createApplicationRecord(APPLICATION_RECORD_STRING)})};
-        nfcIntent.putExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, messages);
-        nfcIntent.setComponent(new ComponentName(APPLICATION_RECORD_STRING,
-                  APPLICATION_RECORD_STRING + ".nfc.ViewerDetectionActivity"));
-        return nfcIntent;
-    }
-
     /**
      * Simulates the NFC tag of the Daydream headset being scanned.
      * @param context The Context that the activity will be started from.
      */
     public static void simNfcScan(Context context) {
-        Intent nfcIntent = makeNfcIntent();
+        Intent nfcIntent = NfcSimUtils.makeNfcIntent();
         try {
             context.startActivity(nfcIntent);
         } catch (ActivityNotFoundException e) {
