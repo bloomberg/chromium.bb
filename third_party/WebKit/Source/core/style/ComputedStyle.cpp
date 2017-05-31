@@ -570,14 +570,14 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
     if (rare_non_inherited_data_->appearance_ !=
             other.rare_non_inherited_data_->appearance_ ||
-        rare_non_inherited_data_->margin_before_collapse !=
-            other.rare_non_inherited_data_->margin_before_collapse ||
-        rare_non_inherited_data_->margin_after_collapse !=
-            other.rare_non_inherited_data_->margin_after_collapse ||
-        rare_non_inherited_data_->line_clamp !=
-            other.rare_non_inherited_data_->line_clamp ||
-        rare_non_inherited_data_->text_overflow !=
-            other.rare_non_inherited_data_->text_overflow ||
+        rare_non_inherited_data_->margin_before_collapse_ !=
+            other.rare_non_inherited_data_->margin_before_collapse_ ||
+        rare_non_inherited_data_->margin_after_collapse_ !=
+            other.rare_non_inherited_data_->margin_after_collapse_ ||
+        rare_non_inherited_data_->line_clamp_ !=
+            other.rare_non_inherited_data_->line_clamp_ ||
+        rare_non_inherited_data_->text_overflow_ !=
+            other.rare_non_inherited_data_->text_overflow_ ||
         rare_non_inherited_data_->shape_margin_ !=
             other.rare_non_inherited_data_->shape_margin_ ||
         rare_non_inherited_data_->order_ !=
@@ -745,8 +745,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     return true;
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->user_drag !=
-            other.rare_non_inherited_data_->user_drag ||
+    if (rare_non_inherited_data_->user_drag_ !=
+            other.rare_non_inherited_data_->user_drag_ ||
         rare_non_inherited_data_->object_fit_ !=
             other.rare_non_inherited_data_->object_fit_ ||
         rare_non_inherited_data_->object_position_ !=
@@ -852,8 +852,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   }
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->opacity !=
-        other.rare_non_inherited_data_->opacity)
+    if (rare_non_inherited_data_->opacity_ !=
+        other.rare_non_inherited_data_->opacity_)
       diff.SetOpacityChanged();
   }
 

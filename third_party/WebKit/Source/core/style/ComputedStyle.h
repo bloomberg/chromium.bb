@@ -1034,10 +1034,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   EMarginCollapse MarginAfterCollapse() const {
     return static_cast<EMarginCollapse>(
-        rare_non_inherited_data_->margin_after_collapse);
+        rare_non_inherited_data_->margin_after_collapse_);
   }
   void SetMarginBeforeCollapse(EMarginCollapse c) {
-    SET_VAR(rare_non_inherited_data_, margin_before_collapse, c);
+    SET_VAR(rare_non_inherited_data_, margin_before_collapse_, c);
   }
 
   // -webkit-margin-after-collapse (aka -webkit-margin-bottom-collapse)
@@ -1046,10 +1046,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   EMarginCollapse MarginBeforeCollapse() const {
     return static_cast<EMarginCollapse>(
-        rare_non_inherited_data_->margin_before_collapse);
+        rare_non_inherited_data_->margin_before_collapse_);
   }
   void SetMarginAfterCollapse(EMarginCollapse c) {
-    SET_VAR(rare_non_inherited_data_, margin_after_collapse, c);
+    SET_VAR(rare_non_inherited_data_, margin_after_collapse_, c);
   }
 
   // mix-blend-mode
@@ -1137,10 +1137,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // opacity (aka -webkit-opacity)
   static float InitialOpacity() { return 1.0f; }
-  float Opacity() const { return rare_non_inherited_data_->opacity; }
+  float Opacity() const { return rare_non_inherited_data_->opacity_; }
   void SetOpacity(float f) {
     float v = clampTo<float>(f, 0, 1);
-    SET_VAR(rare_non_inherited_data_, opacity, v);
+    SET_VAR(rare_non_inherited_data_, opacity_, v);
   }
 
   // order (aka -webkit-order)
@@ -1266,10 +1266,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   ETransformStyle3D TransformStyle3D() const {
     return static_cast<ETransformStyle3D>(
-        rare_non_inherited_data_->transform_style3d_);
+        rare_non_inherited_data_->transform_style_3d_);
   }
   void SetTransformStyle3D(ETransformStyle3D b) {
-    SET_VAR(rare_non_inherited_data_, transform_style3d_, b);
+    SET_VAR(rare_non_inherited_data_, transform_style_3d_, b);
   }
 
   // -webkit-transform-origin-x
@@ -1501,10 +1501,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // text-overflow
   static TextOverflow InitialTextOverflow() { return kTextOverflowClip; }
   TextOverflow GetTextOverflow() const {
-    return static_cast<TextOverflow>(rare_non_inherited_data_->text_overflow);
+    return static_cast<TextOverflow>(rare_non_inherited_data_->text_overflow_);
   }
   void SetTextOverflow(TextOverflow overflow) {
-    SET_VAR(rare_non_inherited_data_, text_overflow, overflow);
+    SET_VAR(rare_non_inherited_data_, text_overflow_, overflow);
   }
 
   // touch-action
@@ -1735,10 +1735,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // -webkit-line-clamp
   static LineClampValue InitialLineClamp() { return LineClampValue(); }
   const LineClampValue& LineClamp() const {
-    return rare_non_inherited_data_->line_clamp;
+    return rare_non_inherited_data_->line_clamp_;
   }
   void SetLineClamp(LineClampValue c) {
-    SET_VAR(rare_non_inherited_data_, line_clamp, c);
+    SET_VAR(rare_non_inherited_data_, line_clamp_, c);
   }
 
   // -webkit-ruby-position
@@ -1768,10 +1768,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // -webkit-user-drag
   static EUserDrag InitialUserDrag() { return DRAG_AUTO; }
   EUserDrag UserDrag() const {
-    return static_cast<EUserDrag>(rare_non_inherited_data_->user_drag);
+    return static_cast<EUserDrag>(rare_non_inherited_data_->user_drag_);
   }
   void SetUserDrag(EUserDrag d) {
-    SET_VAR(rare_non_inherited_data_, user_drag, d);
+    SET_VAR(rare_non_inherited_data_, user_drag_, d);
   }
 
   // -webkit-user-modify
