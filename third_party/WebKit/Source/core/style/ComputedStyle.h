@@ -1475,14 +1475,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // text-underline-position
   static TextUnderlinePosition InitialTextUnderlinePosition() {
-    return kTextUnderlinePositionAuto;
+    return TextUnderlinePosition::kAuto;
   }
   TextUnderlinePosition GetTextUnderlinePosition() const {
     return static_cast<TextUnderlinePosition>(
         rare_inherited_data_->text_underline_position_);
   }
   void SetTextUnderlinePosition(TextUnderlinePosition v) {
-    SET_VAR(rare_inherited_data_, text_underline_position_, v);
+    SET_VAR(rare_inherited_data_, text_underline_position_,
+            static_cast<unsigned>(v));
   }
 
   // text-decoration-skip

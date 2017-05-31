@@ -248,10 +248,10 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
   return a = a | b;
 }
 
-enum TextUnderlinePosition {
+enum class TextUnderlinePosition {
   // FIXME: Implement support for 'under left' and 'under right' values.
-  kTextUnderlinePositionAuto,
-  kTextUnderlinePositionUnder
+  kAuto,
+  kUnder
 };
 
 enum ETransformStyle3D { kTransformStyle3DFlat, kTransformStyle3DPreserve3D };
