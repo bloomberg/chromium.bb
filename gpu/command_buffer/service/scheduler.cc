@@ -25,6 +25,10 @@ class Scheduler::Sequence {
 
   SequenceId sequence_id() const { return sequence_id_; }
 
+  const scoped_refptr<SyncPointOrderData>& order_data() const {
+    return order_data_;
+  }
+
   const SchedulingState& scheduling_state() const { return scheduling_state_; }
 
   bool enabled() const { return enabled_; }
@@ -49,9 +53,8 @@ class Scheduler::Sequence {
   // Sets running state to SCHEDULED.
   void SetScheduled();
 
-  // Called before running the next task on the sequence. Returns the closure
-  // for the task. Sets running state to RUNNING.
-  base::OnceClosure BeginTask();
+  // Returns the next order number and closure. Sets running state to RUNNING.
+  uint32_t BeginTask(base::OnceClosure* closure);
 
   // Called after running the closure returned by BeginTask. Sets running state
   // to IDLE.
@@ -206,7 +209,9 @@ void Scheduler::Sequence::UpdateSchedulingState() {
 
 void Scheduler::Sequence::ContinueTask(base::OnceClosure closure) {
   DCHECK_EQ(running_state_, RUNNING);
-  tasks_.push_front({std::move(closure), order_data_->current_order_num()});
+  uint32_t order_num = order_data_->current_order_num();
+  tasks_.push_front({std::move(closure), order_num});
+  order_data_->PauseProcessingOrderNumber(order_num);
 }
 
 uint32_t Scheduler::Sequence::ScheduleTask(base::OnceClosure closure) {
@@ -215,32 +220,25 @@ uint32_t Scheduler::Sequence::ScheduleTask(base::OnceClosure closure) {
   return order_num;
 }
 
-base::OnceClosure Scheduler::Sequence::BeginTask() {
+uint32_t Scheduler::Sequence::BeginTask(base::OnceClosure* closure) {
+  DCHECK(closure);
   DCHECK(!tasks_.empty());
 
   DCHECK_EQ(running_state_, SCHEDULED);
   running_state_ = RUNNING;
 
-  base::OnceClosure closure = std::move(tasks_.front().closure);
+  *closure = std::move(tasks_.front().closure);
   uint32_t order_num = tasks_.front().order_num;
   tasks_.pop_front();
 
-  order_data_->BeginProcessingOrderNumber(order_num);
-
   UpdateSchedulingState();
 
-  return closure;
+  return order_num;
 }
 
 void Scheduler::Sequence::FinishTask() {
   DCHECK_EQ(running_state_, RUNNING);
   running_state_ = IDLE;
-  uint32_t order_num = order_data_->current_order_num();
-  if (!tasks_.empty() && tasks_.front().order_num == order_num) {
-    order_data_->PauseProcessingOrderNumber(order_num);
-  } else {
-    order_data_->FinishProcessingOrderNumber(order_num);
-  }
   UpdateSchedulingState();
 }
 
@@ -472,16 +470,26 @@ void Scheduler::RunNextTask() {
 
   TRACE_EVENT1("gpu", "Scheduler::RunNextTask", "state", state.AsValue());
 
-  DCHECK(GetSequence(state.sequence_id));
-  base::OnceClosure closure = GetSequence(state.sequence_id)->BeginTask();
+  Sequence* sequence = GetSequence(state.sequence_id);
+  DCHECK(sequence);
 
+  base::OnceClosure closure;
+  uint32_t order_num = sequence->BeginTask(&closure);
+  DCHECK_EQ(order_num, state.order_num);
+
+  // Begin/FinishProcessingOrderNumber must be called with the lock released
+  // because they can renter the scheduler in Enable/DisableSequence.
+  scoped_refptr<SyncPointOrderData> order_data = sequence->order_data();
   {
     base::AutoUnlock auto_unlock(lock_);
+    order_data->BeginProcessingOrderNumber(order_num);
     std::move(closure).Run();
+    if (order_data->IsProcessingOrderNumber())
+      order_data->FinishProcessingOrderNumber(order_num);
   }
 
   // Check if sequence hasn't been destroyed.
-  Sequence* sequence = GetSequence(state.sequence_id);
+  sequence = GetSequence(state.sequence_id);
   if (sequence) {
     sequence->FinishTask();
     if (sequence->IsRunnable()) {
