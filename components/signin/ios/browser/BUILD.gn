@@ -62,7 +62,8 @@ source_set("unit_tests") {
     "//components/signin/core/common",
     "//components/sync_preferences:test_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//third_party/ocmock",
   ]
 }

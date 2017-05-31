@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_DELAYED_RESPONSE_PROVIDER_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_DELAYED_RESPONSE_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_DELAYED_RESPONSE_PROVIDER_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_DELAYED_RESPONSE_PROVIDER_H_
 
 #include <memory>
 
-#import "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/http_server/response_provider.h"
 
 namespace web {
 
@@ -40,4 +40,4 @@ class DelayedResponseProvider : public ResponseProvider {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_DELAYED_RESPONSE_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_DELAYED_RESPONSE_PROVIDER_H_

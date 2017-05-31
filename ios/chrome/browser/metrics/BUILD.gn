@@ -78,6 +78,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/version_info",
     "//ios/chrome/test:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }
@@ -145,7 +146,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/ui",
     "//ios/testing:ocmock_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
@@ -171,7 +172,8 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",
     "//ios/web:earl_grey_test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]
@@ -192,7 +194,7 @@ source_set("external_url_eg_tests") {
     ":test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test/http_server",
   ]
   libs = [ "XCTest.framework" ]
 }

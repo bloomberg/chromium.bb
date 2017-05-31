@@ -17,7 +17,7 @@ source_set("eg_tests") {
     "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey",
     "//ios/web:earl_grey_test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test/http_server",
     "//url",
   ]
   libs = [

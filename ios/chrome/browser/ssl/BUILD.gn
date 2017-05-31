@@ -41,7 +41,7 @@ source_set("unit_tests") {
     ":ssl",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//net",
     "//net:test_support",
   ]

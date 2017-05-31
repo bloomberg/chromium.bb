@@ -4,10 +4,10 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#import "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/http_server_util.h"
-#import "ios/web/public/test/response_providers/html_response_provider.h"
-#import "ios/web/public/test/response_providers/html_response_provider_impl.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider_impl.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"

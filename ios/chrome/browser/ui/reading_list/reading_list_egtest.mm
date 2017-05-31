@@ -31,10 +31,10 @@
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
-#import "ios/web/public/test/http_server.h"
-#import "ios/web/public/test/http_server_util.h"
-#import "ios/web/public/test/response_providers/delayed_response_provider.h"
-#import "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/http_server/delayed_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

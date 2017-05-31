@@ -175,7 +175,7 @@ source_set("unit_tests") {
     "//ios/testing:ocmock_support",
     "//ios/third_party/material_components_ios",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",

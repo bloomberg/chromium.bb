@@ -114,7 +114,7 @@ source_set("unit_tests") {
     "//components/browser_sync",
     "//components/sync",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }

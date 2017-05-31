@@ -33,7 +33,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//url",
   ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/http_server.h"
+#import "ios/web/public/test/http_server/http_server.h"
 
 #import <Foundation/Foundation.h>
 
@@ -30,15 +30,14 @@ web::ResponseProvider::Request ResponseProviderRequestFromGCDWebServerRequest(
     GCDWebServerDataRequest* request) {
   GURL url(net::GURLWithNSURL(request.URL));
   std::string method(base::SysNSStringToUTF8(request.method));
-  base::scoped_nsobject<NSString> body(
-      [[NSString alloc] initWithData:request.data
-                            encoding:NSUTF8StringEncoding]);
+  base::scoped_nsobject<NSString> body([[NSString alloc]
+      initWithData:request.data
+          encoding:NSUTF8StringEncoding]);
   __block net::HttpRequestHeaders headers;
-  [[request headers] enumerateKeysAndObjectsUsingBlock:^(NSString* header_key,
-                                                         NSString* header_value,
-                                                         BOOL*) {
-      headers.SetHeader(base::SysNSStringToUTF8(header_key),
-                        base::SysNSStringToUTF8(header_value));
+  [[request headers] enumerateKeysAndObjectsUsingBlock:^(
+                         NSString* header_key, NSString* header_value, BOOL*) {
+    headers.SetHeader(base::SysNSStringToUTF8(header_key),
+                      base::SysNSStringToUTF8(header_value));
   }];
   return web::ResponseProvider::Request(url, method,
                                         base::SysNSStringToUTF8(body), headers);
@@ -60,7 +59,7 @@ HttpServer& HttpServer::GetSharedInstance() {
   static web::test::HttpServer* shared_instance = nullptr;
   static dispatch_once_t once;
   dispatch_once(&once, ^{
-      shared_instance = new HttpServer();
+    shared_instance = new HttpServer();
   });
   return *shared_instance;
 }
@@ -81,27 +80,27 @@ void HttpServer::InitHttpServer() {
   // Note: This block is called from an arbitrary GCD thread.
   id process_request =
       ^GCDWebServerResponse*(GCDWebServerDataRequest* request) {
-      // Relax the cross-thread access restriction to non-thread-safe RefCount.
-      // TODO(crbug.com/707010): Remove ScopedAllowCrossThreadRefCountAccess.
-      base::ScopedAllowCrossThreadRefCountAccess
-          allow_cross_thread_ref_count_access;
+    // Relax the cross-thread access restriction to non-thread-safe RefCount.
+    // TODO(crbug.com/707010): Remove ScopedAllowCrossThreadRefCountAccess.
+    base::ScopedAllowCrossThreadRefCountAccess
+        allow_cross_thread_ref_count_access;
 
-      ResponseProvider::Request provider_request =
-          ResponseProviderRequestFromGCDWebServerRequest(request);
-      scoped_refptr<RefCountedResponseProviderWrapper>
-          ref_counted_response_provider = GetResponseProviderForRequest(
-              provider_request);
+    ResponseProvider::Request provider_request =
+        ResponseProviderRequestFromGCDWebServerRequest(request);
+    scoped_refptr<RefCountedResponseProviderWrapper>
+        ref_counted_response_provider =
+            GetResponseProviderForRequest(provider_request);
 
-      if (!ref_counted_response_provider) {
-        return [GCDWebServerResponse response];
-      }
-      ResponseProvider* response_provider =
-          ref_counted_response_provider->GetResponseProvider();
-      if (!response_provider) {
-        return [GCDWebServerResponse response];
-      }
+    if (!ref_counted_response_provider) {
+      return [GCDWebServerResponse response];
+    }
+    ResponseProvider* response_provider =
+        ref_counted_response_provider->GetResponseProvider();
+    if (!response_provider) {
+      return [GCDWebServerResponse response];
+    }
 
-      return response_provider->GetGCDWebServerResponse(provider_request);
+    return response_provider->GetGCDWebServerResponse(provider_request);
   };
   [gcd_web_server_ removeAllHandlers];
   // Register a servlet for all HTTP GET, POST methods.
@@ -118,8 +117,7 @@ HttpServer::HttpServer() : port_(0) {
   InitHttpServer();
 }
 
-HttpServer::~HttpServer() {
-}
+HttpServer::~HttpServer() {}
 
 bool HttpServer::StartOnPort(NSUInteger port) {
   DCHECK([NSThread isMainThread]);
@@ -157,7 +155,7 @@ NSUInteger HttpServer::GetPort() const {
 }
 
 // static
-GURL HttpServer::MakeUrl(const std::string &url) {
+GURL HttpServer::MakeUrl(const std::string& url) {
   return HttpServer::GetSharedInstance().MakeUrlForHttpServer(url);
 }
 
@@ -173,8 +171,7 @@ GURL HttpServer::MakeUrlForHttpServer(const std::string& url) const {
   GURL::Replacements replacements;
   replacements.SetHostStr(kLocalhostHost);
 
-  const std::string port = std::string(
-      base::IntToString(static_cast<int>(GetPort())));
+  const std::string port = base::IntToString(static_cast<int>(GetPort()));
   replacements.SetPortStr(port);
 
   // It is necessary to prepend the host of the input URL so that URLs such
@@ -186,8 +183,8 @@ GURL HttpServer::MakeUrlForHttpServer(const std::string& url) const {
 }
 
 scoped_refptr<RefCountedResponseProviderWrapper>
-    HttpServer::GetResponseProviderForRequest(
-        const web::ResponseProvider::Request& request) {
+HttpServer::GetResponseProviderForRequest(
+    const web::ResponseProvider::Request& request) {
   base::AutoLock autolock(provider_list_lock_);
   // Relax the cross-thread access restriction to non-thread-safe RefCount.
   // The lock above protects non-thread-safe RefCount in HTTPServer.
@@ -198,8 +195,8 @@ scoped_refptr<RefCountedResponseProviderWrapper>
     ResponseProvider* response_provider =
         ref_counted_response_provider.get()->GetResponseProvider();
     if (response_provider->CanHandleRequest(request)) {
-      DCHECK(!result) <<
-          "No more than one response provider can handle the same request.";
+      DCHECK(!result)
+          << "No more than one response provider can handle the same request.";
       result = ref_counted_response_provider;
     }
   }
@@ -256,5 +253,5 @@ void HttpServer::SetPort(NSUInteger port) {
   port_ = port;
 }
 
-} // namespace test
-} // namespace web
+}  // namespace test
+}  // namespace web

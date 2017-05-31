@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/http_server_util.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#import "ios/web/public/test/http_server.h"
-#import "ios/web/public/test/response_providers/file_based_response_provider.h"
-#import "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/http_server/file_based_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
+#import "ios/web/public/test/http_server/http_server.h"
 
 namespace web {
 namespace test {

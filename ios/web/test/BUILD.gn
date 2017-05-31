@@ -46,3 +46,42 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+
+  deps = [
+    ":test_constants",
+    "//base",
+    "//base/test:test_support",
+    "//ios/web:web",
+    "//ios/web/public/test/fakes",
+    "//ios/web/public/test/http_server",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//ui/base",
+  ]
+
+  sources = [
+    "crw_fake_web_controller_observer.h",
+    "crw_fake_web_controller_observer.mm",
+    "test_web_thread.cc",
+    "test_web_thread_bundle.cc",
+    "url_test_util.mm",
+    "web_int_test.h",
+    "web_int_test.mm",
+    "web_test_suite.mm",
+    "web_test_with_web_controller.h",
+    "web_test_with_web_controller.mm",
+    "wk_web_view_crash_utils.h",
+    "wk_web_view_crash_utils.mm",
+  ]
+}
+
+source_set("test_constants") {
+  testonly = true
+  sources = [
+    "test_url_constants.cc",
+    "test_url_constants.h",
+  ]
+}

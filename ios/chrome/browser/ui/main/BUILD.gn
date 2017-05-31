@@ -49,7 +49,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }

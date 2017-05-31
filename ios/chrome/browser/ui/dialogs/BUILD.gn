@@ -26,7 +26,7 @@ source_set("unit_tests") {
   deps = [
     ":dialogs",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
 
@@ -72,7 +72,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//ui/base",
     "//url",
@@ -98,7 +98,8 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]

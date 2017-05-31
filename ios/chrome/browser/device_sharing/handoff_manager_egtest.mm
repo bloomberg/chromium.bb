@@ -12,8 +12,8 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/http_server_util.h"
+#include "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 

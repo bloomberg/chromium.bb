@@ -31,7 +31,7 @@ source_set("unit_tests") {
     "//base",
     "//ios/chrome/browser",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

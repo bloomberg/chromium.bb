@@ -38,6 +38,6 @@ source_set("perf_test_support") {
     "//base",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/test:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
   ]
 }

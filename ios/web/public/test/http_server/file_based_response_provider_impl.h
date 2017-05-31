@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
 
 #include "base/files/file_path.h"
-#import "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/http_server/response_provider.h"
 
 class GURL;
 
@@ -33,4 +33,4 @@ class FileBasedResponseProviderImpl {
 };
 }
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_

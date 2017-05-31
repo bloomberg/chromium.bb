@@ -9,8 +9,8 @@
 
 #include "base/ios/ios_util.h"
 #include "base/strings/string_number_conversions.h"
-#import "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/http_server_util.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#import "ios/web/public/test/response_providers/data_response_provider.h"
-#import "ios/web/public/test/response_providers/html_response_provider_impl.h"
-#import "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/http_server/data_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider_impl.h"
+#import "ios/web/public/test/http_server/response_provider.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -50,4 +50,4 @@ class HtmlResponseProvider : public web::DataResponseProvider {
   std::unique_ptr<HtmlResponseProviderImpl> response_provider_impl_;
 };
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_H_

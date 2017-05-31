@@ -9,8 +9,8 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/http_server_util.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/shell/test/app/web_view_interaction_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"

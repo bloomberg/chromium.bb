@@ -42,7 +42,7 @@ source_set("unit_tests") {
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }
