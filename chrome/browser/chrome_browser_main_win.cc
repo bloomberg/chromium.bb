@@ -353,15 +353,6 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
 void ChromeBrowserMainPartsWin::PostProfileInit() {
   ChromeBrowserMainParts::PostProfileInit();
 
-  // TODO(kulshin): remove this cleanup code in 2017. http://crbug.com/603718
-  // Attempt to delete the font cache and ignore any errors.
-  base::FilePath path(
-      profile()->GetPath().AppendASCII("ChromeDWriteFontCache"));
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
-                     content::BrowserThread::FILE),
-      base::Bind(base::IgnoreResult(&base::DeleteFile), path, false));
-
   // Create the module database and hook up the in-process module watcher. This
   // needs to be done before any child processes are initialized as the
   // ModuleDatabase is an endpoint for IPC from child processes.
