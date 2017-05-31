@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
 
 #include <map>
-#include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 
 namespace content {
@@ -67,8 +65,6 @@ enum PageLoadTimingStatus {
 };
 
 extern const char kPageLoadTimingStatus[];
-extern const char kHistogramOutOfOrderTiming[];
-extern const char kHistogramOutOfOrderTimingBuffered[];
 
 }  // namespace internal
 
@@ -105,8 +101,6 @@ class PageLoadMetricsUpdateDispatcher {
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
-  void ShutDown();
-
   const mojom::PageLoadTiming& timing() const {
     return *(current_merged_page_timing_.get());
   }
@@ -128,7 +122,12 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateMainFrameMetadata(const mojom::PageLoadMetadata& new_metadata);
   void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
 
-  void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
+  // Merge values from |new_paint_timing| into |pending_merged_page_timing_|,
+  // offsetting any new timings by the |navigation_start_offset|.
+  void MergePaintTiming(base::TimeDelta navigation_start_offset,
+                        const mojom::PaintTiming& new_paint_timing,
+                        bool is_main_frame);
+
   void DispatchTimingUpdates();
 
   // The client is guaranteed to outlive this object.
@@ -136,8 +135,6 @@ class PageLoadMetricsUpdateDispatcher {
 
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
-
-  std::unique_ptr<base::Timer> timer_;
 
   // Time the navigation for this page load was initiated.
   const base::TimeTicks navigation_start_;

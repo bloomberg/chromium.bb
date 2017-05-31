@@ -25,10 +25,6 @@ namespace internal {
 const char kPageLoadTimingStatus[] = "PageLoad.Internal.PageLoadTimingStatus";
 const char kPageLoadTimingDispatchStatus[] =
     "PageLoad.Internal.PageLoadTimingStatus.AtTimingCallbackDispatch";
-const char kHistogramOutOfOrderTiming[] =
-    "PageLoad.Internal.OutOfOrderInterFrameTiming";
-const char kHistogramOutOfOrderTimingBuffered[] =
-    "PageLoad.Internal.OutOfOrderInterFrameTiming.AfterBuffering";
 
 }  // namespace internal
 
@@ -204,57 +200,10 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
   return internal::VALID;
 }
 
-// If the updated value has an earlier time than the current value, log so we
-// can keep track of how often this happens.
-void LogIfOutOfOrderTiming(const base::Optional<base::TimeDelta>& current,
-                           const base::Optional<base::TimeDelta>& update) {
-  if (!current || !update)
-    return;
-
-  if (update < current) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramOutOfOrderTimingBuffered,
-                        current.value() - update.value());
-  }
-}
-
-// PaintTimingMerger merges paint timing values received from different frames
-// together.
-class PaintTimingMerger {
- public:
-  explicit PaintTimingMerger(mojom::PaintTiming* target) : target_(target) {}
-
-  // Merge paint timing values from |new_paint_timing| into the target
-  // PaintTiming.
-  void Merge(base::TimeDelta navigation_start_offset,
-             const mojom::PaintTiming& new_paint_timing,
-             bool is_main_frame);
-
-  // Whether we merged a new value, for a paint timing field we didn't
-  // previously have a value for in the target PaintTiming.
-  bool did_merge_new_timing_value() const {
-    return did_merge_new_timing_value_;
-  }
-
- private:
-  void MaybeUpdateTimeDelta(
-      base::Optional<base::TimeDelta>* inout_existing_value,
-      base::TimeDelta navigation_start_offset,
-      const base::Optional<base::TimeDelta>& optional_candidate_new_value);
-
-  // The target PaintTiming we are merging values into.
-  mojom::PaintTiming* const target_;
-
-  // Whether we merged a new value, for a paint timing field we didn't
-  // previously have a value for in |target_|.
-  bool did_merge_new_timing_value_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintTimingMerger);
-};
-
 // Updates *|inout_existing_value| with |optional_candidate_new_value|, if
 // either *|inout_existing_value| isn't set, or |optional_candidate_new_value| <
 // |inout_existing_value|.
-void PaintTimingMerger::MaybeUpdateTimeDelta(
+void MaybeUpdateTimeDelta(
     base::Optional<base::TimeDelta>* inout_existing_value,
     base::TimeDelta navigation_start_offset,
     const base::Optional<base::TimeDelta>& optional_candidate_new_value) {
@@ -279,31 +228,11 @@ void PaintTimingMerger::MaybeUpdateTimeDelta(
     // occasionally, as inter-frame updates can arrive out of order. Record a
     // histogram to track how frequently it happens, along with the magnitude
     // of the delta.
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramOutOfOrderTiming,
+    PAGE_LOAD_HISTOGRAM("PageLoad.Internal.OutOfOrderInterFrameTiming",
                         inout_existing_value->value() - candidate_new_value);
-  } else {
-    did_merge_new_timing_value_ = true;
   }
 
   *inout_existing_value = candidate_new_value;
-}
-
-void PaintTimingMerger::Merge(base::TimeDelta navigation_start_offset,
-                              const mojom::PaintTiming& new_paint_timing,
-                              bool is_main_frame) {
-  MaybeUpdateTimeDelta(&target_->first_paint, navigation_start_offset,
-                       new_paint_timing.first_paint);
-  MaybeUpdateTimeDelta(&target_->first_text_paint, navigation_start_offset,
-                       new_paint_timing.first_text_paint);
-  MaybeUpdateTimeDelta(&target_->first_image_paint, navigation_start_offset,
-                       new_paint_timing.first_image_paint);
-  MaybeUpdateTimeDelta(&target_->first_contentful_paint,
-                       navigation_start_offset,
-                       new_paint_timing.first_contentful_paint);
-  if (is_main_frame) {
-    // First meaningful paint is only tracked in the main frame.
-    target_->first_meaningful_paint = new_paint_timing.first_meaningful_paint;
-  }
 }
 
 }  // namespace
@@ -314,24 +243,13 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
     PageLoadMetricsEmbedderInterface* embedder_interface)
     : client_(client),
       embedder_interface_(embedder_interface),
-      timer_(embedder_interface->CreateTimer()),
       navigation_start_(navigation_handle->NavigationStart()),
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
       subframe_metadata_(mojom::PageLoadMetadata::New()) {}
 
-PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
-  ShutDown();
-}
-
-void PageLoadMetricsUpdateDispatcher::ShutDown() {
-  if (timer_ && timer_->IsRunning()) {
-    timer_->Stop();
-    DispatchTimingUpdates();
-  }
-  timer_ = nullptr;
-}
+PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {}
 
 void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
@@ -385,11 +303,32 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
   client_->OnSubFrameTimingChanged(new_timing);
 
   base::TimeDelta navigation_start_offset = it->second;
-  PaintTimingMerger merger(pending_merged_page_timing_->paint_timing.get());
-  merger.Merge(navigation_start_offset, *new_timing.paint_timing,
-               false /* is_main_frame */);
+  MergePaintTiming(navigation_start_offset, *(new_timing.paint_timing),
+                   false /* is_main_frame */);
 
-  MaybeDispatchTimingUpdates(merger.did_merge_new_timing_value());
+  DispatchTimingUpdates();
+}
+
+void PageLoadMetricsUpdateDispatcher::MergePaintTiming(
+    base::TimeDelta navigation_start_offset,
+    const mojom::PaintTiming& new_paint_timing,
+    bool is_main_frame) {
+  MaybeUpdateTimeDelta(&pending_merged_page_timing_->paint_timing->first_paint,
+                       navigation_start_offset, new_paint_timing.first_paint);
+  MaybeUpdateTimeDelta(
+      &pending_merged_page_timing_->paint_timing->first_text_paint,
+      navigation_start_offset, new_paint_timing.first_text_paint);
+  MaybeUpdateTimeDelta(
+      &pending_merged_page_timing_->paint_timing->first_image_paint,
+      navigation_start_offset, new_paint_timing.first_image_paint);
+  MaybeUpdateTimeDelta(
+      &pending_merged_page_timing_->paint_timing->first_contentful_paint,
+      navigation_start_offset, new_paint_timing.first_contentful_paint);
+  if (is_main_frame) {
+    // first meaningful paint is only tracked in the main frame.
+    pending_merged_page_timing_->paint_timing->first_meaningful_paint =
+        new_paint_timing.first_meaningful_paint;
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
@@ -435,12 +374,10 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   // observed |paint_timing|, which is tracked across all frames in the page.
   pending_merged_page_timing_ = new_timing.Clone();
   pending_merged_page_timing_->paint_timing = std::move(last_paint_timing);
+  MergePaintTiming(base::TimeDelta(), *new_timing.paint_timing,
+                   true /* is_main_frame */);
 
-  PaintTimingMerger merger(pending_merged_page_timing_->paint_timing.get());
-  merger.Merge(base::TimeDelta(), *new_timing.paint_timing,
-               true /* is_main_frame */);
-
-  MaybeDispatchTimingUpdates(merger.did_merge_new_timing_value());
+  DispatchTimingUpdates();
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
@@ -461,24 +398,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
   client_->OnMainFrameMetadataChanged();
 }
 
-void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
-    bool did_merge_new_timing_value) {
-  // If we merged a new timing value, then we should buffer updates for
-  // |kBufferTimerDelayMillis|, to allow for any other out of order timings to
-  // arrive before we dispatch the minimum observed timings to observers.
-  if (did_merge_new_timing_value) {
-    timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kBufferTimerDelayMillis),
-        base::Bind(&PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates,
-                   base::Unretained(this)));
-  } else if (!timer_->IsRunning()) {
-    DispatchTimingUpdates();
-  }
-}
-
 void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
-  DCHECK(!timer_->IsRunning());
-
   if (pending_merged_page_timing_->paint_timing->first_paint) {
     if (!pending_merged_page_timing_->parse_timing->parse_start ||
         !pending_merged_page_timing_->document_timing->first_layout) {
@@ -498,19 +418,6 @@ void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
 
   if (current_merged_page_timing_->Equals(*pending_merged_page_timing_))
     return;
-
-  LogIfOutOfOrderTiming(current_merged_page_timing_->paint_timing->first_paint,
-                        pending_merged_page_timing_->paint_timing->first_paint);
-  LogIfOutOfOrderTiming(
-      current_merged_page_timing_->paint_timing->first_text_paint,
-      pending_merged_page_timing_->paint_timing->first_text_paint);
-  LogIfOutOfOrderTiming(
-      current_merged_page_timing_->paint_timing->first_image_paint,
-      pending_merged_page_timing_->paint_timing->first_image_paint);
-  LogIfOutOfOrderTiming(
-      current_merged_page_timing_->paint_timing->first_contentful_paint,
-      pending_merged_page_timing_->paint_timing->first_contentful_paint);
-
   current_merged_page_timing_ = pending_merged_page_timing_->Clone();
 
   internal::PageLoadTimingStatus status =
