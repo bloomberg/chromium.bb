@@ -107,6 +107,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 
 Bug(none) paint/transparency/compositing-alpha-fold-crash.html [ Failure ]
 Bug(none) paint/invalidation/table/row-change-background-rowspan-cell.html [ Failure ]
+Bug(none) paint/invalidation/clip-flex-text.html [ Failure ]
 Bug(none) virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Failure ]
 Bug(none) virtual/new-remote-playback-pipeline/media/controls/video-overlay-cast-dark-rendering.html [ Failure ]
 Bug(none) paint/invalidation/compositing/newly-composited-repaint-rect.html [ Failure ]
