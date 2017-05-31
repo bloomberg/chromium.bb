@@ -59,10 +59,12 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
+import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -84,6 +86,8 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.components.feature_engagement_tracker.EventConstants;
+import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.sync.SyncConstants;
@@ -359,6 +363,15 @@ public class Tab
      * successful page load.
      */
     private int mSadTabSuccessiveRefreshCounter;
+
+    /**
+     * Stores total data saved at the start of a page load. Used to calculate delta at the end of
+     * page load, which is just an estimate of the data saved for the current page load since there
+     * may be multiple pages loading at the same time. This estimate is used to get an idea of how
+     * widely used the data saver feature is for a particular user at a time (i.e. not since the
+     * user started using Chrome).
+     */
+    private long mDataSavedOnStartPageLoad;
 
     private final int mDefaultThemeColor;
     private int mThemeColor;
@@ -1498,6 +1511,9 @@ public class Tab
         updateTitle();
         removeSadTabIfPresent();
 
+        mDataSavedOnStartPageLoad =
+                DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary();
+
         if (mIsRendererUnresponsive) handleRendererResponsive();
 
         if (mTabUma != null) mTabUma.onPageLoadStarted();
@@ -1524,6 +1540,17 @@ public class Tab
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
         mIsBeingRestored = false;
+
+        long dataSaved =
+                DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary()
+                - mDataSavedOnStartPageLoad;
+
+        if (dataSaved > 0) {
+            FeatureEngagementTracker tracker =
+                    FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                            Profile.getLastUsedProfile());
+            tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
+        }
     }
 
     /**
