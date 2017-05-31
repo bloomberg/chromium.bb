@@ -93,6 +93,9 @@ class NGInlineItem {
                         unsigned start,
                         unsigned end) const;
 
+  bool HasStartEdge() const;
+  bool HasEndEdge() const;
+
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
