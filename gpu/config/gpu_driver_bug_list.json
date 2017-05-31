@@ -2401,13 +2401,13 @@
     },
     {
       "id": 224,
-      "description": "VPx decoding isn't supported before Windows 10 anniversary update.",
-      "cr_bugs": [616318],
+      "description": "VPx decoding isn't supported well before Windows 10 creators update.",
+      "cr_bugs": [616318, 667532],
       "os": {
         "type": "win",
         "version": {
           "op": "<",
-          "value": "10.0.14393"
+          "value": "10.0.15063"
         }
       },
       "features": [
