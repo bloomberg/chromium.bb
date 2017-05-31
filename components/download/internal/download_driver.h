@@ -46,6 +46,8 @@ class DownloadDriver {
     virtual void OnDownloadUpdated(const DriverEntry& download) = 0;
   };
 
+  virtual ~DownloadDriver() = default;
+
   // Initialize the driver to receive download updates.
   virtual void Initialize(Client* client) = 0;
 

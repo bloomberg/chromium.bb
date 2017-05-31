@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_DOWNLOAD_SERVICE_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_DOWNLOAD_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -12,10 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "components/download/public/clients.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace download {
 
+class Client;
 struct DownloadParams;
 struct SchedulingParams;
 
@@ -29,6 +32,25 @@ struct SchedulingParams;
 // a process restart.
 class DownloadService : public KeyedService {
  public:
+  // The current status of the Service.
+  enum class ServiceStatus {
+    // The service is in the process of initializing and should not be used yet.
+    // All registered Clients will be notified via
+    // Client::OnServiceInitialized() once the service is ready.
+    STARTING_UP = 0,
+
+    // The service is ready and available for use.
+    READY = 1,
+
+    // The service is unavailable.  This is typically due to an unrecoverable
+    // error on some internal component like the persistence layer.
+    UNAVAILABLE = 2,
+  };
+
+  // |clients| is a map of DownloadClient -> std::unique_ptr<Client>.  This
+  // represents all of the clients that are allowed to have requests made on
+  // their behalf.  This cannot be changed after startup.  Any existing requests
+  // no longer associated with a client will be cancelled.
   // |storage_dir| is a path to where all the local storage will be.  This will
   // hold the internal database as well as any temporary files on disk.  If this
   // is an empty path, the service will not persist any information to disk and
@@ -36,8 +58,13 @@ class DownloadService : public KeyedService {
   // restarts, no files written on completion, etc.).
   // |background_task_runner| will be used for all disk reads and writes.
   static DownloadService* Create(
+      std::unique_ptr<DownloadClientMap> clients,
       const base::FilePath& storage_dir,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
+
+  // Whether or not the DownloadService is currently available, initialized
+  // successfully, and ready to be used.
+  virtual ServiceStatus GetStatus() = 0;
 
   // Sends the download to the service.  A callback to
   // |DownloadParams::callback| will be triggered once the download has been

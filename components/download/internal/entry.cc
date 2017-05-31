@@ -8,6 +8,13 @@ namespace download {
 
 Entry::Entry() = default;
 Entry::Entry(const Entry& other) = default;
+
+Entry::Entry(const DownloadParams& params)
+    : client(params.client),
+      guid(params.guid),
+      scheduling_params(params.scheduling_params),
+      request_params(params.request_params) {}
+
 Entry::~Entry() = default;
 
 }  // namespace download

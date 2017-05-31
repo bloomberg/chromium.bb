@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/download/public/clients.h"
 #include "components/download/public/download_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -49,8 +51,9 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
         profile->GetPath().Append(chrome::kDownloadServiceStorageDirname);
   }
 
-  download::DownloadService* service =
-      download::DownloadService::Create(storage_dir, background_task_runner);
+  download::DownloadService* service = download::DownloadService::Create(
+      base::MakeUnique<download::DownloadClientMap>(), storage_dir,
+      background_task_runner);
 
   // TODO(dtrainor): Register all clients here.
   return service;

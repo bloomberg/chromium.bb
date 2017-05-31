@@ -16,8 +16,13 @@ static_library("internal") {
   ]
 
   sources = [
+    "client_set.cc",
+    "client_set.h",
     "config.cc",
     "config.h",
+    "controller.h",
+    "controller_impl.cc",
+    "controller_impl.h",
     "download_driver.h",
     "download_service_impl.cc",
     "download_service_impl.h",
@@ -27,6 +32,8 @@ static_library("internal") {
     "driver_entry.h",
     "entry.cc",
     "entry.h",
+    "entry_utils.cc",
+    "entry_utils.h",
     "model.h",
     "model_impl.cc",
     "model_impl.h",
@@ -36,6 +43,10 @@ static_library("internal") {
     "scheduler/battery_listener.h",
     "scheduler/network_listener.cc",
     "scheduler/network_listener.h",
+    "startup_status.cc",
+    "startup_status.h",
+    "stats.cc",
+    "stats.h",
     "store.h",
   ]
 
@@ -54,7 +65,10 @@ source_set("unit_tests") {
   visibility = [ "//components/download:unit_tests" ]
 
   sources = [
+    "client_set_unittest.cc",
+    "controller_impl_unittest.cc",
     "download_store_unittest.cc",
+    "entry_utils_unittest.cc",
     "model_impl_unittest.cc",
     "proto_conversions_unittest.cc",
     "scheduler/battery_listener_unittest.cc",

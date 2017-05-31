@@ -9,6 +9,7 @@
 #include "net/http/http_response_headers.h"
 
 namespace download {
+namespace test {
 
 TestDownloadDriver::TestDownloadDriver() : is_ready_(false), client_(nullptr) {}
 
@@ -81,4 +82,5 @@ base::Optional<DriverEntry> TestDownloadDriver::Find(const std::string& guid) {
   return it->second;
 }
 
-}  // namespace downloads
+}  // namespace test
+}  // namespace download

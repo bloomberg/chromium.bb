@@ -102,11 +102,24 @@ struct DownloadParams {
     // The DownloadService has too many downloads.  Backoff and retry.
     BACKOFF,
 
-    // Failed to create the download.  Invalid input parameters.
-    BAD_PARAMETERS,
+    // The DownloadService has no knowledge of the DownloadClient associated
+    // with this request.
+    UNEXPECTED_CLIENT,
+
+    // Failed to create the download.  The guid is already in use.
+    UNEXPECTED_GUID,
+
+    // The download was cancelled by the Client while it was being persisted.
+    CLIENT_CANCELLED,
+
+    // The DownloadService was unable to accept and persist this download due to
+    // an internal error like the underlying DB store failing to write to disk.
+    INTERNAL_ERROR,
 
     // TODO(dtrainor): Add more error codes.
   };
+
+  using StartCallback = base::Callback<void(const std::string&, StartResult)>;
 
   DownloadParams();
   DownloadParams(const DownloadParams& other);
@@ -120,7 +133,7 @@ struct DownloadParams {
 
   // A callback that will be notified if this download has been accepted and
   // persisted by the DownloadService.
-  base::Callback<void(const DownloadParams&, StartResult)> callback;
+  StartCallback callback;
 
   // The parameters that determine under what device conditions this download
   // will occur.
