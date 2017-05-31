@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "base/values.h"
 
 namespace remoting {
@@ -36,6 +37,7 @@ struct HostInfo {
   HostStatus status = kHostStatusOffline;
   std::string offline_reason;
   std::string public_key;
+  base::Time updated_time;
   std::vector<std::string> token_url_patterns;
 };
 

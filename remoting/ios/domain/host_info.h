@@ -21,7 +21,7 @@
 @property(nonatomic, copy) NSString* kind;
 @property(nonatomic, copy) NSString* publicKey;
 @property(nonatomic, copy) NSString* status;
-@property(nonatomic, copy) NSDate* updatedTime;
+@property(nonatomic, copy) NSString* updatedTime;
 // True when |status| is @"ONLINE", anything else is False.
 @property(nonatomic, readonly) bool isOnline;
 
