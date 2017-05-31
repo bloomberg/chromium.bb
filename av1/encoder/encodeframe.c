@@ -275,9 +275,10 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
   set_skip_context(xd, mi_row, mi_col);
 #if CONFIG_VAR_TX
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
-  xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
   xd->max_tx_size = max_txsize_lookup[bsize];
 #endif
 
@@ -1761,8 +1762,8 @@ typedef struct {
 #if CONFIG_VAR_TX
   TXFM_CONTEXT *p_ta;
   TXFM_CONTEXT *p_tl;
-  TXFM_CONTEXT ta[MAX_MIB_SIZE];
-  TXFM_CONTEXT tl[MAX_MIB_SIZE];
+  TXFM_CONTEXT ta[2 * MAX_MIB_SIZE];
+  TXFM_CONTEXT tl[2 * MAX_MIB_SIZE];
 #endif
 } RD_SEARCH_MACROBLOCK_CONTEXT;
 
@@ -1803,9 +1804,9 @@ static void restore_context(MACROBLOCK *x,
   xd->above_txfm_context = ctx->p_ta;
   xd->left_txfm_context = ctx->p_tl;
   memcpy(xd->above_txfm_context, ctx->ta,
-         sizeof(*xd->above_txfm_context) * mi_width);
+         sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
   memcpy(xd->left_txfm_context, ctx->tl,
-         sizeof(*xd->left_txfm_context) * mi_height);
+         sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
 #endif
 #if CONFIG_PVQ
   od_encode_rollback(&x->daala_enc, rdo_buf);
@@ -1848,9 +1849,9 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
          sizeof(xd->left_seg_context[0]) * mi_height);
 #if CONFIG_VAR_TX
   memcpy(ctx->ta, xd->above_txfm_context,
-         sizeof(*xd->above_txfm_context) * mi_width);
+         sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
   memcpy(ctx->tl, xd->left_txfm_context,
-         sizeof(*xd->left_txfm_context) * mi_height);
+         sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
   ctx->p_ta = xd->above_txfm_context;
   ctx->p_tl = xd->left_txfm_context;
 #endif
@@ -2265,9 +2266,10 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   pc_tree->partitioning = partition;
 
 #if CONFIG_VAR_TX
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
-  xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 #endif
 #if !CONFIG_PVQ
   save_context(x, &x_ctx, mi_row, mi_col, bsize);
@@ -3281,9 +3283,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 
 #if CONFIG_VAR_TX
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
-  xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 #endif
 #if !CONFIG_PVQ
   save_context(x, &x_ctx, mi_row, mi_col, bsize);
@@ -5245,8 +5248,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   const int tx_col = blk_col >> 1;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
-  int ctx = txfm_partition_context(xd->above_txfm_context + tx_col,
-                                   xd->left_txfm_context + tx_row,
+  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                   xd->left_txfm_context + blk_row,
                                    mbmi->sb_type, tx_size);
   const TX_SIZE plane_tx_size = mbmi->inter_tx_size[tx_row][tx_col];
 
@@ -5255,8 +5258,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   if (tx_size == plane_tx_size) {
     ++counts->txfm_partition[ctx][0];
     mbmi->tx_size = tx_size;
-    txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bs = tx_size_wide_unit[sub_txs];
@@ -5268,8 +5271,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     if (tx_size == TX_8X8) {
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
-      txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
+      txfm_partition_update(xd->above_txfm_context + blk_col,
+                            xd->left_txfm_context + blk_row, TX_4X4, tx_size);
       return;
     }
 
@@ -5293,9 +5296,10 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
 
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
-  xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
   for (idy = 0; idy < mi_height; idy += bh)
     for (idx = 0; idx < mi_width; idx += bw)
@@ -5316,8 +5320,8 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
 
   if (tx_size == plane_tx_size) {
     mbmi->tx_size = tx_size;
-    txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
 
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -5327,8 +5331,8 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
     if (tx_size == TX_8X8) {
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
-      txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
+      txfm_partition_update(xd->above_txfm_context + blk_col,
+                            xd->left_txfm_context + blk_row, TX_4X4, tx_size);
       return;
     }
 
@@ -5351,9 +5355,10 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
 
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
-  xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
   for (idy = 0; idy < mi_height; idy += bh)
     for (idx = 0; idx < mi_width; idx += bw)

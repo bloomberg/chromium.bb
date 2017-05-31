@@ -785,6 +785,9 @@ static const int tx_size_high_log2[TX_SIZES_ALL] = {
   3, 2, 4, 3, 5, 4, 4, 2, 5, 3
 };
 
+#define TX_UNIT_WIDE_LOG2 (MI_SIZE_LOG2 - tx_size_wide_log2[0])
+#define TX_UNIT_HIGH_LOG2 (MI_SIZE_LOG2 - tx_size_high_log2[0])
+
 static const int tx_size_2d[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
   4,

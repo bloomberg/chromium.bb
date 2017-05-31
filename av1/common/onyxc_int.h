@@ -386,7 +386,7 @@ typedef struct AV1Common {
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
 #if CONFIG_VAR_TX
   TXFM_CONTEXT *above_txfm_context;
-  TXFM_CONTEXT left_txfm_context[MAX_MIB_SIZE];
+  TXFM_CONTEXT left_txfm_context[2 * MAX_MIB_SIZE];
 #endif
   int above_context_alloc_cols;
 
@@ -877,7 +877,8 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
 
 #if CONFIG_VAR_TX
-  av1_zero_array(cm->above_txfm_context + mi_col_start, aligned_width);
+  av1_zero_array(cm->above_txfm_context + (mi_col_start << TX_UNIT_WIDE_LOG2),
+                 aligned_width << TX_UNIT_WIDE_LOG2);
 #endif  // CONFIG_VAR_TX
 }
 
@@ -910,16 +911,16 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h, int skip,
     bh = n8_h * MI_SIZE;
   }
 
-  set_txfm_ctx(xd->above_txfm_context, bw, n8_w);
-  set_txfm_ctx(xd->left_txfm_context, bh, n8_h);
+  set_txfm_ctx(xd->above_txfm_context, bw, n8_w << TX_UNIT_WIDE_LOG2);
+  set_txfm_ctx(xd->left_txfm_context, bh, n8_h << TX_UNIT_HIGH_LOG2);
 }
 
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
                                          TX_SIZE tx_size, TX_SIZE txb_size) {
   BLOCK_SIZE bsize = txsize_to_bsize[txb_size];
-  int bh = mi_size_high[bsize];
-  int bw = mi_size_wide[bsize];
+  int bh = mi_size_high[bsize] << TX_UNIT_HIGH_LOG2;
+  int bw = mi_size_wide[bsize] << TX_UNIT_WIDE_LOG2;
   uint8_t txw = tx_size_wide[tx_size];
   uint8_t txh = tx_size_high[tx_size];
   int i;

@@ -1434,12 +1434,15 @@ static void get_filter_level_and_masks_non420(
 #endif
 
 #if CONFIG_VAR_TX
-    TX_SIZE tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
+    TX_SIZE tx_size_r = AOMMIN(
+        tx_size, cm->above_txfm_context[(mi_col + c) << TX_UNIT_WIDE_LOG2]);
     TX_SIZE tx_size_c =
-        AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
+        AOMMIN(tx_size, cm->left_txfm_context[((mi_row + r) & MAX_MIB_MASK)
+                                              << TX_UNIT_HIGH_LOG2]);
 
-    cm->above_txfm_context[mi_col + c] = tx_size;
-    cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
+    cm->above_txfm_context[(mi_col + c) << TX_UNIT_WIDE_LOG2] = tx_size;
+    cm->left_txfm_context[((mi_row + r) & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2] =
+        tx_size;
 #else
     TX_SIZE tx_size_c = txsize_horz_map[tx_size];
     TX_SIZE tx_size_r = txsize_vert_map[tx_size];
@@ -2189,12 +2192,12 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   int mi_row, mi_col;
 
 #if CONFIG_VAR_TX
-  memset(cm->above_txfm_context, TX_SIZES, cm->mi_cols);
+  memset(cm->above_txfm_context, TX_SIZES, cm->mi_cols << TX_UNIT_WIDE_LOG2);
 #endif  // CONFIG_VAR_TX
   for (mi_row = start; mi_row < stop; mi_row += cm->mib_size) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 #if CONFIG_VAR_TX
-    memset(cm->left_txfm_context, TX_SIZES, MAX_MIB_SIZE);
+    memset(cm->left_txfm_context, TX_SIZES, MAX_MIB_SIZE << TX_UNIT_WIDE_LOG2);
 #endif  // CONFIG_VAR_TX
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
       int plane;

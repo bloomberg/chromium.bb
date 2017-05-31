@@ -362,22 +362,22 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
 
-  int ctx = txfm_partition_context(xd->above_txfm_context + tx_col,
-                                   xd->left_txfm_context + tx_row,
+  int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                   xd->left_txfm_context + blk_row,
                                    mbmi->sb_type, tx_size);
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   if (depth == MAX_VARTX_DEPTH) {
-    txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
   }
 
   if (tx_size == mbmi->inter_tx_size[tx_row][tx_col]) {
     aom_write(w, 0, cm->fc->txfm_partition_prob[ctx]);
-    txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
@@ -386,8 +386,8 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     aom_write(w, 1, cm->fc->txfm_partition_prob[ctx]);
 
     if (tx_size == TX_8X8) {
-      txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, sub_txs, tx_size);
+      txfm_partition_update(xd->above_txfm_context + blk_col,
+                            xd->left_txfm_context + blk_row, sub_txs, tx_size);
       return;
     }
 
@@ -2282,9 +2282,10 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                       mi_row, mi_col, w);
   } else {
 #if CONFIG_VAR_TX
-    xd->above_txfm_context = cm->above_txfm_context + mi_col;
-    xd->left_txfm_context =
-        xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+    xd->above_txfm_context =
+        cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+    xd->left_txfm_context = xd->left_txfm_context_buffer +
+                            ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 #endif
 #if CONFIG_DUAL_FILTER
     // has_subpel_mv_component needs the ref frame buffers set up to look

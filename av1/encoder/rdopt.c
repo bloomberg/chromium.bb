@@ -4046,9 +4046,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   ENTROPY_CONTEXT *pta = ta + blk_col;
   ENTROPY_CONTEXT *ptl = tl + blk_row;
   int coeff_ctx, i;
-  int ctx =
-      txfm_partition_context(tx_above + (blk_col >> 1),
-                             tx_left + (blk_row >> 1), mbmi->sb_type, tx_size);
+  int ctx = txfm_partition_context(tx_above + blk_col, tx_left + blk_row,
+                                   mbmi->sb_type, tx_size);
   int64_t sum_rd = INT64_MAX;
   int tmp_eob = 0;
   int zero_blk_rate;
@@ -4152,8 +4151,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     int idx, idy;
     for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) pta[i] = !(tmp_eob == 0);
     for (i = 0; i < tx_size_high_unit[tx_size]; ++i) ptl[i] = !(tmp_eob == 0);
-    txfm_partition_update(tx_above + (blk_col >> 1), tx_left + (blk_row >> 1),
-                          tx_size, tx_size);
+    txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
+                          tx_size);
     inter_tx_size[0][0] = tx_size;
     for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
       for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
@@ -4192,17 +4191,15 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
     ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
     ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
+    TXFM_CONTEXT tx_above[MAX_MIB_SIZE * 2];
+    TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
 
     RD_STATS pn_rd_stats;
     av1_init_rd_stats(&pn_rd_stats);
 
     av1_get_entropy_contexts(bsize, 0, pd, ctxa, ctxl);
-    memcpy(tx_above, xd->above_txfm_context,
-           sizeof(TXFM_CONTEXT) * (mi_width >> 1));
-    memcpy(tx_left, xd->left_txfm_context,
-           sizeof(TXFM_CONTEXT) * (mi_height >> 1));
+    memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
+    memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
 
     for (idy = 0; idy < mi_height; idy += bh) {
       for (idx = 0; idx < mi_width; idx += bw) {
