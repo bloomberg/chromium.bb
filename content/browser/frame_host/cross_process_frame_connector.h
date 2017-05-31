@@ -133,12 +133,18 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // Returns the view for the top-level frame under the same WebContents.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView();
 
+  const gfx::Rect& viewport_intersection() const {
+    return viewport_intersection_rect_;
+  }
+
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();
   }
 
  private:
+  friend class MockCrossProcessFrameConnector;
+
   // Handlers for messages received from the parent frame.
   void OnFrameRectChanged(const gfx::Rect& frame_rect);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
@@ -157,6 +163,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   RenderWidgetHostViewChildFrame* view_;
 
   gfx::Rect child_frame_rect_;
+  gfx::Rect viewport_intersection_rect_;
 
   bool is_scroll_bubbling_;
 };

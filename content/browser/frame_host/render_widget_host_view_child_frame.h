@@ -151,6 +151,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   bool IsRenderWidgetHostViewChildFrame() override;
 
+  void WillSendScreenRects() override;
+
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;

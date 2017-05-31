@@ -246,6 +246,7 @@ void CrossProcessFrameConnector::OnFrameRectChanged(
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
     const gfx::Rect& viewport_intersection) {
+  viewport_intersection_rect_ = viewport_intersection;
   if (view_)
     view_->UpdateViewportIntersection(viewport_intersection);
 }

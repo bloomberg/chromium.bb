@@ -485,6 +485,7 @@ void RenderWidgetHostImpl::SendScreenRects() {
 
   last_view_screen_rect_ = view_->GetViewBounds();
   last_window_screen_rect_ = view_->GetBoundsInRootWindow();
+  view_->WillSendScreenRects();
   Send(new ViewMsg_UpdateScreenRects(
       GetRoutingID(), last_view_screen_rect_, last_window_screen_rect_));
   waiting_for_screen_rects_ack_ = true;
