@@ -380,7 +380,11 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
 #if defined(OS_MACOSX)
   // The following characters are reported as present in the default macOS
   // system UI font, but they render as blank. Remove them from the allowed
-  // set to prevent spoofing.
+  // set to prevent spoofing until the font issue is resolved.
+
+  // Arabic letter KASHMIRI YEH. Not used in Arabic and Persian.
+  allowed_set.remove(0x0620u);
+
   // Tibetan characters used for transliteration of ancient texts:
   allowed_set.remove(0x0F8Cu);
   allowed_set.remove(0x0F8Du);
