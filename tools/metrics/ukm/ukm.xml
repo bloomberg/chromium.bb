@@ -296,24 +296,93 @@ be describing additional metrics about the same event.
 <event name="PageLoad" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <summary>
-    Recorded when Pageload observer events fire.
+    Core metrics associated with web page loads.
   </summary>
   <metric name="DocumentTiming.NavigationToDOMContentLoadedEventFired">
     <summary>
-      Time from navigation to dom content loaded in ms.
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the DOMContentLoaded event is fired, for main frame
+      documents.
     </summary>
   </metric>
-  <metric name="DocumentTiming.NavigationToLoadEventFired"/>
-  <metric name="Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
-  <metric name="Navigation.PageTransition"/>
-  <metric name="Net.EffectiveConnectionType.OnNavigationStart"/>
-  <metric name="Net.ErrorCode.OnFailedProvisionalLoad"/>
-  <metric name="PageTiming.ForegroundDuration"/>
-  <metric name="PageTiming.NavigationToFailedProvisionalLoad"/>
-  <metric name="PaintTiming.NavigationToFirstContentfulPaint"/>
+  <metric name="DocumentTiming.NavigationToLoadEventFired">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the load event is fired, for main frame documents.
+    </summary>
+  </metric>
+  <metric name="Experimental.PaintTiming.NavigationToFirstMeaningfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the first meaningful paint (http://bit.ly/ttfmp-doc), for main
+      frame documents.
+    </summary>
+  </metric>
+  <metric name="Navigation.PageTransition">
+    <summary>
+      The |ui::PageTransition| for the main frame navigation of this page load.
+    </summary>
+  </metric>
+  <metric name="Net.EffectiveConnectionType.OnNavigationStart">
+    <summary>
+      The |net::EffectiveConnectionType| at the time the navigation for this
+      page load was initiated.
+    </summary>
+  </metric>
+  <metric name="Net.ErrorCode.OnFailedProvisionalLoad">
+    <summary>
+      The |net::Error| code for this page load. Only logged for failed
+      provisional navigations.
+    </summary>
+  </metric>
+  <metric name="Net.HttpRttEstimate.OnNavigationStart">
+    <summary>
+      The HTTP round trip time estimate for this page load, at the time the
+      navigation for this page load was initiated.
+    </summary>
+  </metric>
+  <metric name="Net.TransportRttEstimate.OnNavigationStart">
+    <summary>
+      The transport round trip time estimate for this page load, at the time the
+      navigation for this page load was initiated.
+    </summary>
+  </metric>
+  <metric name="PageTiming.ForegroundDuration">
+    <summary>
+      For page loads that start in the foreground, measures the duration of time
+      in milliseconds until one of the following events occurs: the load of the
+      main resource fails, the page load is stopped, the tab hosting the page is
+      closed, the render process hosting the page goes away, a new navigation
+      which later commits is initiated in the same tab, or the tab hosting the
+      page is backgrounded. This metric has a very long tail, for pages that
+      spend a long period of time in the foreground. As such, use of the mean or
+      tail values are not recommended.
+    </summary>
+  </metric>
+  <metric name="PageTiming.NavigationToFailedProvisionalLoad">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the provisional load failed. Only measures provisional
+      loads that failed in the foreground.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.NavigationToFirstContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints content. A contentful paint
+      includes a paint of text, image, SVG, or canvas.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.NavigationToFirstPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the first paint is performed.
+    </summary>
+  </metric>
   <metric name="ParseTiming.NavigationToParseStart">
     <summary>
-      Time from navigation to parse start in ms.
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the parser started, for main frame documents.
     </summary>
   </metric>
 </event>
