@@ -149,24 +149,28 @@ def BuildFileList(override_dir):
           dest = final_from[len(vs_path) + 1:]
           result.append((final_from, dest))
 
-  # Just copy the whole SDK.
   sdk_path = r'C:\Program Files (x86)\Windows Kits\10'
   for root, _, files in os.walk(sdk_path):
     for f in files:
       combined = os.path.normpath(os.path.join(root, f))
       # Some of the files in this directory are exceedingly long (and exceed
-      #_MAX_PATH for any moderately long root), so exclude them. We don't need
-      # them anyway. Exclude the Windows Performance Toolkit just to save space.
+      # _MAX_PATH for any moderately long root), so exclude them. We don't need
+      # them anyway. Exclude others just to save space.
       tail = combined[len(sdk_path) + 1:]
-      if (tail.startswith('References\\') or
-          tail.startswith('Windows Performance Toolkit\\')):
+      skip_dir = False
+      for dir in ['References\\', 'Windows Performance Toolkit\\', 'Testing\\',
+                  'App Certification Kit\\', 'Extension SDKs\\']:
+        if tail.startswith(dir):
+          skip_dir = True
+      if skip_dir:
         continue
-      # There may be many Include\Lib\Source directories for many different
+      # There may be many Include\Lib\Source\bin directories for many different
       # versions of Windows and packaging them all wastes ~450 MB
       # (uncompressed) per version and wastes time. Only copy the specified
-      # version.
+      # version. Note that the SDK version number started being part of the bin
+      # path with 10.0.15063.0.
       if (tail.startswith('Include\\') or tail.startswith('Lib\\') or
-          tail.startswith('Source\\')):
+          tail.startswith('Source\\') or tail.startswith('bin\\')):
         if tail.count(WIN_VERSION) == 0:
           continue
       to = os.path.join('win_sdk', tail)
@@ -259,7 +263,7 @@ def GenerateSetEnvCmd(target_dir):
   if VS_VERSION == '2017':
     env_x86 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
         ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x86'],
         ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],  # Needed for mspdb1x0.dll.
       ]),
@@ -273,7 +277,7 @@ def GenerateSetEnvCmd(target_dir):
   else:
     env_x86 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', 'x86'],
+        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x86'],
         ['..', '..', 'VC', 'bin', 'amd64_x86'],
         ['..', '..', 'VC', 'bin', 'amd64'],  # Needed for mspdb1x0.dll.
       ]),
@@ -288,7 +292,7 @@ def GenerateSetEnvCmd(target_dir):
   if VS_VERSION == '2017':
     env_x64 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
         ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
@@ -301,7 +305,7 @@ def GenerateSetEnvCmd(target_dir):
   else:
     env_x64 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
         ['..', '..', 'VC', 'bin', 'amd64'],
       ]),
       ('LIB', [
