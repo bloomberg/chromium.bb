@@ -146,6 +146,14 @@ bool IsRenderedAsTable(const Node* node) {
 
 template <typename Strategy>
 TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
+    const EphemeralRangeTemplate<Strategy>& range,
+    const TextIteratorBehavior& behavior)
+    : TextIteratorAlgorithm(range.StartPosition(),
+                            range.EndPosition(),
+                            behavior) {}
+
+template <typename Strategy>
+TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     const TextIteratorBehavior& behavior)
@@ -172,25 +180,11 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   // To avoid renderer hang, we use |CHECK_LE()| to catch the bad callers
   // in release build.
   CHECK_LE(start, end);
-  Initialize(start.ComputeContainerNode(), start.ComputeOffsetInContainerNode(),
-             end.ComputeContainerNode(), end.ComputeOffsetInContainerNode());
-}
 
-template <typename Strategy>
-TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
-    const EphemeralRangeTemplate<Strategy>& range,
-    const TextIteratorBehavior& behavior)
-    : TextIteratorAlgorithm(range.StartPosition(),
-                            range.EndPosition(),
-                            behavior) {}
-
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::Initialize(Node* start_container,
-                                                 int start_offset,
-                                                 Node* end_container,
-                                                 int end_offset) {
-  DCHECK(start_container);
-  DCHECK(end_container);
+  Node* const start_container = start.ComputeContainerNode();
+  const int start_offset = start.ComputeOffsetInContainerNode();
+  Node* const end_container = end.ComputeContainerNode();
+  const int end_offset = end.ComputeOffsetInContainerNode();
 
   text_node_handler_.Initialize(start_container, start_offset, end_container,
                                 end_offset);

@@ -127,11 +127,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
     kHandledChildren
   };
 
-  void Initialize(Node* start_container,
-                  int start_offset,
-                  Node* end_container,
-                  int end_offset);
-
   void ExitNode();
   bool ShouldRepresentNodeOffsetZero();
   bool ShouldEmitSpaceBeforeAndAfterNode(Node*);
