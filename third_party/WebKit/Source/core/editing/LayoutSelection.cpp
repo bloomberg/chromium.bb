@@ -334,7 +334,7 @@ void LayoutSelection::Commit() {
     ClearSelection();
     return;
   }
-
+  DCHECK(!selection.IsNone());
   // Use the rightmost candidate for the start of the selection, and the
   // leftmost candidate for the end of the selection. Example: foo <a>bar</a>.
   // Imagine that a line wrap occurs after 'foo', and that 'bar' is selected.
@@ -342,26 +342,22 @@ void LayoutSelection::Commit() {
   // code will think that content on the line containing 'foo' is selected
   // and will fill the gap before 'bar'.
   PositionInFlatTree start_pos = selection.Start();
-  PositionInFlatTree candidate = MostForwardCaretPosition(start_pos);
-  if (IsVisuallyEquivalentCandidate(candidate))
-    start_pos = candidate;
+  const PositionInFlatTree most_forward_start =
+      MostForwardCaretPosition(start_pos);
+  if (IsVisuallyEquivalentCandidate(most_forward_start))
+    start_pos = most_forward_start;
   PositionInFlatTree end_pos = selection.end();
-  candidate = MostBackwardCaretPosition(end_pos);
-  if (IsVisuallyEquivalentCandidate(candidate))
-    end_pos = candidate;
+  const PositionInFlatTree most_backward = MostBackwardCaretPosition(end_pos);
+  if (IsVisuallyEquivalentCandidate(most_backward))
+    end_pos = most_backward;
 
-  // We can get into a state where the selection endpoints map to the same
-  // |VisiblePosition| when a selection is deleted because we don't yet notify
-  // the |FrameSelection| of text removal.
-  if (start_pos.IsNull() || end_pos.IsNull() ||
-      selection.VisibleStart().DeepEquivalent() ==
-          selection.VisibleEnd().DeepEquivalent())
-    return;
+  DCHECK(start_pos.IsNotNull());
+  DCHECK(end_pos.IsNotNull());
   DCHECK_LE(start_pos, end_pos);
   LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
-  if (!start_layout_object || !end_layout_object)
-    return;
+  DCHECK(start_layout_object);
+  DCHECK(end_layout_object);
   DCHECK(start_layout_object->View() == end_layout_object->View());
 
   const SelectionPaintRange new_range(
