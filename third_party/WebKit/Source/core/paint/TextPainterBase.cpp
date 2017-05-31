@@ -199,9 +199,9 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   switch (baseline_type) {
     case kAlphabeticBaseline:
       switch (style.GetTextUnderlinePosition()) {
-        case kTextUnderlinePositionAuto:
+        case TextUnderlinePosition::kAuto:
           return ResolvedUnderlinePosition::kRoman;
-        case kTextUnderlinePositionUnder:
+        case TextUnderlinePosition::kUnder:
           return ResolvedUnderlinePosition::kUnder;
       }
       break;

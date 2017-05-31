@@ -1146,10 +1146,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextUnderlinePosition e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTextUnderlinePositionAuto:
+    case TextUnderlinePosition::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kTextUnderlinePositionUnder:
+    case TextUnderlinePosition::kUnder:
       value_id_ = CSSValueUnder;
       break;
   }
@@ -1161,9 +1161,9 @@ template <>
 inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kTextUnderlinePositionAuto;
+      return TextUnderlinePosition::kAuto;
     case CSSValueUnder:
-      return kTextUnderlinePositionUnder;
+      return TextUnderlinePosition::kUnder;
     default:
       break;
   }
@@ -1171,7 +1171,7 @@ inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
   // FIXME: Implement support for 'under left' and 'under right' values.
 
   NOTREACHED();
-  return kTextUnderlinePositionAuto;
+  return TextUnderlinePosition::kAuto;
 }
 
 template <>
