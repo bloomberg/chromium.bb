@@ -29,10 +29,7 @@ var ClientRenderer = (function() {
     this.bufferCanvas.width = media.BAR_WIDTH;
     this.bufferCanvas.height = media.BAR_HEIGHT;
 
-    this.clipboardDialog = document.getElementById('clipboard-dialog');
-
     this.clipboardTextarea = document.getElementById('clipboard-textarea');
-    this.clipboardTextarea.onblur = this.hideClipboard_.bind(this);
     var clipboardButtons = document.getElementsByClassName('copy-button');
     for (var i = 0; i < clipboardButtons.length; i++) {
       clipboardButtons[i].onclick = this.copyToClipboard_.bind(this);
@@ -217,8 +214,9 @@ var ClientRenderer = (function() {
       var copyButtonElement =
           document.getElementById('video-capture-capabilities-copy-button');
       copyButtonElement.onclick = function() {
-        this.showClipboard(JSON.stringify(videoCaptureCapabilities, null, 2));
-      }.bind(this);
+        window.prompt('Copy to clipboard: Ctrl+C, Enter',
+                      JSON.stringify(videoCaptureCapabilities))
+      }
 
       var videoTableBodyElement  =
           document.getElementById('video-capture-capabilities-tbody');
@@ -298,7 +296,7 @@ var ClientRenderer = (function() {
       }
 
       var fragment = document.createDocumentFragment();
-      for (var id in components) {
+      for (id in components) {
         var li = document.createElement('li');
         var button_cb = this.selectAudioComponent_.bind(
                 this, componentType, id, components[id]);
@@ -341,7 +339,7 @@ var ClientRenderer = (function() {
 
       var hasPlayers = false;
       var fragment = document.createDocumentFragment();
-      for (var id in players) {
+      for (id in players) {
         hasPlayers = true;
         var player = players[id];
         var usableName = player.properties.name ||
@@ -421,7 +419,7 @@ var ClientRenderer = (function() {
 
     saveLog_: function() {
       var strippedPlayers = []
-      for (var id in this.players) {
+      for (id in this.players) {
         var p = this.players[id];
         strippedPlayers.push({properties: p.properties, events: p.allEvents});
       }
@@ -498,17 +496,6 @@ var ClientRenderer = (function() {
       ctx.fillRect(middle, 0, right - middle, height);
     },
 
-    showClipboard: function(string) {
-      this.clipboardTextarea.value = string;
-      this.clipboardDialog.showModal();
-      this.clipboardTextarea.focus();
-      this.clipboardTextarea.select();
-    },
-
-    hideClipboard_: function() {
-      this.clipboardDialog.close();
-    },
-
     copyToClipboard_: function() {
       if (!this.selectedPlayer && !this.selectedAudioCompontentData) {
         return;
@@ -525,7 +512,17 @@ var ClientRenderer = (function() {
         stringBuffer.push('\n');
       }
 
-      this.showClipboard(stringBuffer.join(''));
+      this.clipboardTextarea.value = stringBuffer.join('');
+      this.clipboardTextarea.classList.remove('hiddenClipboard');
+      this.clipboardTextarea.focus();
+      this.clipboardTextarea.select();
+
+      // Hide the clipboard element when it loses focus.
+      this.clipboardTextarea.onblur = function(event) {
+        setTimeout(function(element) {
+          event.target.classList.add('hiddenClipboard');
+        }, 0);
+      };
     },
 
     onTextChange_: function(event) {
