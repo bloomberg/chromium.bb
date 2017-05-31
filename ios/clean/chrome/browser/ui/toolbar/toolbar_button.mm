@@ -4,6 +4,8 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -20,8 +22,23 @@
   [button setImage:normalImage forState:UIControlStateNormal];
   [button setImage:highlightedImage forState:UIControlStateHighlighted];
   [button setImage:disabledImage forState:UIControlStateDisabled];
+  button.titleLabel.textAlignment = NSTextAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
   return button;
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  // If the UIButton title has text it will center it on top of the image,
+  // this is currently used for the TabStripButton which displays the
+  // total number of tabs.
+  if (self.titleLabel.text) {
+    CGSize size = self.bounds.size;
+    CGPoint center = CGPointMake(size.width / 2, size.height / 2);
+    self.imageView.center = center;
+    self.imageView.frame = AlignRectToPixel(self.imageView.frame);
+    self.titleLabel.frame = self.bounds;
+  }
 }
 
 #pragma mark - Public Methods

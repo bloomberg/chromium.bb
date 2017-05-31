@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -60,8 +61,7 @@
 #pragma mark - View lifecyle
 
 - (void)viewDidLoad {
-  self.view.backgroundColor =
-      [UIColor colorWithWhite:kToolbarBackgroundBrightness alpha:1.0];
+  self.view.backgroundColor = UIColorFromRGB(kToolbarBackgroundColor);
   [self addChildViewController:self.locationBarViewController
                      toSubview:self.locationBarContainer];
   [self setUpToolbarStackView];
@@ -162,6 +162,12 @@
   [self.tabSwitchStripButton addTarget:nil
                                 action:@selector(showTabStrip:)
                       forControlEvents:UIControlEventTouchUpInside];
+  [self.tabSwitchStripButton
+      setTitleColor:UIColorFromRGB(kToolbarButtonTitleNormalColor)
+           forState:UIControlStateNormal];
+  [self.tabSwitchStripButton
+      setTitleColor:UIColorFromRGB(kToolbarButtonTitleHighlightedColor)
+           forState:UIControlStateHighlighted];
 
   // Tab switcher Grid button.
   self.tabSwitchGridButton = [ToolbarButton tabSwitcherGridToolbarButton];
@@ -217,7 +223,7 @@
                       action:@selector(stop:)
             forControlEvents:UIControlEventTouchUpInside];
 
-  // // Set the buttons constraints priority to UILayoutPriorityDefaultHigh so
+  // Set the button constraint priority to UILayoutPriorityDefaultHigh so
   // these are not broken when being hidden by the StackView.
   [self activateConstraints:buttonConstraints
                withPriority:UILayoutPriorityDefaultHigh];
@@ -229,8 +235,7 @@
   locationBarContainer.backgroundColor = [UIColor whiteColor];
   locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
   locationBarContainer.layer.borderColor =
-      [UIColor colorWithWhite:kLocationBarBorderColorBrightness alpha:1.0]
-          .CGColor;
+      UIColorFromRGB(kLocationBarBorderColor).CGColor;
   locationBarContainer.layer.shadowRadius = kLocationBarShadowRadius;
   locationBarContainer.layer.shadowOpacity = kLocationBarShadowOpacity;
   locationBarContainer.layer.shadowOffset = CGSizeMake(0.0f, 0.5f);
@@ -327,6 +332,40 @@
   self.tabSwitchStripButton.hiddenInCurrentState = visible;
   self.tabSwitchGridButton.hiddenInCurrentState = !visible;
   [self updateAllButtonsVisibility];
+}
+
+- (void)setTabCount:(int)tabCount {
+  // Return if tabSwitchStripButton wasn't initialized.
+  if (!self.tabSwitchStripButton)
+    return;
+
+  // Update the text shown in the |self.tabSwitchStripButton|. Note that the
+  // button's title may be empty or contain an easter egg, but the accessibility
+  // value will always be equal to |tabCount|.
+  NSString* tabStripButtonValue = [NSString stringWithFormat:@"%d", tabCount];
+  NSString* tabStripButtonTitle;
+  if (tabCount <= 0) {
+    tabStripButtonTitle = @"";
+  } else if (tabCount > kShowTabStripButtonMaxTabCount) {
+    // As an easter egg, show a smiley face instead of the count if the user has
+    // more than 99 tabs open.
+    tabStripButtonTitle = @":)";
+    [[self.tabSwitchStripButton titleLabel]
+        setFont:[UIFont boldSystemFontOfSize:kFontSizeFewerThanTenTabs]];
+  } else {
+    tabStripButtonTitle = tabStripButtonValue;
+    if (tabCount < 10) {
+      [[self.tabSwitchStripButton titleLabel]
+          setFont:[UIFont boldSystemFontOfSize:kFontSizeFewerThanTenTabs]];
+    } else {
+      [[self.tabSwitchStripButton titleLabel]
+          setFont:[UIFont boldSystemFontOfSize:kFontSizeTenTabsOrMore]];
+    }
+  }
+
+  [self.tabSwitchStripButton setTitle:tabStripButtonTitle
+                             forState:UIControlStateNormal];
+  [self.tabSwitchStripButton setAccessibilityValue:tabStripButtonValue];
 }
 
 #pragma mark - ZoomTransitionDelegate
