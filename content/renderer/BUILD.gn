@@ -239,6 +239,8 @@ target(link_target_type, "renderer") {
     "media/media_permission_dispatcher.h",
     "media/midi_message_filter.cc",
     "media/midi_message_filter.h",
+    "media/mojo_audio_output_ipc.cc",
+    "media/mojo_audio_output_ipc.h",
     "media/render_media_client.cc",
     "media/render_media_client.h",
     "media/render_media_log.cc",
