@@ -105,6 +105,7 @@ struct APIBinding::EventData {
             bool supports_filters,
             bool supports_rules,
             int max_listeners,
+            bool notify_on_change,
             std::vector<std::string> actions,
             std::vector<std::string> conditions,
             APIBinding* binding)
@@ -113,6 +114,7 @@ struct APIBinding::EventData {
         supports_filters(supports_filters),
         supports_rules(supports_rules),
         max_listeners(max_listeners),
+        notify_on_change(notify_on_change),
         actions(std::move(actions)),
         conditions(std::move(conditions)),
         binding(binding) {}
@@ -131,6 +133,9 @@ struct APIBinding::EventData {
 
   // The maximum number of listeners this event supports.
   int max_listeners;
+
+  // Whether to notify the browser of listener changes.
+  bool notify_on_change;
 
   // The associated actions and conditions for declarative events.
   std::vector<std::string> actions;
@@ -266,6 +271,7 @@ APIBinding::APIBinding(const std::string& api_name,
       std::vector<std::string> rule_conditions;
       const base::DictionaryValue* options = nullptr;
       bool supports_rules = false;
+      bool notify_on_change = true;
       int max_listeners = binding::kNoListenerMax;
       if (event_dict->GetDictionary("options", &options)) {
         bool temp_supports_filters = false;
@@ -295,12 +301,15 @@ APIBinding::APIBinding(const std::string& api_name,
         }
 
         options->GetInteger("maxListeners", &max_listeners);
+        bool unmanaged = false;
+        if (options->GetBoolean("unmanaged", &unmanaged))
+          notify_on_change = !unmanaged;
       }
 
       events_.push_back(base::MakeUnique<EventData>(
           std::move(name), std::move(full_name), supports_filters,
-          supports_rules, max_listeners, std::move(rule_actions),
-          std::move(rule_conditions), this));
+          supports_rules, max_listeners, notify_on_change,
+          std::move(rule_actions), std::move(rule_conditions), this));
     }
   }
 }
@@ -482,7 +491,7 @@ void APIBinding::GetEventObject(
   } else {
     retval = event_data->binding->event_handler_->CreateEventInstance(
         event_data->full_name, event_data->supports_filters,
-        event_data->max_listeners, context);
+        event_data->max_listeners, event_data->notify_on_change, context);
   }
   info.GetReturnValue().Set(retval);
 }

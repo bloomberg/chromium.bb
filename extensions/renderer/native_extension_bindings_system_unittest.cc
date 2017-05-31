@@ -1019,4 +1019,34 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
   }
 }
 
+TEST_F(NativeExtensionBindingsSystemUnittest, UnmanagedEvents) {
+  InitEventChangeHandler();
+
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", ItemType::EXTENSION, std::vector<std::string>());
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  const char kAddListeners[] =
+      "(function() {\n"
+      "  chrome.runtime.onMessage.addListener(function() {});\n"
+      "  chrome.runtime.onConnect.addListener(function() {});\n"
+      "});";
+
+  v8::Local<v8::Function> add_listeners =
+      FunctionFromString(context, kAddListeners);
+  RunFunctionOnGlobal(add_listeners, context, 0, nullptr);
+
+  // We should have no notifications for event listeners added (since the
+  // mock is a strict mock, this will fail if anything was called).
+  ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+}
+
 }  // namespace extensions

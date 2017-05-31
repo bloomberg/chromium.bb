@@ -116,7 +116,7 @@ v8::Local<v8::Value> ChromeSetting::GetOnChangeEvent(
     event = event_handler_->CreateEventInstance(
         base::StringPrintf("types.ChromeSetting.%s.onChange",
                            pref_name_.c_str()),
-        supports_filters, binding::kNoListenerMax, context);
+        supports_filters, binding::kNoListenerMax, true, context);
     v8::Maybe<bool> set_result = wrapper->SetPrivate(context, key, event);
     if (!set_result.IsJust() || !set_result.FromJust()) {
       NOTREACHED();
