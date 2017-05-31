@@ -1451,7 +1451,7 @@ static void write_intra_angle_info(const MACROBLOCKD *xd,
 #endif  // CONFIG_INTRA_INTERP
 
   (void)ec_ctx;
-  if (bsize < BLOCK_8X8) return;
+  if (!av1_use_angle_delta(bsize)) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
