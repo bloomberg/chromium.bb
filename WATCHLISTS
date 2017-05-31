@@ -293,7 +293,8 @@
       'filepath': 'chrome_elf',
     },
     'chrome_grc': {
-      'filepath': 'services/resource_coordinator',
+      'filepath': 'chrome/browser/resource_coordinator/'\
+                  '|services/resource_coordinator/',
     },
     'chrome_views': {
       'filepath': 'chrome/browser/ui/views',
