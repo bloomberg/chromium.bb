@@ -1499,7 +1499,11 @@ void Editor::ChangeSelectionAfterCommand(
   // Ranges for selections that are no longer valid
   bool selection_did_not_change_dom_position =
       new_selection == GetFrame().Selection().GetSelectionInDOMTree();
-  GetFrame().Selection().SetSelection(new_selection, options);
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder(new_selection)
+          .SetIsHandleVisible(GetFrame().Selection().IsHandleVisible())
+          .Build(),
+      options);
 
   // Some editing operations change the selection visually without affecting its
   // position within the DOM. For example when you press return in the following
