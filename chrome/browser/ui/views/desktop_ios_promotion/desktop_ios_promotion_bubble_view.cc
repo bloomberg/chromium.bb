@@ -96,19 +96,16 @@ void DesktopIOSPromotionBubbleView::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
-void DesktopIOSPromotionBubbleView::UpdateBubbleHeight() {
-  gfx::Rect old_bounds = GetWidget()->GetWindowBoundsInScreen();
-  old_bounds.set_height(
-      GetWidget()->GetRootView()->GetHeightForWidth(old_bounds.width()));
-  GetWidget()->SetBounds(old_bounds);
-}
-
 void DesktopIOSPromotionBubbleView::UpdateRecoveryPhoneLabel() {
   std::string number = promotion_controller_->GetUsersRecoveryPhoneNumber();
   if (!number.empty()) {
     promotion_text_label_->SetText(desktop_ios_promotion::GetPromoText(
         promotion_controller_->entry_point(), number));
     Layout();
-    UpdateBubbleHeight();
+    views::Widget* widget = GetWidget();
+    gfx::Rect old_bounds = widget->GetWindowBoundsInScreen();
+    old_bounds.set_height(
+        widget->GetRootView()->GetHeightForWidth(old_bounds.width()));
+    widget->SetBounds(old_bounds);
   }
 }
