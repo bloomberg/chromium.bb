@@ -23,7 +23,7 @@ namespace media {
 // decryption context.
 class DecryptContextImpl : public DecryptContext {
  public:
-  using DecryptCB = base::Callback<void(bool)>;
+  using DecryptCB = base::OnceCallback<void(bool)>;
 
   explicit DecryptContextImpl(CastKeySystem key_system);
   ~DecryptContextImpl() override;
@@ -39,7 +39,7 @@ class DecryptContextImpl : public DecryptContext {
   virtual void DecryptAsync(CastDecoderBuffer* buffer,
                             uint8_t* output,
                             size_t data_offset,
-                            const DecryptCB& decrypt_cb);
+                            DecryptCB decrypt_cb);
 
   // Returns whether the data can be decrypted into user memory.
   // If the key system doesn't support secure output or the app explicitly

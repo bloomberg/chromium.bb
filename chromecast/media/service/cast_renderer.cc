@@ -202,8 +202,8 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
         base::Bind(&CastRenderer::OnVideoInitializationFinished,
                    weak_factory_.GetWeakPtr(), init_cb);
     video_mode_switcher_->SwitchMode(
-        video_configs,
-        base::Bind(&VideoModeSwitchCompletionCb, mode_switch_completion_cb));
+        video_configs, base::BindOnce(&VideoModeSwitchCompletionCb,
+                                      mode_switch_completion_cb));
   } else if (video_stream) {
     // No mode switch needed.
     OnVideoInitializationFinished(init_cb, ::media::PIPELINE_OK);

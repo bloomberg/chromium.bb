@@ -30,8 +30,8 @@ DecryptContextImplClearKey::~DecryptContextImplClearKey() {}
 void DecryptContextImplClearKey::DecryptAsync(CastDecoderBuffer* buffer,
                                               uint8_t* output,
                                               size_t data_offset,
-                                              const DecryptCB& decrypt_cb) {
-  decrypt_cb.Run(DoDecrypt(buffer, output, data_offset));
+                                              DecryptCB decrypt_cb) {
+  std::move(decrypt_cb).Run(DoDecrypt(buffer, output, data_offset));
 }
 
 bool DecryptContextImplClearKey::DoDecrypt(CastDecoderBuffer* buffer,
