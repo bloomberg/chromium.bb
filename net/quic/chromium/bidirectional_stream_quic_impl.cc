@@ -98,8 +98,12 @@ void BidirectionalStreamQuicImpl::SendRequestHeaders() {
 
   CreateSpdyHeadersFromHttpRequest(
       http_request_info, http_request_info.extra_headers, true, &headers);
+  // Sending the request might result in |this| being deleted.
+  auto guard = weak_factory_.GetWeakPtr();
   size_t headers_bytes_sent = stream_->WriteHeaders(
       std::move(headers), request_info_->end_stream_on_headers, nullptr);
+  if (!guard.get())
+    return;
   headers_bytes_sent_ += headers_bytes_sent;
   has_sent_headers_ = true;
 }
@@ -264,16 +268,12 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
     stream_ = session_->ReleaseStream(this);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::ReadInitialHeaders,
+                              weak_factory_.GetWeakPtr()));
+
     NotifyStreamReady();
-
-    rv = stream_->ReadInitialHeaders(
-        &initial_headers_,
-        base::Bind(&BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete,
-                   weak_factory_.GetWeakPtr()));
-    if (rv == ERR_IO_PENDING)
-      return;
-
-    OnReadInitialHeadersComplete(rv);
   } else {
     NotifyError(rv);
   }
@@ -304,6 +304,16 @@ void BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete(int rv) {
                             weak_factory_.GetWeakPtr()));
   if (delegate_)
     delegate_->OnHeadersReceived(initial_headers_);
+}
+
+void BidirectionalStreamQuicImpl::ReadInitialHeaders() {
+  int rv = stream_->ReadInitialHeaders(
+      &initial_headers_,
+      base::Bind(&BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete,
+                 weak_factory_.GetWeakPtr()));
+
+  if (rv != ERR_IO_PENDING)
+    OnReadInitialHeadersComplete(rv);
 }
 
 void BidirectionalStreamQuicImpl::ReadTrailingHeaders() {
@@ -362,7 +372,11 @@ void BidirectionalStreamQuicImpl::NotifyError(int error) {
 
 void BidirectionalStreamQuicImpl::NotifyStreamReady() {
   if (send_request_headers_automatically_) {
+    // Sending the request might result in |this| being deleted.
+    auto guard = weak_factory_.GetWeakPtr();
     SendRequestHeaders();
+    if (!guard.get())
+      return;
   }
   if (delegate_)
     delegate_->OnStreamReady(has_sent_headers_);
