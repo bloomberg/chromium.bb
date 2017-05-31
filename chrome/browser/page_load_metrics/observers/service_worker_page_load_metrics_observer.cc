@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 
+#include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
@@ -23,6 +24,12 @@ const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "ParseStartToFirstContentfulPaint";
+const char kHistogramServiceWorkerFirstMeaningfulPaint[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "NavigationToFirstMeaningfulPaint";
+const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaint[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "ParseStartToFirstMeaningfulPaint";
 const char kHistogramServiceWorkerDomContentLoaded[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
@@ -35,12 +42,37 @@ const char kHistogramServiceWorkerFirstContentfulPaintInbox[] =
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "ParseStartToFirstContentfulPaint.inbox";
+const char kHistogramServiceWorkerFirstMeaningfulPaintInbox[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "NavigationToFirstMeaningfulPaint.inbox";
+const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "ParseStartToFirstMeaningfulPaint.inbox";
 const char kHistogramServiceWorkerDomContentLoadedInbox[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.inbox";
 const char kHistogramServiceWorkerLoadInbox[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
     "inbox";
+
+const char kHistogramServiceWorkerFirstContentfulPaintSearch[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint.search";
+const char kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "ParseStartToFirstContentfulPaint.search";
+const char kHistogramServiceWorkerFirstMeaningfulPaintSearch[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "NavigationToFirstMeaningfulPaint.search";
+const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch[] =
+    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "ParseStartToFirstMeaningfulPaint.search";
+const char kHistogramServiceWorkerDomContentLoadedSearch[] =
+    "PageLoad.Clients.ServiceWorker.DocumentTiming."
+    "NavigationToDOMContentLoadedEventFired.search";
+const char kHistogramServiceWorkerLoadSearch[] =
+    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
+    "search";
 
 }  // namespace internal
 
@@ -88,6 +120,50 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
+  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstContentfulPaintSearch,
+        timing.paint_timing->first_contentful_paint.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch,
+        timing.paint_timing->first_contentful_paint.value() -
+            timing.parse_timing->parse_start.value());
+  }
+}
+
+void ServiceWorkerPageLoadMetricsObserver::
+    OnFirstMeaningfulPaintInMainFrameDocument(
+        const page_load_metrics::mojom::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!IsServiceWorkerControlled(info))
+    return;
+  if (!WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, info)) {
+    return;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstMeaningfulPaint,
+                      timing.paint_timing->first_meaningful_paint.value());
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaint,
+      timing.paint_timing->first_meaningful_paint.value() -
+          timing.parse_timing->parse_start.value());
+
+  if (IsInboxSite(info.url)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstMeaningfulPaintInbox,
+        timing.paint_timing->first_meaningful_paint.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox,
+        timing.paint_timing->first_meaningful_paint.value() -
+            timing.parse_timing->parse_start.value());
+  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstMeaningfulPaintSearch,
+        timing.paint_timing->first_meaningful_paint.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch,
+        timing.paint_timing->first_meaningful_paint.value() -
+            timing.parse_timing->parse_start.value());
   }
 }
 
@@ -107,6 +183,10 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedInbox,
         timing.document_timing->dom_content_loaded_event_start.value());
+  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerDomContentLoadedSearch,
+        timing.document_timing->dom_content_loaded_event_start.value());
   }
 }
 
@@ -122,6 +202,9 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
                       timing.document_timing->load_event_start.value());
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
+                        timing.document_timing->load_event_start.value());
+  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
   }
 }
