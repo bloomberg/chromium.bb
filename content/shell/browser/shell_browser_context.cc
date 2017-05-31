@@ -223,4 +223,9 @@ BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
   return background_sync_controller_.get();
 }
 
+BrowsingDataRemoverDelegate*
+ShellBrowserContext::GetBrowsingDataRemoverDelegate() {
+  return nullptr;
+}
+
 }  // namespace content

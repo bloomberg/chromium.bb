@@ -574,8 +574,4 @@ std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
   return salt;
 }
 
-BrowsingDataRemoverDelegate* BrowserContext::GetBrowsingDataRemoverDelegate() {
-  return nullptr;
-}
-
 }  // namespace content

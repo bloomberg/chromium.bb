@@ -323,6 +323,11 @@ AwBrowserContext::GetBackgroundSyncController() {
   return nullptr;
 }
 
+content::BrowsingDataRemoverDelegate*
+AwBrowserContext::GetBrowsingDataRemoverDelegate() {
+  return nullptr;
+}
+
 net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {

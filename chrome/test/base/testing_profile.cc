@@ -25,6 +25,8 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -983,6 +985,19 @@ content::PermissionManager* TestingProfile::GetPermissionManager() {
 content::BackgroundSyncController*
 TestingProfile::GetBackgroundSyncController() {
   return nullptr;
+}
+
+content::BrowsingDataRemoverDelegate*
+TestingProfile::GetBrowsingDataRemoverDelegate() {
+  // TestingProfile contains a real BrowsingDataRemover from BrowserContext.
+  // Since ChromeBrowsingDataRemoverDelegate is just a Chrome-specific extension
+  // of BrowsingDataRemover, we include it here for consistency.
+  //
+  // This is not a problem, since ChromeBrowsingDataRemoverDelegate mostly
+  // just serves as an interface to deletion mechanisms of various browsing
+  // data backends, which are already mocked if considered too heavy-weight
+  // for TestingProfile.
+  return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
 }
 
 net::URLRequestContextGetter* TestingProfile::CreateRequestContext(

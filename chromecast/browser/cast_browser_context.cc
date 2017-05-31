@@ -137,6 +137,11 @@ CastBrowserContext::GetBackgroundSyncController() {
   return nullptr;
 }
 
+content::BrowsingDataRemoverDelegate*
+CastBrowserContext::GetBrowsingDataRemoverDelegate() {
+  return nullptr;
+}
+
 net::URLRequestContextGetter* CastBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
