@@ -62,7 +62,7 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r"(?<!this)(\.\$)[\[\.]",
         "Please only use this.$.localId, not element.$.localId")
 
-  def RunEsLintChecks(self, affected_js_files):
+  def RunEsLintChecks(self, affected_js_files, format='stylish'):
     """Runs lint checks using ESLint. The ESLint rules being applied are defined
        in the .eslintrc.js configuration file.
     """
@@ -89,6 +89,7 @@ class JSChecker(object):
     output = node.RunNode([
         node_modules.PathToEsLint(),
         '--color',
+        '--format', format,
         '--ignore-pattern \'!.eslintrc.js\'',
         ' '.join(affected_js_files_paths)])
 
