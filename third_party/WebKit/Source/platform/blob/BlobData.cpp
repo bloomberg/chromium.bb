@@ -31,6 +31,7 @@
 #include "platform/blob/BlobData.h"
 
 #include <memory>
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UUID.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/text/LineEnding.h"
@@ -40,6 +41,8 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/TextEncoding.h"
+#include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -242,7 +245,17 @@ BlobDataHandle::BlobDataHandle()
     : uuid_(CreateCanonicalUUIDString()),
       size_(0),
       is_single_unknown_size_file_(false) {
-  BlobRegistry::RegisterBlobData(uuid_, BlobData::Create());
+  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+    // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
+    // ends up going through the main thread. Ideally workers wouldn't need
+    // to do that.
+    storage::mojom::blink::BlobRegistryPtr registry;
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        MakeRequest(&registry));
+    registry->Register(MakeRequest(&blob_), uuid_, "", "", {});
+  } else {
+    BlobRegistry::RegisterBlobData(uuid_, BlobData::Create());
+  }
 }
 
 BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
@@ -250,7 +263,19 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
-  BlobRegistry::RegisterBlobData(uuid_, std::move(data));
+  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+    // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
+    // ends up going through the main thread. Ideally workers wouldn't need
+    // to do that.
+    storage::mojom::blink::BlobRegistryPtr registry;
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        MakeRequest(&registry));
+    // TODO(mek): Pass elements from |data| to Register.
+    registry->Register(MakeRequest(&blob_), uuid_, type_.IsNull() ? "" : type_,
+                       "", {});
+  } else {
+    BlobRegistry::RegisterBlobData(uuid_, std::move(data));
+  }
 }
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
@@ -260,11 +285,22 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
       is_single_unknown_size_file_(false) {
-  BlobRegistry::AddBlobDataRef(uuid_);
+  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+    // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
+    // ends up going through the main thread. Ideally workers wouldn't need
+    // to do that.
+    storage::mojom::blink::BlobRegistryPtr registry;
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        MakeRequest(&registry));
+    registry->GetBlobFromUUID(MakeRequest(&blob_), uuid_);
+  } else {
+    BlobRegistry::AddBlobDataRef(uuid_);
+  }
 }
 
 BlobDataHandle::~BlobDataHandle() {
-  BlobRegistry::RemoveBlobDataRef(uuid_);
+  if (!RuntimeEnabledFeatures::mojoBlobsEnabled())
+    BlobRegistry::RemoveBlobDataRef(uuid_);
 }
 
 }  // namespace blink

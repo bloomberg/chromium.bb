@@ -1,0 +1,107 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module storage.mojom;
+
+import "mojo/common/file.mojom";
+import "mojo/common/time.mojom";
+import "url/mojo/url.mojom";
+
+// This interface provides access to a blob in the blob system.
+interface Blob {
+  // Creates a copy of this Blob reference.
+  Clone(Blob& blob);
+
+  // This method is an implementation detail of the blob system. You should not
+  // ever need to call it directly.
+  // This returns the internal UUID of the blob, used by the blob system to
+  // identify the blob.
+  GetInternalUUID() => (string uuid);
+};
+
+// This interface is the primary access point to the blob system. This interface
+// provides methods to register new blobs and get references to existing blobs.
+interface BlobRegistry {
+  // Registers a new blob with the blob registry.
+  // TODO(mek): Make this method non-sync and get rid of the UUID parameter once
+  // enough of the rest of the system doesn't rely on the UUID anymore.
+  [Sync] Register(Blob& blob, string uuid,
+                  string content_type, string content_disposition,
+                  array<DataElement> elements) => ();
+
+  // Returns a reference to an existing blob. Should not be used by new code,
+  // is only exposed to make converting existing blob using code easier.
+  GetBlobFromUUID(Blob& blob, string uuid);
+};
+
+// A blob is built up of elements of various types.
+union DataElement {
+  // Bytes send asynchronously at the request of the blob registry.
+  DataElementBytes bytes;
+  // A reference to a file on disk.
+  DataElementFile file;
+  // A reference to a file as a filesystem URL.
+  DataElementFilesystemURL file_filesystem;
+  // A reference to another blob.
+  DataElementBlob blob;
+};
+
+// Bytes send asynchronously at the request of the blob registry. Can
+// optionally also directly contain the data, in which case the blob registry
+// can decide to either use the embedded data or later request the data again.
+struct DataElementBytes {
+  // Size of the data.
+  uint64 length;
+  // Optionally embedded data. If present, the size of this array should be
+  // equal to |length|.
+  array<uint8>? embedded_data;
+  // Interface through which the blob registry can request the data.
+  BytesProvider data;
+};
+
+// Interface through which the blob registry can request data when it is ready
+// for it.
+interface BytesProvider {
+  // TODO(mek): Define methods.
+};
+
+// A reference to a slice of a file on disk.
+struct DataElementFile {
+  // Path of the file.
+  string path;
+  // Offset inside the file.
+  uint64 offset;
+  // Length of the slice. Can be uint64_max if the length is unknown. If this is
+  // the case the offset is always 0 and this DataElement should be the only
+  // element making up the blob.
+  uint64 length;
+  // Expected modification time of the file being referenced. Can be null if the
+  // modification time is unknown.
+  mojo.common.mojom.Time? expected_modification_time;
+};
+
+// A reference to a slice of a file as a filesystem URL.
+struct DataElementFilesystemURL {
+  // URL of the file.
+  url.mojom.Url url;
+  // Offset inside the file.
+  uint64 offset;
+  // Length of the slice. Can be uint64_max if the length is unknown. If this is
+  // the case the offset is always 0 and this DataElement should be the only
+  // element making up the blob.
+  uint64 length;
+  // Expected modification time of the file being referenced. Can be null if the
+  // modification time is unknown.
+  mojo.common.mojom.Time? expected_modification_time;
+};
+
+// A reference to a slice of another blob.
+struct DataElementBlob {
+  // The blob being referenced.
+  Blob blob;
+  // Offset to the beginning of the slice.
+  uint64 offset;
+  // Length of the slice.
+  uint64 length;
+};
