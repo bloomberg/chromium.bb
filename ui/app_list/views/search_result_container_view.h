@@ -84,11 +84,12 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   virtual void OnContainerSelected(bool from_bottom,
                                    bool directional_movement) = 0;
 
- private:
+ protected:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.
   void ScheduleUpdate();
 
+ private:
   // Updates UI with model. Returns the number of visible results.
   virtual int DoUpdate() = 0;
 
