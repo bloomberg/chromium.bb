@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
 
+#include <memory>
+
 class GURL;
+
+namespace base {
+class Timer;
+}  // namespace base
 
 namespace page_load_metrics {
 
@@ -18,6 +24,7 @@ class PageLoadMetricsEmbedderInterface {
   virtual ~PageLoadMetricsEmbedderInterface() {}
   virtual bool IsNewTabPageUrl(const GURL& url) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
+  virtual std::unique_ptr<base::Timer> CreateTimer() = 0;
 };
 
 }  // namespace page_load_metrics
