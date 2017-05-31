@@ -524,11 +524,12 @@
       custom_value: true,
       inherited: true,
       priority: "High",
-      field_template: "storage_only",
-      type_name: "TextOrientation",
-      default_value: "TextOrientation::kMixed",
+      field_template: "keyword",
+      keywords: ["sideways", "mixed", "upright"],
+      default_value: "mixed",
       field_size: 2,
       field_group: "rare-inherited",
+      getter: "GetTextOrientation"
     },
     {
       name: "-webkit-text-orientation",

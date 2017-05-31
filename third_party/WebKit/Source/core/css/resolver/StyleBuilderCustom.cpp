@@ -827,14 +827,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextOrientation(
     StyleResolverState& state,
     const CSSValue& value) {
   state.SetTextOrientation(
-      ToCSSIdentifierValue(value).ConvertTo<TextOrientation>());
+      ToCSSIdentifierValue(value).ConvertTo<ETextOrientation>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(
     StyleResolverState& state,
     const CSSValue& value) {
   state.SetTextOrientation(
-      ToCSSIdentifierValue(value).ConvertTo<TextOrientation>());
+      ToCSSIdentifierValue(value).ConvertTo<ETextOrientation>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyVariable(

@@ -201,7 +201,7 @@ class CORE_EXPORT StyleResolverState {
     style_->SetWritingMode(new_writing_mode);
     font_builder_.DidChangeWritingMode();
   }
-  void SetTextOrientation(TextOrientation text_orientation) {
+  void SetTextOrientation(ETextOrientation text_orientation) {
     if (style_->SetTextOrientation(text_orientation))
       font_builder_.DidChangeTextOrientation();
   }

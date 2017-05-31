@@ -3309,7 +3309,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextCombineUpright:
       return CSSIdentifierValue::Create(style.TextCombine());
     case CSSPropertyWebkitTextOrientation:
-      if (style.GetTextOrientation() == TextOrientation::kMixed)
+      if (style.GetTextOrientation() == ETextOrientation::kMixed)
         return CSSIdentifierValue::Create(CSSValueVerticalRight);
     case CSSPropertyTextOrientation:
       return CSSIdentifierValue::Create(style.GetTextOrientation());

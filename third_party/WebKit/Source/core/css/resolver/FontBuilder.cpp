@@ -242,11 +242,11 @@ static FontOrientation ComputeFontOrientation(const ComputedStyle& style) {
     return FontOrientation::kHorizontal;
 
   switch (style.GetTextOrientation()) {
-    case TextOrientation::kMixed:
+    case ETextOrientation::kMixed:
       return FontOrientation::kVerticalMixed;
-    case TextOrientation::kUpright:
+    case ETextOrientation::kUpright:
       return FontOrientation::kVerticalUpright;
-    case TextOrientation::kSideways:
+    case ETextOrientation::kSideways:
       return FontOrientation::kVerticalRotated;
     default:
       NOTREACHED();
