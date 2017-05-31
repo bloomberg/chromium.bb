@@ -1631,8 +1631,6 @@ class CORE_EXPORT Document : public ContainerNode,
   ViewportDescription legacy_viewport_description_;
   Length viewport_default_min_width_;
 
-  ReferrerPolicy referrer_policy_;
-
   DocumentTiming document_timing_;
   Member<MediaQueryMatcher> media_query_matcher_;
   bool write_recursion_is_too_deep_;
