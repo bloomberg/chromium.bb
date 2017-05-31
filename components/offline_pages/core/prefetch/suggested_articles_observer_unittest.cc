@@ -67,11 +67,15 @@ class TestingPrefetchService : public PrefetchService {
  public:
   TestingPrefetchService() = default;
 
-  PrefetchGCMHandler* GetPrefetchGCMHandler() override { return nullptr; }
-  PrefetchDispatcher* GetDispatcher() override { return &dispatcher; };
   void ObserveContentSuggestionsService(
       ntp_snippets::ContentSuggestionsService* content_suggestions_service)
       override {}
+  PrefetchDispatcher* GetDispatcher() override { return &dispatcher; };
+  OfflineMetricsCollector* GetOfflineMetricsCollector() override {
+    return nullptr;
+  }
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override { return nullptr; }
+
   TestingPrefetchDispatcher dispatcher;
 };
 }  // namespace
