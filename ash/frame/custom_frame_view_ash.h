@@ -64,7 +64,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // preferred height is used.
   void SetHeaderHeight(base::Optional<int> height);
 
-  views::View* header_view();
+  // Get the view of the header.
+  views::View* GetHeaderView();
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -85,14 +86,11 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void SchedulePaintInRect(const gfx::Rect& r) override;
-  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
-
-  // Get the view of the header.
-  views::View* GetHeaderView();
 
   const views::View* GetAvatarIconViewForTest() const;
 
  private:
+  class AvatarObserver;
   class OverlayView;
   friend class TestWidgetConstraintsDelegate;
   friend class CustomFrameViewAshSizeLock;
@@ -117,6 +115,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   OverlayView* overlay_view_;
 
   ImmersiveFullscreenControllerDelegate* immersive_delegate_;
+
+  // Observes avatar icon change and updates |header_view_|.
+  std::unique_ptr<AvatarObserver> avatar_observer_;
 
   static bool use_empty_minimum_size_for_test_;
 

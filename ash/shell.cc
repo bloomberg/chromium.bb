@@ -54,7 +54,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_model.h"
@@ -1041,7 +1040,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   event_client_.reset(new EventClientImpl);
 
-  session_state_delegate_.reset(shell_delegate_->CreateSessionStateDelegate());
   // Must occur after Shell has installed its early pre-target handlers (for
   // example, WindowModalityController).
   shell_port_->CreatePointerWatcherAdapter();

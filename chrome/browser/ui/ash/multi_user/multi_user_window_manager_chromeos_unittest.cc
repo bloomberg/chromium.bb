@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <set>
+#include <vector>
+
 #include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
@@ -112,9 +115,6 @@ class TestShellContentState : public ash::ShellContentState {
 class TestShellDelegateChromeOS : public ash::test::TestShellDelegate {
  public:
   TestShellDelegateChromeOS() {}
-  ash::test::TestSessionStateDelegate* CreateSessionStateDelegate() override {
-    return new ash::test::TestSessionStateDelegate;
-  }
 
   bool CanShowWindowForUser(aura::Window* window) const override {
     return ::CanShowWindowForUser(
@@ -1491,6 +1491,34 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TeleportedWindowActivatableTests) {
       user_manager()->FindUser(user2));
   EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
   EXPECT_TRUE(::wm::CanActivateWindow(window(1)));
+}
+
+// Test that teleported window has the kAvatarIconKey window property.
+TEST_F(MultiUserWindowManagerChromeOSTest, TeleportedWindowAvatarProperty) {
+  SetUpForThisManyWindows(1);
+
+  const AccountId user1(AccountId::FromUserEmail("a@test.com"));
+  const AccountId user2(AccountId::FromUserEmail("b@test.com"));
+  AddTestUser(user1);
+  AddTestUser(user2);
+
+  multi_user_window_manager()->SetWindowOwner(window(0), user1);
+
+  user_manager()->SwitchActiveUser(user1);
+  multi_user_window_manager()->ActiveUserChanged(
+      user_manager()->FindUser(user1));
+
+  // Window #0 has no kAvatarIconKey property before teloporting.
+  EXPECT_FALSE(window(0)->GetProperty(aura::client::kAvatarIconKey));
+
+  // Teleport window #0 to user2 and kAvatarIconKey property is present.
+  multi_user_window_manager()->ShowWindowForUser(window(0), user2);
+  EXPECT_TRUE(window(0)->GetProperty(aura::client::kAvatarIconKey));
+
+  // Teloport window #0 back to its owner (user1) and kAvatarIconKey property is
+  // gone.
+  multi_user_window_manager()->ShowWindowForUser(window(0), user1);
+  EXPECT_FALSE(window(0)->GetProperty(aura::client::kAvatarIconKey));
 }
 
 // Tests that the window order is preserved when switching between users. Also

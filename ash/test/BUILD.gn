@@ -111,8 +111,6 @@ static_library("test_support_common") {
     "test_session_controller_client.h",
     "test_session_state_animator.cc",
     "test_session_state_animator.h",
-    "test_session_state_delegate.cc",
-    "test_session_state_delegate.h",
     "test_shell_delegate.cc",
     "test_shell_delegate.h",
     "test_system_tray_delegate.cc",

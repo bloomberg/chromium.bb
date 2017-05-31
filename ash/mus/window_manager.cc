@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <limits>
 #include <utility>
 
 #include "ash/drag_drop/drag_image_view.h"
@@ -229,8 +230,7 @@ void WindowManager::CreateShell(
   ShellInitParams init_params;
   ShellPortMash* shell_port =
       new ShellPortMash(window_tree_host ? window_tree_host->window() : nullptr,
-                        this, pointer_watcher_event_router_.get(),
-                        create_session_state_delegate_stub_for_test_);
+                        this, pointer_watcher_event_router_.get());
   // Shell::CreateInstance() takes ownership of ShellDelegate.
   init_params.delegate = shell_delegate_ ? shell_delegate_.release()
                                          : new ShellDelegateMus(connector_);

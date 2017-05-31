@@ -48,7 +48,6 @@ class KeyEventWatcher;
 class KeyboardUI;
 class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
-class SessionStateDelegate;
 struct ShellInitParams;
 class WindowCycleEventFilter;
 class WindowResizer;
@@ -183,8 +182,6 @@ class ASH_EXPORT ShellPort {
   virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
 
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
-
-  virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;

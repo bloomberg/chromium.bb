@@ -4,10 +4,10 @@
 
 #include "ash/system/ime/tray_ime_chromeos.h"
 
+#include <memory>
 #include <vector>
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/shell_delegate.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 
 class PrefService;
@@ -52,7 +51,6 @@ class TestShellDelegate : public ShellDelegate {
   void OpenUrlFromArc(const GURL& url) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
-  TestSessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
   ui::MenuModel* CreateContextMenu(Shelf* shelf,
