@@ -29,6 +29,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -282,11 +283,14 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
   if (state == UIState::READY)
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 
-  // We should block power save during migration.
-  if (state == UIState::MIGRATING)
+  // We should block power save and not shut down on lid close during migration.
+  if (state == UIState::MIGRATING) {
     StartBlockingPowerSave();
-  else
+    PowerPolicyController::Get()->SetEncryptionMigrationActive(true);
+  } else {
     StopBlockingPowerSave();
+    PowerPolicyController::Get()->SetEncryptionMigrationActive(false);
+  }
 }
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {

@@ -112,6 +112,12 @@ class CHROMEOS_EXPORT PowerPolicyController
   // down.
   void NotifyChromeIsExiting();
 
+  // Adjusts policy when the migration of a user homedir to a new
+  // encryption format starts or stops. While migration is active,
+  // the lid-closed action is overridden to ensure the system
+  // doesn't shut down.
+  void SetEncryptionMigrationActive(bool active);
+
   // PowerManagerClient::Observer implementation:
   void PowerManagerRestarted() override;
 
@@ -172,6 +178,9 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   // True if Chrome is in the process of exiting.
   bool chrome_is_exiting_;
+
+  // True if a user homedir is in the process of migrating encryption formats.
+  bool encryption_migration_active_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
 };
