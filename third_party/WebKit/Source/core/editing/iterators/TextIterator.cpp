@@ -182,6 +182,14 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
 }
 
 template <typename Strategy>
+TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
+    const EphemeralRangeTemplate<Strategy>& range,
+    const TextIteratorBehavior& behavior)
+    : TextIteratorAlgorithm(range.StartPosition(),
+                            range.EndPosition(),
+                            behavior) {}
+
+template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::Initialize(Node* start_container,
                                                  int start_offset,
                                                  Node* end_container,

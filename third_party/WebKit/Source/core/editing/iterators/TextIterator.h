@@ -59,6 +59,12 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   TextIteratorAlgorithm(const PositionTemplate<Strategy>& start,
                         const PositionTemplate<Strategy>& end,
                         const TextIteratorBehavior& = TextIteratorBehavior());
+
+  // Same behavior as previous constructor but takes an EphemeralRange instead
+  // of two Positions
+  TextIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>&,
+                        const TextIteratorBehavior& = TextIteratorBehavior());
+
   ~TextIteratorAlgorithm();
 
   bool AtEnd() const { return !text_state_.PositionNode() || should_stop_; }
