@@ -78,6 +78,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   const int provider_id_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
+  mojom::ServiceWorkerProviderHostAssociatedPtr provider_host_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);
 };
 

@@ -79,10 +79,12 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
 
   void CreateDocumentProviderHost() {
     // An empty host.
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForWindow(render_process_id(), kMockProviderId,
                                     true /* is_parent_frame_secure */,
-                                    context()->AsWeakPtr());
+                                    context()->AsWeakPtr(),
+                                    &remote_endpoints_.back());
     provider_host_ = host->AsWeakPtr();
     EXPECT_FALSE(
         context()->GetProviderHost(host->process_id(), host->provider_id()));
@@ -91,10 +93,12 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
 
   void CreateInsecureDocumentProviderHost() {
     // An empty host.
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForWindow(render_process_id(), kMockProviderId,
                                     false /* is_parent_frame_secure */,
-                                    context()->AsWeakPtr());
+                                    context()->AsWeakPtr(),
+                                    &remote_endpoints_.back());
     provider_host_ = host->AsWeakPtr();
     EXPECT_FALSE(
         context()->GetProviderHost(host->process_id(), host->provider_id()));
@@ -102,10 +106,12 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   }
 
   void CreateServiceWorkerProviderHost() {
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
             render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, context()->AsWeakPtr());
+            true /* is_parent_frame_secure */, context()->AsWeakPtr(),
+            &remote_endpoints_.back());
     provider_host_ = host->AsWeakPtr();
     EXPECT_FALSE(
         context()->GetProviderHost(host->process_id(), host->provider_id()));
@@ -161,7 +167,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
     return registrations;
   }
 
- private:
+ protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   net::TestURLRequestContext request_context_;
@@ -169,6 +175,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   MockResourceContext resource_context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   storage::BlobStorageContext blob_storage_context_;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 };
 
 TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_Basic) {
@@ -397,10 +404,12 @@ TEST_F(LinkHeaderServiceWorkerTest,
        InstallServiceWorker_FromWorkerWithControllees) {
   CreateServiceWorkerProviderHost();
 
+  remote_endpoints_.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> controllee =
       CreateProviderHostForWindow(render_process_id(), kMockProviderId,
                                   true /* is_parent_frame_secure */,
-                                  context()->AsWeakPtr());
+                                  context()->AsWeakPtr(),
+                                  &remote_endpoints_.back());
   provider_host()->running_hosted_version()->AddControllee(controllee.get());
 
   ProcessLinkHeaderForRequest(

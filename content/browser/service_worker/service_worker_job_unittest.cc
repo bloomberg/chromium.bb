@@ -173,6 +173,7 @@ class ServiceWorkerJobTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 };
 
 scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
@@ -219,9 +220,11 @@ ServiceWorkerJobTest::FindRegistrationForPattern(
 
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerJobTest::CreateControllee() {
+  remote_endpoints_.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+      &remote_endpoints_.back());
   return host;
 }
 

@@ -30,7 +30,24 @@ ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
     : provider_id(other.provider_id),
       route_id(other.route_id),
       type(other.type),
-      is_parent_frame_secure(other.is_parent_frame_secure) {
+      is_parent_frame_secure(other.is_parent_frame_secure),
+      host_request(std::move(other.host_request)),
+      client_ptr_info(std::move(other.client_ptr_info)) {
+  SetDefaultValues(&other);
+}
+
+ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
+    ServiceWorkerProviderHostInfo&& other,
+    mojom::ServiceWorkerProviderHostAssociatedRequest host_request,
+    mojom::ServiceWorkerProviderAssociatedPtrInfo client_ptr_info)
+    : provider_id(other.provider_id),
+      route_id(other.route_id),
+      type(other.type),
+      is_parent_frame_secure(other.is_parent_frame_secure),
+      host_request(std::move(host_request)),
+      client_ptr_info(std::move(client_ptr_info)) {
+  DCHECK(!other.host_request.is_pending());
+  DCHECK(!other.client_ptr_info.is_valid());
   SetDefaultValues(&other);
 }
 

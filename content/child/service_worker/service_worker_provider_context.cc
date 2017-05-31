@@ -46,9 +46,9 @@ class ServiceWorkerProviderContext::ControlleeDelegate
 
   void AssociateRegistration(
       std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      std::unique_ptr<ServiceWorkerHandleReference> installing,
-      std::unique_ptr<ServiceWorkerHandleReference> waiting,
-      std::unique_ptr<ServiceWorkerHandleReference> active) override {
+      std::unique_ptr<ServiceWorkerHandleReference> /* installing */,
+      std::unique_ptr<ServiceWorkerHandleReference> /* waiting */,
+      std::unique_ptr<ServiceWorkerHandleReference> /* active */) override {
     DCHECK(!registration_);
     registration_ = std::move(registration);
   }
@@ -69,8 +69,8 @@ class ServiceWorkerProviderContext::ControlleeDelegate
   bool HasAssociatedRegistration() override { return !!registration_; }
 
   void GetAssociatedRegistration(
-      ServiceWorkerRegistrationObjectInfo* info,
-      ServiceWorkerVersionAttributes* attrs) override {
+      ServiceWorkerRegistrationObjectInfo* /* info */,
+      ServiceWorkerVersionAttributes* /* attrs */) override {
     NOTREACHED();
   }
 
@@ -111,7 +111,7 @@ class ServiceWorkerProviderContext::ControllerDelegate
   }
 
   void SetController(
-      std::unique_ptr<ServiceWorkerHandleReference> controller) override {
+      std::unique_ptr<ServiceWorkerHandleReference> /* controller */) override {
     NOTREACHED();
   }
 
@@ -147,10 +147,12 @@ class ServiceWorkerProviderContext::ControllerDelegate
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
     ServiceWorkerProviderType provider_type,
+    mojom::ServiceWorkerProviderAssociatedRequest request,
     ThreadSafeSender* thread_safe_sender)
     : provider_id_(provider_id),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      thread_safe_sender_(thread_safe_sender) {
+      thread_safe_sender_(thread_safe_sender),
+      binding_(this, std::move(request)) {
   if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER)
     delegate_.reset(new ControllerDelegate);
   else

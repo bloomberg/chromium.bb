@@ -1,0 +1,27 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+// mojom::ServiceWorkerProviderHost is a browser-side interface. The renderer
+// uses this interface to request the browser to do operations involving service
+// worker registrations.
+interface ServiceWorkerProviderHost {
+  // TODO(shimazu): implement them.
+  // register() => ();
+  // getRegistation() => ();
+  // getRegistrations() => ();
+  // getRegistrationForReady() => ();
+};
+
+// mojom::ServiceWorkerProvider is a renderer-side interface.
+// The browser process uses this interface to send messages to pages or
+// the service worker's context.
+interface ServiceWorkerProvider {
+  // TODO(shimazu): implement them.
+  // associateRegistration();
+  // disassociateRegistration();
+  // setControllerServiceWorker();
+  // messageToDocument();
+};

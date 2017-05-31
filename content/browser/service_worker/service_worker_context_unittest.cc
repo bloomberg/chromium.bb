@@ -583,33 +583,38 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   const GURL kOrigin1 = GURL("http://www.example.com/");
   const GURL kOrigin2 = GURL("https://www.example.com/");
   int provider_id = 1;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints;
 
   // Host1 (provider_id=1): process_id=1, origin1.
+  remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host1 =
-      CreateProviderHostForWindow(kRenderProcessId1, provider_id++,
-                                  true /* is_parent_frame_secure */,
-                                  context()->AsWeakPtr());
+      CreateProviderHostForWindow(
+          kRenderProcessId1, provider_id++, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
   host1->SetDocumentUrl(kOrigin1);
 
   // Host2 (provider_id=2): process_id=2, origin2.
+  remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host2 =
-      CreateProviderHostForWindow(kRenderProcessId2, provider_id++,
-                                  true /* is_parent_frame_secure */,
-                                  context()->AsWeakPtr());
+      CreateProviderHostForWindow(
+          kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
   host2->SetDocumentUrl(kOrigin2);
 
   // Host3 (provider_id=3): process_id=2, origin1.
+  remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host3 =
-      CreateProviderHostForWindow(kRenderProcessId2, provider_id++,
-                                  true /* is_parent_frame_secure */,
-                                  context()->AsWeakPtr());
+      CreateProviderHostForWindow(
+          kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr(), &remote_endpoints.back());
   host3->SetDocumentUrl(kOrigin1);
 
   // Host4 (provider_id=4): process_id=2, origin2, for ServiceWorker.
+  remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host4 =
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, provider_id++, true /* is_parent_frame_secure */,
-          context()->AsWeakPtr());
+          context()->AsWeakPtr(), &remote_endpoints.back());
   host4->SetDocumentUrl(kOrigin2);
 
   ServiceWorkerProviderHost* host1_raw = host1.get();

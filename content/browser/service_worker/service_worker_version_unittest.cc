@@ -627,9 +627,11 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Adding a controllee resets the idle time.
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+      &remote_endpoint);
   version_->AddControllee(host.get());
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   EXPECT_LT(idle_time, version_->idle_time_);
