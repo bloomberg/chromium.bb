@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 
 namespace media {
@@ -40,6 +41,9 @@ StandaloneCastEnvironment::~StandaloneCastEnvironment() {
 
 void StandaloneCastEnvironment::Shutdown() {
   CHECK(CalledOnValidThread());
+
+  base::ThreadRestrictions::ScopedAllowIO
+      because_i_brought_you_into_this_world_and_i_am_gonna_take_you_out;
   main_thread_.Stop();
   audio_thread_.Stop();
   video_thread_.Stop();

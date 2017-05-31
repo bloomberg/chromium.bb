@@ -5026,6 +5026,9 @@ if (!is_android && !is_chromecast) {
         "$root_out_dir/resources.pak",
       ]
     }
+    if (is_mac) {
+      deps += [ "//chrome:chrome_app" ]
+    }
 
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]

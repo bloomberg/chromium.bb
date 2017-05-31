@@ -212,6 +212,8 @@ _BANNED_CPP_FUNCTIONS = (
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
         r"^content[\\\/]test[\\\/]ppapi[\\\/]ppapi_test\.cc$",
+        r"^media[\\\/]cast[\\\/]test[\\\/]utility[\\\/]" +
+            r"standalone_cast_environment\.cc$",
         r"^mojo[\\\/]edk[\\\/]embedder[\\\/]" +
             r"simple_platform_shared_buffer_posix\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
