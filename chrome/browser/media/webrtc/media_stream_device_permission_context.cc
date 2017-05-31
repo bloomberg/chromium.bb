@@ -14,10 +14,25 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 
+namespace {
+
+blink::WebFeaturePolicyFeature GetFeaturePolicyFeature(
+    ContentSettingsType type) {
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+    return blink::WebFeaturePolicyFeature::kMicrophone;
+
+  DCHECK_EQ(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, type);
+  return blink::WebFeaturePolicyFeature::kCamera;
+}
+
+}  // namespace
+
 MediaStreamDevicePermissionContext::MediaStreamDevicePermissionContext(
     Profile* profile,
     const ContentSettingsType content_settings_type)
-    : PermissionContextBase(profile, content_settings_type),
+    : PermissionContextBase(profile,
+                            content_settings_type,
+                            GetFeaturePolicyFeature(content_settings_type)),
       content_settings_type_(content_settings_type) {
   DCHECK(content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);

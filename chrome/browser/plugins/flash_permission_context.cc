@@ -32,7 +32,8 @@ bool PluginsEnterpriseSettingEnabled(
 
 FlashPermissionContext::FlashPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_PLUGINS) {}
+                            CONTENT_SETTINGS_TYPE_PLUGINS,
+                            blink::WebFeaturePolicyFeature::kNotFound) {}
 
 FlashPermissionContext::~FlashPermissionContext() {}
 

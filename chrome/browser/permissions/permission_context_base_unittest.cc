@@ -102,7 +102,9 @@ class TestPermissionContext : public PermissionContextBase {
  public:
   TestPermissionContext(Profile* profile,
                         const ContentSettingsType content_settings_type)
-      : PermissionContextBase(profile, content_settings_type),
+      : PermissionContextBase(profile,
+                              content_settings_type,
+                              blink::WebFeaturePolicyFeature::kNotFound),
         tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}
