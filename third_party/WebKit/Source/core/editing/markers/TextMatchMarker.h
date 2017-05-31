@@ -40,38 +40,46 @@ class TextMatchMarker final : public DocumentMarker {
   TextMatchMarker(unsigned start_offset,
                   unsigned end_offset,
                   MatchStatus status)
-      : DocumentMarker(start_offset, end_offset, status),
-        state_(State::kInvalid) {}
+      : DocumentMarker(DocumentMarker::kTextMatch, start_offset, end_offset),
+        match_status_(status) {
+    layout_state_ = State::kInvalid;
+  }
 
-  bool IsRendered() const { return state_ == State::kValidNotNull; }
+  bool IsActiveMatch() const { return match_status_ == MatchStatus::kActive; }
+  void SetIsActiveMatch(bool active) {
+    match_status_ = active ? MatchStatus::kActive : MatchStatus::kInactive;
+  }
+
+  bool IsRendered() const { return layout_state_ == State::kValidNotNull; }
   bool Contains(const LayoutPoint& point) const {
-    DCHECK_EQ(state_, State::kValidNotNull);
+    DCHECK_EQ(layout_state_, State::kValidNotNull);
     return rendered_rect_.Contains(point);
   }
   void SetRenderedRect(const LayoutRect& rect) {
-    if (state_ == State::kValidNotNull && rect == rendered_rect_)
+    if (layout_state_ == State::kValidNotNull && rect == rendered_rect_)
       return;
-    state_ = State::kValidNotNull;
+    layout_state_ = State::kValidNotNull;
     rendered_rect_ = rect;
   }
 
   const LayoutRect& RenderedRect() const {
-    DCHECK_EQ(state_, State::kValidNotNull);
+    DCHECK_EQ(layout_state_, State::kValidNotNull);
     return rendered_rect_;
   }
 
   void NullifyRenderedRect() {
-    state_ = State::kValidNull;
+    layout_state_ = State::kValidNull;
     // Now |m_renderedRect| can not be accessed until |setRenderedRect| is
     // called.
   }
 
-  void Invalidate() { state_ = State::kInvalid; }
-  bool IsValid() const { return state_ != State::kInvalid; }
+  void Invalidate() { layout_state_ = State::kInvalid; }
+  bool IsValid() const { return layout_state_ != State::kInvalid; }
 
  private:
+  MatchStatus match_status_;
   LayoutRect rendered_rect_;
-  State state_;
+  State layout_state_;
 };
 
 DEFINE_TYPE_CASTS(TextMatchMarker,
