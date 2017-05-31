@@ -14,6 +14,8 @@ class Profile;
 
 namespace chromeos {
 
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
 enum PrinterSetupResult {
   kFatalError = 0,          // Setup failed in an unrecognized way
   kSuccess = 1,             // Printer set up successfully

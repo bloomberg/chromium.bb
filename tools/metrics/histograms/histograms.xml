@@ -57161,11 +57161,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.PpdSource" enum="PpdSource">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    Records the source of PostScript Printer Description files used during
+    printer setup.  Entries are recorded for every attempted configuration. Only
+    recorded on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Printing.CUPS.PrintersDiscovered" units="printers">
   <owner>skau@chromium.org</owner>
   <summary>
     The number of printers shown in the discovered printers dialog during
     printer set up.  Only recorded on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.PrinterSetupResult" enum="PrinterSetupResult">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The success or error code for the setup of a CUPS printer.  Recorded when
+    setup is attempted through the settings dialogs.  Only recorded on Chrome
+    OS.
   </summary>
 </histogram>
 
