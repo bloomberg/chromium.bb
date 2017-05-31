@@ -73,11 +73,6 @@ class SearchAnswerWebView : public views::WebView {
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
 
-bool IsCardSizeOk(const gfx::Size& size) {
-  return size.width() <= features::AnswerCardMaxWidth() &&
-         size.height() <= features::AnswerCardMaxHeight();
-}
-
 }  // namespace
 
 SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
@@ -132,7 +127,6 @@ void SearchAnswerWebContentsDelegate::Update() {
   model_->SetSearchAnswerAvailable(false);
   current_request_url_ = GURL();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
-  is_card_size_ok_ = false;
 
   if (model_->search_box()->is_voice_query()) {
     // No need to send a server request and show a card because launcher
@@ -170,9 +164,7 @@ void SearchAnswerWebContentsDelegate::Update() {
 void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
-  is_card_size_ok_ =
-      IsCardSizeOk(pref_size) || features::IsAnswerCardDarkRunEnabled();
-  model_->SetSearchAnswerAvailable(is_card_size_ok_ && received_answer_ &&
+  model_->SetSearchAnswerAvailable(received_answer_ && IsCardSizeOk() &&
                                    !web_contents_->IsLoading());
   web_view_->SetPreferredSize(pref_size);
   if (!answer_loaded_time_.is_null()) {
@@ -254,7 +246,7 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
   if (!received_answer_)
     return;
 
-  if (is_card_size_ok_)
+  if (IsCardSizeOk())
     model_->SetSearchAnswerAvailable(true);
   answer_loaded_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
@@ -272,6 +264,15 @@ void SearchAnswerWebContentsDelegate::OnSearchEngineIsGoogleChanged(
   Update();
 }
 
+bool SearchAnswerWebContentsDelegate::IsCardSizeOk() const {
+  if (features::IsAnswerCardDarkRunEnabled())
+    return true;
+
+  const gfx::Size size = web_contents_->GetPreferredSize();
+  return size.width() <= features::AnswerCardMaxWidth() &&
+         size.height() <= features::AnswerCardMaxHeight();
+}
+
 void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
   // Recording whether a server response with an answer contains a card of a
   // fitting size, or a too large one. Cannot do this in DidStopLoading() or
@@ -281,10 +282,9 @@ void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
     return;
 
   RecordRequestResult(
-      is_card_size_ok_
-          ? SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER
-          : SearchAnswerRequestResult::
-                REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
+      IsCardSizeOk() ? SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER
+                     : SearchAnswerRequestResult::
+                           REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
 }
 
 }  // namespace app_list
