@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
-#include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -57,6 +56,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -220,7 +220,7 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
   if (!title.empty())
     WebContentsForcedTitle::CreateForWebContentsWithTitle(web_contents, title);
 
-  WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
       web_contents, SK_ColorTRANSPARENT);
 
   // Ensure that the login UI has a tab ID, which will allow the GAIA auth

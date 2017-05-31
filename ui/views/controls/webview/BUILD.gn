@@ -8,6 +8,8 @@ component("webview") {
     "unhandled_keyboard_event_handler.h",
     "unhandled_keyboard_event_handler_mac.mm",
     "unhandled_keyboard_event_handler_win.cc",
+    "web_contents_set_background_color.cc",
+    "web_contents_set_background_color.h",
     "web_dialog_view.cc",
     "web_dialog_view.h",
     "webview.cc",
