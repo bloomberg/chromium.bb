@@ -53,12 +53,16 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     // explicitly starve other queues. Typically this should only be used for
     // private queues which perform control operations.
     CONTROL_PRIORITY,
-    // Queues with high priority will be selected preferentially over normal or
-    // best effort queues. The selector will ensure that high priority queues
-    // cannot completely starve normal priority queues.
+
+    // The selector will prioritize high over normal and low and normal over
+    // low. However it will ensure neither of the lower priority queues can be
+    // completely starved by higher priority tasks. All three of these queues
+    // will always take priority over and can starve the best effort queue.
     HIGH_PRIORITY,
     // Queues with normal priority are the default.
     NORMAL_PRIORITY,
+    LOW_PRIORITY,
+
     // Queues with best effort priority will only be run if all other queues are
     // empty. They can be starved by the other queues.
     BEST_EFFORT_PRIORITY,

@@ -880,8 +880,8 @@ TEST_F(RendererSchedulerImplTest,
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1"),
-                                   std::string("C1"), std::string("C2")));
+                                   std::string("D2"), std::string("C1"),
+                                   std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
@@ -914,8 +914,8 @@ TEST_F(RendererSchedulerImplTest,
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1"),
-                                   std::string("C1"), std::string("C2")));
+                                   std::string("D2"), std::string("C1"),
+                                   std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
@@ -963,8 +963,8 @@ TEST_F(RendererSchedulerImplTest,
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1"),
-                                   std::string("C1"), std::string("C2")));
+                                   std::string("D2"), std::string("C1"),
+                                   std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
@@ -1072,8 +1072,8 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("I1"), std::string("C1"),
-                                   std::string("C2")));
+                                   std::string("C1"), std::string("C2"),
+                                   std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
@@ -1340,8 +1340,8 @@ TEST_F(RendererSchedulerImplTest,
             CurrentUseCase());
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("I1"), std::string("C1"),
-                                   std::string("C2")));
+                                   std::string("C1"), std::string("C2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
@@ -1443,8 +1443,8 @@ TEST_F(RendererSchedulerImplTest, EventConsumedOnCompositorThread_MouseWheel) {
   // Note compositor tasks are not prioritized.
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("I1"), std::string("C1"),
-                                   std::string("C2")));
+                                   std::string("C1"), std::string("C2"),
+                                   std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
@@ -1518,8 +1518,8 @@ TEST_F(
   // Note compositor tasks are not prioritized.
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("I1"), std::string("C1"),
-                                   std::string("C2")));
+                                   std::string("C1"), std::string("C2"),
+                                   std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
             CurrentUseCase());
 }
