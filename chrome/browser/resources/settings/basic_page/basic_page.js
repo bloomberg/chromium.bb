@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-basic-page',
 
-  behaviors: [MainPageBehavior],
+  behaviors: [MainPageBehavior, WebUIListenerBehavior],
 
   properties: {
     /** Preferences state. */
@@ -20,13 +20,26 @@ Polymer({
 
     showAndroidApps: Boolean,
 
+    // <if expr="is_win">
+    /**
+     * Whether there is cleanup information to present to the user.
+     * @private {boolean}
+     */
+    chromeCleanupVisible_: {
+      type: Boolean,
+      value: false,
+    },
+    // </if>
+
     /**
      * Dictionary defining page visibility.
      * @type {!GuestModePageVisibility}
      */
     pageVisibility: {
       type: Object,
-      value: function() { return {}; },
+      value: function() {
+        return {};
+      },
     },
 
     advancedToggleExpanded: {
@@ -56,7 +69,7 @@ Polymer({
       },
     },
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /**
      * Whether the user is a secondary user. Computed so that it is calculated
      * correctly after loadTimeData is available.
@@ -66,7 +79,7 @@ Polymer({
       type: Boolean,
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
-// </if>
+    // </if>
 
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
@@ -79,6 +92,21 @@ Polymer({
   /** @override */
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
+
+    // <if expr="is_win">
+    this.addWebUIListener(
+        'basic-page-set-chrome-cleanup-visibility',
+        function(visibility) {
+          this.chromeCleanupVisible_ = visibility;
+        }.bind(this));
+
+    var cleanupBrowserProxy =
+        settings.ChromeCleanupProxyImpl.getInstance();
+    cleanupBrowserProxy.getChromeCleanupVisibility().then(
+      function(visibility) {
+        this.chromeCleanupVisible_ = visibility;
+      }.bind(this));
+    // </if>
   },
 
   /**
@@ -146,7 +174,7 @@ Polymer({
     });
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @return {boolean}
    * @private
@@ -155,7 +183,7 @@ Polymer({
     return !this.hasExpandedSection_ &&
         loadTimeData.getBoolean('isSecondaryUser');
   },
-// </if>
+  // </if>
 
   /** @private */
   onResetProfileBannerClosed_: function() {

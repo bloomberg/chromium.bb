@@ -1,0 +1,99 @@
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../controls/controlled_button.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="chrome_cleanup_proxy.html">
+
+<dom-module id="settings-chrome-cleanup-page">
+  <template>
+    <style include="settings-shared">
+      #details-container {
+        display: block;
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+
+      #files-to-remove-list {
+        -webkit-user-select: text;
+      }
+
+      .powered-by {
+        padding-top: 10px;
+      }
+
+      #show-files-button {
+        color: var(--google-blue-700);
+        --paper-button-ink-color: white;
+        text-transform: inherit;
+      }
+
+      .show-files-container {
+        padding-top: 10px;
+      }
+
+      #status-icon {
+        height: 24px;
+        width: 24px;
+      }
+
+      .status-icon-container {
+        min-width: 28px;
+        padding-right: 12px;
+      }
+
+      .status-icon-remove {
+        --iron-icon-fill-color: var(--paper-grey-700);
+      }
+
+      .status-icon-done {
+        --iron-icon-fill-color: var(--paper-blue-500);
+      }
+
+      .status-icon-warning {
+        --iron-icon-fill-color: var(--paper-red-700);
+      }
+    </style>
+    <div class="settings-box first two-line">
+      <div class="status-icon-container">
+        <paper-spinner id="cleaning-spinner" active="[[isRemoving_]]"
+            hidden="[[!isRemoving_]]">
+        </paper-spinner>
+        <iron-icon icon="[[statusIcon_]]" hidden="[[isRemoving_]]"
+            class$="[[statusIconClassName_]]"
+            id="status-icon">
+        </iron-icon>
+      </div>
+      <div class="start">[[title_]]</div>
+      <template is="dom-if" if="[[showActionButton_]]">
+        <div class="separator"></div>
+        <paper-button id="action-button" on-tap="proceed_">
+          [[actionButtonLabel_]]
+        </paper-button>
+      </template>
+    </div>
+    <div id="details-container"
+         class="settings-box" hidden="[[!showDetails_]]">
+      <div>[[detailsDescription]]</div>
+      <div class="show-files-container start" hidden="[[showFilesToRemove_]]">
+        <paper-button id="show-files-button" on-tap="showFiles_">
+          $i18n{chromeCleanupLinkShowFiles}
+        </paper-button>
+      </div>
+      <div hidden="[[!showFilesToRemove_]]">
+        <ul id="files-to-remove-list" class="secondary">
+          <template is="dom-repeat" items="[[filesToRemove_]]" as="fileName">
+            <li>[[fileName]]</li>
+          </template>
+        </ul>
+      </div>
+    </div>
+  </template>
+  <script src="chrome_cleanup_page.js"></script>
+</dom-module>

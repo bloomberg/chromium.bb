@@ -354,6 +354,22 @@
                    file="certificate_manager_page/certificates_error_dialog.html"
                    type="chrome_html" />
       </if>
+      <if expr="is_win">
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_HTML"
+                   file="chrome_cleanup_page/chrome_cleanup_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_JS"
+                   file="chrome_cleanup_page/chrome_cleanup_proxy.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_HTML"
+                   file="chrome_cleanup_page/chrome_cleanup_page.html"
+                   type="chrome_html"
+                   preprocess="true" />
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_JS"
+                   file="chrome_cleanup_page/chrome_cleanup_page.js"
+                   type="chrome_html"
+                   preprocess="true" />
+      </if>
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_BROWSER_PROXY_HTML"
                  file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.html"
                  type="chrome_html" />
