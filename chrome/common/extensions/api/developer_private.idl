@@ -186,7 +186,6 @@ namespace developerPrivate {
   };
 
   dictionary ExtensionInfo {
-    boolean actionButtonHidden;
     DOMString? blacklistText;
     Command[] commands;
     ControlledInfo? controlledInfo;
@@ -279,7 +278,6 @@ namespace developerPrivate {
     boolean? incognitoAccess;
     boolean? errorCollection;
     boolean? runOnAllUrls;
-    boolean? showActionButton;
   };
 
   dictionary ProfileConfigurationUpdate {

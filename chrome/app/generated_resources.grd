@@ -4211,9 +4211,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_EXTENSIONS_INFO_LINK" desc="The text for the link that opens the App Info dialog for the extension, displaying permissions and other useful information about the app.">
           Details
         </message>
-        <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
-          Show button
-        </message>
         <message name="IDS_EXTENSIONS_LOG_LEVEL_INFO" desc="Alt-text indicating a low severity level for the error icon in the chrome://extensions page.">
           Log
         </message>

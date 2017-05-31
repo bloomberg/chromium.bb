@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -55,7 +54,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ProcessManagerObserver,
                                     public AppWindowRegistry::Observer,
                                     public CommandService::Observer,
-                                    public ExtensionActionAPI::Observer,
                                     public ExtensionPrefsObserver,
                                     public ExtensionManagement::Observer,
                                     public WarningService::Observer {
@@ -103,10 +101,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnExtensionCommandRemoved(const std::string& extension_id,
                                  const Command& removed_command) override;
 
-  // ExtensionActionAPI::Observer:
-  void OnExtensionActionVisibilityChanged(const std::string& extension_id,
-                                          bool is_now_visible) override;
-
   // ExtensionPrefsObserver:
   void OnExtensionDisableReasonsChanged(const std::string& extension_id,
                                         int disable_reasons) override;
@@ -137,8 +131,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       process_manager_observer_;
   ScopedObserver<AppWindowRegistry, AppWindowRegistry::Observer>
       app_window_registry_observer_;
-  ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
-      extension_action_api_observer_;
   ScopedObserver<WarningService, WarningService::Observer>
       warning_service_observer_;
   ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver>
