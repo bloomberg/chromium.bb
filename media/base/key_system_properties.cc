@@ -9,12 +9,11 @@
 
 namespace media {
 
+#if defined(OS_ANDROID)
 SupportedCodecs KeySystemProperties::GetSupportedSecureCodecs() const {
-#if !defined(OS_ANDROID)
-  NOTREACHED();
-#endif
   return EME_CODEC_NONE;
 }
+#endif
 
 bool KeySystemProperties::UseAesDecryptor() const {
   return false;
