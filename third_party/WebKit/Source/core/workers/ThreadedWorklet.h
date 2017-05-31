@@ -43,7 +43,9 @@ class CORE_EXPORT ThreadedWorklet : public Worklet {
   // Worklet
   void FetchAndInvokeScript(const KURL& module_url_record,
                             const WorkletOptions&,
-                            ScriptPromiseResolver*) override;
+                            ScriptPromiseResolver*) final;
+  bool NeedsToCreateGlobalScope() final;
+  std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() final;
 
   // Called when addModule() is called for the first time.
   virtual void Initialize() = 0;

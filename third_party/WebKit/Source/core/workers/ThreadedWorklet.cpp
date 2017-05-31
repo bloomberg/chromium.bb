@@ -83,6 +83,16 @@ void ThreadedWorklet::FetchAndInvokeScript(const KURL& module_url_record,
       std::move(outside_settings_task_runner), pending_tasks);
 }
 
+bool ThreadedWorklet::NeedsToCreateGlobalScope() {
+  NOTREACHED();
+  return false;
+}
+
+std::unique_ptr<WorkletGlobalScopeProxy> ThreadedWorklet::CreateGlobalScope() {
+  NOTREACHED();
+  return nullptr;
+}
+
 void ThreadedWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
   if (IsInitialized())
