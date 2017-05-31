@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
@@ -165,15 +166,11 @@ base::string16 GetFormattedPhoneNumberForDisplay(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale));
   std::string tentative_intl_phone = "+" + phone;
 
-  autofill::i18n::PhoneObject phone_obj(
-      base::UTF8ToUTF16(phone), GetCountryCodeWithFallback(&profile, locale));
-  autofill::i18n::PhoneObject tentative_intl_phone_obj(
-      base::UTF8ToUTF16(tentative_intl_phone),
-      GetCountryCodeWithFallback(&profile, locale));
-
   // Always favor the tentative international phone number if it's determined as
   // being a valid number.
-  if (!tentative_intl_phone_obj.region().empty()) {
+  if (autofill::IsValidPhoneNumber(
+          base::UTF8ToUTF16(tentative_intl_phone),
+          GetCountryCodeWithFallback(&profile, locale))) {
     return base::UTF8ToUTF16(FormatPhoneForDisplay(
         tentative_intl_phone, GetCountryCodeWithFallback(&profile, locale)));
   }
