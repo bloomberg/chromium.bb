@@ -9,7 +9,6 @@
 
 #include "cc/cc_export.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "cc/resources/resource_format.h"
 
 namespace cc {
 
@@ -34,7 +33,6 @@ class CC_EXPORT RendererSettings {
   int highp_threshold_min = 0;
   size_t texture_id_allocation_chunk_size = 64;
   bool use_gpu_memory_buffer_resources = false;
-  ResourceFormat preferred_tile_format;
   BufferToTextureTargetMap buffer_to_texture_target_map;
 
   // Determines whether we disallow non-exact matches when finding resources

@@ -477,7 +477,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // and are disabled for Android WebView as it doesn't support the format.
     if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures) &&
         base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
-      settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
+      settings.preferred_tile_format = cc::RGBA_4444;
   } else {
     // On other devices we have increased memory excessively to avoid
     // raster-on-demand already, so now we reserve 50% _only_ to avoid
@@ -528,11 +528,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
       !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
-    settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
+    settings.preferred_tile_format = cc::RGBA_4444;
   }
 
   if (cmd.HasSwitch(cc::switches::kEnableTileCompression)) {
-    settings.renderer_settings.preferred_tile_format = cc::ETC1;
+    settings.preferred_tile_format = cc::ETC1;
   }
 
   settings.max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;  // 32MB
