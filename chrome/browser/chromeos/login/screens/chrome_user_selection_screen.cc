@@ -51,9 +51,8 @@ ChromeUserSelectionScreen::~ChromeUserSelectionScreen() {
   }
 }
 
-void ChromeUserSelectionScreen::Init(const user_manager::UserList& users,
-                                     bool show_guest) {
-  UserSelectionScreen::Init(users, show_guest);
+void ChromeUserSelectionScreen::Init(const user_manager::UserList& users) {
+  UserSelectionScreen::Init(users);
 
   // Retrieve the current policy for all users.
   for (user_manager::UserList::const_iterator it = users.begin();

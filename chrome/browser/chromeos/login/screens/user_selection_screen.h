@@ -47,7 +47,7 @@ class UserSelectionScreen
       const AccountId& owner,
       bool is_signin_to_add);
 
-  virtual void Init(const user_manager::UserList& users, bool show_guest);
+  virtual void Init(const user_manager::UserList& users);
   void OnUserImageChanged(const user_manager::User& user);
   void OnBeforeUserRemoved(const AccountId& account_id);
   void OnUserRemoved(const AccountId& account_id);
@@ -133,9 +133,6 @@ class UserSelectionScreen
 
   LoginDisplayWebUIHandler* handler_ = nullptr;
   LoginDisplay::Delegate* login_display_delegate_ = nullptr;
-
-  // Whether to show guest login.
-  bool show_guest_ = false;
 
   // Purpose of the screen (see constants in OobeUI).
   const std::string display_type_;

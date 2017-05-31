@@ -230,7 +230,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
     users_list.Append(std::move(user_dict));
   }
 
-  webui_handler_->LoadUsers(users_list, false);
+  webui_handler_->LoadUsers(users, users_list);
 }
 
 void AppLaunchSigninScreen::CheckUserStatus(const AccountId& account_id) {}

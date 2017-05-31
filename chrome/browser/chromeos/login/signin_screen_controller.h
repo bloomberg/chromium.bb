@@ -44,7 +44,7 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
 
   // Set up the list of users for user selection screen.
   // TODO(antrim): replace with querying for this data.
-  void Init(const user_manager::UserList& users, bool show_guest);
+  void Init(const user_manager::UserList& users);
 
   // Called when signin screen is ready.
   void OnSigninScreenReady();

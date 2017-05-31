@@ -54,7 +54,7 @@ void WebUILoginDisplay::Init(const user_manager::UserList& users,
                              bool allow_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
-  SignInScreenController::Get()->Init(users, show_guest);
+  SignInScreenController::Get()->Init(users);
   show_guest_ = show_guest;
   show_users_changed_ = (show_users_ != show_users);
   show_users_ = show_users;
