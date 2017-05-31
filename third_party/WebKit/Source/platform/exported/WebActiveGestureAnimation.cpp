@@ -33,20 +33,12 @@
 namespace blink {
 
 std::unique_ptr<WebActiveGestureAnimation>
-WebActiveGestureAnimation::CreateAtAnimationStart(
-    std::unique_ptr<WebGestureCurve> curve,
-    WebGestureCurveTarget* target) {
-  return WTF::WrapUnique(
-      new WebActiveGestureAnimation(std::move(curve), target, 0, true));
-}
-
-std::unique_ptr<WebActiveGestureAnimation>
 WebActiveGestureAnimation::CreateWithTimeOffset(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
     double start_time) {
-  return WTF::WrapUnique(new WebActiveGestureAnimation(std::move(curve), target,
-                                                       start_time, false));
+  return WTF::WrapUnique(
+      new WebActiveGestureAnimation(std::move(curve), target, start_time));
 }
 
 WebActiveGestureAnimation::~WebActiveGestureAnimation() {}
@@ -54,18 +46,10 @@ WebActiveGestureAnimation::~WebActiveGestureAnimation() {}
 WebActiveGestureAnimation::WebActiveGestureAnimation(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
-    double start_time,
-    bool waiting_for_first_tick)
-    : start_time_(start_time),
-      waiting_for_first_tick_(waiting_for_first_tick),
-      curve_(std::move(curve)),
-      target_(target) {}
+    double start_time)
+    : start_time_(start_time), curve_(std::move(curve)), target_(target) {}
 
 bool WebActiveGestureAnimation::Animate(double time) {
-  if (waiting_for_first_tick_) {
-    start_time_ = time;
-    waiting_for_first_tick_ = false;
-  }
   // All WebGestureCurves assume zero-based time, so we subtract
   // the animation start time before passing to the curve.
   return curve_->Apply(time - start_time_, target_);
