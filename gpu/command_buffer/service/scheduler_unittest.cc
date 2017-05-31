@@ -331,5 +331,59 @@ TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
   release_state->Destroy();
 }
 
+TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
+  SequenceId sequence_id1 =
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
+  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
+  CommandBufferId command_buffer_id1 = CommandBufferId::FromUnsafeValue(1);
+  scoped_refptr<SyncPointClientState> release_state1 =
+      sync_point_manager()->CreateSyncPointClientState(
+          namespace_id, command_buffer_id1, sequence_id1);
+
+  SequenceId sequence_id2 =
+      scheduler()->CreateSequence(SchedulingPriority::kNormal);
+  CommandBufferId command_buffer_id2 = CommandBufferId::FromUnsafeValue(2);
+  scoped_refptr<SyncPointClientState> release_state2 =
+      sync_point_manager()->CreateSyncPointClientState(
+          namespace_id, command_buffer_id2, sequence_id2);
+
+  uint64_t release = 1;
+  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
+                       command_buffer_id2, release);
+
+  bool ran1, ran2 = false;
+
+  // Schedule task on sequence 2 first so that the sync token wait isn't a nop.
+  // BeginProcessingOrderNumber for this task will run the EnableSequence
+  // callback. This should not deadlock.
+  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] { ran2 = true; }),
+                            std::vector<SyncToken>());
+
+  // This will run first because of the higher priority and no scheduling sync
+  // token dependencies.
+  scheduler()->ScheduleTask(
+      sequence_id1, GetClosure([&] {
+        ran1 = true;
+        release_state1->Wait(
+            sync_token,
+            base::Bind(&Scheduler::EnableSequence,
+                       base::Unretained(scheduler()), sequence_id1));
+        scheduler()->DisableSequence(sequence_id1);
+      }),
+      std::vector<SyncToken>());
+
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran1);
+  EXPECT_FALSE(ran2);
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
+
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran2);
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
+
+  release_state1->Destroy();
+  release_state2->Destroy();
+}
+
 }  // namespace
 }  // namespace gpu
