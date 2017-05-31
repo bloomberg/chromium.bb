@@ -37,12 +37,12 @@ bool InitializeGLOneOff() {
         cmd->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "any") {
       fallback_to_software_gl = true;
-    } else if (requested_implementation_name ==
-               kGLImplementationSwiftShaderName) {
+    } else if ((requested_implementation_name ==
+                kGLImplementationSwiftShaderName) ||
+               (requested_implementation_name ==
+                kGLImplementationSwiftShaderForWebGLName)) {
       impl = kGLImplementationSwiftShaderGL;
-    } else if (requested_implementation_name ==
-                   kGLImplementationSwiftShaderForWebGLName ||
-               requested_implementation_name == kGLImplementationANGLEName) {
+    } else if (requested_implementation_name == kGLImplementationANGLEName) {
       impl = kGLImplementationEGLGLES2;
     } else {
       impl = GetNamedGLImplementation(requested_implementation_name);
