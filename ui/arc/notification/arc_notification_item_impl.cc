@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/arc/notification/arc_custom_notification_view.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"

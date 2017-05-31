@@ -42,14 +42,14 @@ class ArcNotificationItem {
   virtual void Click() = 0;
 
   // Called when the user wants to open an intrinsic setting of notification.
-  // This is called from ArcCustomNotificationView.
+  // This is called from ArcNotificationContentView.
   virtual void OpenSettings() = 0;
   // Called when the user wants to toggle expansio of notification. This is
-  // called from ArcCustomNotificationView.
+  // called from ArcNotificationContentView.
   virtual void ToggleExpansion() = 0;
   // Returns true if this notification has an intrinsic setting which shown
   // inside the notification content area. This is called from
-  // ArcCustomNotificationView.
+  // ArcNotificationContentView.
   virtual bool IsOpeningSettingsSupported() const = 0;
 
   // Adds an observer.

@@ -7,8 +7,8 @@ import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
-    "notification/arc_custom_notification_view.cc",
-    "notification/arc_custom_notification_view.h",
+    "notification/arc_notification_content_view.cc",
+    "notification/arc_notification_content_view.h",
     "notification/arc_notification_delegate.cc",
     "notification/arc_notification_delegate.h",
     "notification/arc_notification_item.h",

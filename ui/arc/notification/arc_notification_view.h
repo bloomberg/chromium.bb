@@ -17,7 +17,7 @@ namespace arc {
 class ArcNotificationContentViewDelegate;
 
 // View for custom notification with NOTIFICATION_TYPE_CUSTOM which hosts the
-// ArcCustomNotificationView which shows content of the notification.
+// ArcNotificationContentView which shows content of the notification.
 class ArcNotificationView : public message_center::MessageView {
  public:
   static const char kViewClassName[];
