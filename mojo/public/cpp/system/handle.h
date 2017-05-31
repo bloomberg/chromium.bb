@@ -39,9 +39,9 @@ namespace mojo {
 // |ScopedHandleBase<HandleType>| is a templated scoped wrapper, for the handle
 // types above (in the same sense that a C++11 |unique_ptr<T>| is a scoped
 // wrapper for a |T*|). It provides lifetime management, closing its owned
-// handle on destruction. It also provides (emulated) move semantics, again
-// along the lines of C++11's |unique_ptr| (and exactly like Chromium's
-// |scoped_ptr|).
+// handle on destruction. It also provides move semantics, again along the lines
+// of C++11's |unique_ptr|. A moved-from |ScopedHandleBase<HandleType>| sets its
+// handle value to MOJO_HANDLE_INVALID.
 //
 // |ScopedHandle| is just (a typedef of) a |ScopedHandleBase<Handle>|.
 // Similarly, |ScopedMessagePipeHandle| is just a
