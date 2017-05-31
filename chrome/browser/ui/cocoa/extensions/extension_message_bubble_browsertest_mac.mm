@@ -105,17 +105,6 @@ class ExtensionMessageBubbleBrowserTestMac
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };
 
-class ExtensionMessageBubbleBrowserTestLegacyMac
-    : public ExtensionMessageBubbleBrowserTestMac {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionMessageBubbleBrowserTestMac::SetUpCommandLine(command_line);
-    override_redesign_.reset();
-    override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), false));
-  }
-};
-
 void ExtensionMessageBubbleBrowserTestMac::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionMessageBubbleBrowserTest::SetUpCommandLine(command_line);
@@ -180,12 +169,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
   TestBubbleAnchoredToExtensionAction();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestLegacyMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        ExtensionBubbleAnchoredToAppMenu) {
   TestBubbleAnchoredToAppMenu();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestLegacyMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
   TestBubbleAnchoredToAppMenuWithOtherAction();
 }

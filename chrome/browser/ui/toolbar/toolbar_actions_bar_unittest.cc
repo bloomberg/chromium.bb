@@ -25,7 +25,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 
 namespace {
@@ -115,10 +114,8 @@ void ToolbarActionsBarUnitTest::SetUp() {
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
 
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    overflow_browser_action_test_util_ =
-        browser_action_test_util_->CreateOverflowBar();
-  }
+  overflow_browser_action_test_util_ =
+      browser_action_test_util_->CreateOverflowBar();
 }
 
 void ToolbarActionsBarUnitTest::TearDown() {
@@ -169,15 +166,9 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
                                total_size,
                                visible_count);
   std::string overflow_bar_error;
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    overflow_bar_error =
-        VerifyToolbarOrderForBar(overflow_bar(),
-                                 overflow_browser_action_test_util(),
-                                 expected_names,
-                                 total_size,
-                                 total_size - visible_count);
-
-  }
+  overflow_bar_error = VerifyToolbarOrderForBar(
+      overflow_bar(), overflow_browser_action_test_util(), expected_names,
+      total_size, total_size - visible_count);
 
   return main_bar_error.empty() && overflow_bar_error.empty() ?
       testing::AssertionSuccess() :

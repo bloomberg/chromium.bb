@@ -122,8 +122,14 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
       extensions::extension_action_test_util::CreateActionExtension(
           "no_action_extension",
           extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::UNPACKED);
+          extensions::Manifest::INTERNAL);
   extension_service()->AddExtension(no_action_extension.get());
+  // The 'suspicious extension' bubble warns the user about extensions that are
+  // disabled for not being from the webstore. This is one of the few bubbles
+  // that lets us test anchoring to the app menu, since we usually anchor to the
+  // extension action now that every extension is given a permanent UI presence.
+  extension_service()->DisableExtension(
+      no_action_extension->id(), extensions::Extension::DISABLE_NOT_VERIFIED);
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
@@ -138,7 +144,7 @@ void ExtensionMessageBubbleBrowserTest::
       extensions::extension_action_test_util::CreateActionExtension(
           "no_action_extension",
           extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::UNPACKED);
+          extensions::Manifest::INTERNAL);
   extension_service()->AddExtension(no_action_extension.get());
 
   scoped_refptr<const extensions::Extension> action_extension =
@@ -147,6 +153,13 @@ void ExtensionMessageBubbleBrowserTest::
           extensions::extension_action_test_util::BROWSER_ACTION,
           extensions::Manifest::INTERNAL);
   extension_service()->AddExtension(action_extension.get());
+
+  // The 'suspicious extension' bubble warns the user about extensions that are
+  // disabled for not being from the webstore. This is one of the few bubbles
+  // that lets us test anchoring to the app menu, since we usually anchor to the
+  // extension action now that every extension is given a permanent UI presence.
+  extension_service()->DisableExtension(
+      no_action_extension->id(), extensions::Extension::DISABLE_NOT_VERIFIED);
 
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);

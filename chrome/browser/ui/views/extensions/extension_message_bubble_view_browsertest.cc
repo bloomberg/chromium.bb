@@ -70,17 +70,6 @@ class ExtensionMessageBubbleViewBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
 
-class ExtensionMessageBubbleViewBrowserTestLegacy
-    : public ExtensionMessageBubbleViewBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
-    override_redesign_.reset();
-    override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), false));
-  }
-};
-
 void ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionMessageBubbleBrowserTest::SetUpCommandLine(command_line);
@@ -163,12 +152,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
   TestBubbleAnchoredToExtensionAction();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestLegacy,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        ExtensionBubbleAnchoredToAppMenu) {
   TestBubbleAnchoredToAppMenu();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestLegacy,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
   TestBubbleAnchoredToAppMenuWithOtherAction();
 }
