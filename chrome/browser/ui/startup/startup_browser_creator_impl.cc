@@ -133,16 +133,17 @@ namespace {
 // Utility functions ----------------------------------------------------------
 
 enum LaunchMode {
-  LM_TO_BE_DECIDED = 0,       // Possibly direct launch or via a shortcut.
-  LM_AS_WEBAPP,               // Launched as a installed web application.
-  LM_WITH_URLS,               // Launched with urls in the cmd line.
-  LM_SHORTCUT_NONE,           // Not launched from a shortcut.
-  LM_SHORTCUT_NONAME,         // Launched from shortcut but no name available.
-  LM_SHORTCUT_UNKNOWN,        // Launched from user-defined shortcut.
-  LM_SHORTCUT_QUICKLAUNCH,    // Launched from the quick launch bar.
-  LM_SHORTCUT_DESKTOP,        // Launched from a desktop shortcut.
-  LM_SHORTCUT_TASKBAR,        // Launched from the taskbar.
-  LM_LINUX_MAC_BEOS           // Other OS buckets start here.
+  LM_TO_BE_DECIDED = 0,     // Possibly direct launch or via a shortcut.
+  LM_AS_WEBAPP,             // Launched as a installed web application.
+  LM_WITH_URLS,             // Launched with urls in the cmd line.
+  LM_OTHER,                 // Not launched from a shortcut.
+  LM_SHORTCUT_NONAME,       // Launched from shortcut but no name available.
+  LM_SHORTCUT_UNKNOWN,      // Launched from user-defined shortcut.
+  LM_SHORTCUT_QUICKLAUNCH,  // Launched from the quick launch bar.
+  LM_SHORTCUT_DESKTOP,      // Launched from a desktop shortcut.
+  LM_SHORTCUT_TASKBAR,      // Launched from the taskbar.
+  LM_USER_EXPERIMENT,       // Launched after acceptance of a user experiment.
+  LM_LINUX_MAC_BEOS         // Other OS buckets start here.
 };
 
 #if defined(OS_WIN)
@@ -171,7 +172,7 @@ LaunchMode GetLaunchShortcutKind() {
       return LM_SHORTCUT_DESKTOP;
     return LM_SHORTCUT_UNKNOWN;
   }
-  return LM_SHORTCUT_NONE;
+  return LM_OTHER;
 }
 #else
 // TODO(cpu): Port to other platforms.
@@ -340,7 +341,8 @@ StartupBrowserCreatorImpl::~StartupBrowserCreatorImpl() {
 bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                                        const std::vector<GURL>& urls_to_open,
                                        bool process_startup) {
-  UMA_HISTOGRAM_COUNTS_100("Startup.BrowserLaunchURLCount",
+  UMA_HISTOGRAM_COUNTS_100(
+      "Startup.BrowserLaunchURLCount",
       static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
   RecordRapporOnStartupURLs(urls_to_open);
 
@@ -377,8 +379,13 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   if (OpenApplicationWindow(profile)) {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   } else {
-    RecordLaunchModeHistogram(urls_to_open.empty() ?
-                              LM_TO_BE_DECIDED : LM_WITH_URLS);
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kTryChromeAgain)) {
+      RecordLaunchModeHistogram(LM_USER_EXPERIMENT);
+    } else {
+      RecordLaunchModeHistogram(urls_to_open.empty() ? LM_TO_BE_DECIDED
+                                                     : LM_WITH_URLS);
+    }
 
     if (StartupBrowserCreator::UseConsolidatedFlow())
       ProcessLaunchUrlsUsingConsolidatedFlow(process_startup, urls_to_open);
