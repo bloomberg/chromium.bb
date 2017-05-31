@@ -1647,10 +1647,19 @@ static int mov_read_wave(MOVContext *c, AVIOContext *pb, MOVAtom atom)
                 atom.size += 8;
             } else if (!st->codecpar->extradata_size) {
 #define ALAC_EXTRADATA_SIZE 36
+#if 0  // Chromium: Always use av_realloc() for |extradata|. https://crbug.com/721872
                 st->codecpar->extradata = av_mallocz(ALAC_EXTRADATA_SIZE + AV_INPUT_BUFFER_PADDING_SIZE);
                 if (!st->codecpar->extradata)
                     return AVERROR(ENOMEM);
                 st->codecpar->extradata_size = ALAC_EXTRADATA_SIZE;
+#else
+                st->codecpar->extradata_size = ALAC_EXTRADATA_SIZE;
+                if ((ret = av_reallocp(&st->codecpar->extradata, st->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE)) < 0) {
+                    st->codecpar->extradata_size = 0;
+                    return ret;
+                }
+                memset(st->codecpar->extradata, 0, st->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+#endif
                 AV_WB32(st->codecpar->extradata    , ALAC_EXTRADATA_SIZE);
                 AV_WB32(st->codecpar->extradata + 4, MKTAG('a','l','a','c'));
                 AV_WB64(st->codecpar->extradata + 12, buffer);
@@ -2069,11 +2078,20 @@ static int mov_rewrite_dvd_sub_extradata(AVStream *st)
         return 0;
 
     av_freep(&st->codecpar->extradata);
+#if 0  // Chromium: Always use av_realloc() for |extradata|. https://crbug.com/721872
     st->codecpar->extradata_size = 0;
     st->codecpar->extradata = av_mallocz(strlen(buf) + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!st->codecpar->extradata)
         return AVERROR(ENOMEM);
     st->codecpar->extradata_size = strlen(buf);
+#else
+    // No need to zero the buffer since we are copying into it.
+    st->codecpar->extradata_size = strlen(buf);
+    if ((i = av_reallocp(&st->codecpar->extradata, st->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE)) < 0) {
+        st->codecpar->extradata_size = 0;
+        return i;
+    }
+#endif
     memcpy(st->codecpar->extradata, buf, st->codecpar->extradata_size);
 
     return 0;
@@ -2387,9 +2405,17 @@ static int mov_read_stsd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     av_freep(&st->codecpar->extradata);
     st->codecpar->extradata_size = sc->extradata_size[0];
     if (sc->extradata_size[0]) {
+#if 0  // Chromium: Always use av_realloc() for |extradata|. https://crbug.com/721872
         st->codecpar->extradata = av_mallocz(sc->extradata_size[0] + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!st->codecpar->extradata)
             return AVERROR(ENOMEM);
+#else
+        // No need to zero the buffer since we are copying into it.
+        if ((ret = av_reallocp(&st->codecpar->extradata, st->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE)) < 0) {
+            st->codecpar->extradata_size = 0;
+            return ret;
+        }
+#endif
         memcpy(st->codecpar->extradata, sc->extradata[0], sc->extradata_size[0]);
     }
 

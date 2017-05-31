@@ -58,6 +58,8 @@ Current patches:
     crbug.com/689339
 
   libavformat/mov.c
+    Always use av_realloc() for |extradata|. https://crbug.com/721872
+
     Incorrect frames after seeking. http://crbug.com/568336.
     Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
     Additional FFmpeg bug: https://trac.ffmpeg.org/ticket/6402
