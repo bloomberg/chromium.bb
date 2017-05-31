@@ -24,6 +24,7 @@ source_set("prefs") {
 }
 
 source_set("browser_prefs") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "browser_prefs.h",
     "browser_prefs.mm",
