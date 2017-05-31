@@ -21,6 +21,8 @@
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
+#define TEST_OPTIMIZE_TXB 0
+
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
 #if 0
   AV1_COMMON *cm = &cpi->common;
@@ -983,6 +985,12 @@ int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
   }
   return cost_diff;
 }
+
+static INLINE tran_low_t qcoeff_to_dqcoeff(tran_low_t qc, int dqv, int shift) {
+  int sgn = qc < 0 ? -1 : 1;
+  return sgn * ((abs(qc) * dqv) >> shift);
+}
+
 static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
                           TxbProbs *txb_probs) {
   const TXB_CTX *txb_ctx = txb_info->txb_ctx;
@@ -1026,6 +1034,28 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
   return cost;
 }
 
+#if TEST_OPTIMIZE_TXB
+static void test_level_down(int coeff_idx, TxbCache *txb_cache,
+                            TxbProbs *txb_probs, TxbInfo *txb_info) {
+  int cost_map[COST_MAP_SIZE][COST_MAP_SIZE];
+  int ref_cost_map[COST_MAP_SIZE][COST_MAP_SIZE];
+  const int cost_diff =
+      try_level_down(coeff_idx, txb_cache, txb_probs, txb_info, cost_map);
+  const int cost_diff_ref = try_level_down_ref(coeff_idx, txb_cache, txb_probs,
+                                               txb_info, ref_cost_map);
+  if (cost_diff != cost_diff_ref) {
+    printf("qc %d cost_diff %d cost_diff_ref %d\n", txb_info->qcoeff[coeff_idx],
+           cost_diff, cost_diff_ref);
+    for (int r = 0; r < COST_MAP_SIZE; ++r) {
+      for (int c = 0; c < COST_MAP_SIZE; ++c) {
+        printf("%d:%d ", cost_map[r][c], ref_cost_map[r][c]);
+      }
+      printf("\n");
+    }
+  }
+}
+#endif
+
 // TODO(angiebird): make this static once it's called
 int get_txb_cost(TxbInfo *txb_info, TxbProbs *txb_probs) {
   int cost = 0;
@@ -1044,6 +1074,64 @@ int get_txb_cost(TxbInfo *txb_info, TxbProbs *txb_probs) {
   return cost;
 }
 
+static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
+                                     int shift) {
+  const int64_t diff = (tcoeff - dqcoeff) * (1 << shift);
+  const int64_t error = diff * diff;
+  return error;
+}
+
+typedef struct LevelDownStats {
+  int update;
+  tran_low_t low_qc;
+  tran_low_t low_dqc;
+  int64_t rd_diff;
+  int cost_diff;
+  int64_t dist_diff;
+  int new_eob;
+} LevelDownStats;
+
+void try_level_down_facade(LevelDownStats *stats, int scan_idx,
+                           const TxbCache *txb_cache, const TxbProbs *txb_probs,
+                           TxbInfo *txb_info) {
+  const int16_t *scan = txb_info->scan_order->scan;
+  const int coeff_idx = scan[scan_idx];
+  const tran_low_t qc = txb_info->qcoeff[coeff_idx];
+  stats->new_eob = -1;
+  stats->update = 0;
+  if (qc == 0) {
+    return;
+  }
+
+  const tran_low_t tqc = txb_info->tcoeff[coeff_idx];
+  const int dqv = txb_info->dequant[coeff_idx != 0];
+
+  const tran_low_t dqc = qcoeff_to_dqcoeff(qc, dqv, txb_info->shift);
+  const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
+
+  stats->low_qc = get_lower_coeff(qc);
+  stats->low_dqc = qcoeff_to_dqcoeff(stats->low_qc, dqv, txb_info->shift);
+  const int64_t low_dqc_dist =
+      get_coeff_dist(tqc, stats->low_dqc, txb_info->shift);
+
+  stats->dist_diff = -dqc_dist + low_dqc_dist;
+  stats->cost_diff = 0;
+  stats->new_eob = txb_info->eob;
+  if (scan_idx == txb_info->eob - 1 && abs(qc) == 1) {
+    stats->cost_diff = try_change_eob(&stats->new_eob, coeff_idx, txb_cache,
+                                      txb_probs, txb_info);
+  } else {
+    stats->cost_diff =
+        try_level_down(coeff_idx, txb_cache, txb_probs, txb_info, NULL);
+#if TEST_OPTIMIZE_TXB
+    test_level_down(coeff_idx, txb_cache, txb_probs, txb_info);
+#endif
+  }
+  stats->rd_diff = RDCOST(txb_info->rdmult, txb_info->rddiv, stats->cost_diff,
+                          stats->dist_diff);
+  if (stats->rd_diff < 0) stats->update = 1;
+  return;
+}
 int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
                                 const SCAN_ORDER *scan_order, int eob) {
   const int16_t *scan = scan_order->scan;
