@@ -2705,7 +2705,7 @@ Bug(none) http/tests/w3c/webperf/submission/Google/resource-timing/html/test_res
 Bug(none) http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 Bug(none) http/tests/webfont/crbug-655076.html [ Timeout ]
 Bug(none) http/tests/webfont/font-display-intervention.html [ Timeout ]
-Bug(none) http/tests/webfont/font-display.html [ Timeout ]
+Bug(none) external/wpt/css-font-display/font-display.html [ Timeout ]
 Bug(none) http/tests/webfont/same-origin-credentials.html [ Failure ]
 Bug(none) http/tests/webfont/slow-loading.html [ Timeout ]
 Bug(none) http/tests/websocket/bufferedAmount-after-send.html [ Failure ]
