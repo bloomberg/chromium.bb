@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/apps/app_load_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/extension.h"
@@ -28,7 +29,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -171,8 +171,10 @@ class BulletedPermissionsList : public views::View {
                                  views::Label* permission_label,
                                  RevokeButton* revoke_button) {
     // Add a padding row before every item except the first.
-    if (has_children())
-      layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    if (has_children()) {
+      layout_->AddPaddingRow(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                    views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    }
 
     const base::char16 bullet_point[] = {0x2022, 0};
     views::Label* bullet_label = new views::Label(base::string16(bullet_point));
@@ -199,10 +201,10 @@ AppInfoPermissionsPanel::AppInfoPermissionsPanel(
     Profile* profile,
     const extensions::Extension* app)
     : AppInfoPanel(profile, app) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        0,
-                                        0,
-                                        views::kRelatedControlVerticalSpacing));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   CreatePermissionsList();
 }

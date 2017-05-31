@@ -18,7 +18,6 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_constants.h"
 
 DesktopIOSPromotionFootnoteView::DesktopIOSPromotionFootnoteView(
     Profile* profile,

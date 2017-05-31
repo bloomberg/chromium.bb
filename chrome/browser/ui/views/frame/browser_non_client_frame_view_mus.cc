@@ -35,7 +35,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/widget.h"
