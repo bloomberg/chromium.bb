@@ -1360,22 +1360,27 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
 
   int border_width = 0;
 
-  const BorderValue& sb =
-      side == kBorderBefore ? Style()->BorderBefore() : Style()->BorderAfter();
-  if (sb.Style() == EBorderStyle::kHidden)
+  EBorderStyle section_border_style = side == kBorderBefore
+                                          ? Style()->BorderBeforeStyle()
+                                          : Style()->BorderAfterStyle();
+  if (section_border_style == EBorderStyle::kHidden)
     return -1;
-  if (ComputedStyle::BorderStyleIsVisible(sb.Style()))
-    border_width = sb.Width();
+  if (ComputedStyle::BorderStyleIsVisible(section_border_style)) {
+    border_width = side == kBorderBefore ? Style()->BorderBeforeWidth()
+                                         : Style()->BorderAfterWidth();
+  }
 
-  const BorderValue& rb = side == kBorderBefore
-                              ? FirstRow()->Style()->BorderBefore()
-                              : LastRow()->Style()->BorderAfter();
-  if (rb.Style() == EBorderStyle::kHidden)
+  EBorderStyle row_border_style = side == kBorderBefore
+                                      ? FirstRow()->Style()->BorderBeforeStyle()
+                                      : LastRow()->Style()->BorderAfterStyle();
+  float row_border_width = side == kBorderBefore
+                               ? FirstRow()->Style()->BorderBeforeWidth()
+                               : LastRow()->Style()->BorderAfterWidth();
+  if (row_border_style == EBorderStyle::kHidden)
     return -1;
-  if (ComputedStyle::BorderStyleIsVisible(rb.Style()) &&
-      rb.Width() > border_width)
-    border_width = rb.Width();
-
+  if (ComputedStyle::BorderStyleIsVisible(row_border_style) &&
+      row_border_width > border_width)
+    border_width = row_border_width;
   bool all_hidden = true;
   unsigned r = side == kBorderBefore ? 0 : grid_.size() - 1;
   unsigned n_cols = NumCols(r);
@@ -1386,33 +1391,39 @@ int LayoutTableSection::CalcBlockDirectionOuterBorder(
     const ComputedStyle& primary_cell_style =
         grid_cell.PrimaryCell()->StyleRef();
     // FIXME: Make this work with perpendicular and flipped cells.
-    const BorderValue& cb = side == kBorderBefore
-                                ? primary_cell_style.BorderBefore()
-                                : primary_cell_style.BorderAfter();
+    EBorderStyle cell_border_style =
+        side == kBorderBefore ? primary_cell_style.BorderBeforeStyle()
+                              : primary_cell_style.BorderAfterStyle();
+    float cell_border_width = side == kBorderBefore
+                                  ? primary_cell_style.BorderBeforeWidth()
+                                  : primary_cell_style.BorderAfterWidth();
     // FIXME: Don't repeat for the same col group
     LayoutTableCol* col =
         Table()->ColElementAtAbsoluteColumn(c).InnermostColOrColGroup();
     if (col) {
-      const BorderValue& gb = side == kBorderBefore
-                                  ? col->Style()->BorderBefore()
-                                  : col->Style()->BorderAfter();
-      if (gb.Style() == EBorderStyle::kHidden ||
-          cb.Style() == EBorderStyle::kHidden)
+      EBorderStyle col_border_style = side == kBorderBefore
+                                          ? col->Style()->BorderBeforeStyle()
+                                          : col->Style()->BorderAfterStyle();
+      const float col_border_width = side == kBorderBefore
+                                         ? col->Style()->BorderBeforeWidth()
+                                         : col->Style()->BorderAfterWidth();
+      if (col_border_style == EBorderStyle::kHidden ||
+          cell_border_style == EBorderStyle::kHidden)
         continue;
       all_hidden = false;
-      if (ComputedStyle::BorderStyleIsVisible(gb.Style()) &&
-          gb.Width() > border_width)
-        border_width = gb.Width();
-      if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
-          cb.Width() > border_width)
-        border_width = cb.Width();
+      if (ComputedStyle::BorderStyleIsVisible(col_border_style) &&
+          col_border_width > border_width)
+        border_width = col_border_width;
+      if (ComputedStyle::BorderStyleIsVisible(cell_border_style) &&
+          cell_border_width > border_width)
+        border_width = cell_border_width;
     } else {
-      if (cb.Style() == EBorderStyle::kHidden)
+      if (cell_border_style == EBorderStyle::kHidden)
         continue;
       all_hidden = false;
-      if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
-          cb.Width() > border_width)
-        border_width = cb.Width();
+      if (ComputedStyle::BorderStyleIsVisible(cell_border_style) &&
+          cell_border_width > border_width)
+        border_width = cell_border_width;
     }
   }
   if (all_hidden)
@@ -1432,23 +1443,31 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
 
   int border_width = 0;
 
-  const BorderValue& sb =
-      side == kBorderStart ? Style()->BorderStart() : Style()->BorderEnd();
-  if (sb.Style() == EBorderStyle::kHidden)
+  EBorderStyle section_border_style = side == kBorderStart
+                                          ? Style()->BorderStartStyle()
+                                          : Style()->BorderEndStyle();
+  const float section_border_width = side == kBorderStart
+                                         ? Style()->BorderStartWidth()
+                                         : Style()->BorderEndWidth();
+  if (section_border_style == EBorderStyle::kHidden)
     return -1;
-  if (ComputedStyle::BorderStyleIsVisible(sb.Style()))
-    border_width = sb.Width();
+  if (ComputedStyle::BorderStyleIsVisible(section_border_style))
+    border_width = section_border_width;
 
   if (LayoutTableCol* col = Table()
                                 ->ColElementAtAbsoluteColumn(col_index)
                                 .InnermostColOrColGroup()) {
-    const BorderValue& gb = side == kBorderStart ? col->Style()->BorderStart()
-                                                 : col->Style()->BorderEnd();
-    if (gb.Style() == EBorderStyle::kHidden)
+    EBorderStyle col_border_style = side == kBorderStart
+                                        ? col->Style()->BorderStartStyle()
+                                        : col->Style()->BorderEndStyle();
+    const float col_border_width = side == kBorderStart
+                                       ? col->Style()->BorderStartWidth()
+                                       : col->Style()->BorderEndWidth();
+    if (col_border_style == EBorderStyle::kHidden)
       return -1;
-    if (ComputedStyle::BorderStyleIsVisible(gb.Style()) &&
-        gb.Width() > border_width)
-      border_width = gb.Width();
+    if (ComputedStyle::BorderStyleIsVisible(col_border_style) &&
+        col_border_width > border_width)
+      border_width = col_border_width;
   }
 
   bool all_hidden = true;
@@ -1464,22 +1483,28 @@ int LayoutTableSection::CalcInlineDirectionOuterBorder(
     const ComputedStyle& primary_cell_parent_style =
         grid_cell.PrimaryCell()->Parent()->StyleRef();
     // FIXME: Make this work with perpendicular and flipped cells.
-    const BorderValue& cb = side == kBorderStart
-                                ? primary_cell_style.BorderStart()
-                                : primary_cell_style.BorderEnd();
-    const BorderValue& rb = side == kBorderStart
-                                ? primary_cell_parent_style.BorderStart()
-                                : primary_cell_parent_style.BorderEnd();
-    if (cb.Style() == EBorderStyle::kHidden ||
-        rb.Style() == EBorderStyle::kHidden)
+    EBorderStyle cell_border_style = side == kBorderStart
+                                         ? primary_cell_style.BorderStartStyle()
+                                         : primary_cell_style.BorderEndStyle();
+    EBorderStyle row_border_style =
+        side == kBorderStart ? primary_cell_parent_style.BorderStartStyle()
+                             : primary_cell_parent_style.BorderEndStyle();
+    const float cell_border_width = side == kBorderStart
+                                        ? primary_cell_style.BorderStartWidth()
+                                        : primary_cell_style.BorderEndWidth();
+    const float row_border_width =
+        side == kBorderStart ? primary_cell_parent_style.BorderStartWidth()
+                             : primary_cell_parent_style.BorderEndWidth();
+    if (cell_border_style == EBorderStyle::kHidden ||
+        row_border_style == EBorderStyle::kHidden)
       continue;
     all_hidden = false;
-    if (ComputedStyle::BorderStyleIsVisible(cb.Style()) &&
-        cb.Width() > border_width)
-      border_width = cb.Width();
-    if (ComputedStyle::BorderStyleIsVisible(rb.Style()) &&
-        rb.Width() > border_width)
-      border_width = rb.Width();
+    if (ComputedStyle::BorderStyleIsVisible(cell_border_style) &&
+        cell_border_width > border_width)
+      border_width = cell_border_width;
+    if (ComputedStyle::BorderStyleIsVisible(row_border_style) &&
+        row_border_width > border_width)
+      border_width = row_border_width;
   }
   if (all_hidden)
     return -1;

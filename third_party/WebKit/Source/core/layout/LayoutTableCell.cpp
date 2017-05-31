@@ -641,9 +641,9 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder() const {
       ResolveBorderProperty(CSSPropertyWebkitBorderStartColor);
   int end_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderEndColor);
-  CollapsedBorderValue result(Style()->BorderStart(),
-                              ResolveColor(start_color_property),
-                              kBorderPrecedenceCell);
+  CollapsedBorderValue result(
+      Style()->BorderStartStyle(), Style()->BorderStartWidth(),
+      ResolveColor(start_color_property), kBorderPrecedenceCell);
 
   // (2) The end border of the preceding cell.
   if (cell_before) {
@@ -775,8 +775,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedEndBorder() const {
   int end_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderEndColor);
   CollapsedBorderValue result = CollapsedBorderValue(
-      Style()->BorderEnd(), ResolveColor(end_color_property),
-      kBorderPrecedenceCell);
+      Style()->BorderEndStyle(), Style()->BorderEndWidth(),
+      ResolveColor(end_color_property), kBorderPrecedenceCell);
 
   // (2) The start border of the following cell.
   if (cell_after) {
@@ -900,13 +900,14 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
   int after_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderAfterColor);
   CollapsedBorderValue result = CollapsedBorderValue(
-      Style()->BorderBefore(), ResolveColor(before_color_property),
-      kBorderPrecedenceCell);
+      Style()->BorderBeforeStyle(), Style()->BorderBeforeWidth(),
+      ResolveColor(before_color_property), kBorderPrecedenceCell);
 
   if (prev_cell) {
     // (2) A before cell's after border.
     result = ChooseBorder(
-        CollapsedBorderValue(prev_cell->Style()->BorderAfter(),
+        CollapsedBorderValue(prev_cell->Style()->BorderAfterStyle(),
+                             prev_cell->Style()->BorderAfterWidth(),
                              prev_cell->ResolveColor(after_color_property),
                              kBorderPrecedenceCell),
         result);
@@ -917,7 +918,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
   // (3) Our row's before border.
   result = ChooseBorder(
       result,
-      CollapsedBorderValue(Parent()->Style()->BorderBefore(),
+      CollapsedBorderValue(Parent()->Style()->BorderBeforeStyle(),
+                           Parent()->Style()->BorderBeforeWidth(),
                            Parent()->ResolveColor(before_color_property),
                            kBorderPrecedenceRow));
   if (!result.Exists())
@@ -933,7 +935,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
 
     if (prev_row) {
       result = ChooseBorder(
-          CollapsedBorderValue(prev_row->Style()->BorderAfter(),
+          CollapsedBorderValue(prev_row->Style()->BorderAfterStyle(),
+                               prev_row->Style()->BorderAfterWidth(),
                                prev_row->ResolveColor(after_color_property),
                                kBorderPrecedenceRow),
           result);
@@ -948,7 +951,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
     // (5) Our row group's before border.
     result = ChooseBorder(
         result,
-        CollapsedBorderValue(curr_section->Style()->BorderBefore(),
+        CollapsedBorderValue(curr_section->Style()->BorderBeforeStyle(),
+                             curr_section->Style()->BorderBeforeWidth(),
                              curr_section->ResolveColor(before_color_property),
                              kBorderPrecedenceRowGroup));
     if (!result.Exists())
@@ -958,7 +962,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
     curr_section = table->SectionAbove(curr_section, kSkipEmptySections);
     if (curr_section) {
       result = ChooseBorder(
-          CollapsedBorderValue(curr_section->Style()->BorderAfter(),
+          CollapsedBorderValue(curr_section->Style()->BorderAfterStyle(),
+                               curr_section->Style()->BorderAfterWidth(),
                                curr_section->ResolveColor(after_color_property),
                                kBorderPrecedenceRowGroup),
           result);
@@ -975,7 +980,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
     if (col_elt) {
       result = ChooseBorder(
           result,
-          CollapsedBorderValue(col_elt->Style()->BorderBefore(),
+          CollapsedBorderValue(col_elt->Style()->BorderBeforeStyle(),
+                               col_elt->Style()->BorderBeforeWidth(),
                                col_elt->ResolveColor(before_color_property),
                                kBorderPrecedenceColumn));
       if (!result.Exists())
@@ -985,7 +991,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
         result = ChooseBorder(
             result,
             CollapsedBorderValue(
-                enclosing_column_group->Style()->BorderBefore(),
+                enclosing_column_group->Style()->BorderBeforeStyle(),
+                enclosing_column_group->Style()->BorderBeforeWidth(),
                 enclosing_column_group->ResolveColor(before_color_property),
                 kBorderPrecedenceColumnGroup));
         if (!result.Exists())
@@ -995,7 +1002,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
 
     // (9) The table's before border.
     result = ChooseBorder(
-        result, CollapsedBorderValue(table->Style()->BorderBefore(),
+        result, CollapsedBorderValue(table->Style()->BorderBeforeStyle(),
+                                     table->Style()->BorderBeforeWidth(),
                                      table->ResolveColor(before_color_property),
                                      kBorderPrecedenceTable));
     if (!result.Exists())
@@ -1023,14 +1031,15 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
   int after_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderAfterColor);
   CollapsedBorderValue result = CollapsedBorderValue(
-      Style()->BorderAfter(), ResolveColor(after_color_property),
-      kBorderPrecedenceCell);
+      Style()->BorderAfterStyle(), Style()->BorderAfterWidth(),
+      ResolveColor(after_color_property), kBorderPrecedenceCell);
 
   if (next_cell) {
     // (2) An after cell's before border.
     result = ChooseBorder(
         result,
-        CollapsedBorderValue(next_cell->Style()->BorderBefore(),
+        CollapsedBorderValue(next_cell->Style()->BorderBeforeStyle(),
+                             next_cell->Style()->BorderBeforeWidth(),
                              next_cell->ResolveColor(before_color_property),
                              kBorderPrecedenceCell));
     if (!result.Exists())
@@ -1039,7 +1048,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
 
   // (3) Our row's after border. (FIXME: Deal with rowspan!)
   result = ChooseBorder(
-      result, CollapsedBorderValue(Parent()->Style()->BorderAfter(),
+      result, CollapsedBorderValue(Parent()->Style()->BorderAfterStyle(),
+                                   Parent()->Style()->BorderAfterWidth(),
                                    Parent()->ResolveColor(after_color_property),
                                    kBorderPrecedenceRow));
   if (!result.Exists())
@@ -1049,7 +1059,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
   if (next_cell) {
     result = ChooseBorder(
         result, CollapsedBorderValue(
-                    next_cell->Parent()->Style()->BorderBefore(),
+                    next_cell->Parent()->Style()->BorderBeforeStyle(),
+                    next_cell->Parent()->Style()->BorderBeforeWidth(),
                     next_cell->Parent()->ResolveColor(before_color_property),
                     kBorderPrecedenceRow));
     if (!result.Exists())
@@ -1062,7 +1073,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
     // (5) Our row group's after border.
     result = ChooseBorder(
         result,
-        CollapsedBorderValue(curr_section->Style()->BorderAfter(),
+        CollapsedBorderValue(curr_section->Style()->BorderAfterStyle(),
+                             curr_section->Style()->BorderAfterWidth(),
                              curr_section->ResolveColor(after_color_property),
                              kBorderPrecedenceRowGroup));
     if (!result.Exists())
@@ -1073,7 +1085,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
     if (curr_section) {
       result = ChooseBorder(
           result, CollapsedBorderValue(
-                      curr_section->Style()->BorderBefore(),
+                      curr_section->Style()->BorderBeforeStyle(),
+                      curr_section->Style()->BorderBeforeWidth(),
                       curr_section->ResolveColor(before_color_property),
                       kBorderPrecedenceRowGroup));
       if (!result.Exists())
@@ -1089,7 +1102,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
     if (col_elt) {
       result = ChooseBorder(
           result,
-          CollapsedBorderValue(col_elt->Style()->BorderAfter(),
+          CollapsedBorderValue(col_elt->Style()->BorderAfterStyle(),
+                               col_elt->Style()->BorderAfterWidth(),
                                col_elt->ResolveColor(after_color_property),
                                kBorderPrecedenceColumn));
       if (!result.Exists())
@@ -1099,7 +1113,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
         result = ChooseBorder(
             result,
             CollapsedBorderValue(
-                enclosing_column_group->Style()->BorderAfter(),
+                enclosing_column_group->Style()->BorderAfterStyle(),
+                enclosing_column_group->Style()->BorderAfterWidth(),
                 enclosing_column_group->ResolveColor(after_color_property),
                 kBorderPrecedenceColumnGroup));
         if (!result.Exists())
@@ -1109,7 +1124,8 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
 
     // (9) The table's after border.
     result = ChooseBorder(
-        result, CollapsedBorderValue(table->Style()->BorderAfter(),
+        result, CollapsedBorderValue(table->Style()->BorderAfterStyle(),
+                                     table->Style()->BorderAfterWidth(),
                                      table->ResolveColor(after_color_property),
                                      kBorderPrecedenceTable));
     if (!result.Exists())

@@ -218,7 +218,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         ts << o.ResolveColor(CSSPropertyBorderTopColor) << ")";
       }
 
-      if (o.Style()->BorderRight() != prev_border) {
+      if (!o.Style()->BorderRightEquals(prev_border)) {
         prev_border = o.Style()->BorderRight();
         if (!box.BorderRight()) {
           ts << " none";
@@ -229,7 +229,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         }
       }
 
-      if (o.Style()->BorderBottom() != prev_border) {
+      if (!o.Style()->BorderBottomEquals(prev_border)) {
         prev_border = box.Style()->BorderBottom();
         if (!box.BorderBottom()) {
           ts << " none";
@@ -240,7 +240,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         }
       }
 
-      if (o.Style()->BorderLeft() != prev_border) {
+      if (!o.Style()->BorderLeftEquals(prev_border)) {
         prev_border = o.Style()->BorderLeft();
         if (!box.BorderLeft()) {
           ts << " none";
