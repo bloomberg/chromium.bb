@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
@@ -40,26 +39,18 @@ namespace {
 // Returns true if Xps support is installed.
 bool XpsIsInstalled() {
   base::FilePath xps_path;
-  if (!SUCCEEDED(GetPrinterDriverDir(&xps_path))) {
+  if (!SUCCEEDED(GetPrinterDriverDir(&xps_path)))
     return false;
-  }
+
   xps_path = xps_path.Append(L"mxdwdrv.dll");
-  if (!base::PathExists(xps_path)) {
-    return false;
-  }
-  return true;
+  return base::PathExists(xps_path);
 }
 
 // Returns true if registration/unregistration can be attempted.
 bool CanRegister() {
-  if (!XpsIsInstalled()) {
+  if (!XpsIsInstalled())
     return false;
-  }
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY)
-      return false;
-  }
-  return true;
+  return base::GetCurrentProcessIntegrityLevel() == base::HIGH_INTEGRITY;
 }
 
 }  // namespace

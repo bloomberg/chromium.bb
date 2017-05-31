@@ -22,7 +22,7 @@ class AdvancedFirewallManagerTest : public ::testing::Test {
   // Sets up the test fixture.
   void SetUp() override {
     if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
-      LOG(WARNING) << "XP or not elevated. Skipping the test.";
+      LOG(WARNING) << "Not elevated. Skipping the test.";
       return;
     }
     skip_test_ = false;
