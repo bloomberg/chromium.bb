@@ -1405,8 +1405,11 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     // Report the number of times we've entered the underflow state. Ensure we
     // only report the value when transitioning from HAVE_ENOUGH to
     // HAVE_NOTHING.
-    if (ready_state_ == WebMediaPlayer::kReadyStateHaveEnoughData)
+    if (ready_state_ == WebMediaPlayer::kReadyStateHaveEnoughData &&
+        !seeking_) {
       underflow_timer_.reset(new base::ElapsedTimer());
+      watch_time_reporter_->OnUnderflow();
+    }
 
     // It shouldn't be possible to underflow if we've not advanced past
     // HAVE_CURRENT_DATA.

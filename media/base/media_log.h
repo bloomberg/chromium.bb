@@ -136,6 +136,17 @@ class MEDIA_EXPORT MediaLog {
   static const char kWatchTimeFinalize[];
   static const char kWatchTimeFinalizePower[];
 
+  // Count of the number of underflow events during a media session.
+  static const char kUnderflowCount[];
+
+  // UMA keys for MTBR samples.
+  static const char kMeanTimeBetweenRebuffersAudioSrc[];
+  static const char kMeanTimeBetweenRebuffersAudioMse[];
+  static const char kMeanTimeBetweenRebuffersAudioEme[];
+  static const char kMeanTimeBetweenRebuffersAudioVideoSrc[];
+  static const char kMeanTimeBetweenRebuffersAudioVideoMse[];
+  static const char kMeanTimeBetweenRebuffersAudioVideoEme[];
+
   static base::flat_set<base::StringPiece> GetWatchTimeKeys();
   static base::flat_set<base::StringPiece> GetWatchTimePowerKeys();
 
