@@ -487,6 +487,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/sys_info.cc',
       'base/task_runner.cc',
       'base/task_scheduler/delayed_task_manager.cc',
+      'base/task_scheduler/environment_config.cc',
       'base/task_scheduler/post_task.cc',
       'base/task_scheduler/priority_queue.cc',
       'base/task_scheduler/scheduler_lock_impl.cc',
