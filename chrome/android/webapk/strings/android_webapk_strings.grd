@@ -95,7 +95,7 @@
     <messages fallback_to_english="true">
       <!-- Select host browser dialog -->
       <message name="IDS_CHOOSE_HOST_BROWSER_DIALOG_TITLE" desc="Title for the host browser picker dialog, which is used to ask users to pick a browser to launch the installed WebAPK.">
-        <ph name="WEBAPK_SITE">%1$s<ex>Housing.com</ex></ph> needs a Web browser to run
+        <ph name="WEBAPK_SITE">%1$s<ex>Housing.com</ex></ph> needs a web browser to run
       </message>
       <message name="IDS_CHOOSE_HOST_BROWSER" desc="Content for the host browser picker dialog, which is used to ask users to pick a browser to launch the installed WebAPK.">
         Please select the browser you'd like to use to run <ph name="WEBAPK_SITE">%1$s<ex>Housing.com</ex></ph>
