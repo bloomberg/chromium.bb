@@ -76,7 +76,7 @@ class WorkletThreadHolder {
   ~WorkletThreadHolder() {}
 
   static Mutex& HolderInstanceMutex() {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holder_mutex, new Mutex);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holder_mutex, ());
     return holder_mutex;
   }
 

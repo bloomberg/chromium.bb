@@ -47,10 +47,10 @@ namespace blink {
 bool IsOnAccessControlResponseHeaderWhitelist(const String& name) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       HTTPHeaderSet, allowed_cross_origin_response_headers,
-      (new HTTPHeaderSet({
+      ({
           "cache-control", "content-language", "content-type", "expires",
           "last-modified", "pragma",
-      })));
+      }));
   return allowed_cross_origin_response_headers.Contains(name);
 }
 
@@ -215,15 +215,12 @@ void CrossOriginAccessControl::AccessControlErrorString(
     const ResourceResponse& response,
     const SecurityOrigin* security_origin,
     WebURLRequest::RequestContext context) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_origin_header_name,
-      (new AtomicString("access-control-allow-origin")));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_credentials_header_name,
-      (new AtomicString("access-control-allow-credentials")));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      AtomicString, allow_suborigin_header_name,
-      (new AtomicString("access-control-allow-suborigin")));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allow_origin_header_name,
+                                  ("access-control-allow-origin"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allow_credentials_header_name,
+                                  ("access-control-allow-credentials"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allow_suborigin_header_name,
+                                  ("access-control-allow-suborigin"));
 
   switch (status) {
     case kInvalidResponse: {

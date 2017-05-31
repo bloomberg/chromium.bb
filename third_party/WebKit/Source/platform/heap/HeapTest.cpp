@@ -5406,13 +5406,12 @@ TEST(HeapTest, IndirectStrongToWeak) {
 }
 
 static Mutex& MainThreadMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, main_mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, main_mutex, ());
   return main_mutex;
 }
 
 static ThreadCondition& MainThreadCondition() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, main_condition,
-                                  new ThreadCondition);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, main_condition, ());
   return main_condition;
 }
 
@@ -5426,13 +5425,12 @@ static void WakeMainThread() {
 }
 
 static Mutex& WorkerThreadMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, worker_mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, worker_mutex, ());
   return worker_mutex;
 }
 
 static ThreadCondition& WorkerThreadCondition() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, worker_condition,
-                                  new ThreadCondition);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, worker_condition, ());
   return worker_condition;
 }
 
@@ -5744,8 +5742,7 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
 }
 
 static RecursiveMutex& GetRecursiveMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, recursive_mutex,
-                                  new RecursiveMutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, recursive_mutex, ());
   return recursive_mutex;
 }
 
@@ -6542,8 +6539,7 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
 
   static IntWrapper& ThreadSpecificIntWrapper() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<IntWrapper>>,
-                                    int_wrapper,
-                                    new ThreadSpecific<Persistent<IntWrapper>>);
+                                    int_wrapper, ());
     Persistent<IntWrapper>& handle = *int_wrapper;
     if (!handle) {
       handle = new IntWrapper(42);
@@ -6588,7 +6584,7 @@ class ThreadedClearOnShutdownTester::HeapObject final
 ThreadedClearOnShutdownTester::WeakHeapObjectSet&
 ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WeakHeapObjectSet>, singleton,
-                                  new ThreadSpecific<WeakHeapObjectSet>);
+                                  ());
   if (!singleton.IsSet())
     singleton->RegisterAsStaticReference();
 
@@ -6597,8 +6593,7 @@ ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
 
 ThreadedClearOnShutdownTester::HeapObjectSet&
 ThreadedClearOnShutdownTester::GetHeapObjectSet() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<HeapObjectSet>, singleton,
-                                  new ThreadSpecific<HeapObjectSet>);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<HeapObjectSet>, singleton, ());
   if (!singleton.IsSet())
     singleton->RegisterAsStaticReference();
 

@@ -423,8 +423,7 @@ void DOMWebSocket::ReleaseChannel() {
 void DOMWebSocket::LogBinaryTypeChangesAfterOpen() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, binary_type_changes_histogram,
-      new CustomCountHistogram("WebCore.WebSocket.BinaryTypeChangesAfterOpen",
-                               1, 1024, 10));
+      ("WebCore.WebSocket.BinaryTypeChangesAfterOpen", 1, 1024, 10));
   DVLOG(3) << "WebSocket " << static_cast<void*>(this)
            << " logBinaryTypeChangesAfterOpen() logging "
            << binary_type_changes_after_open_;
@@ -781,8 +780,7 @@ void DOMWebSocket::DidClose(
 void DOMWebSocket::RecordSendTypeHistogram(WebSocketSendType type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, send_type_histogram,
-      new EnumerationHistogram("WebCore.WebSocket.SendType",
-                               kWebSocketSendTypeMax));
+      ("WebCore.WebSocket.SendType", kWebSocketSendTypeMax));
   send_type_histogram.Count(type);
 }
 
@@ -794,9 +792,8 @@ void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
     case kWebSocketSendTypeArrayBuffer: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, array_buffer_message_size_histogram,
-          new CustomCountHistogram(
-              "WebCore.WebSocket.MessageSize.Send.ArrayBuffer", 1,
-              kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
+          ("WebCore.WebSocket.MessageSize.Send.ArrayBuffer", 1,
+           kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
       array_buffer_message_size_histogram.Count(size_to_count);
       return;
     }
@@ -804,9 +801,8 @@ void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
     case kWebSocketSendTypeArrayBufferView: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, array_buffer_view_message_size_histogram,
-          new CustomCountHistogram(
-              "WebCore.WebSocket.MessageSize.Send.ArrayBufferView", 1,
-              kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
+          ("WebCore.WebSocket.MessageSize.Send.ArrayBufferView", 1,
+           kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
       array_buffer_view_message_size_histogram.Count(size_to_count);
       return;
     }
@@ -814,9 +810,8 @@ void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
     case kWebSocketSendTypeBlob: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, blob_message_size_histogram,
-          new CustomCountHistogram("WebCore.WebSocket.MessageSize.Send.Blob", 1,
-                                   kMaxByteSizeForHistogram,
-                                   kBucketCountForMessageSizeHistogram));
+          ("WebCore.WebSocket.MessageSize.Send.Blob", 1,
+           kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
       blob_message_size_histogram.Count(size_to_count);
       return;
     }
@@ -829,8 +824,7 @@ void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
 void DOMWebSocket::RecordReceiveTypeHistogram(WebSocketReceiveType type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, receive_type_histogram,
-      new EnumerationHistogram("WebCore.WebSocket.ReceiveType",
-                               kWebSocketReceiveTypeMax));
+      ("WebCore.WebSocket.ReceiveType", kWebSocketReceiveTypeMax));
   receive_type_histogram.Count(type);
 }
 
@@ -842,9 +836,8 @@ void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,
     case kWebSocketReceiveTypeArrayBuffer: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, array_buffer_message_size_histogram,
-          new CustomCountHistogram(
-              "WebCore.WebSocket.MessageSize.Receive.ArrayBuffer", 1,
-              kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
+          ("WebCore.WebSocket.MessageSize.Receive.ArrayBuffer", 1,
+           kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
       array_buffer_message_size_histogram.Count(size_to_count);
       return;
     }
@@ -852,9 +845,8 @@ void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,
     case kWebSocketReceiveTypeBlob: {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, blob_message_size_histogram,
-          new CustomCountHistogram("WebCore.WebSocket.MessageSize.Receive.Blob",
-                                   1, kMaxByteSizeForHistogram,
-                                   kBucketCountForMessageSizeHistogram));
+          ("WebCore.WebSocket.MessageSize.Receive.Blob", 1,
+           kMaxByteSizeForHistogram, kBucketCountForMessageSizeHistogram));
       blob_message_size_histogram.Count(size_to_count);
       return;
     }

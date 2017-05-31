@@ -141,9 +141,8 @@ void WorkerSchedulerImpl::WillProcessTask(TaskQueue* task_queue,
 void WorkerSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
                                          double start_time,
                                          double end_time) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, task_time_counter,
-      new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, task_time_counter,
+                                  ("WorkerThread.Task.Time", 0, 10000000, 50));
   task_time_counter.Count((end_time - start_time) *
                           base::Time::kMicrosecondsPerSecond);
 

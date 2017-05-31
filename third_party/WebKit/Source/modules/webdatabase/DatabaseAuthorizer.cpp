@@ -69,7 +69,7 @@ using FunctionNameList = HashSet<String, CaseFoldingHash>;
 const FunctionNameList& WhitelistedFunctions() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       FunctionNameList, list,
-      new FunctionNameList({
+      ({
           // SQLite functions used to help implement some operations
           // ALTER TABLE helpers
           "sqlite_rename_table", "sqlite_rename_trigger",

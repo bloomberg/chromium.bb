@@ -14,8 +14,7 @@ void CanvasMetrics::CountCanvasContextUsage(
     const CanvasContextUsage canvas_context_usage) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, usage_histogram,
-      new EnumerationHistogram("WebCore.CanvasContextUsage",
-                               CanvasContextUsage::kNumberOfUsages));
+      ("WebCore.CanvasContextUsage", CanvasContextUsage::kNumberOfUsages));
   usage_histogram.Count(canvas_context_usage);
 }
 

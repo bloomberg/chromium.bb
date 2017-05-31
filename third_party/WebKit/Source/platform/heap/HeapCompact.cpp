@@ -431,15 +431,13 @@ void HeapCompact::FinishThreadCompaction() {
       WTF::CurrentTimeMS() - start_compaction_time_ms_;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, time_for_heap_compaction_histogram,
-      new CustomCountHistogram("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000,
-                               50));
+      ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
   time_for_heap_compaction_histogram.Count(time_for_heap_compaction);
   start_compaction_time_ms_ = 0;
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
-      new CustomCountHistogram("BlinkGC.ObjectSizeFreedByHeapCompaction", 1,
-                               4 * 1024 * 1024, 50));
+      ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
   object_size_freed_by_heap_compaction.Count(freed_size_ / 1024);
 
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME

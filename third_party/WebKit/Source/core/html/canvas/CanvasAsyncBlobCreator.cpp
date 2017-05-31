@@ -81,10 +81,10 @@ CanvasAsyncBlobCreator::MimeType ConvertMimeTypeStringToEnum(
 
 void RecordIdleTaskStatusHistogram(
     CanvasAsyncBlobCreator::IdleTaskStatus status) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, to_blob_idle_task_status,
-      new EnumerationHistogram("Blink.Canvas.ToBlob.IdleTaskStatus",
-                               CanvasAsyncBlobCreator::kIdleTaskCount));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram,
+                                  to_blob_idle_task_status,
+                                  ("Blink.Canvas.ToBlob.IdleTaskStatus",
+                                   CanvasAsyncBlobCreator::kIdleTaskCount));
   to_blob_idle_task_status.Count(status);
 }
 
@@ -104,50 +104,41 @@ void RecordElapsedTimeHistogram(ElapsedTimeHistogramType type,
     if (mime_type == CanvasAsyncBlobCreator::kMimeTypePng) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_png_initiate_encoding_counter,
-          new CustomCountHistogram(
-              "Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", 0, 10000000,
-              50));
+          ("Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", 0, 10000000, 50));
       to_blob_png_initiate_encoding_counter.Count(elapsed_time * 1000000.0);
     } else if (mime_type == CanvasAsyncBlobCreator::kMimeTypeJpeg) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_jpeg_initiate_encoding_counter,
-          new CustomCountHistogram(
-              "Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", 0, 10000000,
-              50));
+          ("Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", 0, 10000000, 50));
       to_blob_jpeg_initiate_encoding_counter.Count(elapsed_time * 1000000.0);
     }
   } else if (type == kIdleEncodeDuration) {
     if (mime_type == CanvasAsyncBlobCreator::kMimeTypePng) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_png_idle_encode_counter,
-          new CustomCountHistogram("Blink.Canvas.ToBlob.IdleEncodeDuration.PNG",
-                                   0, 10000000, 50));
+          ("Blink.Canvas.ToBlob.IdleEncodeDuration.PNG", 0, 10000000, 50));
       to_blob_png_idle_encode_counter.Count(elapsed_time * 1000000.0);
     } else if (mime_type == CanvasAsyncBlobCreator::kMimeTypeJpeg) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_jpeg_idle_encode_counter,
-          new CustomCountHistogram(
-              "Blink.Canvas.ToBlob.IdleEncodeDuration.JPEG", 0, 10000000, 50));
+          ("Blink.Canvas.ToBlob.IdleEncodeDuration.JPEG", 0, 10000000, 50));
       to_blob_jpeg_idle_encode_counter.Count(elapsed_time * 1000000.0);
     }
   } else if (type == kToBlobDuration) {
     if (mime_type == CanvasAsyncBlobCreator::kMimeTypePng) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_png_counter,
-          new CustomCountHistogram("Blink.Canvas.ToBlobDuration.PNG", 0,
-                                   10000000, 50));
+          ("Blink.Canvas.ToBlobDuration.PNG", 0, 10000000, 50));
       to_blob_png_counter.Count(elapsed_time * 1000000.0);
     } else if (mime_type == CanvasAsyncBlobCreator::kMimeTypeJpeg) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_jpeg_counter,
-          new CustomCountHistogram("Blink.Canvas.ToBlobDuration.JPEG", 0,
-                                   10000000, 50));
+          ("Blink.Canvas.ToBlobDuration.JPEG", 0, 10000000, 50));
       to_blob_jpeg_counter.Count(elapsed_time * 1000000.0);
     } else if (mime_type == CanvasAsyncBlobCreator::kMimeTypeWebp) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, to_blob_webp_counter,
-          new CustomCountHistogram("Blink.Canvas.ToBlobDuration.WEBP", 0,
-                                   10000000, 50));
+          ("Blink.Canvas.ToBlobDuration.WEBP", 0, 10000000, 50));
       to_blob_webp_counter.Count(elapsed_time * 1000000.0);
     }
   }

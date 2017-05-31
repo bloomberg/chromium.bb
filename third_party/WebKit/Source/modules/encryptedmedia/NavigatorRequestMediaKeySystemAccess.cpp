@@ -244,8 +244,7 @@ void MediaKeySystemAccessInitializer::CheckVideoCapabilityRobustness() const {
   if (has_video_capabilities) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, empty_robustness_histogram,
-        new EnumerationHistogram(
-            "Media.EME.Widevine.VideoCapability.HasEmptyRobustness", 2));
+        ("Media.EME.Widevine.VideoCapability.HasEmptyRobustness", 2));
     empty_robustness_histogram.Count(has_empty_robustness);
   }
 

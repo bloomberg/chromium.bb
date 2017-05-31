@@ -62,8 +62,7 @@ String NavigatorID::platform() {
   return "Win32";
 #else  // Unix-like systems
   struct utsname osname;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<String>, platform_name,
-                                  new ThreadSpecific<String>());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<String>, platform_name, ());
   if (platform_name->IsNull()) {
     *platform_name =
         String(uname(&osname) >= 0 ? String(osname.sysname) + String(" ") +

@@ -22,10 +22,10 @@
 
 #define NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, type_name, value, max) \
   case NotificationImageLoader::Type::k##type_name: {                         \
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                          \
-        CustomCountHistogram, metric##type_name##Histogram,                   \
-        new CustomCountHistogram("Notifications." #metric "." #type_name,     \
-                                 1 /* min */, max, 50 /* buckets */));        \
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,                     \
+                                    metric##type_name##Histogram,             \
+                                    ("Notifications." #metric "." #type_name, \
+                                     1 /* min */, max, 50 /* buckets */));    \
     metric##type_name##Histogram.Count(value);                                \
     break;                                                                    \
   }

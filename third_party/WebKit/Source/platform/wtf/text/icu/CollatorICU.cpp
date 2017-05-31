@@ -44,7 +44,7 @@ namespace WTF {
 static UCollator* g_cached_collator;
 static char g_cached_equivalent_locale[Collator::kUlocFullnameCapacity];
 static Mutex& CachedCollatorMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 

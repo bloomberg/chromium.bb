@@ -100,8 +100,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   //     17+  -> overflow bucket.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, notification_count_histogram,
-      new EnumerationHistogram(
-          "Notifications.PersistentNotificationActionCount", 17));
+      ("Notifications.PersistentNotificationActionCount", 17));
   notification_count_histogram.Count(options.actions().size());
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);

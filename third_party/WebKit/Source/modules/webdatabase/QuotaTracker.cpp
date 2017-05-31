@@ -39,7 +39,7 @@
 namespace blink {
 
 QuotaTracker& QuotaTracker::Instance() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(QuotaTracker, tracker, new QuotaTracker);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(QuotaTracker, tracker, ());
   return tracker;
 }
 

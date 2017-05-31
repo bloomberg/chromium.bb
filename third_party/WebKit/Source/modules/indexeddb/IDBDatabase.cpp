@@ -592,8 +592,7 @@ ExecutionContext* IDBDatabase::GetExecutionContext() const {
 void IDBDatabase::RecordApiCallsHistogram(IndexedDatabaseMethods method) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, api_calls_histogram,
-      new EnumerationHistogram("WebCore.IndexedDB.FrontEndAPICalls",
-                               kIDBMethodsMax));
+      ("WebCore.IndexedDB.FrontEndAPICalls", kIDBMethodsMax));
   api_calls_histogram.Count(method);
 }
 

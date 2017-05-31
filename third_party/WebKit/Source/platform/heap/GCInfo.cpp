@@ -21,7 +21,7 @@ void GCInfoTable::EnsureGCInfoIndex(const GCInfo* gc_info,
   DCHECK(gc_info);
   DCHECK(gc_info_index_slot);
   // Keep a global GCInfoTable lock while allocating a new slot.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   MutexLocker locker(mutex);
 
   // If more than one thread ends up allocating a slot for

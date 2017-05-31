@@ -31,9 +31,8 @@ namespace {
 static EnumerationHistogram& TokenValidationResultHistogram() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, histogram,
-      new EnumerationHistogram(
-          "OriginTrials.ValidationResult",
-          static_cast<int>(WebOriginTrialTokenStatus::kLast)));
+      ("OriginTrials.ValidationResult",
+       static_cast<int>(WebOriginTrialTokenStatus::kLast)));
   return histogram;
 }
 

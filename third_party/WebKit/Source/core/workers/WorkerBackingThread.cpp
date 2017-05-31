@@ -21,7 +21,7 @@
 namespace blink {
 
 static Mutex& IsolatesMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 

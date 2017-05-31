@@ -1364,9 +1364,8 @@ void XMLHttpRequest::SetRequestHeaderInternal(const AtomicString& name,
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, header_value_category_histogram,
-      new EnumerationHistogram(
-          "Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230",
-          kHeaderValueCategoryByRFC7230End));
+      ("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230",
+       kHeaderValueCategoryByRFC7230End));
   header_value_category_histogram.Count(header_value_category);
 }
 

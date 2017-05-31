@@ -47,8 +47,7 @@ unsigned DOMWrapperWorld::number_of_non_main_worlds_in_main_thread_ = 0;
 // (see https://crbug.com/704778#c6).
 using WorldMap = HashMap<int, DOMWrapperWorld*>;
 static WorldMap& GetWorldMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WorldMap>, map,
-                                  new ThreadSpecific<WorldMap>);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WorldMap>, map, ());
   return *map;
 }
 
@@ -262,8 +261,7 @@ void DOMWrapperWorld::WeakCallbackForDOMObjectHolder(
 
 // static
 int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<int>, next_world_id,
-                                  new ThreadSpecific<int>);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<int>, next_world_id, ());
   if (!next_world_id.IsSet())
     *next_world_id = WorldId::kUnspecifiedWorldIdStart;
   switch (world_type) {

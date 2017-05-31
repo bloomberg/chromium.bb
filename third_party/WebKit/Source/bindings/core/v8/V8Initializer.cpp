@@ -407,8 +407,8 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
 #if DCHECK_IS_ON()
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(int64_t, process_total, new int64_t(0));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  static int64_t process_total = 0;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   {
     MutexLocker locker(mutex);
 

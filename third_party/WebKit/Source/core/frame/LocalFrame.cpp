@@ -258,8 +258,7 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
 using FrameInitCallbackVector = WTF::Vector<LocalFrame::FrameInitCallback>;
 FrameInitCallbackVector& GetInitializationVector() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(FrameInitCallbackVector,
-                                  initialization_vector,
-                                  new FrameInitCallbackVector());
+                                  initialization_vector, ());
   return initialization_vector;
 }
 
