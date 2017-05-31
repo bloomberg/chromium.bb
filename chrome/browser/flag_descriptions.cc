@@ -171,8 +171,13 @@ const char kEnableHttpFormWarningDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
-
 const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
+const char kMarkHttpAsNonSecureAfterEditing[] =
+    "Warn on HTTP after editing forms";
+const char kMarkHttpAsNonSecureWhileIncognito[] =
+    "Warn on HTTP while in Incognito mode";
+const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
+    "Warn on HTTP while in Incognito mode or after editing forms";
 
 //  Material design of the Incognito NTP.
 
