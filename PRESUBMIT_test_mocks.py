@@ -27,6 +27,7 @@ class MockInputApi(object):
     self.files = []
     self.is_committing = False
     self.change = MockChange([])
+    self.presubmit_local_path = os.path.dirname(__file__)
 
   def AffectedFiles(self, file_filter=None, include_deletes=False):
     return self.files
@@ -38,7 +39,7 @@ class MockInputApi(object):
     return self.files
 
   def PresubmitLocalPath(self):
-    return os.path.dirname(__file__)
+    return self.presubmit_local_path
 
   def ReadFile(self, filename, mode='rU'):
     if hasattr(filename, 'AbsoluteLocalPath'):
