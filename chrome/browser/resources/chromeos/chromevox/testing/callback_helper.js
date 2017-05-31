@@ -40,7 +40,7 @@ CallbackHelper.prototype = {
     return function() {
       savedArgs.arguments = Array.prototype.slice.call(arguments);
       runAll.invoke();
-    }
+    };
   }
 };
 

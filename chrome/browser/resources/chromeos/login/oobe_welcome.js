@@ -139,7 +139,7 @@ Polymer({
   hideAllScreens_: function() {
     this.$.welcomeScreen.hidden = true;
 
-    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog')
+    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
     for (var i = 0; i < screens.length; ++i) {
       screens[i].hidden = true;
     }
@@ -164,7 +164,7 @@ Polymer({
    * @private
    */
   getActiveScreen_: function() {
-    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog')
+    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
     for (var i = 0; i < screens.length; ++i) {
       if (!screens[i].hidden)
         return screens[i];

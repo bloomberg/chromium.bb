@@ -836,7 +836,7 @@ function showHideCallback(sectionId, buttonId, requestFunction) {
       $(sectionId).hidden = true;
       $(buttonId).textContent = loadTimeData.getString('showButton');
     }
-  }
+  };
 }
 
 var powerUI = {

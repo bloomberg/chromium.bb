@@ -25,10 +25,10 @@ cvox.ChromeVoxHTMLMediaWidget = function(mediaElem, tts){
 
   this.keyListener_ = function(evt) {
     self.eventHandler_(evt);
-  }
+  };
   this.blurListener_ = function(evt) {
     self.shutdown();
-  }
+  };
 
   this.mediaElem_.addEventListener('keydown', this.keyListener_, false);
   this.mediaElem_.addEventListener('keyup', this.keyListener_, false);

@@ -400,7 +400,7 @@ cr.define('value_control', function() {
             'Retry', this.writeValue_.bind(this));
       }.bind(this));
     },
-  }
+  };
 
   return {
     ValueControl: ValueControl,

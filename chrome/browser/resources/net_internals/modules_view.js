@@ -107,7 +107,7 @@ var ModulesView = (function() {
   ModulesView.getLayeredServiceProviderProtocolType =
       function(serviceProvider) {
     return tryGetValueWithKey(PROTOCOL_TYPE, serviceProvider.socket_protocol);
-  }
+  };
 
   var NAMESPACE_PROVIDER_PTYPE = {
     '12': 'NS_DNS',

@@ -126,7 +126,7 @@ cr.define('cr.ui', function() {
     slice: function(opt_from, opt_to) {
       var arr = this.array_;
       return this.indexes_.slice(opt_from, opt_to).map(function(index) {
-        return arr[index]
+        return arr[index];
       });
     },
 
@@ -399,7 +399,7 @@ cr.define('cr.ui', function() {
       } else {
         return function(a, b) {
           return defaultValuesCompareFunction.call(null, a[field], b[field]);
-        }
+        };
       }
     },
 

@@ -248,7 +248,7 @@ CertificateManagerWebUITest.prototype = {
                                'policy': false }],
                }],
            ]
-          ].forEach(CertificateManager.onPopulateTree)}));
+          ].forEach(CertificateManager.onPopulateTree);}));
   },
 };
 

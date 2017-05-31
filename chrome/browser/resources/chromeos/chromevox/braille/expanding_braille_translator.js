@@ -152,7 +152,7 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
 
   function finish() {
     var totalCells = chunks.reduce(
-        function(accum, chunk) { return accum + chunk.cells.byteLength}, 0);
+        function(accum, chunk) { return accum + chunk.cells.byteLength;}, 0);
     var cells = new Uint8Array(totalCells);
     var cellPos = 0;
     var textToBraille = [];

@@ -27,14 +27,14 @@ cvox.ChromeVoxEventSuspender.suspendLevel_ = 0;
  */
 cvox.ChromeVoxEventSuspender.enterSuspendEvents = function() {
   cvox.ChromeVoxEventSuspender.suspendLevel_ += 1;
-}
+};
 
 /**
  * Exits a (nested) suspended state.
  */
 cvox.ChromeVoxEventSuspender.exitSuspendEvents = function() {
   cvox.ChromeVoxEventSuspender.suspendLevel_ -= 1;
-}
+};
 
 /**
  * Returns true if events are currently suspended.

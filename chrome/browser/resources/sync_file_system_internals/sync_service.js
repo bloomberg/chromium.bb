@@ -23,7 +23,7 @@ function getServiceStatus() {
  */
 SyncService.onGetServiceStatus = function(statusString) {
   $('service-status').textContent = statusString;
-}
+};
 
 /**
  * Request Google Drive Notification Source. e.g. XMPP or polling.
@@ -38,7 +38,7 @@ function getNotificationSource() {
  */
 SyncService.onGetNotificationSource = function(sourceString) {
   $('notification-source').textContent = sourceString;
-}
+};
 
 // Keeps track of the last log event seen so it's not reprinted.
 var lastLogEventId = -1;
@@ -76,7 +76,7 @@ SyncService.onGetLog = function(logEntries) {
 
     lastLogEventId = logEntry.id;
   }
-}
+};
 
 /**
  * Get initial sync service values and set listeners to get updated values.

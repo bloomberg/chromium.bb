@@ -78,7 +78,7 @@ DumpDatabase.onGetDatabaseDump = function(databaseDump) {
     div.appendChild(table);
     placeholder.appendChild(div);
   }
-}
+};
 
 function main() {
   getDatabaseDump();
