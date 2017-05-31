@@ -19,8 +19,8 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/data_pipe_control_message.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/edk/system/ports_message.h"
 #include "mojo/edk/system/request_context.h"
-#include "mojo/edk/system/user_message_impl.h"
 #include "mojo/public/c/system/data_pipe.h"
 
 namespace mojo {
@@ -476,21 +476,21 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
              << " [control_port=" << control_port_.name() << "]";
     peer_closed_ = true;
   } else if (rv == ports::OK && port_status.has_messages && !in_transit_) {
-    std::unique_ptr<ports::UserMessageEvent> message_event;
+    ports::ScopedMessage message;
     do {
-      int rv = node_controller_->node()->GetMessage(control_port_,
-                                                    &message_event, nullptr);
+      int rv = node_controller_->node()->GetMessage(
+          control_port_, &message, nullptr);
       if (rv != ports::OK)
         peer_closed_ = true;
-      if (message_event) {
-        auto* message = message_event->GetMessage<UserMessageImpl>();
-        if (message->user_payload_size() < sizeof(DataPipeControlMessage)) {
+      if (message) {
+        if (message->num_payload_bytes() < sizeof(DataPipeControlMessage)) {
           peer_closed_ = true;
           break;
         }
 
         const DataPipeControlMessage* m =
-            static_cast<const DataPipeControlMessage*>(message->user_payload());
+            static_cast<const DataPipeControlMessage*>(
+                message->payload_bytes());
 
         if (m->command != DataPipeCommand::DATA_WAS_READ) {
           DLOG(ERROR) << "Unexpected message from consumer.";
@@ -510,7 +510,7 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
 
         available_capacity_ += m->num_bytes;
       }
-    } while (message_event);
+    } while (message);
   }
 
   if (peer_closed_ != was_peer_closed ||

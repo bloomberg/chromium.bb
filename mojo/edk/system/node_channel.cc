@@ -30,16 +30,16 @@ enum class MessageType : uint32_t {
   ADD_BROKER_CLIENT,
   BROKER_CLIENT_ADDED,
   ACCEPT_BROKER_CLIENT,
-  EVENT_MESSAGE,
+  PORTS_MESSAGE,
   REQUEST_PORT_MERGE,
   REQUEST_INTRODUCTION,
   INTRODUCE,
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  RELAY_EVENT_MESSAGE,
+  RELAY_PORTS_MESSAGE,
 #endif
-  BROADCAST_EVENT,
+  BROADCAST,
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  EVENT_MESSAGE_FROM_RELAY,
+  PORTS_MESSAGE_FROM_RELAY,
 #endif
   ACCEPT_PEER,
 };
@@ -113,12 +113,12 @@ struct IntroductionData {
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 // This struct is followed by the full payload of a message to be relayed.
-struct RelayEventMessageData {
+struct RelayPortsMessageData {
   ports::NodeName destination;
 };
 
 // This struct is followed by the full payload of a relayed message.
-struct EventMessageFromRelayData {
+struct PortsMessageFromRelayData {
   ports::NodeName source;
 };
 #endif
@@ -167,19 +167,17 @@ scoped_refptr<NodeChannel> NodeChannel::Create(
 }
 
 // static
-Channel::MessagePtr NodeChannel::CreateEventMessage(size_t payload_size,
+Channel::MessagePtr NodeChannel::CreatePortsMessage(size_t payload_size,
                                                     void** payload,
                                                     size_t num_handles) {
-  return CreateMessage(MessageType::EVENT_MESSAGE, payload_size, num_handles,
+  return CreateMessage(MessageType::PORTS_MESSAGE, payload_size, num_handles,
                        payload);
 }
 
 // static
-void NodeChannel::GetEventMessageData(Channel::Message* message,
+void NodeChannel::GetPortsMessageData(Channel::Message* message,
                                       void** data,
                                       size_t* num_data_bytes) {
-  // NOTE: OnChannelMessage guarantees that we never accept a Channel::Message
-  // with a payload of fewer than |sizeof(Header)| bytes.
   *data = reinterpret_cast<Header*>(message->mutable_payload()) + 1;
   *num_data_bytes = message->payload_size() - sizeof(Header);
 }
@@ -344,6 +342,10 @@ void NodeChannel::AcceptBrokerClient(const ports::NodeName& broker_name,
   WriteChannelMessage(std::move(message));
 }
 
+void NodeChannel::PortsMessage(Channel::MessagePtr message) {
+  WriteChannelMessage(std::move(message));
+}
+
 void NodeChannel::RequestPortMerge(const ports::PortName& connector_port_name,
                                    const std::string& token) {
   RequestPortMergeData* data;
@@ -376,21 +378,17 @@ void NodeChannel::Introduce(const ports::NodeName& name,
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::SendChannelMessage(Channel::MessagePtr message) {
-  WriteChannelMessage(std::move(message));
-}
-
 void NodeChannel::Broadcast(Channel::MessagePtr message) {
   DCHECK(!message->has_handles());
   void* data;
   Channel::MessagePtr broadcast_message = CreateMessage(
-      MessageType::BROADCAST_EVENT, message->data_num_bytes(), 0, &data);
+      MessageType::BROADCAST, message->data_num_bytes(), 0, &data);
   memcpy(data, message->data(), message->data_num_bytes());
   WriteChannelMessage(std::move(broadcast_message));
 }
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
+void NodeChannel::RelayPortsMessage(const ports::NodeName& destination,
                                     Channel::MessagePtr message) {
 #if defined(OS_WIN)
   DCHECK(message->has_handles());
@@ -398,10 +396,10 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // Note that this is only used on Windows, and on Windows all platform
   // handles are included in the message data. We blindly copy all the data
   // here and the relay node (the parent) will duplicate handles as needed.
-  size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
-  RelayEventMessageData* data;
-  Channel::MessagePtr relay_message =
-      CreateMessage(MessageType::RELAY_EVENT_MESSAGE, num_bytes, 0, &data);
+  size_t num_bytes = sizeof(RelayPortsMessageData) + message->data_num_bytes();
+  RelayPortsMessageData* data;
+  Channel::MessagePtr relay_message = CreateMessage(
+      MessageType::RELAY_PORTS_MESSAGE, num_bytes, 0, &data);
   data->destination = destination;
   memcpy(data + 1, message->data(), message->data_num_bytes());
 
@@ -421,10 +419,10 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // message may contain fds which need to be attached to the outer message so
   // that they can be transferred to the broker.
   ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
-  size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
-  RelayEventMessageData* data;
+  size_t num_bytes = sizeof(RelayPortsMessageData) + message->data_num_bytes();
+  RelayPortsMessageData* data;
   Channel::MessagePtr relay_message = CreateMessage(
-      MessageType::RELAY_EVENT_MESSAGE, num_bytes, handles->size(), &data);
+      MessageType::RELAY_PORTS_MESSAGE, num_bytes, handles->size(), &data);
   data->destination = destination;
   memcpy(data + 1, message->data(), message->data_num_bytes());
   relay_message->SetHandles(std::move(handles));
@@ -433,14 +431,14 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   WriteChannelMessage(std::move(relay_message));
 }
 
-void NodeChannel::EventMessageFromRelay(const ports::NodeName& source,
+void NodeChannel::PortsMessageFromRelay(const ports::NodeName& source,
                                         Channel::MessagePtr message) {
-  size_t num_bytes =
-      sizeof(EventMessageFromRelayData) + message->payload_size();
-  EventMessageFromRelayData* data;
-  Channel::MessagePtr relayed_message =
-      CreateMessage(MessageType::EVENT_MESSAGE_FROM_RELAY, num_bytes,
-                    message->num_handles(), &data);
+  size_t num_bytes = sizeof(PortsMessageFromRelayData) +
+      message->payload_size();
+  PortsMessageFromRelayData* data;
+  Channel::MessagePtr relayed_message = CreateMessage(
+      MessageType::PORTS_MESSAGE_FROM_RELAY, num_bytes, message->num_handles(),
+      &data);
   data->source = source;
   if (message->payload_size())
     memcpy(data + 1, message->payload(), message->payload_size());
@@ -506,7 +504,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // If we're not the root, receive any mach ports from the message. If we're
   // the root, the only message containing mach ports should be a
-  // RELAY_EVENT_MESSAGE.
+  // RELAY_PORTS_MESSAGE.
   {
     MachPortRelay* relay = delegate_->GetMachPortRelay();
     if (handles && !relay) {
@@ -607,13 +605,13 @@ void NodeChannel::OnChannelMessage(const void* payload,
       break;
     }
 
-    case MessageType::EVENT_MESSAGE: {
+    case MessageType::PORTS_MESSAGE: {
       size_t num_handles = handles ? handles->size() : 0;
       Channel::MessagePtr message(
           new Channel::Message(payload_size, num_handles));
       message->SetHandles(std::move(handles));
       memcpy(message->mutable_payload(), payload, payload_size);
-      delegate_->OnEventMessage(remote_node_name_, std::move(message));
+      delegate_->OnPortsMessage(remote_node_name_, std::move(message));
       return;
     }
 
@@ -661,16 +659,16 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-    case MessageType::RELAY_EVENT_MESSAGE: {
+    case MessageType::RELAY_PORTS_MESSAGE: {
       base::ProcessHandle from_process;
       {
         base::AutoLock lock(remote_process_handle_lock_);
         from_process = remote_process_handle_;
       }
-      const RelayEventMessageData* data;
+      const RelayPortsMessageData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
         // Don't try to relay an empty message.
-        if (payload_size <= sizeof(Header) + sizeof(RelayEventMessageData))
+        if (payload_size <= sizeof(Header) + sizeof(RelayPortsMessageData))
           break;
 
         const void* message_start = data + 1;
@@ -698,7 +696,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
           }
         }
   #endif
-        delegate_->OnRelayEventMessage(remote_node_name_, from_process,
+        delegate_->OnRelayPortsMessage(remote_node_name_, from_process,
                                        data->destination, std::move(message));
         return;
       }
@@ -706,7 +704,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 #endif
 
-    case MessageType::BROADCAST_EVENT: {
+    case MessageType::BROADCAST: {
       if (payload_size <= sizeof(Header))
         break;
       const void* data = static_cast<const void*>(
@@ -722,8 +720,8 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-    case MessageType::EVENT_MESSAGE_FROM_RELAY:
-      const EventMessageFromRelayData* data;
+    case MessageType::PORTS_MESSAGE_FROM_RELAY:
+      const PortsMessageFromRelayData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
         size_t num_bytes = payload_size - sizeof(*data);
         if (num_bytes < sizeof(Header))
@@ -736,8 +734,8 @@ void NodeChannel::OnChannelMessage(const void* payload,
         message->SetHandles(std::move(handles));
         if (num_bytes)
           memcpy(message->mutable_payload(), data + 1, num_bytes);
-        delegate_->OnEventMessageFromRelay(remote_node_name_, data->source,
-                                           std::move(message));
+        delegate_->OnPortsMessageFromRelay(
+            remote_node_name_, data->source, std::move(message));
         return;
       }
       break;
@@ -823,7 +821,7 @@ void NodeChannel::ProcessPendingMessagesWithMachPorts() {
     ports::NodeName destination = pending_relays.front().first;
     Channel::MessagePtr message = std::move(pending_relays.front().second);
     pending_relays.pop();
-    delegate_->OnRelayEventMessage(remote_node_name_, remote_process_handle,
+    delegate_->OnRelayPortsMessage(remote_node_name_, remote_process_handle,
                                    destination, std::move(message));
   }
 }
@@ -833,7 +831,7 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
 #if defined(OS_WIN)
   // Map handles to the destination process. Note: only messages from a
   // privileged node should contain handles on Windows. If an unprivileged
-  // node needs to send handles, it should do so via RelayEventMessage which
+  // node needs to send handles, it should do so via RelayPortsMessage which
   // stashes the handles in the message in such a way that they go undetected
   // here (they'll be unpacked and duplicated by a privileged parent.)
 

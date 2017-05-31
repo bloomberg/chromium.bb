@@ -9,17 +9,17 @@ namespace mojo {
 namespace edk {
 namespace ports {
 
-class UserMessageEvent;
+class Message;
 
-// An interface which can be implemented to user message events according to
+// An interface which can be implemented to filter port messages according to
 // arbitrary policy.
 class MessageFilter {
  public:
   virtual ~MessageFilter() {}
 
-  // Returns true if |message| should be accepted by whomever is applying this
+  // Returns true of |message| should be accepted by whomever is applying this
   // filter. See MessageQueue::GetNextMessage(), for example.
-  virtual bool Match(const UserMessageEvent& message) = 0;
+  virtual bool Match(const Message& message) = 0;
 };
 
 }  // namespace ports

@@ -26,7 +26,6 @@
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
-#include "mojo/edk/system/ports/user_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -36,35 +35,36 @@ namespace test {
 
 namespace {
 
-// TODO(rockot): Remove this unnecessary alias.
-using ScopedMessage = std::unique_ptr<UserMessageEvent>;
-
-class TestMessage : public UserMessage {
- public:
-  static const TypeInfo kUserMessageTypeInfo;
-
-  TestMessage(const base::StringPiece& payload)
-      : UserMessage(&kUserMessageTypeInfo), payload_(payload) {}
-  ~TestMessage() override {}
-
-  const std::string& payload() const { return payload_; }
-
- private:
-  std::string payload_;
-};
-
-const UserMessage::TypeInfo TestMessage::kUserMessageTypeInfo = {};
-
-ScopedMessage NewUserMessageEvent(const base::StringPiece& payload,
-                                  size_t num_ports) {
-  auto event = base::MakeUnique<UserMessageEvent>(num_ports);
-  event->AttachMessage(base::MakeUnique<TestMessage>(payload));
-  return event;
-}
-
 bool MessageEquals(const ScopedMessage& message, const base::StringPiece& s) {
-  return message->GetMessage<TestMessage>()->payload() == s;
+  return !strcmp(static_cast<const char*>(message->payload_bytes()), s.data());
 }
+
+class TestMessage : public Message {
+ public:
+  static ScopedMessage NewUserMessage(size_t num_payload_bytes,
+                                      size_t num_ports) {
+    return ScopedMessage(new TestMessage(num_payload_bytes, num_ports));
+  }
+
+  TestMessage(size_t num_payload_bytes, size_t num_ports)
+      : Message(num_payload_bytes, num_ports) {
+    start_ = new char[num_header_bytes_ + num_ports_bytes_ + num_payload_bytes];
+    InitializeUserMessageHeader(start_);
+  }
+
+  TestMessage(size_t num_header_bytes,
+              size_t num_payload_bytes,
+              size_t num_ports_bytes)
+      : Message(num_header_bytes,
+                num_payload_bytes,
+                num_ports_bytes) {
+    start_ = new char[num_header_bytes + num_payload_bytes + num_ports_bytes];
+  }
+
+  ~TestMessage() override {
+    delete[] start_;
+  }
+};
 
 class TestNode;
 
@@ -73,10 +73,10 @@ class MessageRouter {
   virtual ~MessageRouter() {}
 
   virtual void GeneratePortName(PortName* name) = 0;
-  virtual void ForwardEvent(TestNode* from_node,
-                            const NodeName& node_name,
-                            ScopedEvent event) = 0;
-  virtual void BroadcastEvent(TestNode* from_node, ScopedEvent event) = 0;
+  virtual void ForwardMessage(TestNode* from_node,
+                              const NodeName& node_name,
+                              ScopedMessage message) = 0;
+  virtual void BroadcastMessage(TestNode* from_node, ScopedMessage message) = 0;
 };
 
 class TestNode : public NodeDelegate {
@@ -85,11 +85,13 @@ class TestNode : public NodeDelegate {
       : node_name_(id, 1),
         node_(node_name_, this),
         node_thread_(base::StringPrintf("Node %" PRIu64 " thread", id)),
-        events_available_event_(
+        messages_available_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        idle_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                    base::WaitableEvent::InitialState::SIGNALED) {}
+        idle_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::SIGNALED) {
+  }
 
   ~TestNode() override {
     StopWhenIdle();
@@ -106,10 +108,10 @@ class TestNode : public NodeDelegate {
   bool IsIdle() {
     base::AutoLock lock(lock_);
     return started_ && !dispatching_ &&
-           (incoming_events_.empty() || (block_on_event_ && blocked_));
+        (incoming_messages_.empty() || (block_on_event_ && blocked_));
   }
 
-  void BlockOnEvent(Event::Type type) {
+  void BlockOnEvent(EventType type) {
     base::AutoLock lock(lock_);
     blocked_event_type_ = type;
     block_on_event_ = true;
@@ -118,7 +120,7 @@ class TestNode : public NodeDelegate {
   void Unblock() {
     base::AutoLock lock(lock_);
     block_on_event_ = false;
-    events_available_event_.Signal();
+    messages_available_event_.Signal();
   }
 
   void Start(MessageRouter* router) {
@@ -126,27 +128,32 @@ class TestNode : public NodeDelegate {
     node_thread_.Start();
     node_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&TestNode::ProcessEvents, base::Unretained(this)));
+        base::Bind(&TestNode::ProcessMessages, base::Unretained(this)));
   }
 
   void StopWhenIdle() {
     base::AutoLock lock(lock_);
     should_quit_ = true;
-    events_available_event_.Signal();
+    messages_available_event_.Signal();
   }
 
-  void WakeUp() { events_available_event_.Signal(); }
+  void WakeUp() { messages_available_event_.Signal(); }
 
   int SendStringMessage(const PortRef& port, const std::string& s) {
-    return node_.SendUserMessage(port, NewUserMessageEvent(s, 0));
+    size_t size = s.size() + 1;
+    ScopedMessage message = TestMessage::NewUserMessage(size, 0);
+    memcpy(message->mutable_payload_bytes(), s.data(), size);
+    return node_.SendMessage(port, std::move(message));
   }
 
   int SendStringMessageWithPort(const PortRef& port,
                                 const std::string& s,
                                 const PortName& sent_port_name) {
-    auto event = NewUserMessageEvent(s, 1);
-    event->ports()[0] = sent_port_name;
-    return node_.SendUserMessage(port, std::move(event));
+    size_t size = s.size() + 1;
+    ScopedMessage message = TestMessage::NewUserMessage(size, 1);
+    memcpy(message->mutable_payload_bytes(), s.data(), size);
+    message->mutable_ports()[0] = sent_port_name;
+    return node_.SendMessage(port, std::move(message));
   }
 
   int SendStringMessageWithPort(const PortRef& port,
@@ -180,14 +187,14 @@ class TestNode : public NodeDelegate {
     return true;
   }
 
-  void EnqueueEvent(ScopedEvent event) {
+  void EnqueueMessage(ScopedMessage message) {
     idle_event_.Reset();
 
     // NOTE: This may be called from ForwardMessage and thus must not reenter
     // |node_|.
     base::AutoLock lock(lock_);
-    incoming_events_.emplace(std::move(event));
-    events_available_event_.Signal();
+    incoming_messages_.emplace(std::move(message));
+    messages_available_event_.Signal();
   }
 
   void GenerateRandomPortName(PortName* port_name) override {
@@ -195,7 +202,12 @@ class TestNode : public NodeDelegate {
     router_->GeneratePortName(port_name);
   }
 
-  void ForwardEvent(const NodeName& node_name, ScopedEvent event) override {
+  void AllocMessage(size_t num_header_bytes, ScopedMessage* message) override {
+    message->reset(new TestMessage(num_header_bytes, 0, 0));
+  }
+
+  void ForwardMessage(const NodeName& node_name,
+                      ScopedMessage message) override {
     {
       base::AutoLock lock(lock_);
       if (drop_messages_) {
@@ -203,18 +215,19 @@ class TestNode : public NodeDelegate {
                  << node_name_ << " to " << node_name;
 
         base::AutoUnlock unlock(lock_);
-        ClosePortsInEvent(event.get());
+        ClosePortsInMessage(message.get());
         return;
       }
     }
 
     DCHECK(router_);
-    DVLOG(1) << "ForwardEvent from node " << node_name_ << " to " << node_name;
-    router_->ForwardEvent(this, node_name, std::move(event));
+    DVLOG(1) << "ForwardMessage from node "
+             << node_name_ << " to " << node_name;
+    router_->ForwardMessage(this, node_name, std::move(message));
   }
 
-  void BroadcastEvent(ScopedEvent event) override {
-    router_->BroadcastEvent(this, std::move(event));
+  void BroadcastMessage(ScopedMessage message) override {
+    router_->BroadcastMessage(this, std::move(message));
   }
 
   void PortStatusChanged(const PortRef& port) override {
@@ -235,44 +248,42 @@ class TestNode : public NodeDelegate {
     }
   }
 
-  void ClosePortsInEvent(Event* event) {
-    if (event->type() != Event::Type::kUserMessage)
-      return;
-
-    UserMessageEvent* message_event = static_cast<UserMessageEvent*>(event);
-    for (size_t i = 0; i < message_event->num_ports(); ++i) {
+  void ClosePortsInMessage(Message* message) {
+    for (size_t i = 0; i < message->num_ports(); ++i) {
       PortRef port;
-      ASSERT_EQ(OK, node_.GetPort(message_event->ports()[i], &port));
+      ASSERT_EQ(OK, node_.GetPort(message->ports()[i], &port));
       EXPECT_EQ(OK, node_.ClosePort(port));
     }
   }
 
  private:
-  void ProcessEvents() {
+  void ProcessMessages() {
     for (;;) {
-      events_available_event_.Wait();
+      messages_available_event_.Wait();
+
       base::AutoLock lock(lock_);
 
       if (should_quit_)
         return;
 
       dispatching_ = true;
-      while (!incoming_events_.empty()) {
+      while (!incoming_messages_.empty()) {
         if (block_on_event_ &&
-            incoming_events_.front()->type() == blocked_event_type_) {
+            GetEventHeader(*incoming_messages_.front())->type ==
+                blocked_event_type_) {
           blocked_ = true;
           // Go idle if we hit a blocked event type.
           break;
         } else {
           blocked_ = false;
         }
-        ScopedEvent event = std::move(incoming_events_.front());
-        incoming_events_.pop();
+        ScopedMessage message = std::move(incoming_messages_.front());
+        incoming_messages_.pop();
 
         // NOTE: AcceptMessage() can re-enter this object to call any of the
         // NodeDelegate interface methods.
         base::AutoUnlock unlock(lock_);
-        node_.AcceptEvent(std::move(event));
+        node_.AcceptMessage(std::move(message));
       }
 
       dispatching_ = false;
@@ -286,7 +297,7 @@ class TestNode : public NodeDelegate {
   MessageRouter* router_ = nullptr;
 
   base::Thread node_thread_;
-  base::WaitableEvent events_available_event_;
+  base::WaitableEvent messages_available_event_;
   base::WaitableEvent idle_event_;
 
   // Guards fields below.
@@ -298,8 +309,8 @@ class TestNode : public NodeDelegate {
   bool save_messages_ = false;
   bool blocked_ = false;
   bool block_on_event_ = false;
-  Event::Type blocked_event_type_;
-  std::queue<ScopedEvent> incoming_events_;
+  EventType blocked_event_type_;
+  std::queue<ScopedMessage> incoming_messages_;
   std::queue<ScopedMessage> saved_messages_;
 };
 
@@ -373,14 +384,14 @@ class PortsTest : public testing::Test, public MessageRouter {
     name->v2 = 0;
   }
 
-  void ForwardEvent(TestNode* from_node,
-                    const NodeName& node_name,
-                    ScopedEvent event) override {
+  void ForwardMessage(TestNode* from_node,
+                      const NodeName& node_name,
+                      ScopedMessage message) override {
     base::AutoLock global_lock(global_lock_);
     base::AutoLock lock(lock_);
     // Drop messages from nodes that have been removed.
     if (nodes_.find(from_node->name()) == nodes_.end()) {
-      from_node->ClosePortsInEvent(event.get());
+      from_node->ClosePortsInMessage(message.get());
       return;
     }
 
@@ -390,10 +401,10 @@ class PortsTest : public testing::Test, public MessageRouter {
       return;
     }
 
-    it->second->EnqueueEvent(std::move(event));
+    it->second->EnqueueMessage(std::move(message));
   }
 
-  void BroadcastEvent(TestNode* from_node, ScopedEvent event) override {
+  void BroadcastMessage(TestNode* from_node, ScopedMessage message) override {
     base::AutoLock global_lock(global_lock_);
     base::AutoLock lock(lock_);
 
@@ -406,7 +417,14 @@ class PortsTest : public testing::Test, public MessageRouter {
       // Broadcast doesn't deliver to the local node.
       if (node == from_node)
         continue;
-      node->EnqueueEvent(event->Clone());
+
+      // NOTE: We only need to support broadcast of events. Events have no
+      // payload or ports bytes.
+      ScopedMessage new_message(
+          new TestMessage(message->num_header_bytes(), 0, 0));
+      memcpy(new_message->mutable_header_bytes(), message->header_bytes(),
+             message->num_header_bytes());
+      node->EnqueueMessage(std::move(new_message));
     }
   }
 
@@ -574,7 +592,7 @@ TEST_F(PortsTest, LostConnectionToNode2) {
 
   EXPECT_EQ(OK, node1.node().GetMessage(x1, &message, nullptr));
   EXPECT_TRUE(message);
-  node1.ClosePortsInEvent(message.get());
+  node1.ClosePortsInMessage(message.get());
 
   EXPECT_EQ(OK, node1.node().ClosePort(x1));
 
@@ -620,7 +638,7 @@ TEST_F(PortsTest, LostConnectionToNodeWithSecondaryProxy) {
   // port A on node 0 will eventually also become aware of it.
 
   // Make sure node2 stops processing events when it encounters an ObserveProxy.
-  node2.BlockOnEvent(Event::Type::kObserveProxy);
+  node2.BlockOnEvent(EventType::kObserveProxy);
 
   EXPECT_EQ(OK, node1.SendStringMessageWithPort(C, ".", F));
   WaitForIdle();
@@ -669,7 +687,7 @@ TEST_F(PortsTest, LostConnectionToNodeWithLocalProxy) {
   EXPECT_EQ(OK, node0.node().CreatePortPair(&C, &D));
 
   // Send D but block node0 on an ObserveProxy event.
-  node0.BlockOnEvent(Event::Type::kObserveProxy);
+  node0.BlockOnEvent(EventType::kObserveProxy);
   EXPECT_EQ(OK, node0.SendStringMessageWithPort(A, ".", D));
 
   // node0 won't collapse the proxy but node1 will receive the message before
@@ -870,7 +888,7 @@ TEST_F(PortsTest, Delegation2) {
     bool got_hello = false;
     ScopedMessage message;
     while (node1.GetSavedMessage(&message)) {
-      node1.ClosePortsInEvent(message.get());
+      node1.ClosePortsInMessage(message.get());
       if (MessageEquals(message, "hello")) {
         got_hello = true;
         break;
@@ -1415,7 +1433,7 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
 
   // Block the merge from proceeding until we can do something stupid with port
   // C. This avoids the test logic racing with async merge logic.
-  node1.BlockOnEvent(Event::Type::kMergePort);
+  node1.BlockOnEvent(EventType::kMergePort);
 
   // Initiate the merge between B and C.
   EXPECT_EQ(OK, node0.node().MergePorts(B, node1.name(), C.name()));

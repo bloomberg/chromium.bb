@@ -10,7 +10,6 @@
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
-#include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 
 namespace mojo {
@@ -40,19 +39,17 @@ MojoResult Dispatcher::Arm(uint32_t* num_ready_contexts,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::WriteMessage(
-    std::unique_ptr<ports::UserMessageEvent> message,
-    MojoWriteMessageFlags flags) {
+MojoResult Dispatcher::WriteMessage(std::unique_ptr<MessageForTransit> message,
+                                    MojoWriteMessageFlags flags) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ReadMessage(
-    std::unique_ptr<ports::UserMessageEvent>* message,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    MojoReadMessageFlags flags,
-    bool read_any_size) {
+MojoResult Dispatcher::ReadMessage(std::unique_ptr<MessageForTransit>* message,
+                                   uint32_t* num_bytes,
+                                   MojoHandle* handles,
+                                   uint32_t* num_handles,
+                                   MojoReadMessageFlags flags,
+                                   bool read_any_size) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
