@@ -22,6 +22,10 @@
         max-height: 395px;  /** Enough height to show six entries. */
       }
 
+      #container {
+        overflow: visible;  /* Allow ripple to go outside of the row. */
+      }
+
       #container iron-list > settings-startup-url-entry:not(:first-of-type) {
         border-top: var(--settings-separator-line);
       }
