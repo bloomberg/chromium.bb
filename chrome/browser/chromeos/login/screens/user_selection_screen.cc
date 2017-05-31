@@ -399,10 +399,8 @@ void UserSelectionScreen::SetView(UserBoardView* view) {
   view_ = view;
 }
 
-void UserSelectionScreen::Init(const user_manager::UserList& users,
-                               bool show_guest) {
+void UserSelectionScreen::Init(const user_manager::UserList& users) {
   users_ = users;
-  show_guest_ = show_guest;
 
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector && !activity_detector->HasObserver(this))
@@ -540,7 +538,7 @@ void UserSelectionScreen::SendUserList() {
     users_list.Append(std::move(user_dict));
   }
 
-  handler_->LoadUsers(users_list, show_guest_);
+  handler_->LoadUsers(users_to_send, users_list);
 }
 
 void UserSelectionScreen::HandleGetUsers() {

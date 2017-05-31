@@ -27,7 +27,7 @@ class ChromeUserSelectionScreen
   ~ChromeUserSelectionScreen() override;
 
   // UserSelectionScreen:
-  void Init(const user_manager::UserList& users, bool show_guest) override;
+  void Init(const user_manager::UserList& users) override;
   void SendUserList() override;
 
   // policy::DeviceLocalAccountPolicyService::Observer:

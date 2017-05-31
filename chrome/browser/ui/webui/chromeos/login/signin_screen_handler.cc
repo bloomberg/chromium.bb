@@ -722,7 +722,7 @@ void SigninScreenHandler::ShowImpl() {
     OnShowAddUser();
   } else {
     // Populates account picker. Animation is turned off for now until we
-    // figure out how to make it fast enough.
+    // figure out how to make it fast enough. This will call LoadUsers.
     delegate_->HandleGetUsers();
 
     // Reset Caps Lock state when login screen is shown.
@@ -1339,8 +1339,8 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
     delegate_->ShowKioskAutolaunchScreen();
 }
 
-void SigninScreenHandler::LoadUsers(const base::ListValue& users_list,
-                                    bool showGuest) {
+void SigninScreenHandler::LoadUsers(const user_manager::UserList& users,
+                                    const base::ListValue& users_list) {
   CallJSOrDefer("login.AccountPickerScreen.loadUsers", users_list,
                 delegate_->IsShowGuest());
 }
