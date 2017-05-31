@@ -531,6 +531,14 @@ void LocalFrame::DocumentAttached() {
     has_received_user_gesture_ = false;
 }
 
+Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
+                                          LocalFrame& active_frame) {
+  Frame* frame = Tree().Find(name);
+  if (!frame || !active_frame.CanNavigate(*frame))
+    return nullptr;
+  return frame;
+}
+
 LocalWindowProxy* LocalFrame::WindowProxy(DOMWrapperWorld& world) {
   return ToLocalWindowProxy(Frame::GetWindowProxy(world));
 }

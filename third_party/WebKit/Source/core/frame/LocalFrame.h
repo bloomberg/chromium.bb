@@ -128,6 +128,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DetachChildren();
   void DocumentAttached();
 
+  Frame* FindFrameForNavigation(const AtomicString& name,
+                                LocalFrame& active_frame);
+
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
   // LocalFrame-specific subclass.

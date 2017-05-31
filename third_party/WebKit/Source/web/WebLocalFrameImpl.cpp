@@ -2031,6 +2031,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
   return local_root;
 }
 
+WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
+  Frame* result = GetFrame()->Tree().Find(name);
+  return WebFrame::FromFrame(result);
+}
+
 void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
   DCHECK(context_menu_node_.Get());

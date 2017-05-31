@@ -116,6 +116,11 @@ class WebLocalFrame : public WebFrame {
   // Get the highest-level LocalFrame in this frame's in-process subtree.
   virtual WebLocalFrame* LocalRoot() = 0;
 
+  // Returns the frame identified by the given name.  This method supports
+  // pseudo-names like _self, _top, and _blank and otherwise performs the same
+  // kind of lookup what |window.open(..., name)| would in Javascript.
+  virtual WebFrame* FindFrameByName(const WebString& name) = 0;
+
   // Navigation Ping --------------------------------------------------------
 
   virtual void SendPings(const WebURL& destination_url) = 0;

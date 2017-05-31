@@ -174,15 +174,6 @@ class WebView : protected WebWidget {
 
   virtual WebFrame* MainFrame() = 0;
 
-  // Returns the frame identified by the given name.  This method
-  // supports pseudo-names like _self, _top, and _blank.  It traverses
-  // the entire frame tree containing this tree looking for a frame that
-  // matches the given name.  If the optional relativeToFrame parameter
-  // is specified, then the search begins with the given frame and its
-  // children.
-  virtual WebFrame* FindFrameByName(const WebString& name,
-                                    WebFrame* relative_to_frame = 0) = 0;
-
   // Focus ---------------------------------------------------------------
 
   virtual WebLocalFrame* FocusedFrame() = 0;

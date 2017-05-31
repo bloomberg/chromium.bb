@@ -679,8 +679,14 @@ std::string TestRunnerForSpecificView::SelectionAsMarkup() {
 
 void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
                                                       bool enabled) {
+  if (!web_view()->MainFrame()->IsWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not a "
+                    "local frame.";
+  }
+
   WebFrame* target_frame =
-      web_view()->FindFrameByName(WebString::FromUTF8(name));
+      web_view()->MainFrame()->ToWebLocalFrame()->FindFrameByName(
+          WebString::FromUTF8(name));
   if (target_frame)
     target_frame->EnableViewSourceMode(enabled);
 }

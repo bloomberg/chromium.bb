@@ -413,7 +413,9 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithIframe) {
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
   auto* web_view = view_->GetWebView();
-  WebFrame* sub1_frame = web_view->FindFrameByName(WebString::FromUTF8("sub1"));
+  WebFrame* sub1_frame =
+      web_view->MainFrame()->ToWebLocalFrame()->FindFrameByName(
+          WebString::FromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
   web_view->SetFocusedFrame(sub1_frame);
   ASSERT_NE(web_view->FocusedFrame(), web_view->MainFrame());

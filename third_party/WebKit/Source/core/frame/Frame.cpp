@@ -134,14 +134,6 @@ ChromeClient& Frame::GetChromeClient() const {
   return GetEmptyChromeClient();
 }
 
-Frame* Frame::FindFrameForNavigation(const AtomicString& name,
-                                     LocalFrame& active_frame) {
-  Frame* frame = Tree().Find(name);
-  if (!frame || !active_frame.CanNavigate(*frame))
-    return nullptr;
-  return frame;
-}
-
 Frame* Frame::FindUnsafeParentScrollPropagationBoundary() {
   Frame* current_frame = this;
   Frame* ancestor_frame = Tree().Parent();
