@@ -25,7 +25,12 @@ interface AudioOutputStream {
 interface AudioOutputStreamProvider {
   // Creates a new AudioOutputStream using |params|. |shared_buffer| and
   // |socket_descriptor| are used to write data to the stream as defined
-  // in AudioDeviceThread. Can only be called once.
+  // in AudioDeviceThread. This means:
+  // * |shared_buffer| will be a writable handle to memory of the size needed
+  //   by AudioDeviceThread for the specified params.
+  // * |socket_descriptor| is a descriptor from which a
+  //   base::CancelableSyncSocket can be constructed.
+  // Can only be called once.
   Acquire(AudioOutputStream& output_stream, AudioParameters params)
   => (handle<shared_buffer> shared_buffer, handle socket_descriptor);
 };
