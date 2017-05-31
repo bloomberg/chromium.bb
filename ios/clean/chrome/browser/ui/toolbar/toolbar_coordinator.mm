@@ -63,6 +63,7 @@
 
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator.consumer = self.viewController;
+  self.mediator.webStateList = &self.browser->web_state_list();
 
   [self.browser->broadcaster()
       addObserver:self.mediator

@@ -14,6 +14,7 @@
 namespace web {
 class WebState;
 }
+class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
@@ -23,9 +24,16 @@ class WebState;
 // the lifetime of this object and may be null.
 @property(nonatomic, assign) web::WebState* webState;
 
+// The WebStateList that this mediator listens for any changes on the total
+// number of Webstates.
+@property(nonatomic, assign) WebStateList* webStateList;
+
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, strong) id<ToolbarConsumer> consumer;
+
+// Stops observing all objects.
+- (void)disconnect;
 
 @end
 

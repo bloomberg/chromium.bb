@@ -5,6 +5,9 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -18,7 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TestToolbarMediator : ToolbarMediator<CRWWebStateObserver>
+@interface TestToolbarMediator
+    : ToolbarMediator<CRWWebStateObserver, WebStateListObserving>
 @end
 
 @implementation TestToolbarMediator
@@ -26,6 +30,7 @@
 
 namespace {
 
+static const int kNumberOfWebStates = 3;
 static const char kTestUrl[] = "http://www.chromium.org";
 
 class ToolbarMediatorTest : public PlatformTest {
@@ -40,10 +45,30 @@ class ToolbarMediatorTest : public PlatformTest {
     consumer_ = OCMProtocolMock(@protocol(ToolbarConsumer));
   }
 
+  // Explicitly disconnect the mediator so there won't be any WebStateList
+  // observers when web_state_list_ gets dealloc.
+  ~ToolbarMediatorTest() override { [mediator_ disconnect]; }
+
  protected:
+  void SetUpWebStateList() {
+    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
+    for (int i = 0; i < kNumberOfWebStates; i++) {
+      InsertWebState(i);
+    }
+  }
+
+  void InsertWebState(int index) {
+    auto web_state = base::MakeUnique<web::TestWebState>();
+    GURL url("http://test/" + std::to_string(index));
+    web_state->SetCurrentURL(url);
+    web_state_list_->InsertWebState(index, std::move(web_state));
+  }
+
   TestToolbarMediator* mediator_;
   ToolbarTestWebState test_web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
+  std::unique_ptr<WebStateList> web_state_list_;
+  FakeWebStateListDelegate web_state_list_delegate_;
   id consumer_;
 };
 
@@ -63,6 +88,15 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoConsumer) {
   [[consumer_ reject] setCanGoForward:NO];
   [[consumer_ reject] setCanGoBack:NO];
   [[consumer_ reject] setIsLoading:YES];
+}
+
+// Test no WebstateList related setup is being done on the Toolbar if there's no
+// WebstateList.
+TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
+  mediator_.consumer = consumer_;
+  mediator_.webState = &test_web_state_;
+
+  [[[consumer_ reject] ignoringNonObjectArgs] setTabCount:0];
 }
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
@@ -87,10 +121,30 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
   [[consumer_ verify] setIsLoading:YES];
 }
 
+// Test the WebstateList related setup gets called when the mediator's WebState
+// and Consumer have been set.
+TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetup) {
+  SetUpWebStateList();
+  mediator_.webStateList = web_state_list_.get();
+  mediator_.consumer = consumer_;
+
+  [[consumer_ verify] setTabCount:3];
+}
+
+// Test the WebstateList related setup gets called when the mediator's WebState
+// and Consumer have been set in reverse order.
+TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
+  mediator_.consumer = consumer_;
+  SetUpWebStateList();
+  mediator_.webStateList = web_state_list_.get();
+
+  [[consumer_ verify] setTabCount:3];
+}
+
 // Test the Toolbar is updated when the Webstate observer method DidStartLoading
 // is triggered by SetLoading.
 TEST_F(ToolbarMediatorTest, TestDidStartLoading) {
-  // Change the default loading state to false so we can verify the Webstate
+  // Change the default loading state to false to verify the Webstate
   // callback with true.
   test_web_state_.SetLoading(false);
   mediator_.webState = &test_web_state_;
@@ -145,6 +199,28 @@ TEST_F(ToolbarMediatorTest, TestTabStripVisible) {
   [[consumer_ verify] setTabStripVisible:YES];
   [mediator_ broadcastTabStripVisible:NO];
   [[consumer_ verify] setTabStripVisible:NO];
+}
+
+// Test that increasing the number of Webstates will update the consumer with
+// the right value.
+TEST_F(ToolbarMediatorTest, TestIncreaseNumberOfWebstates) {
+  SetUpWebStateList();
+  mediator_.webStateList = web_state_list_.get();
+  mediator_.consumer = consumer_;
+
+  InsertWebState(0);
+  [[consumer_ verify] setTabCount:kNumberOfWebStates + 1];
+}
+
+// Test that decreasing the number of Webstates will update the consumer with
+// the right value.
+TEST_F(ToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
+  SetUpWebStateList();
+  mediator_.webStateList = web_state_list_.get();
+  mediator_.consumer = consumer_;
+
+  web_state_list_->DetachWebStateAt(0);
+  [[consumer_ verify] setTabCount:kNumberOfWebStates - 1];
 }
 
 }  // namespace
