@@ -1056,15 +1056,8 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-// Disables per monitor DPI for supported Windows versions.
-// This flag overrides kEnablePerMonitorDpi.
-const char kDisablePerMonitorDpi[]          = "disable-per-monitor-dpi";
-
 // Fallback to XPS. By default connector uses CDD.
 const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
-
-// Enables per monitor DPI for supported Windows versions.
-const char kEnablePerMonitorDpi[]           = "enable-per-monitor-dpi";
 
 // Force-enables the profile shortcut manager. This is needed for tests since
 // they use a custom-user-data-dir which disables this.
