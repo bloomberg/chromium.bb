@@ -848,7 +848,7 @@ class _InfiniteScrollStory(system_health_story.SystemHealthStory):
     return 'Load %s then make a very long scroll.' % cls.URL
 
 
-@decorators.Disabled('win')  # crbug.com/728152
+@decorators.Disabled('win', 'linux')  # crbug.com/728152
 class DiscourseDesktopStory(_InfiniteScrollStory):
   NAME = 'browse:tech:discourse_infinite_scroll'
   URL = ('https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482')
