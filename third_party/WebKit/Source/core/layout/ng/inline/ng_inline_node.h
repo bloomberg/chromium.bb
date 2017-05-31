@@ -93,6 +93,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   LayoutObject* start_inline_;
   LayoutNGBlockFlow* block_;
   Member<NGLayoutInputNode> next_sibling_;
+
+  friend class NGLineBreakerTest;
 };
 
 inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {

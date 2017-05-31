@@ -435,9 +435,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-014.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/border-padding-bleed-001.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/border-padding-bleed-002.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/border-padding-bleed-003.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/empty-inline-002.xht [ Crash Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-001.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ Failure ]
@@ -449,7 +446,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatti
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-013.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-022.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-002.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-004.xht [ Failure ]
@@ -485,8 +481,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-125
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-129.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-001.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-bleed-002.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-117a.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-118a.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-121.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]

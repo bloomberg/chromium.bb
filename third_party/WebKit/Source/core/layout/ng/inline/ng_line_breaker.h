@@ -8,11 +8,12 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "platform/heap/Handle.h"
+#include "platform/text/TextBreakIterator.h"
+#include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
-class LazyLineBreakIterator;
 class NGInlineBreakToken;
 class NGInlineItem;
 class NGInlineNode;
@@ -43,24 +44,50 @@ class CORE_EXPORT NGLineBreaker {
  private:
   void BreakLine(NGInlineItemResults*, NGInlineLayoutAlgorithm*);
 
-  bool HandleControlItem(const NGInlineItem&,
-                         const String& text,
-                         NGInlineItemResult*,
-                         LayoutUnit position);
-  void LayoutAtomicInline(const NGInlineItem&, NGInlineItemResult*);
+  enum class LineBreakState {
+    // The current position is not breakable.
+    kNotBreakable,
+    // The current position is breakable.
+    kIsBreakable,
+    // Break by including trailing items (CloseTag).
+    kBreakAfterTrailings,
+    // Break immediately.
+    kForcedBreak
+  };
 
-  void HandleOverflow(NGInlineItemResults*, const LazyLineBreakIterator&);
+  LineBreakState HandleText(const NGInlineItem&, NGInlineItemResult*);
+  void BreakText(NGInlineItemResult*,
+                 const NGInlineItem&,
+                 LayoutUnit available_width);
+
+  LineBreakState HandleControlItem(const NGInlineItem&, NGInlineItemResult*);
+  LineBreakState HandleAtomicInline(const NGInlineItem&, NGInlineItemResult*);
+  void HandleFloat(const NGInlineItem&,
+                   NGInlineItemResults*,
+                   NGInlineLayoutAlgorithm*);
+
+  void HandleOpenTag(const NGInlineItem&, NGInlineItemResult*);
+  void HandleCloseTag(const NGInlineItem&, NGInlineItemResult*);
+
+  void HandleOverflow(NGInlineItemResults*);
+  void Rewind(NGInlineItemResults*, unsigned new_end);
+
+  void UpdateBreakIterator(const ComputedStyle&);
 
   void MoveToNextOf(const NGInlineItem&);
+  void MoveToNextOf(const NGInlineItemResult&);
   void SkipCollapsibleWhitespaces();
-
-  void AppendCloseTags(NGInlineItemResults*);
 
   Persistent<NGInlineNode> node_;
   const NGConstraintSpace* constraint_space_;
   const AtomicString locale_;
   unsigned item_index_;
   unsigned offset_;
+  LayoutUnit available_width_;
+  LayoutUnit position_;
+  LazyLineBreakIterator break_iterator_;
+
+  unsigned auto_wrap_ : 1;
 };
 
 }  // namespace blink

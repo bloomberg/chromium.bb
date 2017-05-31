@@ -42,6 +42,14 @@ struct CORE_EXPORT NGInlineItemResult {
   // NGBoxStrut for atomic inline items.
   NGBoxStrut margins;
 
+  // Inside of this is not breakable.
+  // Used only during line breaking.
+  unsigned no_break_opportunities_inside : 1;
+
+  // Lines must not break after this.
+  // Used only during line breaking.
+  unsigned prohibit_break_after : 1;
+
   NGInlineItemResult();
   NGInlineItemResult(unsigned index, unsigned start, unsigned end);
 };

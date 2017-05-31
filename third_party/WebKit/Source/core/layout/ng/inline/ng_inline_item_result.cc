@@ -11,6 +11,10 @@ NGInlineItemResult::NGInlineItemResult() {}
 NGInlineItemResult::NGInlineItemResult(unsigned index,
                                        unsigned start,
                                        unsigned end)
-    : item_index(index), start_offset(start), end_offset(end) {}
+    : item_index(index),
+      start_offset(start),
+      end_offset(end),
+      no_break_opportunities_inside(false),
+      prohibit_break_after(false) {}
 
 }  // namespace blink

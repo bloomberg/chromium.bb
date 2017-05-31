@@ -391,7 +391,7 @@ int LazyLineBreakIterator::NextBreakablePositionKeepAll(int pos) const {
 }
 
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
-  int next_break = 0;
+  int next_break = -1;
   IsBreakable(offset, next_break);
   return next_break;
 }
@@ -400,8 +400,7 @@ unsigned LazyLineBreakIterator::PreviousBreakOpportunity(unsigned offset,
                                                          unsigned min) const {
   unsigned pos = std::min(offset, string_.length());
   for (; pos > min; pos--) {
-    int next_break = 0;
-    if (IsBreakable(pos, next_break))
+    if (IsBreakable(pos))
       return pos;
   }
   return min;

@@ -217,6 +217,11 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     return IsBreakable(pos, next_breakable, break_type_);
   }
 
+  inline bool IsBreakable(int pos) const {
+    int next_breakable = -1;
+    return IsBreakable(pos, next_breakable, break_type_);
+  }
+
   // Returns the break opportunity at or after |offset|.
   unsigned NextBreakOpportunity(unsigned offset) const;
 

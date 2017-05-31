@@ -271,8 +271,10 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
                                  borders.BlockSum() + paddings.BlockSum());
       }
     } else if (item.Type() == NGInlineItem::kCloseTag) {
+      position += item_result.inline_size;
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_,
                                    position);
+      continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, position, &line_box,
                               &text_builder);
