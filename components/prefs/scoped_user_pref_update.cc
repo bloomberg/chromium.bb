@@ -13,15 +13,16 @@ namespace subtle {
 ScopedUserPrefUpdateBase::ScopedUserPrefUpdateBase(PrefService* service,
                                                    const std::string& path)
     : service_(service), path_(path), value_(NULL) {
-  DCHECK(service_->CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(service_->sequence_checker_);
 }
 
 ScopedUserPrefUpdateBase::~ScopedUserPrefUpdateBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Notify();
 }
 
 base::Value* ScopedUserPrefUpdateBase::GetValueOfType(base::Value::Type type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!value_)
     value_ = service_->GetMutableUserPref(path_, type);
   return value_;

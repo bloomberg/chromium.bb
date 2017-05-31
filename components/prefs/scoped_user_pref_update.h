@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/values.h"
 #include "components/prefs/base_prefs_export.h"
 #include "components/prefs/pref_service.h"
@@ -31,8 +31,7 @@ namespace subtle {
 // We need this base class mostly for making it a friend of PrefService
 // and getting access to PrefService::GetMutableUserPref and
 // PrefService::ReportUserPrefChanged.
-class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase
-    : public base::NonThreadSafe {
+class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase {
  protected:
   ScopedUserPrefUpdateBase(PrefService* service, const std::string& path);
 
@@ -53,6 +52,8 @@ class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase
   std::string path_;
   // Cache of value from user pref store (set between Get() and Notify() calls).
   base::Value* value_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdateBase);
 };
