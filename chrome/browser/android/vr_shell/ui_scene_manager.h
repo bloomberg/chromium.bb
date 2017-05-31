@@ -86,7 +86,6 @@ class UiSceneManager {
   UiElement* screen_dimmer_ = nullptr;
   UiElement* ceiling_ = nullptr;
   UiElement* floor_ = nullptr;
-  UiElement* floor_grid_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
 

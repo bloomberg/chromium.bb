@@ -1261,7 +1261,8 @@ void VrShellGl::DrawElement(const vr::Mat4f& view_proj_matrix,
     case Fill::GRID_GRADIENT: {
       vr_shell_renderer_->GetGradientGridRenderer()->Draw(
           transform, element.edge_color(), element.center_color(),
-          element.gridline_count(), element.computed_opacity());
+          element.grid_color(), element.gridline_count(),
+          element.computed_opacity());
       break;
     }
     case Fill::CONTENT: {

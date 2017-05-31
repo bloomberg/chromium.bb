@@ -248,7 +248,7 @@ class GradientQuadRenderer : public BaseQuadRenderer {
   DISALLOW_COPY_AND_ASSIGN(GradientQuadRenderer);
 };
 
-class GradientGridRenderer : public BaseRenderer {
+class GradientGridRenderer : public BaseQuadRenderer {
  public:
   GradientGridRenderer();
   ~GradientGridRenderer() override;
@@ -256,19 +256,18 @@ class GradientGridRenderer : public BaseRenderer {
   void Draw(const vr::Mat4f& view_proj_matrix,
             SkColor edge_color,
             SkColor center_color,
+            SkColor grid_color,
             int gridline_count,
             float opacity);
 
  private:
-  void MakeGridLines(int gridline_count);
-
-  GLuint vertex_buffer_ = 0;
   GLuint model_view_proj_matrix_handle_;
   GLuint scene_radius_handle_;
   GLuint center_color_handle_;
   GLuint edge_color_handle_;
+  GLuint grid_color_handle_;
   GLuint opacity_handle_;
-  std::vector<Line3d> grid_lines_;
+  GLuint lines_count_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GradientGridRenderer);
 };

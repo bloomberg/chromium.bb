@@ -17,7 +17,6 @@ enum UiElementDebugId {
   kBackplane,
   kCeiling,
   kFloor,
-  kFloorGrid,
   kUrlBar,
   kLoadingIndicator,
   kAudioCaptureIndicator,
