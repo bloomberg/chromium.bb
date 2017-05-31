@@ -386,7 +386,8 @@ typedef struct AV1Common {
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
 #if CONFIG_VAR_TX
   TXFM_CONTEXT *above_txfm_context;
-  TXFM_CONTEXT left_txfm_context[2 * MAX_MIB_SIZE];
+  TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
+  TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
 #endif
   int above_context_alloc_cols;
 
@@ -928,6 +929,21 @@ static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
   for (i = 0; i < bw; ++i) above_ctx[i] = txw;
 }
 
+static INLINE TX_SIZE get_sqr_tx_size(int tx_dim) {
+  TX_SIZE tx_size;
+  switch (tx_dim) {
+#if CONFIG_EXT_PARTITION
+    case 128:
+#endif
+    case 64:
+    case 32: tx_size = TX_32X32; break;
+    case 16: tx_size = TX_16X16; break;
+    case 8: tx_size = TX_8X8; break;
+    default: tx_size = TX_4X4;
+  }
+  return tx_size;
+}
+
 static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
                                          BLOCK_SIZE bsize, TX_SIZE tx_size) {
@@ -935,22 +951,13 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   const uint8_t txh = tx_size_high[tx_size];
   const int above = *above_ctx < txw;
   const int left = *left_ctx < txh;
-  TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   int category = TXFM_PARTITION_CONTEXTS - 1;
 
   // dummy return, not used by others.
   if (tx_size <= TX_4X4) return 0;
 
-  switch (AOMMAX(block_size_wide[bsize], block_size_high[bsize])) {
-#if CONFIG_EXT_PARTITION
-    case 128:
-#endif
-    case 64:
-    case 32: max_tx_size = TX_32X32; break;
-    case 16: max_tx_size = TX_16X16; break;
-    case 8: max_tx_size = TX_8X8; break;
-    default: assert(max_tx_size == max_txsize_lookup[bsize]); assert(0);
-  }
+  TX_SIZE max_tx_size =
+      get_sqr_tx_size(AOMMAX(block_size_wide[bsize], block_size_high[bsize]));
 
   if (max_tx_size >= TX_8X8) {
     category = (tx_size != max_tx_size && max_tx_size > TX_8X8) +

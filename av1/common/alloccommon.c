@@ -125,6 +125,11 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
 #if CONFIG_VAR_TX
   aom_free(cm->above_txfm_context);
   cm->above_txfm_context = NULL;
+
+  for (i = 0; i < MAX_MB_PLANE; ++i) {
+    aom_free(cm->top_txfm_context[i]);
+    cm->top_txfm_context[i] = NULL;
+  }
 #endif
 }
 
@@ -170,6 +175,14 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
     cm->above_txfm_context = (TXFM_CONTEXT *)aom_calloc(
         aligned_mi_cols << TX_UNIT_WIDE_LOG2, sizeof(*cm->above_txfm_context));
     if (!cm->above_txfm_context) goto fail;
+
+    for (i = 0; i < MAX_MB_PLANE; ++i) {
+      aom_free(cm->top_txfm_context[i]);
+      cm->top_txfm_context[i] =
+          (TXFM_CONTEXT *)aom_calloc(aligned_mi_cols << TX_UNIT_WIDE_LOG2,
+                                     sizeof(*cm->top_txfm_context[0]));
+      if (!cm->top_txfm_context[i]) goto fail;
+    }
 #endif
 
     cm->above_context_alloc_cols = aligned_mi_cols;
