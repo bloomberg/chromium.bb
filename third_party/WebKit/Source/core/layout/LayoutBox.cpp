@@ -2403,7 +2403,8 @@ bool LayoutBox::NeedsForcedBreakBefore(
 }
 
 bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  if (HasNonCompositedScrollbars() || GetSelectionState() != SelectionNone ||
+  if (HasNonCompositedScrollbars() ||
+      GetSelectionState() != SelectionState::kNone ||
       HasBoxDecorationBackground() || StyleRef().HasBoxDecorations() ||
       StyleRef().HasVisualOverflowingEffect())
     return false;

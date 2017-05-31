@@ -916,7 +916,7 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
 }
 
 LayoutRect LayoutReplaced::LocalSelectionRect() const {
-  if (GetSelectionState() == SelectionNone)
+  if (GetSelectionState() == SelectionState::kNone)
     return LayoutRect();
 
   if (!InlineBoxWrapper()) {
@@ -944,8 +944,10 @@ void LayoutReplaced::SetSelectionState(SelectionState state) {
   if (!InlineBoxWrapper())
     return;
 
-  if (CanUpdateSelectionOnRootLineBoxes())
-    InlineBoxWrapper()->Root().SetHasSelectedChildren(state != SelectionNone);
+  if (CanUpdateSelectionOnRootLineBoxes()) {
+    InlineBoxWrapper()->Root().SetHasSelectedChildren(state !=
+                                                      SelectionState::kNone);
+  }
 }
 
 void LayoutReplaced::IntrinsicSizingInfo::Transpose() {

@@ -117,12 +117,15 @@ typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*>
 static ContinuationMap* g_continuation_map = nullptr;
 
 void LayoutBoxModelObject::SetSelectionState(SelectionState state) {
-  if (state == SelectionInside && GetSelectionState() != SelectionNone)
+  if (state == SelectionState::kInside &&
+      GetSelectionState() != SelectionState::kNone)
     return;
 
-  if ((state == SelectionStart && GetSelectionState() == SelectionEnd) ||
-      (state == SelectionEnd && GetSelectionState() == SelectionStart))
-    LayoutObject::SetSelectionState(SelectionBoth);
+  if ((state == SelectionState::kStart &&
+       GetSelectionState() == SelectionState::kEnd) ||
+      (state == SelectionState::kEnd &&
+       GetSelectionState() == SelectionState::kStart))
+    LayoutObject::SetSelectionState(SelectionState::kStartAndEnd);
   else
     LayoutObject::SetSelectionState(state);
 

@@ -287,9 +287,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.
-  bool have_selection = !is_printing &&
-                        paint_info.phase != kPaintPhaseTextClip &&
-                        inline_text_box_.GetSelectionState() != SelectionNone;
+  bool have_selection =
+      !is_printing && paint_info.phase != kPaintPhaseTextClip &&
+      inline_text_box_.GetSelectionState() != SelectionState::kNone;
   if (!have_selection && paint_info.phase == kPaintPhaseSelection) {
     // When only painting the selection, don't bother to paint if there is none.
     return;

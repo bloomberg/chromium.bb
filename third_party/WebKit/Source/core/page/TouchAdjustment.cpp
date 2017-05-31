@@ -140,7 +140,7 @@ bool ProvidesContextMenuItems(Node* node) {
       return true;
     // Only the selected part of the layoutObject is a valid target, but this
     // will be corrected in appendContextSubtargetsForNode.
-    if (node->GetLayoutObject()->GetSelectionState() != SelectionNone)
+    if (node->GetLayoutObject()->GetSelectionState() != SelectionState::kNone)
       return true;
   }
   return false;
@@ -202,24 +202,24 @@ static inline void AppendContextSubtargetsForNode(
       last_offset = offset;
     }
   } else {
-    if (text_layout_object->GetSelectionState() == SelectionNone)
+    if (text_layout_object->GetSelectionState() == SelectionState::kNone)
       return AppendBasicSubtargetsForNode(node, subtargets);
     // If selected, make subtargets out of only the selected part of the text.
     int start_pos, end_pos;
     switch (text_layout_object->GetSelectionState()) {
-      case SelectionInside:
+      case SelectionState::kInside:
         start_pos = 0;
         end_pos = text_layout_object->TextLength();
         break;
-      case SelectionStart:
+      case SelectionState::kStart:
         std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         end_pos = text_layout_object->TextLength();
         break;
-      case SelectionEnd:
+      case SelectionState::kEnd:
         std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         start_pos = 0;
         break;
-      case SelectionBoth:
+      case SelectionState::kStartAndEnd:
         std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         break;
       default:
