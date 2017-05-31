@@ -109,12 +109,6 @@ class CONTENT_EXPORT ResourceScheduler {
                            net::RequestPriority new_priority);
 
  private:
-  // Returns the maximum number of delayable requests to all be in-flight at
-  // any point in time (across all hosts).
-  size_t max_num_delayable_requests() const {
-    return max_num_delayable_requests_;
-  }
-
   class RequestQueue;
   class ScheduledResourceRequest;
   struct RequestPriorityParams;
@@ -138,7 +132,6 @@ class CONTENT_EXPORT ResourceScheduler {
   Client* GetClient(int child_id, int route_id);
 
   ClientMap client_map_;
-  size_t max_num_delayable_requests_;
   RequestSet unowned_requests_;
 
   // True if requests to servers that support priorities (e.g., H2/QUIC) can
