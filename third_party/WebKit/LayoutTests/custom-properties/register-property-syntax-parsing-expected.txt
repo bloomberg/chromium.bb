@@ -112,6 +112,7 @@ PASS syntax:'<percentage>', initialValue:'0' is invalid
 PASS syntax:'<integer>', initialValue:'1.0' is invalid 
 PASS syntax:'<integer>', initialValue:'1e0' is invalid 
 PASS syntax:'<number>|foo', initialValue:'foo var(--foo, bla)' is invalid 
+PASS syntax:'<angle>', initialValue:'0' is invalid 
 PASS syntax:'<angle>', initialValue:'10%' is invalid 
 PASS syntax:'<time>', initialValue:'2px' is invalid 
 PASS syntax:'<resolution>', initialValue:'10' is invalid 
