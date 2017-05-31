@@ -6,7 +6,7 @@
 #define UI_WM_CORE_SHADOW_TYPES_H_
 
 #include "ui/aura/window.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
@@ -24,15 +24,15 @@ enum class ShadowElevation {
   LARGE = 24,
 };
 
-WM_EXPORT void SetShadowElevation(aura::Window* window,
-                                  ShadowElevation elevation);
+WM_CORE_EXPORT void SetShadowElevation(aura::Window* window,
+                                       ShadowElevation elevation);
 
 // Returns true if |value| is a valid element of ShadowElevation elements.
-WM_EXPORT bool IsValidShadowElevation(int64_t value);
+WM_CORE_EXPORT bool IsValidShadowElevation(int64_t value);
 
 // A property key describing the drop shadow that should be displayed under the
 // window. A null value is interpreted as using the default.
-WM_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
+WM_CORE_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
     kShadowElevationKey;
 
 }  // namespace wm

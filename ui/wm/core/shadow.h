@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace ui {
 class Layer;
@@ -20,7 +20,7 @@ namespace wm {
 enum class ShadowElevation;
 
 // Simple class that draws a drop shadow around content at given bounds.
-class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
+class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
  public:
   Shadow();
   ~Shadow() override;

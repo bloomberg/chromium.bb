@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
@@ -29,7 +29,7 @@ class TransientWindowObserver;
 // Transient windows are typically used for popups and menus.
 // TODO(sky): when we nuke TransientWindowClient rename this to
 // TransientWindowController.
-class WM_EXPORT TransientWindowManager : public aura::WindowObserver {
+class WM_CORE_EXPORT TransientWindowManager : public aura::WindowObserver {
  public:
   typedef std::vector<aura::Window*> Windows;
 

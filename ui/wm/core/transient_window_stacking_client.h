@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "ui/aura/client/window_stacking_client.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
 class TransientWindowManager;
 
-class WM_EXPORT TransientWindowStackingClient
+class WM_CORE_EXPORT TransientWindowStackingClient
     : public aura::client::WindowStackingClient {
  public:
   TransientWindowStackingClient();

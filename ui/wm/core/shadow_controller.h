@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/wm_core_export.h"
 #include "ui/wm/public/activation_change_observer.h"
-#include "ui/wm/wm_export.h"
 
 namespace aura {
 class Window;
@@ -27,7 +27,7 @@ class Shadow;
 // shadows as needed. ShadowController itself is light weight and per
 // ActivationClient. ShadowController delegates to its implementation class,
 // which observes all window creation.
-class WM_EXPORT ShadowController : public ActivationChangeObserver {
+class WM_CORE_EXPORT ShadowController : public ActivationChangeObserver {
  public:
   static constexpr ShadowElevation kActiveNormalShadowElevation =
       ShadowElevation::LARGE;
