@@ -815,17 +815,7 @@ int TCPSocketWin::DoConnect() {
   if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
 
-  int result;
-  int os_error;
-  {
-    // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 connect()"));
-    result = connect(socket_, storage.addr, storage.addr_len);
-    os_error = WSAGetLastError();
-  }
-
-  if (!result) {
+  if (!connect(socket_, storage.addr, storage.addr_len)) {
     // Connected without waiting!
     //
     // The MSDN page for connect says:
@@ -841,6 +831,7 @@ int TCPSocketWin::DoConnect() {
     if (ResetEventIfSignaled(core_->read_overlapped_.hEvent))
       return OK;
   } else {
+    int os_error = WSAGetLastError();
     if (os_error != WSAEWOULDBLOCK) {
       LOG(ERROR) << "connect failed: " << os_error;
       connect_os_error_ = os_error;
@@ -849,10 +840,6 @@ int TCPSocketWin::DoConnect() {
       return rv;
     }
   }
-
-  // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 WatchForRead()"));
 
   core_->WatchForRead();
   return ERR_IO_PENDING;
