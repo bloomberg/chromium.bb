@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_util.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 // Up to 10 minutes, with 100 buckets.
@@ -119,11 +118,33 @@ base::Optional<base::TimeDelta> GetInitialForegroundDuration(
     const PageLoadExtraInfo& info,
     base::TimeTicks app_background_time);
 
+// Returns the minimum value of the optional TimeDeltas, if both values are
+// set. Otherwise, if one value is set, returns that value. Otherwise, returns
+// an unset value.
+base::Optional<base::TimeDelta> OptionalMin(
+    const base::Optional<base::TimeDelta>& a,
+    const base::Optional<base::TimeDelta>& b);
+
 // Whether the given loading behavior was observed in any frame (either the main
 // frame or a subframe).
 bool DidObserveLoadingBehaviorInAnyFrame(
     const page_load_metrics::PageLoadExtraInfo& info,
     blink::WebLoadingBehaviorFlag behavior);
+
+// Whether the given url has a google hostname.
+bool IsGoogleHostname(const GURL& url);
+
+// If the given hostname is a google hostname, returns the portion of the
+// hostname before the google hostname. Otherwise, returns an unset optional
+// value.
+//
+// For example:
+//   https://example.com/foo => returns an unset optional value
+//   https://google.com/foo => returns ''
+//   https://www.google.com/foo => returns 'www'
+//   https://news.google.com/foo => returns 'news'
+//   https://a.b.c.google.com/foo => returns 'a.b.c'
+base::Optional<std::string> GetGoogleHostnamePrefix(const GURL& url);
 
 }  // namespace page_load_metrics
 

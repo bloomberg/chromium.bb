@@ -9,17 +9,14 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
-#include "base/timer/mock_timer.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
@@ -120,8 +117,7 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
 };
 
 class TestPageLoadMetricsEmbedderInterface
-    : public PageLoadMetricsEmbedderInterface,
-      public test::WeakMockTimerProvider {
+    : public PageLoadMetricsEmbedderInterface {
  public:
   TestPageLoadMetricsEmbedderInterface() : is_ntp_(false) {}
 
@@ -133,11 +129,6 @@ class TestPageLoadMetricsEmbedderInterface
         &observed_committed_urls_));
     tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
-  }
-  std::unique_ptr<base::Timer> CreateTimer() override {
-    auto timer = base::MakeUnique<test::WeakMockTimer>();
-    SetMockTimer(timer->AsWeakPtr());
-    return std::move(timer);
   }
   const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return updated_timings_;
@@ -169,14 +160,6 @@ class TestPageLoadMetricsEmbedderInterface
   bool is_ntp_;
 };
 
-void PopulatePageLoadTiming(mojom::PageLoadTiming* timing) {
-  page_load_metrics::InitPageLoadTimingForTest(timing);
-  timing->navigation_start = base::Time::FromDoubleT(1);
-  timing->response_start = base::TimeDelta::FromMilliseconds(10);
-  timing->parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
-  timing->document_timing->first_layout = base::TimeDelta::FromMilliseconds(30);
-}
-
 }  //  namespace
 
 class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
@@ -193,30 +176,12 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
         ->NavigateAndCommit(GURL(url::kAboutBlankURL));
   }
 
-  // Returns the mock timer used for buffering updates in the
-  // PageLoadMetricsUpdateDispatcher.
-  base::MockTimer* GetMostRecentTimer() {
-    return embedder_interface_->GetMockTimer();
-  }
-
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing) {
     SimulateTimingUpdate(timing, web_contents()->GetMainFrame());
   }
 
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
                             content::RenderFrameHost* render_frame_host) {
-    SimulateTimingUpdateWithoutFiringDispatchTimer(timing, render_frame_host);
-    // If sending the timing update caused the PageLoadMetricsUpdateDispatcher
-    // to schedule a buffering timer, then fire it now so metrics are dispatched
-    // to observers.
-    base::MockTimer* mock_timer = GetMostRecentTimer();
-    if (mock_timer && mock_timer->IsRunning())
-      mock_timer->Fire();
-  }
-
-  void SimulateTimingUpdateWithoutFiringDispatchTimer(
-      const mojom::PageLoadTiming& timing,
-      content::RenderFrameHost* render_frame_host) {
     observer()->OnTimingUpdated(render_frame_host, timing,
                                 mojom::PageLoadMetadata());
   }
@@ -771,7 +736,13 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
 
   // Dispatch a timing update for the child frame that includes a first paint.
   mojom::PageLoadTiming subframe_timing;
-  PopulatePageLoadTiming(&subframe_timing);
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
+  subframe_timing.parse_timing->parse_start =
+      base::TimeDelta::FromMilliseconds(20);
+  subframe_timing.document_timing->first_layout =
+      base::TimeDelta::FromMilliseconds(30);
   subframe_timing.paint_timing->first_paint =
       base::TimeDelta::FromMilliseconds(40);
   content::RenderFrameHostTester* subframe_tester =
@@ -823,127 +794,6 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
 
   ASSERT_EQ(1, CountUpdatedSubFrameTimingReported());
   EXPECT_TRUE(subframe_timing.Equals(*updated_subframe_timings().back()));
-
-  CheckNoErrorEvents();
-}
-
-// We buffer cross-frame paint updates to account for paint timings from
-// different frames arriving out of order.
-TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
-  // Dispatch a timing update for the main frame that includes a first
-  // paint. This should be buffered, with the dispatch timer running.
-  mojom::PageLoadTiming timing;
-  PopulatePageLoadTiming(&timing);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(1000);
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
-
-  EXPECT_TRUE(GetMostRecentTimer()->IsRunning());
-  ASSERT_EQ(0, CountUpdatedTimingReported());
-
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-
-  // Dispatch a timing update for a child frame that includes a first paint.
-  mojom::PageLoadTiming subframe_timing;
-  PopulatePageLoadTiming(&subframe_timing);
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(500);
-  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
-  content::RenderFrameHostTester* subframe_tester =
-      content::RenderFrameHostTester::For(subframe);
-  subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
-  subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
-  SimulateTimingUpdateWithoutFiringDispatchTimer(subframe_timing, subframe);
-  subframe_tester->SimulateNavigationStop();
-
-  histogram_tester_.ExpectTotalCount(
-      page_load_metrics::internal::kHistogramOutOfOrderTiming, 1);
-
-  EXPECT_TRUE(GetMostRecentTimer()->IsRunning());
-  ASSERT_EQ(0, CountUpdatedTimingReported());
-
-  // At this point, the timing update is buffered, waiting for the timer to
-  // fire.
-  GetMostRecentTimer()->Fire();
-
-  // Firing the timer should produce a timing update. The update should be a
-  // merged view of the main frame timing, with a first paint timestamp from the
-  // subframe.
-  ASSERT_EQ(1, CountUpdatedTimingReported());
-  EXPECT_FALSE(timing.Equals(*updated_timings().back()));
-  EXPECT_TRUE(
-      updated_timings().back()->parse_timing->Equals(*timing.parse_timing));
-  EXPECT_TRUE(updated_timings().back()->document_timing->Equals(
-      *timing.document_timing));
-  EXPECT_FALSE(
-      updated_timings().back()->paint_timing->Equals(*timing.paint_timing));
-  EXPECT_TRUE(updated_timings().back()->paint_timing->first_paint);
-
-  // The first paint value should be the min of all received first paints, which
-  // in this case is the first paint from the subframe. Since it is offset by
-  // the subframe's navigation start, the received value should be >= the first
-  // paint value specified in the subframe.
-  EXPECT_GE(updated_timings().back()->paint_timing->first_paint,
-            subframe_timing.paint_timing->first_paint);
-  EXPECT_LT(updated_timings().back()->paint_timing->first_paint,
-            timing.paint_timing->first_paint);
-
-  base::TimeDelta initial_first_paint =
-      updated_timings().back()->paint_timing->first_paint.value();
-
-  // Dispatch a timing update for an additional child frame, with an earlier
-  // first paint time. This should cause an immediate update, without a timer
-  // delay.
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(50);
-  content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe");
-  content::RenderFrameHostTester* subframe2_tester =
-      content::RenderFrameHostTester::For(subframe2);
-  subframe2_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
-  subframe2_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
-  SimulateTimingUpdateWithoutFiringDispatchTimer(subframe_timing, subframe2);
-  subframe2_tester->SimulateNavigationStop();
-
-  base::TimeDelta updated_first_paint =
-      updated_timings().back()->paint_timing->first_paint.value();
-
-  EXPECT_FALSE(GetMostRecentTimer()->IsRunning());
-  ASSERT_EQ(2, CountUpdatedTimingReported());
-  EXPECT_LT(updated_first_paint, initial_first_paint);
-
-  histogram_tester_.ExpectTotalCount(
-      page_load_metrics::internal::kHistogramOutOfOrderTimingBuffered, 1);
-  histogram_tester_.ExpectBucketCount(
-      page_load_metrics::internal::kHistogramOutOfOrderTimingBuffered,
-      (initial_first_paint - updated_first_paint).InMilliseconds(), 1);
-
-  CheckNoErrorEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, DispatchDelayedMetricsOnPageClose) {
-  mojom::PageLoadTiming timing;
-  PopulatePageLoadTiming(&timing);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(1000);
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
-
-  EXPECT_TRUE(GetMostRecentTimer()->IsRunning());
-  ASSERT_EQ(0, CountUpdatedTimingReported());
-  ASSERT_EQ(0, CountCompleteTimingReported());
-
-  // Navigate to a new page. This should force dispatch of the buffered timing
-  // update.
-  NavigateToUntrackedUrl();
-
-  ASSERT_EQ(1, CountUpdatedTimingReported());
-  ASSERT_EQ(1, CountCompleteTimingReported());
-  EXPECT_TRUE(timing.Equals(*updated_timings().back()));
-  EXPECT_TRUE(timing.Equals(*complete_timings().back()));
 
   CheckNoErrorEvents();
 }

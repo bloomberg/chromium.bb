@@ -97,7 +97,6 @@ class MetricsWebContentsObserver
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       const content::WebContentsObserver::MediaPlayerId& id) override;
-  void WebContentsDestroyed() override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);

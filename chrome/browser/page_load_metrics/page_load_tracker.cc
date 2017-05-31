@@ -201,8 +201,6 @@ PageLoadTracker::~PageLoadTracker() {
   if (did_stop_tracking_)
     return;
 
-  metrics_update_dispatcher_.ShutDown();
-
   if (page_end_time_.is_null()) {
     // page_end_time_ can be unset in some cases, such as when a navigation is
     // aborted by a navigation that started before it. In these cases, set the

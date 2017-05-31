@@ -9,8 +9,6 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/web_contents_tester.h"
@@ -23,11 +21,14 @@ namespace page_load_metrics {
 // an observer, override RegisterObservers and call tracker->AddObserver. This
 // will attach the observer to all main frame navigations.
 class PageLoadMetricsObserverTestHarness
-    : public ChromeRenderViewHostTestHarness,
-      public test::WeakMockTimerProvider {
+    : public ChromeRenderViewHostTestHarness {
  public:
   PageLoadMetricsObserverTestHarness();
   ~PageLoadMetricsObserverTestHarness() override;
+
+  // Helper that fills in any timing fields that MWCO requires but that are
+  // currently missing.
+  static void PopulateRequiredTimingFields(mojom::PageLoadTiming* inout_timing);
 
   void SetUp() override;
 

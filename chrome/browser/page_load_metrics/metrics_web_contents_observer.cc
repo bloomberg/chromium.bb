@@ -103,19 +103,9 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
   return metrics;
 }
 
-MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
-
-void MetricsWebContentsObserver::WebContentsDestroyed() {
+MetricsWebContentsObserver::~MetricsWebContentsObserver() {
   // TODO(csharrison): Use a more user-initiated signal for CLOSE.
   NotifyPageEndAllLoads(END_CLOSE, UserInitiatedInfo::NotUserInitiated());
-
-  // We tear down PageLoadTrackers in WebContentsDestroyed, rather than in the
-  // destructor, since |web_contents()| returns nullptr in the destructor, and
-  // PageLoadMetricsObservers can cause code to execute that wants to be able to
-  // access the current WebContents.
-  committed_load_ = nullptr;
-  provisional_loads_.clear();
-  aborted_provisional_loads_.clear();
 
   for (auto& observer : testing_observers_)
     observer.OnGoingAway();
