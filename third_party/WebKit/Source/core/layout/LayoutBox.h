@@ -376,8 +376,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   DISABLE_CFI_PERF LayoutRect PaddingBoxRect() const {
     return LayoutRect(ClientLeft(), ClientTop(), ClientWidth(), ClientHeight());
   }
-  IntRect PixelSnappedBorderBoxRect() const {
-    return IntRect(IntPoint(), frame_rect_.PixelSnappedSize());
+
+  IntRect PixelSnappedBorderBoxRect(
+      const LayoutSize& offset = LayoutSize()) const {
+    return IntRect(IntPoint(),
+                   PixelSnappedIntSize(frame_rect_.Size(),
+                                       frame_rect_.Location() + offset));
   }
   IntRect BorderBoundingBox() const final {
     return PixelSnappedBorderBoxRect();
