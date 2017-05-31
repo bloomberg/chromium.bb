@@ -34,6 +34,13 @@ inline UnicodeBidi CssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
+inline ETextCombine CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueHorizontal)  // -webkit-text-combine
+    return ETextCombine::kAll;
+  return detail::cssValueIDToPlatformEnumGenerated<ETextCombine>(v);
+}
+
+template <>
 inline ETextAlign CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueWebkitAuto)  // Legacy -webkit-auto. Eqiuvalent to start.
     return ETextAlign::kStart;
