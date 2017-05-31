@@ -633,21 +633,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accRole(VARIANT var_id,
   if (!owner())
     return E_FAIL;
 
-  if (!role)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  if (!target->role_name().empty()) {
-    role->vt = VT_BSTR;
-    role->bstrVal = SysAllocString(target->role_name().c_str());
-  } else {
-    role->vt = VT_I4;
-    role->lVal = target->ia_role();
-  }
-  return S_OK;
+  return AXPlatformNodeWin::get_accRole(var_id, role);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,

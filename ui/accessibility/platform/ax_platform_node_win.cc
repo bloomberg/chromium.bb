@@ -499,6 +499,18 @@ STDMETHODIMP AXPlatformNodeWin::get_accRole(
     VARIANT var_id, VARIANT* role) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, role, target);
+
+  // For historical reasons, we return a string (typically
+  // containing the HTML tag name) as the MSAA role, rather
+  // than a int.
+  std::string role_string = target->StringOverrideForMSAARole();
+  if (!role_string.empty()) {
+    role->vt = VT_BSTR;
+    std::wstring wsTmp(role_string.begin(), role_string.end());
+    role->bstrVal = SysAllocString(wsTmp.c_str());
+    return S_OK;
+  }
+
   role->vt = VT_I4;
   role->lVal = target->MSAARole();
   return S_OK;
@@ -1029,75 +1041,377 @@ int AXPlatformNodeWin::MSAARole() {
   switch (GetData().role) {
     case ui::AX_ROLE_ALERT:
       return ROLE_SYSTEM_ALERT;
+
+    case ui::AX_ROLE_ALERT_DIALOG:
+      return ROLE_SYSTEM_DIALOG;
+
+    case ui::AX_ROLE_ANCHOR:
+      return ROLE_SYSTEM_LINK;
+
     case ui::AX_ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
-    case ui::AX_ROLE_BUTTON_DROP_DOWN:
-      return ROLE_SYSTEM_BUTTONDROPDOWN;
-    case ui::AX_ROLE_POP_UP_BUTTON:
-      return ROLE_SYSTEM_BUTTONMENU;
-    case ui::AX_ROLE_CARET:
-      return ROLE_SYSTEM_CARET;
-    case ui::AX_ROLE_CHECK_BOX:
-      return ROLE_SYSTEM_CHECKBUTTON;
-    case ui::AX_ROLE_COMBO_BOX:
-      return ROLE_SYSTEM_COMBOBOX;
-    case ui::AX_ROLE_DIALOG:
-      return ROLE_SYSTEM_DIALOG;
-    case ui::AX_ROLE_GENERIC_CONTAINER:
+
+    case ui::AX_ROLE_ARTICLE:
+      return ROLE_SYSTEM_DOCUMENT;
+
+    case ui::AX_ROLE_AUDIO:
       return ROLE_SYSTEM_GROUPING;
-    case ui::AX_ROLE_GROUP:
+
+    case ui::AX_ROLE_BANNER:
       return ROLE_SYSTEM_GROUPING;
-    case ui::AX_ROLE_IMAGE:
-      return ROLE_SYSTEM_GRAPHIC;
-    case ui::AX_ROLE_LINK:
-      return ROLE_SYSTEM_LINK;
-    case ui::AX_ROLE_LOCATION_BAR:
-      return ROLE_SYSTEM_GROUPING;
-    case ui::AX_ROLE_MENU_BAR:
-      return ROLE_SYSTEM_MENUBAR;
-    case ui::AX_ROLE_MENU_ITEM:
-      return ROLE_SYSTEM_MENUITEM;
-    case ui::AX_ROLE_MENU_LIST_POPUP:
-      return ROLE_SYSTEM_MENUPOPUP;
-    case ui::AX_ROLE_TREE:
-      return ROLE_SYSTEM_OUTLINE;
-    case ui::AX_ROLE_TREE_ITEM:
-      return ROLE_SYSTEM_OUTLINEITEM;
-    case ui::AX_ROLE_TAB:
-      return ROLE_SYSTEM_PAGETAB;
-    case ui::AX_ROLE_TAB_LIST:
-      return ROLE_SYSTEM_PAGETABLIST;
-    case ui::AX_ROLE_PANE:
-      return ROLE_SYSTEM_PANE;
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-      return ROLE_SYSTEM_PROGRESSBAR;
+
+    case ui::AX_ROLE_BUSY_INDICATOR:
+      return ROLE_SYSTEM_ANIMATION;
+
     case ui::AX_ROLE_BUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
+
+    case ui::AX_ROLE_CANVAS:
+      return ROLE_SYSTEM_GRAPHIC;
+
+    case ui::AX_ROLE_CAPTION:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_CELL:
+      return ROLE_SYSTEM_CELL;
+
+    case ui::AX_ROLE_CHECK_BOX:
+      return ROLE_SYSTEM_CHECKBUTTON;
+
+    case ui::AX_ROLE_COLOR_WELL:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_COLUMN:
+      return ROLE_SYSTEM_COLUMN;
+
+    case ui::AX_ROLE_COLUMN_HEADER:
+      return ROLE_SYSTEM_COLUMNHEADER;
+
+    case ui::AX_ROLE_COMBO_BOX:
+      return ROLE_SYSTEM_COMBOBOX;
+
+    case ui::AX_ROLE_COMPLEMENTARY:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_CONTENT_INFO:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_DATE:
+    case ui::AX_ROLE_DATE_TIME:
+      return ROLE_SYSTEM_DROPLIST;
+
+    case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_DESCRIPTION_LIST:
+      return ROLE_SYSTEM_LIST;
+
+    case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ui::AX_ROLE_DETAILS:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_DIALOG:
+      return ROLE_SYSTEM_DIALOG;
+
+    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
+      return ROLE_SYSTEM_PUSHBUTTON;
+
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
+      return ROLE_SYSTEM_DOCUMENT;
+
+    case ui::AX_ROLE_EMBEDDED_OBJECT:
+      if (delegate_->GetChildCount()) {
+        return ROLE_SYSTEM_GROUPING;
+      } else {
+        return ROLE_SYSTEM_CLIENT;
+      }
+
+    case ui::AX_ROLE_FIGURE:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_FEED:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_GENERIC_CONTAINER:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_GRID:
+      return ROLE_SYSTEM_TABLE;
+
+    case ui::AX_ROLE_GROUP:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_HEADING:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_IFRAME:
+      return ROLE_SYSTEM_DOCUMENT;
+
+    case ui::AX_ROLE_IFRAME_PRESENTATIONAL:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_IMAGE:
+      return ROLE_SYSTEM_GRAPHIC;
+
+    case ui::AX_ROLE_IMAGE_MAP_LINK:
+      return ROLE_SYSTEM_LINK;
+
+    case ui::AX_ROLE_INPUT_TIME:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_LABEL_TEXT:
+    case ui::AX_ROLE_LEGEND:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_LINK:
+      return ROLE_SYSTEM_LINK;
+
+    case ui::AX_ROLE_LIST:
+      return ROLE_SYSTEM_LIST;
+
+    case ui::AX_ROLE_LIST_BOX:
+      return ROLE_SYSTEM_LIST;
+
+    case ui::AX_ROLE_LIST_BOX_OPTION:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ui::AX_ROLE_LIST_ITEM:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ui::AX_ROLE_MAIN:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_MARK:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_MARQUEE:
+      return ROLE_SYSTEM_ANIMATION;
+
+    case ui::AX_ROLE_MATH:
+      return ROLE_SYSTEM_EQUATION;
+
+    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_BUTTON:
+      return ROLE_SYSTEM_MENUPOPUP;
+
+    case ui::AX_ROLE_MENU_BAR:
+      return ROLE_SYSTEM_MENUBAR;
+
+    case ui::AX_ROLE_MENU_ITEM:
+      return ROLE_SYSTEM_MENUITEM;
+
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+      return ROLE_SYSTEM_MENUITEM;
+
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+      return ROLE_SYSTEM_MENUITEM;
+
+    case ui::AX_ROLE_MENU_LIST_POPUP:
+      return ROLE_SYSTEM_LIST;
+
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ui::AX_ROLE_NAVIGATION:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_NOTE:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_OUTLINE:
+      return ROLE_SYSTEM_OUTLINE;
+
+    case ui::AX_ROLE_POP_UP_BUTTON: {
+      std::string html_tag = GetData().GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+      if (html_tag == "select")
+        return ROLE_SYSTEM_COMBOBOX;
+      return ROLE_SYSTEM_BUTTONMENU;
+    }
+    case ui::AX_ROLE_PRE:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+      return ROLE_SYSTEM_PROGRESSBAR;
+
     case ui::AX_ROLE_RADIO_BUTTON:
       return ROLE_SYSTEM_RADIOBUTTON;
+
+    case ui::AX_ROLE_RADIO_GROUP:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_REGION: {
+      std::string html_tag = GetData().GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+      if (html_tag == "section")
+        return ROLE_SYSTEM_GROUPING;
+      return ROLE_SYSTEM_PANE;
+    }
+
+    case ui::AX_ROLE_ROW: {
+      // Role changes depending on whether row is inside a treegrid
+      // https://www.w3.org/TR/core-aam-1.1/#role-map-row
+      auto* container = FromNativeViewAccessible(GetParent());
+      if (container && container->GetData().role == ui::AX_ROLE_GROUP) {
+        // If parent was a rowgroup, we need to look at the grandparent
+        container = FromNativeViewAccessible(container->GetParent());
+      }
+
+      if (!container)
+        return ROLE_SYSTEM_ROW;
+
+      return ROLE_SYSTEM_OUTLINEITEM;
+    }
+
+    case ui::AX_ROLE_ROW_HEADER:
+      return ROLE_SYSTEM_ROWHEADER;
+
+    case ui::AX_ROLE_RUBY:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_RULER:
+      return ROLE_SYSTEM_CLIENT;
+
+    case ui::AX_ROLE_SCROLL_AREA:
+      return ROLE_SYSTEM_CLIENT;
+
     case ui::AX_ROLE_SCROLL_BAR:
       return ROLE_SYSTEM_SCROLLBAR;
-    case ui::AX_ROLE_SPLITTER:
-      return ROLE_SYSTEM_SEPARATOR;
+
+    case ui::AX_ROLE_SEARCH:
+      return ROLE_SYSTEM_GROUPING;
+
     case ui::AX_ROLE_SLIDER:
       return ROLE_SYSTEM_SLIDER;
+
+    case ui::AX_ROLE_SPIN_BUTTON:
+      return ROLE_SYSTEM_SPINBUTTON;
+
+    case ui::AX_ROLE_SPIN_BUTTON_PART:
+      return ROLE_SYSTEM_PUSHBUTTON;
+
+    case ui::AX_ROLE_ANNOTATION:
+    case ui::AX_ROLE_LIST_MARKER:
     case ui::AX_ROLE_STATIC_TEXT:
       return ROLE_SYSTEM_STATICTEXT;
+
+    case ui::AX_ROLE_STATUS:
+      return ROLE_SYSTEM_STATUSBAR;
+
+    case ui::AX_ROLE_SPLITTER:
+      return ROLE_SYSTEM_SEPARATOR;
+
+    case ui::AX_ROLE_SVG_ROOT:
+      return ROLE_SYSTEM_GRAPHIC;
+
+    case ui::AX_ROLE_TAB:
+      return ROLE_SYSTEM_PAGETAB;
+
+    case ui::AX_ROLE_TABLE:
+      return ROLE_SYSTEM_TABLE;
+
+    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
+      return ROLE_SYSTEM_GROUPING;
+
+    case ui::AX_ROLE_TAB_LIST:
+      return ROLE_SYSTEM_PAGETABLIST;
+
+    case ui::AX_ROLE_TAB_PANEL:
+      return ROLE_SYSTEM_PROPERTYPAGE;
+
+    case ui::AX_ROLE_TERM:
+      return ROLE_SYSTEM_LISTITEM;
+
+    case ui::AX_ROLE_TOGGLE_BUTTON:
+      return ROLE_SYSTEM_PUSHBUTTON;
+
     case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SEARCH_BOX:
       return ROLE_SYSTEM_TEXT;
-    case ui::AX_ROLE_TITLE_BAR:
-      return ROLE_SYSTEM_TITLEBAR;
+
+    case ui::AX_ROLE_ABBR:
+    case ui::AX_ROLE_TIME:
+      return ROLE_SYSTEM_TEXT;
+
+    case ui::AX_ROLE_TIMER:
+      return ROLE_SYSTEM_CLOCK;
+
     case ui::AX_ROLE_TOOLBAR:
       return ROLE_SYSTEM_TOOLBAR;
-    case ui::AX_ROLE_WEB_VIEW:
+
+    case ui::AX_ROLE_TOOLTIP:
+      return ROLE_SYSTEM_TOOLTIP;
+
+    case ui::AX_ROLE_TREE:
+      return ROLE_SYSTEM_OUTLINE;
+
+    case ui::AX_ROLE_TREE_GRID:
+      return ROLE_SYSTEM_OUTLINE;
+
+    case ui::AX_ROLE_TREE_ITEM:
+      return ROLE_SYSTEM_OUTLINEITEM;
+
+    case ui::AX_ROLE_LINE_BREAK:
+      return ROLE_SYSTEM_WHITESPACE;
+
+    case ui::AX_ROLE_VIDEO:
       return ROLE_SYSTEM_GROUPING;
+
     case ui::AX_ROLE_WINDOW:
       return ROLE_SYSTEM_WINDOW;
-    case ui::AX_ROLE_CLIENT:
+
+    // TODO(dmazzoni): figure out the proper MSAA role for roles not called out
+    // here.
     default:
-      // This is the default role for MSAA.
       return ROLE_SYSTEM_CLIENT;
   }
+}
+
+std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
+  std::string html_tag = GetData().GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+
+  switch (GetData().role) {
+    case ui::AX_ROLE_BLOCKQUOTE:
+    case ui::AX_ROLE_DEFINITION:
+    case ui::AX_ROLE_IMAGE_MAP:
+      return html_tag;
+
+    case ui::AX_ROLE_CANVAS:
+      if (GetData().GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
+        // TODO(dougt) why not just use the html_tag?
+        return "canvas";
+      }
+      break;
+
+    case ui::AX_ROLE_FORM:
+      // TODO(dougt) why not just use the html_tag?
+      return "form";
+
+    case ui::AX_ROLE_HEADING:
+      if (!html_tag.empty())
+        return html_tag;
+      break;
+
+    case ui::AX_ROLE_PARAGRAPH:
+      // TODO(dougt) why not just use the html_tag and why upper case?
+      return "P";
+
+    case ui::AX_ROLE_GENERIC_CONTAINER:
+      // TODO(dougt) why can't we always use div in this case?
+      if (html_tag.empty())
+        return "div";
+      return html_tag;
+
+    case ui::AX_ROLE_SWITCH:
+      return "switch";
+
+    default:
+      return "";
+  }
+
+  return "";
 }
 
 int AXPlatformNodeWin::MSAAState() {
