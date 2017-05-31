@@ -429,8 +429,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // scripts.
 
       DCHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+
       Modulator* modulator = Modulator::From(
-          ToScriptStateForMainWorld(element_document.GetFrame()));
+          ToScriptStateForMainWorld(context_document->GetFrame()));
       FetchModuleScriptTree(url, modulator, nonce, parser_state,
                             credentials_mode);
 
@@ -486,7 +487,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         //     source text, settings, base URL, cryptographic nonce,
         //     parser state, and module script credentials mode."
         Modulator* modulator = Modulator::From(
-            ToScriptStateForMainWorld(element_document.GetFrame()));
+            ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
             ScriptContent(), modulator, base_url, nonce, parser_state,
             credentials_mode, kSharableCrossOrigin, position);
