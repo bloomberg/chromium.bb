@@ -49,6 +49,8 @@ class MockTimerWithMonitoredReset : public base::MockTimer {
 
 class KeepAliveDelegateTest : public testing::Test {
  public:
+  using ChannelError = ::cast_channel::ChannelError;
+
   KeepAliveDelegateTest() {}
   ~KeepAliveDelegateTest() override {}
 
@@ -87,7 +89,7 @@ class KeepAliveDelegateTest : public testing::Test {
 };
 
 TEST_F(KeepAliveDelegateTest, TestErrorHandledBeforeStarting) {
-  keep_alive_->OnError(CHANNEL_ERROR_CONNECT_ERROR);
+  keep_alive_->OnError(ChannelError::CONNECT_ERROR);
 }
 
 TEST_F(KeepAliveDelegateTest, TestPing) {
@@ -115,7 +117,7 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
                           _))
       .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
   EXPECT_CALL(*inner_delegate_, Start());
-  EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*inner_delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, Stop());
@@ -136,7 +138,7 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
                               KeepAliveDelegate::kHeartbeatPingType)),
                           _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
-  EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_PING_TIMEOUT));
+  EXPECT_CALL(*inner_delegate_, OnError(ChannelError::PING_TIMEOUT));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
@@ -182,7 +184,7 @@ TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
       .Times(1)
       .InSequence(message_and_error_sequence)
       .RetiresOnSaturation();
-  EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE))
+  EXPECT_CALL(*inner_delegate_, OnError(ChannelError::INVALID_MESSAGE))
       .Times(1)
       .InSequence(message_and_error_sequence);
   EXPECT_CALL(*inner_delegate_, OnMessage(EqualsProto(message_after_error)))
@@ -199,7 +201,7 @@ TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
   keep_alive_->Start();
   keep_alive_->OnMessage(message);
   RunPendingTasks();
-  keep_alive_->OnError(CHANNEL_ERROR_INVALID_MESSAGE);
+  keep_alive_->OnError(ChannelError::INVALID_MESSAGE);
   RunPendingTasks();
 
   // Process a non-PING/PONG message and expect it to pass through.

@@ -42,6 +42,9 @@
 
 const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
+using ::cast_channel::ChannelError;
+using ::cast_channel::ChannelAuthType;
+using ::cast_channel::ReadyState;
 using ::testing::_;
 using ::testing::A;
 using ::testing::DoAll;
@@ -177,7 +180,7 @@ class TestCastSocket : public CastSocketImpl {
       Logger* logger,
       uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return std::unique_ptr<TestCastSocket>(new TestCastSocket(
-        CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
+        CreateIPEndPointForTest(), ChannelAuthType::SSL_VERIFIED,
         kDistantTimeoutMillis, logger, device_capabilities));
   }
 
@@ -372,7 +375,7 @@ class CastSocketTest : public testing::Test {
                 SendMessage(EqualsProto(challenge_proto), _))
         .WillOnce(PostCompletionCallbackTask<1>(net::OK));
     EXPECT_CALL(*socket_->GetMockTransport(), Start());
-    EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+    EXPECT_CALL(handler_, OnConnectComplete(ChannelError::NONE));
     socket_->Connect(std::move(delegate_),
                      base::Bind(&CompleteHandler::OnConnectComplete,
                                 base::Unretained(&handler_)));
@@ -413,8 +416,8 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
 
   HandleAuthHandshake();
 
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
 // Tests that the following connection flow works:
@@ -431,8 +434,8 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
 
   HandleAuthHandshake();
 
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
 // Test that an AuthMessage with a mangled namespace triggers cancelation
@@ -449,7 +452,7 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
               SendMessage(EqualsProto(challenge_proto), _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_TRANSPORT_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::TRANSPORT_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
@@ -461,9 +464,8 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
       mangled_auth_reply);
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_TRANSPORT_ERROR,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::TRANSPORT_ERROR, socket_->error_state());
 
   // Verifies that the CastSocket's resources were torn down during channel
   // close. (see http://crbug.com/504078)
@@ -476,14 +478,14 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
 
   socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_ERROR, socket_->error_state());
 }
 
 // Test connection error - TCP connect fails (sync)
@@ -492,51 +494,49 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
 
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_ERROR, socket_->error_state());
 }
 
 // Test connection error - timeout
 TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnectUnresponsive();
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_TIMEOUT));
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_CONNECT_TIMEOUT));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_TIMEOUT));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CONNECT_TIMEOUT));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CONNECTING, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::CONNECTING, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
   socket_->TriggerTimeout();
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
 }
 
 // Test connection error - TCP socket returns timeout
 TEST_F(CastSocketTest, TestConnectTcpSocketTimeoutError) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::ERR_CONNECTION_TIMED_OUT);
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_TIMEOUT));
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_CONNECT_TIMEOUT));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_TIMEOUT));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CONNECT_TIMEOUT));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
   EXPECT_EQ(net::ERR_CONNECTION_TIMED_OUT,
             logger_->GetLastErrors(socket_->id()).net_return_value);
 }
@@ -548,15 +548,14 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::AUTHENTICATION_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::AUTHENTICATION_ERROR, socket_->error_state());
 }
 
 // Test connection error - SSL connect fails (sync)
@@ -566,15 +565,14 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::AUTHENTICATION_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::AUTHENTICATION_ERROR, socket_->error_state());
   EXPECT_EQ(net::ERR_FAILED,
             logger_->GetLastErrors(socket_->id()).net_return_value);
 }
@@ -586,15 +584,14 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutSync) {
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::ERR_CONNECTION_TIMED_OUT);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_TIMEOUT));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_TIMEOUT));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
   EXPECT_EQ(net::ERR_CONNECTION_TIMED_OUT,
             logger_->GetLastErrors(socket_->id()).net_return_value);
 }
@@ -606,15 +603,14 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutAsync) {
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
   socket_->SetupSslConnect(net::ASYNC, net::ERR_CONNECTION_TIMED_OUT);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_TIMEOUT));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CONNECT_TIMEOUT));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
 }
 
 // Test connection error - challenge send fails
@@ -628,14 +624,14 @@ TEST_F(CastSocketTest, TestConnectChallengeSendError) {
               SendMessage(EqualsProto(CreateAuthChallenge()), _))
       .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CAST_SOCKET_ERROR));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CAST_SOCKET_ERROR, socket_->error_state());
 }
 
 // Test connection error - connection is destroyed after the challenge is
@@ -666,19 +662,19 @@ TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
               SendMessage(EqualsProto(CreateAuthChallenge()), _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_FAILED);
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::CAST_SOCKET_ERROR));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
   socket_->GetMockTransport()->current_delegate()->OnError(
-      CHANNEL_ERROR_SOCKET_ERROR);
+      ChannelError::CAST_SOCKET_ERROR);
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::CAST_SOCKET_ERROR, socket_->error_state());
 }
 
 TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
@@ -688,12 +684,12 @@ TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
   socket_->SetupSslConnect(net::ASYNC, net::OK);
   socket_->SetVerifyChallengeResult(false);
 
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::AUTHENTICATION_ERROR));
   CastMessage challenge_proto = CreateAuthChallenge();
   EXPECT_CALL(*socket_->GetMockTransport(),
               SendMessage(EqualsProto(challenge_proto), _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::AUTHENTICATION_ERROR));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
@@ -702,9 +698,8 @@ TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
   socket_->GetMockTransport()->current_delegate()->OnMessage(CreateAuthReply());
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
-            socket_->error_state());
+  EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
+  EXPECT_EQ(ChannelError::AUTHENTICATION_ERROR, socket_->error_state());
 }
 
 // Sends message data through an actual non-mocked CastTransport object,
@@ -732,13 +727,13 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
   EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
   socket_->AddWriteResultForData(net::ASYNC, test_message_str);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::NONE));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 
   // Send the test message through a real transport object.
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
@@ -747,8 +742,8 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
                                base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
 // Same as TestConnectEndToEndWithRealTransportAsync, except synchronous.
@@ -775,13 +770,13 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
   socket_->AddWriteResultForData(net::SYNCHRONOUS, test_message_str);
 
-  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  EXPECT_CALL(handler_, OnConnectComplete(ChannelError::NONE));
   socket_->Connect(std::move(delegate_),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 
   // Send the test message through a real transport object.
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
@@ -790,8 +785,8 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
                                base::Unretained(&handler_)));
   RunPendingTasks();
 
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
 }  // namespace cast_channel

@@ -146,6 +146,9 @@ class MockSocket : public net::Socket {
 
 class CastTransportTest : public testing::Test {
  public:
+  using ChannelError = ::cast_channel::ChannelError;
+  using ChannelAuthType = ::cast_channel::ChannelAuthType;
+
   CastTransportTest() : logger_(new Logger()) {
     delegate_ = new MockCastTransportDelegate;
     transport_.reset(new CastTransportImpl(&mock_socket_, kChannelId,
@@ -241,7 +244,7 @@ TEST_F(CastTransportTest, TestWriteFailureAsync) {
   EXPECT_CALL(mock_socket_, Write(NotNull(), _, _)).WillOnce(
       DoAll(EnqueueCallback<2>(&socket_cbs), Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(write_handler, Complete(net::ERR_FAILED));
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->SendMessage(
       message,
       base::Bind(&CompleteHandler::Complete, base::Unretained(&write_handler)));
@@ -422,7 +425,7 @@ TEST_F(CastTransportTest, TestReadErrorInHeaderAsync) {
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->Start();
   // Header read failure.
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
@@ -460,7 +463,7 @@ TEST_F(CastTransportTest, TestReadErrorInBodyAsync) {
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->Start();
   // Header read is OK.
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
@@ -507,7 +510,7 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageAsync) {
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::INVALID_MESSAGE));
   transport_->Start();
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
   socket_cbs.Pop(serialized_message.size() -
@@ -606,7 +609,7 @@ TEST_F(CastTransportTest, TestReadErrorInHeaderSync) {
       .WillOnce(DoAll(FillBufferFromString<0>(serialized_message),
                       Return(net::ERR_CONNECTION_RESET)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->Start();
 }
 
@@ -635,7 +638,7 @@ TEST_F(CastTransportTest, TestReadErrorInBodySync) {
                               MessageFramer::MessageHeader::header_size() - 1)),
                       Return(net::ERR_CONNECTION_RESET)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->Start();
   EXPECT_EQ(proto::SOCKET_READ, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
@@ -676,7 +679,7 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
                       Return(serialized_message.size() -
                              MessageFramer::MessageHeader::header_size())))
       .RetiresOnSaturation();
-  EXPECT_CALL(*delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE));
+  EXPECT_CALL(*delegate_, OnError(ChannelError::INVALID_MESSAGE));
   transport_->Start();
 }
 }  // namespace cast_channel

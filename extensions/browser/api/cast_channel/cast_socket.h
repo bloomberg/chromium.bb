@@ -16,10 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "components/cast_channel/cast_channel_enum.h"
+#include "extensions/browser/api/api_resource.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
-#include "extensions/common/api/cast_channel.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -58,7 +60,14 @@ enum CastDeviceCapability {
 // Public interface of the CastSocket class.
 class CastSocket {
  public:
+  using ChannelError = ::cast_channel::ChannelError;
+  using ChannelAuthType = ::cast_channel::ChannelAuthType;
+  using ReadyState = ::cast_channel::ReadyState;
+
   virtual ~CastSocket() {}
+
+  // Used by BrowserContextKeyedAPIFactory.
+  static const char* service_name() { return "CastSocketImplManager"; }
 
   // Connects the channel to the peer. If successful, the channel will be in
   // READY_STATE_OPEN.  DO NOT delete the CastSocket object in |callback|.

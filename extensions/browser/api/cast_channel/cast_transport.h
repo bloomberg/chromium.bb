@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
+#include "components/cast_channel/cast_channel_enum.h"
 #include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/common/api/cast_channel.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
@@ -38,6 +38,8 @@ class CastTransport {
   // Object to be informed of incoming messages and read errors.
   class Delegate {
    public:
+    using ChannelError = ::cast_channel::ChannelError;
+
     virtual ~Delegate() {}
 
     // Called once Transport is successfully initialized and started.
@@ -74,6 +76,9 @@ class CastTransport {
 // Manager class for reading and writing messages to/from a socket.
 class CastTransportImpl : public CastTransport {
  public:
+  using ChannelAuthType = ::cast_channel::ChannelAuthType;
+  using ChannelError = ::cast_channel::ChannelError;
+
   // Adds a CastMessage read/write layer to a socket.
   // Message read events are propagated to the owner via |read_delegate|.
   // |vlog_prefix| sets the prefix used for all VLOGged output.
