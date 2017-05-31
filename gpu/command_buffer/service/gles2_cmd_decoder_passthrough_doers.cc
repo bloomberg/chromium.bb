@@ -3579,7 +3579,7 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
-  gl::GLImage* image = image_manager_->LookupImage(imageId);
+  gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
   if (image == nullptr) {
     InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
     return error::kNoError;

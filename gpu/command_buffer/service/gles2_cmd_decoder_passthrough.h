@@ -168,7 +168,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   VertexArrayManager* GetVertexArrayManager() override;
 
   // Gets the ImageManager for this context.
-  ImageManager* GetImageManager() override;
+  ImageManager* GetImageManagerForTest() override;
 
   // Returns false if there are no pending queries.
   bool HasPendingQueries() const override;
@@ -330,9 +330,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   bool offscreen_;
-
-  // Managers
-  std::unique_ptr<ImageManager> image_manager_;
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;

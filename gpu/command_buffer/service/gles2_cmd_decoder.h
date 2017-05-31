@@ -217,7 +217,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
   virtual VertexArrayManager* GetVertexArrayManager() = 0;
 
   // Gets the ImageManager for this context.
-  virtual ImageManager* GetImageManager() = 0;
+  virtual ImageManager* GetImageManagerForTest() = 0;
 
   // Returns false if there are no pending queries.
   virtual bool HasPendingQueries() const = 0;

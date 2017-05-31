@@ -32,6 +32,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -777,6 +778,7 @@ GpuChannel::GpuChannel(
       io_task_runner_(io_task_runner),
       share_group_(share_group),
       mailbox_manager_(mailbox_manager),
+      image_manager_(new gles2::ImageManager()),
       watchdog_(watchdog),
       discardable_manager_(std::move(discardable_manager)),
       is_gpu_host_(is_gpu_host),

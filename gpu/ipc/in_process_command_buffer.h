@@ -179,7 +179,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   class Service {
    public:
     Service(const gpu::GpuPreferences& gpu_preferences);
-    Service(gpu::gles2::MailboxManager* mailbox_manager,
+    Service(gles2::MailboxManager* mailbox_manager,
             scoped_refptr<gl::GLShareGroup> share_group);
 
     virtual ~Service();
@@ -204,7 +204,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
     scoped_refptr<gl::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
-    gpu::gles2::ProgramCache* program_cache();
+    gles2::ProgramCache* program_cache();
+    gles2::ImageManager* image_manager();
     ServiceDiscardableManager* discardable_manager();
     virtual bool BlockThreadOnWaitSyncToken() const = 0;
 
@@ -213,9 +214,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
     scoped_refptr<gl::GLShareGroup> share_group_;
-    std::unique_ptr<gpu::gles2::ProgramCache> program_cache_;
+    std::unique_ptr<gles2::ProgramCache> program_cache_;
     // No-op default initialization is used in in-process mode.
     GpuProcessActivityFlags activity_flags_;
+    std::unique_ptr<gles2::ImageManager> image_manager_;
     std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
   };
 

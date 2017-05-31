@@ -36,6 +36,7 @@ namespace gles2 {
 class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
+class ImageManager;
 class MailboxManager;
 class RenderbufferManager;
 class PathManager;
@@ -65,6 +66,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
           framebuffer_completeness_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
       bool bind_generates_resource,
+      ImageManager* image_manager,
       gpu::ImageFactory* image_factory,
       ProgressReporter* progress_reporter,
       const GpuFeatureInfo& gpu_feature_info,
@@ -157,7 +159,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return feature_info_.get();
   }
 
-  gpu::ImageFactory* image_factory() { return image_factory_; }
+  ImageManager* image_manager() const { return image_manager_; }
+
+  gpu::ImageFactory* image_factory() const { return image_factory_; }
 
   const GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
@@ -295,9 +299,11 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   scoped_refptr<FeatureInfo> feature_info_;
 
+  ImageManager* image_manager_;
+
   gpu::ImageFactory* image_factory_;
 
-  std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
+  std::vector<base::WeakPtr<gles2::GLES2Decoder>> decoders_;
 
   // Mappings from client side IDs to service side IDs.
   base::hash_map<GLuint, GLsync> syncs_id_map_;

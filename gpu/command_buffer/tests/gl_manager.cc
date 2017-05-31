@@ -31,10 +31,8 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -211,7 +209,7 @@ scoped_refptr<gl::GLContext>* GLManager::base_context_;
 
 GLManager::Options::Options() = default;
 
-GLManager::GLManager() : discardable_manager_(new ServiceDiscardableManager()) {
+GLManager::GLManager() {
   SetupBaseContext();
 }
 
@@ -317,11 +315,12 @@ void GLManager::InitializeWithCommandLine(
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
     context_group = new gles2::ContextGroup(
-        gpu_preferences_, mailbox_manager_.get(), nullptr,
+        gpu_preferences_, mailbox_manager_.get(), nullptr /* memory_tracker */,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
         new gpu::gles2::FramebufferCompletenessCache, feature_info,
-        options.bind_generates_resource, options.image_factory, nullptr,
-        GpuFeatureInfo(), discardable_manager_.get());
+        options.bind_generates_resource, &image_manager_, options.image_factory,
+        nullptr /* progress_reporter */, GpuFeatureInfo(),
+        &discardable_manager_);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));
@@ -497,16 +496,12 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
 
   static int32_t next_id = 1;
   int32_t new_id = next_id++;
-  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
-  DCHECK(image_manager);
-  image_manager->AddImage(gl_image.get(), new_id);
+  image_manager_.AddImage(gl_image.get(), new_id);
   return new_id;
 }
 
 void GLManager::DestroyImage(int32_t id) {
-  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
-  DCHECK(image_manager);
-  image_manager->RemoveImage(id);
+  image_manager_.RemoveImage(id);
 }
 
 void GLManager::SignalQuery(uint32_t query, const base::Closure& callback) {

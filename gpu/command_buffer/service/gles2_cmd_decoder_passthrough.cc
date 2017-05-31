@@ -192,8 +192,6 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     return false;
   }
 
-  image_manager_.reset(new ImageManager());
-
   bind_generates_resource_ = group_->bind_generates_resource();
 
   resources_ = group_->passthrough_resources();
@@ -232,8 +230,6 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (have_context) {
     FlushErrors();
   }
-
-  image_manager_.reset();
 
   DeleteServiceObjects(
       &framebuffer_id_map_, have_context,
@@ -474,8 +470,9 @@ GLES2DecoderPassthroughImpl::GetVertexArrayManager() {
   return nullptr;
 }
 
-gpu::gles2::ImageManager* GLES2DecoderPassthroughImpl::GetImageManager() {
-  return image_manager_.get();
+gpu::gles2::ImageManager*
+GLES2DecoderPassthroughImpl::GetImageManagerForTest() {
+  return group_->image_manager();
 }
 
 bool GLES2DecoderPassthroughImpl::HasPendingQueries() const {
@@ -891,7 +888,7 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
     return error::kNoError;
   }
 
-  gl::GLImage* image = image_manager_->LookupImage(imageId);
+  gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
   if (image == nullptr) {
     InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
     return error::kNoError;

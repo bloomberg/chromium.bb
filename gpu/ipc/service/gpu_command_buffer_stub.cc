@@ -576,7 +576,7 @@ bool GpuCommandBufferStub::Initialize(
             init_params.attribs.context_type, channel_->task_runner()),
         manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
-        init_params.attribs.bind_generates_resource,
+        init_params.attribs.bind_generates_resource, channel_->image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
         channel_->watchdog() /* progress_reporter */,
         manager->gpu_feature_info(), channel_->discardable_manager());
@@ -1116,10 +1116,7 @@ void GpuCommandBufferStub::OnCreateImage(
   const uint32_t internalformat = params.internal_format;
   const uint64_t image_release_count = params.image_release_count;
 
-  if (!decoder_)
-    return;
-
-  gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  gles2::ImageManager* image_manager = channel_->image_manager();
   DCHECK(image_manager);
   if (image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image already exists with same ID.";
@@ -1156,10 +1153,7 @@ void GpuCommandBufferStub::OnCreateImage(
 void GpuCommandBufferStub::OnDestroyImage(int32_t id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyImage");
 
-  if (!decoder_)
-    return;
-
-  gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  gles2::ImageManager* image_manager = channel_->image_manager();
   DCHECK(image_manager);
   if (!image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image with ID doesn't exist.";

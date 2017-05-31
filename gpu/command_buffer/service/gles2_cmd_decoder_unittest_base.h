@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -172,7 +173,9 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return decoder_->GetFramebufferManager();
   }
 
-  ImageManager* GetImageManager() { return decoder_->GetImageManager(); }
+  ImageManager* GetImageManagerForTest() {
+    return decoder_->GetImageManagerForTest();
+  }
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
@@ -755,6 +758,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   GpuPreferences gpu_preferences_;
+  gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;
