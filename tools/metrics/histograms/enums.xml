@@ -21094,6 +21094,34 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="268959744" label="NEW_TASK | NEW_DOCUMENT"/>
 </enum>
 
+<enum name="LaunchMode" type="int">
+  <int value="1" label="LM_AS_WEBAPP">
+    Launched as an installed web application
+  </int>
+  <int value="2" label="LM_WITH_URLS">Launched with urls in the cmd line</int>
+  <int value="3" label="LM_OTHER">
+    Fallback value when no other LM_ condition is satisfied
+  </int>
+  <int value="4" label="LM_SHORTCUT_NONAME">
+    Launched from shortcut but the path to the shortcut cannot be determined
+  </int>
+  <int value="5" label="LM_SHORTCUT_UNKNOWN">
+    Launched from user-defined shortcut
+  </int>
+  <int value="6" label="LM_SHORTCUT_QUICKLAUNCH">
+    Launched from the quick launch bar (pre-Win7)
+  </int>
+  <int value="7" label="LM_SHORTCUT_DESKTOP">
+    Launched from a desktop shortcut
+  </int>
+  <int value="8" label="LM_SHORTCUT_TASKBAR">
+    Launched from the taskbar (Win7 and higher)
+  </int>
+  <int value="9" label="LM_USER_EXPERIMENT">
+    Launched from the installer as part of a retention experiment
+  </int>
+</enum>
+
 <enum name="LazyCSSParseUsage" type="int">
   <int value="0" label="&gt;= 0%"/>
   <int value="1" label="&gt; 10%"/>

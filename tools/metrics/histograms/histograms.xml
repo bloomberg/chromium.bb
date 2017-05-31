@@ -26243,6 +26243,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Launch.Modes" enum="LaunchMode">
+  <owner>calamity@chromium.org</owner>
+  <summary>The different ways Chrome is launched.</summary>
+</histogram>
+
 <histogram name="Layout.MicroSecondsPerComplexText" units="microseconds">
   <owner>benjhayden@chromium.org</owner>
   <summary>
