@@ -94,10 +94,10 @@ HostScannerOperation::Factory::BuildInstance(
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
     const cryptauth::RemoteDevice& remote_device,
     const DeviceStatus& device_status,
-    bool set_up_required)
+    bool setup_required)
     : remote_device(remote_device),
       device_status(device_status),
-      set_up_required(set_up_required) {}
+      setup_required(setup_required) {}
 
 HostScannerOperation::ScannedDeviceInfo::~ScannedDeviceInfo() {}
 
@@ -106,7 +106,7 @@ bool operator==(const HostScannerOperation::ScannedDeviceInfo& first,
   return first.remote_device == second.remote_device &&
          first.device_status.SerializeAsString() ==
              second.device_status.SerializeAsString() &&
-         first.set_up_required == second.set_up_required;
+         first.setup_required == second.setup_required;
 }
 
 HostScannerOperation::HostScannerOperation(
@@ -162,21 +162,21 @@ void HostScannerOperation::OnMessageReceived(
                  << remote_device.GetTruncatedDeviceIdForLogs() << " which "
                  << "indicates that tethering is not available.";
   } else {
-    bool set_up_required =
+    bool setup_required =
         response->response_code() ==
         TetherAvailabilityResponse_ResponseCode::
             TetherAvailabilityResponse_ResponseCode_SETUP_NEEDED;
 
     PA_LOG(INFO) << "Received TetherAvailabilityResponse from device with ID "
                  << remote_device.GetTruncatedDeviceIdForLogs() << " which "
-                 << "indicates that tethering is available. set_up_required = "
-                 << set_up_required;
+                 << "indicates that tethering is available. setup_required = "
+                 << setup_required;
 
     tether_host_response_recorder_->RecordSuccessfulTetherAvailabilityResponse(
         remote_device);
 
     scanned_device_list_so_far_.push_back(ScannedDeviceInfo(
-        remote_device, response->device_status(), set_up_required));
+        remote_device, response->device_status(), setup_required));
     NotifyObserversOfScannedDeviceList(false /* is_final_scan_result */);
   }
 
