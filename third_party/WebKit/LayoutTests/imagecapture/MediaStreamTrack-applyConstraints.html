@@ -2,6 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
+<script src="resources/imagecapture-helpers.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
@@ -58,50 +59,55 @@ async_test(function(t) {
     error => {
       assert_unreached("Error creating MockImageCapture: " + error);
     })
-    .then(function() {
-      return videoTrack.applyConstraints(constraints);
-    })
-    .then(function() {
-      assert_equals(constraints.advanced[0].whiteBalanceMode,
+    .then(() => videoTrack.applyConstraints(constraints))
+    .then(appliedConstraints => {
+
+      const constraintsDict = constraints.advanced[0];
+      const appliedConstraintsDict = appliedConstraints.advanced[0];
+
+      // Check that |appliedConstraints| and |constraints| are equal.
+      assert_equals(constraintsDict.length, appliedConstraintsDict.length);
+      Object.keys(appliedConstraintsDict).forEach((key, value) => {
+        assert_not_equals(constraintsDict[key], undefined, 'key ' + key);
+        if (key != "pointsOfInterest") {
+          assert_equals(constraintsDict[key], appliedConstraintsDict[key], key);
+        } else {
+          assert_point2d_array_approx_equals(constraintsDict[key],
+                                             appliedConstraintsDict[key], 0.01);
+        }
+      });
+
+      assert_equals(constraintsDict.whiteBalanceMode,
                     meteringModeNames[theMock.options().white_balance_mode],
                     'whiteBalanceMode');
-      assert_equals(constraints.advanced[0].exposureMode,
+      assert_equals(constraintsDict.exposureMode,
                     meteringModeNames[theMock.options().exposure_mode],
                     'exposureMode');
-      assert_equals(constraints.advanced[0].focusMode,
+      assert_equals(constraintsDict.focusMode,
                     meteringModeNames[theMock.options().focus_mode],
                     'focusMode');
 
-      assert_equals(constraints.advanced[0].pointsOfInterest.length,
-                    theMock.options().points_of_interest.length,
-                    'pointsOfInterest');
-      for (i = 0; i < constraints.advanced[0].pointsOfInterest.length; ++i) {
-        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].x,
-                             theMock.options().points_of_interest[i].x, 0.01,
-                             'pointsOfInterest x');
-        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].y,
-                             theMock.options().points_of_interest[i].y, 0.01,
-                             'pointsOfInterest y');
-      }
+      assert_point2d_array_approx_equals(constraintsDict.pointsOfInterest,
+                                         theMock.options().points_of_interest,
+                                         0.01);
 
-      assert_equals(constraints.advanced[0].exposureCompensation,
+      assert_equals(constraintsDict.exposureCompensation,
                     theMock.options().exposure_compensation,
                     'exposureCompensation');
-      assert_equals(constraints.advanced[0].colorTemperature,
+      assert_equals(constraintsDict.colorTemperature,
                     theMock.options().color_temperature, 'colorTemperature');
-      assert_equals(constraints.advanced[0].iso, theMock.options().iso, 'iso');
+      assert_equals(constraintsDict.iso, theMock.options().iso, 'iso');
 
-      assert_equals(constraints.advanced[0].brightness,
-                    theMock.options().brightness, 'brightness');
-      assert_equals(constraints.advanced[0].contrast,
-                    theMock.options().contrast, 'constrast');
-      assert_equals(constraints.advanced[0].saturation,
-                    theMock.options().saturation, 'saturation');
-      assert_equals(constraints.advanced[0].sharpness,
-                    theMock.options().sharpness, 'sharpness');
+      assert_equals(constraintsDict.brightness, theMock.options().brightness,
+                    'brightness');
+      assert_equals(constraintsDict.contrast, theMock.options().contrast,
+                    'constrast');
+      assert_equals(constraintsDict.saturation, theMock.options().saturation,
+                    'saturation');
+      assert_equals(constraintsDict.sharpness, theMock.options().sharpness,
+                    'sharpness');
 
-      assert_equals(constraints.advanced[0].torch, theMock.options().torch,
-                    'torch');
+      assert_equals(constraintsDict.torch, theMock.options().torch, 'torch');
 
       t.done();
     })
