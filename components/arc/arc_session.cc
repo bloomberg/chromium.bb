@@ -369,18 +369,18 @@ void ArcSessionImpl::OnSocketCreated(
   const cryptohome::Identification cryptohome_id(
       user_manager->GetPrimaryUser()->GetAccountId());
 
-  bool disable_boot_completed_broadcast =
+  const bool skip_boot_completed_broadcast =
       !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature);
 
   // We only enable /vendor/priv-app when voice interaction is enabled because
   // voice interaction service apk would be bundled in this location.
-  bool enable_vendor_privileged =
+  const bool scan_vendor_priv_app =
       chromeos::switches::IsVoiceInteractionEnabled();
 
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
-      cryptohome_id, disable_boot_completed_broadcast, enable_vendor_privileged,
+      cryptohome_id, skip_boot_completed_broadcast, scan_vendor_priv_app,
       base::Bind(&ArcSessionImpl::OnInstanceStarted, weak_factory_.GetWeakPtr(),
                  base::Passed(&socket_fd)));
 }
