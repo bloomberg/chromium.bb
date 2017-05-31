@@ -20,7 +20,6 @@ class MockModelClient : public Model::Client {
 
   // Model::Client implementation.
   MOCK_METHOD1(OnInitialized, void(bool));
-  MOCK_METHOD1(OnDestroyed, void(bool));
   MOCK_METHOD3(OnItemAdded, void(bool, DownloadClient, const std::string&));
   MOCK_METHOD3(OnItemUpdated, void(bool, DownloadClient, const std::string&));
   MOCK_METHOD3(OnItemRemoved, void(bool, DownloadClient, const std::string&));

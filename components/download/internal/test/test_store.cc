@@ -9,8 +9,7 @@
 namespace download {
 namespace test {
 
-TestStore::TestStore()
-    : ready_(false), init_called_(false), destroy_called_(false) {}
+TestStore::TestStore() : ready_(false), init_called_(false) {}
 
 TestStore::~TestStore() {}
 
@@ -21,11 +20,6 @@ bool TestStore::IsInitialized() {
 void TestStore::Initialize(InitCallback callback) {
   init_called_ = true;
   init_callback_ = std::move(callback);
-}
-
-void TestStore::Destroy(StoreCallback callback) {
-  destroy_called_ = true;
-  destroy_callback_ = std::move(callback);
 }
 
 void TestStore::Update(const Entry& entry, StoreCallback callback) {
@@ -44,11 +38,6 @@ void TestStore::TriggerInit(bool success,
   ready_ = success;
   DCHECK(init_callback_);
   std::move(init_callback_).Run(success, std::move(entries));
-}
-
-void TestStore::TriggerDestroy(bool success) {
-  DCHECK(destroy_callback_);
-  std::move(destroy_callback_).Run(success);
 }
 
 void TestStore::TriggerUpdate(bool success) {

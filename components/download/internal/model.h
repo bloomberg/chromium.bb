@@ -32,11 +32,6 @@ class Model {
     // callback.  If |success| is true it can be accessed now.
     virtual void OnInitialized(bool success) = 0;
 
-    // Called asynchronously in response to a Model::Destroy call.  If |success|
-    // is |false|, destruction of the Model and/or the underlying Store failed.
-    // Destruction of the Model is effectively complete after this callback.
-    virtual void OnDestroyed(bool success) = 0;
-
     // Called when an Entry addition is complete.  |success| determines whether
     // or not the entry has been successfully persisted to the Store.
     virtual void OnItemAdded(bool success,
@@ -63,9 +58,6 @@ class Model {
   // Initializes the Model.  Client::OnInitialized() will be called in response.
   // The Model can be used after that call.
   virtual void Initialize() = 0;
-
-  // Destroys the Model.  Client::OnDestroyed() will be called in response.
-  virtual void Destroy() = 0;
 
   // Adds |entry| to this Model and attempts to write |entry| to the Store.
   // Client::OnItemAdded() will be called in response asynchronously.

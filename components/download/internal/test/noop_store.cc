@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/internal/noop_store.h"
+#include "components/download/internal/test/noop_store.h"
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,11 +25,6 @@ void NoopStore::Initialize(InitCallback callback) {
       FROM_HERE,
       base::BindOnce(&NoopStore::OnInitFinished, weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));
-}
-
-void NoopStore::Destroy(StoreCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true /** success */));
 }
 
 void NoopStore::Update(const Entry& entry, StoreCallback callback) {

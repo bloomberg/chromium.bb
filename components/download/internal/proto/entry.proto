@@ -1,0 +1,47 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package protodb;
+
+import "request.proto";
+import "scheduling.proto";
+
+// This should stay in sync with the DownloadClient enum
+// (components/download/public/clients.h).
+enum DownloadClient {
+  INVALID = 0;
+  TEST = 1;
+  OFFLINE_PAGE_PREFETCH = 2;
+  BOUNDARY = 3;
+}
+
+// Stores the request params, internal state, metrics and metadata associated
+// with a download request.
+message Entry {
+  // This should stay in sync with the State enum
+  // (components/download/internal/entry.h).
+  enum State {
+    NEW = 0;
+    AVAILABLE = 1;
+    ACTIVE = 2;
+    PAUSED = 3;
+    COMPLETE = 4;
+    WATCHDOG = 5;
+  }
+
+  // Identification Parameters.
+  optional DownloadClient name_space = 1;
+  optional string guid = 2;
+
+  // Requested Parameters.
+  optional SchedulingParams scheduling_params = 3;
+  optional RequestParams request_params = 4;
+
+  // Internal Tracking State.
+  optional State state = 5;
+}

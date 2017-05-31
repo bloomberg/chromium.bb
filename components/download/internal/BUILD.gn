@@ -21,6 +21,8 @@ static_library("internal") {
     "download_driver.h",
     "download_service_impl.cc",
     "download_service_impl.h",
+    "download_store.cc",
+    "download_store.h",
     "driver_entry.cc",
     "driver_entry.h",
     "entry.cc",
@@ -28,8 +30,8 @@ static_library("internal") {
     "model.h",
     "model_impl.cc",
     "model_impl.h",
-    "noop_store.cc",
-    "noop_store.h",
+    "proto_conversions.cc",
+    "proto_conversions.h",
     "scheduler/battery_listener.cc",
     "scheduler/battery_listener.h",
     "scheduler/network_listener.cc",
@@ -39,7 +41,9 @@ static_library("internal") {
 
   deps = [
     "//base",
+    "//components/download/internal/proto",
     "//components/download/public",
+    "//components/leveldb_proto",
     "//net",
   ]
 }
@@ -50,7 +54,9 @@ source_set("unit_tests") {
   visibility = [ "//components/download:unit_tests" ]
 
   sources = [
+    "download_store_unittest.cc",
     "model_impl_unittest.cc",
+    "proto_conversions_unittest.cc",
     "scheduler/battery_listener_unittest.cc",
     "scheduler/network_listener_unittest.cc",
   ]
@@ -58,7 +64,9 @@ source_set("unit_tests") {
   deps = [
     ":internal",
     "//base/test:test_support",
+    "//components/download/internal/proto",
     "//components/download/internal/test:test_support",
+    "//components/leveldb_proto:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

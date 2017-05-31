@@ -20,13 +20,8 @@ ModelImpl::~ModelImpl() = default;
 
 void ModelImpl::Initialize() {
   DCHECK(!store_->IsInitialized());
-  store_->Initialize(base::Bind(&ModelImpl::OnInitializedFinished,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ModelImpl::Destroy() {
-  store_->Destroy(base::Bind(&ModelImpl::OnDestroyFinished,
-                             weak_ptr_factory_.GetWeakPtr()));
+  store_->Initialize(base::BindOnce(&ModelImpl::OnInitializedFinished,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ModelImpl::Add(const Entry& entry) {
@@ -35,9 +30,9 @@ void ModelImpl::Add(const Entry& entry) {
 
   entries_.emplace(entry.guid, base::MakeUnique<Entry>(entry));
 
-  store_->Update(entry, base::Bind(&ModelImpl::OnAddFinished,
-                                   weak_ptr_factory_.GetWeakPtr(), entry.client,
-                                   entry.guid));
+  store_->Update(entry, base::BindOnce(&ModelImpl::OnAddFinished,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       entry.client, entry.guid));
 }
 
 void ModelImpl::Update(const Entry& entry) {
@@ -45,9 +40,9 @@ void ModelImpl::Update(const Entry& entry) {
   DCHECK(entries_.find(entry.guid) != entries_.end());
 
   entries_[entry.guid] = base::MakeUnique<Entry>(entry);
-  store_->Update(entry, base::Bind(&ModelImpl::OnUpdateFinished,
-                                   weak_ptr_factory_.GetWeakPtr(), entry.client,
-                                   entry.guid));
+  store_->Update(entry, base::BindOnce(&ModelImpl::OnUpdateFinished,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       entry.client, entry.guid));
 }
 
 void ModelImpl::Remove(const std::string& guid) {
@@ -59,8 +54,8 @@ void ModelImpl::Remove(const std::string& guid) {
   DownloadClient client = it->second->client;
   entries_.erase(it);
   store_->Remove(guid,
-                 base::Bind(&ModelImpl::OnRemoveFinished,
-                            weak_ptr_factory_.GetWeakPtr(), client, guid));
+                 base::BindOnce(&ModelImpl::OnRemoveFinished,
+                                weak_ptr_factory_.GetWeakPtr(), client, guid));
 }
 
 Entry* ModelImpl::Get(const std::string& guid) {
@@ -88,12 +83,6 @@ void ModelImpl::OnInitializedFinished(
     entries_.emplace(entry.guid, base::MakeUnique<Entry>(entry));
 
   client_->OnInitialized(true);
-}
-
-void ModelImpl::OnDestroyFinished(bool success) {
-  store_.reset();
-  entries_.clear();
-  client_->OnDestroyed(success);
 }
 
 void ModelImpl::OnAddFinished(DownloadClient client,

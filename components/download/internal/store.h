@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 
 namespace download {
 
@@ -35,10 +33,6 @@ class Store {
   // initialization was successful as well as a list of Entry objects from the
   // Store.
   virtual void Initialize(InitCallback callback) = 0;
-
-  // Destroyes the store and asynchronously returns whether or not that
-  // destruction was successful.
-  virtual void Destroy(StoreCallback callback) = 0;
 
   // Adds or updates |entry| in this Store asynchronously and returns whether or
   // not that was successful.
