@@ -12,7 +12,7 @@
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
+#include "ash/wm/window_util.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -75,8 +75,8 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     : BrowserNonClientFrameView(frame, browser_view),
       caption_button_container_(nullptr),
       window_icon_(nullptr) {
-  ash::WmWindow::Get(frame->GetNativeWindow())
-      ->InstallResizeHandleWindowTargeter(nullptr);
+  ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
+                                                      nullptr);
   ash::Shell::Get()->AddShellObserver(this);
 }
 

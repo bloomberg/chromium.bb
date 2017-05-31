@@ -22,7 +22,6 @@
 #include "ash/test/test_session_controller_client.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

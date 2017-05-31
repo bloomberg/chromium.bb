@@ -487,12 +487,6 @@ WmWindow* WmWindow::GetChildByShellWindowId(int id) {
   return Get(window_->GetChildById(id));
 }
 
-void WmWindow::InstallResizeHandleWindowTargeter(
-    ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
-      window_, immersive_fullscreen_controller));
-}
-
 void WmWindow::SetBoundsInScreenBehaviorForChildren(
     BoundsInScreenBehavior behavior) {
   window_->SetProperty(

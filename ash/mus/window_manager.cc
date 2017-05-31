@@ -33,7 +33,6 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -353,7 +352,7 @@ void WindowManager::OnWmSetBounds(aura::Window* window,
                                   const gfx::Rect& bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
-  WmWindow::Get(window)->SetBounds(bounds);
+  window->SetBounds(bounds);
 }
 
 bool WindowManager::OnWmSetProperty(

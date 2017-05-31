@@ -36,7 +36,6 @@ class Layer;
 
 namespace ash {
 
-class ImmersiveFullscreenController;
 class RootWindowController;
 class WmTransientWindowObserver;
 enum class WmWindowProperty;
@@ -259,11 +258,6 @@ class ASH_EXPORT WmWindow : public ::wm::TransientWindowObserver {
   void Unminimize();
 
   std::vector<WmWindow*> GetChildren();
-
-  // Installs a resize handler on the window that makes it easier to resize
-  // the window. See ResizeHandleWindowTargeter for the specifics.
-  void InstallResizeHandleWindowTargeter(
-      ImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // See description in SetBoundsInScreen().
   void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior behavior);

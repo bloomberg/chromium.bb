@@ -25,7 +25,6 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -49,9 +48,11 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
@@ -64,10 +65,14 @@ namespace ash {
 namespace test {
 namespace {
 
+const display::Display GetDisplayNearestWindow(aura::Window* window) {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+}
+
 bool CompareByDisplayId(RootWindowController* root1,
                         RootWindowController* root2) {
-  return root1->GetWindow()->GetDisplayNearestWindow().id() <
-         root2->GetWindow()->GetDisplayNearestWindow().id();
+  return GetDisplayNearestWindow(root1->GetRootWindow()).id() <
+         GetDisplayNearestWindow(root2->GetRootWindow()).id();
 }
 
 }  // namespace
@@ -314,7 +319,7 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
   std::vector<RootWindowController*> roots = GetRootsOrderedByDisplayId();
   CHECK_LE(2U, roots.size());
   return roots.size() < 2 ? display::Display()
-                          : roots[1]->GetWindow()->GetDisplayNearestWindow();
+                          : GetDisplayNearestWindow(roots[1]->GetRootWindow());
 }
 
 void AshTestHelper::CreateMashWindowManager() {
@@ -396,7 +401,7 @@ void AshTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
   bounds.set_x(*next_x);
   *next_x += bounds.size().width();
   display::Display updated_display =
-      root_window_controller->GetWindow()->GetDisplayNearestWindow();
+      GetDisplayNearestWindow(root_window_controller->GetRootWindow());
   gfx::Insets work_area_insets = updated_display.GetWorkAreaInsets();
   updated_display.set_bounds(bounds);
   updated_display.UpdateWorkAreaFromInsets(work_area_insets);

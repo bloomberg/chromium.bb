@@ -24,9 +24,8 @@ ImmersiveContextAsh::~ImmersiveContextAsh() {}
 
 void ImmersiveContextAsh::InstallResizeHandleWindowTargeter(
     ImmersiveFullscreenController* controller) {
-  aura::Window* window = controller->widget()->GetNativeWindow();
-  window->SetEventTargeter(
-      base::MakeUnique<ResizeHandleWindowTargeter>(window, controller));
+  wm::InstallResizeHandleWindowTargeterForWindow(
+      controller->widget()->GetNativeWindow(), controller);
 }
 
 void ImmersiveContextAsh::OnEnteringOrExitingImmersive(

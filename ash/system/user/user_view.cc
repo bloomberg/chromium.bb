@@ -27,7 +27,6 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"

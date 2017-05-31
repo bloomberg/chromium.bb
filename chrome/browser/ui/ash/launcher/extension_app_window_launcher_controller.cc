@@ -8,7 +8,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"

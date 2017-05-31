@@ -13,7 +13,6 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"

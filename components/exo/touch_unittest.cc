@@ -9,7 +9,6 @@
 #include "ash/shell_port.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm_window.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"

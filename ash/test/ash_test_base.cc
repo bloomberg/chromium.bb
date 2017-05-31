@@ -27,7 +27,6 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_positioner.h"
-#include "ash/wm_window.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -90,7 +89,7 @@ class AshEventGeneratorDelegate
   DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
 };
 
-ui::mojom::WindowType MusWindowTypeFromWmWindowType(
+ui::mojom::WindowType MusWindowTypeFromWindowType(
     aura::client::WindowType window_type) {
   switch (window_type) {
     case aura::client::WINDOW_TYPE_UNKNOWN:
@@ -299,7 +298,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
               ui::mojom::kResizeBehaviorCanMinimize));
 
   const ui::mojom::WindowType mus_window_type =
-      MusWindowTypeFromWmWindowType(type);
+      MusWindowTypeFromWindowType(type);
   mus::WindowManager* window_manager =
       ash_test_helper_->window_manager_app()->window_manager();
   aura::Window* window = mus::CreateAndParentTopLevelWindow(

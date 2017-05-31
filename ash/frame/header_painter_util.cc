@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/font_list.h"
@@ -82,13 +82,13 @@ bool HeaderPainterUtil::CanAnimateActivation(views::Widget* widget) {
   // rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-  // TODO(sky): GetParent()->GetLayer() is for mash until animations ported.
-  if (!window || !window->GetParent() || !window->GetParent()->GetLayer())
+  aura::Window* window = widget->GetNativeWindow();
+  // TODO(sky): parent()->layer() is for mash until animations ported.
+  if (!window || !window->parent() || !window->parent()->layer())
     return true;
 
   ui::LayerAnimator* parent_layer_animator =
-      window->GetParent()->GetLayer()->GetAnimator();
+      window->parent()->layer()->GetAnimator();
   return !parent_layer_animator->IsAnimatingProperty(
              ui::LayerAnimationElement::OPACITY) &&
          !parent_layer_animator->IsAnimatingProperty(

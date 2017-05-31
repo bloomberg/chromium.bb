@@ -15,7 +15,6 @@
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

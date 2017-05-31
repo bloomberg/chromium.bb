@@ -15,7 +15,6 @@
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -26,6 +25,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace mus {
@@ -95,7 +95,8 @@ gfx::Rect CalculateDefaultBounds(
       gfx::Rect bounds(root_size);
       if (!container_window) {
         const display::Display display =
-            root_window_controller->GetWindow()->GetDisplayNearestWindow();
+            display::Screen::GetScreen()->GetDisplayNearestWindow(
+                root_window_controller->GetRootWindow());
         bounds.Offset(display.bounds().OffsetFromOrigin());
       }
       return bounds;
@@ -178,13 +179,13 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   if (container_window) {
     container_window->AddChild(window);
   } else {
-    WmWindow* root = root_window_controller->GetWindow();
-    gfx::Point origin =
-        root->ConvertPointToTarget(root->GetRootWindow(), gfx::Point());
-    origin += root_window_controller->GetWindow()
-                  ->GetDisplayNearestWindow()
-                  .bounds()
-                  .OffsetFromOrigin();
+    aura::Window* root = root_window_controller->GetRootWindow();
+    gfx::Point origin;
+    aura::Window::ConvertPointToTarget(root, root->GetRootWindow(), &origin);
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            root_window_controller->GetRootWindow());
+    origin += display.bounds().OffsetFromOrigin();
     gfx::Rect bounds_in_screen(origin, bounds.size());
     ash::wm::GetDefaultParent(window, bounds_in_screen)->AddChild(window);
   }
@@ -206,7 +207,7 @@ aura::Window* CreateAndParentTopLevelWindow(
   auto ignored_by_shelf_iter = properties->find(
       ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
   if (ignored_by_shelf_iter != properties->end()) {
-    wm::WindowState* window_state = WmWindow::Get(window)->GetWindowState();
+    wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->set_ignored_by_shelf(
         mojo::ConvertTo<bool>(ignored_by_shelf_iter->second));
     // No need to persist this value.

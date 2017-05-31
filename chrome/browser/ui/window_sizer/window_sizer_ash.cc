@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

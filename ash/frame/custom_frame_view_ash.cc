@@ -13,10 +13,11 @@
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shell_port.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm_window.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -261,17 +262,17 @@ CustomFrameViewAsh::CustomFrameViewAsh(
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_),
       avatar_observer_(base::MakeUnique<AvatarObserver>(frame_, header_view_)) {
-  WmWindow* frame_window = WmWindow::Get(frame->GetNativeWindow());
-  frame_window->InstallResizeHandleWindowTargeter(nullptr);
+  aura::Window* frame_window = frame->GetNativeWindow();
+  wm::InstallResizeHandleWindowTargeterForWindow(frame_window, nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
-  frame_window->aura_window()->SetProperty(
-      aura::client::kTopViewColor, header_view_->GetInactiveFrameColor());
+  frame_window->SetProperty(aura::client::kTopViewColor,
+                            header_view_->GetInactiveFrameColor());
 
   // A delegate for a more complex way of fullscreening the window may already
   // be set. This is the case for packaged apps.
-  wm::WindowState* window_state = frame_window->GetWindowState();
+  wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
         new CustomFrameViewAshWindowStateDelegate(window_state, this,
@@ -290,9 +291,9 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
-  WmWindow* frame_window = WmWindow::Get(frame_->GetNativeWindow());
-  frame_window->aura_window()->SetProperty(
-      aura::client::kTopViewColor, header_view_->GetInactiveFrameColor());
+  aura::Window* frame_window = frame_->GetNativeWindow();
+  frame_window->SetProperty(aura::client::kTopViewColor,
+                            header_view_->GetInactiveFrameColor());
 }
 
 void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
@@ -361,9 +362,9 @@ gfx::Size CustomFrameViewAsh::CalculatePreferredSize() const {
 
 void CustomFrameViewAsh::Layout() {
   views::NonClientFrameView::Layout();
-  WmWindow* frame_window = WmWindow::Get(frame_->GetNativeWindow());
-  frame_window->aura_window()->SetProperty(aura::client::kTopViewInset,
-                                           NonClientTopBorderHeight());
+  aura::Window* frame_window = frame_->GetNativeWindow();
+  frame_window->SetProperty(aura::client::kTopViewInset,
+                            NonClientTopBorderHeight());
 }
 
 const char* CustomFrameViewAsh::GetClassName() const {

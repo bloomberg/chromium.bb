@@ -8,7 +8,6 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/window_manager.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -53,7 +52,7 @@ void ConfigureCommonWidgetProperties(views::Widget* widget) {
   // Default animations conflict with the reveal animation, so turn off the
   // default animation.
   window->SetProperty(aura::client::kAnimationsDisabledKey, true);
-  WmWindow::Get(window)->GetWindowState()->set_ignored_by_shelf(true);
+  wm::GetWindowState(window)->set_ignored_by_shelf(true);
 }
 
 void CreateHeaderView(views::Widget* frame,

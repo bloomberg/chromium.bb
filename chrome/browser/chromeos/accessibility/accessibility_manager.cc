@@ -20,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/wm_window.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"

@@ -22,7 +22,6 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_item.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"

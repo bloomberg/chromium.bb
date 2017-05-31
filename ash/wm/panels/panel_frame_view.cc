@@ -9,6 +9,7 @@
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -24,8 +25,7 @@ const char PanelFrameView::kViewClassName[] = "PanelFrameView";
 
 PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
     : frame_(frame), caption_button_container_(nullptr), window_icon_(nullptr) {
-  GetWidgetWindow()->SetEventTargeter(
-      base::MakeUnique<ResizeHandleWindowTargeter>(GetWidgetWindow(), nullptr));
+  wm::InstallResizeHandleWindowTargeterForWindow(GetWidgetWindow(), nullptr);
   DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
     InitHeaderPainter();
