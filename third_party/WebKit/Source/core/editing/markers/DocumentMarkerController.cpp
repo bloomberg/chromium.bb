@@ -159,9 +159,9 @@ void DocumentMarkerController::AddTextMatchMarker(
   for (TextIterator marked_text(range.StartPosition(), range.EndPosition());
        !marked_text.AtEnd(); marked_text.Advance()) {
     AddMarker(marked_text.CurrentContainer(),
-              new DocumentMarker(marked_text.StartOffsetInCurrentContainer(),
-                                 marked_text.EndOffsetInCurrentContainer(),
-                                 match_status));
+              new TextMatchMarker(marked_text.StartOffsetInCurrentContainer(),
+                                  marked_text.EndOffsetInCurrentContainer(),
+                                  match_status));
   }
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.

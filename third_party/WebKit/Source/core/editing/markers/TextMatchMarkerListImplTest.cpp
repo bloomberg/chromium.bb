@@ -5,6 +5,7 @@
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/markers/TextMatchMarker.h"
 
 namespace blink {
 
@@ -13,8 +14,8 @@ class TextMatchMarkerListImplTest : public EditingTestBase {
   TextMatchMarkerListImplTest() : marker_list_(new TextMatchMarkerListImpl()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new DocumentMarker(start_offset, end_offset,
-                              DocumentMarker::MatchStatus::kInactive);
+    return new TextMatchMarker(start_offset, end_offset,
+                               DocumentMarker::MatchStatus::kInactive);
   }
 
   Persistent<TextMatchMarkerListImpl> marker_list_;

@@ -136,7 +136,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
                  unsigned start_offset,
                  unsigned end_offset,
                  const String& description);
-  DocumentMarker(unsigned start_offset, unsigned end_offset, MatchStatus);
   DocumentMarker(unsigned start_offset,
                  unsigned end_offset,
                  Color underline_color,
@@ -175,6 +174,9 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   void ShiftOffsets(int delta);
 
   DECLARE_TRACE();
+
+ protected:
+  DocumentMarker(unsigned start_offset, unsigned end_offset, MatchStatus);
 
  private:
   MarkerType type_;

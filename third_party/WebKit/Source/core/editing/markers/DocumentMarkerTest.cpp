@@ -4,6 +4,7 @@
 
 #include "core/editing/markers/DocumentMarker.h"
 
+#include "core/editing/markers/TextMatchMarker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -13,8 +14,8 @@ using MarkerOffsets = DocumentMarker::MarkerOffsets;
 class DocumentMarkerTest : public ::testing::Test {
  protected:
   DocumentMarker* CreateMarker(unsigned startOffset, unsigned endOffset) {
-    return new DocumentMarker(startOffset, endOffset,
-                              DocumentMarker::MatchStatus::kInactive);
+    return new TextMatchMarker(startOffset, endOffset,
+                               DocumentMarker::MatchStatus::kInactive);
   }
 };
 
