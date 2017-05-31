@@ -23,6 +23,7 @@ constexpr const char* kStartupMetrics[] = {
     "Startup.FirstWebContents.MainNavigationFinished",
     "Startup.FirstWebContents.MainNavigationStart",
     "Startup.FirstWebContents.NonEmptyPaint2",
+    "Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint",
 
     // The following histograms depend on normal browser startup through
     // BrowserMain and are as such not caught by this browser test.

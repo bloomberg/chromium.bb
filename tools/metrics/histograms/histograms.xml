@@ -72121,6 +72121,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint"
+    units="ms">
+  <owner>hans@chromium.org</owner>
+  <summary>
+    Time between RenderFrameHostImpl::Init and
+    Startup.FirstWebContents.NonEmptyPaint2.
+  </summary>
+</histogram>
+
 <histogram name="Startup.FirstWebContents.UINotResponsive" units="ms">
   <obsolete>
     Deprecated 10/2015.
@@ -93815,6 +93825,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="Startup.FirstWebContents.MainNavigationStart.SingleTab"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint2"/>
+  <affected-histogram
+      name="Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain2"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>

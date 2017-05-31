@@ -19,6 +19,8 @@
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -106,7 +108,10 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
 
   collected_paint_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(
-      base::TimeTicks::Now());
+      base::TimeTicks::Now(), web_contents()
+                                  ->GetMainFrame()
+                                  ->GetProcess()
+                                  ->GetInitTimeForNavigationMetrics());
 
   metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
       metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
