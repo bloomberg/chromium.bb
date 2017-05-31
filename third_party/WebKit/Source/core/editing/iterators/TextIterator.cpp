@@ -170,13 +170,9 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   DCHECK(!start.GetDocument()->View() ||
          !start.GetDocument()->View()->NeedsLayout());
   DCHECK(!start.GetDocument()->NeedsLayoutTreeUpdate());
-
-  if (start.CompareTo(end) > 0) {
-    Initialize(end.ComputeContainerNode(), end.ComputeOffsetInContainerNode(),
-               start.ComputeContainerNode(),
-               start.ComputeOffsetInContainerNode());
-    return;
-  }
+  // To avoid renderer hang, we use |CHECK_LE()| to catch the bad callers
+  // in release build.
+  CHECK_LE(start, end);
   Initialize(start.ComputeContainerNode(), start.ComputeOffsetInContainerNode(),
              end.ComputeContainerNode(), end.ComputeOffsetInContainerNode());
 }
