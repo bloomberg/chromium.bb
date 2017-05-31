@@ -156,7 +156,6 @@ class PermissionsBubbleDialogDelegateView
   const gfx::FontList& GetTitleFontList() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
-  gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool Cancel() override;
   bool Accept() override;
@@ -301,12 +300,6 @@ void PermissionsBubbleDialogDelegateView::OnWidgetDestroying(
     owner_->Closing();
     owner_ = nullptr;
   }
-}
-
-gfx::Size PermissionsBubbleDialogDelegateView::CalculatePreferredSize() const {
-  // TODO(estade): bubbles should default to this width.
-  const int kWidth = 320 - GetInsets().width();
-  return gfx::Size(kWidth, GetHeightForWidth(kWidth));
 }
 
 void PermissionsBubbleDialogDelegateView::GetAccessibleNodeData(

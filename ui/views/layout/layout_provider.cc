@@ -104,7 +104,13 @@ const TypographyProvider& LayoutProvider::GetTypographyProvider() const {
 }
 
 int LayoutProvider::GetSnappedDialogWidth(int min_width) const {
-  return min_width;
+  // This is an arbitrary value, but it's a good arbitrary value. Some dialogs
+  // have very small widths for their contents views, which causes ugly
+  // title-wrapping where a two-word title is split across multiple lines or
+  // similar. To prevent that, forbid any snappable dialog from being narrower
+  // than this value. In principle it's possible to factor in the title width
+  // here, but it is not really worth the complexity.
+  return std::max(min_width, 320);
 }
 
 }  // namespace views
