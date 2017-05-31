@@ -17,8 +17,6 @@ public class BrotliTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // Load library first to create MockCertVerifier.
-        System.loadLibrary("cronet_tests");
         assertTrue(Http2TestServer.startHttp2TestServer(
                 getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM));
     }
@@ -26,7 +24,9 @@ public class BrotliTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         assertTrue(Http2TestServer.shutdownHttp2TestServer());
-        mCronetEngine.shutdown();
+        if (mCronetEngine != null) {
+            mCronetEngine.shutdown();
+        }
         super.tearDown();
     }
 
