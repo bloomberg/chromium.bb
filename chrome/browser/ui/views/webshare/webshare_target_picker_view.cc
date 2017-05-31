@@ -15,7 +15,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 

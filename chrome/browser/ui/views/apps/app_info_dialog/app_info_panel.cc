@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -52,7 +52,8 @@ views::View* AppInfoPanel::CreateVerticalStack(int child_spacing) const {
 }
 
 views::View* AppInfoPanel::CreateVerticalStack() const {
-  return CreateVerticalStack(views::kRelatedControlVerticalSpacing);
+  return CreateVerticalStack(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL));
 }
 
 views::View* AppInfoPanel::CreateHorizontalStack(int child_spacing) const {

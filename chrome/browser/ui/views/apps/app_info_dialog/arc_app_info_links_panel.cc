@@ -6,12 +6,12 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/common/app.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -23,8 +23,10 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
     : AppInfoPanel(profile, app),
       app_list_observer_(this),
       manage_link_(nullptr) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                                        views::kRelatedControlVerticalSpacing));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   manage_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_ARC_APPLICATION_INFO_MANAGE_LINK));
   manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -44,7 +44,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
