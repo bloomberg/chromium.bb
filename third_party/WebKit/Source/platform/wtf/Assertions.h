@@ -109,17 +109,6 @@ class WTF_EXPORT ScopedLogger {
 
 }  // namespace WTF
 
-// CRASH() - Raises a fatal error resulting in program termination and
-// triggering either the debugger or the crash reporter.
-//
-// Use CRASH() in response to known, unrecoverable errors like out-of-memory.
-// Macro is enabled in both debug and release mode.
-// To test for unknown errors and verify assumptions, use ASSERT instead, to
-// avoid impacting performance in release builds.
-#ifndef CRASH
-#define CRASH() IMMEDIATE_CRASH()
-#endif
-
 #define DCHECK_AT(assertion, file, line)                            \
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \
               DCHECK_IS_ON() ? !(assertion) : false)

@@ -86,7 +86,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   void SetRowIndex(unsigned row_index) {
     if (UNLIKELY(row_index > kMaxRowIndex))
-      CRASH();
+      IMMEDIATE_CRASH();
 
     row_index_ = row_index;
   }

@@ -76,7 +76,7 @@ static void ReportFatalErrorInMainThread(const char* location,
   int memory_usage_mb = Platform::Current()->ActualMemoryUsageMB();
   DVLOG(1) << "V8 error: " << message << " (" << location
            << ").  Current memory usage: " << memory_usage_mb << " MB";
-  CRASH();
+  IMMEDIATE_CRASH();
 }
 
 static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
@@ -485,7 +485,7 @@ static void ReportFatalErrorInWorker(const char* location,
                                      const char* message) {
   // FIXME: We temporarily deal with V8 internal error situations such as
   // out-of-memory by crashing the worker.
-  CRASH();
+  IMMEDIATE_CRASH();
 }
 
 static void MessageHandlerInWorker(v8::Local<v8::Message> message,
