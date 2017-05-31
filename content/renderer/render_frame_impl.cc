@@ -1055,6 +1055,11 @@ RenderFrame* RenderFrame::FromWebFrame(blink::WebFrame* web_frame) {
 }
 
 // static
+RenderFrame* RenderFrame::FromWebFrame(blink::WebLocalFrame* web_frame) {
+  return RenderFrameImpl::FromWebFrame(web_frame);
+}
+
+// static
 void RenderFrame::ForEach(RenderFrameVisitor* visitor) {
   FrameMap* frames = g_frame_map.Pointer();
   for (FrameMap::iterator it = frames->begin(); it != frames->end(); ++it) {
