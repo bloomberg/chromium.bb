@@ -31,6 +31,7 @@
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/paint/PaintTiming.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -71,6 +72,7 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
       last_notified_progress_value_(0),
       last_notified_progress_time_(0),
       finished_parsing_(false),
+      did_first_contentful_paint_(false),
       progress_value_(0) {}
 
 ProgressTracker::~ProgressTracker() {}
@@ -95,6 +97,7 @@ void ProgressTracker::Reset() {
   last_notified_progress_value_ = 0;
   last_notified_progress_time_ = 0;
   finished_parsing_ = false;
+  did_first_contentful_paint_ = false;
 }
 
 LocalFrameClient* ProgressTracker::GetLocalFrameClient() const {
@@ -125,6 +128,11 @@ void ProgressTracker::FinishedParsing() {
   MaybeSendProgress();
 }
 
+void ProgressTracker::DidFirstContentfulPaint() {
+  did_first_contentful_paint_ = true;
+  MaybeSendProgress();
+}
+
 void ProgressTracker::SendFinalProgress() {
   if (progress_value_ == 1)
     return;
@@ -142,7 +150,7 @@ void ProgressTracker::WillStartLoading(unsigned long identifier,
   // finishes.
   if (frame_->GetSettings()->GetProgressBarCompletion() !=
           ProgressBarCompletion::kLoadEvent &&
-      (finished_parsing_ || priority < kResourceLoadPriorityHigh))
+      (HaveParsedAndPainted() || priority < kResourceLoadPriorityHigh))
     return;
   progress_items_.Set(identifier, WTF::MakeUnique<ProgressItem>(
                                       kProgressItemDefaultEstimatedLength));
@@ -172,13 +180,19 @@ void ProgressTracker::IncrementProgress(unsigned long identifier, int length) {
   MaybeSendProgress();
 }
 
+bool ProgressTracker::HaveParsedAndPainted() {
+  return finished_parsing_ && did_first_contentful_paint_;
+}
+
 void ProgressTracker::MaybeSendProgress() {
   if (!frame_->IsLoading())
     return;
 
   progress_value_ = kInitialProgressValue + 0.1;  // +0.1 for committing
   if (finished_parsing_)
-    progress_value_ += 0.2;
+    progress_value_ += 0.1;
+  if (did_first_contentful_paint_)
+    progress_value_ += 0.1;
 
   long long bytes_received = 0;
   long long estimated_bytes_for_pending_requests = 0;
@@ -190,7 +204,7 @@ void ProgressTracker::MaybeSendProgress() {
   DCHECK_GE(estimated_bytes_for_pending_requests, 0);
   DCHECK_GE(estimated_bytes_for_pending_requests, bytes_received);
 
-  if (finished_parsing_) {
+  if (HaveParsedAndPainted()) {
     if (frame_->GetSettings()->GetProgressBarCompletion() ==
         ProgressBarCompletion::kDOMContentLoaded) {
       SendFinalProgress();

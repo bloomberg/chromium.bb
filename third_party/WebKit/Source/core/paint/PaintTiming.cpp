@@ -9,6 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/ProgressTracker.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -161,6 +162,7 @@ void PaintTiming::SetFirstContentfulPaint(double stamp) {
   TRACE_EVENT_INSTANT1("loading,rail,devtools.timeline", "firstContentfulPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
   RegisterNotifySwapTime(PaintEvent::kFirstContentfulPaint);
+  GetFrame()->Loader().Progress().DidFirstContentfulPaint();
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
