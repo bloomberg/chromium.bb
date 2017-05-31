@@ -585,6 +585,32 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_WIN)');
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsChromeCleanupPageTest() {}
+
+CrSettingsChromeCleanupPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/chrome_cleanup_page/chrome_cleanup_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'chrome_cleanup_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsChromeCleanupPageTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}

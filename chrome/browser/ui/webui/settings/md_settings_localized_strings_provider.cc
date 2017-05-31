@@ -50,6 +50,10 @@
 #include "chrome/browser/ui/webui/settings/system_handler.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#endif
+
 namespace settings {
 namespace {
 
@@ -755,6 +759,29 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
+
+#if defined(OS_WIN)
+void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"chromeCleanupExplanation", IDS_CHROME_CLEANUP_WEBUI_EXPLANATION},
+      {"chromeCleanupDoneButtonLabel",
+       IDS_CHROME_CLEANUP_WEBUI_DONE_BUTTON_LABEL},
+      {"chromeCleanupLinkShowFiles", IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES},
+      {"chromeCleanupRemoveButtonLabel",
+       IDS_CHROME_CLEANUP_WEBUI_REMOVE_BUTTON_LABEL},
+      {"chromeCleanupRestartButtonLabel",
+       IDS_CHROME_CLEANUP_WEBUI_RESTART_BUTTON_LABEL},
+      {"chromeCleanupTitleErrorCantRemove",
+       IDS_CHROME_CLEANUP_WEBUI_TITLE_ERROR_CANT_REMOVE},
+      {"chromeCleanupTitleRemove", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVE},
+      {"chromeCleanupTitleRemoved", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVED},
+      {"chromeCleanupTitleRemoving", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVING},
+      {"chromeCleanupTitleRestart", IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+#endif  // defined(OS_WIN)
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
@@ -2078,6 +2105,11 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddA11yStrings(html_source);
   AddAboutStrings(html_source);
   AddAppearanceStrings(html_source, profile);
+
+#if defined(OS_WIN)
+  AddChromeCleanupStrings(html_source);
+#endif  // defined(OS_WIN)
+
   AddClearBrowsingDataStrings(html_source);
   AddCommonStrings(html_source, profile);
   AddDownloadsStrings(html_source);

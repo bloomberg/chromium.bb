@@ -7,6 +7,8 @@
       'target_name': 'basic_page',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '../chrome_cleanup_page/compiled_resources2.gyp:chrome_cleanup_proxy',
         '../compiled_resources2.gyp:route',
         '../compiled_resources2.gyp:search_settings',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
