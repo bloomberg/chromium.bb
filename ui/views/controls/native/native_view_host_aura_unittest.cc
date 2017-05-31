@@ -13,9 +13,11 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/native/native_view_host_test_base.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -380,6 +382,82 @@ TEST_F(NativeViewHostAuraTest, SimpleShowAndHide) {
 
   DestroyHost();
   DestroyTopLevel();
+}
+
+namespace {
+
+class TestFocusChangeListener : public FocusChangeListener {
+ public:
+  TestFocusChangeListener(FocusManager* focus_manager)
+      : focus_manager_(focus_manager) {
+    focus_manager_->AddFocusChangeListener(this);
+  }
+
+  ~TestFocusChangeListener() override {
+    focus_manager_->RemoveFocusChangeListener(this);
+  }
+
+  int did_change_focus_count() const { return did_change_focus_count_; }
+
+ private:
+  // FocusChangeListener:
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override {}
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override {
+    did_change_focus_count_++;
+  }
+
+  FocusManager* focus_manager_;
+  int did_change_focus_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFocusChangeListener);
+};
+
+}  // namespace
+
+// Verifies the FocusManager is properly updated if focus is in a child widget
+// that is parented to a NativeViewHost and the NativeViewHost is destroyed.
+TEST_F(NativeViewHostAuraTest, FocusManagerUpdatedDuringDestruction) {
+  CreateTopLevel();
+  toplevel()->Show();
+
+  std::unique_ptr<aura::Window> window =
+      base::MakeUnique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->set_owned_by_parent(false);
+
+  std::unique_ptr<NativeViewHost> native_view_host =
+      base::MakeUnique<NativeViewHost>();
+  toplevel()->GetContentsView()->AddChildView(native_view_host.get());
+
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = new views::WidgetDelegateView();  // Owned by the widget.
+  params.child = true;
+  params.bounds = gfx::Rect(10, 10, 100, 100);
+  params.parent = window.get();
+  std::unique_ptr<Widget> child_widget = base::MakeUnique<Widget>();
+  child_widget->Init(params);
+
+  native_view_host->Attach(window.get());
+
+  View* view1 = new View;  // Owned by |child_widget|.
+  view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  view1->SetBounds(0, 0, 20, 20);
+  child_widget->GetContentsView()->AddChildView(view1);
+  child_widget->Show();
+  view1->RequestFocus();
+  EXPECT_EQ(view1, toplevel()->GetFocusManager()->GetFocusedView());
+
+  TestFocusChangeListener focus_change_listener(toplevel()->GetFocusManager());
+
+  // ~NativeViewHost() unparents |window|.
+  native_view_host.reset();
+
+  EXPECT_EQ(nullptr, toplevel()->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(1, focus_change_listener.did_change_focus_count());
+
+  child_widget.reset();
+  EXPECT_EQ(nullptr, toplevel()->GetFocusManager()->GetFocusedView());
 }
 
 }  // namespace views
