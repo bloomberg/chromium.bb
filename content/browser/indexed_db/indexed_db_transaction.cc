@@ -381,6 +381,32 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   if (!used_) {
     committed = true;
   } else {
+    base::TimeDelta active_time = base::Time::Now() - diagnostics_.start_time;
+    uint64_t size = transaction_->GetTransactionSize() / 1024;
+    switch (mode_) {
+      case blink::kWebIDBTransactionModeReadOnly:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WebCore.IndexedDB.Transaction.ReadOnly.TimeActive", active_time);
+        UMA_HISTOGRAM_MEMORY_KB(
+            "WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit", size);
+        break;
+      case blink::kWebIDBTransactionModeReadWrite:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WebCore.IndexedDB.Transaction.ReadWrite.TimeActive", active_time);
+        UMA_HISTOGRAM_MEMORY_KB(
+            "WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit", size);
+        break;
+      case blink::kWebIDBTransactionModeVersionChange:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WebCore.IndexedDB.Transaction.VersionChange.TimeActive",
+            active_time);
+        UMA_HISTOGRAM_MEMORY_KB(
+            "WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit", size);
+        break;
+      default:
+        NOTREACHED();
+    }
+
     s = transaction_->CommitPhaseTwo();
     committed = s.ok();
   }

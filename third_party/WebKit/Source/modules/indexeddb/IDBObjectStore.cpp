@@ -494,6 +494,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
     index_ids.push_back(it.key);
     index_keys.push_back(keys);
   }
+  UMA_HISTOGRAM_MEMORY_KB("WebCore.IndexedDB.PutValueSize",
+                          value_wrapper.DataLengthBeforeWrapInBytes() / 1024);
 
   IDBRequest* request =
       IDBRequest::Create(script_state, source, transaction_.Get());

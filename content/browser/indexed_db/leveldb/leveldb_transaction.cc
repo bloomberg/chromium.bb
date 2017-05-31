@@ -26,7 +26,6 @@ bool IsKeyBeforeEndOfRange(const content::LevelDBComparator* comparator,
   return (open ? comparator->Compare(key, end) < 0
                : comparator->Compare(key, end) <= 0);
 }
-
 }  // namespace
 
 namespace content {
@@ -51,6 +50,7 @@ void LevelDBTransaction::Set(const StringPiece& key,
 
   if (it == data_.end()) {
     std::unique_ptr<Record> record = base::MakeUnique<Record>();
+    size_ += SizeOfRecordInMap(key.size()) + value->size();
     record->key.assign(key.begin(), key.end() - key.begin());
     record->value.swap(*value);
     record->deleted = deleted;
@@ -58,7 +58,9 @@ void LevelDBTransaction::Set(const StringPiece& key,
     NotifyIterators();
     return;
   }
+  size_ += value->size();
   it->second->value.swap(*value);
+  size_ -= value->size();
   it->second->deleted = deleted;
 }
 
@@ -161,6 +163,10 @@ std::unique_ptr<LevelDBIterator> LevelDBTransaction::CreateIterator() {
 std::unique_ptr<LevelDBTransaction::DataIterator>
 LevelDBTransaction::DataIterator::Create(LevelDBTransaction* transaction) {
   return base::WrapUnique(new DataIterator(transaction));
+}
+
+constexpr uint64_t LevelDBTransaction::SizeOfRecordInMap(size_t key_size) {
+  return sizeof(Record) + key_size * 2;
 }
 
 bool LevelDBTransaction::DataIterator::IsValid() const {
@@ -374,11 +380,14 @@ void LevelDBTransaction::TransactionIterator::DataChanged() {
 void LevelDBTransaction::TransactionIterator::Delete() {
   DCHECK(IsValid());
   if (current_ == data_iterator_.get()) {
+    transaction_->size_ -= data_iterator_->Value().size();
     data_iterator_->Delete();
   } else {
     std::unique_ptr<Record> record = base::MakeUnique<Record>();
     record->key = Key().as_string();
     record->deleted = true;
+    transaction_->size_ +=
+        LevelDBTransaction::SizeOfRecordInMap(record->key.size());
     transaction_->data_[record->key] = std::move(record);
   }
 }

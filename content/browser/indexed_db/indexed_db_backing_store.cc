@@ -4364,6 +4364,11 @@ void IndexedDBBackingStore::Transaction::Rollback() {
   transaction_ = NULL;
 }
 
+uint64_t IndexedDBBackingStore::Transaction::GetTransactionSize() {
+  DCHECK(transaction_);
+  return transaction_->GetTransactionSize();
+}
+
 IndexedDBBackingStore::BlobChangeRecord::BlobChangeRecord(
     const std::string& key,
     int64_t object_store_id)

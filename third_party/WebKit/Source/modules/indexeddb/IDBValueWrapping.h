@@ -111,6 +111,8 @@ class MODULES_EXPORT IDBValueWrapper {
     return blob_info_;
   }
 
+  size_t DataLengthBeforeWrapInBytes() { return original_data_length_; }
+
   // Default threshold for WrapIfBiggerThan().
   //
   // This should be tuned to achieve a compromise between short-term IndexedDB
@@ -132,6 +134,7 @@ class MODULES_EXPORT IDBValueWrapper {
   RefPtr<BlobDataHandle> wrapper_handle_;
   Vector<WebBlobInfo> blob_info_;
   Vector<char> wire_bytes_;
+  size_t original_data_length_ = 0;
 #if DCHECK_IS_ON()
   bool had_exception_ = false;
   bool wrap_called_ = false;

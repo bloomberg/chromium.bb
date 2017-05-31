@@ -224,6 +224,9 @@ leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
   return result_;
 }
+uint64_t IndexedDBFakeBackingStore::FakeTransaction::GetTransactionSize() {
+  return 0;
+}
 void IndexedDBFakeBackingStore::FakeTransaction::Rollback() {}
 
 }  // namespace content

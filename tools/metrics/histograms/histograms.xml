@@ -81640,6 +81640,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.PutBlobsCount" units="blobs">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The number of blobs being saved in an IndexedDB object store 'put'
+    operation. Recorded for every 'put' operation.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.PutBlobsTotalSize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total size of the blobs being saved in an IndexedDB object store 'put'
+    operation. Recorded for every 'put' operation, except when there are no
+    attached blobs or a blob has an unknown size.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.PutKeySize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The size of the IndexedDB key used in an IndexedDB object store 'put'
+    operation. Recorded for every 'put' operation.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.PutValueSize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The size of the IndexedDB value used in an IndexedDB object store 'put'
+    operation. Recorded for every 'put' operation.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.Schema.Index.KeyPathType"
     enum="IDBKeyPathType">
   <owner>jsbell@chromium.org</owner>
@@ -81680,6 +81713,66 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the 'keyPath' type (none, string, or array) during IDBDatabase's
     createObjectStore operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit"
+    units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB ReadOnly Transaction. Since this is
+    a readonly transaction, the size should only be &gt;0 when the transaction
+    is removing tombstone index keys. Recorded on transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadOnly.TimeActive" units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The time it takes for an IndexedDB ReadOnly Transaction to commit, starting
+    from when it starts executing tasks (when it is scheduled). Recorded on
+    transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit"
+    units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB ReadWrite Transaction. This is the
+    memory that is temporarily stored before writing to disk. Recorded on
+    transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadWrite.TimeActive" units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The time it takes for an IndexedDB ReadWrite Transaction to commit, starting
+    from when it starts executing tasks (when it is scheduled). Recorded on
+    transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit"
+    units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB VersionChange Transaction. This is
+    the memory that is temporarily stored before writing to disk. Version change
+    transactions happen when creating a database or updating a current database
+    schema. Recorded on transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.VersionChange.TimeActive"
+    units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The time it takes for an IndexedDB VersionChange Transaction to commit,
+    starting from when it starts executing tasks (when it is scheduled). Version
+    change transactions happen when creating a database or updating a current
+    database schema. Recorded on transaction commit.
   </summary>
 </histogram>
 
