@@ -278,8 +278,12 @@ LayoutSize PaintLayer::SubpixelAccumulation() const {
 }
 
 void PaintLayer::SetSubpixelAccumulation(const LayoutSize& size) {
-  if (rare_data_ || !size.IsZero())
+  if (rare_data_ || !size.IsZero()) {
     EnsureRareData().subpixel_accumulation = size;
+    if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+      scrollable_area->PositionOverflowControls();
+    }
+  }
 }
 
 void PaintLayer::UpdateLayerPositionsAfterLayout() {

@@ -834,11 +834,17 @@ LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
 
 void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
     const LayoutPoint& location) {
+  if (!HasLayer()) {
+    SetLocation(location);
+    return;
+  }
+  // The Layer does not yet have the up to date subpixel accumulation
+  // so we base the size strictly on the frame rect's location.
   IntSize old_pixel_snapped_border_rect_size =
       PixelSnappedBorderBoxRect().Size();
   SetLocation(location);
-  if (HasLayer() && PixelSnappedBorderBoxRect().Size() !=
-                        old_pixel_snapped_border_rect_size) {
+  if (PixelSnappedBorderBoxRect().Size() !=
+      old_pixel_snapped_border_rect_size) {
     Layer()->UpdateSizeAndScrollingAfterLayout();
   }
 }

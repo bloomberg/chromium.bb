@@ -1350,7 +1350,8 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   overflow_controls_host_layer_->SetPosition(FloatPoint(host_layer_position));
 
   const IntRect border_box =
-      ToLayoutBox(owning_layer_.GetLayoutObject()).PixelSnappedBorderBoxRect();
+      owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxRect(
+          owning_layer_.SubpixelAccumulation());
   overflow_controls_host_layer_->SetSize(FloatSize(border_box.Size()));
   overflow_controls_host_layer_->SetMasksToBounds(true);
   overflow_controls_host_layer_->SetBackfaceVisibility(
@@ -1455,8 +1456,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
 
   DCHECK(scrolling_contents_layer_);
   LayoutBox& layout_box = ToLayoutBox(GetLayoutObject());
-  IntRect overflow_clip_rect =
-      PixelSnappedIntRect(layout_box.OverflowClipRect(LayoutPoint()));
+  IntRect overflow_clip_rect = PixelSnappedIntRect(layout_box.OverflowClipRect(
+      LayoutPoint(owning_layer_.SubpixelAccumulation())));
 
   // When a m_childTransformLayer exists, local content offsets for the
   // m_scrollingLayer have already been applied. Otherwise, we apply them here.

@@ -28,7 +28,8 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
 
   IntRect abs_rect = GetScrollableArea().ResizerCornerRect(
-      GetScrollableArea().Box().PixelSnappedBorderBoxRect(),
+      GetScrollableArea().Box().PixelSnappedBorderBoxRect(
+          GetScrollableArea().Layer()->SubpixelAccumulation()),
       kResizerForPointer);
   if (abs_rect.IsEmpty())
     return;
@@ -225,7 +226,8 @@ void ScrollableAreaPainter::PaintOverflowControls(
 bool ScrollableAreaPainter::OverflowControlsIntersectRect(
     const CullRect& cull_rect) const {
   const IntRect border_box =
-      GetScrollableArea().Box().PixelSnappedBorderBoxRect();
+      GetScrollableArea().Box().PixelSnappedBorderBoxRect(
+          GetScrollableArea().Layer()->SubpixelAccumulation());
 
   if (cull_rect.IntersectsCullRect(
           GetScrollableArea().RectForHorizontalScrollbar(border_box)))
