@@ -9,55 +9,19 @@
 
 #include "../drv.h"
 #include "cros_gralloc_handle.h"
+#include "cros_gralloc_types.h"
 
-#include <hardware/gralloc.h>
 #include <system/graphics.h>
-
-/* Use these error codes derived from gralloc1 to make transition easier when
- * it happens
- */
-typedef enum {
-	CROS_GRALLOC_ERROR_NONE = 0,
-	CROS_GRALLOC_ERROR_BAD_DESCRIPTOR = 1,
-	CROS_GRALLOC_ERROR_BAD_HANDLE = 2,
-	CROS_GRALLOC_ERROR_BAD_VALUE = 3,
-	CROS_GRALLOC_ERROR_NOT_SHARED = 4,
-	CROS_GRALLOC_ERROR_NO_RESOURCES = 5,
-	CROS_GRALLOC_ERROR_UNDEFINED = 6,
-	CROS_GRALLOC_ERROR_UNSUPPORTED = 7,
-} cros_gralloc_error_t;
-
-/* This enumeration must match the one in <gralloc_drm.h>.
- * The functions supported by this gralloc's temporary private API are listed
- * below. Use of these functions is highly discouraged and should only be
- * reserved for cases where no alternative to get same information (such as
- * querying ANativeWindow) exists.
- */
-// clang-format off
-enum {
-	GRALLOC_DRM_GET_STRIDE,
-	GRALLOC_DRM_GET_FORMAT,
-	GRALLOC_DRM_GET_DIMENSIONS,
-	GRALLOC_DRM_GET_BACKING_STORE,
-};
-// clang-format on
+#include <system/window.h>
 
 constexpr uint32_t cros_gralloc_magic = 0xABCDDCBA;
-
 constexpr uint32_t handle_data_size =
     ((sizeof(struct cros_gralloc_handle) - offsetof(cros_gralloc_handle, fds[0])) / sizeof(int));
 
-constexpr uint32_t sw_access = GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK;
+uint32_t cros_gralloc_convert_format(int32_t format);
 
-uint64_t cros_gralloc_convert_flags(int flags);
+cros_gralloc_handle_t cros_gralloc_convert_handle(buffer_handle_t handle);
 
-uint32_t cros_gralloc_convert_format(int format);
-
-int32_t cros_gralloc_rendernode_open(struct driver **drv);
-
-int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd);
-
-/* Logging code adapted from bsdrm */
 __attribute__((format(printf, 4, 5))) void cros_gralloc_log(const char *prefix, const char *file,
 							    int line, const char *format, ...);
 

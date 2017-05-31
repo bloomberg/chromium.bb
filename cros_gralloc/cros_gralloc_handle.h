@@ -33,4 +33,6 @@ struct cros_gralloc_handle {
 	int32_t usage; /* Android usage. */
 };
 
+typedef const struct cros_gralloc_handle *cros_gralloc_handle_t;
+
 #endif

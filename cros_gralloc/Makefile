@@ -6,6 +6,9 @@ GRALLOC = gralloc.cros.so
 
 SRCS    = $(wildcard *.cc)
 SRCS   += $(wildcard ../*.c)
+
+SRCS   += $(wildcard gralloc0/*.cc)
+
 SOURCES = $(filter-out ../gbm%, $(SRCS))
 PKG_CONFIG ?= pkg-config
 
@@ -14,7 +17,7 @@ LIBDRM_CFLAGS := $(shell $(PKG_CONFIG) --cflags libdrm)
 LIBDRM_LIBS := $(shell $(PKG_CONFIG) --libs libdrm)
 
 CPPFLAGS += -Wall -fPIC -Werror -flto $(LIBDRM_CFLAGS)
-CXXFLAGS += -std=c++11
+CXXFLAGS += -std=c++14
 CFLAGS   += -std=c99
 LIBS     += -shared -lcutils -lhardware $(LIBDRM_LIBS)
 
