@@ -11,14 +11,26 @@
 
 namespace offline_pages {
 
-PrefetchServiceImpl::PrefetchServiceImpl()
-    : dispatcher_(base::MakeUnique<PrefetchDispatcherImpl>()) {}
+PrefetchServiceImpl::PrefetchServiceImpl(
+    std::unique_ptr<PrefetchGCMHandler> gcm_handler)
+    : gcm_handler_(std::move(gcm_handler)),
+      dispatcher_(base::MakeUnique<PrefetchDispatcherImpl>()) {}
 
 PrefetchServiceImpl::~PrefetchServiceImpl() = default;
 
+PrefetchGCMHandler* PrefetchServiceImpl::GetPrefetchGCMHandler() {
+  return gcm_handler_.get();
+}
+
 PrefetchDispatcher* PrefetchServiceImpl::GetDispatcher() {
   return dispatcher_.get();
-};
+}
+
+void PrefetchServiceImpl::ObserveContentSuggestionsService(
+    ntp_snippets::ContentSuggestionsService* service) {
+  suggested_articles_observer_ =
+      base::MakeUnique<SuggestedArticlesObserver>(service, this);
+}
 
 void PrefetchServiceImpl::Shutdown() {}
 

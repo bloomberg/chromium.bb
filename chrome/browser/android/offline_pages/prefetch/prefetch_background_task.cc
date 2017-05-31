@@ -4,9 +4,9 @@
 
 #include "chrome/browser/android/offline_pages/prefetch/prefetch_background_task.h"
 
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/offline_pages/content/prefetch_service_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "content/public/browser/browser_context.h"
 #include "jni/PrefetchBackgroundTask_jni.h"

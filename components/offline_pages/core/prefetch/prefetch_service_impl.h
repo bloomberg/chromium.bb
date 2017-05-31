@@ -8,22 +8,33 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
+
+namespace ntp_snippets {
+class ContentSuggestionsService;
+}
 
 namespace offline_pages {
 
 class PrefetchServiceImpl : public PrefetchService {
  public:
-  PrefetchServiceImpl();
+  PrefetchServiceImpl(std::unique_ptr<PrefetchGCMHandler> gcm_handler);
   ~PrefetchServiceImpl() override;
 
   // PrefetchService implementation:
+  void ObserveContentSuggestionsService(
+      ntp_snippets::ContentSuggestionsService* service) override;
   PrefetchDispatcher* GetDispatcher() override;
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
 
   // KeyedService implementation:
   void Shutdown() override;
 
  private:
+  std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
+  std::unique_ptr<PrefetchGCMHandler> gcm_handler_;
   std::unique_ptr<PrefetchDispatcher> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);

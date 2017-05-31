@@ -16,6 +16,9 @@ static_library("prefetch") {
     "prefetch_dispatcher.h",
     "prefetch_dispatcher_impl.cc",
     "prefetch_dispatcher_impl.h",
+    "prefetch_gcm_app_handler.cc",
+    "prefetch_gcm_app_handler.h",
+    "prefetch_gcm_handler.h",
     "prefetch_item.cc",
     "prefetch_item.h",
     "prefetch_proto_utils.cc",
@@ -27,6 +30,8 @@ static_library("prefetch") {
     "prefetch_service_impl.h",
     "prefetch_types.cc",
     "prefetch_types.h",
+    "suggested_articles_observer.cc",
+    "suggested_articles_observer.h",
   ]
 
   public_deps = [
@@ -34,8 +39,12 @@ static_library("prefetch") {
   ]
   deps = [
     "//base",
+    "//components/gcm_driver",
+    "//components/gcm_driver/common",
     "//components/keyed_service/core",
+    "//components/ntp_snippets",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:switches",
     "//net:net",
     "//url",
   ]
@@ -62,11 +71,13 @@ source_set("unit_tests") {
     "prefetch_request_operation_response_unittest.cc",
     "prefetch_request_test_base.cc",
     "prefetch_request_test_base.h",
+    "suggested_articles_observer_unittest.cc",
   ]
 
   deps = [
     ":prefetch",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/content/suggested_articles_observer.h"
+#include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
-#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -67,36 +67,13 @@ class TestingPrefetchService : public PrefetchService {
  public:
   TestingPrefetchService() = default;
 
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override { return nullptr; }
   PrefetchDispatcher* GetDispatcher() override { return &dispatcher; };
-
+  void ObserveContentSuggestionsService(
+      ntp_snippets::ContentSuggestionsService* content_suggestions_service)
+      override {}
   TestingPrefetchDispatcher dispatcher;
 };
-
-class TestDelegate : public SuggestedArticlesObserver::Delegate {
- public:
-  TestDelegate() = default;
-  ~TestDelegate() override = default;
-
-  const std::vector<ContentSuggestion>& GetSuggestions(
-      const Category& category) override {
-    get_suggestions_count++;
-    return suggestions;
-  }
-
-  PrefetchService* GetPrefetchService(
-      content::BrowserContext* context) override {
-    return &prefetch_service;
-  }
-
-  TestingPrefetchService prefetch_service;
-
-  // Public for test manipulation.
-  std::vector<ContentSuggestion> suggestions;
-
-  // Signals that delegate was called.
-  int get_suggestions_count = 0;
-};
-
 }  // namespace
 
 class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
@@ -104,23 +81,13 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
   OfflinePageSuggestedArticlesObserverTest() = default;
 
   void SetUp() override {
-    observer_ =
-        base::MakeUnique<SuggestedArticlesObserver>(&context_, MakeDelegate());
-  }
-
-  virtual std::unique_ptr<SuggestedArticlesObserver::Delegate> MakeDelegate() {
-    auto delegate_ptr = base::MakeUnique<TestDelegate>();
-    test_delegate_ = delegate_ptr.get();
-    return std::move(delegate_ptr);
+    observer_ = base::MakeUnique<SuggestedArticlesObserver>(
+        nullptr, test_prefetch_service());
   }
 
   SuggestedArticlesObserver* observer() { return observer_.get(); }
 
-  TestDelegate* test_delegate() { return test_delegate_; }
-
-  TestingPrefetchService* test_prefetch_service() {
-    return &(test_delegate()->prefetch_service);
-  }
+  TestingPrefetchService* test_prefetch_service() { return &prefetch_service_; }
 
   TestingPrefetchDispatcher* test_prefetch_dispatcher() {
     return &(test_prefetch_service()->dispatcher);
@@ -129,36 +96,16 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
  protected:
   Category category =
       Category::FromKnownCategory(ntp_snippets::KnownCategories::ARTICLES);
-  content::TestBrowserContext context_;
 
  private:
   std::unique_ptr<SuggestedArticlesObserver> observer_;
-  TestDelegate* test_delegate_;
+  TestingPrefetchService prefetch_service_;
 };
-
-TEST_F(OfflinePageSuggestedArticlesObserverTest,
-       CallsDelegateOnNewSuggestions) {
-  // We should not do anything if the category is not loaded.
-  observer()->OnNewSuggestions(category);
-  EXPECT_EQ(0, test_delegate()->get_suggestions_count);
-  EXPECT_EQ(0, test_prefetch_dispatcher()->new_suggestions_count);
-
-  // Once the category becomes available, new suggestions should cause us to ask
-  // the delegate for suggestion URLs.
-  observer()->OnCategoryStatusChanged(category,
-                                      ntp_snippets::CategoryStatus::AVAILABLE);
-  observer()->OnNewSuggestions(category);
-  EXPECT_EQ(1, test_delegate()->get_suggestions_count);
-
-  // We expect that no pages were forwarded to the prefetch service since no
-  // pages were prepopulated.
-  EXPECT_EQ(0, test_prefetch_dispatcher()->new_suggestions_count);
-}
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest,
        ForwardsSuggestionsToPrefetchService) {
   const GURL test_url_1("https://www.example.com/1");
-  test_delegate()->suggestions.push_back(
+  observer()->GetTestingArticles()->push_back(
       ContentSuggestionFromTestURL(test_url_1));
 
   observer()->OnCategoryStatusChanged(category,
@@ -176,9 +123,9 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
 TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesAllOnBadStatus) {
   const GURL test_url_1("https://www.example.com/1");
   const GURL test_url_2("https://www.example.com/2");
-  test_delegate()->suggestions.push_back(
+  observer()->GetTestingArticles()->push_back(
       ContentSuggestionFromTestURL(test_url_1));
-  test_delegate()->suggestions.push_back(
+  observer()->GetTestingArticles()->push_back(
       ContentSuggestionFromTestURL(test_url_2));
 
   observer()->OnCategoryStatusChanged(category,
@@ -197,7 +144,7 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesAllOnBadStatus) {
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesClientIdOnInvalidated) {
   const GURL test_url_1("https://www.example.com/1");
-  test_delegate()->suggestions.push_back(
+  observer()->GetTestingArticles()->push_back(
       ContentSuggestionFromTestURL(test_url_1));
   observer()->OnCategoryStatusChanged(category,
                                       ntp_snippets::CategoryStatus::AVAILABLE);

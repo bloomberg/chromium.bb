@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
-
 #include <memory>
 
 #include "base/sequenced_task_runner.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_pages/features/features.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +24,12 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #endif
 
 namespace gcm {
@@ -53,6 +59,9 @@ GCMProfileServiceFactory::GCMProfileServiceFactory()
 #if !defined(OS_ANDROID)
   DependsOn(LoginUIServiceFactory::GetInstance());
 #endif
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
 
 GCMProfileServiceFactory::~GCMProfileServiceFactory() {
@@ -67,10 +76,12 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  std::unique_ptr<GCMProfileService> service = nullptr;
 #if defined(OS_ANDROID)
-  return new GCMProfileService(profile->GetPath(), blocking_task_runner);
+  service = base::WrapUnique(
+      new GCMProfileService(profile->GetPath(), blocking_task_runner));
 #else
-  return new GCMProfileService(
+  service = base::WrapUnique(new GCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
@@ -83,8 +94,20 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
           content::BrowserThread::UI),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
-      blocking_task_runner);
+      blocking_task_runner));
 #endif
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  offline_pages::PrefetchService* prefetch_service =
+      offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
+  if (prefetch_service != nullptr) {
+    offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
+        prefetch_service->GetPrefetchGCMHandler();
+    service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
+                                     prefetch_gcm_handler->AsGCMAppHandler());
+  }
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
+  return service.release();
 }
 
 content::BrowserContext* GCMProfileServiceFactory::GetBrowserContextToUse(
