@@ -587,7 +587,12 @@ SoftwareImageDecodeCache::GetOriginalSizeImageDecode(
                  "color conversion");
     image = image->makeColorSpace(target_color_space,
                                   SkTransferFunctionBehavior::kIgnore);
-    DCHECK(image);
+    // Because image is a lazy-decode image, the call to makeColorSpace will
+    // fail if image decode fails.
+    if (!image) {
+      decoded_pixels->Unlock();
+      return nullptr;
+    }
   }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
