@@ -48,6 +48,8 @@ const char KeepAliveDelegate::kHeartbeatPingType[] = "PING";
 // static
 const char KeepAliveDelegate::kHeartbeatPongType[] = "PONG";
 
+using ::cast_channel::ChannelError;
+
 // static
 CastMessage KeepAliveDelegate::CreateKeepAliveMessage(
     const char* message_type) {
@@ -146,19 +148,20 @@ void KeepAliveDelegate::SendKeepAliveMessageComplete(const char* message_type,
     // An error occurred while sending the ping response.
     VLOG(1) << "Error sending " << message_type;
     logger_->LogSocketEventWithRv(socket_->id(), proto::PING_WRITE_ERROR, rv);
-    OnError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
+    OnError(ChannelError::CAST_SOCKET_ERROR);
   }
 }
 
 void KeepAliveDelegate::LivenessTimeout() {
-  OnError(cast_channel::CHANNEL_ERROR_PING_TIMEOUT);
+  OnError(ChannelError::PING_TIMEOUT);
   Stop();
 }
 
 // CastTransport::Delegate interface.
 void KeepAliveDelegate::OnError(ChannelError error_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "KeepAlive::OnError: " << error_state;
+  VLOG(1) << "KeepAlive::OnError: "
+          << ::cast_channel::ChannelErrorToString(error_state);
   inner_delegate_->OnError(error_state);
   Stop();
 }

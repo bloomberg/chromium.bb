@@ -119,7 +119,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
   DCHECK(error);
   DCHECK(message_length);
   if (error_) {
-    *error = CHANNEL_ERROR_INVALID_MESSAGE;
+    *error = ChannelError::INVALID_MESSAGE;
     return nullptr;
   }
 
@@ -127,7 +127,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
             input_buffer_->offset());
   CHECK_LE(num_bytes, BytesRequested());
   message_bytes_received_ += num_bytes;
-  *error = CHANNEL_ERROR_NONE;
+  *error = ChannelError::NONE;
   *message_length = 0;
   switch (current_element_) {
     case HEADER:
@@ -136,7 +136,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
         MessageHeader::Deserialize(input_buffer_->StartOfBuffer(), &header);
         if (header.message_size > MessageHeader::max_message_size()) {
           VLOG(1) << "Error parsing header (message size too large).";
-          *error = CHANNEL_ERROR_INVALID_MESSAGE;
+          *error = ChannelError::INVALID_MESSAGE;
           error_ = true;
           return nullptr;
         }
@@ -151,7 +151,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
                 input_buffer_->StartOfBuffer() + MessageHeader::header_size(),
                 body_size_)) {
           VLOG(1) << "Error parsing packet body.";
-          *error = CHANNEL_ERROR_INVALID_MESSAGE;
+          *error = ChannelError::INVALID_MESSAGE;
           error_ = true;
           return nullptr;
         }

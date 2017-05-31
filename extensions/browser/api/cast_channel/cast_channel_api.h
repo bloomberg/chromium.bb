@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "components/cast_channel/cast_channel_enum.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -171,7 +173,7 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
     ~CastMessageHandler() override;
 
     // CastTransport::Delegate implementation.
-    void OnError(cast_channel::ChannelError error_state) override;
+    void OnError(::cast_channel::ChannelError error_state) override;
     void OnMessage(const cast_channel::CastMessage& message) override;
     void Start() override;
 
@@ -192,14 +194,14 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   static net::IPEndPoint* ParseConnectInfo(
       const cast_channel::ConnectInfo& connect_info);
 
-  void OnOpen(cast_channel::ChannelError result);
+  void OnOpen(::cast_channel::ChannelError result);
 
   std::unique_ptr<cast_channel::Open::Params> params_;
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
   std::unique_ptr<net::IPEndPoint> ip_endpoint_;
-  cast_channel::ChannelAuthType channel_auth_;
+  ::cast_channel::ChannelAuthType channel_auth_;
   base::TimeDelta liveness_timeout_;
   base::TimeDelta ping_interval_;
 

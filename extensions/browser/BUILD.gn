@@ -252,6 +252,7 @@ source_set("browser_sources") {
   deps = [
     "//base:i18n",
     "//components/cast_certificate",
+    "//components/cast_channel",
     "//components/crx_file",
     "//components/guest_view/browser",
     "//components/keyed_service/content",
@@ -396,6 +397,7 @@ source_set("unit_tests") {
     "api/bluetooth/bluetooth_event_router_unittest.cc",
     "api/cast_channel/cast_auth_util_unittest.cc",
     "api/cast_channel/cast_channel_api_unittest.cc",
+    "api/cast_channel/cast_channel_enum_util_unittest.cc",
     "api/cast_channel/cast_framer_unittest.cc",
     "api/cast_channel/cast_socket_service_unittest.cc",
     "api/cast_channel/cast_socket_unittest.cc",
