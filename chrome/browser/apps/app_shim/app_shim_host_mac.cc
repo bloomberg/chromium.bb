@@ -19,14 +19,14 @@
 AppShimHost::AppShimHost() : initial_launch_finished_(false) {}
 
 AppShimHost::~AppShimHost() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimClose(this);
 }
 
 void AppShimHost::ServeChannel(mojo::edk::ScopedPlatformHandle handle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!channel_.get());
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateServerFactory(
@@ -49,7 +49,7 @@ std::string AppShimHost::GetAppId() const {
 }
 
 bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppShimHost, message)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_LaunchApp, OnLaunchApp)
@@ -75,7 +75,7 @@ void AppShimHost::OnLaunchApp(const base::FilePath& profile_dir,
                               const std::string& app_id,
                               apps::AppShimLaunchType launch_type,
                               const std::vector<base::FilePath>& files) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(profile_path_.empty());
   // Only one app launch message per channel.
   if (!profile_path_.empty())
@@ -93,21 +93,21 @@ void AppShimHost::OnLaunchApp(const base::FilePath& profile_dir,
 
 void AppShimHost::OnFocus(apps::AppShimFocusType focus_type,
                           const std::vector<base::FilePath>& files) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimFocus(this, focus_type, files);
 }
 
 void AppShimHost::OnSetHidden(bool hidden) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimSetHidden(this, hidden);
 }
 
 void AppShimHost::OnQuit() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimQuit(this);
@@ -137,6 +137,6 @@ void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
 }
 
 void AppShimHost::Close() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delete this;
 }
