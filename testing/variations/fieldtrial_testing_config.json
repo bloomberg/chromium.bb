@@ -1876,6 +1876,42 @@
             ]
         }
     ],
+    "OmniboxPlaceholderExperiment": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "SearchOrTypeUrl"
+                },
+                {
+                    "name": "SearchOrTypeWebsiteName"
+                },
+                {
+                    "name": "SearchTheWeb"
+                },
+                {
+                    "name": "EnterASearchOrWebsite"
+                },
+                {
+                    "name": "SearchNews"
+                },
+                {
+                    "name": "SearchRecipes"
+                },
+                {
+                    "name": "SearchWeather"
+                },
+                {
+                    "name": "Blank"
+                },
+                {
+                    "name": "Default"
+                }
+            ]
+        }
+    ],
     "OutOfProcessPac": [
         {
             "platforms": [

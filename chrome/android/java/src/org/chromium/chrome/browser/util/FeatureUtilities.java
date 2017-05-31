@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
+import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
@@ -189,6 +190,7 @@ public class FeatureUtilities {
         ChromeWebApkHost.cacheEnabledStateForNextLaunch();
         cacheChromeHomeEnabled();
         FirstRunGlueImpl.cacheFirstRunPrefs();
+        OmniboxPlaceholderFieldTrial.cacheOmniboxPlaceholderGroup();
     }
 
     /**

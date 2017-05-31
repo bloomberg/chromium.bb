@@ -2512,6 +2512,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Offline
       </message>
 
+      <!-- Omnibox Placeholder Experiment -->
+      <message name="IDS_SEARCH_OR_TYPE_WEBSITE_NAME" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
+        Search or type website name
+      </message>
+      <message name="IDS_SEARCH_THE_WEB" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
+        Search the web
+      </message>
+      <message name="IDS_ENTER_A_SEARCH_OR_WEBSITE" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
+        Enter a search or website
+      </message>
+      <message name="IDS_SEARCH_NEWS" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching news. [CHAR-LIMIT=38]">
+        Search… news
+      </message>
+      <message name="IDS_SEARCH_RECIPES" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching recipes. [CHAR-LIMIT=38]">
+        Search… recipes
+      </message>
+      <message name="IDS_SEARCH_WEATHER" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching weather. [CHAR-LIMIT=38]">
+        Search… weather
+      </message>
+
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
         No enabled voice search available

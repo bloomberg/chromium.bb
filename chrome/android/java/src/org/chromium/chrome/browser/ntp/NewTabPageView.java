@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -337,7 +338,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
             searchBoxTextView.setCompoundDrawables(null, null, null, null);
         }
 
-        String hintText = getResources().getString(R.string.search_or_type_url);
+        String hintText = OmniboxPlaceholderFieldTrial.getOmniboxPlaceholder();
         if (!DeviceFormFactor.isTablet()) {
             searchBoxTextView.setHint(hintText);
         } else {
