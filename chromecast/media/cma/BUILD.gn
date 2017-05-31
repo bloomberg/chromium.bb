@@ -14,6 +14,35 @@ group("cma") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/frame_generator_for_test.cc",
+    "test/frame_generator_for_test.h",
+    "test/frame_segmenter_for_test.cc",
+    "test/frame_segmenter_for_test.h",
+    "test/mock_frame_consumer.cc",
+    "test/mock_frame_consumer.h",
+    "test/mock_frame_provider.cc",
+    "test/mock_frame_provider.h",
+    "test/mock_media_pipeline_backend.cc",
+    "test/mock_media_pipeline_backend.h",
+    "test/mock_media_pipeline_backend_factory.cc",
+    "test/mock_media_pipeline_backend_factory.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//media",
+    "//media/base:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+}
+
 source_set("unittests") {
   testonly = true
   sources = [
@@ -27,37 +56,17 @@ source_set("unittests") {
     "base/demuxer_stream_for_test.h",
     "base/multi_demuxer_stream_adapter_unittest.cc",
     "pipeline/audio_video_pipeline_impl_unittest.cc",
-    "test/frame_generator_for_test.cc",
-    "test/frame_generator_for_test.h",
-    "test/frame_segmenter_for_test.cc",
-    "test/frame_segmenter_for_test.h",
-    "test/mock_frame_consumer.cc",
-    "test/mock_frame_consumer.h",
-    "test/mock_frame_provider.cc",
-    "test/mock_frame_provider.h",
-    "test/mock_media_pipeline_backend.cc",
-    "test/mock_media_pipeline_backend.h",
   ]
 
   deps = [
+    ":test_support",
     "//base",
-    "//base:i18n",
     "//base/test:test_support",
     "//chromecast/base",
-    "//chromecast/base/metrics:test_support",
-    "//chromecast/common/media:interfaces",
     "//chromecast/media",
-    "//chromecast/media/audio",
-    "//chromecast/media/cma/backend",
-    "//chromecast/media/cma/base",
-    "//chromecast/media/cma/pipeline",
-    "//chromecast/public",
     "//media",
-    "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/display",
-    "//ui/gfx/geometry",
   ]
 
   data = [

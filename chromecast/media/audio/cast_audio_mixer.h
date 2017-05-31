@@ -6,7 +6,7 @@
 #define CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_MIXER_H_
 
 #include <memory>
-#include <vector>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,15 +25,11 @@ class CastAudioManager;
 // stream down to a single AudioOutputStream to be rendered by the CMA backend.
 class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
  public:
-  using RealStreamFactory = base::Callback<::media::AudioOutputStream*(
-      const ::media::AudioParameters&)>;
-
-  explicit CastAudioMixer(const RealStreamFactory& real_stream_factory);
+  explicit CastAudioMixer(CastAudioManager* audio_manager);
   ~CastAudioMixer() override;
 
   virtual ::media::AudioOutputStream* MakeStream(
-      const ::media::AudioParameters& params,
-      CastAudioManager* audio_manager);
+      const ::media::AudioParameters& params);
 
  private:
   class MixerProxyStream;
@@ -43,7 +39,6 @@ class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  ::media::AudioBus* dest) override;
-
   void OnError() override;
 
   // MixedAudioOutputStreams call Register on opening and AddInput on starting.
@@ -51,17 +46,17 @@ class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
   void Unregister(MixerProxyStream* proxy_stream);
   void AddInput(::media::AudioConverter::InputCallback* input_callback);
   void RemoveInput(::media::AudioConverter::InputCallback* input_callback);
+  void HandleError();
 
-  base::ThreadChecker thread_checker_;
-  std::unique_ptr<::media::AudioConverter> mixer_;
+  CastAudioManager* const audio_manager_;
   bool error_;
-
-  const RealStreamFactory real_stream_factory_;
-  ::media::AudioOutputStream* output_stream_;
+  std::set<MixerProxyStream*> proxy_streams_;
+  std::unique_ptr<::media::AudioConverter> mixer_;
+  base::Lock mixer_lock_;
   ::media::AudioParameters output_params_;
+  ::media::AudioOutputStream* output_stream_;
 
-  std::vector<MixerProxyStream*> proxy_streams_;
-
+  THREAD_CHECKER(audio_thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CastAudioMixer);
 };
 

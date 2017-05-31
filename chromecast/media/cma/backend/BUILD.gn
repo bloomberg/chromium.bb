@@ -8,8 +8,9 @@ import("//media/media_options.gni")
 
 source_set("backend") {
   sources = [
-    "media_pipeline_backend_factory.cc",
     "media_pipeline_backend_factory.h",
+    "media_pipeline_backend_factory_impl.cc",
+    "media_pipeline_backend_factory_impl.h",
     "media_pipeline_backend_manager.cc",
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",

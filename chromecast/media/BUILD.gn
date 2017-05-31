@@ -16,6 +16,7 @@ group("media") {
 
 test("cast_media_unittests") {
   sources = [
+    "audio/cast_audio_manager_unittest.cc",
     "audio/cast_audio_mixer_unittest.cc",
     "audio/cast_audio_output_stream_unittest.cc",
     "base/media_resource_tracker_unittest.cc",
@@ -29,6 +30,7 @@ test("cast_media_unittests") {
     "//base/test:test_support",
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
+    "//chromecast/media/cma:test_support",
     "//chromecast/public",
     "//media",
     "//media/audio:test_support",

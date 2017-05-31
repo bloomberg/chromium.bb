@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_factory_impl.h"
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -11,16 +11,16 @@
 namespace chromecast {
 namespace media {
 
-MediaPipelineBackendFactory::MediaPipelineBackendFactory(
+MediaPipelineBackendFactoryImpl::MediaPipelineBackendFactoryImpl(
     MediaPipelineBackendManager* media_pipeline_backend_manager)
     : media_pipeline_backend_manager_(media_pipeline_backend_manager) {
   DCHECK(media_pipeline_backend_manager_);
 }
 
-MediaPipelineBackendFactory::~MediaPipelineBackendFactory() {}
+MediaPipelineBackendFactoryImpl::~MediaPipelineBackendFactoryImpl() {}
 
 std::unique_ptr<MediaPipelineBackend>
-MediaPipelineBackendFactory::CreateBackend(
+MediaPipelineBackendFactoryImpl::CreateBackend(
     const MediaPipelineDeviceParams& params) {
   return media_pipeline_backend_manager_->CreateMediaPipelineBackend(params);
 }

@@ -6,41 +6,23 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 
 #include <memory>
-#include <string>
-
-#include "base/macros.h"
 
 namespace chromecast {
 namespace media {
 
 class MediaPipelineBackend;
-class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 
-// Creates MediaPipelineBackends using a given MediaPipelineBackendManager.
+// Abstract base class to create MediaPipelineBackend.
 class MediaPipelineBackendFactory {
  public:
-  // TODO(slan): Use a static Create method once all of the constructor
-  // dependencies are removed from the internal implemenation.
-  explicit MediaPipelineBackendFactory(
-      MediaPipelineBackendManager* media_pipeline_backend_manager);
-  virtual ~MediaPipelineBackendFactory();
+  virtual ~MediaPipelineBackendFactory() {}
 
   virtual std::unique_ptr<MediaPipelineBackend> CreateBackend(
-      const MediaPipelineDeviceParams& params);
-
- protected:
-  MediaPipelineBackendManager* media_pipeline_backend_manager() {
-    return media_pipeline_backend_manager_;
-  }
-
- private:
-  media::MediaPipelineBackendManager* const media_pipeline_backend_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendFactory);
+      const MediaPipelineDeviceParams& params) = 0;
 };
 
-}  // media
-}  // chromecast
+}  // namespace media
+}  // namespace chromecast
 
 #endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_H_

@@ -8,9 +8,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
@@ -30,22 +32,15 @@ namespace media {
 CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
-    MediaPipelineBackendManager* backend_manager)
-    : CastAudioManager(std::move(audio_thread),
-                       audio_log_factory,
-                       backend_manager,
-                       new CastAudioMixer(
-                           base::Bind(&CastAudioManager::MakeMixerOutputStream,
-                                      base::Unretained(this)))) {}
-
-CastAudioManager::CastAudioManager(
-    std::unique_ptr<::media::AudioThread> audio_thread,
-    ::media::AudioLogFactory* audio_log_factory,
-    MediaPipelineBackendManager* backend_manager,
-    CastAudioMixer* audio_mixer)
+    std::unique_ptr<MediaPipelineBackendFactory> backend_factory,
+    scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+    bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
-      backend_manager_(backend_manager),
-      mixer_(audio_mixer) {}
+      backend_factory_(std::move(backend_factory)),
+      backend_task_runner_(std::move(backend_task_runner)) {
+  if (use_mixer)
+    mixer_ = base::MakeUnique<CastAudioMixer>(this);
+}
 
 CastAudioManager::~CastAudioManager() = default;
 
@@ -80,12 +75,6 @@ const char* CastAudioManager::GetName() {
   return "Cast";
 }
 
-std::unique_ptr<MediaPipelineBackend>
-CastAudioManager::CreateMediaPipelineBackend(
-    const MediaPipelineDeviceParams& params) {
-  return backend_manager_->CreateMediaPipelineBackend(params);
-}
-
 void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
   // If |stream| is |mixer_output_stream_|, we should not use
   // AudioManagerBase::ReleaseOutputStream as we do not want the release
@@ -108,7 +97,7 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
 
   // If |mixer_| exists, return a mixing stream.
   if (mixer_)
-    return mixer_->MakeStream(params, this);
+    return mixer_->MakeStream(params);
   else
     return new CastAudioOutputStream(params, this);
 }
@@ -121,7 +110,7 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
 
   // If |mixer_| exists, return a mixing stream.
   if (mixer_)
-    return mixer_->MakeStream(params, this);
+    return mixer_->MakeStream(params);
   else
     return new CastAudioOutputStream(params, this);
 }
