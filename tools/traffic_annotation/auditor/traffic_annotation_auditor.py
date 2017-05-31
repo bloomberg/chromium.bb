@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2017 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,9 +7,14 @@
 Please refer to README.md for running steps."""
 
 import argparse
+import datetime
 import os
 import subprocess
 import sys
+import tempfile
+
+from traffic_annotation_file_filter import TrafficAnnotationFileFilter
+
 
 # These two lines are required to import protobuf from third_party directory
 # instead of the one installed with python.
@@ -40,35 +45,40 @@ def _ComputeStringHash(unique_id):
   return _RecursiveHash(unique_id) if len(unique_id) else -1
 
 
-def _RunClangTool(src_dir, build_dir, path_filters):
+def _RunClangTool(src_dir, build_dir, path_filters, prefilter_files):
   """Executes the clang tool to extract annotations.
   Args:
     src_dir: str Path to the src directory of Chrome.
     build_dir: str Path to the build directory.
     path_filters: list of str List of paths to source directories for
         extraction.
+    prefilter_files: bool Flag stating if source files should be first filtered
+        using annotation related keywords and then given to clang tool.
 
   Returns:
-    raw_annotations: str Output of clang tool (extracted content and metadata of
-        annotations).
+    str Output of clang tool (extracted content and metadata of annotations).
   """
-  raw_annotations = ""
-  for path in path_filters:
-    args = [
+  args = [
         src_dir + "/tools/clang/scripts/run_tool.py",
         "--generate-compdb",
         "--tool=traffic_annotation_extractor",
-        "-p", build_dir,
-        path]
-    if sys.platform == "win32":
+        "-p=" + build_dir]
+  if sys.platform == "win32":
       args.insert(0, "python")
-    command = subprocess.Popen(args, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout_text, stderr_text = command.communicate()
-    raw_annotations += stdout_text
-    if stderr_text:
-      print stderr_text
-  return raw_annotations
+
+  if prefilter_files:
+    file_filter = TrafficAnnotationFileFilter(False)
+    for path in path_filters:
+      args += file_filter.GetFilteredFilesList(path)
+  else:
+    args += path_filters
+
+  command = subprocess.Popen(args, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+  stdout_text, stderr_text = command.communicate()
+  if stderr_text:
+    print stderr_text
+  return stdout_text
 
 
 def _ParsRawAnnotations(raw_annotations):
@@ -123,9 +133,9 @@ def _ParsRawAnnotations(raw_annotations):
         source.line = int(lines[current + 3])
         unique_id = lines[current + 5]
 
-        new_metadata = {'function_type': lines[current + 4],
-                        'extra_id': lines[current + 6],
-                        'unique_id_hash': _ComputeStringHash(unique_id)}
+        new_metadata = {"function_type": lines[current + 4],
+                        "extra_id": lines[current + 6],
+                        "unique_id_hash": _ComputeStringHash(unique_id)}
         # Extract serialized proto.
         current += 7
         annotation_text = ""
@@ -195,7 +205,7 @@ def _WriteSummaryFile(annotations, metadata, errors, file_path):
     errors: list of str List of all extraction errors.
     file_path: str File path to the brief summary file.
   """
-  with open(file_path, 'w') as summary_file:
+  with open(file_path, "w") as summary_file:
     if errors:
       summary_file.write("Errors:\n%s\n\n" % "\n".join(errors))
     if len(annotations.network_traffic_annotation):
@@ -215,37 +225,40 @@ def _WriteHashCodesFile(annotations, metadata, file_path):
       of _ParsRawAnnotations function.
     file_path: str File path to the brief summary file.
   """
-  with open(file_path, 'w') as summary_file:
-    for annotation, meta in zip(annotations.network_traffic_annotation,
-                                metadata):
-      summary_file.write(
-          "%s,%s\n" % (annotation.unique_id, meta['unique_id_hash']))
-    for keyword in ("test", "test_partial", "undefined", "missing"):
-      summary_file.write(
-          "%s,%s\n" % (keyword, _ComputeStringHash(keyword)))
+  hash_list = []
+  for annotation, meta in zip(annotations.network_traffic_annotation, metadata):
+    hash_list += ["%s,%s" % (annotation.unique_id, meta["unique_id_hash"])]
+  for keyword in ("test", "test_partial", "undefined", "missing"):
+    hash_list += ["%s,%s" % (keyword, _ComputeStringHash(keyword))]
+  open(file_path, "w").write("\n".join(sorted(hash_list)))
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Traffic Annotation Auditor.')
-  parser.add_argument('--build-dir',
-                      help='Path to the build directory.')
-  parser.add_argument('--extractor-output',
-                      help='Optional path to the temporary file that extracted '
-                           'annotations will be stored into.')
-  parser.add_argument('--extractor-input',
-                      help='Optional path to the file that temporary extracted '
-                           'annotations are already stored in. If this is '
-                           'provided, clang tool is not run and this is used '
-                           'as input.')
-  parser.add_argument('--summary-file',
-                      help='Path to the output file with all annotations.')
-  parser.add_argument('--hash-codes-file',
-                      help='Path to the output file with the list of unique '
-                           'ids and their hash codes.')
-  parser.add_argument('path_filters',
-                      nargs='*',
-                      help='Optional paths to filter what files the tool is '
-                           'run on.')
+  parser = argparse.ArgumentParser(description="Traffic Annotation Auditor.")
+  parser.add_argument("--build-dir",
+                      help="Path to the build directory.")
+  parser.add_argument("--extractor-output",
+                      help="Optional path to the temporary file that extracted "
+                           "annotations will be stored into.")
+  parser.add_argument("--extractor-input",
+                      help="Optional path to the file that temporary extracted "
+                           "annotations are already stored in. If this is "
+                           "provided, clang tool is not run and this is used "
+                           "as input.")
+  parser.add_argument("--summary-file",
+                      help="Path to the output file with all annotations.")
+  parser.add_argument("--hash-codes-file",
+                      help="Path to the output file with the list of unique "
+                           "ids and their hash codes.")
+  parser.add_argument("path_filters",
+                      nargs="*",
+                      help="Optional paths to filter what files the tool is "
+                           "run on.",
+                      default=[""])
+  parser.add_argument("--prefilter-files", action="store_true",
+                      help="Checks source files for patterns of annotations "
+                           "and network functions that may require annotation "
+                           "and limits running clang tool only on them.")
   args = parser.parse_args()
 
   if not args.summary_file and not args.hash_codes_file:
@@ -253,7 +266,7 @@ def main():
 
   # If a pre-extracted input file is provided, load it.
   if args.extractor_input:
-    with open(args.extractor_input, 'r') as raw_file:
+    with open(args.extractor_input, "r") as raw_file:
       raw_annotations = raw_file.read()
   else:
     # Either extacted input file or build directory should be provided.
@@ -267,10 +280,10 @@ def main():
     chrome_source = os.path.abspath(os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "..", "..", ".."))
     raw_annotations = _RunClangTool(chrome_source, args.build_dir,
-        args.path_filters if args.path_filters else ["./"])
+        args.path_filters, args.prefilter_files)
 
   if args.extractor_output:
-    with open(args.extractor_output, 'w') as raw_file:
+    with open(args.extractor_output, "w") as raw_file:
       raw_file.write(raw_annotations)
 
   annotations, metadata, errors = _ParsRawAnnotations(raw_annotations)
@@ -290,5 +303,5 @@ def main():
   return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   sys.exit(main())
