@@ -144,6 +144,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
   void ScheduleWaitForRelease(base::TimeDelta delay);
   void WaitForRelease();
 
+  gfx::GpuMemoryBuffer* const gpu_memory_buffer_;
   ui::ContextFactory* context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   const unsigned texture_target_;
@@ -163,7 +164,8 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
 Buffer::Texture::Texture(ui::ContextFactory* context_factory,
                          cc::ContextProvider* context_provider)
-    : context_factory_(context_factory),
+    : gpu_memory_buffer_(nullptr),
+      context_factory_(context_factory),
       context_provider_(context_provider),
       texture_target_(GL_TEXTURE_2D),
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
@@ -182,7 +184,8 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
                          gfx::GpuMemoryBuffer* gpu_memory_buffer,
                          unsigned texture_target,
                          unsigned query_type)
-    : context_factory_(context_factory),
+    : gpu_memory_buffer_(gpu_memory_buffer),
+      context_factory_(context_factory),
       context_provider_(context_provider),
       texture_target_(texture_target),
       query_type_(query_type),
@@ -250,6 +253,8 @@ gpu::SyncToken Buffer::Texture::BindTexImage() {
     uint64_t fence_sync = gles2->InsertFenceSyncCHROMIUM();
     gles2->OrderingBarrierCHROMIUM();
     gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    TRACE_EVENT_ASYNC_STEP_INTO0("exo", "BufferInUse", gpu_memory_buffer_,
+                                 "bound");
   }
   return sync_token;
 }
@@ -327,6 +332,8 @@ void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
       base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs);
   wait_for_release_time_ = base::TimeTicks::Now() + wait_for_release_delay;
   ScheduleWaitForRelease(wait_for_release_delay);
+  TRACE_EVENT_ASYNC_STEP_INTO0("exo", "BufferInUse", gpu_memory_buffer_,
+                               "pending_query");
   context_provider_->ContextSupport()->SignalQuery(
       query_id_,
       base::Bind(&Buffer::Texture::Released, weak_ptr_factory_.GetWeakPtr()));
@@ -406,6 +413,8 @@ bool Buffer::ProduceTransferableResource(
     bool secure_output_only,
     bool client_usage,
     cc::TransferableResource* resource) {
+  TRACE_EVENT0("exo", "Buffer::ProduceTransferableResource");
+
   DCHECK(attach_count_);
   DLOG_IF(WARNING, !release_contents_callback_.IsCancelled() && client_usage)
       << "Producing a texture mailbox for a buffer that has not been released";
@@ -442,6 +451,9 @@ bool Buffer::ProduceTransferableResource(
         texture_target_, query_type_);
   }
   Texture* contents_texture = contents_texture_.get();
+
+  if (release_contents_callback_.IsCancelled())
+    TRACE_EVENT_ASYNC_BEGIN0("exo", "BufferInUse", gpu_memory_buffer_.get());
 
   // Cancel pending contents release callback.
   release_contents_callback_.Reset(
@@ -535,6 +547,8 @@ std::unique_ptr<base::trace_event::TracedValue> Buffer::AsTracedValue() const {
 // Buffer, private:
 
 void Buffer::Release() {
+  TRACE_EVENT_ASYNC_END0("exo", "BufferInUse", gpu_memory_buffer_.get());
+
   // Run release callback to notify the client that buffer has been released.
   if (!release_callback_.is_null())
     release_callback_.Run();
@@ -556,9 +570,13 @@ void Buffer::ReleaseContents() {
   // Cancel callback to indicate that buffer has been released.
   release_contents_callback_.Cancel();
 
-  // Release buffer if not attached to surface.
-  if (!attach_count_)
+  if (attach_count_) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("exo", "BufferInUse", gpu_memory_buffer_.get(),
+                                 "attached");
+  } else {
+    // Release buffer if not attached to surface.
     Release();
+  }
 }
 
 }  // namespace exo
