@@ -12,7 +12,7 @@ namespace blink {
 
 class DocumentMarker;
 
-class DocumentMarkerListEditor {
+class CORE_EXPORT DocumentMarkerListEditor final {
  public:
   using MarkerList = HeapVector<Member<DocumentMarker>>;
 
