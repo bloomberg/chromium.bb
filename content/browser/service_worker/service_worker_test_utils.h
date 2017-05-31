@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,7 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerProviderHost;
+struct ServiceWorkerProviderHostInfo;
 
 template <typename Arg>
 void ReceiveResult(BrowserThread::ID run_quit_thread,
@@ -46,25 +48,58 @@ base::Callback<void(Arg)> CreateReceiverOnCurrentThread(
   return base::Bind(&ReceiveResult<Arg>, id, quit, out);
 }
 
+// Container for keeping the Mojo connection to the service worker provider on
+// the renderer alive.
+class ServiceWorkerRemoteProviderEndpoint {
+ public:
+  ServiceWorkerRemoteProviderEndpoint();
+  ServiceWorkerRemoteProviderEndpoint(
+      ServiceWorkerRemoteProviderEndpoint&& other);
+  ~ServiceWorkerRemoteProviderEndpoint();
+
+  void BindWithProviderHostInfo(ServiceWorkerProviderHostInfo* info);
+
+  mojom::ServiceWorkerProviderHostAssociatedPtr* host_ptr() {
+    return &host_ptr_;
+  }
+
+  mojom::ServiceWorkerProviderAssociatedRequest* client_request() {
+    return &client_request_;
+  }
+
+ private:
+  // Bound with content::ServiceWorkerProviderHost. The provider host will be
+  // removed asynchronously when this pointer is closed.
+  mojom::ServiceWorkerProviderHostAssociatedPtr host_ptr_;
+  // This is the other end of ServiceWorkerProviderAssociatedPtr owned by
+  // content::ServiceWorkerProviderHost.
+  mojom::ServiceWorkerProviderAssociatedRequest client_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
+};
+
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
     int provider_id,
     bool is_parent_frame_secure,
-    base::WeakPtr<ServiceWorkerContextCore> context);
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
 std::unique_ptr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
     int provider_id,
     bool is_parent_frame_secure,
-    base::WeakPtr<ServiceWorkerContextCore> context);
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostWithDispatcherHost(
     int process_id,
     int provider_id,
     base::WeakPtr<ServiceWorkerContextCore> context,
     int route_id,
-    ServiceWorkerDispatcherHost* dispatcher_host);
+    ServiceWorkerDispatcherHost* dispatcher_host,
+    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
 }  // namespace content
 

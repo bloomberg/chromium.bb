@@ -258,7 +258,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     // Give the active version a controllee.
     host_ = CreateProviderHostForWindow(
         33 /* dummy render process id */, 1 /* dummy provider_id */,
-        true /* is_parent_frame_secure */, context()->AsWeakPtr());
+        true /* is_parent_frame_secure */, context()->AsWeakPtr(),
+        &remote_endpoint_);
     version_1->AddControllee(host_.get());
 
     // Give the active version an in-flight request.
@@ -292,6 +293,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
  private:
   scoped_refptr<ServiceWorkerRegistration> registration_;
   std::unique_ptr<ServiceWorkerProviderHost> host_;
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
   int inflight_request_id_ = -1;
 };
 

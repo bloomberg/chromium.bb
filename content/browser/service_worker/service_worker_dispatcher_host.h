@@ -101,7 +101,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
-  void OnProviderDestroyed(int provider_id) override;
   void OnSetHostedVersionId(int provider_id,
                             int64_t version_id,
                             int embedded_worker_id) override;

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -348,6 +349,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       int /* embedded_worker_id */,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       embedded_worker_id_instance_host_ptr_map_;
+  std::map<int /* embedded_worker_id */, ServiceWorkerRemoteProviderEndpoint>
+      embedded_worker_id_remote_provider_map_;
 
   std::vector<Event> events_;
 

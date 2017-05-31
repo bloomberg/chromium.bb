@@ -110,10 +110,12 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
 
     // An empty host.
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForWindow(
             helper_->mock_render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+            &remote_endpoints_.back());
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
@@ -140,6 +142,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   MockResourceContext mock_resource_context_;
   GURL scope_;
   GURL script_url_;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 };
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {

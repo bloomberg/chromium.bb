@@ -113,8 +113,8 @@ class ServiceWorkerHandleTest : public testing::Test {
 
     provider_host_ = CreateProviderHostWithDispatcherHost(
         helper_->mock_render_process_id(), 1 /* provider_id */,
-        helper_->context()->AsWeakPtr(), kRenderFrameId,
-        dispatcher_host_.get());
+        helper_->context()->AsWeakPtr(), kRenderFrameId, dispatcher_host_.get(),
+        &remote_endpoint_);
     helper_->SimulateAddProcessToPattern(pattern,
                                          helper_->mock_render_process_id());
   }
@@ -137,6 +137,7 @@ class ServiceWorkerHandleTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);

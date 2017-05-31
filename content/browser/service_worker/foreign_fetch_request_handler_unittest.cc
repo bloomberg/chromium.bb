@@ -157,10 +157,12 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   }
 
   void CreateWindowTypeProviderHost() {
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForWindow(
             helper_->mock_render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+            &remote_endpoints_.back());
     EXPECT_FALSE(
         context()->GetProviderHost(host->process_id(), host->provider_id()));
     host->SetDocumentUrl(GURL("https://host/scope/"));
@@ -169,10 +171,12 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   }
 
   void CreateServiceWorkerTypeProviderHost() {
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
             helper_->mock_render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+            &remote_endpoints_.back());
     EXPECT_FALSE(
         context()->GetProviderHost(host->process_id(), host->provider_id()));
     provider_host_ = host->AsWeakPtr();
@@ -235,6 +239,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   storage::BlobStorageContext blob_storage_context_;
   std::unique_ptr<net::URLRequest> request_;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 
   DISALLOW_COPY_AND_ASSIGN(ForeignFetchRequestHandlerTest);
 };

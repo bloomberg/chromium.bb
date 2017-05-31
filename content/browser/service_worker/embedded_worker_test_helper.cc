@@ -575,14 +575,16 @@ void EmbeddedWorkerTestHelper::SimulateWorkerThreadStarted(
     int provider_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+
   // Prepare a provider host to be used by following OnThreadStarted().
   std::unique_ptr<ServiceWorkerProviderHost> host =
       CreateProviderHostForServiceWorkerContext(
           worker->process_id(), provider_id, true /* is_parent_frame_secure */,
-          context()->AsWeakPtr());
+          context()->AsWeakPtr(),
+          &embedded_worker_id_remote_provider_map_[embedded_worker_id]);
   context()->AddProviderHost(std::move(host));
 
-  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
   embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
       ->OnThreadStarted(thread_id, provider_id);
   base::RunLoop().RunUntilIdle();

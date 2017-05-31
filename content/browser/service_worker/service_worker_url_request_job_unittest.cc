@@ -196,7 +196,8 @@ class ServiceWorkerURLRequestJobTest
     std::unique_ptr<ServiceWorkerProviderHost> provider_host =
         CreateProviderHostForWindow(
             helper_->mock_render_process_id(), kProviderID,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+            &remote_endpoint_);
     provider_host_ = provider_host->AsWeakPtr();
     provider_host->SetDocumentUrl(GURL("https://example.com/"));
     registration_->SetActiveVersion(version_);
@@ -355,6 +356,8 @@ class ServiceWorkerURLRequestJobTest
 
   int times_prepare_to_restart_invoked_ = 0;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
+
   // Not owned.
   MockHttpProtocolHandler* http_protocol_handler_;
 

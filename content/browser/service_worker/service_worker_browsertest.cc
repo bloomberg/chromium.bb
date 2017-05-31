@@ -573,6 +573,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void TearDownOnIOThread() override {
     registration_ = NULL;
     version_ = NULL;
+    remote_endpoints_.clear();
   }
 
   void InstallTestHelper(const std::string& worker_url,
@@ -668,11 +669,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void AddControlleeOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    remote_endpoints_.emplace_back();
     std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(33 /* dummy render process id */,
-                                    1 /* dummy provider_id */,
-                                    true /* is_parent_frame_secure */,
-                                    wrapper()->context()->AsWeakPtr());
+        CreateProviderHostForWindow(
+            33 /* dummy render process id */, 1 /* dummy provider_id */,
+            true /* is_parent_frame_secure */,
+            wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
     host->SetDocumentUrl(
         embedded_test_server()->GetURL("/service_worker/host"));
     host->AssociateRegistration(registration_.get(),
@@ -919,6 +921,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<ChromeBlobStorageContext> blob_context_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {

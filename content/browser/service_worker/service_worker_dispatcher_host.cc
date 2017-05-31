@@ -967,7 +967,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // Otherwise, completed the initialization of the pre-created host.
     DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info.type);
     provider_host->CompleteNavigationInitialized(render_process_id_,
-                                                 info.route_id, this);
+                                                 std::move(info), this);
     GetContext()->AddProviderHost(std::move(provider_host));
   } else {
     if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
@@ -978,26 +978,6 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
         render_process_id_, std::move(info), GetContext()->AsWeakPtr(), this));
   }
-}
-
-void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnProviderDestroyed");
-  if (!GetContext())
-    return;
-  if (!GetContext()->GetProviderHost(render_process_id_, provider_id)) {
-    // PlzNavigate: in some cancellation of navigation cases, it is possible
-    // for the pre-created hoist to have been destroyed before being claimed by
-    // the renderer. The provider is then destroyed in the renderer, and no
-    // matching host will be found.
-    if (!IsBrowserSideNavigationEnabled() ||
-        !ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
-      bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_DESTROYED_NO_HOST);
-    }
-    return;
-  }
-  GetContext()->RemoveProviderHost(render_process_id_, provider_id);
 }
 
 void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,

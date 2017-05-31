@@ -22,11 +22,13 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
+#include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace storage {
 class BlobStorageContext;
@@ -54,9 +56,20 @@ class WebContents;
 //
 // For providers hosting a running service worker, this class will observe
 // resource loads made directly by the service worker.
+//
+// This instance is created when navigation is started and
+// ServiceWorkerNetworkProvider is create on the renderer process. Mojo's
+// connection from ServiceWorkerNetworkProvider is established on the creation
+// time, and the instance is destroyed on disconnection from the renderer side.
+// If PlzNavigate is turned on, this instance is pre-created on the browser
+// before ServiceWorkerNetworkProvider is created on the renderer because
+// navigation is possible to be initiated on the browser side. In that case,
+// establishment of Mojo's connection will be deferred until
+// ServiceWorkerNetworkProvider is created on the renderer.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
-      public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
+      public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
+      public NON_EXPORTED_BASE(mojom::ServiceWorkerProviderHost) {
  public:
   using GetRegistrationForReadyCallback =
       base::Callback<void(ServiceWorkerRegistration* reigstration)>;
@@ -84,7 +97,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerDispatcherHost* dispatcher_host);
 
-  virtual ~ServiceWorkerProviderHost();
+  ~ServiceWorkerProviderHost() override;
 
   const std::string& client_uuid() const { return client_uuid_; }
   int process_id() const { return render_process_id_; }
@@ -250,7 +263,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Completes initialization of provider hosts used for navigation requests.
   void CompleteNavigationInitialized(
       int process_id,
-      int frame_routing_id,
+      ServiceWorkerProviderHostInfo info,
       ServiceWorkerDispatcherHost* dispatcher_host);
 
   // Sends event messages to the renderer. Events for the worker are queued up
@@ -318,7 +331,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     ~OneShotGetReadyCallback();
   };
 
-  ServiceWorkerProviderHost(int render_process_id,
+  ServiceWorkerProviderHost(int process_id,
                             ServiceWorkerProviderHostInfo info,
                             base::WeakPtr<ServiceWorkerContextCore> context,
                             ServiceWorkerDispatcherHost* dispatcher_host);
@@ -401,6 +414,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
+
+  // |provider_| is the renderer-side Mojo endpoint for provider.
+  mojom::ServiceWorkerProviderAssociatedPtr provider_;
+  // |binding_| is the Mojo binding that keeps the connection to the
+  // renderer-side counterpart (content::ServiceWorkerNetworkProvider). When the
+  // connection bound on |binding_| gets killed from the renderer side, this
+  // content::ServiceWorkerProviderHost will be destroyed.
+  mojo::AssociatedBinding<mojom::ServiceWorkerProviderHost> binding_;
 
   std::vector<base::Closure> queued_events_;
 

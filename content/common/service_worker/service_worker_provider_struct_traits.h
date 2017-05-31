@@ -31,6 +31,16 @@ struct StructTraits<content::mojom::ServiceWorkerProviderHostInfoDataView,
     return info.is_parent_frame_secure;
   }
 
+  static content::mojom::ServiceWorkerProviderHostAssociatedRequest&
+  host_request(content::ServiceWorkerProviderHostInfo& info) {
+    return info.host_request;
+  }
+
+  static content::mojom::ServiceWorkerProviderAssociatedPtrInfo&
+  client_ptr_info(content::ServiceWorkerProviderHostInfo& info) {
+    return info.client_ptr_info;
+  }
+
   static bool Read(content::mojom::ServiceWorkerProviderHostInfoDataView in,
                    content::ServiceWorkerProviderHostInfo* out);
 };

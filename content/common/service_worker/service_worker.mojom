@@ -6,12 +6,19 @@ module content.mojom;
 
 import "content/common/service_worker/service_worker_provider.mojom";
 
-// Per-process browser-side interface bound to ServiceWorkerDispatcherHost.
-// Each InterfacePtrs on the same render process will be bound to the same
-// ServiceWorkerDispatcherHost.
+// Per-process browser-side interface bound to
+// content::ServiceWorkerDispatcherHost.
+// All InterfacePtrs on the same render process are bound to the same
+// content::ServiceWorkerDispatcherHost. The renderer uses this interface to
+// tell the browser when potential service worker clients are created and when
+// service workers are starting up.
 interface ServiceWorkerDispatcherHost {
+  // Creates a content::ServiceWorkerProviderHost on the browser
+  // process. |provider_info| has Mojo endpoints to connect the provider host
+  // and the provider on the renderer together. The lifetime of
+  // ServiceWorkerProviderHost will be tied to the
+  // mojom::ServiceWorkerProviderHost interface.
   OnProviderCreated(ServiceWorkerProviderHostInfo provider_info);
-  OnProviderDestroyed(int32 provider_id);
 
   // Informs the browser that a service worker is starting up. |provider_id|
   // identifies the ServiceWorkerProviderHost hosting the service

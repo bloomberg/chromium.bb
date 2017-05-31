@@ -293,7 +293,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
             process_id, provider_id, true /* is_parent_frame_secure */,
-            context()->AsWeakPtr());
+            context()->AsWeakPtr(), &remote_endpoint_);
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
     provider_host->running_hosted_version_ = version;
@@ -441,6 +441,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
 
   storage::BlobStorageContext blob_storage_context_;
   content::MockResourceContext resource_context_;
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
 
   net::TestDelegate url_request_delegate_;
   int next_provider_id_ = 1;
