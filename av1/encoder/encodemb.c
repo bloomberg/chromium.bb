@@ -132,6 +132,7 @@ static INLINE unsigned int get_token_bit_costs(
   return token_costs[token == ZERO_TOKEN || token == EOB_TOKEN][ctx][token];
 }
 
+#if !CONFIG_LV_MAP
 #define USE_GREEDY_OPTIMIZE_B 0
 
 #if USE_GREEDY_OPTIMIZE_B
@@ -801,6 +802,7 @@ static int optimize_b_org(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 }
 
 #endif  // USE_GREEDY_OPTIMIZE_B
+#endif  // !CONFIG_LV_MAP
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                    BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
@@ -811,26 +813,32 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
   if (eob == 0) return eob;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return eob;
+#if CONFIG_PVQ
+  (void)cm;
+  (void)tx_size;
+  (void)a;
+  (void)l;
+  return eob;
+#endif
 
+#if !CONFIG_LV_MAP
+  (void)plane_bsize;
 #if CONFIG_VAR_TX
   int ctx = get_entropy_context(tx_size, a, l);
 #else
   int ctx = combine_entropy_contexts(*a, *l);
 #endif
 
-#if CONFIG_PVQ
-  (void)cm;
-  (void)tx_size;
-  (void)ctx;
-  return eob;
-#endif
-
-  (void)plane_bsize;
 #if USE_GREEDY_OPTIMIZE_B
   return optimize_b_greedy(cm, mb, plane, block, tx_size, ctx);
 #else   // USE_GREEDY_OPTIMIZE_B
   return optimize_b_org(cm, mb, plane, block, tx_size, ctx);
 #endif  // USE_GREEDY_OPTIMIZE_B
+#else   // !CONFIG_LV_MAP
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+  return av1_optimize_txb(cm, mb, plane, block, tx_size, &txb_ctx);
+#endif  // !CONFIG_LV_MAP
 }
 
 #if !CONFIG_PVQ
