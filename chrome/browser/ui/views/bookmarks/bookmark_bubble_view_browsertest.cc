@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -68,8 +69,11 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
         nullptr, nullptr, nullptr, profile_.get(), GURL(kTestBookmarkURL),
         true);
     if (name == "ios_promotion") {
-      BookmarkBubbleView::bookmark_bubble()->HandleButtonPressed(
-          BookmarkBubbleView::bookmark_bubble()->save_button_);
+      BookmarkBubbleView::bookmark_bubble()
+          ->GetWidget()
+          ->client_view()
+          ->AsDialogClientView()
+          ->AcceptWindow();
     }
   }
 

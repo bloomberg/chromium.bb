@@ -87,7 +87,7 @@
                                     <textField verticalHuggingPriority="750" id="10">
                                         <rect key="frame" x="17" y="6" width="65" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="^IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" id="11">
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="^IDS_BOOKMARK_BUBBLE_FOLDER_LABEL" id="11">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -96,7 +96,7 @@
                                     <textField verticalHuggingPriority="750" id="8">
                                         <rect key="frame" x="17" y="31" width="65" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="^IDS_BOOKMARK_BUBBLE_TITLE_TEXT" id="9">
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="^IDS_BOOKMARK_BUBBLE_NAME_LABEL" id="9">
                                             <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>

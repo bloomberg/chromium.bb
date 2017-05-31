@@ -200,16 +200,16 @@
   <message name="IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark, read by spoken feedback">
     Edit bookmark
   </message>
-  <message name="IDS_BOOKMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
+  <message name="IDS_BOOKMARK_BUBBLE_NAME_LABEL" desc="Text preceding the title of the page that was bookmarked">
     Name:
   </message>
-  <message name="IDS_BOOKMARK_AX_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked, read by spoken feedback">
+  <message name="IDS_BOOKMARK_AX_BUBBLE_NAME_LABEL" desc="Text preceding the title of the page that was bookmarked, read by spoken feedback">
     Bookmark name
   </message>
-  <message name="IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
+  <message name="IDS_BOOKMARK_BUBBLE_FOLDER_LABEL" desc="Text preceding the folder selector">
     Folder:
   </message>
-  <message name="IDS_BOOKMARK_AX_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
+  <message name="IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL" desc="Text preceding the folder selector">
     Bookmark folder
   </message>
   <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
