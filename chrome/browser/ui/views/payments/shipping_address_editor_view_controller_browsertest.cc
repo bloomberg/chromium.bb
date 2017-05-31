@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_combobox_model.h"
@@ -21,6 +23,7 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/null_storage.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/label.h"
 
 namespace payments {
 
@@ -601,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that the editor accepts an international phone from another country.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       InternationalPhoneNumberFromOtherCountry) {
+                       AddInternationalPhoneNumberFromOtherCountry) {
   InvokePaymentRequestUI();
   OpenShippingAddressEditorScreen();
 
@@ -617,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that the editor doesn't accept a local phone from another country.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       LocalPhoneNumberFromOtherCountry) {
+                       AddLocalPhoneNumberFromOtherCountry) {
   InvokePaymentRequestUI();
   OpenShippingAddressEditorScreen();
 
@@ -628,6 +631,52 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
   EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::PHONE_HOME_WHOLE_NUMBER));
+}
+
+// Tests that there is no error label for an international phone from another
+// country.
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestShippingAddressEditorTest,
+    NoErrorLabelForInternationalPhoneNumberFromOtherCountry) {
+  // Create a profile in the US and add a valid AU phone number in international
+  // format.
+  autofill::AutofillProfile california = autofill::test::GetFullProfile();
+  california.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                        base::UTF8ToUTF16("+61 2 9374 4000"));
+  AddAutofillProfile(california);
+
+  InvokePaymentRequestUI();
+  OpenShippingAddressSectionScreen();
+
+  // There should be no error label.
+  views::View* sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
+  ASSERT_EQ(1, sheet->child_count());
+  EXPECT_EQ(nullptr, sheet->child_at(0)->GetViewByID(
+                         static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
+}
+
+// Tests that there is an error label for an local phone from another country.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       ErrorLabelForLocalPhoneNumberFromOtherCountry) {
+  // Create a profile in the US and add a valid AU phone number in local format.
+  autofill::AutofillProfile california = autofill::test::GetFullProfile();
+  california.set_use_count(50U);
+  california.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                        base::UTF8ToUTF16("02 9374 4000"));
+  AddAutofillProfile(california);
+
+  InvokePaymentRequestUI();
+  OpenShippingAddressSectionScreen();
+
+  // There should be an error label for the phone number.
+  views::View* sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
+  ASSERT_EQ(1, sheet->child_count());
+  views::View* error_label = sheet->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+  EXPECT_EQ(base::ASCIIToUTF16("Phone number required"),
+            static_cast<views::Label*>(error_label)->text());
 }
 
 }  // namespace payments
