@@ -219,8 +219,9 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
   CSSToLengthConversionData::FontSizes font_sizes(
       kOffScreenCanvasEmFontSize, kOffScreenCanvasRemFontSize, &font);
   CSSToLengthConversionData::ViewportSize viewport_size(0, 0);
-  CSSToLengthConversionData conversion_data(&ComputedStyle::InitialStyle(),
-                                            font_sizes, viewport_size, 1);
+  CSSToLengthConversionData conversion_data(nullptr,  // ComputedStyle
+                                            font_sizes, viewport_size,
+                                            1);  // zoom
 
   for (auto& curr_value : ToCSSValueList(in_value)) {
     if (curr_value->IsURIValue())
