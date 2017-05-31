@@ -13,7 +13,7 @@ async_test(function()
     var target = document.createElement("div");
     host.appendChild(target);
 
-    trusted_request(target, document.body);
+    trusted_request(this, target, document.body);
     document.onfullscreenchange = this.step_func_done(function()
     {
       assert_true(host.matches(":-webkit-full-screen-ancestor"));

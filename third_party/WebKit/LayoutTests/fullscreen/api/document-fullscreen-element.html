@@ -24,13 +24,13 @@ async_test(function(t)
         });
     });
 
-    trusted_click(t.step_func(function()
+    trusted_click(t, function()
     {
         assert_equals(document.fullscreenElement, null, "fullscreenElement before requestFullscreen()");
         div.requestFullscreen();
         // TODO(foolip): fullscreenElement should still be null.
         // https://crbug.com/402421
         assert_equals(document.fullscreenElement, div, "fullscreenElement after requestFullscreen()");
-    }), document.body);
+    }, document.body);
 });
 </script>

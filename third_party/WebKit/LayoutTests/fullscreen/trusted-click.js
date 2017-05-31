@@ -1,18 +1,18 @@
-// Invokes callback from a trusted event.
-// When testing manually, a button is added to the container.
-function trusted_click(callback, container)
+// Invokes callback from a trusted click event, to satisfy
+// https://html.spec.whatwg.org/#triggered-by-user-activation
+function trusted_click(test, callback, container)
 {
     var document = container.ownerDocument;
 
     if (window.testRunner) {
         // Running under LayoutTests. Use timeout to be async.
-        setTimeout(function()
+        setTimeout(test.step_func(function()
         {
             document.addEventListener("click", callback);
             eventSender.mouseDown();
             eventSender.mouseUp();
             document.removeEventListener("click", callback);
-        }, 0);
+        }), 0);
     } else {
         // Running as manual test. Show a button to click.
         var button = document.createElement("button");
@@ -20,21 +20,18 @@ function trusted_click(callback, container)
         button.style.display = "block";
         button.style.fontSize = "20px";
         button.style.padding = "10px";
-        button.onclick = function()
+        button.onclick = test.step_func(function()
         {
             callback();
             button.onclick = null;
             container.removeChild(button);
-        };
+        });
         container.appendChild(button);
     }
 }
 
-// Invokes element.requestFullscreen() from a trusted event.
-// When testing manually, a button is added to the container,
-// or to element's parent if no container is provided.
-function trusted_request(element, container)
+// Invokes element.requestFullscreen() from a trusted click.
+function trusted_request(test, element, container)
 {
-    var request = element.requestFullscreen.bind(element);
-    trusted_click(request, container || element.parentNode);
+    trusted_click(test, () => element.requestFullscreen(), container || element.parentNode);
 }

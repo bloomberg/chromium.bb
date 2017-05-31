@@ -16,7 +16,7 @@ async_test(t => {
     // does not.
     assert_equals(document.fullscreenElement, parent, "fullscreenElement after fullscreenchange event");
 
-    trusted_click(t.step_func(() => {
+    trusted_click(t, () => {
       // Request fullscreen on another element, to avoid any synchronous
       // short-circuiting on document.fullscreenElement.requestFullscreen(),
       // which used to be in the spec. Also request both before and after the
@@ -37,10 +37,10 @@ async_test(t => {
       assert_equals(document.fullscreenElement, parent, "fullscreenElement after exitFullscreen()");
       child.requestFullscreen();
       assert_equals(document.fullscreenElement, child, "fullscreenElement after second requestFullscreen()");
-    }), parent);
+    }, parent);
   });
   document.onfullscreenerror = t.unreached_func("fullscreenerror event");
 
-  trusted_request(parent);
+  trusted_request(t, parent);
 });
 </script>

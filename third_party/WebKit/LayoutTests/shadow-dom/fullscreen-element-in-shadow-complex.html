@@ -50,7 +50,7 @@ async_test((test) => {
     assert_equals(host5.shadowRoot.fullscreenElement, null);
 
     var canvas = host3.shadowRoot.querySelector('canvas');
-    trusted_request(canvas);
+    trusted_request(test, canvas);
 
     document.onfullscreenchange = test.step_func(() => {
         // Not interested in handling before or after exitFullscreen.
