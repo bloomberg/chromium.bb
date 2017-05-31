@@ -215,6 +215,9 @@ class UiElement : public WorldRectangle {
     center_color_ = center_color;
   }
 
+  SkColor grid_color() const { return grid_color_; }
+  void set_grid_color(const SkColor& grid_color) { grid_color_ = grid_color; }
+
   int gridline_count() const { return gridline_count_; }
   void set_gridline_count(int gridline_count) {
     gridline_count_ = gridline_count;
@@ -307,6 +310,7 @@ class UiElement : public WorldRectangle {
 
   SkColor edge_color_ = SK_ColorWHITE;
   SkColor center_color_ = SK_ColorWHITE;
+  SkColor grid_color_ = SK_ColorWHITE;
 
   int gridline_count_ = 1;
 

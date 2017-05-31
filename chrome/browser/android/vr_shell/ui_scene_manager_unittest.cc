@@ -197,14 +197,12 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
 
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   std::set<UiElementDebugId> visible_in_browsing = {
-      UiElementDebugId::kContentQuad,     UiElementDebugId::kBackplane,
-      UiElementDebugId::kCeiling,         UiElementDebugId::kFloor,
-      UiElementDebugId::kFloorGrid,       UiElementDebugId::kUrlBar,
-      UiElementDebugId::kLoadingIndicator};
+      UiElementDebugId::kContentQuad, UiElementDebugId::kBackplane,
+      UiElementDebugId::kCeiling,     UiElementDebugId::kFloor,
+      UiElementDebugId::kUrlBar,      UiElementDebugId::kLoadingIndicator};
   std::set<UiElementDebugId> visible_in_fullscreen = {
       UiElementDebugId::kContentQuad, UiElementDebugId::kBackplane,
-      UiElementDebugId::kCeiling, UiElementDebugId::kFloor,
-      UiElementDebugId::kFloorGrid};
+      UiElementDebugId::kCeiling, UiElementDebugId::kFloor};
 
   MakeManager(kNotInCct, kNotInWebVr);
 

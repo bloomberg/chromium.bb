@@ -225,10 +225,9 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           }
           /* clang-format on */);
     case vr_shell::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
-    case vr_shell::ShaderID::GRADIENT_GRID_FRAGMENT_SHADER:
-      return OEIE_SHADER(
+      return SHADER(
           /* clang-format off */
-          precision highp float;
+          precision lowp float;
           varying vec2 v_GridPosition;
           uniform vec4 u_CenterColor;
           uniform vec4 u_EdgeColor;
@@ -241,6 +240,41 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 u_EdgeColor * edgeColorWeight;
             gl_FragColor = vec4(color.xyz * color.w * u_Opacity,
                                 color.w * u_Opacity);
+          }
+          /* clang-format on */);
+    case vr_shell::ShaderID::GRADIENT_GRID_FRAGMENT_SHADER:
+      return SHADER(
+          /* clang-format off */
+          precision lowp float;
+          varying vec2 v_GridPosition;
+          uniform vec4 u_CenterColor;
+          uniform vec4 u_EdgeColor;
+          uniform vec4 u_GridColor;
+          uniform mediump float u_Opacity;
+          uniform int u_LinesCount;
+
+          void main() {
+            float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
+            float centerColorWeight = 1.0 - edgeColorWeight;
+            vec4 bg_color = u_CenterColor * centerColorWeight +
+                u_EdgeColor * edgeColorWeight;
+            bg_color = vec4(bg_color.xyz * bg_color.w, bg_color.w);
+            float linesCountF = float(u_LinesCount) / 2.0;
+            float pos_x = abs(v_GridPosition.x) * linesCountF;
+            float pos_y = abs(v_GridPosition.y) * linesCountF;
+            float diff_x = abs(pos_x - floor(pos_x + 0.5));
+            float diff_y = abs(pos_y - floor(pos_y + 0.5));
+            float diff = min(diff_x, diff_y);
+            if (diff < 0.01) {
+              float opacity = 1.0 - diff / 0.01;
+              opacity = opacity * opacity * centerColorWeight * u_GridColor.w;
+              vec3 grid_color = u_GridColor.xyz * opacity;
+              gl_FragColor = vec4(
+                  grid_color.xyz + bg_color.xyz * (1.0 - opacity),
+                  opacity + bg_color.w * (1.0 - opacity));
+            } else {
+              gl_FragColor = bg_color;
+            }
           }
           /* clang-format on */);
     case vr_shell::ShaderID::CONTROLLER_FRAGMENT_SHADER:
@@ -719,88 +753,43 @@ void GradientQuadRenderer::Draw(const vr::Mat4f& view_proj_matrix,
 GradientQuadRenderer::~GradientQuadRenderer() = default;
 
 GradientGridRenderer::GradientGridRenderer()
-    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(GRADIENT_QUAD_VERTEX_SHADER,
+                       GRADIENT_GRID_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
   center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
   edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
+  grid_color_handle_ = glGetUniformLocation(program_handle_, "u_GridColor");
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
+  lines_count_handle_ = glGetUniformLocation(program_handle_, "u_LinesCount");
 }
 
 void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
+                                SkColor grid_color,
                                 int gridline_count,
                                 float opacity) {
-  // In case the tile number changed we have to regenerate the grid lines.
-  if (grid_lines_.size() != static_cast<size_t>(2 * (gridline_count + 1))) {
-    MakeGridLines(gridline_count);
-  }
-
-  glUseProgram(program_handle_);
-
-  // Pass in model view project matrix.
-  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                     MatrixToGLArray(view_proj_matrix).data());
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Tell shader the grid size so that it can calculate the fading.
   glUniform1f(scene_radius_handle_, kHalfSize);
+  glUniform1i(lines_count_handle_, gridline_count);
 
   // Set the edge color to the fog color so that it seems to fade out.
   SetColorUniform(edge_color_handle_, edge_color);
   SetColorUniform(center_color_handle_, center_color);
+  SetColorUniform(grid_color_handle_, grid_color);
   glUniform1f(opacity_handle_, opacity);
 
-  // Draw the grid.
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        VOID_OFFSET(0));
-  glEnableVertexAttribArray(position_handle_);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  int verticesNumber = 4 * (gridline_count + 1);
-  glDrawArrays(GL_LINES, 0, verticesNumber);
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 
   glDisableVertexAttribArray(position_handle_);
+  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 GradientGridRenderer::~GradientGridRenderer() = default;
-
-void GradientGridRenderer::MakeGridLines(int gridline_count) {
-  int linesNumber = 2 * (gridline_count + 1);
-  grid_lines_.resize(linesNumber);
-
-  for (int i = 0; i < linesNumber - 1; i += 2) {
-    float position = -kHalfSize + (i / 2) * kHalfSize * 2.0f / gridline_count;
-
-    // Line parallel to the z axis.
-    Line3d& zLine = grid_lines_[i];
-    // Line parallel to the x axis.
-    Line3d& xLine = grid_lines_[i + 1];
-
-    zLine.start.x = position;
-    zLine.start.y = kHalfSize;
-    zLine.start.z = 0.0f;
-    zLine.end.x = position;
-    zLine.end.y = -kHalfSize;
-    zLine.end.z = 0.0f;
-    xLine.start.x = -kHalfSize;
-    xLine.start.y = -position;
-    xLine.start.z = 0.0f;
-    xLine.end.x = kHalfSize;
-    xLine.end.y = -position;
-    xLine.end.z = 0.0f;
-  }
-
-  size_t vertex_buffer_size = sizeof(Line3d) * linesNumber;
-
-  glGenBuffersARB(1, &vertex_buffer_);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, grid_lines_.data(),
-               GL_STATIC_DRAW);
-}
 
 VrShellRenderer::VrShellRenderer()
     : external_textured_quad_renderer_(

@@ -229,8 +229,9 @@ void UiSceneManager::CreateBackground() {
   element->set_size({kSceneSize, kSceneSize, 1.0});
   element->set_translation({0.0, -kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
-  element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
+  element->set_fill(vr_shell::Fill::GRID_GRADIENT);
   element->set_draw_phase(0);
+  element->set_gridline_count(kFloorGridlineCount);
   floor_ = element.get();
   content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -239,27 +240,12 @@ void UiSceneManager::CreateBackground() {
   element = base::MakeUnique<UiElement>();
   element->set_debug_id(kCeiling);
   element->set_id(AllocateId());
-  element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
   element->set_size({kSceneSize, kSceneSize, 1.0});
   element->set_translation({0.0, kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
   element->set_draw_phase(0);
   ceiling_ = element.get();
-  content_elements_.push_back(element.get());
-  scene_->AddUiElement(std::move(element));
-
-  // Floor grid.
-  element = base::MakeUnique<UiElement>();
-  element->set_debug_id(kFloorGrid);
-  element->set_id(AllocateId());
-  element->set_size({kSceneSize, kSceneSize, 1.0});
-  element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
-  element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
-  element->set_fill(vr_shell::Fill::GRID_GRADIENT);
-  element->set_gridline_count(kFloorGridlineCount);
-  element->set_draw_phase(0);
-  floor_grid_ = element.get();
   content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
@@ -364,9 +350,7 @@ void UiSceneManager::UpdateBackgroundColor() {
   ceiling_->set_edge_color(color_scheme().horizon);
   floor_->set_center_color(color_scheme().floor);
   floor_->set_edge_color(color_scheme().horizon);
-  floor_grid_->set_center_color(color_scheme().floor_grid);
-  SkColor floor_grid_edge_color = SkColorSetA(color_scheme().floor_grid, 0);
-  floor_grid_->set_edge_color(floor_grid_edge_color);
+  floor_->set_grid_color(color_scheme().floor_grid);
 }
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
