@@ -1125,6 +1125,25 @@
             ]
         }
     ],
+    "GpuScheduler": [
+        {
+            "platforms": [
+                "mac",
+                "win",
+                "linux",
+                "chromeos",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GpuScheduler"
+                    ]
+                }
+            ]
+        }
+    ],
     "Html5ByDefault": [
         {
             "platforms": [
