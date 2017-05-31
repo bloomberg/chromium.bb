@@ -118,6 +118,10 @@ bool CopyingGLImageDXGI::Initialize() {
   base::win::ScopedComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
   context.CopyTo(video_context_.GetAddressOf());
+
+  base::win::ScopedComPtr<ID3D10Multithread> multithread;
+  d3d11_device_.CopyTo(multithread.GetAddressOf());
+  CHECK(multithread->GetMultithreadProtected());
   return true;
 }
 
@@ -125,6 +129,10 @@ bool CopyingGLImageDXGI::InitializeVideoProcessor(
     const base::win::ScopedComPtr<ID3D11VideoProcessor>& video_processor,
     const base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>& enumerator) {
   output_view_.Reset();
+
+  base::win::ScopedComPtr<ID3D11Device> processor_device;
+  video_processor->GetDevice(processor_device.GetAddressOf());
+  CHECK_EQ(d3d11_device_.Get(), processor_device.Get());
 
   d3d11_processor_ = video_processor;
   enumerator_ = enumerator;
@@ -149,6 +157,11 @@ void CopyingGLImageDXGI::UnbindFromTexture() {
 bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
   if (copied_)
     return true;
+
+  CHECK(video_device_);
+  base::win::ScopedComPtr<ID3D11Device> texture_device;
+  texture_->GetDevice(texture_device.GetAddressOf());
+  CHECK_EQ(d3d11_device_.Get(), texture_device.Get());
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC input_view_desc = {0};
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
