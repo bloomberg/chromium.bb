@@ -1675,8 +1675,6 @@ crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-002.html [ Failure ]
 crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-003.html [ Failure ]
 
-crbug.com/726650 inspector/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
-
 # We don't correctly implement aspect ratios for images in Flexbox
 crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001.html [ Failure ]
 crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002.html [ Failure ]
