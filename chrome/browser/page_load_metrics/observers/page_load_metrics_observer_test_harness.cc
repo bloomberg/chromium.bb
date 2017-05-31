@@ -38,6 +38,12 @@ class TestPageLoadMetricsEmbedderInterface
     test_->RegisterObservers(tracker);
   }
 
+  std::unique_ptr<base::Timer> CreateTimer() override {
+    auto timer = base::MakeUnique<test::WeakMockTimer>();
+    test_->SetMockTimer(timer->AsWeakPtr());
+    return std::move(timer);
+  }
+
  private:
   PageLoadMetricsObserverTestHarness* test_;
 
@@ -50,76 +56,6 @@ PageLoadMetricsObserverTestHarness::PageLoadMetricsObserverTestHarness()
     : ChromeRenderViewHostTestHarness() {}
 
 PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
-
-// static
-void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
-    mojom::PageLoadTiming* inout_timing) {
-  if (inout_timing->paint_timing->first_meaningful_paint &&
-      !inout_timing->paint_timing->first_contentful_paint) {
-    inout_timing->paint_timing->first_contentful_paint =
-        inout_timing->paint_timing->first_meaningful_paint;
-  }
-  if ((inout_timing->paint_timing->first_text_paint ||
-       inout_timing->paint_timing->first_image_paint ||
-       inout_timing->paint_timing->first_contentful_paint) &&
-      !inout_timing->paint_timing->first_paint) {
-    inout_timing->paint_timing->first_paint =
-        OptionalMin(OptionalMin(inout_timing->paint_timing->first_text_paint,
-                                inout_timing->paint_timing->first_image_paint),
-                    inout_timing->paint_timing->first_contentful_paint);
-  }
-  if (inout_timing->paint_timing->first_paint &&
-      !inout_timing->document_timing->first_layout) {
-    inout_timing->document_timing->first_layout =
-        inout_timing->paint_timing->first_paint;
-  }
-  if (inout_timing->document_timing->load_event_start &&
-      !inout_timing->document_timing->dom_content_loaded_event_start) {
-    inout_timing->document_timing->dom_content_loaded_event_start =
-        inout_timing->document_timing->load_event_start;
-  }
-  if (inout_timing->document_timing->first_layout &&
-      !inout_timing->parse_timing->parse_start) {
-    inout_timing->parse_timing->parse_start =
-        inout_timing->document_timing->first_layout;
-  }
-  if (inout_timing->document_timing->dom_content_loaded_event_start &&
-      !inout_timing->parse_timing->parse_stop) {
-    inout_timing->parse_timing->parse_stop =
-        inout_timing->document_timing->dom_content_loaded_event_start;
-  }
-  if (inout_timing->parse_timing->parse_stop &&
-      !inout_timing->parse_timing->parse_start) {
-    inout_timing->parse_timing->parse_start =
-        inout_timing->parse_timing->parse_stop;
-  }
-  if (inout_timing->parse_timing->parse_start &&
-      !inout_timing->response_start) {
-    inout_timing->response_start = inout_timing->parse_timing->parse_start;
-  }
-  if (inout_timing->parse_timing->parse_start) {
-    if (!inout_timing->parse_timing->parse_blocked_on_script_load_duration)
-      inout_timing->parse_timing->parse_blocked_on_script_load_duration =
-          base::TimeDelta();
-    if (!inout_timing->parse_timing
-             ->parse_blocked_on_script_execution_duration) {
-      inout_timing->parse_timing->parse_blocked_on_script_execution_duration =
-          base::TimeDelta();
-    }
-    if (!inout_timing->parse_timing
-             ->parse_blocked_on_script_load_from_document_write_duration) {
-      inout_timing->parse_timing
-          ->parse_blocked_on_script_load_from_document_write_duration =
-          base::TimeDelta();
-    }
-    if (!inout_timing->parse_timing
-             ->parse_blocked_on_script_execution_from_document_write_duration) {
-      inout_timing->parse_timing
-          ->parse_blocked_on_script_execution_from_document_write_duration =
-          base::TimeDelta();
-    }
-  }
-}
 
 void PageLoadMetricsObserverTestHarness::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
@@ -146,6 +82,12 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata);
+  // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
+  // schedule a buffering timer, then fire it now so metrics are dispatched to
+  // observers.
+  base::MockTimer* mock_timer = GetMockTimer();
+  if (mock_timer && mock_timer->IsRunning())
+    mock_timer->Fire();
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateStartedResource(
