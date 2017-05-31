@@ -19,6 +19,9 @@ namespace {
 // two labels.
 const CGFloat kHorizontalPadding = 16;
 
+// Padding used on the top and bottom edges of the cell.
+const CGFloat kVerticalPadding = 16;
+
 // Minimum proportion of the available width to guarantee to the main and detail
 // labels.
 const CGFloat kMinTextWidthRatio = 0.75f;
@@ -98,10 +101,12 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
           constraintEqualToAnchor:contentView.trailingAnchor
                          constant:-kHorizontalPadding],
 
-      // Center the text label vertically and align the baselines of the two
-      // text labels.
-      [_textLabel.centerYAnchor
-          constraintEqualToAnchor:contentView.centerYAnchor],
+      // Set up the top and bottom constraints for |_textLabel| and align the
+      // baselines of the two text labels.
+      [_textLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                           constant:kVerticalPadding],
+      [_textLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                              constant:-kVerticalPadding],
       [_detailTextLabel.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
 
