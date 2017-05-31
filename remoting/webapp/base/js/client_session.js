@@ -228,6 +228,20 @@ remoting.ClientSession.PerfStats.prototype.roundtripLatency = 0;
 /** @type {number} */
 remoting.ClientSession.PerfStats.prototype.maxRoundtripLatency = 0;
 
+/**
+ * @param {!remoting.ClientSession.PerfStats} stats
+ * @return {boolean} true if there is any non-zero value in stats, false
+ *     otherwise.
+ */
+remoting.ClientSession.PerfStats.hasValidField = function(stats) {
+  for (var key in stats) {
+    if (stats[key] !== 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Keys for connection statistics.
 remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH = 'videoBandwidth';
 remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE = 'videoFrameRate';
@@ -561,7 +575,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
 
   if (newState == remoting.ClientSession.State.CONNECTED) {
     this.connectedDisposables_.add(
-        new base.RepeatingTimer(this.reportStatistics.bind(this), 1000));
+        new base.RepeatingTimer(this.reportStatistics.bind(this), 1000 * 60));
     if (this.plugin_.hasCapability(
           remoting.ClientSession.Capability.TOUCH_EVENTS)) {
       this.plugin_.enableTouchEvents(true);
