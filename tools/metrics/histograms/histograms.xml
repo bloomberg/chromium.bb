@@ -71577,6 +71577,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Stability.Android.RendererCrash" enum="Boolean">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Counts renderer crashes including OOMs. Android only. Mirrors old stability
+    proto renderer crashes.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BadMessageTerminated.Chrome"
     enum="BadMessageReasonChrome">
   <owner>nick@chromium.org</owner>
