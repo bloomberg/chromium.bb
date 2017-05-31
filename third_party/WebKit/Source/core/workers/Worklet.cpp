@@ -62,6 +62,18 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   return promise;
 }
 
+WebURLRequest::FetchCredentialsMode Worklet::ParseCredentialsOption(
+    const String& credentials_option) {
+  if (credentials_option == "omit")
+    return WebURLRequest::kFetchCredentialsModeOmit;
+  if (credentials_option == "same-origin")
+    return WebURLRequest::kFetchCredentialsModeSameOrigin;
+  if (credentials_option == "include")
+    return WebURLRequest::kFetchCredentialsModeInclude;
+  NOTREACHED();
+  return WebURLRequest::kFetchCredentialsModeOmit;
+}
+
 DEFINE_TRACE(Worklet) {
   ContextLifecycleObserver::Trace(visitor);
 }
