@@ -14,8 +14,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
@@ -72,7 +72,7 @@ class MessageFilterRouter;
 // |channel_lifetime_lock_| is used to protect it. The locking overhead is only
 // paid if the underlying channel supports thread-safe |Send|.
 //
-class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
+class IPC_EXPORT ChannelProxy : public Sender {
  public:
 #if defined(ENABLE_IPC_FUZZER)
   // Interface for a filter to be imposed on outgoing messages which can
@@ -404,6 +404,8 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 #if defined(ENABLE_IPC_FUZZER)
   OutgoingMessageFilter* outgoing_message_filter_;
 #endif
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace IPC
