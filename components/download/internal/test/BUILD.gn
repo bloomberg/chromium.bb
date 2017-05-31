@@ -8,8 +8,12 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "empty_client.cc",
+    "empty_client.h",
     "entry_utils.cc",
     "entry_utils.h",
+    "mock_client.cc",
+    "mock_client.h",
     "mock_model_client.cc",
     "mock_model_client.h",
     "noop_store.cc",

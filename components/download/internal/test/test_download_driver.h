@@ -12,12 +12,13 @@
 #include "components/download/internal/download_driver.h"
 
 namespace download {
+namespace test {
 
 // Download driver that simulates content layer download logic.
 class TestDownloadDriver : public DownloadDriver {
  public:
   TestDownloadDriver();
-  ~TestDownloadDriver();
+  ~TestDownloadDriver() override;
 
   // Marks download driver as ready, used to test logic that depends on
   // data initialization.
@@ -48,6 +49,7 @@ class TestDownloadDriver : public DownloadDriver {
   DISALLOW_COPY_AND_ASSIGN(TestDownloadDriver);
 };
 
+}  // namespace test
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_CONTENT_TEST_TEST_DOWNLOAD_DRIVER_H_

@@ -35,7 +35,7 @@ class DownloadServiceModelImplTest : public testing::Test {
   void SetUp() override {
     auto store = base::MakeUnique<test::TestStore>();
     store_ = store.get();
-    model_ = base::MakeUnique<ModelImpl>(&client_, std::move(store));
+    model_ = base::MakeUnique<ModelImpl>(std::move(store));
   }
 
  protected:
@@ -51,9 +51,9 @@ class DownloadServiceModelImplTest : public testing::Test {
 
 TEST_F(DownloadServiceModelImplTest, SuccessfulLifecycle) {
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
 }
@@ -64,9 +64,9 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
@@ -75,9 +75,9 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
 }
 
 TEST_F(DownloadServiceModelImplTest, BadInit) {
-  EXPECT_CALL(client_, OnInitialized(false)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(false)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
 }
@@ -87,11 +87,11 @@ TEST_F(DownloadServiceModelImplTest, Add) {
   Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemAdded(true, entry1.client, entry1.guid)).Times(1);
   EXPECT_CALL(client_, OnItemAdded(false, entry2.client, entry2.guid)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
 
   model_->Add(entry1);
@@ -119,13 +119,13 @@ TEST_F(DownloadServiceModelImplTest, Update) {
   std::vector<Entry> entries = {entry1};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemUpdated(true, entry1.client, entry1.guid))
       .Times(1);
   EXPECT_CALL(client_, OnItemUpdated(false, entry1.client, entry1.guid))
       .Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
   model_->Update(entry2);
@@ -147,13 +147,13 @@ TEST_F(DownloadServiceModelImplTest, Remove) {
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemRemoved(true, entry1.client, entry1.guid))
       .Times(1);
   EXPECT_CALL(client_, OnItemRemoved(false, entry2.client, entry2.guid))
       .Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
   model_->Remove(entry1.guid);
@@ -173,9 +173,9 @@ TEST_F(DownloadServiceModelImplTest, Get) {
   std::vector<Entry> entries = {entry};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
   EXPECT_TRUE(test::CompareEntry(&entry, model_->Get(entry.guid)));
@@ -188,9 +188,9 @@ TEST_F(DownloadServiceModelImplTest, PeekEntries) {
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
   std::vector<Entry*> expected_peek = {&entry1, &entry2};
@@ -202,11 +202,11 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterAdd) {
   Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemAdded(_, _, _)).Times(0);
   EXPECT_CALL(client_, OnItemRemoved(true, entry.client, entry.guid)).Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
 
   model_->Add(entry);
@@ -228,12 +228,12 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterUpdate) {
   std::vector<Entry> entries = {entry1};
 
   InSequence sequence;
-  EXPECT_CALL(client_, OnInitialized(true)).Times(1);
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemUpdated(_, _, _)).Times(0);
   EXPECT_CALL(client_, OnItemRemoved(true, entry1.client, entry1.guid))
       .Times(1);
 
-  model_->Initialize();
+  model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
 

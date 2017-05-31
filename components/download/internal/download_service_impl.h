@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/download/internal/config.h"
 #include "components/download/public/download_service.h"
 
 namespace download {
+
+class Controller;
 
 struct DownloadParams;
 struct SchedulingParams;
@@ -20,10 +21,11 @@ struct SchedulingParams;
 // The internal implementation of the DownloadService.
 class DownloadServiceImpl : public DownloadService {
  public:
-  DownloadServiceImpl(std::unique_ptr<Configuration> config);
+  DownloadServiceImpl(std::unique_ptr<Controller> controller);
   ~DownloadServiceImpl() override;
 
   // DownloadService implementation.
+  ServiceStatus GetStatus() override;
   void StartDownload(const DownloadParams& download_params) override;
   void PauseDownload(const std::string& guid) override;
   void ResumeDownload(const std::string& guid) override;
@@ -32,7 +34,7 @@ class DownloadServiceImpl : public DownloadService {
                               const SchedulingParams& params) override;
 
  private:
-  std::unique_ptr<Configuration> config_;
+  std::unique_ptr<Controller> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
 };

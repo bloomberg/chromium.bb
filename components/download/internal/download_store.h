@@ -16,8 +16,7 @@
 
 namespace protodb {
 class Entry;
-
-}  // namespace
+}  // namespace protodb
 
 namespace download {
 
