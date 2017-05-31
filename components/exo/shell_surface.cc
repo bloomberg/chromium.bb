@@ -150,7 +150,10 @@ class CustomWindowTargeter : public aura::WindowTargeter {
           return shadow_underlay;
       }
     }
-    return aura::WindowTargeter::FindTargetForEvent(root, event);
+    ui::EventTarget* target =
+        aura::WindowTargeter::FindTargetForEvent(root, event);
+    // Do not accept events in ShellSurface window.
+    return target != root ? target : nullptr;
   }
 
  private:
