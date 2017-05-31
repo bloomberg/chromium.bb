@@ -330,16 +330,13 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that only the appropriate enum value was logged.
-        for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            Assert.assertEquals(
-                    (i
-                                            == (PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
-                                                       | PaymentRequestMetrics
-                                                                 .REQUESTED_INFORMATION_PHONE
-                                                       | PaymentRequestMetrics
-                                                                 .REQUESTED_INFORMATION_NAME)
-                                    ? 1
-                                    : 0),
+        for (int i = 0; i < RequestedInformation.MAX; ++i) {
+            Assert.assertEquals((i
+                                                        == (RequestedInformation.EMAIL
+                                                                   | RequestedInformation.PHONE
+                                                                   | RequestedInformation.NAME)
+                                                ? 1
+                                                : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

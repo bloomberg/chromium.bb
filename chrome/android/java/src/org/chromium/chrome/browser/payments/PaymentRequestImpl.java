@@ -406,13 +406,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
             PaymentDetails details, PaymentOptions options) {
         if (mClient != null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
             return;
         }
 
         if (client == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid mojo client");
             return;
         }
@@ -421,7 +421,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mMethodData = new HashMap<>();
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Not in a secure context");
             return;
         }
@@ -456,7 +456,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mMethodData = getValidatedMethodData(methodData, mCardEditor);
         if (mMethodData == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             return;
         }
@@ -464,7 +464,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
         if (mRawTotal == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Missing total");
             return;
         }
@@ -567,8 +567,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         // Log the number of suggested shipping addresses.
-        mJourneyLogger.setNumberOfSuggestionsShown(
-                JourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
+        mJourneyLogger.setNumberOfSuggestionsShown(Section.SHIPPING_ADDRESS, addresses.size());
 
         // Automatically select the first address if one is complete and if the merchant does
         // not require a shipping address to calculate shipping costs.
@@ -597,7 +596,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Renderer should never invoke show() twice");
             return;
         }
@@ -606,7 +605,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // The renderer can create multiple instances of PaymentRequest and call show() on each
             // one. Only the first one will be shown. This also prevents multiple tabs and windows
             // from showing PaymentRequest UI at the same time.
-            mJourneyLogger.setNotShown(JourneyLogger.NO_SHOW_CONCURRENT_REQUESTS);
+            mJourneyLogger.setNotShown(NotShownReason.CONCURRENT_REQUESTS);
             disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
@@ -617,7 +616,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
-            mJourneyLogger.setNotShown(JourneyLogger.NO_SHOW_REASON_OTHER);
+            mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
@@ -645,7 +644,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
-            mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_SKIPPED_SHOW);
+            mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
             mJourneyLogger.setShowCalled();
 
             onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
@@ -745,7 +744,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
 
         if (mUI == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
             return;
@@ -778,7 +777,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
         if (!PaymentValidator.validatePaymentDetails(details)) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage("Invalid payment details");
             return false;
         }
@@ -993,7 +992,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (!mDidRecordShowEvent) {
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
-            mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_SHOWN);
+            mJourneyLogger.setEventOccurred(Event.SHOWN);
             mJourneyLogger.setShowCalled();
         }
     }
@@ -1035,7 +1034,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
             // Log the change of shipping address.
-            mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionChanges(Section.SHIPPING_ADDRESS);
             AutofillAddress address = (AutofillAddress) option;
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
@@ -1054,7 +1053,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             assert option instanceof AutofillContact;
             // Log the change of contact info.
-            mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionChanges(Section.CONTACT_INFO);
             AutofillContact contact = (AutofillContact) option;
 
             if (contact.isComplete()) {
@@ -1067,7 +1066,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             assert option instanceof PaymentInstrument;
             if (option instanceof AutofillPaymentInstrument) {
                 // Log the change of credit card.
-                mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_CREDIT_CARDS);
+                mJourneyLogger.incrementSelectionChanges(Section.CREDIT_CARDS);
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
 
                 if (!card.isComplete()) {
@@ -1118,17 +1117,17 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             editAddress(null);
             mPaymentInformationCallback = callback;
             // Log the add of shipping address.
-            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionAdds(Section.SHIPPING_ADDRESS);
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
             // Log the add of contact info.
-            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionAdds(Section.CONTACT_INFO);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             editCard(null);
             // Log the add of credit card.
-            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_CREDIT_CARDS);
+            mJourneyLogger.incrementSelectionAdds(Section.CREDIT_CARDS);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
 
@@ -1138,7 +1137,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void editAddress(final AutofillAddress toEdit) {
         if (toEdit != null) {
             // Log the edit of a shipping address.
-            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
         }
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
@@ -1186,7 +1185,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void editContact(final AutofillContact toEdit) {
         if (toEdit != null) {
             // Log the edit of a contact info.
-            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionEdits(Section.CONTACT_INFO);
         }
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
@@ -1219,7 +1218,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void editCard(final AutofillPaymentInstrument toEdit) {
         if (toEdit != null) {
             // Log the edit of a credit card.
-            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_CREDIT_CARDS);
+            mJourneyLogger.incrementSelectionEdits(Section.CREDIT_CARDS);
         }
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
@@ -1292,13 +1291,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mCertificateChain, Collections.unmodifiableMap(methodData), mRawTotal,
                 mRawLineItems, Collections.unmodifiableMap(modifiers), this);
 
-        mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_PAY_CLICKED);
+        mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         return !(instrument instanceof AutofillPaymentInstrument);
     }
 
     @Override
     public void onDismiss() {
-        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
+        mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage("Dialog dismissed");
     }
 
@@ -1325,7 +1324,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else {
             closeClient();
             closeUI(true);
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_MERCHANT);
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
         }
     }
 
@@ -1357,7 +1356,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onCardAndAddressSettingsClicked() {
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (context == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_OTHER);
+            mJourneyLogger.setAborted(AbortReason.OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             return;
         }
@@ -1365,7 +1364,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 context, AutofillAndPaymentsPreferences.class.getName());
         context.startActivity(intent);
-        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_ABORTED_BY_USER);
+        mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage("Card and address settings clicked");
     }
 
@@ -1456,7 +1455,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
         closeClient();
         closeUI(true);
-        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_MOJO_RENDERER_CLOSING);
+        mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
     }
 
     /**
@@ -1467,7 +1466,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
         closeClient();
         closeUI(true);
-        mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_MOJO_CONNECTION_ERROR);
+        mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
     }
 
     /**
@@ -1539,7 +1538,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         // Log the number of suggested credit cards.
         mJourneyLogger.setNumberOfSuggestionsShown(
-                JourneyLogger.SECTION_CREDIT_CARDS, mPendingAutofillInstruments.size());
+                Section.CREDIT_CARDS, mPendingAutofillInstruments.size());
 
         // Possibly pre-select the first instrument on the list.
         int selection = SectionInformation.NO_SELECTION;
@@ -1596,8 +1595,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
             mJourneyLogger.setNotShown(mArePaymentMethodsSupported
-                            ? JourneyLogger.NO_SHOW_NO_MATCHING_PAYMENT_METHOD
-                            : JourneyLogger.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD);
+                            ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
+                            : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
             disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
                     mIsIncognito ? PaymentErrorReason.USER_CANCEL
                                  : PaymentErrorReason.NOT_SUPPORTED);
@@ -1629,21 +1628,21 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                         selectedPaymentMethod.getIdentifier());
             }
             PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    PaymentRequestMetrics.SELECTED_METHOD_CREDIT_CARD);
+                    SelectedPaymentMethod.CREDIT_CARD);
         } else if (methodName.equals(ANDROID_PAY_METHOD_NAME)
                 || methodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
             PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
+                    SelectedPaymentMethod.ANDROID_PAY);
         } else {
             PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    PaymentRequestMetrics.SELECTED_METHOD_OTHER_PAYMENT_APP);
+                    SelectedPaymentMethod.OTHER_PAYMENT_APP);
         }
 
         // Showing the payment request UI if we were previously skipping it so the loading
         // spinner shows up until the merchant notifies that payment was completed.
         if (mShouldSkipShowingPaymentRequestUi) mUI.showProcessingMessageAfterUiSkip();
 
-        mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_RECEIVED_INSTRUMENT_DETAILS);
+        mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
 
         mPaymentResponseHelper.onInstrumentDetailsReceived(methodName, stringifiedDetails);
     }
@@ -1696,7 +1695,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         // Can happen if the tab is closed during the normalization process.
         if (chromeActivity == null) {
-            mJourneyLogger.setAborted(JourneyLogger.ABORT_REASON_OTHER);
+            mJourneyLogger.setAborted(AbortReason.OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
