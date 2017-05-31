@@ -168,6 +168,7 @@ CALayerResult FromTileQuad(ResourceProvider* resource_provider,
   ca_layer_overlay->contents_rect = quad->tex_coord_rect;
   ca_layer_overlay->contents_rect.Scale(1.f / quad->texture_size.width(),
                                         1.f / quad->texture_size.height());
+  ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
   return CA_LAYER_SUCCESS;
 }
 
