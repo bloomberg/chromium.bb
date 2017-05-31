@@ -24,7 +24,6 @@
 
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "media/cast/logging/logging_defines.h"
@@ -71,7 +70,7 @@ class RtcpObserver {
 };
 
 // The application should only trigger this class from the transport thread.
-class CastTransport : public base::NonThreadSafe {
+class CastTransport {
  public:
   // Interface used for receiving status updates, raw events, and RTP packets
   // from CastTransport.
