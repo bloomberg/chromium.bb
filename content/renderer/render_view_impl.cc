@@ -1443,8 +1443,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
   mojom::CreateNewWindowReplyPtr reply;
   mojom::FrameHostAssociatedPtr frame_host_ptr = creator_frame->GetFrameHost();
-  frame_host_ptr->CreateNewWindow(std::move(params), &reply);
-  if (reply->route_id == MSG_ROUTING_NONE)
+  bool err = !frame_host_ptr->CreateNewWindow(std::move(params), &reply);
+  if (err || reply->route_id == MSG_ROUTING_NONE)
     return nullptr;
 
   WebUserGestureIndicator::ConsumeUserGesture();

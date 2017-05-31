@@ -322,4 +322,35 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
+// Regression test for https://crbug.com/728171 where the sync IPC channel has a
+// connection error but we don't properly check for it. This occurs because we
+// send a sync window.open IPC after the RenderFrameHost is destroyed.
+//
+// This test reproduces the issue by calling window.close, and then
+// window.open in a task that runs immediately after window.close (which
+// internally posts a task to send the IPC). This ensures that the
+// RenderFrameHost is destroyed by the time the window.open IPC reaches the
+// browser process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       FrameDetached_WindowOpenIPCFails) {
+  NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+  EXPECT_EQ(1u, Shell::windows().size());
+  GURL test_url = GetTestUrl("render_frame_host", "window_open_and_close.html");
+  std::string open_script =
+      base::StringPrintf("popup = window.open('%s');", test_url.spec().c_str());
+
+  EXPECT_TRUE(content::ExecuteScript(shell(), open_script));
+  ASSERT_EQ(2u, Shell::windows().size());
+
+  Shell* new_shell = Shell::windows()[1];
+  RenderFrameDeletedObserver deleted_observer(
+      new_shell->web_contents()->GetMainFrame());
+  deleted_observer.WaitUntilDeleted();
+
+  bool is_closed = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(), "domAutomationController.send(popup.closed)", &is_closed));
+  EXPECT_TRUE(is_closed);
+}
+
 }  // namespace content
