@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/response_providers/delayed_response_provider.h"
+#import "ios/web/public/test/http_server/delayed_response_provider.h"
 
 #import <Foundation/Foundation.h>
 
 #import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/third_party/gcdwebserver/src/GCDWebServer/Responses/GCDWebServerDataResponse.h"
 
 // A proxy class that will forward all messages to the |_response|.

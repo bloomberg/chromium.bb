@@ -7,7 +7,7 @@
 #import "base/ios/block_types.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/public/test/http_server.h"
+#import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_view_creation_util.h"

@@ -26,7 +26,7 @@ source_set("unit_tests") {
     ":itunes_links",
     "//base",
     "//ios/chrome/browser/store_kit",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",

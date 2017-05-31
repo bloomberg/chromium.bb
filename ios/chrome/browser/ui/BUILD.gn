@@ -111,7 +111,8 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//net",
     "//net:test_support",
     "//testing/gmock",
@@ -510,7 +511,8 @@ source_set("external_url_eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/web:earl_grey_test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
@@ -539,7 +541,8 @@ source_set("eg_tests") {
     "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey",
     "//ios/web:earl_grey_test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]
@@ -571,7 +574,7 @@ source_set("perf_tests") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/chrome/test/base:perf_test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base:test_support",

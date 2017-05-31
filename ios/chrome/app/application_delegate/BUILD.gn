@@ -60,7 +60,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser/user_feedback:test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/ocmock",

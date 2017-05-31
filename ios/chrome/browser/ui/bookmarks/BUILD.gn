@@ -144,7 +144,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }
@@ -174,7 +174,7 @@ source_set("eg_tests") {
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey",
-    "//ios/web:test_support",
+    "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]

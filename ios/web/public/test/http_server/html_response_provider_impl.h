@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_IMPL_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_IMPL_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_IMPL_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_IMPL_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#import "ios/web/public/test/response_providers/data_response_provider.h"
-#import "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/http_server/data_response_provider.h"
+#import "ios/web/public/test/http_server/response_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
@@ -71,4 +71,4 @@ class HtmlResponseProviderImpl {
   const std::map<GURL, Response> responses_;
 };
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTML_RESPONSE_PROVIDER_IMPL_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTML_RESPONSE_PROVIDER_IMPL_H_

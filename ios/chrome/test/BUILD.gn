@@ -48,7 +48,7 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

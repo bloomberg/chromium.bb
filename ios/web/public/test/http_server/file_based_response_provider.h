@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
-#import "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
-#import "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/http_server/file_based_response_provider_impl.h"
+#import "ios/web/public/test/http_server/response_provider.h"
 
 namespace base {
 class FilePath;
@@ -34,4 +34,4 @@ class FileBasedResponseProvider : public ResponseProvider {
 };
 }
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_FILE_BASED_RESPONSE_PROVIDER_H_

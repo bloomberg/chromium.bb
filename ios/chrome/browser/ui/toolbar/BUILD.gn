@@ -178,7 +178,8 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/shared/chrome/browser/ui/toolbar:test_support",
     "//ios/testing:ocmock_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
@@ -205,7 +206,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
-    "//ios/web:test_support",
+    "//ios/web/public/test/http_server",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]

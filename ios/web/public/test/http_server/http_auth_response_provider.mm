@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/response_providers/http_auth_response_provider.h"
+#import "ios/web/public/test/http_server/http_auth_response_provider.h"
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"

@@ -235,7 +235,7 @@ source_set("test_support") {
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/ui/collection_view:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
   ]
 }
@@ -329,7 +329,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//net",
     "//net:test_support",
     "//testing/gmock",
@@ -386,7 +386,8 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//net",
     "//ui/base",
     "//url",

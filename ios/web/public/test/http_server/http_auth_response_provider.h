@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTTP_AUTH_RESPONSE_PROVIDER_H_
-#define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTTP_AUTH_RESPONSE_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTTP_AUTH_RESPONSE_PROVIDER_H_
+#define IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTTP_AUTH_RESPONSE_PROVIDER_H_
 
 #include <string>
 
-#import "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -58,4 +58,4 @@ class HttpAuthResponseProvider : public HtmlResponseProvider {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_HTTP_AUTH_RESPONSE_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_HTTP_AUTH_RESPONSE_PROVIDER_H_

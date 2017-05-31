@@ -357,17 +357,32 @@ source_set("reload_type") {
   ]
 }
 
+# TODO(crbug.com/727860): Remove this when nothing depends on it.
+source_set("test_support") {
+  testonly = true
+
+  public_deps = [
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//ios/web/public/test/http_server",
+  ]
+
+  sources = [
+    "public/test/http_server.h",
+  ]
+}
+
 source_set("earl_grey_test_support") {
   testonly = true
 
   deps = [
-    ":test_support",
     ":web",
     "//base",
     "//base/test:test_support",
     "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
+    "//ios/web/public/test",
     "//net",
   ]
 
@@ -381,122 +396,16 @@ source_set("earl_grey_test_support") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-
-  deps = [
-    ":web",
-    "//base",
-    "//base/test:test_support",
-    "//ios/testing:ios_test_support",
-    "//ios/testing:ocmock_support",
-    "//ios/third_party/gcdwebserver",
-    "//ios/web/test:mojo_bindings",
-    "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/ocmock",
-    "//ui/base",
-  ]
-
-  sources = [
-    "public/test/fakes/crw_test_js_injection_receiver.h",
-    "public/test/fakes/crw_test_js_injection_receiver.mm",
-    "public/test/fakes/crw_test_web_state_observer.h",
-    "public/test/fakes/crw_test_web_state_observer.mm",
-    "public/test/fakes/test_browser_state.cc",
-    "public/test/fakes/test_browser_state.h",
-    "public/test/fakes/test_java_script_dialog_presenter.h",
-    "public/test/fakes/test_java_script_dialog_presenter.mm",
-    "public/test/fakes/test_native_content.h",
-    "public/test/fakes/test_native_content.mm",
-    "public/test/fakes/test_native_content_provider.h",
-    "public/test/fakes/test_native_content_provider.mm",
-    "public/test/fakes/test_navigation_manager.h",
-    "public/test/fakes/test_navigation_manager.mm",
-    "public/test/fakes/test_web_client.h",
-    "public/test/fakes/test_web_client.mm",
-    "public/test/fakes/test_web_state.h",
-    "public/test/fakes/test_web_state.mm",
-    "public/test/fakes/test_web_state_delegate.h",
-    "public/test/fakes/test_web_state_delegate.mm",
-    "public/test/fakes/test_web_state_observer.h",
-    "public/test/fakes/test_web_state_observer.mm",
-    "public/test/fakes/test_web_state_observer_util.h",
-    "public/test/fakes/test_web_state_observer_util.mm",
-    "public/test/fakes/test_web_view_content_view.h",
-    "public/test/fakes/test_web_view_content_view.mm",
-    "public/test/http_server.h",
-    "public/test/http_server.mm",
-    "public/test/http_server_util.h",
-    "public/test/http_server_util.mm",
-    "public/test/js_test_util.h",
-    "public/test/js_test_util.mm",
-    "public/test/native_controller_test_util.h",
-    "public/test/native_controller_test_util.mm",
-    "public/test/navigation_test_util.h",
-    "public/test/navigation_test_util.mm",
-    "public/test/response_providers/data_response_provider.h",
-    "public/test/response_providers/data_response_provider.mm",
-    "public/test/response_providers/delayed_response_provider.h",
-    "public/test/response_providers/delayed_response_provider.mm",
-    "public/test/response_providers/error_page_response_provider.h",
-    "public/test/response_providers/error_page_response_provider.mm",
-    "public/test/response_providers/file_based_response_provider.h",
-    "public/test/response_providers/file_based_response_provider.mm",
-    "public/test/response_providers/file_based_response_provider_impl.h",
-    "public/test/response_providers/file_based_response_provider_impl.mm",
-    "public/test/response_providers/html_response_provider.h",
-    "public/test/response_providers/html_response_provider.mm",
-    "public/test/response_providers/html_response_provider_impl.h",
-    "public/test/response_providers/html_response_provider_impl.mm",
-    "public/test/response_providers/http_auth_response_provider.h",
-    "public/test/response_providers/http_auth_response_provider.mm",
-    "public/test/response_providers/response_provider.h",
-    "public/test/response_providers/response_provider.mm",
-    "public/test/response_providers/string_response_provider.h",
-    "public/test/response_providers/string_response_provider.mm",
-    "public/test/scoped_testing_web_client.h",
-    "public/test/scoped_testing_web_client.mm",
-    "public/test/test_redirect_observer.h",
-    "public/test/test_redirect_observer.mm",
-    "public/test/test_web_thread.h",
-    "public/test/test_web_thread_bundle.h",
-    "public/test/url_test_util.h",
-    "public/test/web_js_test.h",
-    "public/test/web_test.h",
-    "public/test/web_test.mm",
-    "public/test/web_test_suite.h",
-    "public/test/web_test_with_web_state.h",
-    "public/test/web_test_with_web_state.mm",
-    "public/test/web_view_interaction_test_util.h",
-    "public/test/web_view_interaction_test_util.mm",
-    "test/crw_fake_web_controller_observer.h",
-    "test/crw_fake_web_controller_observer.mm",
-    "test/test_url_constants.cc",
-    "test/test_url_constants.h",
-    "test/test_web_thread.cc",
-    "test/test_web_thread_bundle.cc",
-    "test/url_test_util.mm",
-    "test/web_int_test.h",
-    "test/web_int_test.mm",
-    "test/web_test_suite.mm",
-    "test/web_test_with_web_controller.h",
-    "test/web_test_with_web_controller.mm",
-    "test/wk_web_view_crash_utils.h",
-    "test/wk_web_view_crash_utils.mm",
-  ]
-}
-
 source_set("run_all_unittests") {
   testonly = true
   sources = [
     "test/run_all_unittests.cc",
   ]
   deps = [
-    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
     "//mojo/edk/system",
   ]
 }
@@ -520,7 +429,6 @@ test("ios_web_unittests_arc") {
     ":core",
     ":ios_web_unittests_bundle_data",
     ":run_all_unittests",
-    ":test_support",
     ":user_agent",
     ":web",
     "//base",
@@ -530,6 +438,8 @@ test("ios_web_unittests_arc") {
     "//ios/net",
     "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//ios/web/test:mojo_bindings",
     "//net:test_support",
     "//services/service_manager/public/cpp",
@@ -554,7 +464,6 @@ test("ios_web_unittests") {
     ":core",
     ":ios_web_unittests_bundle_data",
     ":run_all_unittests",
-    ":test_support",
     ":user_agent",
     ":web",
     "//base",
@@ -564,7 +473,11 @@ test("ios_web_unittests") {
     "//ios/net",
     "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//ios/web/test:mojo_bindings",
+    "//ios/web/test:test_constants",
+    "//ios/web/test:test_support",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -646,14 +559,18 @@ test("ios_web_unittests") {
 
 test("ios_web_inttests") {
   deps = [
-    ":test_support",
     ":web",
     "//base/test:test_support",
     "//ios/testing:http_server_bundle_data",
     "//ios/testing:ios_test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//ios/web/public/test/http_server",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:packed_resources",
     "//ios/web/test:resources",
+    "//ios/web/test:test_constants",
+    "//ios/web/test:test_support",
     "//mojo/edk/system",
     "//net:test_support",
     "//services/service_manager/public/cpp",

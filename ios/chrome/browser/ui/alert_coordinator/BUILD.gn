@@ -40,7 +40,7 @@ source_set("unit_tests") {
     "//components/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/test:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

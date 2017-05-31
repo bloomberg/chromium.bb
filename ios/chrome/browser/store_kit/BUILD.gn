@@ -25,7 +25,7 @@ source_set("unit_tests") {
     ":store_kit",
     "//base",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock:ocmock",
   ]

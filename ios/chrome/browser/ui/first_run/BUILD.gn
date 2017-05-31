@@ -92,7 +92,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/test:test_support",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
