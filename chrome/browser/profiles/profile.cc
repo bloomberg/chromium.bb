@@ -40,20 +40,63 @@
 #include "extensions/browser/pref_names.h"
 #endif
 
+#if DCHECK_IS_ON()
+
+#include <set>
+#include "base/lazy_instance.h"
+#include "base/logging.h"
+#include "base/synchronization/lock.h"
+
+namespace {
+
+base::LazyInstance<base::Lock>::Leaky g_instances_lock =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::set<content::BrowserContext*>>::Leaky g_instances =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+#endif  // DCHECK_IS_ON()
+
 Profile::Profile()
     : restored_last_session_(false),
       sent_destroyed_notification_(false),
       accessibility_pause_level_(0),
       is_guest_profile_(false),
       is_system_profile_(false) {
+#if DCHECK_IS_ON()
+  base::AutoLock lock(g_instances_lock.Get());
+  g_instances.Get().insert(this);
+#endif  // DCHECK_IS_ON()
 }
 
 Profile::~Profile() {
+#if DCHECK_IS_ON()
+  base::AutoLock lock(g_instances_lock.Get());
+  g_instances.Get().erase(this);
+#endif  // DCHECK_IS_ON()
 }
 
 // static
 Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
-  // This is safe; this is the only implementation of the browser context.
+  if (!browser_context)
+    return nullptr;
+
+  // For code running in a chrome/ environment, it is safe to cast to Profile*
+  // because Profile is the only implementation of BrowserContext used. In
+  // testing, however, there are several BrowserContext subclasses that are not
+  // Profile subclasses, and we can catch them. http://crbug.com/725276
+#if DCHECK_IS_ON()
+  base::AutoLock lock(g_instances_lock.Get());
+  if (!g_instances.Get().count(browser_context)) {
+    DCHECK(false)
+        << "Non-Profile BrowserContext passed to Profile::FromBrowserContext! "
+           "If you have a test linked in chrome/ you need a chrome/ based test "
+           "class such as TestingProfile in chrome/test/base/testing_profile.h "
+           "or you need to subclass your test class from Profile, not from "
+           "BrowserContext.";
+  }
+#endif  // DCHECK_IS_ON()
   return static_cast<Profile*>(browser_context);
 }
 
@@ -63,12 +106,12 @@ Profile* Profile::FromWebUI(content::WebUI* web_ui) {
 }
 
 TestingProfile* Profile::AsTestingProfile() {
-  return NULL;
+  return nullptr;
 }
 
 #if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
-  return NULL;
+  return nullptr;
 }
 #endif  // !defined(OS_ANDROID)
 
