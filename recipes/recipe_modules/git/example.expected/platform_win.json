@@ -36,7 +36,7 @@
     ],
     "cwd": "[START_DIR]\\src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];%(PATH)s"
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];<PATH>"
     },
     "infra_step": true,
     "name": "git fetch"
@@ -187,7 +187,7 @@
     ],
     "cwd": "[START_DIR]\\src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];%(PATH)s"
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];<PATH>"
     },
     "infra_step": true,
     "name": "git new-branch refactor"
@@ -202,7 +202,7 @@
     ],
     "cwd": "[START_DIR]\\src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];%(PATH)s"
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];<PATH>"
     },
     "infra_step": true,
     "name": "git new-branch feature"
