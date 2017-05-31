@@ -748,11 +748,11 @@ void VRDisplay::StopPresenting() {
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
-                           const OnActivateCallback& on_handled) {
+                           OnActivateCallback on_handled) {
   AutoReset<bool> activating(&in_display_activate_, true);
   navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));
-  on_handled.Run(!pending_present_request_ && !is_presenting_);
+  std::move(on_handled).Run(!pending_present_request_ && !is_presenting_);
 }
 
 void VRDisplay::OnDeactivate(

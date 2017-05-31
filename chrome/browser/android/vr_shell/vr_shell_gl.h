@@ -182,11 +182,11 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void OnVSync();
 
   // VRVSyncProvider
-  void GetVSync(const GetVSyncCallback& callback) override;
+  void GetVSync(GetVSyncCallback callback) override;
 
   void ForceExitVr();
 
-  void SendVSync(base::TimeDelta time, const GetVSyncCallback& callback);
+  void SendVSync(base::TimeDelta time, GetVSyncCallback callback);
 
   // samplerExternalOES texture data for main content image.
   int content_texture_id_ = 0;

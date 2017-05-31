@@ -131,7 +131,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnBlur() override;
   void OnFocus() override;
   void OnActivate(device::mojom::blink::VRDisplayEventReason,
-                  const OnActivateCallback& on_handled) override;
+                  OnActivateCallback on_handled) override;
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   void OnVSync(device::mojom::blink::VRPosePtr,

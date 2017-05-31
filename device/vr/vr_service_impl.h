@@ -38,7 +38,7 @@ class VRServiceImpl : public mojom::VRService {
   // mojom::VRService implementation
   // Adds this service to the VRDeviceManager.
   void SetClient(mojom::VRServiceClientPtr service_client,
-                 const SetClientCallback& callback) override;
+                 SetClientCallback callback) override;
 
   bool listening_for_activate() { return listening_for_activate_; }
 

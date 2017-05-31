@@ -1526,7 +1526,7 @@ void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
+void VrShellGl::GetVSync(GetVSyncCallback callback) {
   // In surfaceless (reprojecting) rendering, stay locked
   // to vsync intervals. Otherwise, for legacy Cardboard mode,
   // run requested animation frames now if it missed a vsync.
@@ -1537,11 +1537,11 @@ void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
       binding_.Close();
       return;
     }
-    callback_ = callback;
+    callback_ = std::move(callback);
     return;
   }
   pending_vsync_ = false;
-  SendVSync(pending_time_, callback);
+  SendVSync(pending_time_, std::move(callback));
 }
 
 void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
@@ -1574,8 +1574,7 @@ int64_t VrShellGl::GetPredictedFrameTimeNanos() {
   return expected_frame_micros * 1000;
 }
 
-void VrShellGl::SendVSync(base::TimeDelta time,
-                          const GetVSyncCallback& callback) {
+void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
   uint8_t frame_index = frame_index_++;
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
@@ -1589,8 +1588,8 @@ void VrShellGl::SendVSync(base::TimeDelta time,
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
-  callback.Run(std::move(pose), time, frame_index,
-               device::mojom::VRVSyncProvider::Status::SUCCESS);
+  std::move(callback).Run(std::move(pose), time, frame_index,
+                          device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void VrShellGl::CreateVRDisplayInfo(
