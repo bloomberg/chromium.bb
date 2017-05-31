@@ -2032,7 +2032,7 @@
       name_for_methods: "TextCombine",
       field_template: "storage_only",
       type_name: "TextCombine",
-      default_value: "kTextCombineNone",
+      default_value: "TextCombine::kNone",
       field_size: 1,
       field_group: "rare-inherited",
     },
