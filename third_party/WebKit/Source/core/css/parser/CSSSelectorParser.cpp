@@ -762,13 +762,15 @@ void CSSSelectorParser::PrependTypeSelectorIfNeeded(
   // ::cue, ::shadow), we need a universal selector to set the combinator
   // (relation) on in the cases where there are no simple selectors preceding
   // the pseudo element.
-  bool explicit_for_host =
-      compound_selector->IsHostPseudoSelector() && !element_name.IsNull();
-  if (tag != AnyQName() || explicit_for_host ||
-      compound_selector->NeedsImplicitShadowCombinatorForMatching())
+  bool is_host_pseudo = compound_selector->IsHostPseudoSelector();
+  if (is_host_pseudo && element_name.IsNull() && namespace_prefix.IsNull())
+    return;
+  if (tag != AnyQName() || is_host_pseudo ||
+      compound_selector->NeedsImplicitShadowCombinatorForMatching()) {
     compound_selector->PrependTagSelector(
         tag, determined_prefix == g_null_atom &&
-                 determined_element_name == g_star_atom && !explicit_for_host);
+                 determined_element_name == g_star_atom && !is_host_pseudo);
+  }
 }
 
 std::unique_ptr<CSSParserSelector>
