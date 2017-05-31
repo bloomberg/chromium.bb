@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -55,13 +56,13 @@ void RecordNewContentLengthHistogram(const std::string& name, int64_t sample) {
 }
 
 void RecordNewContentLengthHistograms(
+    const char* prefix,
     bool is_https,
     bool is_video,
     DataReductionProxyRequestType request_type,
-    int64_t received_content_length) {
-  std::string prefix = "Net.HttpContentLength";
-  std::string connection_type = is_https ? ".Https" : ".Http";
-  std::string suffix = ".Other";
+    int64_t content_length) {
+  const char* connection_type = is_https ? ".Https" : ".Http";
+  const char* suffix = ".Other";
   // TODO(crbug.com/726411): Differentiate between a bypass and a disabled
   // proxy config.
   switch (request_type) {
@@ -82,11 +83,13 @@ void RecordNewContentLengthHistograms(
       break;
   }
   // Record a histogram for all traffic, including video.
-  RecordNewContentLengthHistogram(prefix + connection_type + suffix,
-                                  received_content_length);
+  RecordNewContentLengthHistogram(
+      base::StringPrintf("%s%s%s", prefix, connection_type, suffix),
+      content_length);
   if (is_video) {
     RecordNewContentLengthHistogram(
-        prefix + connection_type + suffix + ".Video", received_content_length);
+        base::StringPrintf("%s%s%s.Video", prefix, connection_type, suffix),
+        content_length);
   }
 }
 
@@ -133,8 +136,11 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength", received_content_length);
 
   // Record the new histograms broken down by HTTP/HTTPS and video/non-video
-  RecordNewContentLengthHistograms(is_https, is_video, request_type,
-                                   received_content_length);
+  RecordNewContentLengthHistograms("Net.HttpContentLength", is_https, is_video,
+                                   request_type, received_content_length);
+  RecordNewContentLengthHistograms("Net.HttpOriginalContentLength", is_https,
+                                   is_video, request_type,
+                                   original_content_length);
 
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLength",
                           original_content_length);

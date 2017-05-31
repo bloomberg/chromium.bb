@@ -90133,6 +90133,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     </obsolete>
   </suffix>
   <affected-histogram name="Net.HttpContentLength"/>
+  <affected-histogram name="Net.HttpOriginalContentLength"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NetHttpContentLengthType2" separator=".">
@@ -90148,6 +90149,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Bytes of traffic that passed through the Data Reduction Proxy"/>
   <affected-histogram name="Net.HttpContentLength.Http"/>
   <affected-histogram name="Net.HttpContentLength.Https"/>
+  <affected-histogram name="Net.HttpOriginalContentLength.Http"/>
+  <affected-histogram name="Net.HttpOriginalContentLength.Https"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NetHttpContentLengthType3" separator=".">
