@@ -47,8 +47,9 @@ class CHROMEOS_EXPORT Printer {
     SRC_POLICY,
   };
 
-  // An enumeration of printer protocols.  Do not change these values as they
-  // are used in enums.xml.
+  // An enumeration of printer protocols.
+  // These values are written to logs.  New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
   enum PrinterProtocol {
     kUnknown = 0,
     kUsb = 1,
