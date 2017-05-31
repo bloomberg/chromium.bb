@@ -72,9 +72,8 @@ base::DictionaryValue* GetOrCreatePermissionDict(
   base::DictionaryValue* permission_dict = nullptr;
   if (!origin_dict->GetDictionaryWithoutPathExpansion(permission,
                                                       &permission_dict)) {
-    permission_dict = new base::DictionaryValue();
-    origin_dict->SetWithoutPathExpansion(permission,
-                                         base::WrapUnique(permission_dict));
+    permission_dict = origin_dict->SetDictionaryWithoutPathExpansion(
+        permission, base::MakeUnique<base::DictionaryValue>());
   }
 
   return permission_dict;

@@ -29,9 +29,9 @@ namespace {
 base::ListValue* GetOrCreateList(base::DictionaryValue* dictionary,
                                  const std::string& key) {
   base::ListValue* list = nullptr;
-  if (!dictionary->GetList(key, &list)) {
-    list = new base::ListValue();
-    dictionary->SetWithoutPathExpansion(key, base::WrapUnique(list));
+  if (!dictionary->GetListWithoutPathExpansion(key, &list)) {
+    list = dictionary->SetListWithoutPathExpansion(
+        key, base::MakeUnique<base::ListValue>());
   }
   return list;
 }

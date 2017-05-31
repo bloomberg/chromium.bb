@@ -43,8 +43,8 @@ base::ListValue* AddSection(base::ListValue* parent_list,
   std::unique_ptr<base::ListValue> section_contents(new base::ListValue);
   section->SetString("title", title);
   // Grab a raw pointer to the result before |Pass()|ing it on.
-  base::ListValue* result = section_contents.get();
-  section->Set("data", std::move(section_contents));
+  base::ListValue* result =
+      section->SetList("data", std::move(section_contents));
   parent_list->Append(std::move(section));
   return result;
 }

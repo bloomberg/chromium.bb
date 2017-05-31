@@ -739,9 +739,9 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
 
   ListValue* filter_list = nullptr;
   if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
-    filter_list = new ListValue;
-    filtered_events->SetWithoutPathExpansion(event_name,
-                                             base::WrapUnique(filter_list));
+    filtered_events->SetWithoutPathExpansion(
+        event_name, base::MakeUnique<base::ListValue>());
+    filtered_events->GetListWithoutPathExpansion(event_name, &filter_list);
   }
 
   filter_list->Append(filter->CreateDeepCopy());

@@ -187,10 +187,9 @@ SearchEnginesHandler::GetSearchEnginesList() {
 
   std::unique_ptr<base::DictionaryValue> search_engines_info(
       new base::DictionaryValue);
-  search_engines_info->Set("defaults", base::WrapUnique(defaults.release()));
-  search_engines_info->Set("others", base::WrapUnique(others.release()));
-  search_engines_info->Set("extensions",
-                           base::WrapUnique(extensions.release()));
+  search_engines_info->Set("defaults", std::move(defaults));
+  search_engines_info->Set("others", std::move(others));
+  search_engines_info->Set("extensions", std::move(extensions));
   return search_engines_info;
 }
 

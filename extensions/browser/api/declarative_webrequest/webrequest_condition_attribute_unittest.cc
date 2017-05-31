@@ -385,22 +385,21 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
     if (dictionary->HasKey(*name)) {
       base::Value* entry = NULL;
       std::unique_ptr<base::Value> entry_owned;
-      base::ListValue* list = NULL;
       if (!dictionary->GetWithoutPathExpansion(*name, &entry))
         return std::unique_ptr<base::DictionaryValue>();
       switch (entry->GetType()) {
-        case base::Value::Type::STRING:
+        case base::Value::Type::STRING: {
           // Replace the present string with a list.
-          list = new base::ListValue;
+          auto list = base::MakeUnique<base::ListValue>();
           // Ignoring return value, we already verified the entry is there.
           dictionary->RemoveWithoutPathExpansion(*name, &entry_owned);
           list->Append(std::move(entry_owned));
           list->AppendString(*value);
-          dictionary->SetWithoutPathExpansion(*name, base::WrapUnique(list));
+          dictionary->SetWithoutPathExpansion(*name, std::move(list));
           break;
+        }
         case base::Value::Type::LIST:  // Just append to the list.
-          CHECK(entry->GetAsList(&list));
-          list->AppendString(*value);
+          entry->GetList().emplace_back(*value);
           break;
         default:
           NOTREACHED();  // We never put other Values here.

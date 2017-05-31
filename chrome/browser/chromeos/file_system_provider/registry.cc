@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
@@ -96,10 +97,10 @@ void Registry::RememberFileSystem(
   base::DictionaryValue* file_systems_per_extension_weak = NULL;
   if (!dict_update->GetDictionaryWithoutPathExpansion(
           file_system_info.extension_id(), &file_systems_per_extension_weak)) {
-    auto file_systems_per_extension = base::MakeUnique<base::DictionaryValue>();
-    file_systems_per_extension_weak = file_systems_per_extension.get();
-    dict_update->SetWithoutPathExpansion(file_system_info.extension_id(),
-                                         std::move(file_systems_per_extension));
+    file_systems_per_extension_weak =
+        dict_update->SetDictionaryWithoutPathExpansion(
+            file_system_info.extension_id(),
+            base::MakeUnique<base::DictionaryValue>());
   }
 
   file_systems_per_extension_weak->SetWithoutPathExpansion(

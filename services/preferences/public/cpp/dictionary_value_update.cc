@@ -79,8 +79,8 @@ std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
     base::StringPiece path,
     std::unique_ptr<base::DictionaryValue> in_value) {
   RecordPath(path);
-  base::DictionaryValue* dictionary_value = in_value.get();
-  value_->Set(path, std::move(in_value));
+  base::DictionaryValue* dictionary_value =
+      value_->SetDictionary(path, std::move(in_value));
 
   return base::MakeUnique<DictionaryValueUpdate>(
       report_update_, dictionary_value, ConcatPath(path_, path));
@@ -133,8 +133,8 @@ DictionaryValueUpdate::SetDictionaryWithoutPathExpansion(
     base::StringPiece path,
     std::unique_ptr<base::DictionaryValue> in_value) {
   RecordKey(path);
-  base::DictionaryValue* dictionary_value = in_value.get();
-  value_->SetWithoutPathExpansion(path, std::move(in_value));
+  base::DictionaryValue* dictionary_value =
+      value_->SetDictionaryWithoutPathExpansion(path, std::move(in_value));
 
   std::vector<std::string> full_path = path_;
   full_path.push_back(path.as_string());
