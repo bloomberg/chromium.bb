@@ -73,14 +73,14 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   SerializedScriptValue::DeserializeOptions options;
 
   // If message ports are requested, make some.
-  MessagePortArray* message_ports = nullptr;
   if (hash & kFuzzMessagePorts) {
-    options.message_ports = new MessagePortArray(3);
+    MessagePortArray* message_ports = new MessagePortArray(3);
     std::generate(message_ports->begin(), message_ports->end(), []() {
       MessagePort* port = MessagePort::Create(g_page_holder->GetDocument());
       port->Entangle(WTF::MakeUnique<WebMessagePortChannelImpl>());
       return port;
     });
+    options.message_ports = message_ports;
   }
 
   // If blobs are requested, supply blob info.
