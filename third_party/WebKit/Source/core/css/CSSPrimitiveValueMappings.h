@@ -1387,34 +1387,6 @@ inline TextCombine CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(RubyPosition position)
-    : CSSValue(kIdentifierClass) {
-  switch (position) {
-    case RubyPosition::kBefore:
-      value_id_ = CSSValueBefore;
-      break;
-    case RubyPosition::kAfter:
-      value_id_ = CSSValueAfter;
-      break;
-  }
-}
-
-template <>
-inline RubyPosition CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueBefore:
-      return RubyPosition::kBefore;
-    case CSSValueAfter:
-      return RubyPosition::kAfter;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return RubyPosition::kBefore;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisPosition position)
     : CSSValue(kIdentifierClass) {
   switch (position) {
