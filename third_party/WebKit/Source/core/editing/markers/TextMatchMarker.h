@@ -37,9 +37,11 @@ class TextMatchMarker final : public DocumentMarker {
   enum class State { kInvalid, kValidNull, kValidNotNull };
 
  public:
-  static TextMatchMarker* Create(const DocumentMarker& marker) {
-    return new TextMatchMarker(marker);
-  }
+  TextMatchMarker(unsigned start_offset,
+                  unsigned end_offset,
+                  MatchStatus status)
+      : DocumentMarker(start_offset, end_offset, status),
+        state_(State::kInvalid) {}
 
   bool IsRendered() const { return state_ == State::kValidNotNull; }
   bool Contains(const LayoutPoint& point) const {
