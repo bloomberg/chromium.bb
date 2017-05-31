@@ -9,15 +9,26 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_binding_set_test_binder.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_browser_associated_interfaces.mojom.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace content {
 
-using WebContentsBindingSetBrowserTest = ContentBrowserTest;
-
 namespace {
+
+const char kTestHost1[] = "foo.com";
+const char kTestHost2[] = "bar.com";
+
+class WebContentsBindingSetBrowserTest : public ContentBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule(kTestHost1, "127.0.0.1");
+    host_resolver()->AddRule(kTestHost2, "127.0.0.1");
+  }
+};
 
 class TestInterfaceBinder : public WebContentsBindingSetTestBinder<
                                 mojom::BrowserAssociatedInterfaceTestDriver> {
@@ -36,6 +47,19 @@ class TestInterfaceBinder : public WebContentsBindingSetTestBinder<
   const base::Closure bind_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaceBinder);
+};
+
+class TestFrameInterfaceBinder : public mojom::WebContentsFrameBindingSetTest {
+ public:
+  explicit TestFrameInterfaceBinder(WebContents* web_contents)
+      : bindings_(web_contents, this) {}
+  ~TestFrameInterfaceBinder() override {}
+
+ private:
+  // mojom::WebContentsFrameBindingSetTest:
+  void Ping(PingCallback callback) override { NOTREACHED(); }
+
+  WebContentsFrameBindingSet<mojom::WebContentsFrameBindingSetTest> bindings_;
 };
 
 }  // namespace
@@ -65,6 +89,38 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
           web_contents->GetMainFrame(),
           mojom::BrowserAssociatedInterfaceTestDriver::Name_,
           mojo::MakeIsolatedRequest(&override_client).PassHandle());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, CloseOnFrameDeletion) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(kTestHost1, "/hello.html")));
+
+  // Simulate an inbound request on the navigated main frame.
+  auto* web_contents = shell()->web_contents();
+  TestFrameInterfaceBinder binder(web_contents);
+  mojom::WebContentsFrameBindingSetTestAssociatedPtr override_client;
+  static_cast<WebContentsImpl*>(web_contents)
+      ->OnAssociatedInterfaceRequest(
+          web_contents->GetMainFrame(),
+          mojom::WebContentsFrameBindingSetTest::Name_,
+          mojo::MakeIsolatedRequest(&override_client).PassHandle());
+
+  base::RunLoop run_loop;
+  override_client.set_connection_error_handler(run_loop.QuitClosure());
+
+  // Now navigate the WebContents elsewhere, eventually tearing down the old
+  // main frame.
+  RenderFrameDeletedObserver deleted_observer(web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(kTestHost2, "/title2.html")));
+  deleted_observer.WaitUntilDeleted();
+
+  // Verify that this message never reaches the binding for the old frame. If it
+  // does, the impl will hit a DCHECK. The RunLoop terminates when the client is
+  // disconnected.
+  override_client->Ping(base::Bind([] {}));
   run_loop.Run();
 }
 

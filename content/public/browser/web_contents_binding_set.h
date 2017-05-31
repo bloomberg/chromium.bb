@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -113,8 +114,9 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
  public:
   WebContentsFrameBindingSet(WebContents* web_contents, Interface* impl)
       : WebContentsBindingSet(
-          web_contents, Interface::Name_,
-          base::MakeUnique<FrameInterfaceBinder>(this, impl)) {}
+            web_contents,
+            Interface::Name_,
+            base::MakeUnique<FrameInterfaceBinder>(this, web_contents, impl)) {}
   ~WebContentsFrameBindingSet() {}
 
   // Returns the RenderFrameHost currently targeted by a message dispatch to
@@ -130,10 +132,12 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
   }
 
  private:
-  class FrameInterfaceBinder : public Binder {
+  class FrameInterfaceBinder : public Binder, public WebContentsObserver {
    public:
     FrameInterfaceBinder(WebContentsFrameBindingSet* binding_set,
-                         Interface* impl) : impl_(impl) {
+                         WebContents* web_contents,
+                         Interface* impl)
+        : WebContentsObserver(web_contents), impl_(impl) {
       bindings_.set_pre_dispatch_handler(
           base::Bind(&WebContentsFrameBindingSet::WillDispatchForContext,
                      base::Unretained(binding_set)));
@@ -145,13 +149,26 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
     void OnRequestForFrame(
         RenderFrameHost* render_frame_host,
         mojo::ScopedInterfaceEndpointHandle handle) override {
-      bindings_.AddBinding(
+      auto id = bindings_.AddBinding(
           impl_, mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)),
           render_frame_host);
+      frame_to_bindings_map_[render_frame_host].push_back(id);
+    }
+
+    // WebContentsObserver:
+    void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+      auto it = frame_to_bindings_map_.find(render_frame_host);
+      if (it == frame_to_bindings_map_.end())
+        return;
+      for (auto id : it->second)
+        bindings_.RemoveBinding(id);
+      frame_to_bindings_map_.erase(it);
     }
 
     Interface* const impl_;
     mojo::AssociatedBindingSet<Interface, RenderFrameHost*> bindings_;
+    std::map<RenderFrameHost*, std::vector<mojo::BindingId>>
+        frame_to_bindings_map_;
 
     DISALLOW_COPY_AND_ASSIGN(FrameInterfaceBinder);
   };

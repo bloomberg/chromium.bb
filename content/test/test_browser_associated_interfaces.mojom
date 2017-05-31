@@ -8,3 +8,7 @@ interface BrowserAssociatedInterfaceTestDriver {
   ExpectString(string expected);
   RequestQuit() => ();
 };
+
+interface WebContentsFrameBindingSetTest {
+  Ping() => ();
+};
