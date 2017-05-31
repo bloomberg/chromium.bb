@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #if defined(OS_ANDROID)
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
@@ -55,6 +56,7 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderInterface:
   bool IsNewTabPageUrl(const GURL& url) override;
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
+  std::unique_ptr<base::Timer> CreateTimer() override;
 
  private:
   bool IsPrerendering() const;
@@ -140,6 +142,10 @@ void PageLoadMetricsEmbedder::RegisterObservers(
 bool PageLoadMetricsEmbedder::IsPrerendering() const {
   return prerender::PrerenderContents::FromWebContents(web_contents_) !=
          nullptr;
+}
+
+std::unique_ptr<base::Timer> PageLoadMetricsEmbedder::CreateTimer() {
+  return base::MakeUnique<base::OneShotTimer>();
 }
 
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
