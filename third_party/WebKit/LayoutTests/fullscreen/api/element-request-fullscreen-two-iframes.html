@@ -28,9 +28,9 @@ async_test(t => {
   a.contentDocument.onfullscreenchange = t.unreached_func('fullscreenchange event in iframe a');
   b.contentDocument.onfullscreenerror = t.unreached_func('fullscreenerror event in iframe b');
 
-  trusted_click(t.step_func(() => {
+  trusted_click(t, () => {
     b.contentDocument.body.requestFullscreen();
     a.contentDocument.body.requestFullscreen();
-  }), document.body);
+  }, document.body);
 });
 </script>
