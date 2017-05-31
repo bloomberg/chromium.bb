@@ -614,6 +614,11 @@ bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {
   return true;
 }
 
+void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
+  if (frame_connector_)
+    UpdateViewportIntersection(frame_connector_->viewport_intersection());
+}
+
 #if defined(OS_MACOSX)
 ui::AcceleratedWidgetMac*
 RenderWidgetHostViewChildFrame::GetAcceleratedWidgetMac() const {

@@ -766,8 +766,8 @@ void WebFrameWidgetImpl::SetRemoteViewportIntersection(
   // Remote viewports are only applicable to local frames with remote ancestors.
   DCHECK(local_root_->Parent() && local_root_->Parent()->IsWebRemoteFrame());
 
-  if (local_root_->GetFrameView()) {
-    local_root_->GetFrameView()->SetViewportIntersectionFromParent(
+  if (local_root_->GetFrame()) {
+    local_root_->GetFrame()->SetViewportIntersectionFromParent(
         viewport_intersection);
   }
 }

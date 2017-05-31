@@ -255,6 +255,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // focused element or passed node into explicit methods.
   WebPluginContainerBase* GetWebPluginContainerBase(Node* = nullptr) const;
 
+  // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
+  // viewport intersection available that accounts for remote ancestor frames
+  // and their respective scroll positions, clips, etc.
+  void SetViewportIntersectionFromParent(const IntRect&);
+  IntRect RemoteViewportIntersection() { return remote_viewport_intersection_; }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -305,6 +311,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   InterfaceProvider* const interface_provider_;
   InterfaceRegistry* const interface_registry_;
+
+  IntRect remote_viewport_intersection_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
