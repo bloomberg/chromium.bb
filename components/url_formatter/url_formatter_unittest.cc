@@ -414,8 +414,11 @@ const IDNTestCase idn_cases[] = {
   // Hebrew Gershayim with Arabic is disallowed.
   {"xn--5eb7h.eg", L"\x0628\x05f4.eg", false},
 #if defined(OS_MACOSX)
-  // Tibetan transliteration characters are disallowed on Mac.
+  // These characters are blocked due to a font issue on Mac.
+  // Tibetan transliteration characters.
   {"xn--com-luma.test.pl", L"\u0f8c.test.pl", false},
+  // Arabic letter KASHMIRI YEH
+  {"xn--fgb.com", L"\u0620.com", false},
 #endif
 
   // Hyphens (http://unicode.org/cldr/utility/confusables.jsp?a=-)
