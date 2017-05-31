@@ -78,9 +78,10 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ImageAnimationPolicy,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::ViewportStyle,
                               content::ViewportStyle::DEFAULT,
                               content::ViewportStyle::LAST)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::AutoplayPolicy,
-                              content::AutoplayPolicy::kNoUserGestureRequired,
-                              content::AutoplayPolicy::kUserGestureRequired)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(
+    content::AutoplayPolicy,
+    content::AutoplayPolicy::kNoUserGestureRequired,
+    content::AutoplayPolicy::kUserGestureRequiredForCrossOrigin)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
