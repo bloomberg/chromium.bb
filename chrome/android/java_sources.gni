@@ -1641,6 +1641,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/toolbar/BrandColorTest.java",
   "javatests/src/org/chromium/chrome/browser/toolbar/ToolbarModelTest.java",
   "javatests/src/org/chromium/chrome/browser/toolbar/ToolbarTest.java",
+  "javatests/src/org/chromium/chrome/browser/translate/TranslateCompactInfoBarTest.java",
   "javatests/src/org/chromium/chrome/browser/translate/TranslateInfoBarTest.java",
   "javatests/src/org/chromium/chrome/browser/translate/TranslateOptionsTest.java",
   "javatests/src/org/chromium/chrome/browser/util/ChromeFileProviderTest.java",

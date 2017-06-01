@@ -25,7 +25,7 @@ import org.chromium.ui.widget.Toast;
 /**
  * Java version of the compact translate infobar.
  */
-class TranslateCompactInfoBar extends InfoBar
+public class TranslateCompactInfoBar extends InfoBar
         implements TabLayout.OnTabSelectedListener, TranslateMenuHelper.TranslateMenuListener {
     public static final int TRANSLATING_INFOBAR = 1;
 
@@ -410,6 +410,22 @@ class TranslateCompactInfoBar extends InfoBar
         dismissMenus();
         if (getSnackbarManager() != null) getSnackbarManager().dismissAllSnackbars();
         super.onStartedHiding();
+    }
+
+    /**
+     * Returns true if overflow menu is showing.  This is only used for automation testing.
+     */
+    public boolean isShowingOverflowMenuForTesting() {
+        if (mOverflowMenuHelper == null) return false;
+        return mOverflowMenuHelper.isShowing();
+    }
+
+    /**
+     * Returns true if language menu is showing.  This is only used for automation testing.
+     */
+    public boolean isShowingLanguageMenuForTesting() {
+        if (mLanguageMenuHelper == null) return false;
+        return mLanguageMenuHelper.isShowing();
     }
 
     private void createAndShowSnackbar(String title, int umaType, int actionId) {
