@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -398,6 +399,13 @@ public class ProcessInitializationHandler {
                             R.string.error_printing_failed);
                     PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
                 }
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(application);
             }
         });
     }
