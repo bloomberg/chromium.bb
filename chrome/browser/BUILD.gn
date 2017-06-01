@@ -3520,6 +3520,8 @@ split_static_library("browser") {
       "obsolete_system/obsolete_system_win.cc",
       "pdf/pdf_extension_util.cc",
       "pdf/pdf_extension_util.h",
+      "policy/local_sync_policy_handler.cc",
+      "policy/local_sync_policy_handler.h",
       "process_singleton_modal_dialog_lock.cc",
       "process_singleton_modal_dialog_lock.h",
       "process_singleton_posix.cc",
