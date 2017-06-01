@@ -24,11 +24,12 @@ CloudPrintTokenStore::CloudPrintTokenStore() {
 }
 
 CloudPrintTokenStore::~CloudPrintTokenStore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lazy_tls.Pointer()->Set(NULL);
 }
 
 void CloudPrintTokenStore::SetToken(const std::string& token) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_ = token;
 }
 

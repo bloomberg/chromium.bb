@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 #include "chrome/service/cloud_print/cloud_print_wipeout.h"
 
@@ -24,8 +24,7 @@ struct CloudPrintProxyInfo;
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
 class CloudPrintProxy : public CloudPrintProxyFrontend,
-                        public CloudPrintWipeout::Client,
-                        public base::NonThreadSafe {
+                        public CloudPrintWipeout::Client {
  public:
   class Client {
    public:
@@ -98,6 +97,8 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   bool enabled_;
   // This is a cleanup class for unregistering printers on proxy disable.
   std::unique_ptr<CloudPrintWipeout> wipeout_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };
