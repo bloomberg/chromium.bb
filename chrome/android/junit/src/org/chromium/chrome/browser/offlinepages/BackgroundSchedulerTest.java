@@ -5,98 +5,147 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import android.content.Context;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.Task;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.gms.Shadows;
-import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
-import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.TaskIds;
+import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for BackgroundScheduler.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class, sdk = 21,
-        shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
+@Config(manifest = Config.NONE)
 public class BackgroundSchedulerTest {
-    private Context mContext;
     private TriggerConditions mConditions1 = new TriggerConditions(
-            true /* power */, 10 /* battery percentage */, false /* unmetered */);
+            true /* power */, 10 /* battery percentage */, true /* requires unmetered */);
     private TriggerConditions mConditions2 = new TriggerConditions(
-            false /* power */, 0 /* battery percentage */, false /* unmetered */);
-    private ShadowGcmNetworkManager mGcmNetworkManager;
+            false /* power */, 0 /* battery percentage */, false /* does not require unmetered */);
+
+    @Mock
+    private BackgroundTaskScheduler mTaskScheduler;
+    @Captor
+    ArgumentCaptor<TaskInfo> mTaskInfo;
 
     @Before
     public void setUp() throws Exception {
-        Shadows.shadowOf(GoogleApiAvailability.getInstance())
-                .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
+        MockitoAnnotations.initMocks(this);
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
+        doReturn(true)
+                .when(mTaskScheduler)
+                .schedule(eq(RuntimeEnvironment.application), mTaskInfo.capture());
+    }
 
-        mContext = RuntimeEnvironment.application;
-        mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
-                GcmNetworkManager.getInstance(mContext));
-        mGcmNetworkManager.clear();
+    private void verifyFixedTaskInfoValues(TaskInfo info) {
+        assertEquals(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, info.getTaskId());
+        assertEquals(OfflineBackgroundTask.class, info.getBackgroundTaskClass());
+        assertTrue(info.isPersisted());
+        assertFalse(info.isPeriodic());
+        assertEquals(BackgroundScheduler.ONE_WEEK_IN_MILLISECONDS,
+                info.getOneOffInfo().getWindowEndTimeMs());
+        assertTrue(info.getOneOffInfo().hasWindowStartTimeConstraint());
+
+        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(info.getExtras());
+        assertTrue(scheduledTimeMillis > 0L);
     }
 
     @Test
     @Feature({"OfflinePages"})
-    public void testSchedule() {
-        assertNull(mGcmNetworkManager.getScheduledTask());
-        BackgroundScheduler.getInstance(mContext).schedule(mConditions1);
-        // Check with gcmNetworkManagerShadow that schedule got called.
-        assertNotNull(mGcmNetworkManager.getScheduledTask());
+    public void testScheduleUnmeteredAndCharging() {
+        BackgroundScheduler.getInstance().schedule(mConditions1);
+        verify(mTaskScheduler, times(1))
+                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
 
-        // Verify details of the scheduled task.
-        Task task = mGcmNetworkManager.getScheduledTask();
-        assertEquals(OfflinePageUtils.TASK_TAG, task.getTag());
-        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(task.getExtras());
-        assertTrue(scheduledTimeMillis > 0L);
+        TaskInfo info = mTaskInfo.getValue();
+        verifyFixedTaskInfoValues(info);
+
+        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertTrue(info.requiresCharging());
+
+        assertTrue(info.shouldUpdateCurrent());
+        assertEquals(BackgroundScheduler.NO_DELAY, info.getOneOffInfo().getWindowStartTimeMs());
+
         assertEquals(
-                mConditions1, TaskExtrasPacker.unpackTriggerConditionsFromBundle(task.getExtras()));
+                mConditions1, TaskExtrasPacker.unpackTriggerConditionsFromBundle(info.getExtras()));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testScheduleMeteredAndNotCharging() {
+        BackgroundScheduler.getInstance().schedule(mConditions2);
+        verify(mTaskScheduler, times(1))
+                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+
+        TaskInfo info = mTaskInfo.getValue();
+        verifyFixedTaskInfoValues(info);
+
+        assertEquals(TaskInfo.NETWORK_TYPE_ANY, info.getRequiredNetworkType());
+        assertFalse(info.requiresCharging());
+
+        assertTrue(info.shouldUpdateCurrent());
+        assertEquals(BackgroundScheduler.NO_DELAY, info.getOneOffInfo().getWindowStartTimeMs());
+
+        assertEquals(
+                mConditions2, TaskExtrasPacker.unpackTriggerConditionsFromBundle(info.getExtras()));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testScheduleBackup() {
+        BackgroundScheduler.getInstance().scheduleBackup(
+                mConditions1, BackgroundScheduler.FIVE_MINUTES_IN_MILLISECONDS);
+        verify(mTaskScheduler, times(1))
+                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+
+        TaskInfo info = mTaskInfo.getValue();
+        verifyFixedTaskInfoValues(info);
+
+        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertTrue(info.requiresCharging());
+
+        assertFalse(info.shouldUpdateCurrent());
+        assertEquals(BackgroundScheduler.FIVE_MINUTES_IN_MILLISECONDS,
+                info.getOneOffInfo().getWindowStartTimeMs());
+
+        assertEquals(
+                mConditions1, TaskExtrasPacker.unpackTriggerConditionsFromBundle(info.getExtras()));
     }
 
     @Test
     @Feature({"OfflinePages"})
     public void testCancel() {
-        assertNull(mGcmNetworkManager.getScheduledTask());
-        BackgroundScheduler.getInstance(mContext).schedule(mConditions1);
-        assertNotNull(mGcmNetworkManager.getScheduledTask());
+        BackgroundScheduler.getInstance().schedule(mConditions1);
+        verify(mTaskScheduler, times(1))
+                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
 
-        assertNull(mGcmNetworkManager.getCanceledTask());
-        BackgroundScheduler.getInstance(mContext).cancel();
-        assertNotNull(mGcmNetworkManager.getCanceledTask());
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testReschedulOnUpgrade() {
-        assertNull(mGcmNetworkManager.getScheduledTask());
-        BackgroundScheduler.getInstance(mContext).rescheduleOfflinePagesTasksOnUpgrade();
-        // Check with gcmNetworkManagerShadow that schedule got called.
-        assertNotNull(mGcmNetworkManager.getScheduledTask());
-
-        // Verify details of the scheduled task.
-        Task task = mGcmNetworkManager.getScheduledTask();
-        assertEquals(OfflinePageUtils.TASK_TAG, task.getTag());
-        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(task.getExtras());
-        assertTrue(scheduledTimeMillis > 0L);
-        assertEquals(
-                mConditions2, TaskExtrasPacker.unpackTriggerConditionsFromBundle(task.getExtras()));
+        doNothing()
+                .when(mTaskScheduler)
+                .cancel(eq(RuntimeEnvironment.application),
+                        eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
+        BackgroundScheduler.getInstance().cancel();
+        verify(mTaskScheduler, times(1))
+                .cancel(eq(RuntimeEnvironment.application),
+                        eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
     }
 }
