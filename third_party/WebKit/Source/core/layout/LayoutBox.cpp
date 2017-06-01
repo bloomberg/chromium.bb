@@ -5783,13 +5783,14 @@ LayoutUnit LayoutBox::CalculatePaginationStrutToFitContent(
     LayoutUnit content_logical_height) const {
   DCHECK_EQ(strut_to_next_page, PageRemainingLogicalHeightForOffset(
                                     offset, kAssociateWithLatterPage));
-  // If we're a cell in a row that straddles a page then avoid the repeating
-  // header group if necessary.
-  if (IsTableCell()) {
-    const LayoutTableCell* cell = ToLayoutTableCell(this);
-    if (!cell->Row()->IsFirstRowInSectionAfterHeader())
-      strut_to_next_page += cell->Table()->RowOffsetFromRepeatingHeader();
+  // If we're inside a cell in a row that straddles a page then avoid the
+  // repeating header group if necessary. If we're a table section we're
+  // already accounting for it.
+  if (!IsTableSection()) {
+    LayoutState* layout_state = View()->GetLayoutState();
+    strut_to_next_page += layout_state->HeightOffsetForTableHeaders();
   }
+
   LayoutUnit next_page_logical_top = offset + strut_to_next_page;
   if (PageLogicalHeightForOffset(next_page_logical_top) >=
       content_logical_height)

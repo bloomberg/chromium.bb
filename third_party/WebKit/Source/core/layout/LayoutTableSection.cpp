@@ -97,7 +97,8 @@ LayoutTableSection::LayoutTableSection(Element* element)
       needs_cell_recalc_(false),
       force_full_paint_(false),
       has_multiple_cell_levels_(false),
-      has_spanning_cells_(false) {
+      has_spanning_cells_(false),
+      is_repeating_header_group_(false) {
   // init LayoutObject attributes
   SetInline(false);  // our object is not Inline
 }
@@ -2088,9 +2089,6 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   // fragmentainer, above this row. Otherwise, this row will just go at the top
   // of the next fragmentainer.
 
-  LayoutTableSection* header = Table()->Header();
-  if (row_object.IsFirstRowInSectionAfterHeader())
-    Table()->SetRowOffsetFromRepeatingHeader(LayoutUnit());
   // Border spacing from the previous row has pushed this row just past the top
   // of the page, so we must reposition it to the top of the page and avoid any
   // repeating header.
@@ -2099,6 +2097,7 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
 
   // If we have a header group we will paint it at the top of each page,
   // move the rows down to accomodate it.
+  LayoutTableSection* header = Table()->Header();
   if (header && header != this)
     pagination_strut += Table()->RowOffsetFromRepeatingHeader().ToInt();
   row_object.SetPaginationStrut(LayoutUnit(pagination_strut));
@@ -2116,30 +2115,27 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   row_object.SetLogicalHeight(LayoutUnit(LogicalHeightForRow(row_object)));
 }
 
-bool LayoutTableSection::IsRepeatingHeaderGroup() const {
-  if (GetPaginationBreakability() == LayoutBox::kAllowAnyBreaks)
+bool LayoutTableSection::HeaderGroupShouldRepeat() const {
+  if (Table()->Header() != this)
     return false;
-  // TODO(rhogan): Should we paint a header repeatedly if it's self-painting?
+
+  if (GetPaginationBreakability() == kAllowAnyBreaks)
+    return false;
+  // TODO(rhogan): Sections can be self-painting.
   if (HasSelfPaintingLayer())
     return false;
-  LayoutUnit page_height = Table()->PageLogicalHeightForOffset(LayoutUnit());
+  LayoutUnit page_height = PageLogicalHeightForOffset(LayoutUnit());
+  // If we don't know the page height yet, just assume we fit.
   if (!page_height)
-    return false;
+    return true;
 
   if (LogicalHeight() > page_height)
     return false;
 
-  // If the first row of the section after the header group doesn't fit on the
-  // page, then don't repeat the header on each page.
-  // See https://drafts.csswg.org/css-tables-3/#repeated-headers
-  LayoutTableSection* section_below = Table()->SectionBelow(this);
-  if (!section_below)
-    return true;
-  if (LayoutTableRow* first_row = section_below->FirstRow()) {
-    if (first_row->PaginationStrut() ||
-        first_row->LogicalHeight() > page_height)
-      return false;
-  }
+  // See https://drafts.csswg.org/css-tables-3/#repeated-headers which says
+  // a header/footer can repeat if it takes up less than a quarter of the page.
+  if (LogicalHeight() > 0 && page_height / LogicalHeight() < 4)
+    return false;
 
   return true;
 }
@@ -2156,7 +2152,7 @@ bool LayoutTableSection::MapToVisualRectInAncestorSpaceInternal(
   // the header in all columns.
   // Note that this is in flow thread coordinates, not visual coordinates. The
   // enclosing LayoutFlowThread will convert to visual coordinates.
-  if (Table()->Header() == this && IsRepeatingHeaderGroup()) {
+  if (IsRepeatingHeaderGroup()) {
     transform_state.Flatten();
     FloatRect rect = transform_state.LastPlanarQuad().BoundingBox();
     rect.SetHeight(Table()->LogicalHeight());

@@ -33,8 +33,10 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
   LayoutUnit header_group_offset = table->BlockOffsetToFirstRepeatableHeader();
   // The header may have a pagination strut before it so we need to account for
   // that when establishing its position.
+  LayoutUnit strut_on_first_row;
   if (LayoutTableRow* row = layout_table_section_.FirstRow())
-    header_group_offset += row->PaginationStrut();
+    strut_on_first_row = row->PaginationStrut();
+  header_group_offset += strut_on_first_row;
   LayoutUnit offset_to_next_page =
       page_height - IntMod(header_group_offset, page_height);
   // Move paginationOffset to the top of the next page.
@@ -59,11 +61,16 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
                paint_offset.Y() + total_height_of_rows);
 
   while (pagination_offset.Y() < bottom_bound) {
+    LayoutPoint nested_offset = pagination_offset;
+    LayoutUnit height_of_previous_headers =
+        table->RowOffsetFromRepeatingHeader() -
+        layout_table_section_.LogicalHeight() + strut_on_first_row;
+    nested_offset.Move(LayoutUnit(), height_of_previous_headers);
     if (item_to_paint == kPaintCollapsedBorders) {
-      PaintCollapsedSectionBorders(paint_info, pagination_offset,
+      PaintCollapsedSectionBorders(paint_info, nested_offset,
                                    current_border_value);
     } else {
-      PaintSection(paint_info, pagination_offset);
+      PaintSection(paint_info, nested_offset);
     }
     pagination_offset.Move(0, page_height.ToInt());
   }

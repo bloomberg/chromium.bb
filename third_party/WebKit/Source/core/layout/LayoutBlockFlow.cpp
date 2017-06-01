@@ -1130,7 +1130,8 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
   logical_offset += delta;
   line_box.SetPaginationStrut(LayoutUnit());
   line_box.SetIsFirstAfterPageBreak(false);
-  if (!View()->GetLayoutState()->IsPaginated())
+  LayoutState* layout_state = View()->GetLayoutState();
+  if (!layout_state->IsPaginated())
     return;
   LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
   if (!page_logical_height)
@@ -1194,14 +1195,22 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
     // up in the next column or page. Setting a strut on the block is also
     // important when it comes to satisfying orphan requirements.
     if (ShouldSetStrutOnBlock(*this, line_box, logical_offset, line_index,
-                              page_logical_height))
-      strut_to_propagate = logical_offset;
+                              page_logical_height)) {
+      DCHECK(!IsTableCell());
+      strut_to_propagate =
+          logical_offset + layout_state->HeightOffsetForTableHeaders();
+    } else if (LayoutUnit pagination_strut =
+                   layout_state->HeightOffsetForTableHeaders()) {
+      delta += pagination_strut;
+      line_box.SetPaginationStrut(pagination_strut);
+    }
   } else if (line_box == FirstRootBox() && AllowsPaginationStrut()) {
     // This is the first line in the block. The block may still start in the
     // previous column or page, and if that's the case, attempt to pull it over
     // to where this line is, so that we don't split the top border or padding.
-    LayoutUnit strut =
-        remaining_logical_height + logical_offset - page_logical_height;
+    LayoutUnit strut = remaining_logical_height + logical_offset +
+                       layout_state->HeightOffsetForTableHeaders() -
+                       page_logical_height;
     if (strut > LayoutUnit()) {
       // The block starts in a previous column or page. Set a strut on the block
       // if there's room for the top border, padding and the line in one column
