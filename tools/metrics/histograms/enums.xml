@@ -37051,6 +37051,11 @@ from previous Chrome versions.
   <int value="8" label="Download error"/>
   <int value="9" label="Install error"/>
   <int value="10" label="Install timed out"/>
+  <int value="11" label="Request to Play install API failed - Policy disabled"/>
+  <int value="12"
+      label="Request to Play install API failed - User not signed into Play"/>
+  <int value="13" label="Request to Play install API failed - Network Error"/>
+  <int value="14" label="Request to Play install API failed - Resolve Error"/>
 </enum>
 
 <enum name="WebApkGooglePlayInstallState" type="int">
