@@ -12,6 +12,7 @@
 #include "components/download/public/download_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
 
@@ -34,7 +35,9 @@ class DownloadDriverImpl : public DownloadDriver,
   // DownloadDriver implementation.
   void Initialize(DownloadDriver::Client* client) override;
   bool IsReady() const override;
-  void Start(const DownloadParams& params) override;
+  void Start(
+      const DownloadParams& params,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   void Cancel(const std::string& guid) override;
   void Pause(const std::string& guid) override;
   void Resume(const std::string& guid) override;

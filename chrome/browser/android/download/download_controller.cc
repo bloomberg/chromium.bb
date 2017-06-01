@@ -30,6 +30,7 @@
 #include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
 #include "net/base/filename_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
@@ -91,7 +92,7 @@ void CreateContextMenuDownload(
   if (!is_link && extra_headers.empty())
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
-  dlm->DownloadUrl(std::move(dl_params));
+  dlm->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
 }
 
 // Check if an interrupted download item can be auto resumed.

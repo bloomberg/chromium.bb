@@ -63,6 +63,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2347,7 +2348,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           shell()->web_contents(), origin_two.GetURL("/bar")));
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters),
+                                                TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
 
   // Get the important info from other threads and check it.

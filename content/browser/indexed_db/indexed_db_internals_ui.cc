@@ -23,6 +23,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -299,7 +300,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
 
   BrowserContext* context = web_contents->GetBrowserContext();
   BrowserContext::GetDownloadManager(context)->DownloadUrl(
-      std::move(dl_params));
+      std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
 }
 
 // The entire purpose of this class is to delete the temp file after

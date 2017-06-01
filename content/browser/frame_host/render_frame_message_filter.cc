@@ -30,6 +30,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
@@ -89,7 +90,8 @@ void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   DownloadManager* download_manager =
       BrowserContext::GetDownloadManager(browser_context);
   RecordDownloadSource(INITIATED_BY_RENDERER);
-  download_manager->DownloadUrl(std::move(parameters));
+  download_manager->DownloadUrl(std::move(parameters),
+                                NO_TRAFFIC_ANNOTATION_YET);
 }
 
 // Common functionality for converting a sync renderer message to a callback

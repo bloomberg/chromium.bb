@@ -12,6 +12,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,7 @@ class DownloadRequestCoreTest : public testing::Test {
 
   void CreateRequestOnIOThread(DownloadUrlParameters* params) {
     url_request_ = DownloadRequestCore::CreateRequestOnIOThread(
-        DownloadItem::kInvalidId, params);
+        DownloadItem::kInvalidId, params, TRAFFIC_ANNOTATION_FOR_TESTS);
     DCHECK(url_request_.get());
   }
 

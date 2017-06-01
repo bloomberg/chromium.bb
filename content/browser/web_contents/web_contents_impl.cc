@@ -127,6 +127,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
@@ -3209,7 +3210,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
     }
   }
   BrowserContext::GetDownloadManager(GetBrowserContext())
-      ->DownloadUrl(std::move(params));
+      ->DownloadUrl(std::move(params), NO_TRAFFIC_ANNOTATION_YET);
 }
 
 void WebContentsImpl::GenerateMHTML(

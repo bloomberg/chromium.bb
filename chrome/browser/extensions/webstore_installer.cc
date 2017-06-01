@@ -63,6 +63,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "net/base/escape.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -679,7 +680,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));
-  download_manager->DownloadUrl(std::move(params));
+  download_manager->DownloadUrl(std::move(params), NO_TRAFFIC_ANNOTATION_YET);
 }
 
 void WebstoreInstaller::UpdateDownloadProgress() {

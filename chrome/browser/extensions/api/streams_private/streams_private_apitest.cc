@@ -30,6 +30,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserContext;
@@ -390,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
   params->set_file_path(target_path);
 
   // Start download of the URL with a path "/text_path.txt" on the test server.
-  download_manager->DownloadUrl(std::move(params));
+  download_manager->DownloadUrl(std::move(params),
+                                TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Wait for the download to start.
   download_observer->WaitForFinished();

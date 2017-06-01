@@ -54,7 +54,9 @@ bool TestDownloadDriver::IsReady() const {
   return is_ready_;
 }
 
-void TestDownloadDriver::Start(const DownloadParams& params) {
+void TestDownloadDriver::Start(
+    const DownloadParams& params,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DriverEntry entry;
   entry.guid = params.guid;
   entry.state = DriverEntry::State::IN_PROGRESS;

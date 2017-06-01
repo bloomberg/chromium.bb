@@ -108,6 +108,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/features/features.h"
 #include "net/base/escape.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -2221,8 +2222,8 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   dl_params->set_suggested_name(params_.suggested_filename);
   dl_params->set_prompt(true);
 
-  BrowserContext::GetDownloadManager(browser_context_)->DownloadUrl(
-      std::move(dl_params));
+  BrowserContext::GetDownloadManager(browser_context_)
+      ->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
 }
 
 void RenderViewContextMenu::ExecSaveAs() {

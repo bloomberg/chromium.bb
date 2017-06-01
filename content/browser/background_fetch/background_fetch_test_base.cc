@@ -125,7 +125,9 @@ class BackgroundFetchTestBase::RespondingDownloadManager
 
   // Called when the Background Fetch system starts a download, all information
   // for which is contained in the |params|.
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
+  void DownloadUrl(
+      std::unique_ptr<DownloadUrlParameters> params,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     auto iter = registered_responses_.find(params->url());
     if (iter == registered_responses_.end())
       return;

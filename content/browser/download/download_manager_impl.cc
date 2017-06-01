@@ -51,6 +51,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
@@ -66,7 +67,8 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<net::URLRequest> url_request =
-      DownloadRequestCore::CreateRequestOnIOThread(download_id, params.get());
+      DownloadRequestCore::CreateRequestOnIOThread(download_id, params.get(),
+                                                   NO_TRAFFIC_ANNOTATION_YET);
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       params->GetBlobDataHandle();
   if (blob_data_handle) {
@@ -606,7 +608,8 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
 }
 
 void DownloadManagerImpl::DownloadUrl(
-    std::unique_ptr<DownloadUrlParameters> params) {
+    std::unique_ptr<DownloadUrlParameters> params,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());
