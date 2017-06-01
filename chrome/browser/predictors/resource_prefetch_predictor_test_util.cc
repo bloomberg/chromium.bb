@@ -176,6 +176,22 @@ URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
   return summary;
 }
 
+void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
+  if (small_db) {
+    config->max_urls_to_track = 3;
+    config->max_hosts_to_track = 2;
+    config->min_url_visit_count = 2;
+    config->max_resources_per_entry = 4;
+    config->max_consecutive_misses = 2;
+    config->max_redirect_consecutive_misses = 2;
+    config->min_resource_confidence_to_trigger_prefetch = 0.5;
+  }
+  config->is_url_learning_enabled = true;
+  config->is_manifests_enabled = true;
+  config->is_origin_learning_enabled = true;
+  config->mode = LoadingPredictorConfig::LEARNING;
+}
+
 std::ostream& operator<<(std::ostream& os, const PrefetchData& data) {
   os << "[" << data.primary_key() << "," << data.last_visit_time() << "]"
      << std::endl;

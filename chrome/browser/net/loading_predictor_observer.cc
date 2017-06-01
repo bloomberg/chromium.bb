@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/net/loading_predictor_observer.h"
 
 #include <memory>
 #include <string>
@@ -20,6 +20,7 @@ class WebContents;
 }
 
 using content::BrowserThread;
+using predictors::LoadingPredictor;
 using predictors::ResourcePrefetchPredictor;
 using URLRequestSummary =
     predictors::ResourcePrefetchPredictor::URLRequestSummary;
@@ -48,15 +49,13 @@ enum MainFrameRequestStats {
 };
 
 void ReportRequestStats(RequestStats stat) {
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.RequestStats",
-                            stat,
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.RequestStats", stat,
                             REQUEST_STATS_MAX);
 }
 
 void ReportMainFrameRequestStats(MainFrameRequestStats stat) {
   UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.MainFrameRequestStats",
-                            stat,
-                            MAIN_FRAME_REQUEST_STATS_MAX);
+                            stat, MAIN_FRAME_REQUEST_STATS_MAX);
 }
 
 bool TryToFillNavigationID(
@@ -79,18 +78,17 @@ bool TryToFillNavigationID(
 
 namespace chrome_browser_net {
 
-ResourcePrefetchPredictorObserver::ResourcePrefetchPredictorObserver(
-    ResourcePrefetchPredictor* predictor)
+LoadingPredictorObserver::LoadingPredictorObserver(LoadingPredictor* predictor)
     : predictor_(predictor->AsWeakPtr()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-ResourcePrefetchPredictorObserver::~ResourcePrefetchPredictorObserver() {
+LoadingPredictorObserver::~LoadingPredictorObserver() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
         BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
-void ResourcePrefetchPredictorObserver::OnRequestStarted(
+void LoadingPredictorObserver::OnRequestStarted(
     net::URLRequest* request,
     content::ResourceType resource_type,
     const content::ResourceRequestInfo::WebContentsGetter&
@@ -109,17 +107,16 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &ResourcePrefetchPredictorObserver::OnRequestStartedOnUIThread,
-          base::Unretained(this), base::Passed(std::move(summary)),
-          web_contents_getter, request->first_party_for_cookies(),
-          request->creation_time()));
+      base::BindOnce(&LoadingPredictorObserver::OnRequestStartedOnUIThread,
+                     base::Unretained(this), base::Passed(std::move(summary)),
+                     web_contents_getter, request->first_party_for_cookies(),
+                     request->creation_time()));
 
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS);
 }
 
-void ResourcePrefetchPredictorObserver::OnRequestRedirected(
+void LoadingPredictorObserver::OnRequestRedirected(
     net::URLRequest* request,
     const GURL& redirect_url,
     const content::ResourceRequestInfo::WebContentsGetter&
@@ -145,11 +142,10 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &ResourcePrefetchPredictorObserver::OnRequestRedirectedOnUIThread,
-          base::Unretained(this), base::Passed(std::move(summary)),
-          web_contents_getter, request->first_party_for_cookies(),
-          request->creation_time()));
+      base::BindOnce(&LoadingPredictorObserver::OnRequestRedirectedOnUIThread,
+                     base::Unretained(this), base::Passed(std::move(summary)),
+                     web_contents_getter, request->first_party_for_cookies(),
+                     request->creation_time()));
 
   if (request_info &&
       request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
@@ -157,7 +153,7 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
   }
 }
 
-void ResourcePrefetchPredictorObserver::OnResponseStarted(
+void LoadingPredictorObserver::OnResponseStarted(
     net::URLRequest* request,
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
@@ -182,11 +178,10 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &ResourcePrefetchPredictorObserver::OnResponseStartedOnUIThread,
-          base::Unretained(this), base::Passed(std::move(summary)),
-          web_contents_getter, request->first_party_for_cookies(),
-          request->creation_time()));
+      base::BindOnce(&LoadingPredictorObserver::OnResponseStartedOnUIThread,
+                     base::Unretained(this), base::Passed(std::move(summary)),
+                     web_contents_getter, request->first_party_for_cookies(),
+                     request->creation_time()));
 
   ReportRequestStats(REQUEST_STATS_TOTAL_PROCESSED_RESPONSES);
   if (request_info &&
@@ -195,7 +190,7 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
   }
 }
 
-void ResourcePrefetchPredictorObserver::OnRequestStartedOnUIThread(
+void LoadingPredictorObserver::OnRequestStartedOnUIThread(
     std::unique_ptr<URLRequestSummary> summary,
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& main_frame_url,
@@ -205,10 +200,12 @@ void ResourcePrefetchPredictorObserver::OnRequestStartedOnUIThread(
                              main_frame_url, creation_time)) {
     return;
   }
-  predictor_->RecordURLRequest(*summary);
+  if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+    predictor_->OnMainFrameRequest(*summary);
+  predictor_->resource_prefetch_predictor()->RecordURLRequest(*summary);
 }
 
-void ResourcePrefetchPredictorObserver::OnRequestRedirectedOnUIThread(
+void LoadingPredictorObserver::OnRequestRedirectedOnUIThread(
     std::unique_ptr<URLRequestSummary> summary,
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& main_frame_url,
@@ -218,10 +215,12 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirectedOnUIThread(
                              main_frame_url, creation_time)) {
     return;
   }
-  predictor_->RecordURLRedirect(*summary);
+  if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+    predictor_->OnMainFrameRedirect(*summary);
+  predictor_->resource_prefetch_predictor()->RecordURLRedirect(*summary);
 }
 
-void ResourcePrefetchPredictorObserver::OnResponseStartedOnUIThread(
+void LoadingPredictorObserver::OnResponseStartedOnUIThread(
     std::unique_ptr<URLRequestSummary> summary,
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& main_frame_url,
@@ -231,7 +230,9 @@ void ResourcePrefetchPredictorObserver::OnResponseStartedOnUIThread(
                              main_frame_url, creation_time)) {
     return;
   }
-  predictor_->RecordURLResponse(*summary);
+  if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+    predictor_->OnMainFrameResponse(*summary);
+  predictor_->resource_prefetch_predictor()->RecordURLResponse(*summary);
 }
 
 }  // namespace chrome_browser_net

@@ -26,7 +26,7 @@
 #include "chrome/browser/loader/predictor_resource_throttle.h"
 #include "chrome/browser/loader/safe_browsing_resource_throttle.h"
 #include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -536,8 +536,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_type, throttles);
 #endif  // !defined(DISABLE_NACL)
 
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
+  if (io_data->loading_predictor_observer()) {
+    io_data->loading_predictor_observer()->OnRequestStarted(
         request, resource_type, info->GetWebContentsGetterForRequest());
   }
 }
@@ -811,8 +811,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   }
 #endif
 
-  if (io_data->resource_prefetch_predictor_observer())
-    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(
+  if (io_data->loading_predictor_observer())
+    io_data->loading_predictor_observer()->OnResponseStarted(
         request, info->GetWebContentsGetterForRequest());
 
   mod_pagespeed::RecordMetrics(info->GetResourceType(), request->url(),
@@ -837,8 +837,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   signin::FixMirrorRequestHeaderHelper(request, redirect_url, io_data,
                                        info->GetChildID(), info->GetRouteID());
 
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
+  if (io_data->loading_predictor_observer()) {
+    io_data->loading_predictor_observer()->OnRequestRedirected(
         request, redirect_url, info->GetWebContentsGetterForRequest());
   }
 

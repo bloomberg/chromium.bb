@@ -51,7 +51,7 @@ class CertificateProvider;
 }
 
 namespace chrome_browser_net {
-class ResourcePrefetchPredictorObserver;
+class LoadingPredictorObserver;
 }
 
 namespace certificate_transparency {
@@ -204,9 +204,9 @@ class ProfileIOData {
     return &incognito_availibility_pref_;
   }
 
-  chrome_browser_net::ResourcePrefetchPredictorObserver*
-      resource_prefetch_predictor_observer() const {
-    return resource_prefetch_predictor_observer_.get();
+  chrome_browser_net::LoadingPredictorObserver* loading_predictor_observer()
+      const {
+    return loading_predictor_observer_.get();
   }
 
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
@@ -313,8 +313,8 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
-    std::unique_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
-        resource_prefetch_predictor_observer_;
+    std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
+        loading_predictor_observer_;
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -600,8 +600,8 @@ class ProfileIOData {
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
-  mutable std::unique_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
-      resource_prefetch_predictor_observer_;
+  mutable std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
+      loading_predictor_observer_;
 
   mutable std::unique_ptr<ChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;

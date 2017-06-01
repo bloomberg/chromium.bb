@@ -628,9 +628,7 @@ void ResourcePrefetchPredictor::RecordURLResponse(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  if (response.resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-    OnMainFrameResponse(response);
-  else
+  if (response.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
     OnSubresourceResponse(response);
 }
 
@@ -678,56 +676,6 @@ void ResourcePrefetchPredictor::RecordFirstContentfulPaint(
     nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
-void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
-                                                 HintOrigin origin) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
-               url.spec());
-  // Save prefetch start time to report prefetching duration.
-  if (inflight_prefetches_.find(url) == inflight_prefetches_.end() &&
-      IsUrlPrefetchable(url)) {
-    inflight_prefetches_.insert(std::make_pair(url, base::TimeTicks::Now()));
-  }
-
-  if (!prefetch_manager_.get())  // Prefetching not enabled.
-    return;
-  if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
-    return;
-
-  ResourcePrefetchPredictor::Prediction prediction;
-  if (!GetPrefetchData(url, &prediction))
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                     prefetch_manager_, url, prediction.subresource_urls));
-
-  if (observer_)
-    observer_->OnPrefetchingStarted(url);
-}
-
-void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
-               url.spec());
-  auto it = inflight_prefetches_.find(url);
-  if (it != inflight_prefetches_.end()) {
-    UMA_HISTOGRAM_TIMES(
-        internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
-        base::TimeTicks::Now() - it->second);
-    inflight_prefetches_.erase(it);
-  }
-  if (!prefetch_manager_.get())  // Not enabled.
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourcePrefetcherManager::MaybeRemovePrefetch,
-                     prefetch_manager_, url));
-
-  if (observer_)
-    observer_->OnPrefetchingStopped(url);
-}
-
 void ResourcePrefetchPredictor::OnPrefetchingFinished(
     const GURL& main_frame_url,
     std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats) {
@@ -737,7 +685,8 @@ void ResourcePrefetchPredictor::OnPrefetchingFinished(
   prefetcher_stats_.insert(std::make_pair(main_frame_url, std::move(stats)));
 }
 
-bool ResourcePrefetchPredictor::IsUrlPrefetchable(const GURL& main_frame_url) {
+bool ResourcePrefetchPredictor::IsUrlPrefetchable(
+    const GURL& main_frame_url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (initialization_state_ != INITIALIZED)
     return false;
@@ -771,30 +720,13 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  const GURL& main_frame_url = request.navigation_id.main_frame_url;
-  StartPrefetching(main_frame_url, HintOrigin::NAVIGATION);
-
   CleanupAbandonedNavigations(request.navigation_id);
 
   // New empty navigation entry.
-  inflight_navigations_.insert(
-      std::make_pair(request.navigation_id,
-                     base::MakeUnique<PageRequestSummary>(main_frame_url)));
-}
-
-void ResourcePrefetchPredictor::OnMainFrameResponse(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  NavigationMap::iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it != inflight_navigations_.end()) {
-    // To match an URL in StartPrefetching().
-    StopPrefetching(nav_it->second->initial_url);
-  } else {
-    StopPrefetching(response.navigation_id.main_frame_url);
-  }
+  const GURL& main_frame_url = request.navigation_id.main_frame_url;
+  inflight_navigations_.emplace(
+      request.navigation_id,
+      base::MakeUnique<PageRequestSummary>(main_frame_url));
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
@@ -825,8 +757,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
   NavigationID navigation_id(response.navigation_id);
   navigation_id.main_frame_url = response.redirect_url;
   summary->main_frame_url = response.redirect_url;
-  inflight_navigations_.insert(
-      std::make_pair(navigation_id, std::move(summary)));
+  inflight_navigations_.emplace(navigation_id, std::move(summary));
 }
 
 void ResourcePrefetchPredictor::OnSubresourceResponse(
@@ -1074,20 +1005,6 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     if ((it->first.tab_id == navigation_id.tab_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-
-  for (auto it = inflight_prefetches_.begin();
-       it != inflight_prefetches_.end();) {
-    base::TimeDelta prefetch_age = time_now - it->second;
-    if (prefetch_age > max_navigation_age) {
-      // It goes to the last bucket meaning that the duration was unlimited.
-      UMA_HISTOGRAM_TIMES(
-          internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
-          prefetch_age);
-      it = inflight_prefetches_.erase(it);
     } else {
       ++it;
     }
@@ -1597,6 +1514,40 @@ void ResourcePrefetchPredictor::ConnectToHistoryService() {
     // HistoryService is already loaded. Continue with Initialization.
     OnHistoryAndCacheLoaded();
   }
+}
+
+void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
+               url.spec());
+  if (!prefetch_manager_.get())  // Not enabled.
+    return;
+
+  ResourcePrefetchPredictor::Prediction prediction;
+  bool has_data = GetPrefetchData(url, &prediction);
+  DCHECK(has_data);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ResourcePrefetcherManager::MaybeAddPrefetch,
+                     prefetch_manager_, url, prediction.subresource_urls));
+
+  if (observer_)
+    observer_->OnPrefetchingStarted(url);
+}
+
+void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
+               url.spec());
+  if (!prefetch_manager_.get())  // Not enabled.
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ResourcePrefetcherManager::MaybeRemovePrefetch,
+                     prefetch_manager_, url));
+
+  if (observer_)
+    observer_->OnPrefetchingStopped(url);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

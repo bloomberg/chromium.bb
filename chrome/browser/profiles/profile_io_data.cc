@@ -38,8 +38,8 @@
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
+#include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/predictors/loading_predictor.h"
@@ -391,9 +391,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   if (auto* loading_predictor =
           predictors::LoadingPredictorFactory::GetForProfile(profile)) {
-    resource_prefetch_predictor_observer_.reset(
-        new chrome_browser_net::ResourcePrefetchPredictorObserver(
-            loading_predictor->resource_prefetch_predictor()));
+    loading_predictor_observer_ =
+        base::MakeUnique<chrome_browser_net::LoadingPredictorObserver>(
+            loading_predictor);
   }
 
   ProtocolHandlerRegistry* protocol_handler_registry =
@@ -1100,9 +1100,9 @@ void ProfileIOData::Init(
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
 
-  if (profile_params_->resource_prefetch_predictor_observer_) {
-    resource_prefetch_predictor_observer_.reset(
-        profile_params_->resource_prefetch_predictor_observer_.release());
+  if (profile_params_->loading_predictor_observer_) {
+    loading_predictor_observer_ =
+        std::move(profile_params_->loading_predictor_observer_);
   }
 
 #if defined(OS_CHROMEOS)
