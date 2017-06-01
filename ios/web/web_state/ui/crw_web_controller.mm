@@ -302,9 +302,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Last URL change reported to webWill/DidStartLoadingURL. Used to detect page
   // location changes (client redirects) in practice.
   GURL _lastRegisteredRequestURL;
-  // Last URL change reported to webDidStartLoadingURL. Used to detect page
-  // location changes in practice.
-  GURL _URLOnStartLoading;
   // Page loading phase.
   web::LoadPhase _loadPhase;
   // The web::PageDisplayState recorded when the page starts loading.
@@ -1636,7 +1633,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
           if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
             return;
           base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-          strongSelf.get()->_URLOnStartLoading = URL;
           strongSelf.get()->_lastRegisteredRequestURL = URL;
         }];
 }
@@ -2742,7 +2738,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
   NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
-  _URLOnStartLoading = pushURL;
   _lastRegisteredRequestURL = pushURL;
 
   // If the user interacted with the page, categorize it as a link navigation.
@@ -2809,7 +2804,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
   NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
-  _URLOnStartLoading = replaceURL;
   _lastRegisteredRequestURL = replaceURL;
   [self replaceStateWithPageURL:replaceURL stateObject:stateObject];
   NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
@@ -2872,7 +2866,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)didStartLoadingURL:(const GURL&)URL {
   _loadPhase = web::PAGE_LOADING;
-  _URLOnStartLoading = URL;
   _displayStateOnStartLoading = self.pageDisplayState;
 
   self.userInteractionRegistered = NO;
@@ -4018,8 +4011,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     for (UIGestureRecognizer* recognizer in _gestureRecognizers.get()) {
       [_webView addGestureRecognizer:recognizer];
     }
-
-    _URLOnStartLoading = _defaultURL;
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.
