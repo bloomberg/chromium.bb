@@ -4,6 +4,7 @@
 
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
+#include "core/editing/markers/SpellingMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,8 +19,7 @@ class SpellingMarkerListImplTest : public ::testing::Test {
   SpellingMarkerListImplTest() : marker_list_(new SpellingMarkerListImpl()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new DocumentMarker(DocumentMarker::kSpelling, start_offset,
-                              end_offset, g_empty_string);
+    return new SpellingMarker(start_offset, end_offset, g_empty_string);
   }
 
   Persistent<SpellingMarkerListImpl> marker_list_;

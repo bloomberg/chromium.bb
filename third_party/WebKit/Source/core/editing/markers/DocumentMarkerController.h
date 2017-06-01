@@ -114,9 +114,6 @@ class CORE_EXPORT DocumentMarkerController final
       const EphemeralRange&,
       std::function<DocumentMarker*(int, int)> create_marker_from_offsets);
   void AddMarkerToNode(Node*, DocumentMarker*);
-  void AddSpellCheckMarker(const EphemeralRange&,
-                           DocumentMarker::MarkerType,
-                           const String& description = g_empty_string);
 
   using MarkerLists = HeapVector<Member<DocumentMarkerList>,
                                  DocumentMarker::kMarkerTypeIndexesCount>;

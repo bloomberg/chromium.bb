@@ -65,6 +65,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
@@ -1010,9 +1011,9 @@ String Internals::markerDescriptionForNode(Node* node,
                                            unsigned index,
                                            ExceptionState& exception_state) {
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
-  if (!marker)
+  if (!marker || !IsSpellCheckMarker(*marker))
     return String();
-  return marker->Description();
+  return ToSpellCheckMarker(marker)->Description();
 }
 
 static WTF::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(

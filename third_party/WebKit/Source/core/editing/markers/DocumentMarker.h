@@ -32,12 +32,11 @@
 
 namespace blink {
 
-class DocumentMarkerDetails;
-
 // A range of a node within a document that is "marked", such as the range of a
 // misspelled word. It optionally includes a description that could be displayed
 // in the user interface.
-class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
+class CORE_EXPORT DocumentMarker
+    : public GarbageCollectedFinalized<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
     kSpellingMarkerIndex = 0,
@@ -128,19 +127,11 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     MisspellingMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
-  DocumentMarker(MarkerType,
-                 unsigned start_offset,
-                 unsigned end_offset,
-                 const String& description);
+  virtual ~DocumentMarker();
 
   MarkerType GetType() const { return type_; }
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
-
-  const String& Description() const;
-  DocumentMarkerDetails* Details() const;
-
-  void ClearDetails() { details_.Clear(); }
 
   struct MarkerOffsets {
     unsigned start_offset;
@@ -157,7 +148,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   void SetEndOffset(unsigned offset) { end_offset_ = offset; }
   void ShiftOffsets(int delta);
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   DocumentMarker(MarkerType, unsigned start_offset, unsigned end_offset);
@@ -166,26 +157,11 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   const MarkerType type_;
   unsigned start_offset_;
   unsigned end_offset_;
-  Member<DocumentMarkerDetails> details_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentMarker);
 };
 
 using DocumentMarkerVector = HeapVector<Member<DocumentMarker>>;
-
-inline DocumentMarkerDetails* DocumentMarker::Details() const {
-  return details_.Get();
-}
-
-class DocumentMarkerDetails
-    : public GarbageCollectedFinalized<DocumentMarkerDetails> {
- public:
-  DocumentMarkerDetails() {}
-  virtual ~DocumentMarkerDetails();
-  virtual bool IsDescription() const { return false; }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-};
 
 }  // namespace blink
 
