@@ -50,7 +50,7 @@ static CGFloat kHostInset = 5.f;
 - (instancetype)init {
   _isAuthenticated = NO;
   UICollectionViewFlowLayout* layout =
-      [[UICollectionViewFlowLayout alloc] init];
+      [[MDCCollectionViewFlowLayout alloc] init];
   layout.minimumInteritemSpacing = 0;
   CGFloat sectionInset = kHostInset * 2.f;
   [layout setSectionInset:UIEdgeInsetsMake(sectionInset, sectionInset,
