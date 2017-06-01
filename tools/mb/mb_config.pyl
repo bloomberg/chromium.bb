@@ -513,6 +513,7 @@
       'chromeos_daisy_chromium_compile_only_ng': 'cros_chrome_sdk',
       'chromeos_x86-generic_chromium_compile_only_ng': 'cros_chrome_sdk',
       'closure_compilation': 'closure_compilation',
+      'fuchsia': 'release_trybot_fuchsia',
       'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
@@ -1436,6 +1437,10 @@
 
     'release_trybot_arm': [
       'release_trybot', 'arm',
+    ],
+
+    'release_trybot_fuchsia': [
+      'release_trybot', 'fuchsia',
     ],
 
     'release_trybot_x86': [
