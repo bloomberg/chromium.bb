@@ -9,15 +9,15 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/task_runner.h"
-#include "base/threading/non_thread_safe.h"
 
 namespace storage {
 
 namespace {
 
-// A shareable file map with enforcement of thread checker.
-class ShareableFileMap : public base::NonThreadSafe {
+// A shareable file map with enforcement of sequence checker.
+class ShareableFileMap {
  public:
   typedef std::map<base::FilePath, ShareableFileReference*> FileMap;
   typedef FileMap::iterator iterator;
@@ -26,32 +26,39 @@ class ShareableFileMap : public base::NonThreadSafe {
 
   ShareableFileMap() {}
 
-  ~ShareableFileMap() {
-    DetachFromThread();
-  }
+  ~ShareableFileMap() = default;
 
   iterator Find(key_type key) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return file_map_.find(key);
   }
 
   iterator End() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return file_map_.end();
   }
 
   std::pair<iterator, bool> Insert(value_type value) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return file_map_.insert(value);
   }
 
   void Erase(key_type key) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     file_map_.erase(key);
   }
 
+#if DCHECK_IS_ON()
+  void AssertCalledOnValidSequence() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+#endif  // DCHECK_IS_ON()
+
  private:
   FileMap file_map_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(ShareableFileMap);
 };
 
@@ -102,7 +109,9 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
 void ShareableFileReference::AddFinalReleaseCallback(
     const FinalReleaseCallback& callback) {
-  DCHECK(g_file_map.Get().CalledOnValidThread());
+#if DCHECK_IS_ON()
+  g_file_map.Get().AssertCalledOnValidSequence();
+#endif  // DCHECK_IS_ON()
   scoped_file_.AddScopeOutCallback(callback, NULL);
 }
 
