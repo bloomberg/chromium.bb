@@ -135,14 +135,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // Returns true if text is emitted from the remembered progress (if any).
   bool HandleRememberedProgress();
 
-  // Return true if the iteration progress should advance to |kHandledNode|
-  // after calling a |HandleXXX| function.
-  // TODO(xiaochengh): The meaning of the return values is unclear, and they do
-  // not always clearly control the iteration progress. Should consider removing
-  // the return values and control the iteration in a cleaner way.
-  bool HandleTextNode();
-  bool HandleReplacedElement();
-  bool HandleNonTextNode();
+  void HandleTextNode();
+  void HandleReplacedElement();
+  void HandleNonTextNode();
   void SpliceBuffer(UChar,
                     Node* text_node,
                     Node* offset_base_node,

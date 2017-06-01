@@ -134,7 +134,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   EmitText(text_node_, text_node_->GetLayoutObject(), run_start, run_end);
 }
 
-bool TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
+void TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
   text_node_ = node;
   offset_ = text_node_ == start_container_ ? start_offset_ : 0;
   handled_first_letter_ = false;
@@ -146,7 +146,7 @@ bool TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
   // handle pre-formatted text
   if (!layout_object->Style()->CollapseWhiteSpace()) {
     HandlePreFormattedTextNode();
-    return true;
+    return;
   }
 
   if (layout_object->FirstTextBox())
@@ -159,12 +159,12 @@ bool TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
 
   if (!layout_object->FirstTextBox() && str.length() > 0 &&
       !should_handle_first_letter) {
-    if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
-        !IgnoresStyleVisibility())
-      return false;
-    last_text_node_ended_with_collapsed_space_ =
-        true;  // entire block is collapsed space
-    return true;
+    if (layout_object->Style()->Visibility() == EVisibility::kVisible ||
+        IgnoresStyleVisibility()) {
+      last_text_node_ended_with_collapsed_space_ =
+          true;  // entire block is collapsed space
+    }
+    return;
   }
 
   if (first_letter_text_)
@@ -184,7 +184,6 @@ bool TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
   }
 
   HandleTextBox();
-  return true;
 }
 
 // Restore the collapsed space for copy & paste. See http://crbug.com/318925
