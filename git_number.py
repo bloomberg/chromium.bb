@@ -204,8 +204,14 @@ def load_generation_numbers(targets):
 
   if git.tree(REF) is None:
     empty = git.mktree({})
-    commit_hash = git.run('commit-tree', '-m', 'Initial commit from git-number',
-                          empty)
+    commit_hash = git.run(
+        # Git user.name and/or user.email may not be configured, so specifying
+        # them explicitly. They are not used, but requried by Git.
+        '-c', 'user.name=%s' % AUTHOR_NAME,
+        '-c', 'user.email=%s' % AUTHOR_EMAIL,
+        'commit-tree',
+        '-m', 'Initial commit from git-number',
+        empty)
     git.run('update-ref', REF, commit_hash)
 
   with git.ScopedPool(kind=POOL_KIND) as pool:
