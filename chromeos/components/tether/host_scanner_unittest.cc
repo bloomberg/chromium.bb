@@ -196,10 +196,10 @@ CreateFakeScannedDeviceInfos(
         cell_provider_name, battery_percentage, connection_strength);
 
     // Require set-up for odd-numbered device indices.
-    bool set_up_required = i % 2 == 0;
+    bool setup_required = i % 2 == 0;
 
     scanned_device_infos.push_back(HostScannerOperation::ScannedDeviceInfo(
-        remote_devices[i], device_status, set_up_required));
+        remote_devices[i], device_status, setup_required));
   }
 
   return scanned_device_infos;
@@ -332,6 +332,8 @@ class HostScannerTest : public testing::Test {
       EXPECT_EQ(0, cache_item.signal_strength);
     else
       EXPECT_EQ(status.connection_strength() * 25, cache_item.signal_strength);
+
+    EXPECT_EQ(scanned_device_info.setup_required, cache_item.setup_required);
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;

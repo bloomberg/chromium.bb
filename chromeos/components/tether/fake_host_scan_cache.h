@@ -23,6 +23,7 @@ class FakeHostScanCache : public HostScanCache {
     std::string carrier;
     int battery_percentage;
     int signal_strength;
+    bool setup_required;
   };
 
   FakeHostScanCache();
@@ -52,9 +53,11 @@ class FakeHostScanCache : public HostScanCache {
                          const std::string& device_name,
                          const std::string& carrier,
                          int battery_percentage,
-                         int signal_strength) override;
+                         int signal_strength,
+                         bool setup_required) override;
   bool RemoveHostScanResult(const std::string& tether_network_guid) override;
   void ClearCacheExceptForActiveHost() override;
+  bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
   void OnPreviouslyConnectedHostIdsChanged() override;
 
  private:

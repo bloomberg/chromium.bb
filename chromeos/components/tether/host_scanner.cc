@@ -167,7 +167,8 @@ void HostScanner::SetCacheEntry(
   host_scan_cache_->SetHostScanResult(
       device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
           remote_device.GetDeviceId()),
-      remote_device.name, carrier, battery_percentage, signal_strength);
+      remote_device.name, carrier, battery_percentage, signal_strength,
+      scanned_device_info.setup_required);
 }
 
 }  // namespace tether

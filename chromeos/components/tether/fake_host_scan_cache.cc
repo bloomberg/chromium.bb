@@ -51,7 +51,8 @@ void FakeHostScanCache::SetHostScanResult(
     const std::string& device_name,
     const std::string& carrier,
     int battery_percentage,
-    int signal_strength) {
+    int signal_strength,
+    bool setup_required) {
   auto it = cache_.find(tether_network_guid);
   if (it != cache_.end()) {
     // If already in the cache, update the cache with new values.
@@ -59,13 +60,14 @@ void FakeHostScanCache::SetHostScanResult(
     it->second.carrier = carrier;
     it->second.battery_percentage = battery_percentage;
     it->second.signal_strength = signal_strength;
+    it->second.setup_required = setup_required;
     return;
   }
 
   // Otherwise, add a new entry.
-  cache_.emplace(
-      tether_network_guid,
-      CacheEntry{device_name, carrier, battery_percentage, signal_strength});
+  cache_.emplace(tether_network_guid,
+                 CacheEntry{device_name, carrier, battery_percentage,
+                            signal_strength, setup_required});
 }
 
 bool FakeHostScanCache::RemoveHostScanResult(
@@ -84,6 +86,15 @@ void FakeHostScanCache::ClearCacheExceptForActiveHost() {
     else
       it = cache_.erase(it);
   }
+}
+
+bool FakeHostScanCache::DoesHostRequireSetup(
+    const std::string& tether_network_guid) {
+  auto it = cache_.find(tether_network_guid);
+  if (it != cache_.end())
+    return it->second.setup_required;
+
+  return false;
 }
 
 void FakeHostScanCache::OnPreviouslyConnectedHostIdsChanged() {}
