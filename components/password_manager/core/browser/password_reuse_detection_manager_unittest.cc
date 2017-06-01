@@ -130,6 +130,26 @@ TEST_F(PasswordReuseDetectionManagerTest, CheckThatBufferClearedAfterEnter) {
   manager.OnKeyPressed(base::ASCIIToUTF16("2"));
 }
 
+// Verify that after reuse found, no reuse checking happens till next main frame
+// navigation.
+TEST_F(PasswordReuseDetectionManagerTest, NoReuseCheckingAfterReuseFound) {
+  EXPECT_CALL(client_, GetPasswordStore())
+      .WillRepeatedly(testing::Return(store_.get()));
+  PasswordReuseDetectionManager manager(&client_);
+
+  // Simulate that reuse found.
+  manager.OnReuseFound(base::string16(), std::string(), 0, 0);
+
+  // Expect no checking of reuse.
+  EXPECT_CALL(*store_, CheckReuse(_, _, _)).Times(0);
+  manager.OnKeyPressed(base::ASCIIToUTF16("1"));
+
+  // Expect that after main frame navigation checking is restored.
+  manager.DidNavigateMainFrame(GURL("https://www.example.com"));
+  EXPECT_CALL(*store_, CheckReuse(base::ASCIIToUTF16("1"), _, _));
+  manager.OnKeyPressed(base::ASCIIToUTF16("1"));
+}
+
 }  // namespace
 
 }  // namespace password_manager
