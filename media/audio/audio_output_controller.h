@@ -75,6 +75,7 @@ class MEDIA_EXPORT AudioOutputController
     virtual void OnControllerPlaying() = 0;
     virtual void OnControllerPaused() = 0;
     virtual void OnControllerError() = 0;
+    virtual void OnLog(const std::string& message) = 0;
 
    protected:
     virtual ~EventHandler() {}

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -107,6 +108,8 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
   TRACE_EVENT0("audio", "AudioOutputController::DoCreate");
+  handler_->OnLog(base::StringPrintf("AOC::DoCreate (for device change: %s)",
+                                     is_for_device_change ? "yes" : "no"));
 
   // Close() can be called before DoCreate() is executed.
   if (state_ == kClosed)
@@ -151,6 +154,7 @@ void AudioOutputController::DoPlay() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
   TRACE_EVENT0("audio", "AudioOutputController::DoPlay");
+  handler_->OnLog("AOC::DoPlay");
 
   // We can start from created or paused state.
   if (state_ != kCreated && state_ != kPaused)
@@ -201,6 +205,7 @@ void AudioOutputController::DoPause() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
   TRACE_EVENT0("audio", "AudioOutputController::DoPause");
+  handler_->OnLog("AOC::DoPause");
 
   StopStream();
 
@@ -219,6 +224,7 @@ void AudioOutputController::DoClose() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
   TRACE_EVENT0("audio", "AudioOutputController::DoClose");
+  handler_->OnLog("AOC::DoClose");
 
   if (state_ != kClosed) {
     DoStopCloseAndClearStream();
@@ -352,6 +358,27 @@ void AudioOutputController::OnDeviceChange() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
   TRACE_EVENT0("audio", "AudioOutputController::OnDeviceChange");
+
+  auto state_to_string = [](State state) {
+    switch (state) {
+      case AudioOutputController::kEmpty:
+        return "empty";
+      case AudioOutputController::kCreated:
+        return "created";
+      case AudioOutputController::kPlaying:
+        return "playing";
+      case AudioOutputController::kPaused:
+        return "paused";
+      case AudioOutputController::kClosed:
+        return "closed";
+      case AudioOutputController::kError:
+        return "error";
+    };
+    return "unknown";
+  };
+
+  handler_->OnLog(base::StringPrintf("AOC::OnDeviceChange while in state: %s",
+                                     state_to_string(state_)));
 
   // TODO(dalecurtis): Notify the renderer side that a device change has
   // occurred.  Currently querying the hardware information here will lead to
