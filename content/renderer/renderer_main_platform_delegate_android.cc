@@ -7,7 +7,6 @@
 #include <signal.h>
 
 #include "base/android/build_info.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,7 +15,6 @@
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 #include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
-#include "content/public/common/content_features.h"
 #include "content/renderer/seccomp_sandbox_status_android.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
@@ -106,29 +104,22 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
     return true;
   }
 
-  // Seccomp has been detected, check if the field trial experiment should run.
-  if (base::FeatureList::IsEnabled(features::kSeccompSandboxAndroid)) {
-    status_uma.set_status(SeccompSandboxStatus::FEATURE_ENABLED);
-
-    sig_t old_handler = signal(SIGSYS, SIG_DFL);
-    if (old_handler != SIG_DFL) {
-      // On Android O and later, the zygote applies a seccomp filter to all
-      // apps. It has its own SIGSYS handler that must be un-hooked so that
-      // the Chromium one can be used instead. If pre-O devices have a SIGSYS
-      // handler, then warn about that.
-      DLOG_IF(WARNING, info->sdk_int() < 26)
-          << "Un-hooking existing SIGSYS handler before starting "
-          << "Seccomp sandbox";
-    }
-
-    sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
-    CHECK(sandbox.StartSandbox(
-        sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
-
-    status_uma.set_status(SeccompSandboxStatus::ENGAGED);
-  } else {
-    status_uma.set_status(SeccompSandboxStatus::FEATURE_DISABLED);
+  sig_t old_handler = signal(SIGSYS, SIG_DFL);
+  if (old_handler != SIG_DFL) {
+    // On Android O and later, the zygote applies a seccomp filter to all
+    // apps. It has its own SIGSYS handler that must be un-hooked so that
+    // the Chromium one can be used instead. If pre-O devices have a SIGSYS
+    // handler, then warn about that.
+    DLOG_IF(WARNING, info->sdk_int() < 26)
+        << "Un-hooking existing SIGSYS handler before starting "
+        << "Seccomp sandbox";
   }
+
+  sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
+  CHECK(
+      sandbox.StartSandbox(sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
+
+  status_uma.set_status(SeccompSandboxStatus::ENGAGED);
 #endif
   return true;
 }

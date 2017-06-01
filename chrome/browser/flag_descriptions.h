@@ -1075,9 +1075,6 @@ extern const char kReaderModeHeuristicsAdaboost[];
 extern const char kReaderModeHeuristicsAlwaysOff[];
 extern const char kReaderModeHeuristicsAlwaysOn[];
 
-extern const char kSeccompFilterSandboxAndroidName[];
-extern const char kSeccompFilterSandboxAndroidDescription[];
-
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 

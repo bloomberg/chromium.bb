@@ -1993,21 +1993,6 @@ const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser "
     "tab.";
 
-//  Mixed content issue workaround flags
-
-#if defined(OS_ANDROID)
-
-//  Flag strings for seccomp-bpf sandbox flag.
-
-const char kSeccompFilterSandboxAndroidName[] = "Seccomp-bpf renderer sandbox";
-
-const char kSeccompFilterSandboxAndroidDescription[] =
-    "Renderers will have a second-layer sandbox provided by seccomp-bpf. "
-    "This requires kernel features only available on select Android "
-    "versions.";
-
-#endif  // defined(OS_ANDROID)
-
 //  Extension Content Verification
 
 const char kExtensionContentVerificationName[] =
