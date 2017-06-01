@@ -46,10 +46,14 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   unsigned edges = BorderEdges();
   NGPhysicalBoxStrut box_strut(
-      LayoutUnit((edges & kTopBorder) ? Style().BorderTopWidth() : .0f),
-      LayoutUnit((edges & kRightBorder) ? Style().BorderRightWidth() : .0f),
-      LayoutUnit((edges & kBottomBorder) ? Style().BorderBottomWidth() : .0f),
-      LayoutUnit((edges & kLeftBorder) ? Style().BorderLeftWidth() : .0f));
+      LayoutUnit((edges & NGBorderEdges::kTop) ? Style().BorderTopWidth()
+                                               : .0f),
+      LayoutUnit((edges & NGBorderEdges::kRight) ? Style().BorderRightWidth()
+                                                 : .0f),
+      LayoutUnit((edges & NGBorderEdges::kBottom) ? Style().BorderBottomWidth()
+                                                  : .0f),
+      LayoutUnit((edges & NGBorderEdges::kLeft) ? Style().BorderLeftWidth()
+                                                : .0f));
   return box_strut.SnapToDevicePixels();
 }
 
