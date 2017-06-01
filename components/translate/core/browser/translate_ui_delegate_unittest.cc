@@ -13,6 +13,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/translate/core/browser/mock_translate_client.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/translate/core/browser/mock_translate_ranker.h"
 #include "components/translate/core/browser/translate_client.h"
@@ -26,53 +27,11 @@
 
 using testing::Return;
 using testing::Test;
+using translate::testing::MockTranslateClient;
 using translate::testing::MockTranslateDriver;
 using translate::testing::MockTranslateRanker;
 
 namespace translate {
-
-#if defined(OS_CHROMEOS)
-const char* preferred_languages_prefs = "settings.language.preferred_languages";
-#else
-const char* preferred_languages_prefs = NULL;
-#endif
-
-class MockTranslateClient : public TranslateClient {
- public:
-  MockTranslateClient(TranslateDriver* driver, PrefService* prefs)
-      : driver_(driver), prefs_(prefs) {}
-
-  TranslateDriver* GetTranslateDriver() { return driver_; }
-  PrefService* GetPrefs() { return prefs_; }
-
-  std::unique_ptr<TranslatePrefs> GetTranslatePrefs() {
-    return base::MakeUnique<TranslatePrefs>(prefs_, "intl.accept_languages",
-                                            preferred_languages_prefs);
-  }
-
-  MOCK_METHOD0(GetTranslateAcceptLanguages, TranslateAcceptLanguages*());
-  MOCK_CONST_METHOD0(GetInfobarIconID, int());
-
-  MOCK_CONST_METHOD1(CreateInfoBarMock,
-                     infobars::InfoBar*(TranslateInfoBarDelegate*));
-  std::unique_ptr<infobars::InfoBar> CreateInfoBar(
-      std::unique_ptr<TranslateInfoBarDelegate> delegate) const {
-    return base::WrapUnique(CreateInfoBarMock(std::move(delegate).get()));
-  }
-
-  MOCK_METHOD5(ShowTranslateUI,
-               void(translate::TranslateStep,
-                    const std::string&,
-                    const std::string&,
-                    TranslateErrors::Type,
-                    bool));
-  MOCK_METHOD1(IsTranslatableURL, bool(const GURL&));
-  MOCK_METHOD1(ShowReportLanguageDetectionErrorUI, void(const GURL&));
-
- private:
-  TranslateDriver* driver_;
-  PrefService* prefs_;
-};
 
 class TranslateUIDelegateTest : public ::testing::Test {
  public:

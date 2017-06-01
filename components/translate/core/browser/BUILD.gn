@@ -94,6 +94,8 @@ source_set("unit_tests") {
   sources = [
     "language_model_unittest.cc",
     "language_state_unittest.cc",
+    "mock_translate_client.cc",
+    "mock_translate_client.h",
     "mock_translate_driver.cc",
     "mock_translate_driver.h",
     "mock_translate_ranker.cc",
