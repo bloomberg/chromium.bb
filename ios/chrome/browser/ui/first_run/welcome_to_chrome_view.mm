@@ -45,7 +45,7 @@ const CGFloat kContainerViewCompactWidthPercentage = 0.8;
 // Layout constants.
 const CGFloat kImageTopPadding[SIZE_CLASS_COUNT] = {32.0, 50.0};
 const CGFloat kTOSLabelTopPadding[SIZE_CLASS_COUNT] = {34.0, 40.0};
-const CGFloat kOptInLabelTopPadding[SIZE_CLASS_COUNT] = {10.0, 14.0};
+const CGFloat kOptInLabelPadding[SIZE_CLASS_COUNT] = {10.0, 14.0};
 const CGFloat kCheckBoxPadding[SIZE_CLASS_COUNT] = {10.0, 16.0};
 const CGFloat kOKButtonBottomPadding[SIZE_CLASS_COUNT] = {32.0, 32.0};
 const CGFloat kOKButtonHeight[SIZE_CLASS_COUNT] = {36.0, 54.0};
@@ -326,8 +326,10 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
   [self layoutTOSLabel];
   [self layoutOptInLabel];
   [self layoutCheckBoxButton];
-  [self layoutContainerView];
+  // The OK Button must be laid out before the container view so that the
+  // container view can take its position into account.
   [self layoutOKButton];
+  [self layoutContainerView];
 }
 
 - (void)layoutTitleLabel {
@@ -398,7 +400,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
 - (void)layoutOptInLabel {
   // The opt in label is laid out to the right (or left in RTL) of the check box
-  // button and below |TOSLabel| as specified by kOptInLabelTopPadding.
+  // button and below |TOSLabel| as specified by kOptInLabelPadding.
   CGSize checkBoxSize =
       [self.checkBoxButton imageForState:self.checkBoxButton.state].size;
   CGFloat checkBoxPadding = kCheckBoxPadding[self.cr_widthSizeClass];
@@ -407,7 +409,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
       sizeThatFits:CGSizeMake(CGRectGetWidth(self.containerView.bounds) -
                                   optInLabelSidePadding,
                               CGFLOAT_MAX)];
-  CGFloat optInLabelTopPadding = kOptInLabelTopPadding[self.cr_heightSizeClass];
+  CGFloat optInLabelTopPadding = kOptInLabelPadding[self.cr_heightSizeClass];
   CGFloat optInLabelOriginX =
       base::i18n::IsRTL() ? 0.0f : optInLabelSidePadding;
   self.optInLabel.frame = AlignRectOriginAndSizeToPixels(
@@ -447,12 +449,18 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 - (void)layoutContainerView {
   // The container view is resized according to the final layout of
   // |checkBoxButton|, which is its lowest subview.  The resized view is then
-  // centered horizontally and vertically.
+  // centered horizontally and vertically. If necessary, it is shifted up to
+  // allow |kOptInLabelPadding| between |optInLabel| and |OKButton|.
   CGSize containerViewSize = self.containerView.bounds.size;
   containerViewSize.height = CGRectGetMaxY(self.checkBoxButton.frame);
-  self.containerView.frame = AlignRectOriginAndSizeToPixels(CGRectMake(
-      (CGRectGetWidth(self.bounds) - containerViewSize.width) / 2.0,
+
+  CGFloat padding = kOptInLabelPadding[self.cr_heightSizeClass];
+  CGFloat originY = fmin(
       (CGRectGetHeight(self.bounds) - containerViewSize.height) / 2.0,
+      CGRectGetMinY(self.OKButton.frame) - padding - containerViewSize.height);
+
+  self.containerView.frame = AlignRectOriginAndSizeToPixels(CGRectMake(
+      (CGRectGetWidth(self.bounds) - containerViewSize.width) / 2.0, originY,
       containerViewSize.width, CGRectGetMaxY(self.checkBoxButton.frame)));
 }
 
