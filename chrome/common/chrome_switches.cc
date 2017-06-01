@@ -940,6 +940,9 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 // Custom crosh command.
 const char kCroshCommand[] = "crosh-command";
 
+// Disables logging redirect for testing.
+const char kDisableLoggingRedirect[] = "disable-logging-redirect";
+
 // Disables apps on the login screen. By default, they are allowed and can be
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";

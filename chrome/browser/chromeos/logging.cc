@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -51,8 +52,8 @@ void RedirectChromeLogging(const base::CommandLine& command_line) {
     return;
   }
 
-  DCHECK(!chrome_logging_redirected_)
-      << "Attempted to redirect logging when it was already initialized.";
+  if (command_line.HasSwitch(switches::kDisableLoggingRedirect))
+    return;
 
   // Redirect logs to the session log directory, if set.  Otherwise
   // defaults to the profile dir.
