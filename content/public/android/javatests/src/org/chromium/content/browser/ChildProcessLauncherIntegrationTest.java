@@ -114,7 +114,7 @@ public class ChildProcessLauncherIntegrationTest {
     public void testCrossDomainNavigationDoNotLoseImportance() throws Throwable {
         final TestChildProcessConnectionFactory factory = new TestChildProcessConnectionFactory();
         final List<TestChildProcessConnection> connections = factory.getConnections();
-        ChildProcessLauncher.setSandboxServicesSettingsForTesting(factory,
+        ChildProcessLauncherHelper.setSandboxServicesSettingsForTesting(factory,
                 10 /* arbitrary number, only realy need 2 */, null /* use default service name */);
 
         ContentShellActivity activity =

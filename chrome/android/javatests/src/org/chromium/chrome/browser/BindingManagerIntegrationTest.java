@@ -35,7 +35,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -298,7 +298,7 @@ public class BindingManagerIntegrationTest {
         });
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -367,7 +367,7 @@ public class BindingManagerIntegrationTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
                 tab.getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -444,7 +444,7 @@ public class BindingManagerIntegrationTest {
         });
         ChromeTabUtils.waitForTabPageLoaded(tabs[0], "about:blank");
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], "about:blank");
-        // At this point 3 sanboxed services are allocated; the initial one + 2 new tabs.
+        // At this point 3 sandboxed services are allocated; the initial one + 2 new tabs.
         Assert.assertFalse(mBindingManager.isReleaseAllModerateBindingsCalled());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
@@ -456,7 +456,7 @@ public class BindingManagerIntegrationTest {
             }
         });
         ChromeTabUtils.waitForTabPageLoaded(tabs[2], "about:blank");
-        // At this point all the sanboxed services are allocated.
+        // At this point all the sandboxed services are allocated.
         mBindingManager.assertIsReleaseAllModerateBindingsCalled();
     }
 
@@ -497,7 +497,7 @@ public class BindingManagerIntegrationTest {
             }
         });
 
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -548,7 +548,7 @@ public class BindingManagerIntegrationTest {
     public void setUp() throws Exception {
         // Hook in the test binding manager.
         mBindingManager = new MockBindingManager();
-        ChildProcessLauncher.setBindingManagerForTesting(mBindingManager);
+        ChildProcessLauncherHelper.setBindingManagerForTesting(mBindingManager);
 
         mActivityTestRule.startMainActivityOnBlankPage();
 

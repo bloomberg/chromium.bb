@@ -33,7 +33,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
@@ -622,7 +622,7 @@ public class AwContentsTest extends AwTestBase {
     @ParameterizedTest.Set
     public void testSandboxedRendererWorks() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
 
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -651,7 +651,7 @@ public class AwContentsTest extends AwTestBase {
     @ParameterizedTest.Set
     public void testRendererPriorityStartsHigh() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
 
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -673,7 +673,7 @@ public class AwContentsTest extends AwTestBase {
     @ParameterizedTest.Set
     public void testRendererPriorityLow() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
 
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -703,7 +703,7 @@ public class AwContentsTest extends AwTestBase {
     @ParameterizedTest.Set
     public void testRendererPriorityManaged() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
+        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
 
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
