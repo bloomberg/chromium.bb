@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/event_targeter.h"
 
-#include "services/ui/ws/event_dispatcher_delegate.h"
+#include "services/ui/ws/event_targeter_delegate.h"
 #include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/window_finder.h"
 #include "ui/events/event.h"
@@ -13,9 +13,9 @@
 namespace ui {
 namespace ws {
 
-EventTargeter::EventTargeter(EventDispatcherDelegate* event_dispatcher_delegate,
+EventTargeter::EventTargeter(EventTargeterDelegate* event_targeter_delegate,
                              ModalWindowController* modal_window_controller)
-    : event_dispatcher_delegate_(event_dispatcher_delegate),
+    : event_targeter_delegate_(event_targeter_delegate),
       modal_window_controller_(modal_window_controller) {}
 
 EventTargeter::~EventTargeter() {}
@@ -41,7 +41,7 @@ DeepestWindow EventTargeter::FindDeepestVisibleWindowForEvents(
     gfx::Point* location,
     int64_t* display_id) {
   ServerWindow* root =
-      event_dispatcher_delegate_->GetRootWindowContaining(location, display_id);
+      event_targeter_delegate_->GetRootWindowContaining(location, display_id);
   return root ? ui::ws::FindDeepestVisibleWindowForEvents(root, *location)
               : DeepestWindow();
 }
