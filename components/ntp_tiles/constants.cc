@@ -18,9 +18,6 @@ extern const base::Feature kPopularSitesBakedInContentFeature{
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
     "NTPMostLikelyFaviconsFromServer", base::FEATURE_DISABLED_BY_DEFAULT};
 
-extern const base::Feature kPinHomePageAsTileFeature{
-    "PinHomePageAsTile", base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool AreNtpMostLikelyFaviconsFromServerEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

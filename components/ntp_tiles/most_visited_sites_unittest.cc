@@ -437,8 +437,6 @@ TEST_P(MostVisitedSitesTest, ShouldStartNoCallInConstructor) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldIncludeTileForHomePage) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   DisableRemoteSuggestions();
@@ -456,32 +454,10 @@ TEST_P(MostVisitedSitesTest, ShouldIncludeTileForHomePage) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageWithoutClient) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(Not(Contains(
-                  MatchesTile("", kHomePageUrl, TileSource::HOMEPAGE)))));
-  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
-                                                  /*num_sites=*/3);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfFeatureDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(ntp_tiles::kPinHomePageAsTileFeature);
-  FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
-  home_page_client->SetHomePageEnabled(true);
-  DisableRemoteSuggestions();
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
-      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomePageUrl))))
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_observer_,
               OnMostVisitedURLsAvailable(Not(Contains(
                   MatchesTile("", kHomePageUrl, TileSource::HOMEPAGE)))));
@@ -491,8 +467,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfFeatureDisabled) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfNoTileRequested) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   DisableRemoteSuggestions();
@@ -509,8 +483,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfNoTileRequested) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldReturnOnlyHomePageIfOneTileRequested) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   DisableRemoteSuggestions();
@@ -530,8 +502,6 @@ TEST_P(MostVisitedSitesTest, ShouldReturnOnlyHomePageIfOneTileRequested) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldDeduplicateHomePageWithTopSites) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   DisableRemoteSuggestions();
@@ -554,8 +524,6 @@ TEST_P(MostVisitedSitesTest, ShouldDeduplicateHomePageWithTopSites) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfItIsNewTabPage) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   home_page_client->SetNtpIsHomePage(true);
@@ -575,8 +543,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfItIsNewTabPage) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfThereIsNone) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(false);
   DisableRemoteSuggestions();
@@ -596,8 +562,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfThereIsNone) {
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfEmptyUrl) {
   const std::string kEmptyHomePageUrl;
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   home_page_client->SetHomePageUrl(GURL(kEmptyHomePageUrl));
@@ -617,8 +581,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfEmptyUrl) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfBlacklisted) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
   DisableRemoteSuggestions();
@@ -643,8 +605,6 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfBlacklisted) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldPinHomePageAgainIfBlacklistingUndone) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(ntp_tiles::kPinHomePageAsTileFeature);
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
 
