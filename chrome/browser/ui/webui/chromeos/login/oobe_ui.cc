@@ -175,6 +175,10 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
     source->AddResourcePath(kCustomElementsJSPath,
                             IDR_CUSTOM_ELEMENTS_LOGIN_JS);
+    source->AddResourcePath(kCustomElementsPinKeyboardHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
+    source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
+                            IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
