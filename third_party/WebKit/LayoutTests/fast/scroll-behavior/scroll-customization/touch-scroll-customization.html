@@ -204,14 +204,12 @@ if ('ScrollState' in window) {
       assert_equals(document.scrollingElement.scrollTop, scrollingElementTop, "For scrollingElement on step " + step);
     };
 
-    assertScrollTops(0, 0, 0, 0);
-
     var frame_actions = [
       function() {
         eventSender.gestureFlingStart(10, 10, -1000000, -1000000, "touchscreen");
       },
       flingTest.step_func(function() {
-        assertScrollTops(100, 0, 0, 1);
+        assertScrollTops(0, 0, 0, 1);
       }),
       flingTest.step_func(function() {
         assertScrollTops(100, 0, 0, 2);
