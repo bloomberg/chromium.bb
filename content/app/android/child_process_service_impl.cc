@@ -23,7 +23,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
-#include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessServiceImpl_jni.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"

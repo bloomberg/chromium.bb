@@ -24,7 +24,6 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"

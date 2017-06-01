@@ -6,12 +6,11 @@
 #define CONTENT_PUBLIC_COMMON_CONTENT_DESCRIPTORS_H_
 
 #include "build/build_config.h"
-#include "ipc/ipc_descriptors.h"
 
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kCrashDumpSignal = kIPCDescriptorMax,
+  kCrashDumpSignal = 0,
   kSandboxIPCChannel,  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
   kMojoIPCChannel,
   kFieldTrialDescriptor,

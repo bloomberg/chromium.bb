@@ -54,7 +54,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/embedder/switches.h"
