@@ -40,8 +40,8 @@ class SearchCardView : public views::View {
     SetBorder(base::MakeUnique<views::ShadowBorder>(
         GetShadowForZHeight(kSearchResultZHeight)));
     SetLayoutManager(new views::FillLayout());
-    content_view->set_background(
-        views::Background::CreateSolidBackground(kCardBackgroundColor));
+    content_view->SetBackground(
+        views::CreateSolidBackground(kCardBackgroundColor));
     AddChildView(content_view);
   }
 

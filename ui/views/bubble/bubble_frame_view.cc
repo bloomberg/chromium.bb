@@ -400,7 +400,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   SetBorder(std::move(border));
 
   // Update the background, which relies on the border.
-  set_background(new views::BubbleBackground(bubble_border_));
+  SetBackground(base::MakeUnique<views::BubbleBackground>(bubble_border_));
 }
 
 void BubbleFrameView::SetFootnoteView(View* view) {
@@ -412,8 +412,8 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   footnote_container_->SetLayoutManager(
       new BoxLayout(BoxLayout::kVertical, content_margins_.left(),
                     content_margins_.top(), 0));
-  footnote_container_->set_background(
-      Background::CreateSolidBackground(kFootnoteBackgroundColor));
+  footnote_container_->SetBackground(
+      CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(
       CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
   footnote_container_->AddChildView(view);

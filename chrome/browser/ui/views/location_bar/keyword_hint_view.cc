@@ -66,8 +66,8 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 
   chip_container_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
-  chip_container_->set_background(
-      new BackgroundWith1PxBorder(tab_bg_color, tab_border_color));
+  chip_container_->SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
+      tab_bg_color, tab_border_color));
   chip_container_->AddChildView(chip_label_);
   chip_container_->SetLayoutManager(new views::FillLayout());
   AddChildView(chip_container_);

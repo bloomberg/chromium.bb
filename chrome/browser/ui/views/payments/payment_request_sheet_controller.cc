@@ -196,7 +196,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   if (GetSheetId(&sheet_id))
     view->set_id(static_cast<int>(sheet_id));
 
-  view->set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+  view->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   // Paint the sheets to layers, otherwise the MD buttons (which do paint to a
   // layer) won't do proper clipping.
@@ -233,8 +233,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   content_view_ = new views::View;
   content_view_->SetPaintToLayer();
   content_view_->layer()->SetFillsBoundsOpaquely(true);
-  content_view_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorWHITE));
+  content_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   pane_layout->AddView(content_view_);
   pane_->SizeToPreferredSize();
 

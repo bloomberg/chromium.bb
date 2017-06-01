@@ -107,7 +107,7 @@ class InformationTextArea : public views::View {
 
     SetLayoutManager(new views::FillLayout());
     AddChildView(label_);
-    set_background(views::Background::CreateSolidBackground(
+    SetBackground(views::CreateSolidBackground(
         color_utils::AlphaBlend(SK_ColorBLACK,
                                 GetNativeTheme()->GetSystemColor(
                                     ui::NativeTheme::kColorId_WindowBackground),

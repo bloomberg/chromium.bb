@@ -58,7 +58,7 @@ const SkColor kDialogColor = SK_ColorWHITE;
 class ToolbarRowView : public views::View {
  public:
   ToolbarRowView() {
-    set_background(views::Background::CreateSolidBackground(kDialogColor));
+    SetBackground(views::CreateSolidBackground(kDialogColor));
   }
 
   ~ToolbarRowView() override {}
@@ -168,7 +168,7 @@ void SimpleWebViewDialog::Init() {
   toolbar_model_.reset(
       new ToolbarModelImpl(this, content::kMaxURLDisplayChars));
 
-  set_background(views::Background::CreateSolidBackground(kDialogColor));
+  SetBackground(views::CreateSolidBackground(kDialogColor));
 
   // Back/Forward buttons.
   back_ = new views::ImageButton(this);

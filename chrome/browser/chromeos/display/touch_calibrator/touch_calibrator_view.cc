@@ -554,8 +554,8 @@ void TouchCalibratorView::InitViewContents() {
   touch_point_view_->SetPaintToLayer();
   touch_point_view_->layer()->SetFillsBoundsOpaquely(false);
   touch_point_view_->layer()->GetAnimator()->AddObserver(this);
-  touch_point_view_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  touch_point_view_->SetBackground(
+      views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
   touch_point_view_->AddChildView(throbber_circle_);
   touch_point_view_->AddChildView(tap_label_);
@@ -612,8 +612,8 @@ void TouchCalibratorView::InitViewContents() {
   completion_message_view_->SetPaintToLayer();
   completion_message_view_->layer()->SetFillsBoundsOpaquely(false);
   completion_message_view_->layer()->GetAnimator()->AddObserver(this);
-  completion_message_view_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  completion_message_view_->SetBackground(
+      views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
   AddChildView(completion_message_view_);
 }

@@ -440,13 +440,13 @@ void LabelButton::ResetColorsFromNativeTheme() {
     colors[STATE_NORMAL] = colors[STATE_HOVERED] = colors[STATE_PRESSED] =
         SK_ColorWHITE;
     label_->SetBackgroundColor(SK_ColorBLACK);
-    label_->set_background(Background::CreateSolidBackground(SK_ColorBLACK));
+    label_->SetBackground(CreateSolidBackground(SK_ColorBLACK));
     label_->SetAutoColorReadabilityEnabled(true);
     label_->SetShadows(gfx::ShadowValues());
   } else {
     if (style() == STYLE_BUTTON)
       PlatformStyle::ApplyLabelButtonTextStyle(label_, &colors);
-    label_->set_background(nullptr);
+    label_->SetBackground(nullptr);
     label_->SetAutoColorReadabilityEnabled(false);
   }
 

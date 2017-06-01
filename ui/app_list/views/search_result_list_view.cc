@@ -46,8 +46,8 @@ SearchResultListView::SearchResultListView(
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
 
-  auto_launch_indicator_->set_background(
-      views::Background::CreateSolidBackground(kTimeoutIndicatorColor));
+  auto_launch_indicator_->SetBackground(
+      views::CreateSolidBackground(kTimeoutIndicatorColor));
   auto_launch_indicator_->SetVisible(false);
 
   AddChildView(auto_launch_indicator_);

@@ -213,10 +213,10 @@ ArcNotificationContentView::ControlButton::ControlButton(
     ArcNotificationContentView* owner)
     : message_center::PaddedButton(owner), owner_(owner) {
   if (owner_->item_) {
-    set_background(views::Background::CreateSolidBackground(
+    SetBackground(views::CreateSolidBackground(
         GetControlButtonBackgroundColor(owner_->item_->GetShownContents())));
   } else {
-    set_background(views::Background::CreateSolidBackground(
+    SetBackground(views::CreateSolidBackground(
         message_center::kControlButtonBackgroundColor));
   }
 }
@@ -720,13 +720,12 @@ void ArcNotificationContentView::AnimationProgressed(
     const SkColor current_color = gfx::Tween::ColorValueBetween(
         animation->GetCurrentValue(), start, target);
     if (settings_button_) {
-      settings_button_->set_background(
-          views::Background::CreateSolidBackground(current_color));
+      settings_button_->SetBackground(
+          views::CreateSolidBackground(current_color));
       settings_button_->SchedulePaint();
     }
     if (close_button_) {
-      close_button_->set_background(
-          views::Background::CreateSolidBackground(current_color));
+      close_button_->SetBackground(views::CreateSolidBackground(current_color));
       close_button_->SchedulePaint();
     }
   }

@@ -300,8 +300,7 @@ void FocusTraversalTest::InitContentView() {
   //     NativeButton      * THUMBNAIL_STAR_ID
   //     NativeButton      * THUMBNAIL_SUPER_STAR_ID
 
-  GetContentsView()->set_background(
-      Background::CreateSolidBackground(SK_ColorWHITE));
+  GetContentsView()->SetBackground(CreateSolidBackground(SK_ColorWHITE));
 
   Checkbox* cb = new Checkbox(ASCIIToUTF16("This is a checkbox"));
   GetContentsView()->AddChildView(cb);
@@ -311,8 +310,8 @@ void FocusTraversalTest::InitContentView() {
 
   left_container_ = new PaneView();
   left_container_->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
-  left_container_->set_background(
-      Background::CreateSolidBackground(240, 240, 240));
+  left_container_->SetBackground(
+      CreateSolidBackground(SkColorSetRGB(240, 240, 240)));
   left_container_->set_id(LEFT_CONTAINER_ID);
   GetContentsView()->AddChildView(left_container_);
   left_container_->SetBounds(10, 35, 250, 200);
@@ -395,8 +394,8 @@ void FocusTraversalTest::InitContentView() {
 
   right_container_ = new PaneView();
   right_container_->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
-  right_container_->set_background(
-      Background::CreateSolidBackground(240, 240, 240));
+  right_container_->SetBackground(
+      CreateSolidBackground(SkColorSetRGB(240, 240, 240)));
   right_container_->set_id(RIGHT_CONTAINER_ID);
   GetContentsView()->AddChildView(right_container_);
   right_container_->SetBounds(270, 35, 300, 200);
@@ -426,8 +425,8 @@ void FocusTraversalTest::InitContentView() {
 
   View* inner_container = new View();
   inner_container->SetBorder(CreateSolidBorder(1, SK_ColorBLACK));
-  inner_container->set_background(
-      Background::CreateSolidBackground(230, 230, 230));
+  inner_container->SetBackground(
+      CreateSolidBackground(SkColorSetRGB(230, 230, 230)));
   inner_container->set_id(INNER_CONTAINER_ID);
   right_container_->AddChildView(inner_container);
   inner_container->SetBounds(100, 10, 150, 180);
@@ -439,8 +438,8 @@ void FocusTraversalTest::InitContentView() {
 
   View* scroll_content = new View();
   scroll_content->SetBounds(0, 0, 200, 200);
-  scroll_content->set_background(
-      Background::CreateSolidBackground(200, 200, 200));
+  scroll_content->SetBackground(
+      CreateSolidBackground(SkColorSetRGB(200, 200, 200)));
   scroll_view->SetContents(scroll_content);
 
   static const char* const kTitles[] = {
@@ -495,7 +494,7 @@ void FocusTraversalTest::InitContentView() {
 
   // Left bottom box with style checkboxes.
   contents = new View();
-  contents->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
+  contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   cb = new Checkbox(ASCIIToUTF16("Bold"));
   contents->AddChildView(cb);
   cb->SetBounds(10, 10, 50, 20);
@@ -530,7 +529,7 @@ void FocusTraversalTest::InitContentView() {
 
   // Right bottom box with search.
   contents = new View();
-  contents->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
+  contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   text_field = new Textfield();
   contents->AddChildView(text_field);
   text_field->SetBounds(10, 10, 100, 20);
@@ -557,7 +556,7 @@ void FocusTraversalTest::InitContentView() {
 
   contents = new View();
   contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
+  contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(THUMBNAIL_CONTAINER_ID);
   button = MdTextButton::Create(NULL, ASCIIToUTF16("Star"));
   contents->AddChildView(button);

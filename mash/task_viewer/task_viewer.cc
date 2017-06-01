@@ -65,7 +65,7 @@ class TaskViewerContents
 
     table_view_ = new views::TableView(this, GetColumns(), views::TEXT_ONLY,
                                        false);
-    set_background(views::Background::CreateStandardPanelBackground());
+    SetBackground(views::CreateStandardPanelBackground());
 
     table_view_parent_ = table_view_->CreateParentIfNecessary();
     AddChildView(table_view_parent_);

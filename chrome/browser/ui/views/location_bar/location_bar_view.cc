@@ -195,8 +195,8 @@ void LocationBarView::Init() {
       new views::Label(base::string16(), {font_list});
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
-  ime_inline_autocomplete_view_->set_background(
-      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+  ime_inline_autocomplete_view_->SetBackground(
+      views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
   ime_inline_autocomplete_view_->SetEnabledColor(
       GetNativeTheme()->GetSystemColor(
@@ -587,13 +587,12 @@ void LocationBarView::Layout() {
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   RefreshLocationIcon();
   if (is_popup_mode_) {
-    set_background(
-        views::Background::CreateSolidBackground(GetColor(BACKGROUND)));
+    SetBackground(views::CreateSolidBackground(GetColor(BACKGROUND)));
   } else {
     // This border color will be blended on top of the toolbar (which may use an
     // image in the case of themes).
-    set_background(
-        new BackgroundWith1PxBorder(GetColor(BACKGROUND), GetBorderColor()));
+    SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
+        GetColor(BACKGROUND), GetBorderColor()));
   }
   SchedulePaint();
 }

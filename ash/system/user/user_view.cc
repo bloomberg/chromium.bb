@@ -80,7 +80,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy) {
                            kTrayPopupLabelHorizontalPadding + icon_padding);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   view->SetLayoutManager(layout);
-  view->set_background(views::Background::CreateThemedSolidBackground(
+  view->SetBackground(views::CreateThemedSolidBackground(
       view, ui::NativeTheme::kColorId_BubbleBackground));
 
   int message_id = 0;

@@ -22,8 +22,7 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,
       gfx::Insets(1, 2, 2, 2)));
-  set_background(
-      views::Background::CreateSolidBackground(kControlButtonBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kControlButtonBackgroundColor));
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kControlButtonBorderSize)));
   set_animate_on_state_change(false);
 

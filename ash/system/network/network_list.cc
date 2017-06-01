@@ -739,23 +739,21 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Set up layout and apply sticky row property.
   TriView* connection_warning = TrayPopupUtils::CreateDefaultRowView();
   TrayPopupUtils::ConfigureAsStickyHeader(connection_warning);
-  connection_warning->set_background(
-      views::Background::CreateSolidBackground(kHeaderBackgroundColor));
+  connection_warning->SetBackground(
+      views::CreateSolidBackground(kHeaderBackgroundColor));
 
   // Set 'info' icon on left side.
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(
       gfx::CreateVectorIcon(kSystemMenuInfoIcon, kMenuIconColor));
-  image_view->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   connection_warning->AddView(TriView::Container::START, image_view);
 
   // Set message label in middle of row.
   views::Label* label = TrayPopupUtils::CreateDefaultLabel();
   label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING));
-  label->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+  label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
   style.SetupLabel(label);
   connection_warning->AddView(TriView::Container::CENTER, label);

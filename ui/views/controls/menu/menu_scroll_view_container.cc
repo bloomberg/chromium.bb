@@ -304,7 +304,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
                                     BubbleBorder::SMALL_SHADOW,
                                     SK_ColorWHITE);
   SetBorder(std::unique_ptr<Border>(bubble_border_));
-  set_background(new BubbleBackground(bubble_border_));
+  SetBackground(base::MakeUnique<BubbleBackground>(bubble_border_));
 }
 
 BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(

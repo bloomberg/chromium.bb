@@ -37,7 +37,7 @@ ButtonExample::~ButtonExample() {
 }
 
 void ButtonExample::CreateExampleView(View* container) {
-  container->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
+  container->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   container->SetLayoutManager(layout);

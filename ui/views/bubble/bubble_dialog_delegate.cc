@@ -303,9 +303,9 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
 
   // When there's an opaque layer, the bubble border background won't show
   // through, so explicitly paint a background color.
-  set_background(layer() && layer()->fills_bounds_opaquely()
-                     ? Background::CreateSolidBackground(color())
-                     : nullptr);
+  SetBackground(layer() && layer()->fills_bounds_opaquely()
+                    ? CreateSolidBackground(color())
+                    : nullptr);
 }
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,

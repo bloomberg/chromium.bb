@@ -43,7 +43,7 @@ class ModalDialogExample : public DialogExample {
 };
 
 DialogExample::DialogExample() {
-  set_background(Background::CreateSolidBackground(SK_ColorGRAY));
+  SetBackground(CreateSolidBackground(SK_ColorGRAY));
   SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 10, 10, 10));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
@@ -105,7 +105,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   if (!widget->GetContentsView()) {
     View* contents = new View();
     contents->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0));
-    contents->set_background(Background::CreateSolidBackground(SK_ColorGRAY));
+    contents->SetBackground(CreateSolidBackground(SK_ColorGRAY));
     BuildButton(contents, "Close", CLOSE_WIDGET);
     widget->SetContentsView(contents);
   }

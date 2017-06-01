@@ -234,9 +234,8 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   auto request_cvc_view = base::MakeUnique<views::View>();
-  request_cvc_view->set_background(
-      views::Background::CreateThemedSolidBackground(
-          request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
+  request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
+      request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -280,7 +279,7 @@ void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
 void SaveCardBubbleViews::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   view_stack_ = new ViewStack();
-  view_stack_->set_background(views::Background::CreateThemedSolidBackground(
+  view_stack_->SetBackground(views::CreateThemedSolidBackground(
       view_stack_, ui::NativeTheme::kColorId_BubbleBackground));
   view_stack_->Push(CreateMainContentView(), /*animate=*/false);
   AddChildView(view_stack_);

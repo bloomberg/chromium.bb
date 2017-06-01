@@ -210,7 +210,7 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
   // Frequently the label will paint to a layer that's non-opaque, so subpixel
   // rendering won't work unless we explicitly set a background. See
   // crbug.com/686363
-  label->set_background(views::Background::CreateThemedSolidBackground(
+  label->SetBackground(views::CreateThemedSolidBackground(
       label, ui::NativeTheme::kColorId_BubbleBackground));
   return label;
 }
@@ -269,7 +269,7 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::CustomButton* button) {
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->set_id(VIEW_ID_STICKY_HEADER);
-  view->set_background(views::Background::CreateThemedSolidBackground(
+  view->SetBackground(views::CreateThemedSolidBackground(
       view, ui::NativeTheme::kColorId_BubbleBackground));
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));

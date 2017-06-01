@@ -243,7 +243,7 @@ base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
 class InMenuButton : public LabelButton {
  public:
   InMenuButton(views::ButtonListener* listener, const base::string16& text)
-      : LabelButton(listener, text), in_menu_background_(NULL) {}
+      : LabelButton(listener, text) {}
   ~InMenuButton() override {}
 
   void Init(InMenuButtonBackground::ButtonType type) {
@@ -252,8 +252,7 @@ class InMenuButton : public LabelButton {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-    in_menu_background_ = new InMenuButtonBackground(type);
-    set_background(in_menu_background_);
+    SetBackground(base::MakeUnique<InMenuButtonBackground>(type));
     SetBorder(
         views::CreateEmptyBorder(0, kHorizontalPadding, 0, kHorizontalPadding));
     label()->SetFontList(MenuConfig::instance().font_list);
@@ -287,8 +286,6 @@ class InMenuButton : public LabelButton {
   }
 
  private:
-  InMenuButtonBackground* in_menu_background_;
-
   DISALLOW_COPY_AND_ASSIGN(InMenuButton);
 };
 
@@ -491,9 +488,8 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_->SetAutoColorReadabilityEnabled(false);
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
-    InMenuButtonBackground* center_bg =
-        new InMenuButtonBackground(InMenuButtonBackground::NO_BORDER);
-    zoom_label_->set_background(center_bg);
+    zoom_label_->SetBackground(base::MakeUnique<InMenuButtonBackground>(
+        InMenuButtonBackground::NO_BORDER));
 
     AddChildView(zoom_label_);
     zoom_label_max_width_valid_ = false;
@@ -517,8 +513,8 @@ class AppMenu::ZoomView : public AppMenuView {
     fullscreen_button_->set_tag(fullscreen_index);
     fullscreen_button_->SetImageAlignment(
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
-    fullscreen_button_->set_background(
-        new InMenuButtonBackground(InMenuButtonBackground::LEADING_BORDER));
+    fullscreen_button_->SetBackground(base::MakeUnique<InMenuButtonBackground>(
+        InMenuButtonBackground::LEADING_BORDER));
     fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
         menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
     AddChildView(fullscreen_button_);
@@ -1105,7 +1101,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
             new ExtensionToolbarMenuView(browser_, this, item));
         for (int i = 0; i < extension_toolbar->contents()->child_count(); ++i) {
           View* action_view = extension_toolbar->contents()->child_at(i);
-          action_view->set_background(new InMenuButtonBackground(
+          action_view->SetBackground(base::MakeUnique<InMenuButtonBackground>(
               InMenuButtonBackground::ROUNDED_BUTTON));
         }
         extension_toolbar_ = extension_toolbar.get();

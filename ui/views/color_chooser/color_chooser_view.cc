@@ -347,7 +347,7 @@ ColorChooserView::SelectedColorPatchView::SelectedColorPatchView() {
 
 void ColorChooserView::SelectedColorPatchView::SetColor(SkColor color) {
   if (!background())
-    set_background(Background::CreateSolidBackground(color));
+    SetBackground(CreateSolidBackground(color));
   else
     background()->SetNativeControlColor(color);
   SchedulePaint();
@@ -362,7 +362,7 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
     : listener_(listener) {
   DCHECK(listener_);
 
-  set_background(Background::CreateSolidBackground(SK_ColorLTGRAY));
+  SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
   SetLayoutManager(new BoxLayout(BoxLayout::kVertical, kMarginWidth,
                                  kMarginWidth, kMarginWidth));
 

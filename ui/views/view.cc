@@ -911,8 +911,8 @@ void View::Paint(const ui::PaintContext& parent_context) {
   PaintChildren(context);
 }
 
-void View::set_background(Background* b) {
-  background_.reset(b);
+void View::SetBackground(std::unique_ptr<Background> b) {
+  background_ = std::move(b);
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {

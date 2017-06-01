@@ -80,8 +80,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       focus_manager_(nullptr) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
-  set_background(views::Background::CreateSolidBackground(
-      kMessageCenterBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kMessageCenterBackgroundColor));
 
   NotifierSettingsProvider* notifier_settings_provider =
       message_center_->GetNotifierSettingsProvider();
@@ -96,8 +95,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
-  scroller_->set_background(
-      views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
+  scroller_->SetBackground(
+      views::CreateSolidBackground(kMessageCenterBackgroundColor));
 
   scroller_->SetPaintToLayer();
   scroller_->layer()->SetFillsBoundsOpaquely(false);

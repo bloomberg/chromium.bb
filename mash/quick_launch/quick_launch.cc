@@ -42,7 +42,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
         connector_(connector),
         prompt_(new views::Textfield),
         catalog_(std::move(catalog)) {
-    set_background(views::Background::CreateStandardPanelBackground());
+    SetBackground(views::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     AddChildView(prompt_);
 

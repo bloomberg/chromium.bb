@@ -144,7 +144,7 @@ SubtleNotificationView::SubtleNotificationView(
   std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
       views::BubbleBorder::NONE, views::BubbleBorder::NO_ASSETS,
       kBackgroundColor));
-  set_background(new views::BubbleBackground(bubble_border.get()));
+  SetBackground(base::MakeUnique<views::BubbleBackground>(bubble_border.get()));
   SetBorder(std::move(bubble_border));
 
   instruction_view_ =

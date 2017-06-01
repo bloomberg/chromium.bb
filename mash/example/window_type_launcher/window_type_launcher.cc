@@ -59,7 +59,7 @@ class WindowDelegateView : public views::WidgetDelegateView {
   };
 
   explicit WindowDelegateView(uint32_t traits) : traits_(traits) {
-    set_background(views::Background::CreateSolidBackground(SK_ColorRED));
+    SetBackground(views::CreateSolidBackground(SK_ColorRED));
   }
   ~WindowDelegateView() override {}
 

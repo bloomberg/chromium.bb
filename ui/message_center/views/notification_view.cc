@@ -623,8 +623,8 @@ void NotificationView::CreateOrUpdateImageView(
 
     image_container_ = new views::View();
     image_container_->SetLayoutManager(new views::FillLayout());
-    image_container_->set_background(views::Background::CreateSolidBackground(
-        message_center::kImageBackgroundColor));
+    image_container_->SetBackground(
+        views::CreateSolidBackground(message_center::kImageBackgroundColor));
 
     image_view_ = new message_center::ProportionalImageView(ideal_size);
     image_container_->AddChildView(image_view_);

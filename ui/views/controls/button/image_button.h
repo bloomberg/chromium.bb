@@ -50,9 +50,9 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   virtual void SetImage(ButtonState state, const gfx::ImageSkia& image);
 
   // Set the background details.
-  void SetBackground(SkColor color,
-                     const gfx::ImageSkia* image,
-                     const gfx::ImageSkia* mask);
+  void SetBackgroundImage(SkColor color,
+                          const gfx::ImageSkia* image,
+                          const gfx::ImageSkia* mask);
 
   // Sets how the image is laid out within the button's bounds.
   void SetImageAlignment(HorizontalAlignment h_align,

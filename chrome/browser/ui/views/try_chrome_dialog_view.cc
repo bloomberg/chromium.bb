@@ -99,8 +99,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowDialog(
 
   views::View* root_view = popup_->GetRootView();
   // The window color is a tiny bit off-white.
-  root_view->set_background(
-      views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
+  root_view->SetBackground(
+      views::CreateSolidBackground(SkColorSetRGB(0xfc, 0xfc, 0xfc)));
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
   views::ColumnSet* columns;
