@@ -31,14 +31,15 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate, UI.ListMode.EqualHeightItems);
+var model = new UI.ListModel();
+var list = new UI.ListControl(model, delegate, UI.ListMode.EqualHeightItems);
 list.element.style.height = '73px';
 UI.inspectorView.element.appendChild(list.element);
 
 function dumpList()
 {
   var height = list.element.offsetHeight;
-  TestRunner.addResult(`----list[length=${list.length()}][height=${height}]----`);
+  TestRunner.addResult(`----list[length=${model.length()}][height=${height}]----`);
   for (var child of list.element.children) {
     var offsetTop = child.getBoundingClientRect().top - list.element.getBoundingClientRect().top;
     var offsetBottom = child.getBoundingClientRect().bottom - list.element.getBoundingClientRect().top;
@@ -52,7 +53,7 @@ function dumpList()
 }
 
 TestRunner.addResult('Adding 0, 1, 2');
-list.replaceAllItems([0, 1, 2]);
+model.replaceAllItems([0, 1, 2]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 0');
@@ -84,7 +85,7 @@ list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
 dumpList();
 
 TestRunner.addResult('Replacing 0 with 5, 6, 7');
-list.replaceItemsInRange(0, 1, [5, 6, 7]);
+model.replaceItemsInRange(0, 1, [5, 6, 7]);
 dumpList();
 
 TestRunner.addResult('ArrowUp');
@@ -92,7 +93,7 @@ list._onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
 dumpList();
 
 TestRunner.addResult('Pushing 10');
-list.pushItem(10);
+model.pushItem(10);
 dumpList();
 
 TestRunner.addResult('Selecting 10');
@@ -100,19 +101,19 @@ list.selectItem(10);
 dumpList();
 
 TestRunner.addResult('Popping 10');
-list.popItem();
+model.popItem();
 dumpList();
 
 TestRunner.addResult('Removing 2');
-list.removeItemAtIndex(4);
+model.removeItemAtIndex(4);
 dumpList();
 
 TestRunner.addResult('Inserting 8');
-list.insertItemAtIndex(1, 8);
+model.insertItemAtIndex(1, 8);
 dumpList();
 
 TestRunner.addResult('Replacing with 0...20');
-list.replaceAllItems([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+model.replaceAllItems([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 dumpList();
 
 TestRunner.addResult('Resizing');
@@ -146,11 +147,11 @@ list.selectItem(7);
 dumpList();
 
 TestRunner.addResult('Replacing 7 with 27');
-list.replaceItemsInRange(7, 8, [27]);
+model.replaceItemsInRange(7, 8, [27]);
 dumpList();
 
 TestRunner.addResult('Replacing 18, 19 with 28, 29');
-list.replaceItemsInRange(18, 20, [28, 29]);
+model.replaceItemsInRange(18, 20, [28, 29]);
 dumpList();
 
 TestRunner.addResult('PageDown');
@@ -158,7 +159,7 @@ list._onKeyDown(TestRunner.createKeyEvent('PageDown'));
 dumpList();
 
 TestRunner.addResult('Replacing 1, 2, 3 with [31-43]');
-list.replaceItemsInRange(1, 4, [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]);
+model.replaceItemsInRange(1, 4, [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 13 (center)');
@@ -194,11 +195,24 @@ list._onKeyDown(TestRunner.createKeyEvent('PageUp'));
 dumpList();
 
 TestRunner.addResult('Replacing all but 29 with []');
-list.replaceItemsInRange(0, 29, []);
+model.replaceItemsInRange(0, 29, []);
 dumpList();
 
 TestRunner.addResult('ArrowDown');
 list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
+dumpList();
+
+var newModel = new UI.ListModel([5, 6, 7]);
+TestRunner.addResult('Replacing model with [5-7]');
+list.setModel(newModel);
+dumpList();
+
+TestRunner.addResult('Pushing 8');
+newModel.pushItem(8);
+dumpList();
+
+TestRunner.addResult('Pushing 9 to old model');
+model.pushItem(9);
 dumpList();
 
 TestRunner.completeTest();
