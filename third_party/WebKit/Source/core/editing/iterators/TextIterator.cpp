@@ -188,9 +188,6 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   Node* const end_container = end.ComputeContainerNode();
   const int end_offset = end.ComputeOffsetInContainerNode();
 
-  text_node_handler_.Initialize(start_container, start_offset, end_container,
-                                end_offset);
-
   // Remember the range - this does not change.
   start_container_ = start_container;
   start_offset_ = start_offset;
@@ -484,8 +481,23 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
-  last_text_node_ = ToText(node_);
-  text_node_handler_.HandleTextNode(ToText(node_));
+  Text* text = ToText(node_);
+  last_text_node_ = text;
+
+  // TODO(editing-dev): Introduce a |DOMOffsetRange| class so that we can pass
+  // an offset range with unbounded endpoint(s) in an easy but still clear way.
+  if (node_ != start_container_) {
+    if (node_ != end_container_)
+      text_node_handler_.HandleTextNodeWhole(text);
+    else
+      text_node_handler_.HandleTextNodeEndAt(text, end_offset_);
+    return;
+  }
+  if (node_ != end_container_) {
+    text_node_handler_.HandleTextNodeStartFrom(text, start_offset_);
+    return;
+  }
+  text_node_handler_.HandleTextNodeInRange(text, start_offset_, end_offset_);
 }
 
 template <typename Strategy>
