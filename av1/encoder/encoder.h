@@ -321,6 +321,12 @@ typedef struct ThreadData {
   PICK_MODE_CONTEXT *leaf_tree;
   PC_TREE *pc_tree;
   PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
+#if CONFIG_MOTION_VAR
+  int32_t *wsrc_buf;
+  int32_t *mask_buf;
+  uint8_t *above_pred_buf;
+  uint8_t *left_pred_buf;
+#endif
 
 #if CONFIG_PALETTE
   PALETTE_BUFFER *palette_buffer;

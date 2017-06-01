@@ -147,6 +147,8 @@ struct macroblock {
 #if CONFIG_MOTION_VAR
   int32_t *wsrc_buf;
   int32_t *mask_buf;
+  uint8_t *above_pred_buf;
+  uint8_t *left_pred_buf;
 #endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_PALETTE

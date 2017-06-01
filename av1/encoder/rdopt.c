@@ -9948,15 +9948,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   const MODE_INFO *left_mi = xd->left_mi;
 #endif  // CONFIG_PALETTE
 #if CONFIG_MOTION_VAR
-#if CONFIG_HIGHBITDEPTH
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf1[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf2[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
-#else
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_SB_SQUARE]);
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_SB_SQUARE]);
-#endif  // CONFIG_HIGHBITDEPTH
-  DECLARE_ALIGNED(16, int32_t, weighted_src_buf[MAX_SB_SQUARE]);
-  DECLARE_ALIGNED(16, int32_t, mask2d_buf[MAX_SB_SQUARE]);
   int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -9965,22 +9956,24 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
-    args.above_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
-    args.above_pred_buf[1] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * len);
+    args.above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
+    args.above_pred_buf[1] =
+        CONVERT_TO_BYTEPTR(x->above_pred_buf + MAX_SB_SQUARE * len);
     args.above_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(tmp_buf1 + 2 * MAX_SB_SQUARE * len);
-    args.left_pred_buf[0] = CONVERT_TO_BYTEPTR(tmp_buf2);
-    args.left_pred_buf[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->above_pred_buf + 2 * MAX_SB_SQUARE * len);
+    args.left_pred_buf[0] = CONVERT_TO_BYTEPTR(x->left_pred_buf);
+    args.left_pred_buf[1] =
+        CONVERT_TO_BYTEPTR(x->left_pred_buf + MAX_SB_SQUARE * len);
     args.left_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(tmp_buf2 + 2 * MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->left_pred_buf + 2 * MAX_SB_SQUARE * len);
   } else {
 #endif  // CONFIG_HIGHBITDEPTH
-    args.above_pred_buf[0] = tmp_buf1;
-    args.above_pred_buf[1] = tmp_buf1 + MAX_SB_SQUARE;
-    args.above_pred_buf[2] = tmp_buf1 + 2 * MAX_SB_SQUARE;
-    args.left_pred_buf[0] = tmp_buf2;
-    args.left_pred_buf[1] = tmp_buf2 + MAX_SB_SQUARE;
-    args.left_pred_buf[2] = tmp_buf2 + 2 * MAX_SB_SQUARE;
+    args.above_pred_buf[0] = x->above_pred_buf;
+    args.above_pred_buf[1] = x->above_pred_buf + MAX_SB_SQUARE;
+    args.above_pred_buf[2] = x->above_pred_buf + 2 * MAX_SB_SQUARE;
+    args.left_pred_buf[0] = x->left_pred_buf;
+    args.left_pred_buf[1] = x->left_pred_buf + MAX_SB_SQUARE;
+    args.left_pred_buf[2] = x->left_pred_buf + 2 * MAX_SB_SQUARE;
 #if CONFIG_HIGHBITDEPTH
   }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -10088,8 +10081,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                        dst_height2, args.left_pred_stride);
     av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
                          mi_col);
-    x->mask_buf = mask2d_buf;
-    x->wsrc_buf = weighted_src_buf;
     calc_target_weighted_pred(cm, x, xd, mi_row, mi_col, args.above_pred_buf[0],
                               args.above_pred_stride[0], args.left_pred_buf[0],
                               args.left_pred_stride[0]);
