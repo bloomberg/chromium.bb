@@ -379,7 +379,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
-  GetRootWindowController(root_window_)
+  RootWindowController::ForWindow(root_window_)
       ->ash_host()
       ->SetRootWindowTransformer(std::move(transformer));
 

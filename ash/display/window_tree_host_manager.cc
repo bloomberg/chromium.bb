@@ -273,7 +273,7 @@ void WindowTreeHostManager::Shutdown() {
   RootWindowController* primary_rwc = nullptr;
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    RootWindowController* rwc = GetRootWindowController(*iter);
+    RootWindowController* rwc = RootWindowController::ForWindow(*iter);
     if (GetRootWindowSettings(*iter)->display_id == primary_id)
       primary_rwc = rwc;
     else
@@ -350,7 +350,7 @@ aura::Window::Windows WindowTreeHostManager::GetAllRootWindows() {
   for (WindowTreeHostMap::const_iterator it = window_tree_hosts_.begin();
        it != window_tree_hosts_.end(); ++it) {
     DCHECK(it->second);
-    if (GetRootWindowController(GetWindow(it->second)))
+    if (RootWindowController::ForWindow(GetWindow(it->second)))
       windows.push_back(GetWindow(it->second));
   }
   return windows;
@@ -372,7 +372,7 @@ WindowTreeHostManager::GetAllRootWindowControllers() {
   for (WindowTreeHostMap::const_iterator it = window_tree_hosts_.begin();
        it != window_tree_hosts_.end(); ++it) {
     RootWindowController* controller =
-        GetRootWindowController(GetWindow(it->second));
+        RootWindowController::ForWindow(GetWindow(it->second));
     if (controller)
       controllers.push_back(controller);
   }
@@ -583,7 +583,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     // Show the shelf if the original WTH had a visible system
     // tray. It may or may not be visible depending on OOBE state.
     ash::SystemTray* old_tray =
-        GetRootWindowController(to_delete->AsWindowTreeHost()->window())
+        RootWindowController::ForWindow(to_delete->AsWindowTreeHost()->window())
             ->GetSystemTray();
     ash::SystemTray* new_tray = ash::Shell::Get()->GetPrimarySystemTray();
     if (old_tray->GetWidget()->IsVisible()) {
@@ -630,7 +630,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
 void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
   ClearDisplayPropertiesOnHost(host_to_delete);
   RootWindowController* controller =
-      GetRootWindowController(GetWindow(host_to_delete));
+      RootWindowController::ForWindow(GetWindow(host_to_delete));
   DCHECK(controller);
   controller->MoveWindowsTo(GetPrimaryRootWindow());
   // Delete most of root window related objects, but don't delete

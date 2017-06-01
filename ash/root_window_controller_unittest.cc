@@ -560,32 +560,32 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
   EXPECT_EQ(NULL, controllers[1]->GetWindowForFullscreenMode());
 }
 
-// Test that GetRootWindowController() works with multiple displays and
-// child widgets.
-TEST_F(RootWindowControllerTest, GetRootWindowController) {
+// Test that ForWindow() works with multiple displays and child widgets.
+TEST_F(RootWindowControllerTest, ForWindow) {
   UpdateDisplay("600x600,600x600");
   Shell::RootWindowControllerList controllers =
       Shell::Get()->GetAllRootWindowControllers();
   ASSERT_EQ(2u, controllers.size());
 
-  // Test null.
-  EXPECT_FALSE(GetRootWindowController(nullptr));
+  // Test a root window.
+  EXPECT_EQ(controllers[0],
+            RootWindowController::ForWindow(Shell::GetPrimaryRootWindow()));
 
   // Test a widget on the first display.
   Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(controllers[0],
-            GetRootWindowController(w1->GetNativeWindow()->GetRootWindow()));
+            RootWindowController::ForWindow(w1->GetNativeWindow()));
 
   // Test a child widget.
   Widget* w2 = Widget::CreateWindowWithParentAndBounds(
       nullptr, w1->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(controllers[0],
-            GetRootWindowController(w2->GetNativeWindow()->GetRootWindow()));
+            RootWindowController::ForWindow(w2->GetNativeWindow()));
 
   // Test a widget on the second display.
   Widget* w3 = CreateTestWidget(gfx::Rect(600, 0, 100, 100));
   EXPECT_EQ(controllers[1],
-            GetRootWindowController(w3->GetNativeWindow()->GetRootWindow()));
+            RootWindowController::ForWindow(w3->GetNativeWindow()));
 }
 
 // Test that user session window can't be focused if user session blocked by
@@ -657,15 +657,15 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   window1->set_owned_by_parent(false);
   observer1.SetWindow(window1);
   window1->Init(ui::LAYER_NOT_DRAWN);
-  aura::client::ParentWindowWithContext(
-      window1, Shell::Get()->GetPrimaryRootWindow(), gfx::Rect());
+  aura::client::ParentWindowWithContext(window1, Shell::GetPrimaryRootWindow(),
+                                        gfx::Rect());
 
   DestroyedWindowObserver observer2;
   aura::Window* window2 = new aura::Window(NULL);
   window2->set_owned_by_parent(false);
   observer2.SetWindow(window2);
   window2->Init(ui::LAYER_NOT_DRAWN);
-  Shell::Get()->GetPrimaryRootWindow()->AddChild(window2);
+  Shell::GetPrimaryRootWindow()->AddChild(window2);
 
   Shell::GetPrimaryRootWindowController()->CloseChildWindows();
 

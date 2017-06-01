@@ -153,7 +153,7 @@ void ExitWarningHandler::Show() {
   params.bounds = bounds;
   params.name = "ExitWarningWindow";
   widget_.reset(new views::Widget);
-  GetRootWindowController(root_window)
+  RootWindowController::ForWindow(root_window)
       ->ConfigureWidgetInitParamsForContainer(
           widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
   widget_->Init(params);

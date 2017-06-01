@@ -37,7 +37,7 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 void TestLauncherAlignment(aura::Window* root,
                            ShelfAlignment alignment,
                            const gfx::Rect& expected) {
-  GetRootWindowController(root)->shelf()->SetAlignment(alignment);
+  Shelf::ForWindow(root)->SetAlignment(alignment);
   EXPECT_EQ(expected.ToString(), display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(root)
                                      .work_area()

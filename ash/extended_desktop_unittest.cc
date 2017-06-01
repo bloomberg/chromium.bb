@@ -164,18 +164,15 @@ class ExtendedDesktopTest : public test::AshTestBase {
   }
 };
 
-// Test conditions that root windows in extended desktop mode
-// must satisfy.
+// Test conditions that root windows in extended desktop mode must satisfy.
 TEST_F(ExtendedDesktopTest, Basic) {
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  // All root windows must have the root window controller.
+  // All root windows must have a root window controller.
   ASSERT_EQ(2U, root_windows.size());
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    EXPECT_TRUE(GetRootWindowController(*iter) != nullptr);
-  }
+  EXPECT_TRUE(RootWindowController::ForWindow(root_windows[0]));
+  EXPECT_TRUE(RootWindowController::ForWindow(root_windows[1]));
   // Make sure root windows share the same controllers.
   EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),
             aura::client::GetFocusClient(root_windows[1]));

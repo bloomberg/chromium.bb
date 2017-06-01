@@ -77,8 +77,10 @@ ExtendedMouseWarpController::WarpRegion::WarpRegion(
   aura::Window* a_window = GetRootWindowForDisplayId(a_display_id);
   aura::Window* b_window = GetRootWindowForDisplayId(b_display_id);
 
-  AshWindowTreeHost* a_ash_host = GetRootWindowController(a_window)->ash_host();
-  AshWindowTreeHost* b_ash_host = GetRootWindowController(b_window)->ash_host();
+  AshWindowTreeHost* a_ash_host =
+      RootWindowController::ForWindow(a_window)->ash_host();
+  AshWindowTreeHost* b_ash_host =
+      RootWindowController::ForWindow(b_window)->ash_host();
 
   a_edge_bounds_in_native_ =
       GetNativeEdgeBounds(a_ash_host, a_indicator_bounds);
@@ -189,7 +191,7 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     aura::Window* dst_window = GetRootWindowForDisplayId(
         in_a_edge ? warp->b_display_id_ : warp->a_display_id_);
     AshWindowTreeHost* target_ash_host =
-        GetRootWindowController(dst_window)->ash_host();
+        RootWindowController::ForWindow(dst_window)->ash_host();
 
     MoveCursorTo(target_ash_host, point_in_screen, update_mouse_location_now);
     return true;

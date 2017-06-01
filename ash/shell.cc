@@ -250,18 +250,15 @@ void Shell::DeleteInstance() {
 // static
 RootWindowController* Shell::GetPrimaryRootWindowController() {
   CHECK(HasInstance());
-  return GetRootWindowController(GetPrimaryRootWindow());
+  return RootWindowController::ForWindow(GetPrimaryRootWindow());
 }
 
 // static
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
   RootWindowControllerList root_window_controllers;
-  for (aura::Window* root_window :
-       instance_->shell_port_->GetAllRootWindows()) {
-    root_window_controllers.push_back(
-        RootWindowController::ForWindow(root_window));
-  }
+  for (aura::Window* root : GetAllRootWindows())
+    root_window_controllers.push_back(RootWindowController::ForWindow(root));
   return root_window_controllers;
 }
 
@@ -269,9 +266,9 @@ Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
 RootWindowController* Shell::GetRootWindowControllerWithDisplayId(
     int64_t display_id) {
   CHECK(HasInstance());
-  aura::Window* root_window =
+  aura::Window* root =
       instance_->shell_port_->GetRootWindowForDisplayId(display_id);
-  return GetRootWindowController(root_window);
+  return root ? RootWindowController::ForWindow(root) : nullptr;
 }
 
 // static
@@ -385,8 +382,8 @@ ShelfModel* Shell::shelf_model() {
 }
 
 void Shell::UpdateShelfVisibility() {
-  for (auto* root_window_controller : GetAllRootWindowControllers())
-    root_window_controller->shelf()->UpdateVisibilityState();
+  for (aura::Window* root : GetAllRootWindows())
+    Shelf::ForWindow(root)->UpdateVisibilityState();
 }
 
 PrefService* Shell::GetActiveUserPrefService() const {
@@ -660,8 +657,8 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
-  for (auto* root_window_controller : GetAllRootWindowControllers())
-    root_window_controller->shelf()->ShutdownShelfWidget();
+  for (aura::Window* root : GetAllRootWindows())
+    Shelf::ForWindow(root)->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
   DeleteSystemTrayDelegate();
 
@@ -718,8 +715,7 @@ Shell::~Shell() {
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
-  // destruction
-  // of its owned RootWindowControllers relies on the value.
+  // destruction of its owned RootWindowControllers relies on the value.
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
@@ -1164,13 +1160,13 @@ void Shell::DeleteSystemTrayDelegate() {
 }
 
 void Shell::CloseAllRootWindowChildWindows() {
-  for (aura::Window* root_window : shell_port_->GetAllRootWindows()) {
-    RootWindowController* controller = GetRootWindowController(root_window);
+  for (aura::Window* root : GetAllRootWindows()) {
+    RootWindowController* controller = RootWindowController::ForWindow(root);
     if (controller) {
       controller->CloseChildWindows();
     } else {
-      while (!root_window->children().empty()) {
-        aura::Window* child = root_window->children()[0];
+      while (!root->children().empty()) {
+        aura::Window* child = root->children()[0];
         delete child;
       }
     }

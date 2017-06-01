@@ -79,7 +79,7 @@ class RootWindowLayoutManager;
 // indirectly owned and deleted by |WindowTreeHostManager|.
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
-// |GetRootWindowController(aura::WindowEventDispatcher*)| function.
+// |RootWindowController::ForWindow(aura::Window*)| function.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
   // Enumerates the type of display. If there is only a single display then
@@ -358,12 +358,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };
-
-// On classic ash, returns the RootWindowController for the given |root_window|.
-// On mus ash, returns the RootWindowController for the primary display.
-// See RootWindowController class comment above.
-ASH_EXPORT RootWindowController* GetRootWindowController(
-    const aura::Window* root_window);
 
 }  // namespace ash
 

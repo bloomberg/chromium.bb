@@ -72,7 +72,7 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
       }
     }
   }
-  return GetRootWindowController(Shell::GetRootWindowForNewWindows());
+  return RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
 // Returns the bounds for the new window.

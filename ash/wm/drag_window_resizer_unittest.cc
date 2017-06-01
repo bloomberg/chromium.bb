@@ -614,7 +614,7 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   {
     // Make sure the window is on the default container first.
     aura::Window* default_container =
-        GetRootWindowController(root_windows[1])
+        RootWindowController::ForWindow(root_windows[1])
             ->GetContainer(kShellWindowId_DefaultContainer);
     default_container->AddChild(window_.get());
     window_->SetBoundsInScreen(

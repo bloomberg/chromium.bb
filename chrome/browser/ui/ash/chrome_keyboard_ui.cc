@@ -201,7 +201,7 @@ bool ChromeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
     return false;
 
   ash::RootWindowController* root_window_controller =
-      ash::GetRootWindowController(root_window);
+      ash::RootWindowController::ForWindow(root_window);
   // Shell ime window container contains virtual keyboard windows and IME
   // windows(IME windows are created by chrome.app.window.create api). They
   // should never be overscrolled.

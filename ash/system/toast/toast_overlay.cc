@@ -215,7 +215,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
-  GetRootWindowController(Shell::GetRootWindowForNewWindows())
+  RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows())
       ->ConfigureWidgetInitParamsForContainer(
           overlay_widget_.get(), kShellWindowId_SystemModalContainer, &params);
   overlay_widget_->Init(params);

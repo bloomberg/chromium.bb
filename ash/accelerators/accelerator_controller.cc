@@ -354,7 +354,8 @@ void HandleShowMessageCenterBubble() {
 void HandleShowSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  SystemTray* tray = GetRootWindowController(target_root)->GetSystemTray();
+  SystemTray* tray =
+      RootWindowController::ForWindow(target_root)->GetSystemTray();
   if (!tray->HasSystemBubble()) {
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
     tray->ActivateBubble();
@@ -526,8 +527,7 @@ void HandleLock() {
 
 void HandleShowStylusTools() {
   base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
-  GetRootWindowController(Shell::GetRootWindowForNewWindows())
-      ->shelf()
+  Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
       ->GetStatusAreaWidget()
       ->palette_tray()
       ->ShowPalette();
