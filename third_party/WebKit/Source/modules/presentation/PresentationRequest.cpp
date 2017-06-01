@@ -28,23 +28,6 @@ namespace blink {
 
 namespace {
 
-// TODO(mlamouri): refactor in one common place.
-PresentationController* GetPresentationController(
-    ExecutionContext* execution_context) {
-  DCHECK(execution_context);
-
-  Document* document = ToDocument(execution_context);
-  if (!document->GetFrame())
-    return nullptr;
-  return PresentationController::From(*document->GetFrame());
-}
-
-WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
-  PresentationController* controller =
-      GetPresentationController(execution_context);
-  return controller ? controller->Client() : nullptr;
-}
-
 Settings* GetSettings(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
@@ -143,7 +126,8 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             kInvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (!client)
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -159,7 +143,8 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
                                              const String& id) {
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (!client)
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -170,7 +155,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   PresentationController* controller =
-      GetPresentationController(GetExecutionContext());
+      PresentationController::FromContext(GetExecutionContext());
   DCHECK(controller);
 
   PresentationConnection* existing_connection =
@@ -189,7 +174,8 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (!client)
     return ScriptPromise::RejectWithDOMException(
         script_state,
