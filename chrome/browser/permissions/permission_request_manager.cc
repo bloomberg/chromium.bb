@@ -26,11 +26,18 @@ class CancelledRequest : public PermissionRequest {
  public:
   explicit CancelledRequest(PermissionRequest* cancelled)
       : icon_(cancelled->GetIconId()),
+#if defined(OS_ANDROID)
+        message_(cancelled->GetMessageText()),
+#endif
         message_fragment_(cancelled->GetMessageTextFragment()),
-        origin_(cancelled->GetOrigin()) {}
+        origin_(cancelled->GetOrigin()) {
+  }
   ~CancelledRequest() override {}
 
   IconId GetIconId() const override { return icon_; }
+#if defined(OS_ANDROID)
+  base::string16 GetMessageText() const override { return message_; }
+#endif
   base::string16 GetMessageTextFragment() const override {
     return message_fragment_;
   }
@@ -45,6 +52,9 @@ class CancelledRequest : public PermissionRequest {
 
  private:
   IconId icon_;
+#if defined(OS_ANDROID)
+  base::string16 message_;
+#endif
   base::string16 message_fragment_;
   GURL origin_;
 };

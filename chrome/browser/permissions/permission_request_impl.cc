@@ -100,6 +100,41 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 #endif
 }
 
+#if defined(OS_ANDROID)
+base::string16 PermissionRequestImpl::GetMessageText() const {
+  // This is currently only used for modal dialogs on Android.
+  int message_id;
+  switch (content_settings_type_) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      message_id = IDS_GEOLOCATION_INFOBAR_QUESTION;
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+      message_id = IDS_NOTIFICATION_PERMISSIONS;
+      break;
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      message_id = IDS_MIDI_SYSEX_INFOBAR_QUESTION;
+      break;
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION;
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+      break;
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+  return l10n_util::GetStringFUTF16(
+      message_id,
+      url_formatter::FormatUrlForSecurityDisplay(
+          GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+#endif
+
 base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   int message_id;
   switch (content_settings_type_) {

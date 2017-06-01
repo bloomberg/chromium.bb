@@ -220,6 +220,17 @@ bool MediaStreamDevicesController::Request::IsAskingForVideo() const {
   return is_asking_for_video_;
 }
 
+PermissionRequest::IconId MediaStreamDevicesController::Request::GetIconId()
+    const {
+#if defined(OS_ANDROID)
+  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
+                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
+#else
+  return IsAskingForVideo() ? ui::kVideocamIcon : ui::kMicrophoneIcon;
+#endif
+}
+
+#if defined(OS_ANDROID)
 base::string16 MediaStreamDevicesController::Request::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
   if (!IsAskingForAudio())
@@ -231,16 +242,7 @@ base::string16 MediaStreamDevicesController::Request::GetMessageText() const {
       url_formatter::FormatUrlForSecurityDisplay(
           GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
-
-PermissionRequest::IconId MediaStreamDevicesController::Request::GetIconId()
-    const {
-#if defined(OS_ANDROID)
-  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
-                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
-#else
-  return IsAskingForVideo() ? ui::kVideocamIcon : ui::kMicrophoneIcon;
 #endif
-}
 
 base::string16 MediaStreamDevicesController::Request::GetMessageTextFragment()
     const {

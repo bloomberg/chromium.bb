@@ -76,6 +76,12 @@ class PermissionRequest {
   // The icon to use next to the message text fragment in the permission bubble.
   virtual IconId GetIconId() const = 0;
 
+#if defined(OS_ANDROID)
+  // Returns the full prompt text for this permission. This is currently only
+  // used on Android.
+  virtual base::string16 GetMessageText() const = 0;
+#endif
+
   // Returns the shortened prompt text for this permission.  Must be phrased
   // as a heading, e.g. "Location", or "Camera". The permission bubble may
   // coalesce different requests, and if it does, this text will be displayed

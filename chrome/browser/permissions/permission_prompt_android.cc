@@ -103,6 +103,12 @@ int PermissionPromptAndroid::GetIconIdForPermission(size_t position) const {
   return requests[position]->GetIconId();
 }
 
+base::string16 PermissionPromptAndroid::GetMessageText(size_t position) const {
+  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
+  DCHECK_LT(position, requests.size());
+  return requests[position]->GetMessageText();
+}
+
 base::string16 PermissionPromptAndroid::GetMessageTextFragment(
     size_t position) const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
