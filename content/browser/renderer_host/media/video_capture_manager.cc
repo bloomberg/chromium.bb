@@ -355,6 +355,15 @@ void VideoCaptureManager::OnDeviceLaunchAborted() {
   ProcessDeviceStartRequestQueue();
 }
 
+void VideoCaptureManager::OnDeviceConnectionLost(
+    VideoCaptureController* controller) {
+  const std::string log_message = base::StringPrintf(
+      "Lost connection to device %d.", controller->serial_id());
+  DLOG(WARNING) << log_message;
+  controller->OnLog(log_message);
+  controller->OnError();
+}
+
 void VideoCaptureManager::ConnectClient(
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params,
@@ -430,6 +439,10 @@ void VideoCaptureManager::DisconnectClient(
 
   // If controller has no more clients, delete controller and device.
   DestroyControllerIfNoClients(controller);
+
+  if (controllers_.empty()) {
+    video_capture_provider_->Uninitialize();
+  }
 }
 
 void VideoCaptureManager::PauseCaptureForClient(

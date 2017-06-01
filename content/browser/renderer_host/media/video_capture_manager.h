@@ -183,6 +183,7 @@ class CONTENT_EXPORT VideoCaptureManager
   void OnDeviceLaunched(VideoCaptureController* controller) override;
   void OnDeviceLaunchFailed(VideoCaptureController* controller) override;
   void OnDeviceLaunchAborted() override;
+  void OnDeviceConnectionLost(VideoCaptureController* controller) override;
 
   // Retrieves camera calibration information for a particular device. Returns
   // nullopt_t if the |device_id| is not found or camera calibration information

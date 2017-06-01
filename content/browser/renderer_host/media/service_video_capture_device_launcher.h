@@ -25,6 +25,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
                          MediaStreamType stream_type,
                          const media::VideoCaptureParams& params,
                          base::WeakPtr<media::VideoFrameReceiver> receiver,
+                         base::OnceClosure connection_lost_cb,
                          Callbacks* callbacks,
                          base::OnceClosure done_cb) override;
   void AbortLaunch() override;
@@ -42,6 +43,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
       const media::VideoCaptureParams& params,
       video_capture::mojom::DevicePtr device,
       base::WeakPtr<media::VideoFrameReceiver> receiver,
+      base::OnceClosure connection_lost_cb,
       video_capture::mojom::DeviceAccessResultCode result_code);
 
   void OnConnectionLostWhileWaitingForCallback();

@@ -14,8 +14,8 @@ namespace content {
 // service.
 class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
  public:
-  explicit ServiceLaunchedVideoCaptureDevice(
-      video_capture::mojom::DevicePtr device);
+  ServiceLaunchedVideoCaptureDevice(video_capture::mojom::DevicePtr device,
+                                    base::OnceClosure connection_lost_cb);
   ~ServiceLaunchedVideoCaptureDevice() override;
 
   // LaunchedVideoCaptureDevice implementation.
@@ -40,6 +40,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void OnLostConnectionToDevice();
 
   video_capture::mojom::DevicePtr device_;
+  base::OnceClosure connection_lost_cb_;
   base::SequenceChecker sequence_checker_;
 };
 

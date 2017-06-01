@@ -19,6 +19,7 @@ void ConcludeLaunchDeviceWithSuccess(
     const media::VideoCaptureParams& params,
     video_capture::mojom::DevicePtr device,
     base::WeakPtr<media::VideoFrameReceiver> receiver,
+    base::OnceClosure connection_lost_cb,
     VideoCaptureDeviceLauncher::Callbacks* callbacks,
     base::OnceClosure done_cb) {
   if (abort_requested) {
@@ -38,7 +39,8 @@ void ConcludeLaunchDeviceWithSuccess(
       std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));
   device->Start(params, std::move(receiver_proxy));
   callbacks->OnDeviceLaunched(
-      base::MakeUnique<ServiceLaunchedVideoCaptureDevice>(std::move(device)));
+      base::MakeUnique<ServiceLaunchedVideoCaptureDevice>(
+          std::move(device), std::move(connection_lost_cb)));
   base::ResetAndReturn(&done_cb).Run();
 }
 
@@ -71,6 +73,7 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     base::WeakPtr<media::VideoFrameReceiver> receiver,
+    base::OnceClosure connection_lost_cb,
     Callbacks* callbacks,
     base::OnceClosure done_cb) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -110,7 +113,7 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
               // that |this| stays alive.
               &ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback,
               base::Unretained(this), params, base::Passed(&device),
-              std::move(receiver)));
+              std::move(receiver), base::Passed(&connection_lost_cb)));
   state_ = State::DEVICE_START_IN_PROGRESS;
 }
 
@@ -124,6 +127,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback(
     const media::VideoCaptureParams& params,
     video_capture::mojom::DevicePtr device,
     base::WeakPtr<media::VideoFrameReceiver> receiver,
+    base::OnceClosure connection_lost_cb,
     video_capture::mojom::DeviceAccessResultCode result_code) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(callbacks_);
@@ -135,9 +139,9 @@ void ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback(
   callbacks_ = nullptr;
   switch (result_code) {
     case video_capture::mojom::DeviceAccessResultCode::SUCCESS:
-      ConcludeLaunchDeviceWithSuccess(abort_requested, params,
-                                      std::move(device), std::move(receiver),
-                                      callbacks, std::move(done_cb_));
+      ConcludeLaunchDeviceWithSuccess(
+          abort_requested, params, std::move(device), std::move(receiver),
+          std::move(connection_lost_cb), callbacks, std::move(done_cb_));
       return;
     case video_capture::mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND:
     case video_capture::mojom::DeviceAccessResultCode::NOT_INITIALIZED:

@@ -17,6 +17,7 @@ class CONTENT_EXPORT VideoCaptureDeviceLaunchObserver {
   virtual void OnDeviceLaunched(VideoCaptureController* controller) = 0;
   virtual void OnDeviceLaunchFailed(VideoCaptureController* controller) = 0;
   virtual void OnDeviceLaunchAborted() = 0;
+  virtual void OnDeviceConnectionLost(VideoCaptureController* controller) = 0;
 };
 
 }  // namespace content
