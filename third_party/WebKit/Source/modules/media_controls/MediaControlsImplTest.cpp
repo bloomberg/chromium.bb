@@ -39,6 +39,14 @@
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// The MediaTimelineWidths histogram suffix expected to be encountered in these
+// tests. Depends on the OS, since Android sizes its timeline differently.
+#if OS(ANDROID)
+#define TIMELINE_W "80_127"
+#else
+#define TIMELINE_W "128_255"
+#endif
+
 namespace blink {
 
 namespace {
@@ -618,13 +626,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
       "Media.Timeline.Width.FullscreenPortrait", 0);
 }
 
-// TODO(johnme): Fix and re-enable this on Android.
-#if OS(ANDROID)
-#define MAYBE_TimelineMetricsClick DISABLED_TimelineMetricsClick
-#else
-#define MAYBE_TimelineMetricsClick TimelineMetricsClick
-#endif
-TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
+TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
@@ -645,27 +647,19 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
   EXPECT_LE(0.49 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.51 * duration, MediaControls().MediaElement().currentTime());
 
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType." TIMELINE_W,
                                           0 /* SeekType::kClick */, 1);
   GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.DragGestureDuration.128_255", 0);
-  GetHistogramTester().ExpectTotalCount("Media.Timeline.DragPercent.128_255",
-                                        0);
+      "Media.Timeline.DragGestureDuration." TIMELINE_W, 0);
   GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.DragSumAbsTimeDelta.128_255", 0);
-  GetHistogramTester().ExpectTotalCount("Media.Timeline.DragTimeDelta.128_255",
-                                        0);
+      "Media.Timeline.DragPercent." TIMELINE_W, 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Media.Timeline.DragSumAbsTimeDelta." TIMELINE_W, 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Media.Timeline.DragTimeDelta." TIMELINE_W, 0);
 }
 
-// TODO(johnme): Fix and re-enable this on Android.
-#if OS(ANDROID)
-#define MAYBE_TimelineMetricsDragFromCurrentPosition \
-  DISABLED_TimelineMetricsDragFromCurrentPosition
-#else
-#define MAYBE_TimelineMetricsDragFromCurrentPosition \
-  TimelineMetricsDragFromCurrentPosition
-#endif
-TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
+TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
@@ -689,26 +683,19 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
   EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
 
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.SeekType.128_255",
+      "Media.Timeline.SeekType." TIMELINE_W,
       1 /* SeekType::kDragFromCurrentPosition */, 1);
   GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.DragGestureDuration.128_255", 1);
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                          47 /* [60.0%, 70.0%) */, 1);
+      "Media.Timeline.DragGestureDuration." TIMELINE_W, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragSumAbsTimeDelta.128_255", 16 /* [4m, 8m) */, 1);
+      "Media.Timeline.DragPercent." TIMELINE_W, 47 /* [60.0%, 70.0%) */, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragTimeDelta.128_255", 40 /* [4m, 8m) */, 1);
+      "Media.Timeline.DragSumAbsTimeDelta." TIMELINE_W, 16 /* [4m, 8m) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta." TIMELINE_W, 40 /* [4m, 8m) */, 1);
 }
 
-// TODO(johnme): Fix and re-enable this on Android.
-#if OS(ANDROID)
-#define MAYBE_TimelineMetricsDragFromElsewhere \
-  DISABLED_TimelineMetricsDragFromElsewhere
-#else
-#define MAYBE_TimelineMetricsDragFromElsewhere TimelineMetricsDragFromElsewhere
-#endif
-TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
+TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
@@ -732,27 +719,20 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
   EXPECT_LE(0.66 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
 
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType." TIMELINE_W,
                                           2 /* SeekType::kDragFromElsewhere */,
                                           1);
   GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.DragGestureDuration.128_255", 1);
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                          42 /* [30.0%, 35.0%) */, 1);
+      "Media.Timeline.DragGestureDuration." TIMELINE_W, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragSumAbsTimeDelta.128_255", 15 /* [2m, 4m) */, 1);
+      "Media.Timeline.DragPercent." TIMELINE_W, 42 /* [30.0%, 35.0%) */, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragTimeDelta.128_255", 39 /* [2m, 4m) */, 1);
+      "Media.Timeline.DragSumAbsTimeDelta." TIMELINE_W, 15 /* [2m, 4m) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta." TIMELINE_W, 39 /* [2m, 4m) */, 1);
 }
 
-// TODO(johnme): Fix and re-enable this on Android.
-#if OS(ANDROID)
-#define MAYBE_TimelineMetricsDragBackAndForth \
-  DISABLED_TimelineMetricsDragBackAndForth
-#else
-#define MAYBE_TimelineMetricsDragBackAndForth TimelineMetricsDragBackAndForth
-#endif
-TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
+TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
@@ -778,17 +758,17 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
   EXPECT_LE(0.32 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.34 * duration, MediaControls().MediaElement().currentTime());
 
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType.128_255",
+  GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType." TIMELINE_W,
                                           2 /* SeekType::kDragFromElsewhere */,
                                           1);
   GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.DragGestureDuration.128_255", 1);
-  GetHistogramTester().ExpectUniqueSample("Media.Timeline.DragPercent.128_255",
-                                          8 /* (-35.0%, -30.0%] */, 1);
+      "Media.Timeline.DragGestureDuration." TIMELINE_W, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragSumAbsTimeDelta.128_255", 17 /* [8m, 15m) */, 1);
+      "Media.Timeline.DragPercent." TIMELINE_W, 8 /* (-35.0%, -30.0%] */, 1);
   GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.DragTimeDelta.128_255", 9 /* (-4m, -2m] */, 1);
+      "Media.Timeline.DragSumAbsTimeDelta." TIMELINE_W, 17 /* [8m, 15m) */, 1);
+  GetHistogramTester().ExpectUniqueSample(
+      "Media.Timeline.DragTimeDelta." TIMELINE_W, 9 /* (-4m, -2m] */, 1);
 }
 
 namespace {
