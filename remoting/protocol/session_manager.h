@@ -57,7 +57,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
@@ -71,7 +70,7 @@ class Authenticator;
 class AuthenticatorFactory;
 
 // Generic interface for Chromoting session manager.
-class SessionManager : public base::NonThreadSafe {
+class SessionManager {
  public:
   enum IncomingSessionResponse {
     // Accept the session.

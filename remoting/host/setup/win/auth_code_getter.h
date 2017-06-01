@@ -12,14 +12,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
 
 namespace remoting {
 
 // A class for getting an OAuth authorization code.
-class AuthCodeGetter : public base::NonThreadSafe {
+class AuthCodeGetter {
  public:
   AuthCodeGetter();
   ~AuthCodeGetter();
@@ -48,6 +48,8 @@ class AuthCodeGetter : public base::NonThreadSafe {
   base::OneShotTimer timer_;
   // The interval at which the timer fires.
   base::TimeDelta timer_interval_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AuthCodeGetter);
 };

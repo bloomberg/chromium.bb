@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "net/log/net_log_with_source.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "third_party/webrtc/p2p/base/pseudotcp.h"
@@ -27,7 +27,7 @@ class P2PDatagramSocket;
 // while PseudoTcp cannot, the core of the PseudoTcpAdapter is reference
 // counted, with a reference held by the adapter, and an additional reference
 // held on the stack during callbacks.
-class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
+class PseudoTcpAdapter : public P2PStreamSocket {
  public:
   explicit PseudoTcpAdapter(std::unique_ptr<P2PDatagramSocket> socket);
   ~PseudoTcpAdapter() override;
@@ -74,6 +74,8 @@ class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
   scoped_refptr<Core> core_;
 
   net::NetLogWithSource net_log_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PseudoTcpAdapter);
 };

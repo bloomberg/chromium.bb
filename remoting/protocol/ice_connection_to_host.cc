@@ -28,7 +28,9 @@ namespace remoting {
 namespace protocol {
 
 IceConnectionToHost::IceConnectionToHost() {}
-IceConnectionToHost::~IceConnectionToHost() {}
+IceConnectionToHost::~IceConnectionToHost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void IceConnectionToHost::Connect(
     std::unique_ptr<Session> session,
@@ -88,7 +90,7 @@ void IceConnectionToHost::InitializeAudio(
 }
 
 void IceConnectionToHost::OnSessionStateChange(Session::State state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(event_callback_);
 
   switch (state) {
@@ -216,7 +218,7 @@ void IceConnectionToHost::CloseChannels() {
 }
 
 void IceConnectionToHost::SetState(State state, ErrorCode error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |error| should be specified only when |state| is set to FAILED.
   DCHECK(state == FAILED || error == OK);
 

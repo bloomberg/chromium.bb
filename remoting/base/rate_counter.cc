@@ -13,10 +13,12 @@ RateCounter::RateCounter(base::TimeDelta time_window)
   DCHECK_GT(time_window, base::TimeDelta());
 }
 
-RateCounter::~RateCounter() {}
+RateCounter::~RateCounter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void RateCounter::Record(int64_t value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::TimeTicks now = tick_clock_->NowTicks();
   EvictOldDataPoints(now);
@@ -25,7 +27,7 @@ void RateCounter::Record(int64_t value) {
 }
 
 double RateCounter::Rate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   EvictOldDataPoints(tick_clock_->NowTicks());
   return sum_ / time_window_.InSecondsF();

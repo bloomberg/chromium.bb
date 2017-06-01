@@ -591,6 +591,7 @@ WtsSessionProcessDelegate::WtsSessionProcessDelegate(
 }
 
 WtsSessionProcessDelegate::~WtsSessionProcessDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 

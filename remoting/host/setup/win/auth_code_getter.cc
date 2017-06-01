@@ -24,6 +24,7 @@ AuthCodeGetter::AuthCodeGetter() :
 }
 
 AuthCodeGetter::~AuthCodeGetter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   KillBrowser();
 }
 

@@ -48,7 +48,7 @@ DisconnectWindowMac::DisconnectWindowMac()
 }
 
 DisconnectWindowMac::~DisconnectWindowMac() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // DisconnectWindowController is responsible for releasing itself in its
   // windowWillClose: method.
@@ -58,7 +58,7 @@ DisconnectWindowMac::~DisconnectWindowMac() {
 
 void DisconnectWindowMac::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_session_control);
   DCHECK(window_controller_ == nil);
 

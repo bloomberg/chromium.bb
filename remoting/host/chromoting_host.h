@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/host/client_session.h"
@@ -62,8 +62,7 @@ class DesktopEnvironmentFactory;
 //    all pending tasks to complete. After all of that completed we
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
-class ChromotingHost : public base::NonThreadSafe,
-                       public ClientSession::EventHandler,
+class ChromotingHost : public ClientSession::EventHandler,
                        public HostStatusMonitor {
  public:
   typedef std::vector<std::unique_ptr<ClientSession>> ClientSessions;
@@ -178,6 +177,8 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // List of host extensions.
   std::vector<std::unique_ptr<HostExtension>> extensions_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ChromotingHost> weak_factory_;
 

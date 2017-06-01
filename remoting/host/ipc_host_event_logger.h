@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_status_observer.h"
 
@@ -23,10 +23,7 @@ namespace remoting {
 
 class HostStatusMonitor;
 
-class IpcHostEventLogger
-    : public base::NonThreadSafe,
-      public HostEventLogger,
-      public HostStatusObserver {
+class IpcHostEventLogger : public HostEventLogger, public HostStatusObserver {
  public:
   // Initializes the logger. |daemon_channel| must outlive this object.
   IpcHostEventLogger(base::WeakPtr<HostStatusMonitor> monitor,
@@ -49,6 +46,8 @@ class IpcHostEventLogger
   IPC::Sender* daemon_channel_;
 
   base::WeakPtr<HostStatusMonitor> monitor_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IpcHostEventLogger);
 };

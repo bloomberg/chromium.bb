@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 
@@ -19,7 +20,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -33,8 +33,7 @@ namespace remoting {
 
 namespace {
 
-class LocalInputMonitorX11 : public base::NonThreadSafe,
-                               public LocalInputMonitor {
+class LocalInputMonitorX11 : public LocalInputMonitor {
  public:
   LocalInputMonitorX11(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -97,6 +96,8 @@ class LocalInputMonitorX11 : public base::NonThreadSafe,
 
   scoped_refptr<Core> core_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorX11);
 };
 
@@ -111,6 +112,7 @@ LocalInputMonitorX11::LocalInputMonitorX11(
 }
 
 LocalInputMonitorX11::~LocalInputMonitorX11() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 

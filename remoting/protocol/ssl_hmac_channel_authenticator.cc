@@ -223,12 +223,13 @@ SslHmacChannelAuthenticator::SslHmacChannelAuthenticator(
 }
 
 SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<P2PStreamSocket> socket,
     const DoneCallback& done_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   done_callback_ = done_callback;
 
@@ -377,7 +378,7 @@ void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
 }
 
 void SslHmacChannelAuthenticator::OnAuthBytesWritten(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (HandleAuthBytesWritten(result, nullptr))
     WriteAuthenticationBytes(nullptr);
@@ -417,7 +418,7 @@ void SslHmacChannelAuthenticator::ReadAuthenticationBytes() {
 }
 
 void SslHmacChannelAuthenticator::OnAuthBytesRead(int result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (HandleAuthBytesRead(result))
     ReadAuthenticationBytes();

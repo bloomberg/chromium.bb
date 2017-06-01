@@ -8,7 +8,7 @@
 #include <queue>
 
 #include "base/callback.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -29,7 +29,6 @@ namespace remoting {
 // On first usage it is likely an application will only have an auth code,
 // from this you can get a refresh token which can be reused next app launch.
 class OAuthTokenGetterImpl : public OAuthTokenGetter,
-                             public base::NonThreadSafe,
                              public gaia::GaiaOAuthClient::Delegate {
  public:
   OAuthTokenGetterImpl(
@@ -83,6 +82,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   base::Time access_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
   std::unique_ptr<base::OneShotTimer> refresh_timer_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace remoting

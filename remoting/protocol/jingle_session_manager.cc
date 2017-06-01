@@ -56,7 +56,7 @@ std::unique_ptr<Session> JingleSessionManager::Connect(
 
 void JingleSessionManager::set_authenticator_factory(
     std::unique_ptr<AuthenticatorFactory> authenticator_factory) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_factory_ = std::move(authenticator_factory);
 }
 

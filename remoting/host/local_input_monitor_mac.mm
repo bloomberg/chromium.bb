@@ -17,9 +17,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMCarbonEvent.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -31,8 +31,7 @@ static const NSUInteger kEscKeyCode = 53;
 namespace remoting {
 namespace {
 
-class LocalInputMonitorMac : public base::NonThreadSafe,
-                             public LocalInputMonitor {
+class LocalInputMonitorMac : public LocalInputMonitor {
  public:
   // Invoked by LocalInputMonitorManager.
   class EventHandler {
@@ -53,6 +52,8 @@ class LocalInputMonitorMac : public base::NonThreadSafe,
   // The actual implementation resides in LocalInputMonitorMac::Core class.
   class Core;
   scoped_refptr<Core> core_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorMac);
 };
@@ -209,6 +210,7 @@ LocalInputMonitorMac::LocalInputMonitorMac(
 }
 
 LocalInputMonitorMac::~LocalInputMonitorMac() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 

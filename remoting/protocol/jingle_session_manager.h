@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -70,6 +71,8 @@ class JingleSessionManager : public SessionManager,
   std::unique_ptr<IqSender> iq_sender_;
 
   SessionsMap sessions_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(JingleSessionManager);
 };

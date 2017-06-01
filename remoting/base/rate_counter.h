@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -21,7 +21,7 @@ namespace remoting {
 // Measures average rate per second of a sequence of point rate samples
 // over a specified time window. This can be used to measure bandwidth, frame
 // rates, etc.
-class RateCounter : public base::NonThreadSafe {
+class RateCounter {
  public:
   // Constructs a rate counter over the specified |time_window|.
   explicit RateCounter(base::TimeDelta time_window);
@@ -56,6 +56,8 @@ class RateCounter : public base::NonThreadSafe {
 
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* tick_clock_ = &default_tick_clock_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RateCounter);
 };

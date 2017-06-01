@@ -60,6 +60,7 @@ SignalingConnector::SignalingConnector(
 }
 
 SignalingConnector::~SignalingConnector() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signal_strategy_->RemoveListener(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -67,7 +68,7 @@ SignalingConnector::~SignalingConnector() {
 
 void SignalingConnector::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
@@ -92,7 +93,7 @@ bool SignalingConnector::OnSignalStrategyIncomingStanza(
 
 void SignalingConnector::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
       signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Network state changed to online.";
@@ -101,7 +102,7 @@ void SignalingConnector::OnConnectionTypeChanged(
 }
 
 void SignalingConnector::OnIPAddressChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "IP address has changed.";
     ResetAndTryReconnect();
@@ -111,7 +112,7 @@ void SignalingConnector::OnIPAddressChanged() {
 void SignalingConnector::OnAccessToken(OAuthTokenGetter::Status status,
                                        const std::string& user_email,
                                        const std::string& access_token) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status == OAuthTokenGetter::AUTH_ERROR) {
     auth_failed_callback_.Run();
@@ -133,13 +134,13 @@ void SignalingConnector::OnAccessToken(OAuthTokenGetter::Status status,
 }
 
 void SignalingConnector::OnNetworkError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   reconnect_attempts_++;
   ScheduleTryReconnect();
 }
 
 void SignalingConnector::ScheduleTryReconnect() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (timer_.IsRunning() || net::NetworkChangeNotifier::IsOffline())
     return;
   int delay_s = std::min(1 << reconnect_attempts_,
@@ -149,7 +150,7 @@ void SignalingConnector::ScheduleTryReconnect() {
 }
 
 void SignalingConnector::ResetAndTryReconnect() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signal_strategy_->Disconnect();
   reconnect_attempts_ = 0;
   timer_.Stop();
@@ -157,7 +158,7 @@ void SignalingConnector::ResetAndTryReconnect() {
 }
 
 void SignalingConnector::TryReconnect() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(dns_blackhole_checker_.get());
 
   // This will check if this machine is allowed to access the chromoting
@@ -168,7 +169,7 @@ void SignalingConnector::TryReconnect() {
 }
 
 void SignalingConnector::OnDnsBlackholeCheckerDone(bool allow) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Unable to access the host talkgadget. Don't allow the connection, but
   // schedule a reconnect in case this is a transient problem rather than

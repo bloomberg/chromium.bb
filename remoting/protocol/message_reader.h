@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/message_decoder.h"
 
@@ -34,7 +34,7 @@ class P2PStreamSocket;
 // It is still possible that the MessageReceivedCallback is called
 // twice (so that there is more than one outstanding message),
 // e.g. when we the sender sends multiple messages in one TCP packet.
-class MessageReader : public base::NonThreadSafe {
+class MessageReader {
  public:
   typedef base::Callback<void(std::unique_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
@@ -70,6 +70,8 @@ class MessageReader : public base::NonThreadSafe {
 
   // Callback is called when a message is received.
   MessageReceivedCallback message_received_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<MessageReader> weak_factory_;
 

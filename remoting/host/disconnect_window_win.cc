@@ -121,7 +121,7 @@ DisconnectWindowWin::~DisconnectWindowWin() {
 
 void DisconnectWindowWin::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!client_session_control_);
   DCHECK(client_session_control);
 
@@ -161,7 +161,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd,
                                           UINT message,
                                           WPARAM wparam,
                                           LPARAM lparam) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (message) {
     // Ignore close messages.
@@ -228,7 +228,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd,
 }
 
 bool DisconnectWindowWin::BeginDialog() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!hwnd_);
 
   hwnd_ =
@@ -252,7 +252,7 @@ bool DisconnectWindowWin::BeginDialog() {
 }
 
 void DisconnectWindowWin::EndDialog() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (has_hotkey_) {
     UnregisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID);
@@ -282,7 +282,7 @@ bool DisconnectWindowWin::GetControlRect(HWND control, RECT* rect) {
 }
 
 void DisconnectWindowWin::SetDialogPosition() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Try to center the window above the task-bar. If that fails, use the
   // primary monitor. If that fails (very unlikely), use the default position.
@@ -302,7 +302,7 @@ void DisconnectWindowWin::SetDialogPosition() {
 }
 
 bool DisconnectWindowWin::SetStrings() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Localize the disconnect button text and measure length of the old and new
   // labels.

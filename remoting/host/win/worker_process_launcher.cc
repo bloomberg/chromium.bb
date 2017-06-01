@@ -67,7 +67,7 @@ WorkerProcessLauncher::WorkerProcessLauncher(
 }
 
 WorkerProcessLauncher::~WorkerProcessLauncher() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ipc_handler_ = nullptr;
   StopWorker();
@@ -75,7 +75,7 @@ WorkerProcessLauncher::~WorkerProcessLauncher() {
 
 void WorkerProcessLauncher::Crash(
     const tracked_objects::Location& location) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ask the worker process to crash voluntarily if it is still connected.
   if (ipc_enabled_) {
@@ -96,7 +96,7 @@ void WorkerProcessLauncher::Crash(
 }
 
 void WorkerProcessLauncher::Send(IPC::Message* message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (ipc_enabled_) {
     launcher_delegate_->Send(message);
@@ -107,7 +107,7 @@ void WorkerProcessLauncher::Send(IPC::Message* message) {
 
 void WorkerProcessLauncher::OnProcessLaunched(
     base::win::ScopedHandle worker_process) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ipc_enabled_);
   DCHECK(!launch_timer_.IsRunning());
   DCHECK(!process_watcher_.GetWatchedObject());
@@ -123,14 +123,14 @@ void WorkerProcessLauncher::OnProcessLaunched(
 }
 
 void WorkerProcessLauncher::OnFatalError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   StopWorker();
 }
 
 bool WorkerProcessLauncher::OnMessageReceived(
   const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ipc_enabled_)
     return false;
@@ -139,7 +139,7 @@ bool WorkerProcessLauncher::OnMessageReceived(
 }
 
 void WorkerProcessLauncher::OnChannelConnected(int32_t peer_pid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ipc_enabled_)
     return;
@@ -150,7 +150,7 @@ void WorkerProcessLauncher::OnChannelConnected(int32_t peer_pid) {
 }
 
 void WorkerProcessLauncher::OnChannelError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Schedule a delayed termination of the worker process. Usually, the pipe is
   // disconnected when the worker process is about to exit. Waiting a little bit
@@ -164,7 +164,7 @@ void WorkerProcessLauncher::OnChannelError() {
 }
 
 void WorkerProcessLauncher::OnObjectSignaled(HANDLE object) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!process_watcher_.GetWatchedObject());
   DCHECK_EQ(exit_code_, CONTROL_C_EXIT);
   DCHECK_EQ(worker_process_.Get(), object);
@@ -180,7 +180,7 @@ void WorkerProcessLauncher::OnObjectSignaled(HANDLE object) {
 }
 
 void WorkerProcessLauncher::LaunchWorker() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ipc_enabled_);
   DCHECK(!kill_process_timer_.IsRunning());
   DCHECK(!launch_timer_.IsRunning());
@@ -198,7 +198,7 @@ void WorkerProcessLauncher::LaunchWorker() {
 }
 
 void WorkerProcessLauncher::RecordLaunchResult() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!worker_process_.IsValid()) {
     LOG(WARNING) << "A worker process failed to start within "
@@ -214,7 +214,7 @@ void WorkerProcessLauncher::RecordLaunchResult() {
 }
 
 void WorkerProcessLauncher::RecordSuccessfulLaunchForTest() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (launch_result_timer_.IsRunning()) {
     launch_result_timer_.Stop();
@@ -224,13 +224,13 @@ void WorkerProcessLauncher::RecordSuccessfulLaunchForTest() {
 
 void WorkerProcessLauncher::SetKillProcessTimeoutForTest(
     const base::TimeDelta& timeout) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   kill_process_timeout_ = timeout;
 }
 
 void WorkerProcessLauncher::StopWorker() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Record a launch failure if the process exited too soon.
   if (launch_result_timer_.IsRunning()) {

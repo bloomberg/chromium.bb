@@ -23,13 +23,14 @@ HostStatusLogger::HostStatusLogger(base::WeakPtr<HostStatusMonitor> monitor,
 }
 
 HostStatusLogger::~HostStatusLogger() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (monitor_.get())
     monitor_->RemoveStatusObserver(this);
 }
 
 void HostStatusLogger::LogSessionStateChange(const std::string& jid,
                                              bool connected) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<ServerLogEntry> entry(
       MakeLogEntryForSessionStateChange(connected));
@@ -43,12 +44,12 @@ void HostStatusLogger::LogSessionStateChange(const std::string& jid,
 }
 
 void HostStatusLogger::OnClientConnected(const std::string& jid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogSessionStateChange(jid, true);
 }
 
 void HostStatusLogger::OnClientDisconnected(const std::string& jid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogSessionStateChange(jid, false);
   connection_route_type_.erase(jid);
 }

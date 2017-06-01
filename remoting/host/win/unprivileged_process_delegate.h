@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_listener.h"
 #include "remoting/host/win/worker_process_launcher.h"
@@ -32,10 +32,8 @@ namespace remoting {
 
 // Implements logic for launching and monitoring a worker process under a less
 // privileged user account.
-class UnprivilegedProcessDelegate
-    : public base::NonThreadSafe,
-      public IPC::Listener,
-      public WorkerProcessLauncher::Delegate {
+class UnprivilegedProcessDelegate : public IPC::Listener,
+                                    public WorkerProcessLauncher::Delegate {
  public:
   UnprivilegedProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -71,6 +69,8 @@ class UnprivilegedProcessDelegate
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(UnprivilegedProcessDelegate);
 };

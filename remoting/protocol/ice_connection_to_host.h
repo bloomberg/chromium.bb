@@ -12,8 +12,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_filter.h"
@@ -37,8 +37,7 @@ class ClientVideoDispatcher;
 class IceConnectionToHost : public ConnectionToHost,
                             public Session::EventHandler,
                             public IceTransport::EventHandler,
-                            public ChannelDispatcherBase::EventHandler,
-                            public base::NonThreadSafe {
+                            public ChannelDispatcherBase::EventHandler {
  public:
   IceConnectionToHost();
   ~IceConnectionToHost() override;
@@ -107,6 +106,8 @@ class IceConnectionToHost : public ConnectionToHost,
   ErrorCode error_ = OK;
 
  private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(IceConnectionToHost);
 };
 

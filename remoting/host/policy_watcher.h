@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/policy/core/common/policy_service.h"
 
 namespace base {
@@ -28,8 +28,7 @@ class SchemaRegistry;
 namespace remoting {
 
 // Watches for changes to the managed remote access host policies.
-class PolicyWatcher : public policy::PolicyService::Observer,
-                      public base::NonThreadSafe {
+class PolicyWatcher : public policy::PolicyService::Observer {
  public:
   // Called first with all policies, and subsequently with any changed policies.
   typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
@@ -157,6 +156,8 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   std::unique_ptr<policy::SchemaRegistry> owned_schema_registry_;
   std::unique_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider_;
   std::unique_ptr<policy::PolicyService> owned_policy_service_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PolicyWatcher);
 };
