@@ -67,7 +67,12 @@ struct DescThunker {
   explicit DescThunker(NaClIPCAdapter* adapter_arg)
       : adapter(adapter_arg) {
   }
+
+  ~DescThunker() { adapter->CloseChannel(); }
+
   scoped_refptr<NaClIPCAdapter> adapter;
+
+  DISALLOW_COPY_AND_ASSIGN(DescThunker);
 };
 
 NaClIPCAdapter* ToAdapter(void* handle) {
