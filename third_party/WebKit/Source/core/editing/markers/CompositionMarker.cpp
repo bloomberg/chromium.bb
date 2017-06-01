@@ -11,10 +11,14 @@ CompositionMarker::CompositionMarker(unsigned start_offset,
                                      Color underline_color,
                                      bool thick,
                                      Color background_color)
-    : DocumentMarker(DocumentMarker::kComposition, start_offset, end_offset),
+    : DocumentMarker(start_offset, end_offset),
       underline_color_(underline_color),
       background_color_(background_color),
       thick_(thick) {}
+
+DocumentMarker::MarkerType CompositionMarker::GetType() const {
+  return DocumentMarker::kComposition;
+}
 
 Color CompositionMarker::UnderlineColor() const {
   return underline_color_;

@@ -15,8 +15,7 @@ namespace blink {
 // or grammar error.
 class CORE_EXPORT SpellCheckMarker : public DocumentMarker {
  public:
-  SpellCheckMarker(DocumentMarker::MarkerType,
-                   unsigned start_offset,
+  SpellCheckMarker(unsigned start_offset,
                    unsigned end_offset,
                    const String& description);
 

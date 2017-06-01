@@ -36,7 +36,7 @@ namespace blink {
 // markers. We store whether or not the match is active, a LayoutRect used for
 // rendering the marker, and whether or not the LayoutRect is currently
 // up-to-date.
-class TextMatchMarker final : public DocumentMarker {
+class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
  private:
   enum class State { kInvalid, kValidNull, kValidNotNull };
 
@@ -46,11 +46,14 @@ class TextMatchMarker final : public DocumentMarker {
   TextMatchMarker(unsigned start_offset,
                   unsigned end_offset,
                   MatchStatus status)
-      : DocumentMarker(DocumentMarker::kTextMatch, start_offset, end_offset),
-        match_status_(status) {
+      : DocumentMarker(start_offset, end_offset), match_status_(status) {
     layout_state_ = State::kInvalid;
   }
 
+  // DocumentMarker implementations
+  MarkerType GetType() const final;
+
+  // TextMatchMarker-specific
   bool IsActiveMatch() const { return match_status_ == MatchStatus::kActive; }
   void SetIsActiveMatch(bool active) {
     match_status_ = active ? MatchStatus::kActive : MatchStatus::kInactive;

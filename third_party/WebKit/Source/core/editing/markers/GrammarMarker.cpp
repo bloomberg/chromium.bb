@@ -9,11 +9,12 @@ namespace blink {
 GrammarMarker::GrammarMarker(unsigned start_offset,
                              unsigned end_offset,
                              const String& description)
-    : SpellCheckMarker(DocumentMarker::kGrammar,
-                       start_offset,
-                       end_offset,
-                       description) {
+    : SpellCheckMarker(start_offset, end_offset, description) {
   DCHECK_LT(start_offset, end_offset);
+}
+
+DocumentMarker::MarkerType GrammarMarker::GetType() const {
+  return DocumentMarker::kGrammar;
 }
 
 }  // namespace blink

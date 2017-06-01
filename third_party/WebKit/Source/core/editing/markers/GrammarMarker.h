@@ -20,6 +20,9 @@ class CORE_EXPORT GrammarMarker final : public SpellCheckMarker {
                 const String& description);
 
  private:
+  // DocumentMarker implementations
+  MarkerType GetType() const final;
+
   DISALLOW_COPY_AND_ASSIGN(GrammarMarker);
 };
 

@@ -129,7 +129,7 @@ class CORE_EXPORT DocumentMarker
 
   virtual ~DocumentMarker();
 
-  MarkerType GetType() const { return type_; }
+  virtual MarkerType GetType() const = 0;
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
 
@@ -151,10 +151,9 @@ class CORE_EXPORT DocumentMarker
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  DocumentMarker(MarkerType, unsigned start_offset, unsigned end_offset);
+  DocumentMarker(unsigned start_offset, unsigned end_offset);
 
  private:
-  const MarkerType type_;
   unsigned start_offset_;
   unsigned end_offset_;
 
