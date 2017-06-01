@@ -53,7 +53,10 @@ void RecordPpdSource(const PpdSourceForHistogram& source) {
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PpdSource", source, kPpdSourceMax);
 }
 
-void OnRemovedPrinter(bool success) {}
+void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
+  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterRemoved", protocol,
+                            Printer::PrinterProtocol::kProtocolMax);
+}
 
 std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   std::unique_ptr<base::DictionaryValue> printer_info =
@@ -184,12 +187,19 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   std::string printer_name;
   CHECK(args->GetString(0, &printer_id));
   CHECK(args->GetString(1, &printer_name));
-  PrintersManagerFactory::GetForBrowserContext(profile_)->RemovePrinter(
-      printer_id);
+  PrintersManager* prefs =
+      PrintersManagerFactory::GetForBrowserContext(profile_);
+  auto printer = prefs->GetPrinter(printer_id);
+  if (!printer)
+    return;
+
+  Printer::PrinterProtocol protocol = printer->GetProtocol();
+  prefs->RemovePrinter(printer_id);
 
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->CupsRemovePrinter(printer_name, base::Bind(&OnRemovedPrinter),
+  client->CupsRemovePrinter(printer_name,
+                            base::Bind(&OnRemovedPrinter, protocol),
                             base::Bind(&base::DoNothing));
 }
 
@@ -270,6 +280,8 @@ void CupsPrintersHandler::OnAddedPrinter(
                             chromeos::PrinterSetupResult::kMaxValue);
   switch (result_code) {
     case chromeos::PrinterSetupResult::kSuccess: {
+      UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
+                                printer->GetProtocol(), Printer::kProtocolMax);
       auto* manager = PrintersManagerFactory::GetForBrowserContext(profile_);
       manager->PrinterInstalled(*printer);
       manager->RegisterPrinter(std::move(printer));
