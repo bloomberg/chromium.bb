@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/events/event.h"
 
 class AppWindowLauncherItemController;
@@ -37,6 +38,9 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate : public mojom::ShelfItemDelegate {
     image_set_by_controller_ = image_set_by_controller;
   }
 
+  // Returns a pointer to this instance, to be used by remote shelf models, etc.
+  mojom::ShelfItemDelegatePtr CreateInterfacePtrAndBind();
+
   // Returns items for the application menu; used for convenience and testing.
   virtual MenuItemList GetAppMenuItems(int event_flags);
 
@@ -50,6 +54,9 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate : public mojom::ShelfItemDelegate {
   // shelf items per app. This id is used together with the app_id to uniquely
   // identify each shelf item that has the same app_id.
   ShelfID shelf_id_;
+
+  // A binding used by remote shelf item delegate users.
+  mojo::Binding<mojom::ShelfItemDelegate> binding_;
 
   // Set to true if the launcher item image has been set by the controller.
   bool image_set_by_controller_;

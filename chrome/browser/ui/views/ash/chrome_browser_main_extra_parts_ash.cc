@@ -102,7 +102,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   if (ash_util::IsRunningInMash()) {
     DCHECK(!ash::Shell::HasInstance());
     DCHECK(!ChromeLauncherController::instance());
-    // TODO(crbug.com/557406): Synchronize this ShelfModel with the one in Ash.
     chrome_shelf_model_ = base::MakeUnique<ash::ShelfModel>();
     chrome_launcher_controller_ = base::MakeUnique<ChromeLauncherController>(
         nullptr, chrome_shelf_model_.get());

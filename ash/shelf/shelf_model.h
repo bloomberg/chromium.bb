@@ -19,15 +19,19 @@ namespace ash {
 class ShelfItemDelegate;
 class ShelfModelObserver;
 
+// An id for the AppList item, which is added in the ShelfModel constructor.
+// Generated as crx_file::id_util::GenerateId("org.chromium.applist")
+ASH_EXPORT extern const char kAppListId[];
+
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
+// TODO(msw): Move this to ash/public/cpp and use ASH_PUBLIC_EXPORT.
 class ASH_EXPORT ShelfModel {
  public:
   ShelfModel();
   ~ShelfModel();
 
   // Pins an app with |app_id| to shelf. A running instance will get pinned.
-  // In case there is no running instance a new shelf item is created and
-  // pinned.
+  // If there is no running instance, a new shelf item is created and pinned.
   void PinAppWithID(const std::string& app_id);
 
   // Check if the app with |app_id_| is pinned to the shelf.

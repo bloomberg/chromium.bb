@@ -9,6 +9,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
@@ -463,10 +464,22 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Notify the item of its selection; handle the result in AfterItemSelected.
   const ShelfItem& item = model_->items()[last_pressed_index_];
+  // Mash requires conversion of mouse and touch events to pointer events.
+  std::unique_ptr<ui::Event> pointer_event;
+  if (Shell::GetAshConfig() == Config::MASH &&
+      ui::PointerEvent::CanConvertFrom(event)) {
+    if (event.IsMouseEvent())
+      pointer_event = base::MakeUnique<ui::PointerEvent>(*event.AsMouseEvent());
+    else if (event.IsTouchEvent())
+      pointer_event = base::MakeUnique<ui::PointerEvent>(*event.AsTouchEvent());
+    else
+      NOTREACHED() << "Need conversion of event to pointer event.";
+  }
+  const ui::Event* event_to_pass = pointer_event ? pointer_event.get() : &event;
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
-      ui::Event::Clone(event), display_id, LAUNCH_FROM_UNKNOWN,
+      ui::Event::Clone(*event_to_pass), display_id, LAUNCH_FROM_UNKNOWN,
       base::Bind(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
-                 item, sender, base::Passed(ui::Event::Clone(event)),
+                 item, sender, base::Passed(ui::Event::Clone(*event_to_pass)),
                  ink_drop));
 }
 
@@ -1593,6 +1606,9 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
   if (!cancelling_drag_model_changed_)
     AnimateToIdealBounds();
 }
+
+void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
+                                         ShelfItemDelegate* delegate) {}
 
 void ShelfView::AfterItemSelected(
     const ShelfItem& item,

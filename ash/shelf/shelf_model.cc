@@ -8,6 +8,8 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
@@ -43,7 +45,17 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-ShelfModel::ShelfModel() = default;
+const char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
+
+ShelfModel::ShelfModel() {
+  // Add the app list item.
+  ShelfItem item;
+  item.type = TYPE_APP_LIST;
+  item.id = ShelfID(kAppListId);
+  item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
+  const int index = Add(item);
+  DCHECK_EQ(0, index);
+}
 
 ShelfModel::~ShelfModel() = default;
 
@@ -106,8 +118,8 @@ int ShelfModel::Add(const ShelfItem& item) {
 
 int ShelfModel::AddAt(int index, const ShelfItem& item) {
   // Items should have unique non-empty ids to avoid undefined model behavior.
-  DCHECK(!item.id.IsNull());
-  DCHECK_EQ(ItemIndexByID(item.id), -1);
+  DCHECK(!item.id.IsNull()) << " The id is null.";
+  DCHECK_EQ(ItemIndexByID(item.id), -1) << " The id is not unique: " << item.id;
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
   for (auto& observer : observers_)
@@ -210,6 +222,10 @@ void ShelfModel::SetShelfItemDelegate(
     item_delegate->set_shelf_id(shelf_id);
   // This assignment replaces any ShelfItemDelegate already registered for |id|.
   id_to_item_delegate_map_[shelf_id] = std::move(item_delegate);
+  for (auto& observer : observers_) {
+    observer.ShelfItemDelegateChanged(shelf_id,
+                                      id_to_item_delegate_map_[shelf_id].get());
+  }
 }
 
 ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(const ShelfID& shelf_id) {

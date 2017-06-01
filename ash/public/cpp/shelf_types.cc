@@ -68,4 +68,8 @@ ShelfID ShelfID::Deserialize(const std::string* string) {
   return ShelfID(components[0], components[1]);
 }
 
+std::ostream& operator<<(std::ostream& o, const ShelfID& id) {
+  return o << "app_id:" << id.app_id << ", launch_id:" << id.launch_id;
+}
+
 }  // namespace ash
