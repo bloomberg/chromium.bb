@@ -216,6 +216,7 @@ blink_core_sources("editing") {
     "markers/SpellingMarker.h",
     "markers/SpellingMarkerListImpl.cpp",
     "markers/SpellingMarkerListImpl.h",
+    "markers/TextMatchMarker.cpp",
     "markers/TextMatchMarker.h",
     "markers/TextMatchMarkerListImpl.cpp",
     "markers/TextMatchMarkerListImpl.h",

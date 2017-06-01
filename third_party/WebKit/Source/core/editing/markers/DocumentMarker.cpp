@@ -37,10 +37,8 @@ namespace blink {
 
 DocumentMarker::~DocumentMarker() = default;
 
-DocumentMarker::DocumentMarker(MarkerType type,
-                               unsigned start_offset,
-                               unsigned end_offset)
-    : type_(type), start_offset_(start_offset), end_offset_(end_offset) {
+DocumentMarker::DocumentMarker(unsigned start_offset, unsigned end_offset)
+    : start_offset_(start_offset), end_offset_(end_offset) {
   DCHECK_LT(start_offset_, end_offset_);
 }
 

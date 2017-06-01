@@ -22,6 +22,10 @@ class CORE_EXPORT CompositionMarker final : public DocumentMarker {
                     bool thick,
                     Color background_color);
 
+  // DocumentMarker implementations
+  MarkerType GetType() const final;
+
+  // CompositionMarker-specific
   Color UnderlineColor() const;
   bool Thick() const;
   Color BackgroundColor() const;

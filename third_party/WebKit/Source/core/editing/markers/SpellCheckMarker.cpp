@@ -6,12 +6,10 @@
 
 namespace blink {
 
-SpellCheckMarker::SpellCheckMarker(DocumentMarker::MarkerType type,
-                                   unsigned start_offset,
+SpellCheckMarker::SpellCheckMarker(unsigned start_offset,
                                    unsigned end_offset,
                                    const String& description)
-    : DocumentMarker(type, start_offset, end_offset),
-      description_(description) {
+    : DocumentMarker(start_offset, end_offset), description_(description) {
   DCHECK_LT(start_offset, end_offset);
 }
 
