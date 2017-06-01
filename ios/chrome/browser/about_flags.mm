@@ -241,6 +241,11 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableSigninPromo);
   }
 
+  // Populate command line flag for the request mobile site experiment from the
+  // configuration plist.
+  if ([defaults boolForKey:@"RequestMobileSiteDisabled"])
+    command_line->AppendSwitch(switches::kDisableRequestMobileSite);
+
   ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
       defaults, command_line);
 }
