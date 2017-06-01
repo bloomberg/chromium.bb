@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/mime_util/mime_util.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "jni/DownloadInfo_jni.h"
@@ -37,7 +37,7 @@ long kUnknownRemainingTime = -1;
 
 // Finch flag for controlling auto resumption limit.
 int kDefaultAutoResumptionLimit = 5;
-const char kAutoResumptionLimitVariation[] = "AutoResumptionLimit";
+const char kAutoResumptionLimitParamName[] = "AutoResumptionLimit";
 
 bool ShouldShowDownloadItem(content::DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient();
@@ -472,14 +472,11 @@ jboolean IsSupportedMimeType(
 // static
 jint GetAutoResumptionLimit(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz) {
-  std::string variation = variations::GetVariationParamValueByFeature(
+  std::string value  = base::GetFieldTrialParamValueByFeature(
       chrome::android::kDownloadAutoResumptionThrottling,
-      kAutoResumptionLimitVariation);
+      kAutoResumptionLimitParamName);
   int auto_resumption_limit;
-  if (!variation.empty() &&
-      base::StringToInt(variation, &auto_resumption_limit)) {
-    return auto_resumption_limit;
-  }
-
-  return kDefaultAutoResumptionLimit;
+  return base::StringToInt(value, &auto_resumption_limit)
+               ? auto_resumption_limit
+               : kDefaultAutoResumptionLimit;
 }
