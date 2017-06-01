@@ -149,8 +149,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return Style()->BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
-  LayoutUnit BorderStart() const override { return LayoutUnit(border_start_); }
-  LayoutUnit BorderEnd() const override { return LayoutUnit(border_end_); }
+  LayoutUnit BorderStart() const override;
+  LayoutUnit BorderEnd() const override;
   LayoutUnit BorderBefore() const override;
   LayoutUnit BorderAfter() const override;
 
@@ -181,47 +181,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
                                                    : BorderAfter();
     return Style()->IsLeftToRightDirection() ? BorderEnd() : BorderStart();
   }
-
-  int OuterBorderBefore() const;
-  int OuterBorderAfter() const;
-  int OuterBorderStart() const;
-  int OuterBorderEnd() const;
-
-  int OuterBorderLeft() const {
-    if (Style()->IsHorizontalWritingMode())
-      return Style()->IsLeftToRightDirection() ? OuterBorderStart()
-                                               : OuterBorderEnd();
-    return Style()->IsFlippedBlocksWritingMode() ? OuterBorderAfter()
-                                                 : OuterBorderBefore();
-  }
-
-  int OuterBorderRight() const {
-    if (Style()->IsHorizontalWritingMode())
-      return Style()->IsLeftToRightDirection() ? OuterBorderEnd()
-                                               : OuterBorderStart();
-    return Style()->IsFlippedBlocksWritingMode() ? OuterBorderBefore()
-                                                 : OuterBorderAfter();
-  }
-
-  int OuterBorderTop() const {
-    if (Style()->IsHorizontalWritingMode())
-      return Style()->IsFlippedBlocksWritingMode() ? OuterBorderAfter()
-                                                   : OuterBorderBefore();
-    return Style()->IsLeftToRightDirection() ? OuterBorderStart()
-                                             : OuterBorderEnd();
-  }
-
-  int OuterBorderBottom() const {
-    if (Style()->IsHorizontalWritingMode())
-      return Style()->IsFlippedBlocksWritingMode() ? OuterBorderBefore()
-                                                   : OuterBorderAfter();
-    return Style()->IsLeftToRightDirection() ? OuterBorderEnd()
-                                             : OuterBorderStart();
-  }
-
-  int CalcBorderStart() const;
-  int CalcBorderEnd() const;
-  void RecalcBordersInRowDirection();
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
@@ -274,12 +233,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return row_offset_from_repeating_header_;
   }
 
-  // This function returns 0 if the table has no section.
+  // These functions return nullptr if the table has no sections.
   LayoutTableSection* TopSection() const;
   LayoutTableSection* BottomSection() const;
 
-  // This function returns 0 if the table has no non-empty sections.
+  // These functions return nullptr if the table has no non-empty sections.
   LayoutTableSection* TopNonEmptySection() const;
+  LayoutTableSection* BottomNonEmptySection() const;
 
   unsigned LastEffectiveColumnIndex() const {
     return NumEffectiveColumns() - 1;
@@ -522,6 +482,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void AddOverflowFromChildren() override;
 
   void RecalcSections() const;
+
+  void UpdateCollapsedOuterBorders() const;
+  unsigned ComputeCollapsedOuterBorderBefore() const;
+  unsigned ComputeCollapsedOuterBorderAfter() const;
+  unsigned ComputeCollapsedOuterBorderStart() const;
+  unsigned ComputeCollapsedOuterBorderEnd() const;
+
   void LayoutCaption(LayoutTableCaption&, SubtreeLayoutScope&);
   void LayoutSection(LayoutTableSection&,
                      SubtreeLayoutScope&,
@@ -589,6 +556,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   CollapsedBorderValues collapsed_borders_;
   bool collapsed_borders_valid_ : 1;
   bool needs_invalidate_collapsed_borders_for_all_cells_ : 1;
+  mutable bool collapsed_outer_borders_valid_ : 1;
 
   mutable bool has_col_elements_ : 1;
   mutable bool needs_section_recalc_ : 1;
@@ -606,8 +574,11 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   short h_spacing_;
   short v_spacing_;
-  int border_start_;
-  int border_end_;
+
+  mutable unsigned collapsed_outer_border_start_;
+  mutable unsigned collapsed_outer_border_end_;
+  mutable unsigned collapsed_outer_border_before_;
+  mutable unsigned collapsed_outer_border_after_;
 
   LayoutUnit block_offset_to_first_repeatable_header_;
   LayoutUnit row_offset_from_repeating_header_;

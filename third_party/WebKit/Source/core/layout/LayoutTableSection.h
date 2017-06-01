@@ -204,17 +204,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void AppendEffectiveColumn(unsigned pos);
   void SplitEffectiveColumn(unsigned pos, unsigned first);
 
-  enum BlockBorderSide { kBorderBefore, kBorderAfter };
-  int CalcBlockDirectionOuterBorder(BlockBorderSide) const;
-  enum InlineBorderSide { kBorderStart, kBorderEnd };
-  int CalcInlineDirectionOuterBorder(InlineBorderSide) const;
-  void RecalcOuterBorder();
-
-  int OuterBorderBefore() const { return outer_border_before_; }
-  int OuterBorderAfter() const { return outer_border_after_; }
-  int OuterBorderStart() const { return outer_border_start_; }
-  int OuterBorderEnd() const { return outer_border_end_; }
-
   unsigned NumRows() const {
     DCHECK(!NeedsCellRecalc());
     return grid_.size();
@@ -438,11 +427,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // Do not use outside of recalcCells and addChild.
   unsigned c_col_;
   unsigned c_row_;
-
-  int outer_border_start_;
-  int outer_border_end_;
-  int outer_border_before_;
-  int outer_border_after_;
 
   bool needs_cell_recalc_;
 
