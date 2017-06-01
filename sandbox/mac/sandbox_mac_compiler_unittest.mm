@@ -11,6 +11,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "sandbox/mac/sandbox_compiler.h"
+#include "sandbox/mac/seatbelt.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -155,6 +156,29 @@ MULTIPROCESS_TEST_MAIN(ProfileFunctionalityTestErrorProcess) {
 TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTestError) {
   base::SpawnChildResult spawn_child =
       SpawnChild("ProfileFunctionalityTestErrorProcess");
+  ASSERT_TRUE(spawn_child.process.IsValid());
+  int exit_code = 42;
+  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
+      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_EQ(exit_code, 0);
+}
+
+MULTIPROCESS_TEST_MAIN(SandboxCheckTestProcess) {
+  CHECK(!Seatbelt::IsSandboxed());
+  std::string profile =
+      "(version 1)"
+      "(deny default (with no-log))";
+
+  SandboxCompiler compiler(profile);
+  std::string error;
+  CHECK(compiler.CompileAndApplyProfile(&error));
+  CHECK(Seatbelt::IsSandboxed());
+
+  return 0;
+}
+
+TEST_F(SandboxMacCompilerTest, SandboxCheckTest) {
+  base::SpawnChildResult spawn_child = SpawnChild("SandboxCheckTestProcess");
   ASSERT_TRUE(spawn_child.process.IsValid());
   int exit_code = 42;
   EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
