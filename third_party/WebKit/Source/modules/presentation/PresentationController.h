@@ -40,6 +40,8 @@ class MODULES_EXPORT PresentationController final
   static void ProvideTo(LocalFrame&, WebPresentationClient*);
 
   WebPresentationClient* Client();
+  static WebPresentationClient* ClientFromContext(ExecutionContext*);
+  static PresentationController* FromContext(ExecutionContext*);
 
   // Implementation of Supplement.
   DECLARE_VIRTUAL_TRACE();

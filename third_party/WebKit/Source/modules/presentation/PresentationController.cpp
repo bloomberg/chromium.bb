@@ -59,6 +59,28 @@ WebPresentationClient* PresentationController::Client() {
   return client_;
 }
 
+// static
+PresentationController* PresentationController::FromContext(
+    ExecutionContext* execution_context) {
+  if (!execution_context)
+    return nullptr;
+
+  DCHECK(execution_context->IsDocument());
+  Document* document = ToDocument(execution_context);
+  if (!document->GetFrame())
+    return nullptr;
+
+  return PresentationController::From(*document->GetFrame());
+}
+
+// static
+WebPresentationClient* PresentationController::ClientFromContext(
+    ExecutionContext* execution_context) {
+  PresentationController* controller =
+      PresentationController::FromContext(execution_context);
+  return controller ? controller->Client() : nullptr;
+}
+
 DEFINE_TRACE(PresentationController) {
   visitor->Trace(presentation_);
   visitor->Trace(connections_);

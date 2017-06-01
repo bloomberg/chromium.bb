@@ -16,22 +16,6 @@
 
 namespace blink {
 
-namespace {
-
-WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
-  if (!execution_context)
-    return nullptr;
-  DCHECK(execution_context->IsDocument());
-  Document* document = ToDocument(execution_context);
-  if (!document->GetFrame())
-    return nullptr;
-  PresentationController* controller =
-      PresentationController::From(*document->GetFrame());
-  return controller ? controller->Client() : nullptr;
-}
-
-}  // anonymous namespace
-
 // static
 PresentationAvailability* PresentationAvailability::Take(
     PresentationAvailabilityProperty* resolver,
@@ -118,7 +102,8 @@ void PresentationAvailability::SetState(State state) {
 }
 
 void PresentationAvailability::UpdateListening() {
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (!client)
     return;
 

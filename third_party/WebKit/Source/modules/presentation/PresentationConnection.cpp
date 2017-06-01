@@ -32,19 +32,6 @@ namespace blink {
 
 namespace {
 
-// TODO(mlamouri): refactor in one common place.
-WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
-  DCHECK(execution_context);
-  DCHECK(execution_context->IsDocument());
-
-  Document* document = ToDocument(execution_context);
-  if (!document->GetFrame())
-    return nullptr;
-  PresentationController* controller =
-      PresentationController::From(*document->GetFrame());
-  return controller ? controller->Client() : nullptr;
-}
-
 const AtomicString& ConnectionStateToString(
     WebPresentationConnectionState state) {
   DEFINE_STATIC_LOCAL(const AtomicString, connecting_value, ("connecting"));
@@ -311,11 +298,12 @@ bool PresentationConnection::CanSendMessage(ExceptionState& exception_state) {
   }
 
   // The connection can send a message if there is a client available.
-  return !!PresentationClient(GetExecutionContext());
+  return !!PresentationController::ClientFromContext(GetExecutionContext());
 }
 
 void PresentationConnection::HandleMessageQueue() {
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (!client || !proxy_)
     return;
 
@@ -402,7 +390,8 @@ void PresentationConnection::close() {
       state_ != WebPresentationConnectionState::kConnected) {
     return;
   }
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (client)
     client->CloseConnection(url_, id_, proxy_.get());
 
@@ -412,7 +401,8 @@ void PresentationConnection::close() {
 void PresentationConnection::terminate() {
   if (state_ != WebPresentationConnectionState::kConnected)
     return;
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (client)
     client->TerminatePresentation(url_, id_);
 
@@ -491,7 +481,8 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK(buffer);
   DCHECK(buffer->Buffer());
   // Send the loaded blob immediately here and continue processing the queue.
-  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  WebPresentationClient* client =
+      PresentationController::ClientFromContext(GetExecutionContext());
   if (client) {
     client->SendBlobData(url_, id_, static_cast<const uint8_t*>(buffer->Data()),
                          buffer->ByteLength(), proxy_.get());
