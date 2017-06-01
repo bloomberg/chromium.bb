@@ -597,9 +597,16 @@ std::unique_ptr<web::WebState> CreateWebState(
     return referencedFiles;
   // Check the currently open tabs for external files.
   for (Tab* tab in self) {
-    if (UrlIsExternalFileReference(tab.url)) {
-      NSString* fileName = base::SysUTF8ToNSString(tab.url.ExtractFileName());
-      [referencedFiles addObject:fileName];
+    const GURL& lastCommittedURL = tab.lastCommittedURL;
+    if (UrlIsExternalFileReference(lastCommittedURL)) {
+      [referencedFiles addObject:base::SysUTF8ToNSString(
+                                     lastCommittedURL.ExtractFileName())];
+    }
+    web::NavigationItem* pendingItem =
+        tab.webState->GetNavigationManager()->GetPendingItem();
+    if (pendingItem && UrlIsExternalFileReference(pendingItem->GetURL())) {
+      [referencedFiles addObject:base::SysUTF8ToNSString(
+                                     pendingItem->GetURL().ExtractFileName())];
     }
   }
   // Do the same for the recently closed tabs.
@@ -752,7 +759,9 @@ std::unique_ptr<web::WebState> CreateWebState(
   BOOL closedNTPTab = NO;
   if (oldCount == 1) {
     Tab* tab = [self tabAtIndex:0];
-    if (tab.url == GURL(kChromeUINewTabURL)) {
+    BOOL hasPendingLoad =
+        tab.webState->GetNavigationManager()->GetPendingItem() != nullptr;
+    if (!hasPendingLoad && tab.lastCommittedURL == GURL(kChromeUINewTabURL)) {
       [self closeTab:tab];
       closedNTPTab = YES;
       oldCount = 0;

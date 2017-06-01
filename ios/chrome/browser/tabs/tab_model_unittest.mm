@@ -349,6 +349,8 @@ TEST_F(TabModelTest, RestoreSessionOnNTPTest) {
                               openedByDOM:NO
                                   atIndex:0
                              inBackground:NO];
+  web::WebStateImpl* web_state = static_cast<web::WebStateImpl*>(tab.webState);
+  web_state->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window];
@@ -368,6 +370,8 @@ TEST_F(TabModelTest, RestoreSessionOn2NtpTest) {
                                openedByDOM:NO
                                    atIndex:0
                               inBackground:NO];
+  web::WebStateImpl* web_state = static_cast<web::WebStateImpl*>(tab0.webState);
+  web_state->GetNavigationManagerImpl().CommitPendingItem();
   Tab* tab1 = [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
                                   referrer:web::Referrer()
                                 transition:ui::PAGE_TRANSITION_TYPED
@@ -375,6 +379,8 @@ TEST_F(TabModelTest, RestoreSessionOn2NtpTest) {
                                openedByDOM:NO
                                    atIndex:1
                               inBackground:NO];
+  web_state = static_cast<web::WebStateImpl*>(tab1.webState);
+  web_state->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window];
@@ -399,6 +405,8 @@ TEST_F(TabModelTest, RestoreSessionOnAnyTest) {
                               openedByDOM:NO
                                   atIndex:0
                              inBackground:NO];
+  web::WebStateImpl* web_state = static_cast<web::WebStateImpl*>(tab.webState);
+  web_state->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());
   [tab_model_ restoreSessionWindow:window];

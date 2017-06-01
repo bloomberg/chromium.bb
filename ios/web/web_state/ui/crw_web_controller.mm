@@ -2878,7 +2878,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   self.userInteractionRegistered = NO;
   _pageHasZoomed = NO;
 
-  [[self sessionController] commitPendingItem];
+  self.navigationManagerImpl->CommitPendingItem();
 }
 
 - (void)wasShown {

@@ -212,6 +212,10 @@ void NavigationManagerImpl::AddPendingItem(
   }
 }
 
+void NavigationManagerImpl::CommitPendingItem() {
+  [session_controller_ commitPendingItem];
+}
+
 BrowserState* NavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }

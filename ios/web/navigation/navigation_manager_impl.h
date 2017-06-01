@@ -105,6 +105,9 @@ class NavigationManagerImpl : public NavigationManager {
                       NavigationInitiationType initiation_type,
                       UserAgentOverrideOption user_agent_override_option);
 
+  // Commits the pending item, if any.
+  void CommitPendingItem();
+
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
   WebState* GetWebState() const override;
