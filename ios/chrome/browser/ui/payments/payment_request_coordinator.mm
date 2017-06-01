@@ -49,6 +49,7 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
+@synthesize connectionSecure = _connectionSecure;
 @synthesize delegate = _delegate;
 
 - (void)start {
@@ -60,6 +61,7 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
   [_viewController setPageFavicon:_pageFavicon];
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
+  [_viewController setConnectionSecure:_connectionSecure];
   [_viewController setDelegate:self];
   [_viewController setDataSource:_mediator];
   [_viewController loadModel];

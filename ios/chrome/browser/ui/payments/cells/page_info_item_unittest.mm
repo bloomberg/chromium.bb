@@ -22,10 +22,12 @@ TEST(PaymentRequestPageInfoItemTest, TextLabels) {
   UIImage* pageFavicon = ios_internal::CollectionViewTestImage();
   NSString* pageTitle = @"The Greatest Website Ever";
   NSString* pageHost = @"www.greatest.example.com";
+  NSString* pageHostSecure = @"https://www.greatest.example.com";
 
   item.pageFavicon = pageFavicon;
   item.pageTitle = pageTitle;
   item.pageHost = pageHost;
+  item.connectionSecure = false;
 
   id cell = [[[item cellClass] alloc] init];
   ASSERT_TRUE([cell isMemberOfClass:[PageInfoCell class]]);
@@ -34,11 +36,30 @@ TEST(PaymentRequestPageInfoItemTest, TextLabels) {
   EXPECT_FALSE(pageInfoCell.pageTitleLabel.text);
   EXPECT_FALSE(pageInfoCell.pageHostLabel.text);
   EXPECT_FALSE(pageInfoCell.pageFaviconView.image);
+  EXPECT_FALSE(pageInfoCell.pageLockIndicatorView.image);
 
   [item configureCell:pageInfoCell];
   EXPECT_NSEQ(pageTitle, pageInfoCell.pageTitleLabel.text);
   EXPECT_NSEQ(pageHost, pageInfoCell.pageHostLabel.text);
   EXPECT_NSEQ(pageFavicon, pageInfoCell.pageFaviconView.image);
+  EXPECT_FALSE(pageInfoCell.pageLockIndicatorView.image);
+
+  item.connectionSecure = true;
+
+  id cell2 = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell2 isMemberOfClass:[PageInfoCell class]]);
+
+  PageInfoCell* pageInfoCell2 = cell2;
+  EXPECT_FALSE(pageInfoCell2.pageTitleLabel.text);
+  EXPECT_FALSE(pageInfoCell2.pageHostLabel.text);
+  EXPECT_FALSE(pageInfoCell2.pageFaviconView.image);
+  EXPECT_FALSE(pageInfoCell2.pageLockIndicatorView.image);
+
+  [item configureCell:pageInfoCell2];
+  EXPECT_NSEQ(pageTitle, pageInfoCell2.pageTitleLabel.text);
+  EXPECT_NSEQ(pageHostSecure, pageInfoCell2.pageHostLabel.text);
+  EXPECT_NSEQ(pageFavicon, pageInfoCell2.pageFaviconView.image);
+  EXPECT_TRUE(pageInfoCell2.pageLockIndicatorView.image);
 }
 
 }  // namespace

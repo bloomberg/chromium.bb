@@ -22,12 +22,14 @@ source_set("cells") {
   ]
 
   deps = [
+    "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//url/",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
