@@ -5,15 +5,16 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
+# Sanitizer builds need to override operator new, operator delete, and
+# some exception handling symbols, so libc++ must be a shared library
+# to prevent duplicate symbol errors when linking.
+libcpp_is_static = !is_component_build && !using_sanitizer
+
 # Used by libc++ and libc++abi.
 config("config") {
   defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
-  if (!is_component_build && !using_sanitizer) {
-    # Don't leak any symbols on a release build.  Component builds
-    # need default symbol visibility for linking against libc++.so.
-    # Sanitizer builds need to override operator new, operator delete,
-    # and some exception handling symbols, and will complain if those
-    # symbols do not have default visibility.
+  if (libcpp_is_static) {
+    # Don't leak any symbols on a static build.
     defines += [
       "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS",
       "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS",
@@ -31,12 +32,10 @@ config("config") {
   ]
 }
 
-# libc++ cannot be a component because that would add a circular
-# dependency created from depending on //build/config:exe_and_shlib_deps
-if (is_component_build) {
-  link_target_type = "shared_library"
-} else {
+if (libcpp_is_static) {
   link_target_type = "source_set"
+} else {
+  link_target_type = "shared_library"
 }
 target(link_target_type, "libc++") {
   sources = [
@@ -121,7 +120,17 @@ group("libcxx_proxy") {
 # //build/config/sanitizers:default_sanitizer_flags sets the include paths for
 # everything else.
 config("link_helper") {
+  # Make sure we don't link against libc++ or libstdc++.
   ldflags = [ "-nodefaultlibs" ]
+
+  # Unfortunately, there's no way to disable linking against just
+  # libc++; -nodefaultlibs removes all of the default libraries,
+  # so add back the ones that we need.
+  libs = [
+    "c",
+    "m",
+    "gcc_s",
+  ]
 
   if (!is_mac) {
     ldflags += [

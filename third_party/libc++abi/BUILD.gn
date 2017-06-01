@@ -9,14 +9,7 @@ config("libc++abi_warnings") {
   }
 }
 
-# libc++abi cannot be a component because that would add a circular
-# dependency created from depending on //build/config:exe_and_shlib_deps
-if (is_component_build) {
-  link_target_type = "shared_library"
-} else {
-  link_target_type = "source_set"
-}
-target(link_target_type, "libc++abi") {
+source_set("libc++abi") {
   sources = [
     "trunk/src/abort_message.cpp",
     "trunk/src/cxa_aux_runtime.cpp",
