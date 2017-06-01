@@ -103,19 +103,19 @@ RdpClient::RdpClient(
 }
 
 RdpClient::~RdpClient() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   core_->Disconnect();
 }
 
 void RdpClient::InjectSas() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   core_->InjectSas();
 }
 
 void RdpClient::ChangeResolution(const ScreenResolution& resolution) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   core_->ChangeResolution(resolution);
 }

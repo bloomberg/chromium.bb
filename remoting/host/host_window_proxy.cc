@@ -75,19 +75,19 @@ HostWindowProxy::HostWindowProxy(
 
   // Detach |host_window| from the calling thread so that |Core| could run it on
   // the |ui_task_runner_| thread.
-  host_window->DetachFromThread();
+  DETACH_FROM_SEQUENCE(host_window->sequence_checker_);
   core_ = new Core(caller_task_runner, ui_task_runner, std::move(host_window));
 }
 
 HostWindowProxy::~HostWindowProxy() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   core_->Stop();
 }
 
 void HostWindowProxy::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   core_->Start(client_session_control);
 }

@@ -141,7 +141,7 @@ bool VerifyWellformedness(const base::DictionaryValue& changed_policies) {
 void PolicyWatcher::StartWatching(
     const PolicyUpdatedCallback& policy_updated_callback,
     const PolicyErrorCallback& policy_error_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!policy_updated_callback.is_null());
   DCHECK(!policy_error_callback.is_null());
   DCHECK(policy_updated_callback_.is_null());
@@ -207,6 +207,7 @@ PolicyWatcher::PolicyWatcher(
 }
 
 PolicyWatcher::~PolicyWatcher() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Stop observing |policy_service_| if StartWatching() has been called.
   if (!policy_updated_callback_.is_null()) {
     policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);

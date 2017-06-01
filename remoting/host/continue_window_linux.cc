@@ -49,7 +49,7 @@ ContinueWindowGtk::~ContinueWindowGtk() {
 }
 
 void ContinueWindowGtk::ShowUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!continue_window_);
 
   CreateWindow();
@@ -58,7 +58,7 @@ void ContinueWindowGtk::ShowUi() {
 }
 
 void ContinueWindowGtk::HideUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (continue_window_) {
     gtk_widget_destroy(continue_window_);
@@ -67,7 +67,7 @@ void ContinueWindowGtk::HideUi() {
 }
 
 void ContinueWindowGtk::CreateWindow() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!continue_window_);
 
   GtkDialogFlags flags = GTK_DIALOG_MODAL;
@@ -111,7 +111,7 @@ void ContinueWindowGtk::CreateWindow() {
 }
 
 void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (response_id == GTK_RESPONSE_OK) {
     ContinueSession();

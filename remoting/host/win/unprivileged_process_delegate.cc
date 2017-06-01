@@ -228,14 +228,14 @@ UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
       event_handler_(nullptr) {}
 
 UnprivilegedProcessDelegate::~UnprivilegedProcessDelegate() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!channel_);
   DCHECK(!worker_process_.IsValid());
 }
 
 void UnprivilegedProcessDelegate::LaunchProcess(
     WorkerProcessLauncher* event_handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!event_handler_);
 
   event_handler_ = event_handler;
@@ -322,7 +322,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 }
 
 void UnprivilegedProcessDelegate::Send(IPC::Message* message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (channel_) {
     channel_->Send(message);
@@ -332,12 +332,12 @@ void UnprivilegedProcessDelegate::Send(IPC::Message* message) {
 }
 
 void UnprivilegedProcessDelegate::CloseChannel() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   channel_.reset();
 }
 
 void UnprivilegedProcessDelegate::KillProcess() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CloseChannel();
   event_handler_ = nullptr;
@@ -350,13 +350,13 @@ void UnprivilegedProcessDelegate::KillProcess() {
 
 bool UnprivilegedProcessDelegate::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return event_handler_->OnMessageReceived(message);
 }
 
 void UnprivilegedProcessDelegate::OnChannelConnected(int32_t peer_pid) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DWORD pid = GetProcessId(worker_process_.Get());
   if (pid != static_cast<DWORD>(peer_pid)) {
@@ -371,13 +371,13 @@ void UnprivilegedProcessDelegate::OnChannelConnected(int32_t peer_pid) {
 }
 
 void UnprivilegedProcessDelegate::OnChannelError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   event_handler_->OnChannelError();
 }
 
 void UnprivilegedProcessDelegate::ReportFatalError() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CloseChannel();
 
@@ -388,7 +388,7 @@ void UnprivilegedProcessDelegate::ReportFatalError() {
 
 void UnprivilegedProcessDelegate::ReportProcessLaunched(
     base::win::ScopedHandle worker_process) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!worker_process_.IsValid());
 
   worker_process_ = std::move(worker_process);

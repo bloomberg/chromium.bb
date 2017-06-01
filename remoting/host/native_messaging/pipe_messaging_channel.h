@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
 #include "remoting/host/native_messaging/native_messaging_reader.h"
 #include "remoting/host/native_messaging/native_messaging_writer.h"
@@ -28,8 +28,7 @@ namespace remoting {
 // communicate with the chrome process.
 // TODO(kelvinp): Move this class to the extensions/browser/api/messaging
 // directory.
-class PipeMessagingChannel : public extensions::NativeMessagingChannel,
-                             public base::NonThreadSafe {
+class PipeMessagingChannel : public extensions::NativeMessagingChannel {
  public:
   typedef extensions::NativeMessagingChannel::EventHandler EventHandler;
 
@@ -54,6 +53,9 @@ class PipeMessagingChannel : public extensions::NativeMessagingChannel,
 
   EventHandler* event_handler_;
   base::WeakPtr<PipeMessagingChannel> weak_ptr_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<PipeMessagingChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeMessagingChannel);

@@ -27,11 +27,12 @@ LogToServer::LogToServer(ServerLogEntry::Mode mode,
 }
 
 LogToServer::~LogToServer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signal_strategy_->RemoveListener(this);
 }
 
 void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state == SignalStrategy::CONNECTED) {
     iq_sender_.reset(new IqSender(signal_strategy_));

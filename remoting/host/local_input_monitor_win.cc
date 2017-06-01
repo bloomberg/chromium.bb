@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/win/message_window.h"
 #include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -27,8 +27,7 @@ namespace {
 const USHORT kGenericDesktopPage = 1;
 const USHORT kMouseUsage = 2;
 
-class LocalInputMonitorWin : public base::NonThreadSafe,
-                             public LocalInputMonitor {
+class LocalInputMonitorWin : public LocalInputMonitor {
  public:
   LocalInputMonitorWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -80,6 +79,8 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
 
   scoped_refptr<Core> core_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorWin);
 };
 
@@ -94,6 +95,7 @@ LocalInputMonitorWin::LocalInputMonitorWin(
 }
 
 LocalInputMonitorWin::~LocalInputMonitorWin() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 

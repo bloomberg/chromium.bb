@@ -83,7 +83,7 @@ ChromotingHost::ChromotingHost(
 }
 
 ChromotingHost::~ChromotingHost() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Disconnect all of the clients.
   while (!clients_.empty()) {
@@ -102,7 +102,7 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start(const std::string& host_owner_email) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!started_);
 
   HOST_LOG << "Starting host";
@@ -115,12 +115,12 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   status_observers_.AddObserver(observer);
 }
 
 void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   status_observers_.RemoveObserver(observer);
 }
 
@@ -130,7 +130,7 @@ void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {
 
 void ChromotingHost::SetAuthenticatorFactory(
     std::unique_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_manager_->set_authenticator_factory(std::move(authenticator_factory));
 }
 
@@ -156,7 +156,7 @@ void ChromotingHost::OnSessionAuthenticating(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   login_backoff_.Reset();
 
@@ -181,7 +181,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify observers.
   for (auto& observer : status_observers_)
@@ -189,7 +189,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify observers.
   for (auto& observer : status_observers_)
@@ -197,7 +197,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ClientSessions::iterator it =
       std::find_if(clients_.begin(), clients_.end(),
@@ -220,7 +220,7 @@ void ChromotingHost::OnSessionRouteChange(
     ClientSession* session,
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : status_observers_)
     observer.OnClientRouteChange(session->client_jid(), channel_name, route);
 }
@@ -228,7 +228,7 @@ void ChromotingHost::OnSessionRouteChange(
 void ChromotingHost::OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(started_);
 
   if (login_backoff_.ShouldRejectRequest()) {

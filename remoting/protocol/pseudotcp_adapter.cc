@@ -455,6 +455,7 @@ PseudoTcpAdapter::PseudoTcpAdapter(std::unique_ptr<P2PDatagramSocket> socket)
     : core_(new Core(std::move(socket))) {}
 
 PseudoTcpAdapter::~PseudoTcpAdapter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Make sure that the underlying socket is destroyed before PseudoTcp.
   core_->DeleteSocket();
 }
@@ -462,46 +463,46 @@ PseudoTcpAdapter::~PseudoTcpAdapter() {
 int PseudoTcpAdapter::Read(const scoped_refptr<net::IOBuffer>& buffer,
                            int buffer_size,
                            const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return core_->Read(buffer, buffer_size, callback);
 }
 
 int PseudoTcpAdapter::Write(const scoped_refptr<net::IOBuffer>& buffer,
                             int buffer_size,
                             const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return core_->Write(buffer, buffer_size, callback);
 }
 
 int PseudoTcpAdapter::SetReceiveBufferSize(int32_t size) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->SetReceiveBufferSize(size);
   return net::OK;
 }
 
 int PseudoTcpAdapter::SetSendBufferSize(int32_t size) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->SetSendBufferSize(size);
   return net::OK;
 }
 
 int PseudoTcpAdapter::Connect(const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return core_->Connect(callback);
 }
 
 void PseudoTcpAdapter::SetAckDelay(int delay_ms) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->SetAckDelay(delay_ms);
 }
 
 void PseudoTcpAdapter::SetNoDelay(bool no_delay) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->SetNoDelay(no_delay);
 }
 
 void PseudoTcpAdapter::SetWriteWaitsForSend(bool write_waits_for_send) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->SetWriteWaitsForSend(write_waits_for_send);
 }
 

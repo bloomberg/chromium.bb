@@ -54,7 +54,7 @@ ContinueWindowWin::~ContinueWindowWin() {
 }
 
 void ContinueWindowWin::ShowUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!hwnd_);
 
   hwnd_ = CreateDialogParam(CURRENT_MODULE(), MAKEINTRESOURCE(IDD_CONTINUE),
@@ -68,7 +68,7 @@ void ContinueWindowWin::ShowUi() {
 }
 
 void ContinueWindowWin::HideUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   EndDialog();
 }
@@ -91,7 +91,7 @@ BOOL CALLBACK ContinueWindowWin::DialogProc(HWND hwnd, UINT msg,
 
 BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
                                         WPARAM wParam, LPARAM lParam) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (msg) {
     case WM_CLOSE:
@@ -119,7 +119,7 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
 }
 
 void ContinueWindowWin::EndDialog() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (hwnd_) {
     ::DestroyWindow(hwnd_);

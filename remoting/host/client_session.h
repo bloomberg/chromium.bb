@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
@@ -50,8 +50,7 @@ class VideoLayout;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
-class ClientSession : public base::NonThreadSafe,
-                      public protocol::HostStub,
+class ClientSession : public protocol::HostStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public protocol::VideoStream::Observer,
                       public ClientSessionControl,
@@ -247,6 +246,8 @@ class ClientSession : public base::NonThreadSafe,
       event_timestamp_source_for_tests_;
 
   HostExperimentSessionPlugin host_experiment_session_plugin_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to disable callbacks to |this| once DisconnectSession() has been
   // called.

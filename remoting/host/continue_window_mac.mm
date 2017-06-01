@@ -55,11 +55,11 @@ ContinueWindowMac::ContinueWindowMac() {
 }
 
 ContinueWindowMac::~ContinueWindowMac() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void ContinueWindowMac::ShowUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::mac::ScopedNSAutoreleasePool pool;
   controller_.reset(
@@ -68,7 +68,7 @@ void ContinueWindowMac::ShowUi() {
 }
 
 void ContinueWindowMac::HideUi() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::mac::ScopedNSAutoreleasePool pool;
   [controller_ hide];

@@ -10,14 +10,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 
 namespace remoting {
 namespace protocol {
 
 class P2PStreamSocket;
 
-class StreamChannelFactory : public base::NonThreadSafe {
+class StreamChannelFactory {
  public:
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
@@ -41,6 +41,8 @@ class StreamChannelFactory : public base::NonThreadSafe {
 
  protected:
   virtual ~StreamChannelFactory() {}
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamChannelFactory);

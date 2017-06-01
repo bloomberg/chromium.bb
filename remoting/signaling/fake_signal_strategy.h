@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
@@ -23,8 +23,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class FakeSignalStrategy : public SignalStrategy,
-                           public base::NonThreadSafe {
+class FakeSignalStrategy : public SignalStrategy {
  public:
   // Calls ConenctTo() to connect |peer1| and |peer2|. Both |peer1| and |peer2|
   // must belong to the current thread.
@@ -90,6 +89,8 @@ class FakeSignalStrategy : public SignalStrategy,
 
   // All received messages, includes thouse still in |pending_messages_|.
   std::list<buzz::XmlElement*> received_messages_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<FakeSignalStrategy> weak_factory_;
 

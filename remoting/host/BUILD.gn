@@ -174,6 +174,7 @@ static_library("host") {
     "host_status_logger.h",
     "host_status_monitor.h",
     "host_status_observer.h",
+    "host_window.cc",
     "host_window.h",
     "host_window_proxy.cc",
     "host_window_proxy.h",

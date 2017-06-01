@@ -82,7 +82,7 @@ ClientSession::ClientSession(
 }
 
 ClientSession::~ClientSession() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!audio_stream_);
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
@@ -94,7 +94,7 @@ ClientSession::~ClientSession() {
 
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(resolution.dips_width() > 0 && resolution.dips_height() > 0);
 
   VLOG(1) << "Received ClientResolution (dips_width="
@@ -124,7 +124,7 @@ void ClientSession::NotifyClientResolution(
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Note that |video_stream_| may be null, depending upon whether
   // extensions choose to wrap or "steal" the video capturer or encoder.
@@ -152,7 +152,7 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
 }
 
 void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (audio_control.has_enable()) {
     VLOG(1) << "Received AudioControl (enable="
@@ -164,7 +164,7 @@ void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
 
 void ClientSession::SetCapabilities(
     const protocol::Capabilities& capabilities) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ignore all the messages but the 1st one.
   if (client_capabilities_) {
@@ -223,7 +223,7 @@ void ClientSession::OnConnectionAuthenticating() {
 }
 
 void ClientSession::OnConnectionAuthenticated() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!audio_stream_);
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
@@ -280,7 +280,7 @@ void ClientSession::OnConnectionAuthenticated() {
 }
 
 void ClientSession::CreateMediaStreams() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Create a VideoStream to pump frames from the capturer to the client.
   video_stream_ = connection_->StartVideoStream(
@@ -307,7 +307,7 @@ void ClientSession::CreateMediaStreams() {
 }
 
 void ClientSession::OnConnectionChannelsConnected() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!channels_connected_);
   channels_connected_ = true;
@@ -337,7 +337,7 @@ void ClientSession::OnConnectionChannelsConnected() {
 }
 
 void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   HOST_LOG << "Client disconnected: " << client_jid_ << "; error = " << error;
 
@@ -368,7 +368,7 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
 void ClientSession::OnRouteChange(
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_handler_->OnSessionRouteChange(this, channel_name, route);
 }
 
@@ -377,7 +377,7 @@ const std::string& ClientSession::client_jid() const {
 }
 
 void ClientSession::DisconnectSession(protocol::ErrorCode error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(connection_.get());
 
   max_duration_timer_.Stop();
@@ -388,12 +388,12 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
 }
 
 void ClientSession::OnLocalMouseMoved(const webrtc::DesktopVector& position) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   remote_input_filter_.LocalMouseMoved(position);
 }
 
 void ClientSession::SetDisableInputs(bool disable_inputs) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (disable_inputs)
     input_tracker_.ReleaseAll();
@@ -403,27 +403,27 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 }
 
 uint32_t ClientSession::desktop_session_id() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(desktop_environment_);
   return desktop_environment_->GetDesktopSessionId();
 }
 
 ClientSessionControl* ClientSession::session_control() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
 }
 
 void ClientSession::SetEventTimestampsSourceForTests(
     scoped_refptr<protocol::InputEventTimestampsSource>
         event_timestamp_source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_timestamp_source_for_tests_ = event_timestamp_source;
   if (video_stream_)
     video_stream_->SetEventTimestampsSource(event_timestamp_source_for_tests_);
 }
 
 std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::MakeUnique<protocol::ClipboardThreadProxy>(
       client_clipboard_factory_.GetWeakPtr(),
       base::ThreadTaskRunnerHandle::Get());
@@ -432,7 +432,7 @@ std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
 void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
                                        const webrtc::DesktopSize& size,
                                        const webrtc::DesktopVector& dpi) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   mouse_clamping_filter_.set_output_size(size);
 

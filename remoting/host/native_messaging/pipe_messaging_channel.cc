@@ -54,10 +54,12 @@ PipeMessagingChannel::PipeMessagingChannel(base::File input, base::File output)
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-PipeMessagingChannel::~PipeMessagingChannel() {}
+PipeMessagingChannel::~PipeMessagingChannel() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void PipeMessagingChannel::Start(EventHandler* event_handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!event_handler_);
 
   event_handler_ = event_handler;
@@ -70,14 +72,14 @@ void PipeMessagingChannel::Start(EventHandler* event_handler) {
 
 void PipeMessagingChannel::ProcessMessage(
     std::unique_ptr<base::Value> message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (event_handler_)
     event_handler_->OnMessage(std::move(message));
 }
 
 void PipeMessagingChannel::SendMessage(std::unique_ptr<base::Value> message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool success = message && native_messaging_writer_;
   if (success)
@@ -91,7 +93,7 @@ void PipeMessagingChannel::SendMessage(std::unique_ptr<base::Value> message) {
 }
 
 void PipeMessagingChannel::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (event_handler_) {
     // Set |event_handler_| to nullptr to indicate the object is in a shutdown

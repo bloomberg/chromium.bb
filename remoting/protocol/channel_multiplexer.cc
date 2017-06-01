@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
@@ -97,7 +98,6 @@ class ChannelMultiplexer::MuxChannel {
 };
 
 class ChannelMultiplexer::MuxSocket : public P2PStreamSocket,
-                                      public base::NonThreadSafe,
                                       public base::SupportsWeakPtr<MuxSocket> {
  public:
   MuxSocket(MuxChannel* channel);
@@ -125,6 +125,8 @@ class ChannelMultiplexer::MuxSocket : public P2PStreamSocket,
   bool write_pending_;
   int write_result_;
   net::CompletionCallback write_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MuxSocket);
 };
@@ -220,7 +222,7 @@ ChannelMultiplexer::MuxSocket::~MuxSocket() {
 int ChannelMultiplexer::MuxSocket::Read(
     const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
     const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(read_callback_.is_null());
 
   if (base_channel_error_ != net::OK)
@@ -239,7 +241,7 @@ int ChannelMultiplexer::MuxSocket::Read(
 int ChannelMultiplexer::MuxSocket::Write(
     const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
     const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(write_callback_.is_null());
 
   if (base_channel_error_ != net::OK)
@@ -307,6 +309,7 @@ ChannelMultiplexer::ChannelMultiplexer(StreamChannelFactory* factory,
       weak_factory_(this) {}
 
 ChannelMultiplexer::~ChannelMultiplexer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pending_channels_.empty());
 
   // Cancel creation of the base channel if it hasn't finished.
