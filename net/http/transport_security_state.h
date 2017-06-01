@@ -484,12 +484,6 @@ class NET_EXPORT TransportSecurityState
                             STSState* sts_result,
                             PKPState* pkp_result) const;
 
-  // Returns true iff there is static (built-in) state for |host| that
-  // references the Google pins.
-  // TODO(rch): Remove this temporary gross layering violation once QUIC 32 is
-  // deployed.
-  bool IsGooglePinnedHost(const std::string& host) const;
-
   // Returns true and updates |*result| iff |host| has HSTS/HPKP/Expect-CT
   // (respectively) state. If multiple entries match |host|, the most specific
   // match determines the return value.
