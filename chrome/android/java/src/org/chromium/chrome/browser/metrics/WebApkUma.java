@@ -39,7 +39,11 @@ public class WebApkUma {
     public static final int GOOGLE_PLAY_INSTALL_FAILED_DOWNLOAD_ERROR = 8;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_ERROR = 9;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_TIMEOUT = 10;
-    public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 11;
+    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_POLICY_DISABLED = 11;
+    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_UNKNOWN_ACCOUNT = 12;
+    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NETWORK_ERROR = 13;
+    public static final int GOOGLE_PLAY_INSTALL_REQUSET_FAILED_RESOLVE_ERROR = 14;
+    public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 14;
 
     public static final String HISTOGRAM_UPDATE_REQUEST_SENT =
             "WebApk.Update.RequestSent";
