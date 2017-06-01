@@ -82,19 +82,6 @@ BaseResourceThrottle::BaseResourceThrottle(
           net::NetLogWithSource::Make(request->net_log().net_log(),
                                       NetLogSourceType::SAFE_BROWSING)) {}
 
-// static
-BaseResourceThrottle* BaseResourceThrottle::MaybeCreate(
-    net::URLRequest* request,
-    content::ResourceType resource_type,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<BaseUIManager> ui_manager) {
-  if (database_manager->IsSupported()) {
-    return new BaseResourceThrottle(request, resource_type,
-                                    database_manager, ui_manager);
-  }
-  return nullptr;
-}
-
 BaseResourceThrottle::~BaseResourceThrottle() {
   if (defer_state_ != DEFERRED_NONE) {
     EndNetLogEvent(NetLogEventType::SAFE_BROWSING_DEFERRED, nullptr, nullptr);

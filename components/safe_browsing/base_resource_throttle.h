@@ -50,15 +50,6 @@ class BaseResourceThrottle
       public SafeBrowsingDatabaseManager::Client,
       public base::SupportsWeakPtr<BaseResourceThrottle> {
  public:
-  // Construct a BaseResourceThrottle, or return nullptr if we
-  // cannot access the safe browsing API on Android
-  static BaseResourceThrottle* MaybeCreate(
-      net::URLRequest* request,
-      content::ResourceType resource_type,
-      scoped_refptr<SafeBrowsingDatabaseManager>
-          database_manager,
-      scoped_refptr<BaseUIManager> ui_manager);
-
   // content::ResourceThrottle implementation (called on IO thread):
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
