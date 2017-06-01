@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -13,27 +13,39 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.util.concurrent.Callable;
 
 /**
  * Tests for the PromoDialog and PromoDialogLayout.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 public class PromoDialogTest {
+    // TODO(tedchoc): Find a way to introduce a lightweight activity that doesn't spin up the world.
+    //                crbug.com/728297
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     /**
      * Creates a PromoDialog.  Doesn't call {@link PromoDialog#show} because there is no Window to
      * attach them to, but it does create them and inflate the layouts.
@@ -44,16 +56,15 @@ public class PromoDialogTest {
         public final PromoDialog dialog;
         public final PromoDialogLayout dialogLayout;
 
-        private final Context mContext;
         private final DialogParams mDialogParams;
 
-        PromoDialogWrapper(final DialogParams dialogParams) throws Exception {
-            mContext = InstrumentationRegistry.getTargetContext();
+        PromoDialogWrapper(final Activity activity, final DialogParams dialogParams)
+                throws Exception {
             mDialogParams = dialogParams;
             dialog = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
                 @Override
                 public PromoDialog call() throws Exception {
-                    PromoDialog dialog = new PromoDialog(mContext) {
+                    PromoDialog dialog = new PromoDialog(activity) {
                         @Override
                         public DialogParams getDialogParams() {
                             return mDialogParams;
@@ -105,13 +116,8 @@ public class PromoDialogTest {
     }
 
     @Before
-    public void setUp() {
-        ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext(), true);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @Test
@@ -136,7 +142,8 @@ public class PromoDialogTest {
 
     /** Confirm that PromoDialogs are constructed with all the elements expected. */
     private void checkDialogControlVisibility(final DialogParams dialogParams) throws Exception {
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         View illustration = promoDialogLayout.findViewById(R.id.illustration);
@@ -175,7 +182,8 @@ public class PromoDialogTest {
         dialogParams.secondaryButtonStringResource = R.string.cancel;
         dialogParams.footerStringResource = R.string.learn_more;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         LinearLayout flippableLayout =
                 (LinearLayout) promoDialogLayout.findViewById(R.id.full_promo_content);
@@ -211,7 +219,8 @@ public class PromoDialogTest {
         dialogParams.primaryButtonStringResource = R.string.ok;
         dialogParams.secondaryButtonStringResource = R.string.cancel;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         // Nothing should have been clicked yet.
@@ -248,7 +257,8 @@ public class PromoDialogTest {
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         ViewGroup scrollableLayout =
                 (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
@@ -267,7 +277,8 @@ public class PromoDialogTest {
         dialogParams.headerStringResource = R.string.search_with_sogou;
         dialogParams.primaryButtonStringResource = R.string.ok;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         ViewGroup scrollableLayout =
                 (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
@@ -286,7 +297,8 @@ public class PromoDialogTest {
         dialogParams.headerStringResource = R.string.search_with_sogou;
         dialogParams.primaryButtonStringResource = R.string.ok;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         // Add a dummy control view to ensure the scrolling container has some content.

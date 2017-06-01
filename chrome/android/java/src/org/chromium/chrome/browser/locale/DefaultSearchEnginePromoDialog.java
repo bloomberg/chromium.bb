@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.locale;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -22,7 +21,6 @@ import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
-import org.chromium.ui.base.WindowAndroid;
 
 /** A dialog that forces the user to choose a default search engine. */
 public class DefaultSearchEnginePromoDialog extends PromoDialog {
@@ -46,11 +44,11 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
      * Construct and show the dialog.  Will be asynchronous if the TemplateUrlService has not yet
      * been loaded.
      *
-     * @param context     Context to build the dialog with.
+     * @param activity    Activity to build the dialog with.
      * @param dialogType  Type of dialog to show.
      * @param onDismissed Notified about whether the user chose an engine when it got dismissed.
      */
-    public static void show(final Context context, @SearchEnginePromoType final int dialogType,
+    public static void show(final Activity activity, @SearchEnginePromoType final int dialogType,
             @Nullable final Callback<Boolean> onDismissed) {
         assert LibraryLoader.isInitialized();
 
@@ -61,21 +59,20 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
             public void onTemplateUrlServiceLoaded() {
                 instance.unregisterLoadListener(this);
 
-                Activity activity = WindowAndroid.activityFromContext(context);
                 if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
                     if (onDismissed != null) onDismissed.onResult(false);
                     return;
                 }
 
-                new DefaultSearchEnginePromoDialog(context, dialogType, onDismissed).show();
+                new DefaultSearchEnginePromoDialog(activity, dialogType, onDismissed).show();
             }
         });
         if (!instance.isLoaded()) instance.load();
     }
 
     private DefaultSearchEnginePromoDialog(
-            Context context, int dialogType, @Nullable Callback<Boolean> onDismissed) {
-        super(context);
+            Activity activity, int dialogType, @Nullable Callback<Boolean> onDismissed) {
+        super(activity);
         mDialogType = dialogType;
         mOnDismissed = onDismissed;
         setOnDismissListener(this);
@@ -129,8 +126,8 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     @Override
     public void onDismiss(DialogInterface dialog) {
         if (mHelper.getCurrentlySelectedKeyword() == null) {
-            // This shouldn't happen, but in case it does, finish the Activity so that the user has
-            // to respond to the dialog next time.
+            // If no selection, finish the Activity so that the user has to respond to the dialog
+            // next time.
             if (getOwnerActivity() != null) getOwnerActivity().finish();
         }
 

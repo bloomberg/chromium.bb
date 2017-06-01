@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.app.Dialog;
-import android.content.Context;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,8 +18,8 @@ import org.chromium.chrome.R;
 /**
  * Generic builder for promo dialogs.
  */
-public abstract class PromoDialog
-        extends Dialog implements View.OnClickListener, DialogInterface.OnDismissListener {
+public abstract class PromoDialog extends AlwaysDismissedDialog
+        implements View.OnClickListener, DialogInterface.OnDismissListener {
     /** Parameters that can be used to create a new PromoDialog. */
     public static class DialogParams {
         /**
@@ -56,13 +55,13 @@ public abstract class PromoDialog
     private final FrameLayout mScrimView;
     private final PromoDialogLayout mDialogLayout;
 
-    protected PromoDialog(Context context) {
-        super(context, R.style.PromoDialog);
+    protected PromoDialog(Activity activity) {
+        super(activity, R.style.PromoDialog);
 
-        mScrimView = new FrameLayout(context);
+        mScrimView = new FrameLayout(activity);
         mScrimView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.modal_dialog_scrim_color));
-        LayoutInflater.from(context).inflate(R.layout.promo_dialog_layout, mScrimView, true);
+                activity.getResources(), R.color.modal_dialog_scrim_color));
+        LayoutInflater.from(activity).inflate(R.layout.promo_dialog_layout, mScrimView, true);
 
         mDialogLayout = (PromoDialogLayout) mScrimView.findViewById(R.id.promo_dialog_layout);
         mDialogLayout.initialize(getDialogParams());
