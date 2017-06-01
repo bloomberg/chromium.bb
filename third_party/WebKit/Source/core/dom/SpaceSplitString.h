@@ -21,6 +21,7 @@
 #ifndef SpaceSplitString_h
 #define SpaceSplitString_h
 
+#include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
@@ -28,7 +29,7 @@
 
 namespace blink {
 
-class SpaceSplitString {
+class CORE_EXPORT SpaceSplitString {
   USING_FAST_MALLOC(SpaceSplitString);
 
  public:
@@ -84,9 +85,11 @@ class SpaceSplitString {
     explicit Data(const AtomicString&);
     explicit Data(const Data&);
 
-    void CreateVector(const String&);
+    void CreateVector(const AtomicString&);
     template <typename CharacterType>
-    inline void CreateVector(const CharacterType*, unsigned);
+    inline void CreateVector(const AtomicString&,
+                             const CharacterType*,
+                             unsigned);
 
     AtomicString key_string_;
     Vector<AtomicString, 4> vector_;

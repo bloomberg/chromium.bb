@@ -1207,6 +1207,7 @@ source_set("unit_tests") {
     "dom/ScriptedAnimationControllerTest.cpp",
     "dom/ScriptedIdleTaskControllerTest.cpp",
     "dom/SelectorQueryTest.cpp",
+    "dom/SpaceSplitStringTest.cpp",
     "dom/StaticRangeTest.cpp",
     "dom/StyleElementTest.cpp",
     "dom/StyleEngineTest.cpp",
