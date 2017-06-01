@@ -29,10 +29,11 @@
 
 """Webkit-patch is a tool with multiple sub-commands with different purposes.
 
-Historically, it had commands related to dealing with bugzilla, and posting
-and comitting patches to WebKit. More recently, it has commands for printing
-expectations, fetching new test baselines, starting a commit-announcer IRC bot,
-etc. These commands don't necessarily have anything to do with each other.
+Historically, it had commands related to dealing with bugzilla and posting
+and committing patches to WebKit. More recently, it has commands for printing
+expectations, fetching new test baselines, etc.
+
+These commands don't necessarily have anything to do with each other.
 """
 
 import logging
@@ -43,6 +44,7 @@ from webkitpy.common.host import Host
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
+from webkitpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 from webkitpy.tool.commands.help_command import HelpCommand
 from webkitpy.tool.commands.layout_tests_server import LayoutTestsServer
@@ -51,12 +53,11 @@ from webkitpy.tool.commands.pretty_diff import PrettyDiff
 from webkitpy.tool.commands.queries import CrashLog
 from webkitpy.tool.commands.queries import PrintBaselines
 from webkitpy.tool.commands.queries import PrintExpectations
-from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
 from webkitpy.tool.commands.rebaseline import Rebaseline
 from webkitpy.tool.commands.rebaseline import RebaselineExpectations
-from webkitpy.tool.commands.rebaseline import RebaselineTest
 from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
 from webkitpy.tool.commands.rebaseline_server import RebaselineServer
+from webkitpy.tool.commands.rebaseline_test import RebaselineTest
 
 
 _log = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ class WebKitPatch(Host):
         self.commands = [
             AnalyzeBaselines(),
             AutoRebaseline(),
-            CopyExistingBaselinesInternal(),
+            CopyExistingBaselines(),
             CrashLog(),
             FlakyTests(),
             LayoutTestsServer(),
