@@ -9739,6 +9739,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.DircryptoMigrationTotalByteCountInMb" units="MB">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    The total byte count (MB) of the data in a user's home directory which is
+    being migrated from ecryptfs to ext4-crypto.  This is logged once when a new
+    migration starts.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMigrationTotalFileCount">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    The total file count in a user's home directory which is being migrated from
+    ecryptfs to ext4-crypto.  This is logged once when a new migration starts.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.Errors" enum="CryptohomeError">
   <owner>dkrahn@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
