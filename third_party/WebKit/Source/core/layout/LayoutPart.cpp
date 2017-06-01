@@ -36,6 +36,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 
@@ -302,6 +303,11 @@ LayoutRect LayoutPart::ReplacedContentRect() const {
   // cause the sub-frame to layout due to the 1px snap difference. In order to
   // avoid that, the size of sub-frame is rounded in advance.
   LayoutRect size_rounded_rect = ContentBoxRect();
+
+  // IFrames set as the root scroller should get their size from their parent.
+  if (ChildFrameView() && View() && RootScrollerUtil::IsEffective(*this))
+    size_rounded_rect = LayoutRect(LayoutPoint(), View()->ViewRect().Size());
+
   size_rounded_rect.SetSize(
       LayoutSize(RoundedIntSize(size_rounded_rect.Size())));
   return size_rounded_rect;

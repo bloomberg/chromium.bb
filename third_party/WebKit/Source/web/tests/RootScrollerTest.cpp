@@ -973,6 +973,78 @@ TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
   MainFrameView()->UpdateAllLifecyclePhases();
 }
 
+// Makes sure that when an iframe becomes the effective root scroller, its
+// FrameView stops sizing layout to the frame rect and uses its parent's layout
+// size instead. This allows matching the layout size semantics of the root
+// FrameView since its layout size can differ from the frame rect due to
+// resizes by the URL bar.
+TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
+  Initialize("root-scroller-iframe.html");
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  Document* document = MainFrame()->GetDocument();
+  HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
+      MainFrame()->GetDocument()->getElementById("iframe"));
+  LocalFrameView* iframe_view = ToLocalFrame(iframe->ContentFrame())->View();
+
+  ASSERT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+  ASSERT_EQ(IntSize(400, 400), iframe_view->Size());
+  ASSERT_TRUE(iframe_view->LayoutSizeFixedToFrameSize());
+
+  // Make the iframe the rootscroller. This should cause the iframe's layout
+  // size to be manually controlled.
+  {
+    document->setRootScroller(iframe);
+    EXPECT_FALSE(iframe_view->LayoutSizeFixedToFrameSize());
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
+  }
+
+  // Hide the URL bar, the iframe's frame rect should expand but the layout
+  // size should remain the same.
+  {
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, false);
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(400, 450), iframe_view->Size());
+  }
+
+  // Simulate a rotation. This time the layout size should reflect the resize.
+  {
+    GetWebView()->ResizeWithBrowserControls(IntSize(450, 400), 50, false);
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(450, 350), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(450, 400), iframe_view->Size());
+
+    // "Un-rotate" for following tests.
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, false);
+    MainFrameView()->UpdateAllLifecyclePhases();
+  }
+
+  // Show the URL bar again. The frame rect should match the viewport.
+  {
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
+  }
+
+  // Hide the URL bar and reset the rootScroller. The iframe should go back to
+  // tracking layout size by frame rect.
+  {
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, false);
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(400, 450), iframe_view->Size());
+    document->setRootScroller(nullptr);
+    EXPECT_TRUE(iframe_view->LayoutSizeFixedToFrameSize());
+    MainFrameView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
+    EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
+  }
+}
+
 // Ensure that removing the root scroller element causes an update to the RFV's
 // layout viewport immediately since old layout viewport is now part of a
 // detached layout hierarchy.
