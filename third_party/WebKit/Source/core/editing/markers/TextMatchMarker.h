@@ -86,6 +86,8 @@ class TextMatchMarker final : public DocumentMarker {
   MatchStatus match_status_;
   LayoutRect rendered_rect_;
   State layout_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextMatchMarker);
 };
 
 DEFINE_TYPE_CASTS(TextMatchMarker,
