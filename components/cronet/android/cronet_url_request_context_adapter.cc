@@ -490,9 +490,9 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
 
   if (http_server_properties_manager_)
-    http_server_properties_manager_->ShutdownOnPrefThread();
+    http_server_properties_manager_->ShutdownOnPrefSequence();
   if (network_qualities_prefs_manager_)
-    network_qualities_prefs_manager_->ShutdownOnPrefThread();
+    network_qualities_prefs_manager_->ShutdownOnPrefSequence();
   if (pref_service_)
     pref_service_->CommitPendingWrite();
   if (network_quality_estimator_) {
@@ -660,7 +660,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         http_server_properties_manager(new net::HttpServerPropertiesManager(
             new PrefServiceAdapter(pref_service_.get()),
             base::ThreadTaskRunnerHandle::Get(), GetNetworkTaskRunner()));
-    http_server_properties_manager->InitializeOnNetworkThread();
+    http_server_properties_manager->InitializeOnNetworkSequence();
     http_server_properties_manager_ = http_server_properties_manager.get();
     context_builder.SetHttpServerProperties(
         std::move(http_server_properties_manager));
