@@ -76,7 +76,7 @@ struct WhitelistedComponentExtensionIME {
 #endif
     {
         // Braille hardware keyboard IME that works together with ChromeVox.
-        extension_misc::kBrailleImeExtensionId, IDR_BRAILLE_MANIFEST,
+        extension_ime_util::kBrailleImeExtensionId, IDR_BRAILLE_MANIFEST,
     },
 };
 

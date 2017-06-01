@@ -64,12 +64,6 @@ const char kSelectToSpeakExtensionPath[] = "chromeos/select_to_speak";
 const char kSwitchAccessExtensionId[] = "pmehocpgjmkenlokgjfkaichfjdhpeol";
 const char kSwitchAccessExtensionPath[] = "chromeos/switch_access";
 const char kGuestManifestFilename[] = "manifest_guest.json";
-const char kBrailleImeExtensionId[] =
-    "jddehjeebkoimngcbdkaahpobgicbffp";
-const char kBrailleImeExtensionPath[] =
-    "chromeos/braille_ime";
-const char kBrailleImeEngineId[] =
-    "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";
 const char kConnectivityDiagnosticsLauncherPath[] =

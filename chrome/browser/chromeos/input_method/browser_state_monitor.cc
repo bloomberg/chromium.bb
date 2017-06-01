@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
 namespace input_method {

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
 namespace input_method {

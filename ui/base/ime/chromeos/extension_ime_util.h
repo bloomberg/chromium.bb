@@ -35,6 +35,12 @@ const char kChineseZhuyinExtensionId[] = "ekbifjdfhkmdeeajnolmgdlmkllopefi";
 const char kChineseCangjieExtensionId[] = "aeebooiibjahgpgmhkeocbeekccfknbj";
 #endif
 
+// Extension id, path (relative to |chrome::DIR_RESOURCES|) and IME engine
+// id for the builtin-in Braille IME extension.
+UI_BASE_IME_EXPORT extern const char kBrailleImeExtensionId[];
+UI_BASE_IME_EXPORT extern const char kBrailleImeExtensionPath[];
+UI_BASE_IME_EXPORT extern const char kBrailleImeEngineId[];
+
 // Returns InputMethodID for |engine_id| in |extension_id| of extension IME.
 // This function does not check |extension_id| is installed extension IME nor
 // |engine_id| is really a member of |extension_id|.

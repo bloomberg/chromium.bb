@@ -83,6 +83,7 @@
 #include "media/audio/sounds/sounds_manager.h"
 #include "media/base/media_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -173,7 +174,6 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
       notify(notify) {}
 
 ///////////////////////////////////////////////////////////////////////////////
-//
 // AccessibilityManager::PrefHandler
 
 AccessibilityManager::PrefHandler::PrefHandler(const char* pref_path)
@@ -1093,14 +1093,14 @@ void AccessibilityManager::UpdateBrailleImeState() {
       preload_engines_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::vector<base::StringPiece>::iterator it =
       std::find(preload_engines.begin(), preload_engines.end(),
-                extension_misc::kBrailleImeEngineId);
+                extension_ime_util::kBrailleImeEngineId);
   bool is_enabled = (it != preload_engines.end());
   bool should_be_enabled =
       (spoken_feedback_enabled_ && braille_display_connected_);
   if (is_enabled == should_be_enabled)
     return;
   if (should_be_enabled)
-    preload_engines.push_back(extension_misc::kBrailleImeEngineId);
+    preload_engines.push_back(extension_ime_util::kBrailleImeEngineId);
   else
     preload_engines.erase(it);
   pref_service->SetString(prefs::kLanguagePreloadEngines,
@@ -1123,7 +1123,7 @@ void AccessibilityManager::InputMethodChanged(
   const chromeos::input_method::InputMethodDescriptor descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =
-      (descriptor.id() == extension_misc::kBrailleImeEngineId);
+      (descriptor.id() == extension_ime_util::kBrailleImeEngineId);
 }
 
 void AccessibilityManager::OnSessionStateChanged() {
@@ -1425,7 +1425,7 @@ void AccessibilityManager::OnBrailleKeyEvent(const KeyEvent& event) {
       !braille_ime_current_) {
     input_method::InputMethodManager::Get()
         ->GetActiveIMEState()
-        ->ChangeInputMethod(extension_misc::kBrailleImeEngineId,
+        ->ChangeInputMethod(extension_ime_util::kBrailleImeEngineId,
                             false /* show_message */);
   }
 }
