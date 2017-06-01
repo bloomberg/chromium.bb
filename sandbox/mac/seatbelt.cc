@@ -4,6 +4,8 @@
 
 #include "sandbox/mac/seatbelt.h"
 
+#include <unistd.h>
+
 extern "C" {
 #include <sandbox.h>
 
@@ -11,6 +13,12 @@ int sandbox_init_with_parameters(const char* profile,
                                  uint64_t flags,
                                  const char* const parameters[],
                                  char** errorbuf);
+
+// Not deprecated. The canonical usage to test if sandboxed is
+// sandbox_check(getpid(), NULL, SANDBOX_FILTER_NONE), which returns
+// 1 if sandboxed. Note `type` is actually a sandbox_filter_type enum value, but
+// it is unused currently.
+int sandbox_check(pid_t pid, const char* operation, int type, ...);
 };
 
 namespace sandbox {
@@ -52,6 +60,11 @@ void Seatbelt::FreeError(char* errorbuf) {
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   return ::sandbox_free_error(errorbuf);
 #pragma clang diagnostic pop
+}
+
+// static
+bool Seatbelt::IsSandboxed() {
+  return ::sandbox_check(getpid(), NULL, 0);
 }
 
 }  // namespace sandbox
