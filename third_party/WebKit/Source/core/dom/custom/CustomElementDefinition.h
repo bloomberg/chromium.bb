@@ -29,6 +29,10 @@ class CORE_EXPORT CustomElementDefinition
   WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
 
  public:
+  // Each definition has an ID that is unique within the
+  // CustomElementRegistry that created it.
+  using Id = uint32_t;
+
   CustomElementDefinition(const CustomElementDescriptor&);
   CustomElementDefinition(const CustomElementDescriptor&,
                           const HashSet<AtomicString>&);

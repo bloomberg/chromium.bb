@@ -41,7 +41,8 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   bool CheckConstructorNotRegistered() override;
   bool CheckPrototype() override;
   bool RememberOriginalProperties() override;
-  CustomElementDefinition* Build(const CustomElementDescriptor&) override;
+  CustomElementDefinition* Build(const CustomElementDescriptor&,
+                                 CustomElementDefinition::Id) override;
 
  private:
   static ScriptCustomElementDefinitionBuilder* stack_;

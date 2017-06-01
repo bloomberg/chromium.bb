@@ -265,8 +265,8 @@ class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
  public:
   LogUpgradeBuilder() {}
 
-  CustomElementDefinition* Build(
-      const CustomElementDescriptor& descriptor) override {
+  CustomElementDefinition* Build(const CustomElementDescriptor& descriptor,
+                                 CustomElementDefinition::Id) override {
     return new LogUpgradeDefinition(descriptor);
   }
 };
