@@ -77,7 +77,7 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
   blink::WebElement result_element = start_node.QuerySelector(web_selector);
   int result_acc_obj_id = 0;
   if (!result_element.IsNull()) {
-    blink::WebAXObject result_acc_obj = result_element.AccessibilityObject();
+    auto result_acc_obj = blink::WebAXObject::FromWebNode(result_element);
     if (!result_acc_obj.IsDetached()) {
       while (result_acc_obj.AccessibilityIsIgnored())
         result_acc_obj = result_acc_obj.ParentObject();

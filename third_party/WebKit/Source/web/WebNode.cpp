@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/AXObject.h"
-#include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -50,7 +49,6 @@
 #include "core/layout/LayoutPart.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
@@ -175,14 +173,6 @@ bool WebNode::Focused() const {
 
 WebPluginContainer* WebNode::PluginContainer() const {
   return private_->GetWebPluginContainerBase();
-}
-
-WebAXObject WebNode::AccessibilityObject() {
-  WebDocument web_document = GetDocument();
-  const Document* doc = GetDocument().ConstUnwrap<Document>();
-  AXObjectCacheBase* cache = ToAXObjectCacheBase(doc->ExistingAXObjectCache());
-  Node* node = Unwrap<Node>();
-  return cache ? WebAXObject(cache->Get(node)) : WebAXObject();
 }
 
 WebNode::WebNode(Node* node) : private_(node) {}
