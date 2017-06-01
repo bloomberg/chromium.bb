@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
@@ -26,8 +26,7 @@ class WebFileWriterClient;
 namespace content {
 
 class WebFileSystemImpl : public blink::WebFileSystem,
-                          public WorkerThread::Observer,
-                          public base::NonThreadSafe {
+                          public WorkerThread::Observer {
  public:
   class WaitableCallbackResults;
 
@@ -106,6 +105,8 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   CallbacksMap callbacks_;
   int next_callbacks_id_;
   WaitableCallbackResultsMap waitable_results_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WebFileSystemImpl);
 };

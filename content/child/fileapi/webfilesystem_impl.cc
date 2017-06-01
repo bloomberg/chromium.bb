@@ -397,6 +397,7 @@ WebFileSystemImpl::WebFileSystemImpl(
 }
 
 WebFileSystemImpl::~WebFileSystemImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   g_webfilesystem_tls.Pointer()->Set(NULL);
 }
 
@@ -654,21 +655,21 @@ bool WebFileSystemImpl::WaitForAdditionalResult(int callbacksId) {
 
 int WebFileSystemImpl::RegisterCallbacks(
     const WebFileSystemCallbacks& callbacks) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int id = next_callbacks_id_++;
   callbacks_[id] = callbacks;
   return id;
 }
 
 WebFileSystemCallbacks WebFileSystemImpl::GetCallbacks(int callbacks_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CallbacksMap::iterator found = callbacks_.find(callbacks_id);
   DCHECK(found != callbacks_.end());
   return found->second;
 }
 
 void WebFileSystemImpl::UnregisterCallbacks(int callbacks_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CallbacksMap::iterator found = callbacks_.find(callbacks_id);
   DCHECK(found != callbacks_.end());
   callbacks_.erase(found);
