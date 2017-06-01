@@ -28,6 +28,7 @@
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebPointerProperties.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -64,6 +65,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::kTouchActionMax)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
+                              blink::WebPointerProperties::Button::kNoButton,
+                              blink::WebPointerProperties::Button::kLastEntry)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
+                          blink::WebPointerProperties::PointerType::kLastEntry)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)

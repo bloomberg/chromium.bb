@@ -29,7 +29,8 @@ class WebPointerProperties {
     kRight,
     kBack,
     kForward,
-    kEraser
+    kEraser,
+    kLastEntry = kEraser  // Must be the last entry in the list
   };
 
   enum class Buttons : unsigned {
