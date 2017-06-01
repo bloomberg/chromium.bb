@@ -59,7 +59,6 @@
 #include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebDistillability.h"
 #include "public/platform/WebURL.h"
-#include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
@@ -211,27 +210,6 @@ WebReferrerPolicy WebDocument::GetReferrerPolicy() const {
 
 WebString WebDocument::OutgoingReferrer() {
   return WebString(Unwrap<Document>()->OutgoingReferrer());
-}
-
-WebAXObject WebDocument::AccessibilityObject() const {
-  const Document* document = ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
-  return cache ? WebAXObject(cache->GetOrCreate(
-                     ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
-                         document->GetLayoutViewItem()))))
-               : WebAXObject();
-}
-
-WebAXObject WebDocument::AccessibilityObjectFromID(int ax_id) const {
-  const Document* document = ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
-  return cache ? WebAXObject(cache->ObjectFromAXID(ax_id)) : WebAXObject();
-}
-
-WebAXObject WebDocument::FocusedAccessibilityObject() const {
-  const Document* document = ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
-  return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 
 WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {

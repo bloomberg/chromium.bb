@@ -41,6 +41,9 @@
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/input/KeyboardEventManager.h"
+#include "core/layout/LayoutObject.h"
+#include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -1578,6 +1581,32 @@ WebAXObject WebAXObject::FromWebView(WebView& web_view) {
 
   Document* document = main_frame->GetDocument();
   return WebAXObject(ToAXObjectCacheImpl(document->AxObjectCache())->Root());
+}
+
+// static
+WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
+  const Document* document = web_document.ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->GetOrCreate(
+                     ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
+                         document->GetLayoutViewItem()))))
+               : WebAXObject();
+}
+
+// static
+WebAXObject WebAXObject::FromWebDocumentByID(const WebDocument& web_document,
+                                             int ax_id) {
+  const Document* document = web_document.ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->ObjectFromAXID(ax_id)) : WebAXObject();
+}
+
+// static
+WebAXObject WebAXObject::FromWebDocumentFocused(
+    const WebDocument& web_document) {
+  const Document* document = web_document.ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 
 }  // namespace blink

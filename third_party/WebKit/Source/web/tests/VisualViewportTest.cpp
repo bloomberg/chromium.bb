@@ -1890,7 +1890,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   // Because of where the visual viewport is located, this should hit the bottom
   // right target (target 4).
   WebAXObject hitNode =
-      web_doc.AccessibilityObject().HitTest(WebPoint(154, 165));
+      WebAXObject::FromWebDocument(web_doc).HitTest(WebPoint(154, 165));
   WebAXNameFrom name_from;
   WebVector<WebAXObject> name_objects;
   EXPECT_EQ(std::string("Target4"),

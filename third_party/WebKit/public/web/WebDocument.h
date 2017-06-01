@@ -49,7 +49,6 @@ class Local;
 namespace blink {
 
 class Document;
-class WebAXObject;
 class WebElement;
 class WebFormElement;
 class WebElementCollection;
@@ -108,19 +107,6 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebElement FocusedElement() const;
   BLINK_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
   BLINK_EXPORT WebString OutgoingReferrer();
-
-  // Accessibility support. These methods should only be called on the
-  // top-level document, because one accessibility cache spans all of
-  // the documents on the page.
-
-  // Gets the accessibility object for this document.
-  BLINK_EXPORT WebAXObject AccessibilityObject() const;
-
-  // Gets the accessibility object for an object on this page by ID.
-  BLINK_EXPORT WebAXObject AccessibilityObjectFromID(int ax_id) const;
-
-  // Gets the accessibility object that has focus.
-  BLINK_EXPORT WebAXObject FocusedAccessibilityObject() const;
 
   // Inserts the given CSS source code as a stylesheet in the document, and
   // return its id.
