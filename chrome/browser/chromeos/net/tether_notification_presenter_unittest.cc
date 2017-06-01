@@ -187,6 +187,11 @@ class TetherNotificationPresenterTest : public testing::Test {
         TetherNotificationPresenter::kPotentialHotspotNotificationId);
   }
 
+  std::string GetSetupRequiredNotificationId() {
+    return std::string(
+        TetherNotificationPresenter::kSetupRequiredNotificationId);
+  }
+
   void VerifySettingsOpened() {
     EXPECT_EQ(profile_.get(), test_settings_ui_delegate_->last_profile());
     EXPECT_EQ("networks?type=Tether",
@@ -248,6 +253,24 @@ TEST_F(TetherNotificationPresenterTest,
   // Tap the notification.
   test_message_center_->NotifyNotificationTapped(GetActiveHostNotificationId());
   VerifySettingsOpened();
+}
+
+TEST_F(TetherNotificationPresenterTest, TestSetupRequiredNotification) {
+  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
+      GetSetupRequiredNotificationId()));
+  notification_presenter_->NotifySetupRequired(test_device_.name);
+
+  message_center::Notification* notification =
+      test_message_center_->FindVisibleNotificationById(
+          GetSetupRequiredNotificationId());
+  EXPECT_TRUE(notification);
+  EXPECT_EQ(GetSetupRequiredNotificationId(), notification->id());
+
+  EXPECT_EQ(1u, test_message_center_->GetNumNotifications());
+  notification_presenter_->RemoveSetupRequiredNotification();
+  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
+      GetSetupRequiredNotificationId()));
+  EXPECT_EQ(0u, test_message_center_->GetNumNotifications());
 }
 
 TEST_F(TetherNotificationPresenterTest,

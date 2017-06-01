@@ -53,6 +53,11 @@ constexpr const char
         "cros_tether_notification_ids.potential_hotspot";
 
 // static
+constexpr const char
+    TetherNotificationPresenter::kSetupRequiredNotificationId[] =
+        "cros_tether_notification_ids.setup_required";
+
+// static
 std::unique_ptr<message_center::Notification>
 TetherNotificationPresenter::CreateNotification(const std::string& id,
                                                 const base::string16& title,
@@ -138,6 +143,27 @@ void TetherNotificationPresenter::RemovePotentialHotspotNotification() {
 
   message_center_->RemoveNotification(
       std::string(kPotentialHotspotNotificationId), false /* by_user */);
+}
+
+void TetherNotificationPresenter::NotifySetupRequired(
+    const std::string& device_name) {
+  PA_LOG(INFO) << "Displaying \"setup required\" notification. Notification "
+               << "ID = " << kSetupRequiredNotificationId;
+
+  ShowNotification(CreateNotification(
+      std::string(kSetupRequiredNotificationId),
+      l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_TITLE,
+                                 base::ASCIIToUTF16(device_name)),
+      l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_MESSAGE,
+                                 base::ASCIIToUTF16(device_name))));
+}
+
+void TetherNotificationPresenter::RemoveSetupRequiredNotification() {
+  PA_LOG(INFO) << "Removing \"setup required\" dialog. "
+               << "Notification ID = " << kSetupRequiredNotificationId;
+
+  message_center_->RemoveNotification(std::string(kSetupRequiredNotificationId),
+                                      false /* by_user */);
 }
 
 void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
