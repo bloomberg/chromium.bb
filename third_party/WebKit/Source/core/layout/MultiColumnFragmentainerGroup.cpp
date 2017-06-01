@@ -39,9 +39,8 @@ MultiColumnFragmentainerGroup::BlockOffsetInEnclosingFragmentationContext()
 
 LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
     unsigned column_index) const {
+  DCHECK(IsLogicalHeightKnown());
   LayoutUnit column_height = ColumnLogicalHeight();
-  if (!column_height)
-    return LayoutUnit();
   LayoutUnit logical_top = LogicalTopInFlowThreadAt(column_index);
   LayoutUnit logical_bottom = logical_top + column_height;
   if (logical_bottom > LogicalBottomInFlowThread()) {
@@ -65,6 +64,7 @@ void MultiColumnFragmentainerGroup::ResetColumnHeight() {
       // fragmentation context, in order to tell how much content this
       // MultiColumnFragmentainerGroup can hold, and when we need to append a
       // new one.
+      is_logical_height_known_ = true;
       logical_height_ = max_logical_height_;
       return;
     }
@@ -76,8 +76,10 @@ void MultiColumnFragmentainerGroup::ResetColumnHeight() {
   // height, we have to balance and shrink the height and lay out the columns
   // over again.
   if (LayoutUnit logical_height = flow_thread->ColumnHeightAvailable()) {
+    is_logical_height_known_ = true;
     SetAndConstrainColumnHeight(HeightAdjustedForRowOffset(logical_height));
   } else {
+    is_logical_height_known_ = false;
     logical_height_ = LayoutUnit();
   }
 }
@@ -119,6 +121,10 @@ bool MultiColumnFragmentainerGroup::RecalculateColumnHeight(
     // available for columns may have changed as well.
     SetAndConstrainColumnHeight(logical_height_);
   }
+
+  // We may not have found our final height yet, but at least we've found a
+  // height.
+  is_logical_height_known_ = true;
 
   if (logical_height_ == old_column_height)
     return false;  // No change. We're done.
@@ -295,16 +301,15 @@ unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
   // We must always return a value of 1 or greater. Column count = 0 is a
   // meaningless situation, and will confuse and cause problems in other parts
   // of the code.
-  LayoutUnit column_height = ColumnLogicalHeight();
-  if (!column_height)
+  if (!IsLogicalHeightKnown())
     return 1;
-
   // Our flow thread portion determines our column count. We have as many
   // columns as needed to fit all the content.
   LayoutUnit flow_thread_portion_height = LogicalHeightInFlowThread();
   if (!flow_thread_portion_height)
     return 1;
 
+  LayoutUnit column_height = ColumnLogicalHeight();
   unsigned count = (flow_thread_portion_height / column_height).Floor();
   // flowThreadPortionHeight may be saturated, so detect the remainder manually.
   if (count * column_height < flow_thread_portion_height)
@@ -315,11 +320,9 @@ unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
 
 LayoutUnit MultiColumnFragmentainerGroup::HeightAdjustedForRowOffset(
     LayoutUnit height) const {
-  // Let's avoid zero height, as that would cause an infinite amount of columns
-  // to be created.
-  return std::max(
-      height - LogicalTop() - column_set_.LogicalTopFromMulticolContentEdge(),
-      LayoutUnit(1));
+  LayoutUnit adjusted_height =
+      height - LogicalTop() - column_set_.LogicalTopFromMulticolContentEdge();
+  return adjusted_height.ClampNegativeToZero();
 }
 
 LayoutUnit MultiColumnFragmentainerGroup::CalculateMaxColumnHeight() const {
@@ -500,9 +503,9 @@ unsigned MultiColumnFragmentainerGroup::ColumnIndexAtOffset(
   if (offset_in_flow_thread < logical_top_in_flow_thread_)
     return 0;
 
-  LayoutUnit column_height = ColumnLogicalHeight();
-  if (!column_height)
+  if (!IsLogicalHeightKnown())
     return 0;
+  LayoutUnit column_height = ColumnLogicalHeight();
   unsigned column_index =
       ((offset_in_flow_thread - logical_top_in_flow_thread_) / column_height)
           .Floor();

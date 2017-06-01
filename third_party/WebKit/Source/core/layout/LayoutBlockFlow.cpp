@@ -1047,7 +1047,7 @@ LayoutUnit LayoutBlockFlow::AdjustFloatLogicalTopForPagination(
     } else {
       // Even if we didn't break before the border box to the next
       // fragmentainer, we need to check if we can fit the margin before it.
-      if (PageLogicalHeightForOffset(logical_top_margin_edge)) {
+      if (IsPageLogicalHeightKnown()) {
         LayoutUnit remaining_space = PageRemainingLogicalHeightForOffset(
             logical_top_margin_edge, kAssociateWithLatterPage);
         if (remaining_space <= margin_before) {
@@ -1133,9 +1133,9 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
   LayoutState* layout_state = View()->GetLayoutState();
   if (!layout_state->IsPaginated())
     return;
-  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
-  if (!page_logical_height)
+  if (!IsPageLogicalHeightKnown())
     return;
+  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
   LayoutUnit remaining_logical_height = PageRemainingLogicalHeightForOffset(
       logical_offset, kAssociateWithLatterPage);
   int line_index = LineCount(&line_box);
@@ -1242,8 +1242,7 @@ LayoutUnit LayoutBlockFlow::AdjustForUnsplittableChild(
   if (child.IsFloating())
     child_logical_height +=
         MarginBeforeForChild(child) + MarginAfterForChild(child);
-  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
-  if (!page_logical_height)
+  if (!IsPageLogicalHeightKnown())
     return logical_offset;
   LayoutUnit remaining_logical_height = PageRemainingLogicalHeightForOffset(
       logical_offset, kAssociateWithLatterPage);
@@ -1252,7 +1251,7 @@ LayoutUnit LayoutBlockFlow::AdjustForUnsplittableChild(
   LayoutUnit pagination_strut = CalculatePaginationStrutToFitContent(
       logical_offset, remaining_logical_height, child_logical_height);
   if (pagination_strut == remaining_logical_height &&
-      remaining_logical_height == page_logical_height) {
+      remaining_logical_height == PageLogicalHeightForOffset(logical_offset)) {
     // Don't break if we were at the top of a page, and we failed to fit the
     // content completely. No point in leaving a page completely blank.
     return logical_offset;
@@ -2393,13 +2392,13 @@ LayoutUnit LayoutBlockFlow::ApplyForcedBreak(LayoutUnit logical_offset,
   // next fragmentainer of the fragmentation context we're in. However, we may
   // want to find the next left or right page - even if we're inside a multicol
   // container when printing.
-  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
-  if (!page_logical_height)
-    return logical_offset;  // Page height is still unknown, so we cannot insert
-                            // forced breaks.
+  if (!IsPageLogicalHeightKnown()) {
+    // Page height is still unknown, so we cannot insert forced breaks.
+    return logical_offset;
+  }
   LayoutUnit remaining_logical_height = PageRemainingLogicalHeightForOffset(
       logical_offset, kAssociateWithLatterPage);
-  if (remaining_logical_height == page_logical_height)
+  if (remaining_logical_height == PageLogicalHeightForOffset(logical_offset))
     return logical_offset;  // Don't break if we're already at the block start
                             // of a fragmentainer.
 

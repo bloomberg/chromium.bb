@@ -651,7 +651,7 @@ void LayoutTable::UpdateLayout() {
     if (LayoutTableSection* section = Header()) {
       LayoutSection(*section, layouter, section_logical_left,
                     table_height_changing);
-      if (state.IsPaginated()) {
+      if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
         // If the repeating header group allows at least one row of content,
         // then store the offset for other sections to offset their rows
         // against.

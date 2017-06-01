@@ -4913,7 +4913,7 @@ void LayoutBox::UpdateFragmentationInfoForChild(LayoutBox& child) {
   LayoutState* layout_state = View()->GetLayoutState();
   DCHECK(layout_state->IsPaginated());
   child.SetOffsetToNextPage(LayoutUnit());
-  if (!PageLogicalHeightForOffset(child.LogicalTop()))
+  if (!IsPageLogicalHeightKnown())
     return;
 
   LayoutUnit logical_top = child.LogicalTop();
@@ -4930,11 +4930,11 @@ bool LayoutBox::ChildNeedsRelayoutForPagination(const LayoutBox& child) const {
   if (child.IsFloating())
     return true;
   const LayoutFlowThread* flow_thread = child.FlowThreadContainingBlock();
-  LayoutUnit logical_top = child.LogicalTop();
   // Figure out if we really need to force re-layout of the child. We only need
   // to do this if there's a chance that we need to recalculate pagination
   // struts inside.
-  if (PageLogicalHeightForOffset(logical_top)) {
+  if (IsPageLogicalHeightKnown()) {
+    LayoutUnit logical_top = child.LogicalTop();
     LayoutUnit logical_height = child.LogicalHeightWithVisibleOverflow();
     LayoutUnit remaining_space = PageRemainingLogicalHeightForOffset(
         logical_top, kAssociateWithLatterPage);
@@ -5731,12 +5731,22 @@ void LayoutBox::ClearPercentHeightDescendants() {
 }
 
 LayoutUnit LayoutBox::PageLogicalHeightForOffset(LayoutUnit offset) const {
+  // We need to have calculated some fragmentainer logical height (even a
+  // tentative one will do, though) in order to tell how tall one fragmentainer
+  // is.
+  DCHECK(IsPageLogicalHeightKnown());
+
   LayoutView* layout_view = View();
   LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
-  if (!flow_thread)
-    return layout_view->PageLogicalHeight();
-  return flow_thread->PageLogicalHeightForOffset(
-      offset + OffsetFromLogicalTopOfFirstPage());
+  LayoutUnit page_logical_height;
+  if (!flow_thread) {
+    page_logical_height = layout_view->PageLogicalHeight();
+  } else {
+    page_logical_height = flow_thread->PageLogicalHeightForOffset(
+        offset + OffsetFromLogicalTopOfFirstPage());
+  }
+  DCHECK_GT(page_logical_height, LayoutUnit());
+  return page_logical_height;
 }
 
 bool LayoutBox::IsPageLogicalHeightKnown() const {
@@ -5748,6 +5758,7 @@ bool LayoutBox::IsPageLogicalHeightKnown() const {
 LayoutUnit LayoutBox::PageRemainingLogicalHeightForOffset(
     LayoutUnit offset,
     PageBoundaryRule page_boundary_rule) const {
+  DCHECK(IsPageLogicalHeightKnown());
   LayoutView* layout_view = View();
   offset += OffsetFromLogicalTopOfFirstPage();
 
@@ -5771,7 +5782,7 @@ LayoutUnit LayoutBox::PageRemainingLogicalHeightForOffset(
 
 bool LayoutBox::CrossesPageBoundary(LayoutUnit offset,
                                     LayoutUnit logical_height) const {
-  if (!PageLogicalHeightForOffset(offset))
+  if (!IsPageLogicalHeightKnown())
     return false;
   return PageRemainingLogicalHeightForOffset(offset, kAssociateWithLatterPage) <
          logical_height;

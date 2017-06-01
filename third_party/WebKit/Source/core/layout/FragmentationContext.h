@@ -37,8 +37,10 @@ class CORE_EXPORT FragmentationContext {
   virtual bool IsFragmentainerLogicalHeightKnown() = 0;
 
   // Return the height of the fragmentainer at the specified offset. The
-  // fragmentainer height isn't necessarily uniform all across the fragmentation
-  // context.
+  // fragmentainer height isn't necessarily uniform all across the
+  // fragmentation context. This method may only be called if the logical
+  // height has been calculated, i.e. if IsFragmentainerLogicalHeightKnown()
+  // returns true.
   virtual LayoutUnit FragmentainerLogicalHeightAt(LayoutUnit block_offset) = 0;
 
   // Return how much is left of the fragmentainer at the specified offset.

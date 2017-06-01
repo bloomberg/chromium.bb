@@ -168,10 +168,11 @@ bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
 }
 
 LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(LayoutUnit offset) {
+  DCHECK(IsPageLogicalHeightKnown());
   LayoutMultiColumnSet* column_set =
       ColumnSetAtBlockOffset(offset, kAssociateWithLatterPage);
   if (!column_set)
-    return LayoutUnit();
+    return LayoutUnit(1);
 
   return column_set->PageLogicalHeightForOffset(offset);
 }
@@ -179,10 +180,11 @@ LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(LayoutUnit offset) {
 LayoutUnit LayoutFlowThread::PageRemainingLogicalHeightForOffset(
     LayoutUnit offset,
     PageBoundaryRule page_boundary_rule) {
+  DCHECK(IsPageLogicalHeightKnown());
   LayoutMultiColumnSet* column_set =
       ColumnSetAtBlockOffset(offset, page_boundary_rule);
   if (!column_set)
-    return LayoutUnit();
+    return LayoutUnit(1);
 
   return column_set->PageRemainingLogicalHeightForOffset(offset,
                                                          page_boundary_rule);

@@ -1217,9 +1217,9 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
   DCHECK(row);
   if (row->GetPaginationBreakability() == kAllowAnyBreaks)
     return 0;
-  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
-  if (!page_logical_height)
+  if (!IsPageLogicalHeightKnown())
     return 0;
+  LayoutUnit page_logical_height = PageLogicalHeightForOffset(logical_offset);
   // If the row is too tall for the page don't insert a strut.
   LayoutUnit row_logical_height = row->LogicalHeight();
   if (row_logical_height > page_logical_height)
@@ -1891,6 +1891,8 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
                                                 SubtreeLayoutScope& layouter) {
   row_object.SetPaginationStrut(LayoutUnit());
   row_object.SetLogicalHeight(LayoutUnit(LogicalHeightForRow(row_object)));
+  if (!IsPageLogicalHeightKnown())
+    return;
   int pagination_strut =
       PaginationStrutForRow(&row_object, row_object.LogicalTop());
   bool row_is_at_top_of_column = false;
@@ -1898,7 +1900,7 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   if (!pagination_strut) {
     LayoutUnit page_logical_height =
         PageLogicalHeightForOffset(row_object.LogicalTop());
-    if (page_logical_height && Table()->Header() && Table()->Header() != this &&
+    if (Table()->Header() && Table()->Header() != this &&
         Table()->RowOffsetFromRepeatingHeader()) {
       offset_from_top_of_page =
           page_logical_height -
@@ -1952,10 +1954,10 @@ bool LayoutTableSection::HeaderGroupShouldRepeat() const {
   // TODO(rhogan): Sections can be self-painting.
   if (HasSelfPaintingLayer())
     return false;
-  LayoutUnit page_height = PageLogicalHeightForOffset(LayoutUnit());
   // If we don't know the page height yet, just assume we fit.
-  if (!page_height)
+  if (!IsPageLogicalHeightKnown())
     return true;
+  LayoutUnit page_height = PageLogicalHeightForOffset(LayoutUnit());
 
   if (LogicalHeight() > page_height)
     return false;

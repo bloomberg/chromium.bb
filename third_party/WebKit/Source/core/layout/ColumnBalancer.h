@@ -55,9 +55,11 @@ class ColumnBalancer {
       // in a previous fragmentainer group.
       return false;
     }
+    const auto& group = GroupAtOffset(flow_thread_offset);
+    if (!group.IsLogicalHeightKnown())
+      return false;
     return flow_thread_offset ==
-           GroupAtOffset(flow_thread_offset)
-               .ColumnLogicalTopForOffset(flow_thread_offset);
+           group.ColumnLogicalTopForOffset(flow_thread_offset);
   }
 
   bool IsLogicalTopWithinBounds(LayoutUnit logical_top_in_flow_thread) const {
