@@ -53,7 +53,7 @@
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction" aria-labelledby="label"
-          aria-describedby="subLabel"
+          aria-describedby="subLabel" on-up="resetTrackLock_"
           disabled="[[controlDisabled_(disabled, pref)]]">
       </paper-toggle-button>
     </div>

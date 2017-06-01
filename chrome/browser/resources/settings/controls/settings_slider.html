@@ -67,7 +67,7 @@
       <paper-slider id="slider"
           disabled$="[[disableSlider_]]" snaps
           on-immediate-value-changed="onSliderChanged_" max="[[max]]"
-          min="[[min]]">
+          min="[[min]]" on-up="resetTrackLock_">
       </paper-slider>
       <div id="labels" disabled$="[[disableSlider_]]">
         <div id="label-begin">[[labelMin]]</div>
