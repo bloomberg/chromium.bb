@@ -12,6 +12,7 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GURL;
 
@@ -94,6 +95,7 @@ class LargeIconService : public KeyedService {
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
       bool may_page_url_be_private,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const base::Callback<void(bool success)>& callback);
 
  private:

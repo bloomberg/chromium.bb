@@ -8,6 +8,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/variations",
   "+net/base",
+  "+net/traffic_annotation",
   "+skia",
   "+third_party/skia",
   "+third_party/skia/include",
