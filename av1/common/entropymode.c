@@ -4535,6 +4535,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_CFL
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
 #endif
+#if CONFIG_INTRABC
+  fc->intrabc_prob = INTRABC_PROB_DEFAULT;
+#endif
 }
 
 int av1_switchable_interp_ind[SWITCHABLE_FILTERS];

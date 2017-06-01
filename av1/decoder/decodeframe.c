@@ -4795,6 +4795,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         for (i = 0; i < INTRA_MODES - 1; ++i)
           av1_diff_update_prob(&r, &cm->kf_y_prob[k][j][i], ACCT_STR);
 #endif
+#if CONFIG_INTRABC
+    if (cm->allow_screen_content_tools) {
+      av1_diff_update_prob(&r, &fc->intrabc_prob, ACCT_STR);
+    }
+#endif
   } else {
     read_inter_mode_probs(fc, &r);
 

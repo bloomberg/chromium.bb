@@ -2126,7 +2126,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #if CONFIG_INTRABC
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
     int use_intrabc = is_intrabc_block(mbmi);
-    aom_write(w, use_intrabc, INTRABC_PROB);
+    aom_write(w, use_intrabc, ec_ctx->intrabc_prob);
     if (use_intrabc) {
       assert(mbmi->mode == DC_PRED);
       assert(mbmi->uv_mode == DC_PRED);
@@ -4718,6 +4718,12 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                          counts->kf_y_mode[i][j], INTRA_MODES, probwt,
                          header_bc);
 #endif  // CONFIG_EC_ADAPT
+#if CONFIG_INTRABC
+    if (cm->allow_screen_content_tools) {
+      av1_cond_prob_diff_update(header_bc, &fc->intrabc_prob,
+                                cm->counts.intrabc, probwt);
+    }
+#endif
   } else {
     update_inter_mode_probs(cm, header_bc, counts);
 #if CONFIG_EXT_INTER

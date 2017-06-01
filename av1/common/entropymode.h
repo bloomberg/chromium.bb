@@ -73,7 +73,7 @@ extern "C" {
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_INTRABC
-#define INTRABC_PROB 192
+#define INTRABC_PROB_DEFAULT 192
 #endif  // CONFIG_INTRABC
 
 struct AV1Common;
@@ -230,6 +230,7 @@ typedef struct frame_contexts {
   nmv_context nmvc[NMV_CONTEXTS];
 #if CONFIG_INTRABC
   nmv_context ndvc;
+  aom_prob intrabc_prob;
 #endif
   int initialized;
 #if CONFIG_EXT_TX
@@ -405,6 +406,7 @@ typedef struct FRAME_COUNTS {
   unsigned int skip[SKIP_CONTEXTS][2];
   nmv_context_counts mv[NMV_CONTEXTS];
 #if CONFIG_INTRABC
+  unsigned int intrabc[2];
   nmv_context_counts dv;
 #endif
 #if CONFIG_DELTA_Q

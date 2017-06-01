@@ -1017,7 +1017,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
 #if CONFIG_INTRABC
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
-    mbmi->use_intrabc = aom_read(r, INTRABC_PROB, ACCT_STR);
+    mbmi->use_intrabc = aom_read(r, ec_ctx->intrabc_prob, ACCT_STR);
     if (mbmi->use_intrabc) {
       mbmi->mode = mbmi->uv_mode = DC_PRED;
 #if CONFIG_DUAL_FILTER

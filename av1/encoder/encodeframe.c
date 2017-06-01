@@ -1730,6 +1730,15 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
       }
     }
+#if CONFIG_INTRABC
+  } else {
+    if (cm->allow_screen_content_tools && bsize >= BLOCK_8X8) {
+      FRAME_COUNTS *const counts = td->counts;
+      ++counts->intrabc[mbmi->use_intrabc];
+    } else {
+      assert(!mbmi->use_intrabc);
+    }
+#endif
   }
 }
 

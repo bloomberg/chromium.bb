@@ -8109,6 +8109,11 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   MACROBLOCKD *const xd = &x->e_mbd;
   const TileInfo *tile = &xd->tile;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *const ec_ctx = cm->fc;
+#endif  // CONFIG_EC_ADAPT
   MODE_INFO *const mi = xd->mi[0];
   const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
   const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
@@ -8223,8 +8228,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                   x->mvcost, MV_COST_WEIGHT);
     const PREDICTION_MODE A = av1_above_block_mode(mi, xd->above_mi, 0);
     const PREDICTION_MODE L = av1_left_block_mode(mi, xd->left_mi, 0);
-    const int rate_mode =
-        cpi->y_mode_costs[A][L][DC_PRED] + av1_cost_bit(INTRABC_PROB, 1);
+    const int rate_mode = cpi->y_mode_costs[A][L][DC_PRED] +
+                          av1_cost_bit(ec_ctx->intrabc_prob, 1);
 
     RD_STATS rd_stats, rd_stats_uv;
     av1_subtract_plane(x, bsize, 0);
