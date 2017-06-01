@@ -11,6 +11,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Other changes
 - Fix building of Python bindings when cross-compiling. Thanks to
   Chris Brannon
+- lou_checkyaml is now only installed if libyaml is available. Thanks
+  to Christian Egli
 ** Braille table improvements
 - Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
   Kevin Derome
@@ -18,7 +20,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Roshanson
 - Fixes for the International Phonetic Alphabet Braille table thanks
   to Ludovic Oger
-- Added more unicode symbols (fractions and not equal) to the UEB
+- Added more Unicode symbols (fractions and not equal) to the UEB
   tables. Thanks to Paul Wood and James Bowden.
 - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
 - Vastly improved Danish tables thanks to Bue Vester-Andersen.
@@ -29,7 +31,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Appendix 3 (Symbols List) from the Rules of Unified English Braille
   Second Edition 2013 document thanks to Victor Montalvão.
 ** Backwards incompatible changes
-- The old greek table gr-gr-g1.utb is gone. Use el.ctb instead
+- The old Greek table gr-gr-g1.utb is gone. Use el.ctb instead
+- The doctests are gone. They have been superseded by the YAML tests.
 
 ** New, renamed or removed tables
 - sin.cti (new)
