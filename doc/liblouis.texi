@@ -2017,14 +2017,14 @@ resulting braille is encoded as Unicode dot patterns (as defined in
 @file{unicode.dis}).
 
 @example
-lou_translate unicode.dis,en-us-g2.ctb < input.txt
+lou_translate --forward unicode.dis,en-us-g2.ctb < input.txt
 @end example
 
 Use a pipe if you would rather just pass some given text to the
 translator.
 
 @example
-echo "The quick brown fox jumps over the lazy dog" | lou_translate unicode.dis,en-us-g2.ctb
+echo "The quick brown fox jumps over the lazy dog" | lou_translate -f unicode.dis,en-us-g2.ctb
 @end example
 
 The result will be written to standard output:
