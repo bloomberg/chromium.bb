@@ -200,13 +200,14 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
   if (apply_ink_drop) {
     SetInkDropMode(InkDropMode::ON);
     SetFocusPainter(nullptr);
-    constexpr int kIconSize = 16;
 #if defined(OS_LINUX)
+    constexpr int kIconSize = 16;
     set_ink_drop_base_color(SK_ColorWHITE);
     SetBorder(base::MakeUnique<AvatarButtonThemedBorder>());
     generic_avatar_ = gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
                                             kIconSize, gfx::kPlaceholderColor);
 #elif defined(OS_WIN)
+    constexpr int kIconSize = 16;
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     set_ink_drop_base_color(SK_ColorBLACK);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));
