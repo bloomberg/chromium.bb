@@ -898,6 +898,7 @@ class FlickrMobileStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL]
 
 
+@decorators.Disabled('android-webview')  # crbug.com/728528
 class PinterestMobileStory(_InfiniteScrollStory):
   NAME = 'browse:social:pinterest_infinite_scroll'
   URL = 'https://www.pinterest.com/all'
