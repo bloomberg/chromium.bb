@@ -9,7 +9,18 @@ config("libc++abi_warnings") {
   }
 }
 
-source_set("libc++abi") {
+# TODO(thomasanderson): Make this a source_set on all platforms when
+# https://bugs.llvm.org/show_bug.cgi?id=33272 is fixed.  Making this
+# target a static_library coincidentally fixes the issue since the
+# linking rules for it are different (__cxa_thread_atexit_impl is
+# undefined, but the only symbol that uses it, __cxa_thread_atexit, is
+# unused and optimized away).
+if (is_mac) {
+  link_target_type = "static_library"
+} else {
+  link_target_type = "source_set"
+}
+target(link_target_type, "libc++abi") {
   sources = [
     "trunk/src/abort_message.cpp",
     "trunk/src/cxa_aux_runtime.cpp",
