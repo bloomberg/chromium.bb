@@ -155,6 +155,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&) override;
 
+  void Detach() override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -197,10 +199,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   Member<DocumentLoader> document_loader_;
-  // FIXME: Oilpan: Ideally this should just be a traced Member but that will
-  // currently leak because ComputedStyle and its data are not on the heap.
-  // See crbug.com/383860 for details.
-  WeakMember<Document> document_;
+  Member<Document> document_;
 };
 
 }  // namespace blink
