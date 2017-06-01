@@ -365,6 +365,48 @@ ImageData* ImageData::CreateForTest(
   return new ImageData(size, buffer_view, color_settings);
 }
 
+// Crops ImageData to the intersect of its size and the given rectangle. If the
+// intersection is empty or it cannot create the cropped ImageData it returns
+// nullptr. This function leaves the source ImageData intact. When crop_rect
+// covers all the ImageData, a copy of the ImageData is returned.
+ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
+  IntRect src_rect(IntPoint(), size_);
+  const IntRect dst_rect = Intersection(src_rect, crop_rect);
+  if (dst_rect.IsEmpty())
+    return nullptr;
+
+  unsigned data_size = 4 * dst_rect.Width() * dst_rect.Height();
+  DOMArrayBufferView* buffer_view = AllocateAndValidateDataArray(
+      data_size,
+      ImageData::GetImageDataStorageFormat(color_settings_.storageFormat()));
+  if (!buffer_view)
+    return nullptr;
+
+  if (src_rect == dst_rect && !flip_y) {
+    std::memcpy(buffer_view->BufferBase()->Data(), BufferBase()->Data(),
+                data_size * buffer_view->TypeSize());
+  } else {
+    unsigned data_type_size =
+        ImageData::StorageFormatDataSize(color_settings_.storageFormat());
+    int src_index = (dst_rect.X() * src_rect.Width() + dst_rect.Y()) * 4;
+    int dst_index = 0;
+    if (flip_y)
+      dst_index = (dst_rect.Height() - 1) * dst_rect.Width() * 4;
+    int src_row_stride = src_rect.Width() * 4;
+    int dst_row_stride = flip_y ? -dst_rect.Width() * 4 : dst_rect.Width() * 4;
+    for (int i = 0; i < dst_rect.Height(); i++) {
+      std::memcpy(
+          static_cast<char*>(buffer_view->BufferBase()->Data()) +
+              dst_index * data_type_size,
+          static_cast<char*>(BufferBase()->Data()) + src_index * data_type_size,
+          dst_rect.Width() * 4 * data_type_size);
+      src_index += src_row_stride;
+      dst_index += dst_row_stride;
+    }
+  }
+  return new ImageData(dst_rect.Size(), buffer_view, &color_settings_);
+}
+
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            EventTarget& event_target,
                                            Optional<IntRect> crop_rect,
@@ -600,38 +642,6 @@ sk_sp<SkColorSpace> ImageData::GetSkColorSpace() {
   return SkColorSpace::MakeSRGB();
 }
 
-// This function returns the proper SkColorSpace to color correct the pixels
-// stored in ImageData before copying to the canvas. For now, it assumes that
-// both ImageData and canvas use a linear gamma curve.
-sk_sp<SkColorSpace> ImageData::GetSkColorSpace(
-    const CanvasColorSpace& color_space,
-    const CanvasPixelFormat& pixel_format) {
-  switch (color_space) {
-    case kLegacyCanvasColorSpace:
-      return (gfx::ColorSpace::CreateSRGB()).ToSkColorSpace();
-    case kSRGBCanvasColorSpace:
-      if (pixel_format == kF16CanvasPixelFormat)
-        return (gfx::ColorSpace::CreateSCRGBLinear()).ToSkColorSpace();
-      return (gfx::ColorSpace::CreateSRGB()).ToSkColorSpace();
-    case kRec2020CanvasColorSpace:
-      return (gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                              gfx::ColorSpace::TransferID::LINEAR))
-          .ToSkColorSpace();
-    case kP3CanvasColorSpace:
-      return (gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTEST432_1,
-                              gfx::ColorSpace::TransferID::LINEAR))
-          .ToSkColorSpace();
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-sk_sp<SkColorSpace> ImageData::GetSkColorSpaceForTest(
-    const CanvasColorSpace& color_space,
-    const CanvasPixelFormat& pixel_format) {
-  return GetSkColorSpace(color_space, pixel_format);
-}
-
 bool ImageData::ImageDataInCanvasColorSettings(
     const CanvasColorSpace& canvas_color_space,
     const CanvasPixelFormat& canvas_pixel_format,
@@ -690,16 +700,18 @@ bool ImageData::ImageDataInCanvasColorSettings(
 
   sk_sp<SkColorSpace> src_color_space = nullptr;
   if (data_) {
-    src_color_space = ImageData::GetSkColorSpace(image_data_color_space,
-                                                 kRGBA8CanvasPixelFormat);
+    src_color_space =
+        CanvasColorParams(image_data_color_space, kRGBA8CanvasPixelFormat)
+            .GetSkColorSpaceForSkSurfaces();
   } else {
-    src_color_space = ImageData::GetSkColorSpace(image_data_color_space,
-                                                 kF16CanvasPixelFormat);
+    src_color_space =
+        CanvasColorParams(image_data_color_space, kF16CanvasPixelFormat)
+            .GetSkColorSpaceForSkSurfaces();
   }
 
   sk_sp<SkColorSpace> dst_color_space =
-      ImageData::GetSkColorSpace(canvas_color_space, canvas_pixel_format);
-
+      CanvasColorParams(canvas_color_space, canvas_pixel_format)
+          .GetSkColorSpaceForSkSurfaces();
   SkColorSpaceXform::ColorFormat dst_color_format =
       SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
   if (canvas_pixel_format == kF16CanvasPixelFormat)

@@ -38,24 +38,15 @@ class ImageDataTest : public ::testing::Test {
 
 TEST_F(ImageDataTest, NegativeAndZeroIntSizeTest) {
   ImageData* image_data;
-
-  image_data = ImageData::Create(IntSize(0, 10));
-  EXPECT_EQ(image_data, nullptr);
-
-  image_data = ImageData::Create(IntSize(10, 0));
-  EXPECT_EQ(image_data, nullptr);
-
-  image_data = ImageData::Create(IntSize(0, 0));
-  EXPECT_EQ(image_data, nullptr);
-
-  image_data = ImageData::Create(IntSize(-1, 10));
-  EXPECT_EQ(image_data, nullptr);
-
-  image_data = ImageData::Create(IntSize(10, -1));
-  EXPECT_EQ(image_data, nullptr);
-
-  image_data = ImageData::Create(IntSize(-1, -1));
-  EXPECT_EQ(image_data, nullptr);
+  // Test scenarios
+  const int num_test_cases = 6;
+  const IntSize image_data_sizes[6] = {IntSize(0, 10),  IntSize(10, 0),
+                                       IntSize(0, 0),   IntSize(-1, 10),
+                                       IntSize(10, -1), IntSize(-1, -1)};
+  for (int i = 1; i < num_test_cases; i++) {
+    image_data = ImageData::Create(image_data_sizes[i]);
+    EXPECT_EQ(image_data, nullptr);
+  }
 }
 
 // Under asan_clang_phone, the test crashes after the memory allocation
@@ -250,15 +241,18 @@ bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
 
   sk_sp<SkColorSpace> src_sk_color_space = nullptr;
   if (u8_array) {
-    src_sk_color_space = ImageData::GetSkColorSpaceForTest(
-        src_color_space, kRGBA8CanvasPixelFormat);
+    src_sk_color_space =
+        CanvasColorParams(src_color_space, kRGBA8CanvasPixelFormat)
+            .GetSkColorSpaceForSkSurfaces();
   } else {
-    src_sk_color_space = ImageData::GetSkColorSpaceForTest(
-        src_color_space, kF16CanvasPixelFormat);
+    src_sk_color_space =
+        CanvasColorParams(src_color_space, kF16CanvasPixelFormat)
+            .GetSkColorSpaceForSkSurfaces();
   }
 
   sk_sp<SkColorSpace> dst_sk_color_space =
-      ImageData::GetSkColorSpaceForTest(dst_color_space, dst_pixel_format);
+      CanvasColorParams(dst_color_space, dst_pixel_format)
+          .GetSkColorSpaceForSkSurfaces();
 
   // When the input dataArray is in Uint16, we normally should convert the
   // values from Little Endian to Big Endian before passing the buffer to
@@ -396,6 +390,145 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
       }
     }
   }
+  delete[] u16_pixels;
+  delete[] f32_pixels;
+}
+
+// This test examines ImageData::CropRect()
+TEST_F(ImageDataTest, TestCropRect) {
+  const int num_image_data_storage_formats = 3;
+  ImageDataStorageFormat image_data_storage_formats[] = {
+      kUint8ClampedArrayStorageFormat, kUint16ArrayStorageFormat,
+      kFloat32ArrayStorageFormat,
+  };
+  String image_data_storage_format_names[] = {
+      kUint8ClampedArrayStorageFormatName, kUint16ArrayStorageFormatName,
+      kFloat32ArrayStorageFormatName,
+  };
+
+  // Source pixels
+  unsigned width = 20;
+  unsigned height = 20;
+  unsigned data_length = width * height * 4;
+  uint8_t* u8_pixels = new uint8_t[data_length];
+  uint16_t* u16_pixels = new uint16_t[data_length];
+  float* f32_pixels = new float[data_length];
+
+  // Test scenarios
+  const int num_test_cases = 12;
+  const IntRect crop_rects[12] = {
+      IntRect(3, 4, 5, 6),     IntRect(3, 4, 5, 6),    IntRect(10, 10, 20, 20),
+      IntRect(10, 10, 20, 20), IntRect(0, 0, 20, 20),  IntRect(0, 0, 20, 20),
+      IntRect(0, 0, 10, 10),   IntRect(0, 0, 10, 10),  IntRect(0, 0, 10, 0),
+      IntRect(0, 0, 0, 10),    IntRect(10, 0, 10, 10), IntRect(0, 10, 10, 10),
+  };
+  const bool crop_flips[12] = {true, false, true,  false, true,  false,
+                               true, false, false, false, false, false};
+
+  // Fill the pixels with numbers related to their positions
+  unsigned set_value = 0;
+  unsigned expected_value = 0;
+  float fexpected_value = 0;
+  unsigned index = 0, row_index = 0;
+  for (unsigned i = 0; i < height; i++)
+    for (unsigned j = 0; j < width; j++)
+      for (unsigned k = 0; k < 4; k++) {
+        index = i * width * 4 + j * 4 + k;
+        set_value = (i + 1) * (j + 1) * (k + 1);
+        u8_pixels[index] = set_value % 255;
+        u16_pixels[index] = (set_value * 257) % 65535;
+        f32_pixels[index] = (set_value % 255) / 255.0f;
+      }
+
+  // Create ImageData objects
+  DOMArrayBufferView* data_array = nullptr;
+
+  DOMUint8ClampedArray* data_u8 =
+      DOMUint8ClampedArray::Create(u8_pixels, data_length);
+  DCHECK(data_u8);
+  EXPECT_EQ(data_length, data_u8->length());
+  DOMUint16Array* data_u16 = DOMUint16Array::Create(u16_pixels, data_length);
+  DCHECK(data_u16);
+  EXPECT_EQ(data_length, data_u16->length());
+  DOMFloat32Array* data_f32 = DOMFloat32Array::Create(f32_pixels, data_length);
+  DCHECK(data_f32);
+  EXPECT_EQ(data_length, data_f32->length());
+
+  ImageData* image_data = nullptr;
+  ImageData* cropped_image_data = nullptr;
+
+  bool test_passed = true;
+  for (int i = 0; i < num_image_data_storage_formats; i++) {
+    if (image_data_storage_formats[i] == kUint8ClampedArrayStorageFormat)
+      data_array = static_cast<DOMArrayBufferView*>(data_u8);
+    else if (image_data_storage_formats[i] == kUint16ArrayStorageFormat)
+      data_array = static_cast<DOMArrayBufferView*>(data_u16);
+    else
+      data_array = static_cast<DOMArrayBufferView*>(data_f32);
+
+    ImageDataColorSettings color_settings;
+    color_settings.setStorageFormat(image_data_storage_format_names[i]);
+    image_data = ImageData::CreateForTest(IntSize(width, height), data_array,
+                                          &color_settings);
+    for (int j = 0; j < num_test_cases; j++) {
+      // Test the size of the cropped image data
+      IntRect src_rect(IntPoint(), image_data->Size());
+      IntRect crop_rect = Intersection(src_rect, crop_rects[j]);
+
+      cropped_image_data = image_data->CropRect(crop_rects[j], crop_flips[j]);
+      if (crop_rect.IsEmpty()) {
+        EXPECT_FALSE(cropped_image_data);
+        continue;
+      }
+      EXPECT_TRUE(cropped_image_data->Size() == crop_rect.Size());
+
+      // Test the content
+      for (int k = 0; k < crop_rect.Height(); k++)
+        for (int m = 0; m < crop_rect.Width(); m++)
+          for (int n = 0; n < 4; n++) {
+            row_index = crop_flips[j] ? (crop_rect.Height() - k - 1) : k;
+            index =
+                row_index * cropped_image_data->Size().Width() * 4 + m * 4 + n;
+            expected_value =
+                (k + crop_rect.X() + 1) * (m + crop_rect.Y() + 1) * (n + 1);
+            if (image_data_storage_formats[i] ==
+                kUint8ClampedArrayStorageFormat)
+              expected_value %= 255;
+            else if (image_data_storage_formats[i] == kUint16ArrayStorageFormat)
+              expected_value = (expected_value * 257) % 65535;
+            else
+              fexpected_value = (expected_value % 255) / 255.0f;
+
+            if (image_data_storage_formats[i] ==
+                kUint8ClampedArrayStorageFormat) {
+              if (cropped_image_data->data()->Data()[index] != expected_value) {
+                test_passed = false;
+                break;
+              }
+            } else if (image_data_storage_formats[i] ==
+                       kUint16ArrayStorageFormat) {
+              if (cropped_image_data->dataUnion()
+                      .getAsUint16Array()
+                      .View()
+                      ->Data()[index] != expected_value) {
+                test_passed = false;
+                break;
+              }
+            } else {
+              if (cropped_image_data->dataUnion()
+                      .getAsFloat32Array()
+                      .View()
+                      ->Data()[index] != fexpected_value) {
+                test_passed = false;
+                break;
+              }
+            }
+          }
+      EXPECT_TRUE(test_passed);
+    }
+  }
+
+  delete[] u8_pixels;
   delete[] u16_pixels;
   delete[] f32_pixels;
 }

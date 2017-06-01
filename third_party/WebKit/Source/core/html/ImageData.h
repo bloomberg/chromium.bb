@@ -39,6 +39,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/CanvasColorParams.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/Compiler.h"
@@ -108,8 +109,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   static ImageData* CreateForTest(const IntSize&,
                                   DOMArrayBufferView*,
                                   const ImageDataColorSettings* = nullptr);
-  static sk_sp<SkColorSpace> GetSkColorSpaceForTest(const CanvasColorSpace&,
-                                                    const CanvasPixelFormat&);
+
+  ImageData* CropRect(const IntRect&, bool = false);
 
   static CanvasColorSpace GetCanvasColorSpace(const String&);
   static String CanvasColorSpaceName(const CanvasColorSpace&);
@@ -193,9 +194,6 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
 
   static DOMFloat32Array* ConvertFloat16ArrayToFloat32Array(const uint16_t*,
                                                             unsigned);
-
-  static sk_sp<SkColorSpace> GetSkColorSpace(const CanvasColorSpace&,
-                                             const CanvasPixelFormat&);
 };
 
 }  // namespace blink
