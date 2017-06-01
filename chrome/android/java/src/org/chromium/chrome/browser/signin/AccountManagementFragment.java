@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 
@@ -114,6 +115,9 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_SYNC_SETTINGS = "sync_settings";
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
+
+    private static final String ACCOUNT_SETTINGS_ACTION = "android.settings.ACCOUNT_SYNC_SETTINGS";
+    private static final String ACCOUNT_SETTINGS_ACCOUNT_KEY = "account";
 
     private int mGaiaServiceType;
 
@@ -424,13 +428,11 @@ public class AccountManagementFragment extends PreferenceFragment
         }
         mAccountsListPreferences.clear();
 
-        final Preferences activity = (Preferences) getActivity();
         Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
         int nextPrefOrder = FIRST_ACCOUNT_PREF_ORDER;
 
-        for (Account account : accounts) {
-            ChromeBasePreference pref = new ChromeBasePreference(activity);
-            pref.setSelectable(false);
+        for (final Account account : accounts) {
+            ChromeBasePreference pref = new ChromeBasePreference(getActivity());
             pref.setTitle(account.name);
 
             boolean isChildAccount = mProfile.isChild();
@@ -438,6 +440,15 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
                         getUserPicture(account.name, getResources())));
+
+            pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(ACCOUNT_SETTINGS_ACTION);
+                    intent.putExtra(ACCOUNT_SETTINGS_ACCOUNT_KEY, account);
+                    return IntentUtils.safeStartActivity(getActivity(), intent);
+                }
+            });
 
             pref.setOrder(nextPrefOrder++);
             prefScreen.addPreference(pref);
