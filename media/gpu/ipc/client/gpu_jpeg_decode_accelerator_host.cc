@@ -24,8 +24,7 @@ namespace media {
 // Class to receive AcceleratedJpegDecoderHostMsg_DecodeAck IPC message on IO
 // thread. This does very similar what MessageFilter usually does. It is not
 // MessageFilter because GpuChannelHost doesn't support AddFilter.
-class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
-                                               public base::NonThreadSafe {
+class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener {
  public:
   Receiver(Client* client,
            const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
@@ -34,11 +33,11 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
         weak_factory_for_io_(
             base::MakeUnique<base::WeakPtrFactory<Receiver>>(this)),
         weak_ptr_for_io_(weak_factory_for_io_->GetWeakPtr()) {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
   ~Receiver() override {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // If |io_task_runner_| no longer accepts tasks, |weak_factory_for_io_|
     // will leak. This is acceptable, because that should only happen on
     // Browser shutdown.
@@ -96,6 +95,8 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
   // GPU IO task runner.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // Weak pointers will be invalidated on IO thread.
   std::unique_ptr<base::WeakPtrFactory<Receiver>> weak_factory_for_io_;
   base::WeakPtr<Receiver> weak_ptr_for_io_;
@@ -115,7 +116,7 @@ GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
 }
 
 GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Send(new AcceleratedJpegDecoderMsg_Destroy(decoder_route_id_));
 
   if (receiver_) {
@@ -140,7 +141,7 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
 
 bool GpuJpegDecodeAcceleratorHost::Initialize(
     JpegDecodeAccelerator::Client* client) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool succeeded = false;
   // This cannot be on IO thread because the msg is synchronous.
@@ -159,7 +160,7 @@ bool GpuJpegDecodeAcceleratorHost::Initialize(
 void GpuJpegDecodeAcceleratorHost::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(
       base::SharedMemory::IsHandleValid(video_frame->shared_memory_handle()));
@@ -202,7 +203,7 @@ bool GpuJpegDecodeAcceleratorHost::IsSupported() {
 }
 
 void GpuJpegDecodeAcceleratorHost::Send(IPC::Message* message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!channel_->Send(message)) {
     DLOG(ERROR) << "Send(" << message->type() << ") failed";

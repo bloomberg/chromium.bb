@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -26,7 +26,7 @@ class VASurface;
 class VaapiWrapper;
 
 // Picture is native pixmap abstraction (X11/Ozone).
-class VaapiPicture : public base::NonThreadSafe {
+class VaapiPicture {
  public:
   // Create a VaapiPicture of |size| to be associated with |picture_buffer_id|.
   // If provided, bind it to |texture_id|, as well as to |client_texture_id|
@@ -86,6 +86,8 @@ class VaapiPicture : public base::NonThreadSafe {
 
  private:
   int32_t picture_buffer_id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPicture);
 };

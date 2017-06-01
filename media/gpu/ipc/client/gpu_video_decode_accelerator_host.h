@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
@@ -31,8 +31,7 @@ namespace media {
 class GpuVideoDecodeAcceleratorHost
     : public IPC::Listener,
       public VideoDecodeAccelerator,
-      public gpu::CommandBufferProxyImpl::DeletionObserver,
-      public base::NonThreadSafe {
+      public gpu::CommandBufferProxyImpl::DeletionObserver {
  public:
   // |this| is guaranteed not to outlive |impl|.  (See comments for |impl_|.)
   explicit GpuVideoDecodeAcceleratorHost(gpu::CommandBufferProxyImpl* impl);
@@ -106,6 +105,9 @@ class GpuVideoDecodeAcceleratorHost
 
   // WeakPtr for posting tasks to ourself.
   base::WeakPtr<GpuVideoDecodeAcceleratorHost> weak_this_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<GpuVideoDecodeAcceleratorHost> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);

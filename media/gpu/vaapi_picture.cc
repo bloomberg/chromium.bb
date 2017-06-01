@@ -31,7 +31,9 @@ VaapiPicture::VaapiPicture(
       client_texture_id_(client_texture_id),
       picture_buffer_id_(picture_buffer_id) {}
 
-VaapiPicture::~VaapiPicture() {}
+VaapiPicture::~VaapiPicture() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 // static
 linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
