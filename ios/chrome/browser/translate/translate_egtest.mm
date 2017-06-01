@@ -679,6 +679,16 @@ using translate::LanguageDetectionController;
   [[EarlGrey selectElementWithMatcher:switchOn]
       assertWithMatcher:grey_notNil()];
 
+  // Assert that Spanish to English translation is not enabled after tapping
+  // the switch (should only be saved when "Done" button is tapped).
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("es", "en"),
+             @"Translate Spanish is disabled");
+
+  // Tap the "Done" button to save the preference.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   @"Done")] performAction:grey_tap()];
+
   // Assert that Spanish to English translation is enabled.
   GREYAssert(translatePrefs->IsLanguagePairWhitelisted("es", "en"),
              @"Translate Spanish is disabled");
