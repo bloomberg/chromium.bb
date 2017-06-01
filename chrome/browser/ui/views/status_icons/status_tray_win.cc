@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -40,8 +40,7 @@ UINT ReservedIconId(StatusTray::StatusIconType type) {
 // Exporer.exe via COM.  It spawns a background thread with a fresh COM
 // apartment and requests that the visibility be increased unless the user
 // has explicitly set the icon to be hidden.
-class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
-                                        public base::NonThreadSafe {
+class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy {
  public:
   StatusTrayStateChangerProxyImpl()
       : pending_requests_(0),
@@ -50,8 +49,12 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
     worker_thread_.init_com_with_mta(false);
   }
 
+  ~StatusTrayStateChangerProxyImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
   void EnqueueChange(UINT icon_id, HWND window) override {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (pending_requests_ == 0)
       worker_thread_.Start();
 
@@ -80,7 +83,7 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
 
   // Called on UI thread.
   void ChangeDone() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_GT(pending_requests_, 0);
 
     if (--pending_requests_ == 0)
@@ -90,6 +93,9 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
  private:
   int pending_requests_;
   base::Thread worker_thread_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<StatusTrayStateChangerProxyImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayStateChangerProxyImpl);

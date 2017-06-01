@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/scoped_comptr.h"
 
@@ -53,8 +53,7 @@ class __declspec(uuid("D782CCBA-AFB0-43F1-94DB-FDA3779EACCB")) INotificationCB
 // overflow area to the taskbar, and refuses to do anything if the user has
 // explicitly marked an icon to be always hidden.
 class StatusTrayStateChangerWin : public INotificationCB,
-                                  public base::win::IUnknownImpl,
-                                  public base::NonThreadSafe {
+                                  public base::win::IUnknownImpl {
  public:
   StatusTrayStateChangerWin(UINT icon_id, HWND window);
 
@@ -128,6 +127,8 @@ class StatusTrayStateChangerWin : public INotificationCB,
   //   StatusTrayStateChangerWin->Notify(NOTIFYITEM);
   // so we can't just return the notifyitem we're looking for.
   std::unique_ptr<NOTIFYITEM> notify_item_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayStateChangerWin);
 };
