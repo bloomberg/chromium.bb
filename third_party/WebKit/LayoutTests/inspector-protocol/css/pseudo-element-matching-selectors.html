@@ -8,61 +8,37 @@ function addBeforeElement()
     document.getElementById("style").textContent = "#for-pseudo:before { content: \"BEFORE\" }";
 }
 
-function test()
+async function test()
 {
     var nodeInfo = {};
     var childrenCallback;
 
     InspectorTest.eventHandler["DOM.setChildNodes"] = setChildNodes;
-    getDocument();
+    await InspectorTest.sendCommandOrDie("DOM.enable", {});
+    await InspectorTest.sendCommandOrDie("CSS.enable", {});
 
-    function getDocument()
-    {
-        step({
-            name: "Get the Document",
-            command: "DOM.getDocument",
-            parameters: {},
-            callback: getImmediateChildren
-        });
-    };
+    InspectorTest.log("\n=== Get the Document ===\n");
+    var result = await InspectorTest.sendCommandOrDie("DOM.getDocument", {});
+    var bodyId = result.root.children[0].children[1].nodeId;
 
-    function getImmediateChildren(result)
-    {
-        var bodyId = result.root.children[0].children[1].nodeId;
-        childrenCallback = onChildrenRequested;
-        step({
-            name: "Get immediate children of the body",
-            command: "DOM.requestChildNodes",
-            parameters: {"nodeId": bodyId}
-        });
-    };
+    InspectorTest.log("\n=== Get immediate children of the body ===\n");
+    result = await InspectorTest.sendCommandOrDie("DOM.requestChildNodes", {"nodeId": bodyId});
+    var node = findNodeById("for-pseudo");
+    var beforeNode = node.pseudoElements[0];
 
-    function onChildrenRequested()
-    {
-        var node = findNodeById("for-pseudo");
-        var beforeNode = node.pseudoElements[0];
-        step({
-            name: "Request matching styles for #for-pseudo::before",
-            command: "CSS.getMatchedStylesForNode",
-            parameters: {nodeId: beforeNode.nodeId},
-            callback: stylesReceived
-        });
-    }
-
-    function stylesReceived(result)
-    {
-        var matchedRules = result.matchedCSSRules;
-        for (var i = 0; i < matchedRules.length; ++i) {
-            var match = matchedRules[i];
-            if (match.rule.selectorList.text === "#for-pseudo::before") {
-                InspectorTest.log("#for-pseudo::before matching the :before element: " + (match.matchingSelectors[0] === 0));
-                InspectorTest.completeTest();
-                return;
-            }
+    InspectorTest.log("\n=== Request matching styles for #for-pseudo::before ===\n");
+    result = await InspectorTest.sendCommandOrDie("CSS.getMatchedStylesForNode", {nodeId: beforeNode.nodeId});
+    var matchedRules = result.matchedCSSRules;
+    for (var i = 0; i < matchedRules.length; ++i) {
+        var match = matchedRules[i];
+        if (match.rule.selectorList.text === "#for-pseudo::before") {
+            InspectorTest.log("#for-pseudo::before matching the :before element: " + (match.matchingSelectors[0] === 0));
+            InspectorTest.completeTest();
+            return;
         }
-        InspectorTest.log("#for-pseudo::before rule not received");
-        InspectorTest.completeTest();
     }
+    InspectorTest.log("#for-pseudo::before rule not received");
+    InspectorTest.completeTest();
 
     function setChildNodes(message)
     {
@@ -73,18 +49,6 @@ function test()
         childrenCallback = null;
         if (callback)
             callback();
-    }
-
-    function step(test)
-    {
-        InspectorTest.log("\n=== " + test.name + " ===\n");
-        InspectorTest.sendCommand(test.command, test.parameters, function(messageObject) {
-            if (messageObject.hasOwnProperty("error"))
-                InspectorTest.log("Backend error: " + messageObject.error.message + " (" + messageObject.error.code + ")\n");
-
-            if (test.callback)
-                test.callback(messageObject.result);
-        });
     }
 
     function findNodeById(id)
@@ -105,18 +69,10 @@ function test()
         return null;
     }
 
-    function addNodesRecursive(root)
-    {
-        addNode(root);
-        if (!root.children)
-            return;
-        for (var i = 0; i < root.children.length; ++i)
-            addNodesRecursive(root.children[i]);
-    }
-
-    function addNode(node)
+    function addNodesRecursive(node)
     {
         nodeInfo[node.nodeId] = node;
+        (node.children || []).forEach(addNodesRecursive);
     }
 }
 
