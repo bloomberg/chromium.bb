@@ -30,7 +30,7 @@ class WPTExpectationsUpdater(object):
         self.host = host
         self.port = self.host.port_factory.get()
         self.finder = PathFinder(self.host.filesystem)
-        self.port = self.host.port_factory.get()
+        self.ports_with_no_results = set()
 
     def run(self, args=None):
         """Downloads text new baselines and adds test expectations lines."""
@@ -101,10 +101,11 @@ class WPTExpectationsUpdater(object):
             this will return an empty dictionary.
         """
         layout_test_results = self.host.buildbot.fetch_results(build)
+        port_name = self.host.builders.port_name_for_builder_name(build.builder_name)
         if layout_test_results is None:
             _log.warning('No results for build %s', build)
+            self.ports_with_no_results.add(port_name)
             return {}
-        port_name = self.host.builders.port_name_for_builder_name(build.builder_name)
         test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
         failing_results_dict = self.generate_results_dict(port_name, test_results)
         return failing_results_dict
@@ -274,9 +275,23 @@ class WPTExpectationsUpdater(object):
         return line_list
 
     def _create_line(self, test_name, port_names, results):
-        """Constructs one test expectations line string."""
+        """Constructs and returns a test expectation line string."""
+        port_names = self.tuple_or_value_to_list(port_names)
+
+        # The set of ports with no results is assumed to have have no
+        # overlap with the set of port names passed in here.
+        assert (set(port_names) & self.ports_with_no_results) == set()
+
+        # The ports with no results are generally ports of builders that
+        # failed, maybe for unrelated reasons. At this point, we add ports
+        # with no results to the list of platforms because we're guessing
+        # that this new expectation might be cross-platform and should
+        # also apply to any ports that we weren't able to get results for.
+        port_names.extend(self.ports_with_no_results)
+
+        specifier_part = self.specifier_part(port_names, test_name)
+
         line_parts = [results['bug']]
-        specifier_part = self.specifier_part(self.to_list(port_names), test_name)
         if specifier_part:
             line_parts.append(specifier_part)
         line_parts.append(test_name)
@@ -306,7 +321,7 @@ class WPTExpectationsUpdater(object):
         return '[ %s ]' % ' '.join(specifiers)
 
     @staticmethod
-    def to_list(tuple_or_value):
+    def tuple_or_value_to_list(tuple_or_value):
         """Converts a tuple to a list, and a string value to a one-item list."""
         if isinstance(tuple_or_value, tuple):
             return list(tuple_or_value)
