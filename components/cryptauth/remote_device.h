@@ -23,7 +23,7 @@ struct RemoteDevice {
 
   // Note: To save space, the BeaconSeeds may not necessarily be included in
   // this object.
-  bool are_beacon_seeds_loaded;
+  bool are_beacon_seeds_loaded = false;
   std::vector<BeaconSeed> beacon_seeds;
 
   RemoteDevice();
