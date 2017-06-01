@@ -125,27 +125,49 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   bool Uninstall() override;
 
  private:
+  struct RegistrationInfo : base::RefCountedThreadSafe<RegistrationInfo> {
+    RegistrationInfo();
+
+    base::FilePath install_dir;
+    base::Version version;
+    std::string fingerprint;
+    std::unique_ptr<base::DictionaryValue> manifest;
+
+   private:
+    friend class base::RefCountedThreadSafe<RegistrationInfo>;
+
+    ~RegistrationInfo();
+
+    DISALLOW_COPY_AND_ASSIGN(RegistrationInfo);
+  };
+
   ~DefaultComponentInstaller() override;
 
   // If there is a installation of the component set up alongside Chrome's
   // files (as opposed to in the user data directory), sets current_* to the
   // values associated with that installation and returns true; otherwise,
   // returns false.
-  bool FindPreinstallation(const base::FilePath& root);
+  bool FindPreinstallation(
+      const base::FilePath& root,
+      const scoped_refptr<RegistrationInfo>& registration_info);
   update_client::CrxInstaller::Result InstallHelper(
       const base::DictionaryValue& manifest,
       const base::FilePath& unpack_path,
       const base::FilePath& install_path);
-  void StartRegistration(ComponentUpdateService* cus);
-  void FinishRegistration(ComponentUpdateService* cus,
-                          const base::Closure& callback);
+  void StartRegistration(
+      const scoped_refptr<RegistrationInfo>& registration_info,
+      ComponentUpdateService* cus);
+  void FinishRegistration(
+      const scoped_refptr<RegistrationInfo>& registration_info,
+      ComponentUpdateService* cus,
+      const base::Closure& callback);
   void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 
   base::FilePath current_install_dir_;
   base::Version current_version_;
   std::string current_fingerprint_;
-  std::unique_ptr<base::DictionaryValue> current_manifest_;
+
   std::unique_ptr<ComponentInstallerTraits> installer_traits_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
