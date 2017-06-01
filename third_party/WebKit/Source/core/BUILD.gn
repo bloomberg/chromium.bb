@@ -1184,6 +1184,8 @@ source_set("unit_tests") {
     "css/resolver/MatchResultTest.cpp",
     "css/resolver/ScopedStyleResolverTest.cpp",
     "css/resolver/SharedStyleFinderTest.cpp",
+    "css/threaded/CSSToLengthConversionDataThreadedTest.cpp",
+    "css/threaded/FilterOperationResolverThreadedTest.cpp",
     "dom/AttrTest.cpp",
     "dom/CSSSelectorWatchTest.cpp",
     "dom/DOMImplementationTest.cpp",
