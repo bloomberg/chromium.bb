@@ -12518,21 +12518,23 @@
         ],
         "vm_tests_override": null
     },
-    "lakitu-st-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lakitu-st"
-        ],
-        "buildslave_type": "baremetal",
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "lakitu-st-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
             "lakitu-st"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "lakitu-st-full": {
@@ -12541,54 +12543,194 @@
             "lakitu-st"
         ],
         "buildslave_type": "baremetal",
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "prebuilts": "public",
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "lakitu-st-incremental": {
+        "_template": "incremental",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal",
+        "description": "Incremental Builds (internal)",
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "lakitu-st-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "lakitu-st"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "lakitu-st-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "lakitu-st"
         ],
+        "buildslave_type": "baremetal",
+        "chrome_sdk": false,
+        "description": "Commit Queue (internal)",
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
+        ],
+        "image_test": false,
         "important": false,
-        "vm_tests": []
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
+    },
+    "lakitu-st-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "lakitu-st"
+        ]
     },
     "lakitu-st-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "lakitu-st"
         ],
-        "buildslave_type": "baremetal"
+        "buildslave_type": "baremetal",
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+        ]
     },
     "lakitu-st-release": {
         "_template": "release",
         "active_waterfall": "chromeos",
-        "boards": [
-            "lakitu-st"
-        ],
-        "buildslave_type": "baremetal"
-    },
-    "lakitu-st-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
         "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal"
-        ]
+        "chrome_sdk": false,
+        "dev_installer_prebuilts": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
+        "hw_tests": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
+        "sign_types": [
+            "base"
+        ],
+        "sync_chrome": false,
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": null
     },
     "lakitu-st-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
             "lakitu-st"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "lakitu-unittest-stress": {
@@ -14229,6 +14371,7 @@
             "kip-paladin",
             "lakitu-gpu-paladin",
             "lakitu-paladin",
+            "lakitu-st-paladin",
             "lasilla-ground-paladin",
             "lasilla-sky-paladin",
             "leon-paladin",

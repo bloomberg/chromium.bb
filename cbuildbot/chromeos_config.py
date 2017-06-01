@@ -509,6 +509,7 @@ _x86_internal_release_boards = frozenset([
     'kunimitsu',
     'lakitu',
     'lakitu-gpu',
+    'lakitu-st',
     'lakitu_next',
     'lars',
     'leon',
@@ -628,6 +629,7 @@ _beaglebone_boards = frozenset([
 _lakitu_boards = frozenset([
     'lakitu',
     'lakitu-gpu',
+    'lakitu-st',
     'lakitu_next',
 ])
 
@@ -2220,6 +2222,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan',
       'eve',
       'lakitu-gpu', # crbug.com/732942
+      'lakitu-st',
       'veyron_jaq',
       'veyron_tiger',
   ])
@@ -2607,6 +2610,16 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-gpu'],
+      site_config.templates.lakitu_test_customizations,
+      active_waterfall=constants.WATERFALL_INTERNAL,
+  )
+
+  site_config.Add(
+      'lakitu-st-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
+      board_configs['lakitu-st'],
       site_config.templates.lakitu_test_customizations,
       active_waterfall=constants.WATERFALL_INTERNAL,
   )
@@ -3310,6 +3323,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-gpu-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
+      'lakitu-st-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
       'lakitu_next-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
@@ -3334,6 +3350,12 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       ),
 
       'lakitu-gpu-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+          site_config.templates.lakitu_notification_emails,
+          sign_types=['base'],
+      ),
+
+      'lakitu-st-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
