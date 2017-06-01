@@ -375,10 +375,25 @@ class HomePrefNotificationBridge {
 }
 
 - (NSView*)backOrForwardTouchBarView {
-  NSArray* images = @[
+  NSMutableArray* images = [NSMutableArray arrayWithArray:@[
     CreateNSImageFromIcon(ui::kBackArrowIcon),
     CreateNSImageFromIcon(ui::kForwardArrowIcon)
-  ];
+  ]];
+
+  // Offset the icons so that it matches the height of the other Touch Bar
+  // items.
+  const int kIconYOffset = 2;
+  for (NSUInteger i = 0; i < [images count]; i++) {
+    NSImage* image = [images objectAtIndex:i];
+    NSSize size = [image size];
+    size.height += kIconYOffset;
+
+    NSImage* offsettedImage = [[[NSImage alloc] initWithSize:size] autorelease];
+    [offsettedImage lockFocus];
+    [image drawInRect:NSMakeRect(0, 0, size.width, size.height - kIconYOffset)];
+    [offsettedImage unlockFocus];
+    [images replaceObjectAtIndex:i withObject:offsettedImage];
+  }
 
   NSSegmentedControl* control = [NSSegmentedControl
       segmentedControlWithImages:images
