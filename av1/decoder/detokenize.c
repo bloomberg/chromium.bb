@@ -218,7 +218,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 }
 #endif  // !CONFIG_PVQ
 
-#if CONFIG_PALETTE
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
                                aom_reader *r) {
   const MODE_INFO *const mi = xd->mi[0];
@@ -281,7 +280,6 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
            color_map + (rows - 1) * plane_block_width, plane_block_width);
   }
 }
-#endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,

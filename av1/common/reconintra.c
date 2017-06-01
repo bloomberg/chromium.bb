@@ -2991,7 +2991,6 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
   const int have_bottom_left =
       has_bottom_left(bsize, mi_row, mi_col, bottom_available, have_left,
                       tx_size, row_off, col_off, pd->subsampling_y);
-#if CONFIG_PALETTE
   if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane != 0] > 0) {
     const int stride = wpx;
     int r, c;
@@ -3020,7 +3019,6 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
 #endif  // CONFIG_HIGHBITDEPTH
     return;
   }
-#endif  // CONFIG_PALETTE
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {

@@ -1898,12 +1898,10 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int row_y, col_y, row_c, col_c;
       int plane;
 
-#if CONFIG_PALETTE
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane])
           av1_decode_palette_tokens(xd, plane, r);
       }
-#endif
 
       for (row_y = 0; row_y < tu_num_h_y; row_y++) {
         for (col_y = 0; col_y < tu_num_w_y; col_y++) {
@@ -1983,12 +1981,10 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #else  // CONFIG_COEF_INTERLEAVE
   if (!is_inter_block(mbmi)) {
     int plane;
-#if CONFIG_PALETTE
     for (plane = 0; plane <= 1; ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
-#endif  // CONFIG_PALETTE
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
@@ -3841,10 +3837,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->xd.daala_dec.state.adapt = &td->tctx.pvq_context;
 #endif
 
-#if CONFIG_PALETTE
       td->xd.plane[0].color_index_map = td->color_index_map[0];
       td->xd.plane[1].color_index_map = td->color_index_map[1];
-#endif  // CONFIG_PALETTE
     }
   }
 
@@ -4223,10 +4217,8 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         // Initialise the tile context from the frame context
         twd->tctx = *cm->fc;
         twd->xd.tile_ctx = &twd->tctx;
-#if CONFIG_PALETTE
         twd->xd.plane[0].color_index_map = twd->color_index_map[0];
         twd->xd.plane[1].color_index_map = twd->color_index_map[1];
-#endif  // CONFIG_PALETTE
 
         worker->had_error = 0;
         if (i == num_workers - 1 || tile_col == tile_cols_end - 1) {
@@ -4561,17 +4553,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
     cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
-#if CONFIG_PALETTE || CONFIG_INTRABC
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 #if CONFIG_TEMPMV_SIGNALING
     cm->use_prev_frame_mvs = 0;
 #endif
   } else {
     cm->intra_only = cm->show_frame ? 0 : aom_rb_read_bit(rb);
-#if CONFIG_PALETTE || CONFIG_INTRABC
     if (cm->intra_only) cm->allow_screen_content_tools = aom_rb_read_bit(rb);
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 #if CONFIG_TEMPMV_SIGNALING
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
 #endif

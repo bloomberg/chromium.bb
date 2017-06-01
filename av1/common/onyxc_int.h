@@ -232,9 +232,7 @@ typedef struct AV1Common {
 
   int allow_high_precision_mv;
 
-#if CONFIG_PALETTE || CONFIG_INTRABC
   int allow_screen_content_tools;
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 #if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA
   int allow_interintra_compound;

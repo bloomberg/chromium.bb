@@ -153,7 +153,7 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd) {
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+#if CONFIG_PALETTE_DELTA_ENCODING
 int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
                           int plane, uint16_t *cache) {
   int above_n = 0, left_n = 0;
@@ -193,7 +193,7 @@ int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
   assert(n <= 2 * PALETTE_MAX_SIZE);
   return n;
 }
-#endif  // CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real macroblocks.

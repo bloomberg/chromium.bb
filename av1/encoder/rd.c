@@ -117,7 +117,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              fc->switchable_interp_cdf[i],
                              av1_switchable_interp_inv);
 
-#if CONFIG_PALETTE
   for (i = 0; i < PALETTE_BLOCK_SIZES; ++i) {
     av1_cost_tokens_from_cdf(x->palette_y_size_cost[i],
                              fc->palette_y_size_cdf[i], NULL);
@@ -133,7 +132,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                fc->palette_uv_color_index_cdf[i][j], NULL);
     }
   }
-#endif  // CONFIG_PALETTE
 
   for (i = 0; i < MAX_TX_DEPTH; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)

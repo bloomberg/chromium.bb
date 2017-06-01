@@ -40,7 +40,6 @@ extern "C" {
 #define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_PALETTE
 // Number of possible contexts for a color index.
 // As can be seen from av1_get_palette_color_index_context(), the possible
 // contexts are (2,0,0), (2,2,1), (3,2,0), (4,1,0), (5,0,0). These are mapped to
@@ -70,7 +69,6 @@ extern "C" {
 #define PALETTE_UV_MODE_CONTEXTS 2
 
 #define PALETTE_MAX_BLOCK_SIZE (64 * 64)
-#endif  // CONFIG_PALETTE
 
 #if CONFIG_INTRABC
 #define INTRABC_PROB_DEFAULT 192
@@ -234,7 +232,6 @@ typedef struct frame_contexts {
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
-#if CONFIG_PALETTE
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
   aom_cdf_prob palette_uv_size_cdf[PALETTE_BLOCK_SIZES]
                                   [CDF_SIZE(PALETTE_SIZES)];
@@ -244,7 +241,6 @@ typedef struct frame_contexts {
   aom_cdf_prob palette_uv_color_index_cdf[PALETTE_SIZES]
                                          [PALETTE_COLOR_INDEX_CONTEXTS]
                                          [CDF_SIZE(PALETTE_COLORS)];
-#endif  // CONFIG_PALETTE
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
@@ -516,12 +512,10 @@ typedef struct FRAME_COUNTS {
 extern const aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                            [CDF_SIZE(INTRA_MODES)];
 
-#if CONFIG_PALETTE
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
                                                      [PALETTE_Y_MODE_CONTEXTS];
 extern const aom_prob
     av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
-#endif  // CONFIG_PALETTE
 
 extern const int av1_intra_mode_ind[INTRA_MODES];
 extern const int av1_intra_mode_inv[INTRA_MODES];
@@ -552,10 +546,8 @@ extern const aom_tree_index
 #endif
 extern const aom_tree_index
     av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
-#if CONFIG_PALETTE
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
-#endif  // CONFIG_PALETTE
 extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 extern const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)];
@@ -607,14 +599,12 @@ static INLINE int av1_ceil_log2(int n) {
   return i;
 }
 
-#if CONFIG_PALETTE
 // Returns the context for palette color index at row 'r' and column 'c',
 // along with the 'color_order' of neighbors and the 'color_idx'.
 // The 'color_map' is a 2D array with the given 'stride'.
 int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
                                         int r, int c, int palette_size,
                                         uint8_t *color_order, int *color_idx);
-#endif  // CONFIG_PALETTE
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -50,9 +50,9 @@
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/mcomp.h"
-#if CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+#if CONFIG_PALETTE_DELTA_ENCODING
 #include "av1/encoder/palette.h"
-#endif  // CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
@@ -67,7 +67,6 @@ static struct av1_token
     inter_singleref_comp_mode_encodings[INTER_SINGLEREF_COMP_MODES];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
   const int l = get_unsigned_bits(n);
   const int m = (1 << l) - n;
@@ -79,7 +78,6 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
     aom_write_literal(w, (v - m) & 1, 1);
   }
 }
-#endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 
 #if CONFIG_EXT_TX
 static struct av1_token ext_tx_inter_encodings[EXT_TX_SETS_INTER][TX_TYPES];
@@ -622,7 +620,6 @@ static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
 }
 #endif
 
-#if CONFIG_PALETTE
 static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
                                 int num) {
   const TOKENEXTRA *p = *tp;
@@ -635,7 +632,6 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   }
   *tp = p;
 }
-#endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ
 #if CONFIG_SUPERTX
@@ -1280,11 +1276,7 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
                                          const MB_MODE_INFO *const mbmi,
                                          int mi_row, int mi_col,
                                          aom_writer *w) {
-  if (mbmi->mode == DC_PRED
-#if CONFIG_PALETTE
-      && mbmi->palette_mode_info.palette_size[0] == 0
-#endif  // CONFIG_PALETTE
-      ) {
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
     aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
               cm->fc->filter_intra_probs[0]);
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
@@ -1305,11 +1297,8 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
   (void)mi_col;
 #endif  // CONFIG_CB4X4
 
-  if (mbmi->uv_mode == UV_DC_PRED
-#if CONFIG_PALETTE
-      && mbmi->palette_mode_info.palette_size[1] == 0
-#endif  // CONFIG_PALETTE
-      ) {
+  if (mbmi->uv_mode == UV_DC_PRED &&
+      mbmi->palette_mode_info.palette_size[1] == 0) {
     aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[1],
               cm->fc->filter_intra_probs[1]);
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[1]) {
@@ -1400,7 +1389,6 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_PALETTE
 #if CONFIG_PALETTE_DELTA_ENCODING
 // Transmit color values with delta encoding. Write the first value as
 // literal, and the deltas between each value and the previous one. "min_val" is
@@ -1590,7 +1578,6 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 }
-#endif  // CONFIG_PALETTE
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
@@ -1878,10 +1865,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_EXT_INTRA
     write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
-#if CONFIG_PALETTE
     if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
       write_palette_mode_info(cm, xd, mi, w);
-#endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
     if (bsize >= BLOCK_8X8 || unify_bsize)
       write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
@@ -2286,11 +2271,9 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #if CONFIG_EXT_INTRA
   write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
-#if CONFIG_PALETTE
   if (bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST &&
       cm->allow_screen_content_tools)
     write_palette_mode_info(cm, xd, mi, w);
-#endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
   if (bsize >= BLOCK_8X8 || unify_bsize)
     write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
@@ -2536,7 +2519,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
                  cm->mi_rows, cm->mi_cols);
 
-#if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
@@ -2553,7 +2535,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       assert(*tok < tok_end + mbmi->skip);
     }
   }
-#endif  // CONFIG_PALETTE
 
 #if CONFIG_COEF_INTERLEAVE
   if (!mbmi->skip) {
@@ -4349,14 +4330,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     assert(cpi->common.ans_window_size_log2 < 24);
     aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
-#if CONFIG_PALETTE || CONFIG_INTRABC
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
   } else {
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
-#if CONFIG_PALETTE || CONFIG_INTRABC
     if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
       if (cm->intra_only) {

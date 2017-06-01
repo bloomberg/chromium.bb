@@ -54,9 +54,7 @@ typedef struct TileData {
   CFL_CTX cfl;
 #endif
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
-#if CONFIG_PALETTE
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
-#endif  // CONFIG_PALETTE
 } TileData;
 
 typedef struct TileWorkerData {
@@ -74,9 +72,7 @@ typedef struct TileWorkerData {
   CFL_CTX cfl;
 #endif
   FRAME_CONTEXT tctx;
-#if CONFIG_PALETTE
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
-#endif  // CONFIG_PALETTE
   struct aom_internal_error_info error_info;
 } TileWorkerData;
 
@@ -213,7 +209,6 @@ static INLINE int dec_is_ref_frame_buf(AV1Decoder *const pbi,
 }
 #endif  // CONFIG_EXT_REFS
 
-#if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 #define ACCT_STR __func__
 static INLINE int av1_read_uniform(aom_reader *r, int n) {
   const int l = get_unsigned_bits(n);
@@ -225,7 +220,6 @@ static INLINE int av1_read_uniform(aom_reader *r, int n) {
   else
     return (v << 1) - m + aom_read_literal(r, 1, ACCT_STR);
 }
-#endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 
 #ifdef __cplusplus
 }  // extern "C"

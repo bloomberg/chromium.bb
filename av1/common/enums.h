@@ -385,7 +385,6 @@ typedef enum {
   (CFL_SIGN_V(js) * CFL_SIGNS + CFL_SIGN_U(js) - CFL_SIGNS)
 #endif
 
-#if CONFIG_PALETTE
 typedef enum {
   TWO_COLORS,
   THREE_COLORS,
@@ -408,7 +407,6 @@ typedef enum {
   PALETTE_COLOR_EIGHT,
   PALETTE_COLORS
 } PALETTE_COLOR;
-#endif  // CONFIG_PALETTE
 
 // Note: All directional predictors must be between V_PRED and D63_PRED (both
 // inclusive).

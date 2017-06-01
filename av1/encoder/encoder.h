@@ -350,9 +350,7 @@ typedef struct ThreadData {
   uint8_t *left_pred_buf;
 #endif
 
-#if CONFIG_PALETTE
   PALETTE_BUFFER *palette_buffer;
-#endif  // CONFIG_PALETTE
 } ThreadData;
 
 struct EncWorkerData;

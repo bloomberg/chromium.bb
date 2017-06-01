@@ -691,7 +691,6 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   }
 }
 
-#if CONFIG_PALETTE
 #if CONFIG_PALETTE_DELTA_ENCODING
 static int uint16_compare(const void *a, const void *b) {
   const uint16_t va = *(const uint16_t *)a;
@@ -840,7 +839,6 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
   }
 }
-#endif  // CONFIG_PALETTE
 
 #if CONFIG_FILTER_INTRA
 static void read_filter_intra_mode_info(AV1_COMMON *const cm,
@@ -852,11 +850,7 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
   FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
       &mbmi->filter_intra_mode_info;
 
-  if (mbmi->mode == DC_PRED
-#if CONFIG_PALETTE
-      && mbmi->palette_mode_info.palette_size[0] == 0
-#endif  // CONFIG_PALETTE
-      ) {
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
     filter_intra_mode_info->use_filter_intra_mode[0] =
         aom_read(r, cm->fc->filter_intra_probs[0], ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[0]) {
@@ -879,11 +873,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
   (void)mi_col;
 #endif  // CONFIG_CB4X4
 
-  if (mbmi->uv_mode == UV_DC_PRED
-#if CONFIG_PALETTE
-      && mbmi->palette_mode_info.palette_size[1] == 0
-#endif  // CONFIG_PALETTE
-      ) {
+  if (mbmi->uv_mode == UV_DC_PRED &&
+      mbmi->palette_mode_info.palette_size[1] == 0) {
     filter_intra_mode_info->use_filter_intra_mode[1] =
         aom_read(r, cm->fc->filter_intra_probs[1], ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[1]) {
@@ -1210,13 +1201,11 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(cm, xd, r);
 #endif  // CONFIG_EXT_INTRA
-#if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST &&
       cm->allow_screen_content_tools)
     read_palette_mode_info(cm, xd, r);
-#endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
@@ -1818,12 +1807,10 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(cm, xd, r);
 #endif  // CONFIG_EXT_INTRA
-#if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
     read_palette_mode_info(cm, xd, r);
-#endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
@@ -2241,10 +2228,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
 
-#if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
-#endif  // CONFIG_PALETTE
 
   memset(ref_mvs, 0, sizeof(ref_mvs));
 

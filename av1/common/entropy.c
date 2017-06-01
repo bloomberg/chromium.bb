@@ -5678,12 +5678,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(txfm_partition_cdf)
 #endif
 #endif  // CONFIG_NEW_MULTISYMBOL
-#if CONFIG_PALETTE
   AVERAGE_TILE_CDFS(palette_y_size_cdf)
   AVERAGE_TILE_CDFS(palette_uv_size_cdf)
   AVERAGE_TILE_CDFS(palette_y_color_index_cdf)
   AVERAGE_TILE_CDFS(palette_uv_color_index_cdf)
-#endif
 }
 
 void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,

@@ -1474,7 +1474,6 @@ static const aom_prob default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS] = {
 };
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_PALETTE
 // TODO(huisu): tune these cdfs
 const aom_cdf_prob
     default_palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)] = {
@@ -1740,8 +1739,6 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
                                                     1] = { -1, -1, 0, -1, -1,
                                                            4,  3,  2, 1 };
 
-#endif  // CONFIG_PALETTE
-
 // The transform size is coded as an offset to the smallest transform
 // block size.
 const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)] = {
@@ -1807,7 +1804,6 @@ static const aom_prob
     };
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_PALETTE
 #define NUM_PALETTE_NEIGHBORS 3  // left, top-left and top.
 int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
                                         int r, int c, int palette_size,
@@ -1891,8 +1887,6 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
 }
 #undef NUM_PALETTE_NEIGHBORS
 #undef MAX_COLOR_CONTEXT_HASH
-
-#endif  // CONFIG_PALETTE
 
 #if CONFIG_VAR_TX
 static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
@@ -5059,12 +5053,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
   av1_copy(fc->comp_inter_prob, default_comp_inter_p);
-#if CONFIG_PALETTE
   av1_copy(fc->palette_y_size_cdf, default_palette_y_size_cdf);
   av1_copy(fc->palette_uv_size_cdf, default_palette_uv_size_cdf);
   av1_copy(fc->palette_y_color_index_cdf, default_palette_y_color_index_cdf);
   av1_copy(fc->palette_uv_color_index_cdf, default_palette_uv_color_index_cdf);
-#endif  // CONFIG_PALETTE
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
 #endif  // CONFIG_NEW_MULTISYMBOL

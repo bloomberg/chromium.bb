@@ -649,9 +649,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
 #endif  // CONFIG_LV_MAP
   }
-#if CONFIG_PALETTE
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
-#endif  // CONFIG_PALETTE
   // Restore the coding context of the MB to that that was in place
   // when the mode was picked for it
   for (y = 0; y < mi_height; y++)
@@ -1413,9 +1411,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
   }
 
-#if CONFIG_PALETTE
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
-#endif  // CONFIG_PALETTE
 
   ctx->skippable = 0;
 
@@ -5012,7 +5008,6 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
-#if CONFIG_PALETTE
 // Estimate if the source frame is screen content, based on the portion of
 // blocks that have no more than 4 (experimentally selected) luma colors.
 static int is_screen_content(const uint8_t *src,
@@ -5040,7 +5035,6 @@ static int is_screen_content(const uint8_t *src,
   // The threshold is 10%.
   return counts * blk_h * blk_w * 10 > width * height;
 }
-#endif  // CONFIG_PALETTE
 
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
@@ -5068,9 +5062,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->coef_counts);
   av1_zero(rdc->comp_pred_diff);
 
-#if CONFIG_PALETTE || CONFIG_INTRABC
   if (frame_is_intra_only(cm)) {
-#if CONFIG_PALETTE
     cm->allow_screen_content_tools =
         cpi->oxcf.content == AOM_CONTENT_SCREEN ||
         is_screen_content(cpi->source->y_buffer,
@@ -5079,11 +5071,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_HIGHBITDEPTH
                           cpi->source->y_stride, cpi->source->y_width,
                           cpi->source->y_height);
-#else
-    cm->allow_screen_content_tools = cpi->oxcf.content == AOM_CONTENT_SCREEN;
-#endif  // CONFIG_PALETTE
   }
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(rdc->global_motion_used);
@@ -5702,11 +5690,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     }
 #endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_FILTER_INTRA
-    if (mbmi->mode == DC_PRED
-#if CONFIG_PALETTE
-        && mbmi->palette_mode_info.palette_size[0] == 0
-#endif  // CONFIG_PALETTE
-        ) {
+    if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
       const int use_filter_intra_mode =
           mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
       ++counts->filter_intra[0][use_filter_intra_mode];
@@ -5717,10 +5701,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                             xd->plane[1].subsampling_y)
 #endif
-#if CONFIG_PALETTE
-        && mbmi->palette_mode_info.palette_size[1] == 0
-#endif  // CONFIG_PALETTE
-        ) {
+        && mbmi->palette_mode_info.palette_size[1] == 0) {
       const int use_filter_intra_mode =
           mbmi->filter_intra_mode_info.use_filter_intra_mode[1];
       ++counts->filter_intra[1][use_filter_intra_mode];
@@ -5978,14 +5959,12 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
     }
-#if CONFIG_PALETTE
     if (bsize >= BLOCK_8X8 && !dry_run) {
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0)
           av1_tokenize_palette_sb(td, plane, t, dry_run, bsize, rate);
       }
     }
-#endif  // CONFIG_PALETTE
 #if CONFIG_VAR_TX
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif

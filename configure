@@ -526,7 +526,6 @@ post_process_cmdline() {
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
 
-    soft_enable palette
     soft_enable alt_intra
     soft_enable palette_throughput
     soft_enable tempmv_signaling
@@ -544,7 +543,6 @@ post_process_cmdline() {
     enabled pvq && disable_feature palette
     enabled pvq && disable_feature palette_throughput
     enabled mrc_tx && enable_feature ext_tx
-    enabled palette_throughput && soft_enable palette
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
