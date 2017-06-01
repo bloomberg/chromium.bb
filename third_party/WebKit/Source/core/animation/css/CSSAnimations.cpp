@@ -73,7 +73,7 @@ using PropertySet = HashSet<CSSPropertyID>;
 
 namespace {
 
-static StringKeyframeEffectModel* CreateKeyframeEffectModel(
+StringKeyframeEffectModel* CreateKeyframeEffectModel(
     StyleResolver* resolver,
     const Element* animating_element,
     Element& element,
@@ -210,7 +210,9 @@ bool CSSAnimations::IsTransitionAnimationForInspector(
   return false;
 }
 
-static const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
+namespace {
+
+const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
     const AnimationEffectReadOnly* effect) {
   if (!effect)
     return nullptr;
@@ -223,6 +225,8 @@ static const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
     return nullptr;
   return ToKeyframeEffectModelBase(model);
 }
+
+}  // namespace
 
 void CSSAnimations::CalculateCompositorAnimationUpdate(
     CSSAnimationUpdate& update,
@@ -949,7 +953,9 @@ void CSSAnimations::Cancel() {
   ClearPendingUpdate();
 }
 
-static bool IsCustomPropertyHandle(const PropertyHandle& property) {
+namespace {
+
+bool IsCustomPropertyHandle(const PropertyHandle& property) {
   return property.IsCSSCustomProperty();
 }
 
@@ -960,12 +966,12 @@ static bool IsCustomPropertyHandle(const PropertyHandle& property) {
 // the case of effect collisions.
 // Example: Both 'color' and 'svg-color' set the color on ComputedStyle but are
 // considered distinct properties in the ActiveInterpolationsMap.
-static bool IsStandardPropertyHandle(const PropertyHandle& property) {
+bool IsStandardPropertyHandle(const PropertyHandle& property) {
   return (property.IsCSSProperty() && !property.IsCSSCustomProperty()) ||
          property.IsPresentationAttribute();
 }
 
-static void AdoptActiveAnimationInterpolations(
+void AdoptActiveAnimationInterpolations(
     EffectStack* effect_stack,
     CSSAnimationUpdate& update,
     const HeapVector<Member<const InertEffect>>* new_animations,
@@ -983,6 +989,8 @@ static void AdoptActiveAnimationInterpolations(
   update.AdoptActiveInterpolationsForStandardAnimations(
       standard_interpolations);
 }
+
+}  // namespace
 
 void CSSAnimations::CalculateAnimationActiveInterpolations(
     CSSAnimationUpdate& update,
@@ -1010,7 +1018,9 @@ void CSSAnimations::CalculateAnimationActiveInterpolations(
                                      &update.SuppressedAnimations());
 }
 
-static EffectStack::PropertyHandleFilter PropertyFilter(
+namespace {
+
+EffectStack::PropertyHandleFilter PropertyFilter(
     CSSAnimations::PropertyPass property_pass) {
   if (property_pass == CSSAnimations::PropertyPass::kCustom) {
     return IsCustomPropertyHandle;
@@ -1018,6 +1028,8 @@ static EffectStack::PropertyHandleFilter PropertyFilter(
   DCHECK_EQ(property_pass, CSSAnimations::PropertyPass::kStandard);
   return IsStandardPropertyHandle;
 }
+
+}  // namespace
 
 void CSSAnimations::CalculateTransitionActiveInterpolations(
     CSSAnimationUpdate& update,
