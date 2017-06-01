@@ -253,6 +253,12 @@ void WebFrameWidgetBase::DidLosePointerLock() {
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
+void WebFrameWidgetBase::RequestDecode(
+    sk_sp<SkImage> image,
+    std::unique_ptr<WTF::Function<void(bool)>> callback) {
+  View()->RequestDecode(std::move(image), std::move(callback));
+}
+
 // TODO(665924): Remove direct dispatches of mouse events from
 // PointerLockController, instead passing them through EventHandler.
 void WebFrameWidgetBase::PointerLockMouseEvent(

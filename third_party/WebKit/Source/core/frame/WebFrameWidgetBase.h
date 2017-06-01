@@ -86,6 +86,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
 
+  // Image decode functionality.
+  void RequestDecode(sk_sp<SkImage>,
+                     std::unique_ptr<WTF::Function<void(bool)>> callback);
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 

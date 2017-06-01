@@ -125,6 +125,10 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
 
   virtual WebSettingsImpl* SettingsImpl() = 0;
 
+  virtual void RequestDecode(
+      sk_sp<SkImage>,
+      std::unique_ptr<WTF::Function<void(bool)>> callback) = 0;
+
   using WebWidget::GetPagePopup;
   virtual PagePopup* OpenPagePopup(PagePopupClient*) = 0;
   virtual void ClosePagePopup(PagePopup*) = 0;

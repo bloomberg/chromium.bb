@@ -207,12 +207,7 @@ void SingleThreadProxy::DoCommit() {
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCommit();
 
-    // Issue decode callbacks.
-    auto completed_decode_callbacks =
-        layer_tree_host_impl_->TakeCompletedImageDecodeCallbacks();
-    for (auto& callback : completed_decode_callbacks)
-      callback.Run();
-
+    IssueImageDecodeFinishedCallbacks();
     layer_tree_host_impl_->CommitComplete();
 
     // Commit goes directly to the active tree, but we need to synchronously
@@ -222,6 +217,15 @@ void SingleThreadProxy::DoCommit() {
     // the flag to force the tree to not draw until textures are ready.
     NotifyReadyToActivate();
   }
+}
+
+void SingleThreadProxy::IssueImageDecodeFinishedCallbacks() {
+  DCHECK(task_runner_provider_->IsImplThread());
+
+  auto completed_decode_callbacks =
+      layer_tree_host_impl_->TakeCompletedImageDecodeCallbacks();
+  for (auto& callback : completed_decode_callbacks)
+    callback.Run();
 }
 
 void SingleThreadProxy::CommitComplete() {
@@ -444,6 +448,19 @@ void SingleThreadProxy::OnDrawForCompositorFrameSink(
 void SingleThreadProxy::NeedsImplSideInvalidation() {
   DCHECK(scheduler_on_impl_thread_);
   scheduler_on_impl_thread_->SetNeedsImplSideInvalidation();
+}
+
+void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
+  // If we don't have a scheduler, then just issue the callbacks here.
+  // Otherwise, schedule a commit.
+  if (!scheduler_on_impl_thread_) {
+    DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
+    DebugScopedSetImplThread impl(task_runner_provider_);
+
+    IssueImageDecodeFinishedCallbacks();
+    return;
+  }
+  SetNeedsCommitOnImplThread();
 }
 
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {

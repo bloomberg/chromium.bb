@@ -55,4 +55,6 @@
     // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlimageelement-interface
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
+
+    [RuntimeEnabled=JSImageDecode, CallWith=ScriptState, RaisesException] Promise decode();
 };

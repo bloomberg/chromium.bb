@@ -473,6 +473,11 @@ void ProxyImpl::NeedsImplSideInvalidation() {
   scheduler_->SetNeedsImplSideInvalidation();
 }
 
+void ProxyImpl::NotifyImageDecodeRequestFinished() {
+  DCHECK(IsImplThread());
+  SetNeedsCommitOnImplThread();
+}
+
 void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->WillBeginImplFrame(args);

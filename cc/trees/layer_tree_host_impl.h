@@ -128,6 +128,8 @@ class LayerTreeHostImplClient {
       bool resourceless_software_draw) = 0;
 
   virtual void NeedsImplSideInvalidation() = 0;
+  // Called when a requested image decode completes.
+  virtual void NotifyImageDecodeRequestFinished() = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
