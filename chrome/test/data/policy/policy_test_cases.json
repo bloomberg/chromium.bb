@@ -3078,9 +3078,9 @@
     ]
   },
 
-  "NetworkTimeQueriesEnabled": {
+  "BrowserNetworkTimeQueriesEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "NetworkTimeQueriesEnabled": true },
+    "test_policy": { "BrowserNetworkTimeQueriesEnabled": true },
     "pref_mappings": [
       { "pref": "network_time.network_time_queries_enabled",
         "local_state": true

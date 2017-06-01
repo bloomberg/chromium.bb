@@ -671,7 +671,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     syncer::prefs::kEnableLocalSyncBackend,
     base::Value::Type::BOOLEAN },
 
-  { key::kNetworkTimeQueriesEnabled,
+  { key::kBrowserNetworkTimeQueriesEnabled,
     network_time::prefs::kNetworkTimeQueriesEnabled,
     base::Value::Type::BOOLEAN },
 };

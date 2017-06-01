@@ -9549,10 +9549,10 @@
       If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
     {
-      'name': 'NetworkTimeQueriesEnabled',
+      'name': 'BrowserNetworkTimeQueriesEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:60-', 'chrome_os:60-'],
+      'supported_on': ['chrome.*:60-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
