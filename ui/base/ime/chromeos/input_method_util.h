@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_UTIL_H_
+#ifndef UI_BASE_IME_CHROMEOS_INPUT_METHOD_UTIL_H_
+#define UI_BASE_IME_CHROMEOS_INPUT_METHOD_UTIL_H_
 
 #include <cstddef>
 #include <map>
@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -28,7 +29,7 @@ enum InputMethodType {
 };
 
 // A class which provides miscellaneous input method utility functions.
-class InputMethodUtil {
+class UI_BASE_IME_EXPORT InputMethodUtil {
  public:
   explicit InputMethodUtil(InputMethodDelegate* delegate);
   ~InputMethodUtil();
@@ -221,4 +222,4 @@ class InputMethodUtil {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_UTIL_H_
+#endif  // UI_BASE_IME_CHROMEOS_INPUT_METHOD_UTIL_H_

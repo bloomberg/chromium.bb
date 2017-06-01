@@ -8,7 +8,6 @@
 
 #include "ash/shell.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -18,6 +17,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/chromeos/input_method_whitelist.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_factory.h"

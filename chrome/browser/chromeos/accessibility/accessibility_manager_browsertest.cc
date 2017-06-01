@@ -34,6 +34,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 using chromeos::input_method::InputMethodManager;
@@ -227,7 +228,7 @@ bool IsBrailleImeActive() {
   for (InputMethodDescriptors::const_iterator i = descriptors->begin();
        i != descriptors->end();
        ++i) {
-    if (i->id() == extension_misc::kBrailleImeEngineId)
+    if (i->id() == extension_ime_util::kBrailleImeEngineId)
       return true;
   }
   return false;
@@ -236,7 +237,7 @@ bool IsBrailleImeActive() {
 bool IsBrailleImeCurrent() {
   InputMethodManager* imm = InputMethodManager::Get();
   return imm->GetActiveIMEState()->GetCurrentInputMethod().id() ==
-         extension_misc::kBrailleImeEngineId;
+         extension_ime_util::kBrailleImeEngineId;
 }
 }  // anonymous namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
 #include <stddef.h>
 
@@ -17,16 +17,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/extension_constants.h"
-// TODO(nona): move this header from this file.
-#include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 // For SetHardwareKeyboardLayoutForTesting.
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace {
 
@@ -51,7 +48,7 @@ const struct {
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
   { "zh-hant-t-i0-cangjie-1987-x-m0-simplified",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { extension_misc::kBrailleImeEngineId,
+  { chromeos::extension_ime_util::kBrailleImeEngineId,
     IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
@@ -388,8 +385,7 @@ InputMethodUtil::InputMethodUtil(InputMethodDelegate* delegate)
   }
 }
 
-InputMethodUtil::~InputMethodUtil() {
-}
+InputMethodUtil::~InputMethodUtil() {}
 
 std::string InputMethodUtil::GetLocalizedDisplayName(
     const InputMethodDescriptor& descriptor) const {
@@ -529,7 +525,6 @@ base::string16 InputMethodUtil::GetInputMethodLongNameInternal(
   return text;
 }
 
-
 base::string16 InputMethodUtil::GetInputMethodLongNameStripped(
     const InputMethodDescriptor& input_method) const {
   return GetInputMethodLongNameInternal(input_method, true /* short_name */);
@@ -594,13 +589,12 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
   // screen or set in UserContext when starting a public session).
   out_input_method_ids->push_back(preferred_input_method.id());
 
-  const std::string current_layout
-      = preferred_input_method.GetPreferredKeyboardLayout();
-  for (size_t i = 0; i < arraysize(kDefaultInputMethodRecommendation);
-       ++i) {
-    if (kDefaultInputMethodRecommendation[i].locale == language_code && (
-        !kDefaultInputMethodRecommendation[i].layout[0] ||
-        kDefaultInputMethodRecommendation[i].layout == current_layout)) {
+  const std::string current_layout =
+      preferred_input_method.GetPreferredKeyboardLayout();
+  for (size_t i = 0; i < arraysize(kDefaultInputMethodRecommendation); ++i) {
+    if (kDefaultInputMethodRecommendation[i].locale == language_code &&
+        (!kDefaultInputMethodRecommendation[i].layout[0] ||
+         kDefaultInputMethodRecommendation[i].layout == current_layout)) {
       out_input_method_ids->push_back(
           extension_ime_util::GetInputMethodIDByEngineID(
               kDefaultInputMethodRecommendation[i].engine_id));
@@ -666,8 +660,7 @@ std::string InputMethodUtil::MigrateInputMethod(
     }
   }
   // Migrates the extension IDs.
-  std::string id =
-      extension_ime_util::GetInputMethodIDByEngineID(engine_id);
+  std::string id = extension_ime_util::GetInputMethodIDByEngineID(engine_id);
   if (extension_ime_util::IsComponentExtensionIME(id)) {
     std::string id_new = extension_ime_util::GetInputMethodIDByEngineID(
         extension_ime_util::GetComponentIDByInputMethodID(id));
@@ -753,15 +746,14 @@ void InputMethodUtil::SetHardwareKeyboardLayoutForTesting(
   UpdateHardwareLayoutCache();
 }
 
-const std::vector<std::string>&
-    InputMethodUtil::GetHardwareInputMethodIds() {
+const std::vector<std::string>& InputMethodUtil::GetHardwareInputMethodIds() {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateHardwareLayoutCache();
   return hardware_layouts_;
 }
 
 const std::vector<std::string>&
-    InputMethodUtil::GetHardwareLoginInputMethodIds() {
+InputMethodUtil::GetHardwareLoginInputMethodIds() {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateHardwareLayoutCache();
   return hardware_login_layouts_;

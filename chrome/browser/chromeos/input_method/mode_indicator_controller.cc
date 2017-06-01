@@ -9,7 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/chromeos/ime/mode_indicator_view.h"
 
 namespace chromeos {

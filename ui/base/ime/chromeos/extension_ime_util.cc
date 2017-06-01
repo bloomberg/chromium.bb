@@ -23,6 +23,11 @@ const int kExtensionIdLength = 32;
 
 namespace extension_ime_util {
 
+const char kBrailleImeExtensionId[] = "jddehjeebkoimngcbdkaahpobgicbffp";
+const char kBrailleImeExtensionPath[] = "chromeos/braille_ime";
+const char kBrailleImeEngineId[] =
+    "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
+
 std::string GetInputMethodID(const std::string& extension_id,
                              const std::string& engine_id) {
   DCHECK(!extension_id.empty());

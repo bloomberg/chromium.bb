@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
 #include <stddef.h>
 
@@ -210,20 +210,17 @@ TEST_F(InputMethodUtilTest, GetInputMethodLongNameTest) {
   // See below for exceptions.
   {
     InputMethodDescriptor desc = GetDesc("xkb:jp::jpn", "jp", "ja", "");
-    EXPECT_EQ(ASCIIToUTF16("Japanese"),
-              util_.GetInputMethodLongName(desc));
+    EXPECT_EQ(ASCIIToUTF16("Japanese"), util_.GetInputMethodLongName(desc));
   }
   {
     InputMethodDescriptor desc =
         GetDesc("xkb:us:dvorak:eng", "us(dvorak)", "en-US", "");
-    EXPECT_EQ(ASCIIToUTF16("US Dvorak"),
-              util_.GetInputMethodLongName(desc));
+    EXPECT_EQ(ASCIIToUTF16("US Dvorak"), util_.GetInputMethodLongName(desc));
   }
   {
     InputMethodDescriptor desc =
         GetDesc("xkb:gb:dvorak:eng", "gb(dvorak)", "en-US", "");
-    EXPECT_EQ(ASCIIToUTF16("UK Dvorak"),
-              util_.GetInputMethodLongName(desc));
+    EXPECT_EQ(ASCIIToUTF16("UK Dvorak"), util_.GetInputMethodLongName(desc));
   }
 
   // For Dutch, French, German and Hindi,
@@ -258,8 +255,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodLongNameTest) {
     InputMethodDescriptor desc = GetDesc("invalid-id", "us", "xx", "");
     // You can safely ignore the "Resouce ID is not found for: invalid-id"
     // error.
-    EXPECT_EQ(ASCIIToUTF16("invalid-id"),
-              util_.GetInputMethodLongName(desc));
+    EXPECT_EQ(ASCIIToUTF16("invalid-id"), util_.GetInputMethodLongName(desc));
   }
 }
 
@@ -291,8 +287,7 @@ TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
 }
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodDisplayNameFromId) {
-  EXPECT_EQ("US",
-            util_.GetInputMethodDisplayNameFromId("xkb:us::eng"));
+  EXPECT_EQ("US", util_.GetInputMethodDisplayNameFromId("xkb:us::eng"));
   EXPECT_EQ("", util_.GetInputMethodDisplayNameFromId("nonexistent"));
 }
 
@@ -526,11 +521,11 @@ TEST_F(InputMethodUtilTest, TestHardwareInputMethodIDs) {
   EXPECT_EQ(1U, login_input_method_ids.size());
 
   EXPECT_EQ("xkb:us::eng", extension_ime_util::GetComponentIDByInputMethodID(
-      input_method_ids[0]));
+                               input_method_ids[0]));
   EXPECT_EQ("xkb:ru::rus", extension_ime_util::GetComponentIDByInputMethodID(
-      input_method_ids[1]));
+                               input_method_ids[1]));
   EXPECT_EQ("xkb:us::eng", extension_ime_util::GetComponentIDByInputMethodID(
-      login_input_method_ids[0]));
+                               login_input_method_ids[0]));
 }
 
 }  // namespace input_method

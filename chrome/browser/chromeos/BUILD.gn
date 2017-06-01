@@ -696,8 +696,6 @@ source_set("chromeos") {
     "input_method/input_method_persistence.h",
     "input_method/input_method_syncer.cc",
     "input_method/input_method_syncer.h",
-    "input_method/input_method_util.cc",
-    "input_method/input_method_util.h",
     "input_method/mode_indicator_controller.cc",
     "input_method/mode_indicator_controller.h",
     "language_preferences.cc",
@@ -1678,7 +1676,6 @@ source_set("unit_tests") {
     "input_method/input_method_engine_unittest.cc",
     "input_method/input_method_manager_impl_unittest.cc",
     "input_method/input_method_persistence_unittest.cc",
-    "input_method/input_method_util_unittest.cc",
     "locale_change_guard_unittest.cc",
     "lock_screen_apps/state_controller_unittest.cc",
     "login/auth/cryptohome_authenticator_unittest.cc",
@@ -1828,8 +1825,6 @@ source_set("unit_tests") {
     "//components/drive/sync/entry_update_performer_unittest.cc",
     "//components/drive/sync/remove_performer_unittest.cc",
     "//components/drive/sync_client_unittest.cc",
-    "//ui/base/ime/chromeos/input_method_whitelist.cc",
-    "//ui/base/ime/chromeos/input_method_whitelist.h",
   ]
 
   public_deps = [
