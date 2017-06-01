@@ -43,7 +43,8 @@ int AwSafeBrowsingUIManager::GetErrorUiType(
     const UnsafeResource& resource) const {
   WebContents* web_contents = resource.web_contents_getter.Run();
   UIManagerClient* client = UIManagerClient::FromWebContents(web_contents);
-  return client && client->GetErrorUiType();
+  DCHECK(client);
+  return client->GetErrorUiType();
 }
 
 }  // namespace android_webview
