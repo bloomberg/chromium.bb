@@ -301,7 +301,7 @@ class BluetoothAdvertisementServiceProviderImpl
     dict_entry_writer.AppendString(
         bluetooth_advertisement::kManufacturerDataProperty);
     dbus::MessageWriter variant_writer(NULL);
-    dict_entry_writer.OpenVariant("a{qay}", &variant_writer);
+    dict_entry_writer.OpenVariant("a{qv}", &variant_writer);
     AppendManufacturerDataVariant(&variant_writer);
     dict_entry_writer.CloseContainer(&variant_writer);
     array_writer->CloseContainer(&dict_entry_writer);
@@ -326,7 +326,7 @@ class BluetoothAdvertisementServiceProviderImpl
     dict_entry_writer.AppendString(
         bluetooth_advertisement::kServiceDataProperty);
     dbus::MessageWriter variant_writer(NULL);
-    dict_entry_writer.OpenVariant("a{say}", &variant_writer);
+    dict_entry_writer.OpenVariant("a{sv}", &variant_writer);
     AppendServiceDataVariant(&variant_writer);
     dict_entry_writer.CloseContainer(&variant_writer);
     array_writer->CloseContainer(&dict_entry_writer);
@@ -335,14 +335,17 @@ class BluetoothAdvertisementServiceProviderImpl
   void AppendManufacturerDataVariant(dbus::MessageWriter* writer) {
     DCHECK(manufacturer_data_);
     dbus::MessageWriter array_writer(NULL);
-    writer->OpenArray("{qay}", &array_writer);
+    writer->OpenArray("{qv}", &array_writer);
     for (const auto& m : *manufacturer_data_) {
       dbus::MessageWriter entry_writer(NULL);
 
       array_writer.OpenDictEntry(&entry_writer);
 
-      entry_writer.AppendUint32(m.first);
-      entry_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
+      entry_writer.AppendUint16(m.first);
+      dbus::MessageWriter variant_writer(NULL);
+      entry_writer.OpenVariant("ay", &variant_writer);
+      variant_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
+      entry_writer.CloseContainer(&variant_writer);
 
       array_writer.CloseContainer(&entry_writer);
     }
@@ -352,14 +355,17 @@ class BluetoothAdvertisementServiceProviderImpl
   void AppendServiceDataVariant(dbus::MessageWriter* writer) {
     DCHECK(service_data_);
     dbus::MessageWriter array_writer(NULL);
-    writer->OpenArray("{say}", &array_writer);
+    writer->OpenArray("{sv}", &array_writer);
     for (const auto& m : *service_data_) {
       dbus::MessageWriter entry_writer(NULL);
 
       array_writer.OpenDictEntry(&entry_writer);
 
       entry_writer.AppendString(m.first);
-      entry_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
+      dbus::MessageWriter variant_writer(NULL);
+      entry_writer.OpenVariant("ay", &variant_writer);
+      variant_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
+      entry_writer.CloseContainer(&variant_writer);
 
       array_writer.CloseContainer(&entry_writer);
     }
