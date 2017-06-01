@@ -218,18 +218,20 @@ v8::Local<v8::Object> AccessibilityController::FocusedElement() {
   blink::WebAXObject focused_element =
       frame->GetDocument().FocusedAccessibilityObject();
   if (focused_element.IsNull())
-    focused_element = web_view()->AccessibilityObject();
+    focused_element = blink::WebAXObject::FromWebView(*web_view());
   return elements_.GetOrCreate(focused_element);
 }
 
 v8::Local<v8::Object> AccessibilityController::RootElement() {
-  blink::WebAXObject root_element = web_view()->AccessibilityObject();
+  blink::WebAXObject root_element =
+      blink::WebAXObject::FromWebView(*web_view());
   return elements_.GetOrCreate(root_element);
 }
 
 v8::Local<v8::Object> AccessibilityController::AccessibleElementById(
     const std::string& id) {
-  blink::WebAXObject root_element = web_view()->AccessibilityObject();
+  blink::WebAXObject root_element =
+      blink::WebAXObject::FromWebView(*web_view());
 
   if (!root_element.UpdateLayoutAndCheckValidity())
     return v8::Local<v8::Object>();

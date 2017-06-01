@@ -50,6 +50,7 @@ class WebNode;
 class WebDocument;
 class WebString;
 class WebURL;
+class WebView;
 struct WebFloatRect;
 struct WebPoint;
 struct WebRect;
@@ -94,6 +95,7 @@ class WebAXObject {
   }
 
   BLINK_EXPORT static WebAXObject FromWebNode(WebNode&);
+  BLINK_EXPORT static WebAXObject FromWebView(WebView&);
 
   BLINK_EXPORT void Reset();
   BLINK_EXPORT void Assign(const WebAXObject&);
