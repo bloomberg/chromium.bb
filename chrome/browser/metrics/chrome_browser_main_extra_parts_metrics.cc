@@ -283,7 +283,7 @@ void RecordLinuxGlibcVersion() {
 #endif
 }
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS)
 UMALinuxWindowManager GetLinuxWindowManager() {
   switch (ui::GuessWindowManager()) {
     case ui::WM_OTHER:
