@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -195,6 +197,12 @@ void DisplayColorManager::LoadCalibrationForDisplay(
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return;
   }
+
+  // TODO: enable QuirksManager for mash. http://crbug.com/728748. Some tests
+  // don't create the Shell when running this code, hence the
+  // Shell::HasInstance() conditional.
+  if (Shell::HasInstance() && Shell::GetAshConfig() == Config::MASH)
+    return;
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(
       display->product_id(), display->display_name(),
