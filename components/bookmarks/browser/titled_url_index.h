@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/query_parser/query_parser.h"
@@ -50,7 +50,7 @@ class TitledUrlIndex {
 
  private:
   using TitledUrlNodes = std::vector<const TitledUrlNode*>;
-  using TitledUrlNodeSet = std::set<const TitledUrlNode*>;
+  using TitledUrlNodeSet = base::flat_set<const TitledUrlNode*>;
   using Index = std::map<base::string16, TitledUrlNodeSet>;
 
   // Constructs |sorted_nodes| by copying the matches in |matches| and sorting

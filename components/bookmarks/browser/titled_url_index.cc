@@ -207,16 +207,10 @@ bool TitledUrlIndex::GetResultsMatchingTerm(
     while (i != index_.end() &&
            i->first.size() >= term.size() &&
            term.compare(0, term.size(), i->first, 0, term.size()) == 0) {
-#if !defined(OS_ANDROID)
-      prefix_matches->insert(i->second.begin(), i->second.end());
-#else
-      // Work around a bug in the implementation of std::set::insert in the STL
-      // used on android (http://crbug.com/367050).
       for (TitledUrlNodeSet::const_iterator n = i->second.begin();
-           n != i->second.end();
-           ++n)
+           n != i->second.end(); ++n) {
         prefix_matches->insert(prefix_matches->end(), *n);
-#endif
+      }
       ++i;
     }
     if (!first_term) {
