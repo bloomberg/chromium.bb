@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                           autofill::CREDIT_CARD_NAME_FULL);
   // In this test case, only "visa" and "mastercard" are supported, so entering
   // a MIR card will fail.
-  SetEditorTextfieldValue(base::ASCIIToUTF16("22222222invalidcard"),
+  SetEditorTextfieldValue(base::ASCIIToUTF16("22002222invalidcard"),
                           autofill::CREDIT_CARD_NUMBER);
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),

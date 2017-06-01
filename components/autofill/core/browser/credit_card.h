@@ -272,6 +272,7 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card);
 extern const char kAmericanExpressCard[];
 extern const char kDinersCard[];
 extern const char kDiscoverCard[];
+extern const char kEloCard[];
 extern const char kGenericCard[];
 extern const char kJCBCard[];
 extern const char kMasterCard[];

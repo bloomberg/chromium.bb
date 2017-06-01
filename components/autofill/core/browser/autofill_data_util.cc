@@ -33,6 +33,7 @@ const PaymentRequestData kPaymentRequestData[]{
      IDS_AUTOFILL_CC_DINERS},
     {autofill::kDiscoverCard, "discover", IDR_AUTOFILL_CC_DISCOVER,
      IDS_AUTOFILL_CC_DISCOVER},
+    {autofill::kEloCard, "elo", IDR_AUTOFILL_CC_ELO, IDS_AUTOFILL_CC_ELO},
     {autofill::kJCBCard, "jcb", IDR_AUTOFILL_CC_JCB, IDS_AUTOFILL_CC_JCB},
     {autofill::kMasterCard, "mastercard", IDR_AUTOFILL_CC_MASTERCARD,
      IDS_AUTOFILL_CC_MASTERCARD},

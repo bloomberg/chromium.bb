@@ -53,7 +53,10 @@ const char* const kValidNumbers[] = {
   "5019717010103742",
   "6331101999990016",
   "6247130048162403",
+  "4532261615476013542",
+  "6362970000457013",
 };
+
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
   "41111111111111111115", /* too long */
@@ -407,9 +410,6 @@ TEST(CreditCardTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
-// This method is not compiled for iOS because these resources are not used and
-// should not be shipped.
-#if !defined(OS_IOS)
 // Test we get the correct icon for each card type.
 TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
@@ -418,6 +418,8 @@ TEST(CreditCardTest, IconResourceId) {
             CreditCard::IconResourceId(kDinersCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_DISCOVER,
             CreditCard::IconResourceId(kDiscoverCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_ELO,
+            CreditCard::IconResourceId(kEloCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_JCB,
             CreditCard::IconResourceId(kJCBCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_MASTERCARD,
@@ -429,7 +431,6 @@ TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
             CreditCard::IconResourceId(kVisaCard));
 }
-#endif  // #if !defined(OS_IOS)
 
 TEST(CreditCardTest, UpdateFromImportedCard) {
   CreditCard original_card(base::GenerateGUID(), "https://www.example.com");
@@ -687,6 +688,7 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"4111111111111111", kVisaCard, true},
         GetCardNetworkTestCase{"4012888888881881", kVisaCard, true},
         GetCardNetworkTestCase{"4222222222222", kVisaCard, true},
+        GetCardNetworkTestCase{"4532261615476013542", kVisaCard, true},
 
         // The relevant sample numbers from
         // https://www.auricsystems.com/sample-credit-card-numbers/
@@ -703,13 +705,12 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"6500000000000002", kDiscoverCard, true},
         GetCardNetworkTestCase{"3566002020360505", kJCBCard, true},
         GetCardNetworkTestCase{"3528000000000007", kJCBCard, true},
+        GetCardNetworkTestCase{"2222400061240016", kMasterCard, true},
+        GetCardNetworkTestCase{"2223000048400011", kMasterCard, true},
         GetCardNetworkTestCase{"5500005555555559", kMasterCard, true},
         GetCardNetworkTestCase{"5555555555555557", kMasterCard, true},
         GetCardNetworkTestCase{"5454545454545454", kMasterCard, true},
-        GetCardNetworkTestCase{"5555515555555551", kMasterCard, true},
-        GetCardNetworkTestCase{"5405222222222226", kMasterCard, true},
         GetCardNetworkTestCase{"5478050000000007", kMasterCard, true},
-        GetCardNetworkTestCase{"5111005111051128", kMasterCard, true},
         GetCardNetworkTestCase{"5112345112345114", kMasterCard, true},
         GetCardNetworkTestCase{"5115915115915118", kMasterCard, true},
         GetCardNetworkTestCase{"6247130048162403", kUnionPay, true},
@@ -718,6 +719,12 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"2204883716636153", kMirCard, true},
         GetCardNetworkTestCase{"2200111234567898", kMirCard, true},
         GetCardNetworkTestCase{"2200481349288130", kMirCard, true},
+
+        // The relevant sample numbers from
+        // https://www.bincodes.com/bank-creditcard-generator/ and
+        // https://www.ebanx.com/business/en/developers/integrations/testing/credit-card-test-numbers
+        GetCardNetworkTestCase{"5067001446391275", kEloCard, true},
+        GetCardNetworkTestCase{"6362970000457013", kEloCard, true},
 
         // Empty string
         GetCardNetworkTestCase{std::string(), kGenericCard, false},
@@ -753,7 +760,11 @@ INSTANTIATE_TEST_CASE_P(
 
         // Issuer Identification Numbers (IINs) that Chrome recognizes.
         GetCardNetworkTestCase{"4", kVisaCard, false},
-        GetCardNetworkTestCase{"22", kMirCard, false},
+        GetCardNetworkTestCase{"2200", kMirCard, false},
+        GetCardNetworkTestCase{"2202", kMirCard, false},
+        GetCardNetworkTestCase{"2204", kMirCard, false},
+        GetCardNetworkTestCase{"2221", kMasterCard, false},
+        GetCardNetworkTestCase{"2720", kMasterCard, false},
         GetCardNetworkTestCase{"34", kAmericanExpressCard, false},
         GetCardNetworkTestCase{"37", kAmericanExpressCard, false},
         GetCardNetworkTestCase{"300", kDinersCard, false},
@@ -762,7 +773,7 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"303", kDinersCard, false},
         GetCardNetworkTestCase{"304", kDinersCard, false},
         GetCardNetworkTestCase{"305", kDinersCard, false},
-        GetCardNetworkTestCase{"3095", kDinersCard, false},
+        GetCardNetworkTestCase{"309", kDinersCard, false},
         GetCardNetworkTestCase{"36", kDinersCard, false},
         GetCardNetworkTestCase{"38", kDinersCard, false},
         GetCardNetworkTestCase{"39", kDinersCard, false},
@@ -774,6 +785,9 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"648", kDiscoverCard, false},
         GetCardNetworkTestCase{"649", kDiscoverCard, false},
         GetCardNetworkTestCase{"65", kDiscoverCard, false},
+        GetCardNetworkTestCase{"5067", kEloCard, false},
+        GetCardNetworkTestCase{"5090", kEloCard, false},
+        GetCardNetworkTestCase{"636297", kEloCard, false},
         GetCardNetworkTestCase{"3528", kJCBCard, false},
         GetCardNetworkTestCase{"3531", kJCBCard, false},
         GetCardNetworkTestCase{"3589", kJCBCard, false},
@@ -788,7 +802,6 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"2", kGenericCard, false},
         GetCardNetworkTestCase{"3", kGenericCard, false},
         GetCardNetworkTestCase{"30", kGenericCard, false},
-        GetCardNetworkTestCase{"309", kGenericCard, false},
         GetCardNetworkTestCase{"35", kGenericCard, false},
         GetCardNetworkTestCase{"5", kGenericCard, false},
         GetCardNetworkTestCase{"6", kGenericCard, false},
@@ -817,9 +830,6 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"306", kGenericCard, false},
         GetCardNetworkTestCase{"307", kGenericCard, false},
         GetCardNetworkTestCase{"308", kGenericCard, false},
-        GetCardNetworkTestCase{"3091", kGenericCard, false},
-        GetCardNetworkTestCase{"3094", kGenericCard, false},
-        GetCardNetworkTestCase{"3096", kGenericCard, false},
         GetCardNetworkTestCase{"31", kGenericCard, false},
         GetCardNetworkTestCase{"32", kGenericCard, false},
         GetCardNetworkTestCase{"33", kGenericCard, false},

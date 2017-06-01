@@ -56,6 +56,8 @@ const char* const kValidNumbers[] = {
     "5019717010103742",
     "6331101999990016",
     "6247130048162403",
+    "4532261615476013542", // Visa, 19 digits.
+    "6362970000457013", // Elo
 };
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
@@ -346,7 +348,7 @@ TEST_P(AutofillCCNumberValidationTest, IsValidCreditCardNumber) {
 }
 
 const static std::set<std::string> kAllBasicCardNetworks{
-    "amex",       "discover", "diners",   "jcb",
+    "amex",       "discover", "diners",   "elo",  "jcb",
     "mastercard", "mir",      "unionpay", "visa"};
 
 INSTANTIATE_TEST_CASE_P(
@@ -384,6 +386,8 @@ INSTANTIATE_TEST_CASE_P(
                      IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
 
         CCNumberCase(kValidNumbers[17], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[18], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[19], kAllBasicCardNetworks, true, 0),
 
         CCNumberCase(kInvalidNumbers[0],
                      kAllBasicCardNetworks,
@@ -436,6 +440,7 @@ INSTANTIATE_TEST_CASE_P(
         GetCvcLengthForCardTypeCase{kAmericanExpressCard, AMEX_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kDinersCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kDiscoverCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kEloCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kGenericCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kJCBCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kMasterCard, GENERAL_CVC_LENGTH},

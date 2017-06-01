@@ -79,6 +79,8 @@ base::string16 NetworkForFill(const std::string& network) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
   if (network == kDiscoverCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+  if (network == kEloCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_ELO);
   if (network == kJCBCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
   if (network == kMasterCard)
@@ -146,6 +148,8 @@ int CreditCard::IconResourceId(const std::string& network) {
     return IDR_AUTOFILL_CC_DINERS;
   if (network == kDiscoverCard)
     return IDR_AUTOFILL_CC_DISCOVER;
+  if (network == kEloCard)
+    return IDR_AUTOFILL_CC_ELO;
   if (network == kJCBCard)
     return IDR_AUTOFILL_CC_JCB;
   if (network == kMasterCard)
@@ -166,27 +170,24 @@ int CreditCard::IconResourceId(const std::string& network) {
 // static
 const char* CreditCard::GetCardNetwork(const base::string16& number) {
   // Credit card number specifications taken from:
-  // http://en.wikipedia.org/wiki/Credit_card_numbers,
-  // http://en.wikipedia.org/wiki/List_of_Issuer_Identification_Numbers,
-  // http://www.discovernetwork.com/merchants/images/Merchant_Marketing_PDF.pdf,
+  // https://en.wikipedia.org/wiki/Payment_card_number,
   // http://www.regular-expressions.info/creditcard.html,
-  // http://developer.ean.com/general_info/Valid_Credit_Card_Types,
-  // http://www.bincodes.com/,
-  // http://www.fraudpractice.com/FL-binCC.html, and
-  // http://www.beachnet.com/~hstiles/cardtype.html
+  // https://developer.ean.com/general-info/valid-card-types,
+  // http://www.bincodes.com/, and
+  // http://www.fraudpractice.com/FL-binCC.html.
+  // (Last updated: May 29, 2017)
   //
-  // The last site is currently unavailable, but a cached version remains at
-  // http://web.archive.org/web/20120923111349/http://www.beachnet.com/~hstiles/cardtype.html
-  //
-  // Card Type              Prefix(es)                      Length
-  // ---------------------------------------------------------------
-  // Visa                   4                               13,16
-  // American Express       34,37                           15
-  // Diners Club            300-305,3095,36,38-39           14
-  // Discover Card          6011,644-649,65                 16
-  // JCB                    3528-3589                       16
-  // Mastercard             51-55                           16
-  // UnionPay               62                              16-19
+  // Card Type              Prefix(es)                                  Length
+  // --------------------------------------------------------------------------
+  // Visa                   4                                          13,16,19
+  // American Express       34,37                                      15
+  // Diners Club            300-305,309,36,38-39                       14
+  // Discover Card          6011,644-649,65                            16
+  // Elo                    431274,451416,5067,5090,627780,636297      16
+  // JCB                    3528-3589                                  16
+  // Mastercard             2221-2720, 51-55                           16
+  // MIR                    2200-2204                                  16
+  // UnionPay               62                                         16-19
 
   // Check for prefixes of length 1.
   if (number.empty())
@@ -202,9 +203,6 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   int first_two_digits = 0;
   if (!base::StringToInt(number.substr(0, 2), &first_two_digits))
     return kGenericCard;
-
-  if (first_two_digits == 22)
-    return kMirCard;
 
   if (first_two_digits == 34 || first_two_digits == 37)
     return kAmericanExpressCard;
@@ -231,7 +229,8 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   if (!base::StringToInt(number.substr(0, 3), &first_three_digits))
     return kGenericCard;
 
-  if (first_three_digits >= 300 && first_three_digits <= 305)
+  if ((first_three_digits >= 300 && first_three_digits <= 305) ||
+      first_three_digits == 309)
     return kDinersCard;
 
   if (first_three_digits >= 644 && first_three_digits <= 649)
@@ -245,14 +244,34 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
     return kGenericCard;
 
-  if (first_four_digits == 3095)
-    return kDinersCard;
+  if (first_four_digits >= 2200 && first_four_digits <= 2204)
+    return kMirCard;
+
+  if (first_four_digits >= 2221 && first_four_digits <= 2720)
+    return kMasterCard;
 
   if (first_four_digits >= 3528 && first_four_digits <= 3589)
     return kJCBCard;
 
+  if (first_four_digits == 5067 || first_four_digits == 5090)
+    return kEloCard;
+
   if (first_four_digits == 6011)
     return kDiscoverCard;
+
+  // Check for prefixes of length 6.
+  if (number.size() < 6)
+    return kGenericCard;
+
+  int first_six_digits = 0;
+  if (!base::StringToInt(number.substr(0, 6), &first_six_digits))
+    return kGenericCard;
+
+  if (first_six_digits == 431274 ||
+      first_six_digits == 451416 ||
+      first_six_digits == 627780 ||
+      first_six_digits == 636297)
+    return kEloCard;
 
   return kGenericCard;
 }
@@ -930,12 +949,10 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
                           credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
-// These values must match the values in WebKitPlatformSupportImpl in
-// webkit/glue. We send these strings to WebKit, which then asks
-// WebKitPlatformSupportImpl to load the image data.
 const char kAmericanExpressCard[] = "americanExpressCC";
 const char kDinersCard[] = "dinersCC";
 const char kDiscoverCard[] = "discoverCC";
+const char kEloCard[] = "eloCC";
 const char kGenericCard[] = "genericCC";
 const char kJCBCard[] = "jcbCC";
 const char kMasterCard[] = "masterCardCC";
