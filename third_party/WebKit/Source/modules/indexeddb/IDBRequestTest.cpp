@@ -147,8 +147,10 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(transaction_);
 
-  IDBRequest* request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  IDBRequest* request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+
   EXPECT_EQ(request->readyState(), "pending");
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(request->transaction());
@@ -166,8 +168,9 @@ TEST_F(IDBRequestTest, EventsAfterDoneStop) {
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(transaction_);
 
-  IDBRequest* request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  IDBRequest* request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(request->transaction());
   request->HandleResponse(CreateIDBValue(scope.GetIsolate(), false));
@@ -185,8 +188,9 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(transaction_);
 
-  IDBRequest* request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  IDBRequest* request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   EXPECT_EQ(request->readyState(), "pending");
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(request->transaction());
@@ -207,10 +211,12 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(transaction_);
 
-  IDBRequest* request1 = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
-  IDBRequest* request2 = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  IDBRequest* request1 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+  IDBRequest* request2 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   EXPECT_EQ(request1->readyState(), "pending");
   EXPECT_EQ(request2->readyState(), "pending");
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
@@ -230,8 +236,9 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
 TEST_F(IDBRequestTest, AbortErrorAfterAbort) {
   V8TestingScope scope;
   IDBTransaction* transaction = nullptr;
-  IDBRequest* request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction);
+  IDBRequest* request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction, IDBRequest::AsyncTraceState());
   EXPECT_EQ(request->readyState(), "pending");
 
   // Simulate the IDBTransaction having received OnAbort from back end and

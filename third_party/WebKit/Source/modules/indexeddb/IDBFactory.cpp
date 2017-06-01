@@ -65,6 +65,10 @@ static bool IsContextValid(ExecutionContext* context) {
 
 IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
                                          ExceptionState& exception_state) {
+  IDB_TRACE("IDBFactory::getDatabaseNamesRequestSetup");
+  IDBRequest::AsyncTraceState metrics("IDBFactory::getDatabaseNames", this);
+  IDBRequest* request = IDBRequest::Create(script_state, IDBAny::CreateNull(),
+                                           nullptr, std::move(metrics));
   // TODO(jsbell): Used only by inspector; remove unneeded checks/exceptions?
   if (!IsContextValid(ExecutionContext::From(script_state)))
     return nullptr;
@@ -75,9 +79,6 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
         "access to the Indexed Database API is denied in this context.");
     return nullptr;
   }
-
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::CreateNull(), nullptr);
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state),

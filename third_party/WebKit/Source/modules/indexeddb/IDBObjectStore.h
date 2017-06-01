@@ -129,10 +129,12 @@ class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
                   ExceptionState&);
 
   // Used internally and by InspectorIndexedDBAgent:
-  IDBRequest* openCursor(ScriptState*,
-                         IDBKeyRange*,
-                         WebIDBCursorDirection,
-                         WebIDBTaskType = kWebIDBTaskTypeNormal);
+  IDBRequest* openCursor(
+      ScriptState*,
+      IDBKeyRange*,
+      WebIDBCursorDirection,
+      WebIDBTaskType = kWebIDBTaskTypeNormal,
+      IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
 
   void MarkDeleted();
   bool IsDeleted() const { return deleted_; }

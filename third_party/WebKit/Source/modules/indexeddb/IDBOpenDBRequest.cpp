@@ -53,7 +53,10 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* script_state,
                                    IDBDatabaseCallbacks* callbacks,
                                    int64_t transaction_id,
                                    int64_t version)
-    : IDBRequest(script_state, IDBAny::CreateNull(), nullptr),
+    : IDBRequest(script_state,
+                 IDBAny::CreateNull(),
+                 nullptr,
+                 IDBRequest::AsyncTraceState()),
       database_callbacks_(callbacks),
       transaction_id_(transaction_id),
       version_(version) {
