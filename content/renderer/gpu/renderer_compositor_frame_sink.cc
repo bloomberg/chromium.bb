@@ -16,7 +16,6 @@
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -34,8 +33,7 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     cc::SharedBitmapManager* shared_bitmap_manager,
     cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
-    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
+    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request)
     : ClientCompositorFrameSink(std::move(context_provider),
                                 std::move(worker_context_provider),
                                 gpu_memory_buffer_manager,
@@ -47,10 +45,8 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
-      frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id) {
   DCHECK(compositor_frame_sink_filter_);
-  DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
 }
 
@@ -59,8 +55,7 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
-    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
+    cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request)
     : ClientCompositorFrameSink(std::move(vulkan_context_provider),
                                 std::move(synthetic_begin_frame_source),
                                 std::move(sink_info),
@@ -69,10 +64,8 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
-      frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id) {
   DCHECK(compositor_frame_sink_filter_);
-  DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
 }
 
@@ -102,22 +95,6 @@ void RendererCompositorFrameSink::DetachFromClient() {
 
 void RendererCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
-  {
-    std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
-        send_message_scope =
-            frame_swap_message_queue_->AcquireSendMessageScope();
-    std::vector<std::unique_ptr<IPC::Message>> messages;
-    frame_swap_message_queue_->DrainMessages(&messages);
-    std::vector<IPC::Message> messages_to_send;
-    FrameSwapMessageQueue::TransferMessages(&messages, &messages_to_send);
-    if (!messages_to_send.empty()) {
-      frame.metadata.frame_token =
-          frame_swap_message_queue_->AllocateFrameToken();
-      message_sender_->Send(new ViewHostMsg_FrameSwapMessages(
-          routing_id_, frame.metadata.frame_token, messages_to_send));
-    }
-    // ~send_message_scope.
-  }
   auto new_surface_properties =
       RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
   ClientCompositorFrameSink::SubmitCompositorFrame(std::move(frame));

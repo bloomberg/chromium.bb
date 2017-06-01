@@ -323,7 +323,6 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
 
   sync_client_->SubmitCompositorFrame(compositor_frame_sink_id_,
                                       std::move(submit_frame));
-  DeliverMessages();
   did_submit_frame_ = true;
 }
 
@@ -343,12 +342,14 @@ void SynchronousCompositorFrameSink::FallbackTickFired() {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("renderer", "SynchronousCompositorFrameSink::FallbackTickFired");
   base::AutoReset<bool> in_fallback_tick(&fallback_tick_running_, true);
+  frame_swap_message_queue_->NotifyFramesAreDiscarded(true);
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(0);
   SkCanvas canvas(bitmap);
   fallback_tick_pending_ = false;
   DemandDrawSw(&canvas);
+  frame_swap_message_queue_->NotifyFramesAreDiscarded(false);
 }
 
 void SynchronousCompositorFrameSink::Invalidate() {

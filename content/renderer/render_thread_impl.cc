@@ -1912,7 +1912,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
           routing_id, std::move(synthetic_begin_frame_source),
           std::move(vulkan_context_provider), std::move(sink_info),
-          std::move(client_request), std::move(frame_swap_message_queue)));
+          std::move(client_request)));
       return;
     }
   }
@@ -1940,7 +1940,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
         routing_id, std::move(synthetic_begin_frame_source), nullptr, nullptr,
         nullptr, shared_bitmap_manager(), std::move(sink_info),
-        std::move(client_request), std::move(frame_swap_message_queue)));
+        std::move(client_request)));
     return;
   }
 
@@ -2013,7 +2013,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       routing_id, std::move(synthetic_begin_frame_source),
       std::move(context_provider), std::move(worker_context_provider),
       GetGpuMemoryBufferManager(), nullptr, std::move(sink_info),
-      std::move(client_request), std::move(frame_swap_message_queue))));
+      std::move(client_request))));
 }
 
 AssociatedInterfaceRegistry*

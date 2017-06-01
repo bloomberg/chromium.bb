@@ -112,9 +112,11 @@ class SwapQueue : public FrameSwapMessageSubQueue {
 
 }  // namespace
 
-FrameSwapMessageQueue::FrameSwapMessageQueue()
+FrameSwapMessageQueue::FrameSwapMessageQueue(int32_t routing_id)
     : visual_state_queue_(new VisualStateQueue()),
-      swap_queue_(new SwapQueue()) {
+      swap_queue_(new SwapQueue()),
+      routing_id_(routing_id) {
+  DETACH_FROM_THREAD(impl_thread_checker_);
 }
 
 FrameSwapMessageQueue::~FrameSwapMessageQueue() {
@@ -208,6 +210,17 @@ void FrameSwapMessageQueue::TransferMessages(
 
 uint32_t FrameSwapMessageQueue::AllocateFrameToken() {
   return ++last_used_frame_token_;
+}
+
+void FrameSwapMessageQueue::NotifyFramesAreDiscarded(
+    bool frames_are_discarded) {
+  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
+  frames_are_discarded_ = frames_are_discarded;
+}
+
+bool FrameSwapMessageQueue::AreFramesDiscarded() {
+  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
+  return frames_are_discarded_;
 }
 
 }  // namespace content

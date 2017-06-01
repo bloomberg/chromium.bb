@@ -41,7 +41,6 @@ class ContextProvider;
 }
 
 namespace content {
-class FrameSwapMessageQueue;
 
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
@@ -57,16 +56,14 @@ class RendererCompositorFrameSink
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       cc::SharedBitmapManager* shared_bitmap_manager,
       cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
-      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
+      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request);
   RendererCompositorFrameSink(
       int32_t routing_id,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       cc::mojom::MojoCompositorFrameSinkPtrInfo sink_info,
-      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request,
-      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
+      cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request);
   ~RendererCompositorFrameSink() override;
 
   // Overriden from viz::ClientCompositorFrameSink.
@@ -105,7 +102,6 @@ class RendererCompositorFrameSink
       compositor_frame_sink_filter_handler_;
   scoped_refptr<RendererCompositorFrameSinkProxy> compositor_frame_sink_proxy_;
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
-  scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   int routing_id_;
 
   RenderWidgetSurfaceProperties current_surface_properties_;
