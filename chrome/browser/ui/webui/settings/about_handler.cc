@@ -103,12 +103,12 @@ base::string16 GetAllowedConnectionTypesMessage() {
   const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
                                               ->network_state_handler()
                                               ->DefaultNetwork();
-  const bool cellular = network && network->IsConnectedState() &&
-                        network->type() == shill::kTypeCellular;
+  const bool mobile_data =
+      network && network->IsConnectedState() && network->IsUsingMobileData();
 
   if (help_utils_chromeos::IsUpdateOverCellularAllowed(
           true /* interactive */)) {
-    return cellular
+    return mobile_data
                ? l10n_util::GetStringUTF16(
                      IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC)
                : l10n_util::GetStringUTF16(

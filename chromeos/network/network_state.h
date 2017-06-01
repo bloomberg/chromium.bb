@@ -100,6 +100,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& roaming() const { return roaming_; }
   const std::string& payment_url() const { return payment_url_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
+  const std::string& tethering_state() const { return tethering_state_; }
 
   // VPN property accessors
   const std::string& vpn_provider_type() const { return vpn_provider_type_; }
@@ -122,6 +123,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   }
   const std::string& tether_guid() const { return tether_guid_; }
   void set_tether_guid(const std::string& guid) { tether_guid_ = guid; }
+
+  // Returns true if current connection is using mobile data.
+  bool IsUsingMobileData() const;
 
   // Returns true if the network securty is WEP_8021x (Dynamic WEP)
   bool IsDynamicWep() const;
@@ -226,6 +230,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string roaming_;
   std::string payment_url_;
   bool cellular_out_of_credits_ = false;
+  std::string tethering_state_;
 
   // VPN properties, used to construct the display name and to show the correct
   // configuration dialog.
@@ -235,6 +240,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Tether properties.
   std::string carrier_;
   int battery_percentage_;
+
   // Whether the current device has already connected to the tether host device
   // providing the hotspot corresponding to this NetworkState.
   // Note: this means that the current device has already connected to the

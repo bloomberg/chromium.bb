@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -51,7 +52,9 @@ bool IsUpdateOverCellularAllowed(bool interactive) {
   return false;
 }
 
-base::string16 GetConnectionTypeAsUTF16(const std::string& type) {
+base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
+  const std::string type =
+      network->IsUsingMobileData() ? shill::kTypeCellular : network->type();
   if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
   if (type == shill::kTypeWifi)

@@ -55,7 +55,8 @@ NetworkStatus GetNetworkStatus(bool interactive,
   if (network->type() == shill::kTypeBluetooth)
     return NETWORK_STATUS_DISALLOWED;
 
-  if (network->type() == shill::kTypeCellular &&
+  // Treats tethered networks as cellular networks.
+  if (network->IsUsingMobileData() &&
       !help_utils_chromeos::IsUpdateOverCellularAllowed(interactive)) {
     return NETWORK_STATUS_DISALLOWED;
   }
@@ -99,10 +100,9 @@ bool EnsureCanUpdate(bool interactive,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
     return false;
   } else if (status == NETWORK_STATUS_DISALLOWED) {
-    base::string16 message =
-        l10n_util::GetStringFUTF16(
-            IDS_UPGRADE_DISALLOWED,
-            help_utils_chromeos::GetConnectionTypeAsUTF16(network->type()));
+    base::string16 message = l10n_util::GetStringFUTF16(
+        IDS_UPGRADE_DISALLOWED,
+        help_utils_chromeos::GetConnectionTypeAsUTF16(network));
     callback.Run(VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED, 0,
                  std::string(), 0, message);
     return false;
