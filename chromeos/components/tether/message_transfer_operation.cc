@@ -7,6 +7,7 @@
 #include <set>
 
 #include "chromeos/components/tether/message_wrapper.h"
+#include "chromeos/components/tether/timer_factory.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -35,12 +36,17 @@ std::vector<cryptauth::RemoteDevice> RemoveDuplicatesFromVector(
 // static
 uint32_t MessageTransferOperation::kMaxConnectionAttemptsPerDevice = 3;
 
+// static
+uint32_t MessageTransferOperation::kDefaultResponseTimeoutSeconds = 10;
+
 MessageTransferOperation::MessageTransferOperation(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       connection_manager_(connection_manager),
-      initialized_(false) {}
+      timer_factory_(base::MakeUnique<TimerFactory>()),
+      initialized_(false),
+      weak_ptr_factory_(this) {}
 
 MessageTransferOperation::~MessageTransferOperation() {
   connection_manager_->RemoveObserver(this);
@@ -63,6 +69,9 @@ void MessageTransferOperation::Initialize() {
     cryptauth::SecureChannel::Status status;
     if (connection_manager_->GetStatusForDevice(remote_device, &status) &&
         status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
+      if (ShouldWaitForResponse())
+        StartResponseTimerForDevice(remote_device);
+
       OnDeviceAuthenticated(remote_device);
     }
   }
@@ -81,6 +90,9 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
   }
 
   if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
+    if (ShouldWaitForResponse())
+      StartResponseTimerForDevice(remote_device);
+
     OnDeviceAuthenticated(remote_device);
   } else if (old_status == cryptauth::SecureChannel::Status::AUTHENTICATING) {
     // If authentication fails, account details (e.g., BeaconSeeds) are not
@@ -139,6 +151,9 @@ void MessageTransferOperation::UnregisterDevice(
   remote_devices_.erase(std::remove(remote_devices_.begin(),
                                     remote_devices_.end(), remote_device),
                         remote_devices_.end());
+  if (ShouldWaitForResponse())
+    StopResponseTimerForDeviceIfRunning(remote_device);
+
   connection_manager_->UnregisterRemoteDevice(remote_device,
                                               GetMessageTypeForConnection());
 
@@ -152,6 +167,56 @@ void MessageTransferOperation::SendMessageToDevice(
     std::unique_ptr<MessageWrapper> message_wrapper) {
   connection_manager_->SendMessage(remote_device,
                                    message_wrapper->ToRawMessage());
+}
+
+bool MessageTransferOperation::ShouldWaitForResponse() {
+  return true;
+}
+
+uint32_t MessageTransferOperation::GetResponseTimeoutSeconds() {
+  return MessageTransferOperation::kDefaultResponseTimeoutSeconds;
+}
+
+void MessageTransferOperation::SetTimerFactoryForTest(
+    std::unique_ptr<TimerFactory> timer_factory_for_test) {
+  timer_factory_ = std::move(timer_factory_for_test);
+}
+
+void MessageTransferOperation::StartResponseTimerForDevice(
+    const cryptauth::RemoteDevice& remote_device) {
+  DCHECK(ShouldWaitForResponse());
+
+  PA_LOG(INFO) << "Starting timer to wait for response to message type "
+               << GetMessageTypeForConnection() << " from device with ID "
+               << remote_device.GetTruncatedDeviceIdForLogs() << ".";
+
+  remote_device_to_timer_map_.emplace(remote_device,
+                                      timer_factory_->CreateOneShotTimer());
+  remote_device_to_timer_map_[remote_device]->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(GetResponseTimeoutSeconds()),
+      base::Bind(&MessageTransferOperation::OnResponseTimeout,
+                 weak_ptr_factory_.GetWeakPtr(), remote_device));
+}
+
+void MessageTransferOperation::StopResponseTimerForDeviceIfRunning(
+    const cryptauth::RemoteDevice& remote_device) {
+  DCHECK(ShouldWaitForResponse());
+
+  if (!remote_device_to_timer_map_[remote_device])
+    return;
+
+  remote_device_to_timer_map_[remote_device]->Stop();
+  remote_device_to_timer_map_.erase(remote_device);
+}
+
+void MessageTransferOperation::OnResponseTimeout(
+    const cryptauth::RemoteDevice& remote_device) {
+  PA_LOG(WARNING) << "Timed out while waiting for response to message type "
+                  << GetMessageTypeForConnection() << " from device with ID "
+                  << remote_device.GetTruncatedDeviceIdForLogs() << ".";
+
+  remote_device_to_timer_map_.erase(remote_device);
+  UnregisterDevice(remote_device);
 }
 
 }  // namespace tether
