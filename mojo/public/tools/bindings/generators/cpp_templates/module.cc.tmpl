@@ -59,6 +59,8 @@ const char {{constant.name}}[] = {{constant|constant_value}};
 {%-   for constant in struct.constants %}
 {%-     if constant.kind|is_string_kind %}
 const char {{struct.name}}::{{constant.name}}[] = {{constant|constant_value}};
+{%-     else %}
+constexpr {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}};
 {%-     endif %}
 {%-   endfor %}
 {%- endfor %}
