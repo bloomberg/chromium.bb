@@ -9,6 +9,7 @@
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/wm/public/activation_client.h"
@@ -37,13 +38,14 @@ WMHelperMus::~WMHelperMus() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperMus, private:
 
-const display::ManagedDisplayInfo WMHelperMus::GetDisplayInfo(
+const display::ManagedDisplayInfo& WMHelperMus::GetDisplayInfo(
     int64_t display_id) const {
   // TODO(penghuang): Return real display info when it is supported in mus.
-  return display::ManagedDisplayInfo(display_id, "", false);
+  static const display::ManagedDisplayInfo info;
+  return info;
 }
 
-aura::Window* WMHelperMus::GetContainer(int container_id) {
+aura::Window* WMHelperMus::GetPrimaryDisplayContainer(int container_id) {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -59,6 +61,13 @@ aura::Window* WMHelperMus::GetFocusedWindow() const {
 ui::CursorSetType WMHelperMus::GetCursorSet() const {
   NOTIMPLEMENTED();
   return ui::CursorSetType::CURSOR_SET_NORMAL;
+}
+
+const display::Display& WMHelperMus::GetCursorDisplay() const {
+  NOTIMPLEMENTED();
+  // TODO(penghuang): Return real display when supported in mus.
+  static const display::Display display;
+  return display;
 }
 
 void WMHelperMus::AddPreTargetHandler(ui::EventHandler* handler) {

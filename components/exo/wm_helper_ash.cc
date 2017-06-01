@@ -51,14 +51,12 @@ WMHelperAsh::~WMHelperAsh() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperAsh, private:
 
-const display::ManagedDisplayInfo WMHelperAsh::GetDisplayInfo(
+const display::ManagedDisplayInfo& WMHelperAsh::GetDisplayInfo(
     int64_t display_id) const {
   return ash::Shell::Get()->display_manager()->GetDisplayInfo(display_id);
 }
 
-aura::Window* WMHelperAsh::GetContainer(int container_id) {
-  // TODO(domlaskowski): Use target root window once multi-display support lands
-  // in ARC. See crbug.com/718627.
+aura::Window* WMHelperAsh::GetPrimaryDisplayContainer(int container_id) {
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);
 }
@@ -78,6 +76,15 @@ ui::CursorSetType WMHelperAsh::GetCursorSet() const {
   if (ash::ShellPort::Get()->GetAshConfig() == ash::Config::MUS)
     return ui::CURSOR_SET_NORMAL;
   return ash::Shell::Get()->cursor_manager()->GetCursorSet();
+}
+
+const display::Display& WMHelperAsh::GetCursorDisplay() const {
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::ShellPort::Get()->GetAshConfig() == ash::Config::MUS) {
+    static const display::Display display;
+    return display;
+  }
+  return ash::Shell::Get()->cursor_manager()->GetDisplay();
 }
 
 void WMHelperAsh::AddPreTargetHandler(ui::EventHandler* handler) {
@@ -124,6 +131,10 @@ void WMHelperAsh::OnCursorVisibilityChanged(bool is_visible) {
 
 void WMHelperAsh::OnCursorSetChanged(ui::CursorSetType cursor_set) {
   NotifyCursorSetChanged(cursor_set);
+}
+
+void WMHelperAsh::OnCursorDisplayChanged(const display::Display& display) {
+  NotifyCursorDisplayChanged(display);
 }
 
 void WMHelperAsh::OnMaximizeModeStarted() {

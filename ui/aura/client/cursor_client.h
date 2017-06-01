@@ -61,6 +61,9 @@ class AURA_EXPORT CursorClient {
   // Sets the display for the cursor.
   virtual void SetDisplay(const display::Display& display) = 0;
 
+  // Returns the display where the cursor is located.
+  virtual const display::Display& GetDisplay() const = 0;
+
   // Locks the cursor change. The cursor type, cursor visibility, and mouse
   // events enable state never change as long as lock is held by anyone.
   virtual void LockCursor() = 0;

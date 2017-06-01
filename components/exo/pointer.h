@@ -13,6 +13,7 @@
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -59,6 +60,7 @@ class Pointer : public ui::EventHandler,
 
   // Overridden from WMHelper::CursorObserver:
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+  void OnCursorDisplayChanged(const display::Display& display) override;
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
@@ -71,17 +73,14 @@ class Pointer : public ui::EventHandler,
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
-  // Recompute cursor scale and update cursor if scale changed.
-  void UpdateCursorScale();
-
   // Asynchronously update the cursor by capturing a snapshot of |surface_|.
-  void CaptureCursor();
+  void CaptureCursor(const gfx::Point& hotspot);
 
   // Called when cursor snapshot has been captured.
   void OnCursorCaptured(const gfx::Point& hotspot,
                         std::unique_ptr<cc::CopyOutputResult> result);
 
-  // Update cursor to reflect the current value of |cursor_|.
+  // Update |cursor_| to |cursor_bitmap_| transformed for the current display.
   void UpdateCursor();
 
   // The delegate instance that all events are dispatched to.
@@ -96,11 +95,11 @@ class Pointer : public ui::EventHandler,
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
 
-  // The scale applied to the cursor to compensate for the UI scale.
-  float cursor_scale_ = 1.0f;
-
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
+
+  // Latest cursor snapshot.
+  SkBitmap cursor_bitmap_;
 
   // The current cursor.
   ui::Cursor cursor_;

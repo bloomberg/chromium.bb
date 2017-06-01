@@ -13,6 +13,7 @@
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 
 namespace arc {
@@ -24,15 +25,22 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     FakeWMHelper() = default;
 
    private:
-    const display::ManagedDisplayInfo GetDisplayInfo(
+    const display::ManagedDisplayInfo& GetDisplayInfo(
         int64_t display_id) const override {
-      return display::ManagedDisplayInfo(display_id, "", false);
+      static const display::ManagedDisplayInfo info;
+      return info;
     }
-    aura::Window* GetContainer(int container_id) override { return nullptr; }
+    aura::Window* GetPrimaryDisplayContainer(int container_id) override {
+      return nullptr;
+    }
     aura::Window* GetActiveWindow() const override { return nullptr; }
     aura::Window* GetFocusedWindow() const override { return nullptr; }
     ui::CursorSetType GetCursorSet() const override {
       return ui::CursorSetType::CURSOR_SET_NORMAL;
+    }
+    const display::Display& GetCursorDisplay() const override {
+      static const display::Display display;
+      return display;
     }
     void AddPreTargetHandler(ui::EventHandler* handler) override {}
     void PrependPreTargetHandler(ui::EventHandler* handler) override {}
