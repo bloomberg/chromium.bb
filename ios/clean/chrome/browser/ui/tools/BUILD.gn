@@ -27,6 +27,7 @@ source_set("tools") {
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/shared/chrome/browser/ui/tools_menu",
+    "//ios/web",
     "//ui/base",
   ]
 }
@@ -69,9 +70,13 @@ source_set("unit_tests") {
   deps = [
     ":tools",
     ":tools_ui",
+    "//base",
     "//base/test:test_support",
     "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/ui/toolbar:test_support",
     "//ios/shared/chrome/browser/ui/tools_menu",
+    "//ios/web",
+    "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

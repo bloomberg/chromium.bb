@@ -83,9 +83,6 @@ const CGFloat kCloseButtonHeight = 44.0;
   self.menuScrollView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.menuScrollView];
 
-  // PLACEHOLDER: Hardcoded value until the mediator observes the Webstate.
-  self.currentPageLoading = NO;
-
   [self setupCloseMenuButton];
   [self setupMenuStackView];
   [self setupConstraints];
@@ -251,6 +248,19 @@ const CGFloat kCloseButtonHeight = 44.0;
 
 - (void)displayOverflowControls:(BOOL)displayOverflowControls {
   self.displayOverflowControls = displayOverflowControls;
+}
+
+- (void)setIsLoading:(BOOL)isLoading {
+  self.currentPageLoading = isLoading;
+}
+
+- (void)setCurrentPageLoading:(BOOL)currentPageLoading {
+  _currentPageLoading = currentPageLoading;
+  // If the OverflowButtons have been initialized update their visibility.
+  if (self.toolbarOverflowStackView) {
+    self.toolbarOverflowStackView.reloadButton.hidden = currentPageLoading;
+    self.toolbarOverflowStackView.stopButton.hidden = !currentPageLoading;
+  }
 }
 
 @end
