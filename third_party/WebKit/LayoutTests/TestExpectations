@@ -1331,9 +1331,6 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-001.
 crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-003.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
-# An animated manual test that should not be run
-crbug.com/728522 external/wpt/css/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Skip ]
-
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
