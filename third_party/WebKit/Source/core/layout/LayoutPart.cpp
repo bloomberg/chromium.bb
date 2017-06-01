@@ -95,7 +95,7 @@ LayoutPart::~LayoutPart() {
 
 LocalFrameView* LayoutPart::ChildFrameView() const {
   FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (frame_or_plugin && frame_or_plugin->IsFrameView())
+  if (frame_or_plugin && frame_or_plugin->IsLocalFrameView())
     return ToLocalFrameView(frame_or_plugin);
   return nullptr;
 }

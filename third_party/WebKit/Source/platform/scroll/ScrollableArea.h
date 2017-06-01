@@ -348,7 +348,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
                                               const LayoutObject*,
                                               unsigned = 0) const;
 
-  virtual bool IsFrameView() const { return false; }
+  virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
 

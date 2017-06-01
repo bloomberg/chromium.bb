@@ -20,7 +20,7 @@ class CORE_EXPORT FrameOrPlugin : public GarbageCollectedMixin {
  public:
   virtual ~FrameOrPlugin() {}
 
-  virtual bool IsFrameView() const { return false; }
+  virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPluginView() const { return false; }
 
   virtual void Attach() = 0;

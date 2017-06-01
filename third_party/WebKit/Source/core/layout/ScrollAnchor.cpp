@@ -32,7 +32,7 @@ ScrollAnchor::~ScrollAnchor() {}
 void ScrollAnchor::SetScroller(ScrollableArea* scroller) {
   DCHECK_NE(scroller_, scroller);
   DCHECK(scroller);
-  DCHECK(scroller->IsRootFrameViewport() || scroller->IsFrameView() ||
+  DCHECK(scroller->IsRootFrameViewport() || scroller->IsLocalFrameView() ||
          scroller->IsPaintLayerScrollableArea());
   scroller_ = scroller;
   ClearSelf();
