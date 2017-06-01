@@ -2994,9 +2994,9 @@ crbug.com/725585 payments/payment-request-interface.html [ Failure Pass ]
 crbug.com/727014 [ Linux ] external/wpt/IndexedDB/large-nested-cloning.html [ Pass Timeout ]
 crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
-# Sheriff failures 2017-05-30
-# Failing on try (with patch) and Linux FYI too frequently.
-crbug.com/727505 [ Linux ] virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Pass Crash ]
-
-# Sheriff failures 2017-05-31
-crbug.com/727991 [ Linux Mac ] virtual/threaded/fast/compositorworker/visual-update.html [ Pass Failure ]
+# Compositor worker tests are flaky, crashing and timing out
+crbug.com/727991 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/visual-update.html [ Pass Failure Timeout Crash ]
+crbug.com/728036 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/compositor-proxy-supports.html [ Pass Failure Timeout Crash ]
+crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Pass Failure Timeout Crash ]
+crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/basic-plumbing-worker-to-main.html [ Pass Failure Timeout Crash ]
+crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/request-animation-frame.html [ Pass Failure Timeout Crash ]
