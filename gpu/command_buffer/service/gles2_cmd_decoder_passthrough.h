@@ -29,6 +29,7 @@ namespace gpu {
 namespace gles2 {
 
 class ContextGroup;
+class GPUTracer;
 
 struct MappedBuffer {
   GLsizeiptr size;
@@ -78,6 +79,12 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                    const volatile void* buffer,
                    int num_entries,
                    int* entries_processed) override;
+
+  template <bool DebugImpl>
+  Error DoCommandsImpl(unsigned int num_commands,
+                       const volatile void* buffer,
+                       int num_entries,
+                       int* entries_processed);
 
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
@@ -233,10 +240,15 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   Logger* GetLogger() override;
 
+  void BeginDecoding() override;
+  void EndDecoding() override;
+
   const ContextState* GetContextState() override;
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
  private:
+  const char* GetCommandName(unsigned int command_id) const;
+
   void* GetScratchMemory(size_t size);
 
   template <typename T>
@@ -377,6 +389,13 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 
   std::set<GLenum> errors_;
+
+  // Tracing
+  std::unique_ptr<GPUTracer> gpu_tracer_;
+  const unsigned char* gpu_decoder_category_;
+  int gpu_trace_level_;
+  bool gpu_trace_commands_;
+  bool gpu_debug_commands_;
 
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;
