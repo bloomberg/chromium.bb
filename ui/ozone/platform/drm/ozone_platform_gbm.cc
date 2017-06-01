@@ -191,12 +191,12 @@ class OzonePlatformGbm : public OzonePlatform {
       adapter = gpu_platform_support_host_.get();
     }
 
-    display_manager_.reset(
-        new DrmDisplayHostManager(adapter, device_manager_.get(),
-                                  event_factory_ozone_->input_controller()));
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     overlay_manager_.reset(
         new DrmOverlayManager(adapter, window_manager_.get()));
+    display_manager_.reset(new DrmDisplayHostManager(
+        adapter, device_manager_.get(), overlay_manager_.get(),
+        event_factory_ozone_->input_controller()));
+    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 
     if (using_mojo_ || single_process_) {
       mus_thread_proxy_->ProvideManagers(display_manager_.get(),

@@ -28,6 +28,7 @@ class DrmDeviceHandle;
 class DrmDisplayHost;
 class DrmDisplayHostManager;
 class DrmNativeDisplayDelegate;
+class DrmOverlayManager;
 class GpuThreadAdapter;
 
 struct DisplaySnapshot_Params;
@@ -39,6 +40,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
  public:
   DrmDisplayHostManager(GpuThreadAdapter* proxy,
                         DeviceManager* device_manager,
+                        DrmOverlayManager* overlay_manager,
                         InputControllerEvdev* input_controller);
   ~DrmDisplayHostManager() override;
 
@@ -100,6 +102,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   GpuThreadAdapter* proxy_;                 // Not owned.
   DeviceManager* device_manager_;           // Not owned.
+  DrmOverlayManager* overlay_manager_;      // Not owned.
   InputControllerEvdev* input_controller_;  // Not owned.
 
   DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.
