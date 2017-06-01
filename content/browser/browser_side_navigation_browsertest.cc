@@ -7,14 +7,17 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -26,6 +29,7 @@
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc_security_test_util.h"
+#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -425,13 +429,27 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
             controller.GetLastCommittedEntry()->GetURL().spec());
 }
 
+class BrowserSideNavigationBrowserDisableWebSecurityTest
+    : public BrowserSideNavigationBrowserTest {
+ public:
+  BrowserSideNavigationBrowserDisableWebSecurityTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Simulate a compromised renderer, otherwise the cross-origin request to
+    // file: is blocked.
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+    BrowserSideNavigationBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
 // Test to verify that an exploited renderer process trying to specify a
 // non-empty URL for base_url_for_data_url on navigation is correctly
 // terminated.
 // TODO(nasko): This test case belongs better in
 // security_exploit_browsertest.cc, so move it there once PlzNavigate is on
 // by default.
-IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
                        ValidateBaseUrlForDataUrl) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
@@ -439,20 +457,32 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
 
+  GURL data_url("data:text/html,foo");
+  base::FilePath file_path = GetTestFilePath("", "simple_page.html");
+  GURL file_url = net::FilePathToFileURL(file_path);
+
+  // To get around DataUrlNavigationThrottle. Other attempts at getting around
+  // it don't work, i.e.:
+  // -if the request is made in a child frame then the frame is torn down
+  // immediately on process killing so the navigation doesn't complete
+  // -if it's classified as same document, then a DCHECK in
+  // NavigationRequest::CreateRendererInitiated fires
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAllowContentInitiatedDataUrlNavigations);
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
-  GURL url(embedded_test_server()->GetURL("/title2.html"));
   CommonNavigationParams common_params(
-      url, Referrer(), ui::PAGE_TRANSITION_LINK,
+      data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true, false,
       base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
-      embedded_test_server()->GetURL("foo.com",
-                                     "/title3.html"),  // base_url_for_data_url
+      file_url,  // base_url_for_data_url
       GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), CSPDisposition::CHECK);
   BeginNavigationParams begin_params(
       std::string(), net::LOAD_NORMAL, false, false,
       REQUEST_CONTEXT_TYPE_LOCATION,
-      blink::WebMixedContentContextType::kBlockable, false, url::Origin(url));
+      blink::WebMixedContentContextType::kBlockable, false,
+      url::Origin(data_url));
   FrameHostMsg_BeginNavigation msg(rfh->GetRoutingID(), common_params,
                                    begin_params);
 
@@ -463,6 +493,26 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   IPC::IpcSecurityTestUtil::PwnMessageReceived(rfh->GetProcess()->GetChannel(),
                                                msg);
   process_exit_observer.Wait();
+
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      rfh->GetProcess()->GetID(), file_path));
+
+  // Reload the page to create another renderer process.
+  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
+  shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+  tab_observer.Wait();
+
+  // Make an XHR request to check if the page has access.
+  std::string script = base::StringPrintf(
+      "var xhr = new XMLHttpRequest()\n"
+      "xhr.open('GET', '%s', false);\n"
+      "xhr.send();\n"
+      "window.domAutomationController.send(xhr.responseText);",
+      file_url.spec().c_str());
+  std::string result;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(shell()->web_contents(), script, &result));
+  EXPECT_TRUE(result.empty());
 }
 
 }  // namespace content
