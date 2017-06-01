@@ -141,6 +141,11 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
   def Name(cls):
     return 'dromaeo.domcoreattr'
 
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # http://dromaeo.com?dom-attr not disabled.
+    return StoryExpectations()
 
 @benchmark.Owner(emails=['yukishiino@chromium.org',
                          'bashi@chromium.org',
@@ -156,6 +161,12 @@ class DromaeoDomCoreModify(_DromaeoBenchmark):
   @classmethod
   def Name(cls):
     return 'dromaeo.domcoremodify'
+
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # http://dromaeo.com?dom-modify not disabled.
+    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['yukishiino@chromium.org',
@@ -173,6 +184,12 @@ class DromaeoDomCoreQuery(_DromaeoBenchmark):
   def Name(cls):
     return 'dromaeo.domcorequery'
 
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # http://dromaeo.com?dom-query not disabled.
+    return StoryExpectations()
+
 
 @benchmark.Owner(emails=['yukishiino@chromium.org',
                          'bashi@chromium.org',
@@ -188,3 +205,9 @@ class DromaeoDomCoreTraverse(_DromaeoBenchmark):
   @classmethod
   def Name(cls):
     return 'dromaeo.domcoretraverse'
+
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # http://dromaeo.com?dom-traverse not disabled.
+    return StoryExpectations()
