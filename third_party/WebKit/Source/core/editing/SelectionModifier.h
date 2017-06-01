@@ -82,6 +82,13 @@ class SelectionModifier {
   VisiblePosition ModifyMovingBackward(TextGranularity);
   VisiblePosition NextWordPositionForPlatform(const VisiblePosition&);
 
+  // TODO(editing-dev): We should handle |skips_spaces_when_moving_right| in
+  // another way, e.g. pass |EditingBehavior()|.
+  static VisiblePosition LeftWordPosition(const VisiblePosition&,
+                                          bool skips_space_when_moving_right);
+  static VisiblePosition RightWordPosition(const VisiblePosition&,
+                                           bool skips_space_when_moving_right);
+
   Member<LocalFrame> frame_;
   VisibleSelection selection_;
   LayoutUnit x_pos_for_vertical_arrow_navigation_;
