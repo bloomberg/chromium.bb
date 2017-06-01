@@ -245,12 +245,17 @@ template("idl_compiler") {
   }
 }
 
-# Runs the idl_compiler to generate IDL dictionary and union impl files.
+# Runs idl_compiler.py to generate IDL dictionary impl files, unions and
+# callback functions.
 #
 # Parameters:
-#   sources = a list of IDL files to process
-#   outputs = a list of files to write to
-#   output_dir = the directory to put the output files
+#   dict_idls = a list of dictionary IDL files to process. the callback and
+#               union IDL file names are already known and do not need to be
+#               specified.
+#   non_dict_outputs = a list of files generated from callback functions and
+#                      unions. the list of files generated from |dict_idls| is
+#                      added automatically and does not need to be specified.
+#   non_dict_output_dir = the directory to put the non-dict output files.
 #   target_component = component to generate code for
 template("idl_impl") {
   dictionary_impl_output_dir = "$root_gen_dir/blink/"
@@ -258,7 +263,7 @@ template("idl_impl") {
   action(target_name) {
     script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
     idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
-    write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
+    write_file(idl_files_list, rebase_path(invoker.dict_idls, root_build_dir))
 
     inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
     inputs += [
@@ -267,14 +272,27 @@ template("idl_impl") {
       "$bindings_scripts_output_dir/cached_jinja_templates.stamp",
       "$bindings_dir/IDLExtendedAttributes.txt",
     ]
-    inputs += [ idl_files_list ] + invoker.sources
-    outputs = invoker.outputs
+    inputs += [ idl_files_list ] + invoker.dict_idls
+    outputs = invoker.non_dict_outputs
+
+    # Derive the names of the generated dictionary impl files. Contrary to
+    # generated interfaces, callbacks and unions, these files go to
+    # $root_gen_dir/blink/{core,modules}/<module name>/<IDLName>.{cpp,h}.
+    foreach(dict_idl, invoker.dict_idls) {
+      rel_path = rebase_path(dict_idl, "//third_party/WebKit/Source")
+      impl_dir = get_path_info(rel_path, "dir")
+      idl_name = get_path_info(rel_path, "name")
+      outputs += [
+        "${dictionary_impl_output_dir}$impl_dir/$idl_name.cpp",
+        "${dictionary_impl_output_dir}$impl_dir/$idl_name.h",
+      ]
+    }
 
     args = [
       "--cache-dir",
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--output-dir",
-      rebase_path(invoker.output_dir, root_build_dir),
+      rebase_path(invoker.non_dict_output_dir, root_build_dir),
       "--impl-output-dir",
       rebase_path(dictionary_impl_output_dir, root_build_dir),
       "--info-dir",
