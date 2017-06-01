@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/chrome_constants.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -156,6 +157,23 @@ gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
   ToolbarActionViewController* popup_owner =
       GetToolbarActionsBar()->popup_owner();
   return popup_owner ? popup_owner->GetPopupNativeView() : nil;
+}
+
+bool BrowserActionTestUtil::WaitForPopup() {
+  NSWindow* window = [GetPopupNativeView() window];
+  if (!window)
+    return false;
+
+  if ([window isKeyWindow])
+    return true;
+
+  base::scoped_nsobject<WindowedNSNotificationObserver> waiter(
+      [[WindowedNSNotificationObserver alloc]
+          initForNotification:NSWindowDidBecomeKeyNotification
+                       object:window]);
+
+  BOOL notification_observed = [waiter wait];
+  return notification_observed && [window isKeyWindow];
 }
 
 bool BrowserActionTestUtil::HasPopup() {
