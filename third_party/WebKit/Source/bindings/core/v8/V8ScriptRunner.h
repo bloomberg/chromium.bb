@@ -120,7 +120,8 @@ class CORE_EXPORT V8ScriptRunner final {
   // Only to be used from ScriptModule::ReportException().
   static void ReportExceptionForModule(v8::Isolate*,
                                        v8::Local<v8::Value> exception,
-                                       const String& file_name);
+                                       const String& file_name,
+                                       const TextPosition&);
 
   static uint32_t TagForParserCache(CachedMetadataHandler*);
   static uint32_t TagForCodeCache(CachedMetadataHandler*);

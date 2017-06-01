@@ -35,7 +35,7 @@ ModuleScript* ModuleScript::Create(
     return nullptr;
 
   return CreateInternal(source_text, modulator, result, base_url, nonce,
-                        parser_state, credentials_mode);
+                        parser_state, credentials_mode, start_position);
 }
 
 ModuleScript* ModuleScript::CreateInternal(
@@ -45,7 +45,8 @@ ModuleScript* ModuleScript::CreateInternal(
     const KURL& base_url,
     const String& nonce,
     ParserDisposition parser_state,
-    WebURLRequest::FetchCredentialsMode credentials_mode) {
+    WebURLRequest::FetchCredentialsMode credentials_mode,
+    const TextPosition& start_position) {
   // https://html.spec.whatwg.org/#creating-a-module-script
   // Step 7. Set script's module record to result.
   // Step 8. Set script's base URL to the script base URL provided.
@@ -57,7 +58,7 @@ ModuleScript* ModuleScript::CreateInternal(
   // [not specced] |source_text| is saved for CSP checks.
   ModuleScript* module_script =
       new ModuleScript(modulator, result, base_url, nonce, parser_state,
-                       credentials_mode, source_text);
+                       credentials_mode, source_text, start_position);
 
   // Step 5, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.
@@ -75,7 +76,8 @@ ModuleScript* ModuleScript::CreateForTest(
     WebURLRequest::FetchCredentialsMode credentials_mode) {
   String dummy_source_text = "";
   return CreateInternal(dummy_source_text, modulator, record, base_url, nonce,
-                        parser_state, credentials_mode);
+                        parser_state, credentials_mode,
+                        TextPosition::MinimumPosition());
 }
 
 ModuleScript::ModuleScript(Modulator* settings_object,
@@ -84,7 +86,8 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const String& nonce,
                            ParserDisposition parser_state,
                            WebURLRequest::FetchCredentialsMode credentials_mode,
-                           const String& source_text)
+                           const String& source_text,
+                           const TextPosition& start_position)
     : settings_object_(settings_object),
       record_(this),
       base_url_(base_url),
@@ -92,7 +95,8 @@ ModuleScript::ModuleScript(Modulator* settings_object,
       nonce_(nonce),
       parser_state_(parser_state),
       credentials_mode_(credentials_mode),
-      source_text_(source_text) {
+      source_text_(source_text),
+      start_position_(start_position) {
   if (record.IsNull()) {
     // We allow empty records for module infra tests which never touch records.
     // This should never happen outside unit tests.

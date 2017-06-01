@@ -195,7 +195,7 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
     ScriptModule::ReportException(
         script_state_.Get(),
         module_script->CreateInstantiationErrorInternal(isolate),
-        module_script->BaseURL().GetString());
+        module_script->BaseURL().GetString(), module_script->StartPosition());
     return;
   }
 

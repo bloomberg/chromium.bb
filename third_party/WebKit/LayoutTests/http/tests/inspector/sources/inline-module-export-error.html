@@ -1,0 +1,44 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script type="module">
+import {x} from "./resources/empty-module.js";
+</script>
+<script>
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.waitUntilPaused(step2);
+        InspectorTest.reloadPage();
+    }
+
+    function step2()
+    {
+        var callFrames = InspectorTest.debuggerModel.callFrames;
+        var frame = callFrames[0];
+        var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
+        InspectorTest.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
+
+        function dumpCallFrameLine(sourceFrame)
+        {
+            var resourceText = sourceFrame._textEditor.text();
+            var lines = resourceText.split("\n");
+            var lineNumber = uiLocation.lineNumber;
+            InspectorTest.addResult("line " + lineNumber + ", content: " + lines[lineNumber]);
+            InspectorTest.completeDebuggerTest();
+        }
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests lineNumber for import error inside of inline module.</p>
+</body>
+</html>
