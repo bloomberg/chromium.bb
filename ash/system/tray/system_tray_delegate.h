@@ -53,9 +53,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns a list of properties for the currently selected IME.
   virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list);
 
-  // Returns a non-empty string if IMEs are managed by policy.
-  virtual base::string16 GetIMEManagedMessage();
-
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
 

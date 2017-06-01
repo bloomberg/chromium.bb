@@ -47,7 +47,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
@@ -61,8 +60,6 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
@@ -245,13 +242,6 @@ void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
     property.selected = menu_list[i].is_selection_item_checked;
     list->push_back(property);
   }
-}
-
-base::string16 SystemTrayDelegateChromeOS::GetIMEManagedMessage() {
-  auto ime_state = input_method::InputMethodManager::Get()->GetActiveIMEState();
-  return ime_state->GetAllowedInputMethods().empty()
-             ? base::string16()
-             : l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
 }
 
 ash::NetworkingConfigDelegate*

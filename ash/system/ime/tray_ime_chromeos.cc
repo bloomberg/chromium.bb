@@ -26,8 +26,10 @@
 #include "ash/system/tray_accessibility.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -37,6 +39,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
+
+using chromeos::input_method::InputMethodManager;
 
 namespace ash {
 namespace tray {
@@ -270,7 +274,11 @@ void TrayIME::OnIMERefresh() {
   delegate->GetCurrentIME(&current_ime_);
   delegate->GetAvailableIMEList(&ime_list_);
   delegate->GetCurrentIMEProperties(&property_list_);
-  ime_managed_message_ = delegate->GetIMEManagedMessage();
+  auto ime_state = InputMethodManager::Get()->GetActiveIMEState();
+  ime_managed_message_ =
+      ime_state->GetAllowedInputMethods().empty()
+          ? base::string16()
+          : l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
 
   Update();
 }
