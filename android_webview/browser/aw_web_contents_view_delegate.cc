@@ -38,7 +38,7 @@ void AwWebContentsViewDelegate::ShowContextMenu(
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::FromWebContents(web_contents_);
   if (content_view_core)
-    content_view_core->ShowPastePopup(params);
+    content_view_core->ShowSelectionMenu(params);
 }
 
 }  // namespace android_webview

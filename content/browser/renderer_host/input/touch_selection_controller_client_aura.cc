@@ -170,6 +170,12 @@ bool TouchSelectionControllerClientAura::HandleContextMenu(
     UpdateQuickMenu();
     return true;
   }
+
+  const bool from_touch = params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
+                          params.source_type == ui::MENU_SOURCE_TOUCH;
+  if (from_touch && !params.selection_text.empty())
+    return true;
+
   rwhva_->selection_controller()->HideAndDisallowShowingAutomatically();
   return false;
 }

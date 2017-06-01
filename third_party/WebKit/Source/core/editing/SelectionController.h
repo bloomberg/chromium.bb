@@ -102,7 +102,8 @@ class CORE_EXPORT SelectionController final
                                           SelectInputEventType);
   void SelectClosestMisspellingFromHitTestResult(const HitTestResult&,
                                                  AppendTrailingWhitespace);
-  void SelectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
+  // Returns |true| if a word was selected.
+  bool SelectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
   void SelectClosestMisspellingFromMouseEvent(
       const MouseEventWithHitTestResults&);
   void SelectClosestWordOrLinkFromMouseEvent(

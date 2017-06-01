@@ -49,7 +49,8 @@ enum MenuSourceType {
   MENU_SOURCE_LONG_PRESS      = 5,
   MENU_SOURCE_LONG_TAP        = 6,
   MENU_SOURCE_TOUCH_HANDLE    = 7,
-  MENU_SOURCE_TYPE_LAST = MENU_SOURCE_TOUCH_HANDLE
+  MENU_SOURCE_STYLUS          = 8,
+  MENU_SOURCE_TYPE_LAST = MENU_SOURCE_STYLUS
 };
 
 UI_BASE_EXPORT MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);

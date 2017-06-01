@@ -50,7 +50,9 @@ class StylusTextSelectorTest : public testing::Test,
     event_log_.push_back(ss.str());
   }
 
-  void OnStylusSelectEnd() override { event_log_.push_back("End"); }
+  void OnStylusSelectEnd(float x, float y) override {
+    event_log_.push_back("End");
+  }
 
   void OnStylusSelectTap(base::TimeTicks time, float x, float y) override {
     event_log_.push_back("Tap");

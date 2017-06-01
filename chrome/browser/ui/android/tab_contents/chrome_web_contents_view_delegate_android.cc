@@ -32,7 +32,7 @@ void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     const content::ContextMenuParams& params) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::FromWebContents(web_contents_);
-  if (content_view_core && content_view_core->ShowPastePopup(params))
+  if (content_view_core && content_view_core->ShowSelectionMenu(params))
     return;
 
   // TODO(dtrainor, kouhei): Give WebView a Populator/delegate so it can use

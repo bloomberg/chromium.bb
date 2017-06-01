@@ -128,6 +128,8 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
     });
 
     logCounts('GestureTap', documents, multiTapNotification, function() {
+        // We don't want to tap on an existing selection so we clear selections.
+        window.getSelection().empty();
         eventSender.gestureTap(targetX, targetY, 1, 30, 30);
     });
 

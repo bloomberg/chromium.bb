@@ -653,7 +653,8 @@ void WebContentsAndroid::ShowContextMenuAtTouchHandle(
     int y) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view)
-    view->ShowContextMenuAtTouchHandle(gfx::Point(x, y));
+    view->ShowContextMenuAtPoint(gfx::Point(x, y),
+                                 ui::MENU_SOURCE_TOUCH_HANDLE);
 }
 
 void WebContentsAndroid::SetHasPersistentVideo(

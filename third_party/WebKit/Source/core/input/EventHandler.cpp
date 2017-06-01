@@ -1892,20 +1892,29 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   doc->UpdateHoverActiveState(request, result.InnerElement());
 
   // The contextmenu event is a mouse event even when invoked using the
-  // keyboard or other methods.  This is required for web compatibility.
+  // keyboard.  This is required for web compatibility.
   WebInputEvent::Type event_type = WebInputEvent::kMouseDown;
   if (frame_->GetSettings() &&
       frame_->GetSettings()->GetShowContextMenuOnMouseUp())
     event_type = WebInputEvent::kMouseUp;
 
+  WebInputEvent::Modifiers modifiers;
+  switch (source_type) {
+    case kMenuSourceTouch:
+    case kMenuSourceLongPress:
+    case kMenuSourceTouchHandle:
+      modifiers = WebInputEvent::kIsCompatibilityEventForTouch;
+      break;
+    default:
+      modifiers = WebInputEvent::kNoModifiers;
+      break;
+  }
+
   WebMouseEvent mouse_event(
       event_type,
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
-      WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      ((source_type == kMenuSourceTouchHandle)
-           ? WebInputEvent::kIsCompatibilityEventForTouch
-           : WebInputEvent::kNoModifiers),
+      WebPointerProperties::Button::kNoButton, /* clickCount */ 0, modifiers,
       TimeTicks::Now().InSeconds());
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport

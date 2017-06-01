@@ -1866,10 +1866,11 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
     host_->MoveCaret(point);
 }
 
-void RenderWidgetHostViewAndroid::ShowContextMenuAtTouchHandle(
-    const gfx::Point& point) {
+void RenderWidgetHostViewAndroid::ShowContextMenuAtPoint(
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   if (host_)
-    host_->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_TOUCH_HANDLE);
+    host_->ShowContextMenuAtPoint(point, source_type);
 }
 
 void RenderWidgetHostViewAndroid::DismissTextHandles() {
@@ -2171,6 +2172,10 @@ void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
 
 void RenderWidgetHostViewAndroid::OnStylusSelectUpdate(float x, float y) {
   MoveRangeSelectionExtent(gfx::PointF(x, y));
+}
+
+void RenderWidgetHostViewAndroid::OnStylusSelectEnd(float x, float y) {
+  ShowContextMenuAtPoint(gfx::Point(x, y), ui::MENU_SOURCE_STYLUS);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
