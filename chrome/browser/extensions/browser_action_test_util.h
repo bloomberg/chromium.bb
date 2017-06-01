@@ -69,6 +69,10 @@ class BrowserActionTestUtil {
 
   gfx::NativeView GetPopupNativeView();
 
+  // Spins a RunLoop until the NativeWindow hosting |GetPopupNativeView()| is
+  // reported as active by the OS. Returns true if successful.
+  bool WaitForPopup();
+
   // Returns whether a browser action popup is being shown currently.
   bool HasPopup();
 
