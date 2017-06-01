@@ -1315,6 +1315,7 @@ source_set("unit_tests") {
     "layout/LayoutTableCellTest.cpp",
     "layout/LayoutTableRowTest.cpp",
     "layout/LayoutTableSectionTest.cpp",
+    "layout/LayoutTableTest.cpp",
     "layout/LayoutTestHelper.cpp",
     "layout/LayoutTestHelper.h",
     "layout/LayoutTextTest.cpp",
