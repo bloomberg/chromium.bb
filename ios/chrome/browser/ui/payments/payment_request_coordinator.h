@@ -101,6 +101,9 @@ class PaymentShippingOption;
 // calling |start|.
 @property(nonatomic, copy) NSString* pageHost;
 
+// Whether or not the connection is secure.
+@property(nonatomic, assign, getter=isConnectionSecure) BOOL connectionSecure;
+
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;
 

@@ -74,6 +74,9 @@ class PaymentRequest;
 // The host of the page invoking the Payment Request API.
 @property(nonatomic, copy) NSString* pageHost;
 
+// Whether or not the connection is secure.
+@property(nonatomic, assign, getter=isConnectionSecure) BOOL connectionSecure;
+
 // Whether or not the view is in a pending state.
 @property(nonatomic, assign, getter=isPending) BOOL pending;
 

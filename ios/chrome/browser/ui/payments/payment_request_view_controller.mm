@@ -123,6 +123,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
+@synthesize connectionSecure = _connectionSecure;
 @synthesize pending = _pending;
 @synthesize delegate = _delegate;
 @synthesize showPaymentDataSource = _showPaymentDataSource;
@@ -211,6 +212,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   pageInfo.pageFavicon = _pageFavicon;
   pageInfo.pageTitle = _pageTitle;
   pageInfo.pageHost = _pageHost;
+  pageInfo.connectionSecure = _connectionSecure;
   [model setHeader:pageInfo forSectionWithIdentifier:SectionIdentifierSummary];
 
   if (_pending) {

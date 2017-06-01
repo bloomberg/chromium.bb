@@ -433,6 +433,8 @@ struct PendingPaymentResponse {
   NSString* pageTitle = base::SysUTF16ToNSString([self webState]->GetTitle());
   NSString* pageHost =
       base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
+  // TODO(crbug.com/728639): Determine when connection is secure.
+  BOOL connectionSecure = false;
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebState(_webState)->autofill_manager();
   _paymentRequestCoordinator = [[PaymentRequestCoordinator alloc]
@@ -443,6 +445,7 @@ struct PendingPaymentResponse {
   [_paymentRequestCoordinator setPageFavicon:pageFavicon];
   [_paymentRequestCoordinator setPageTitle:pageTitle];
   [_paymentRequestCoordinator setPageHost:pageHost];
+  [_paymentRequestCoordinator setConnectionSecure:connectionSecure];
   [_paymentRequestCoordinator setDelegate:self];
 
   [_paymentRequestCoordinator start];
