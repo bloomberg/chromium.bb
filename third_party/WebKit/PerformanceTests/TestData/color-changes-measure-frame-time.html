@@ -61,10 +61,13 @@ PerfTestRunner.measureFrameTime({
     for (var index = 0; index < elementsToChange.length; index++)
       elementsToChange[index].style.backgroundColor = newColor;
   },
-   warmUpCount: 3,
-   iterationCount: 10,
-   tracingCategories: 'blink',
-   traceEventsToMeasure: ['FrameView::prePaint', 'FrameView::paintTree']
+  warmUpCount: 3,
+  iterationCount: 10,
+  tracingCategories: 'blink',
+  traceEventsToMeasure: [
+    'LocalFrameView::prePaint',
+    'LocalFrameView::paintTree'
+  ]
 });
 </script>
 </body>
