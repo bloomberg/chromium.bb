@@ -86,11 +86,8 @@ bool DOMTokenList::contains(const AtomicString& token) const {
   return tokens_.Contains(token);
 }
 
-void DOMTokenList::add(const AtomicString& token,
-                       ExceptionState& exception_state) {
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  add(tokens, exception_state);
+void DOMTokenList::Add(const AtomicString& token) {
+  add(Vector<String>({token}), ASSERT_NO_EXCEPTION);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
@@ -104,11 +101,8 @@ void DOMTokenList::add(const Vector<String>& tokens,
   AddTokens(tokens);
 }
 
-void DOMTokenList::remove(const AtomicString& token,
-                          ExceptionState& exception_state) {
-  Vector<String> tokens;
-  tokens.push_back(token.GetString());
-  remove(tokens, exception_state);
+void DOMTokenList::Remove(const AtomicString& token) {
+  remove(Vector<String>({token}), ASSERT_NO_EXCEPTION);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-remove
