@@ -911,6 +911,7 @@ class TumblrStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL]
 
 
+@decorators.Disabled('win')  # crbug.com/728464
 class TwitterScrollDesktopStory(_InfiniteScrollStory):
   NAME = 'browse:social:twitter_infinite_scroll'
   URL = 'https://twitter.com/taylorswift13'
