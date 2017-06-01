@@ -155,6 +155,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       override;
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
+  InputEventAckState FilterChildGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
@@ -291,6 +293,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
+
+  // TODO(mcnee): Tests needing this are BrowserPlugin specific. Remove after
+  // removing BrowserPlugin (crbug.com/533069).
+  void SetOverscrollControllerForTesting(
+      std::unique_ptr<OverscrollController> controller);
 
   void SnapToPhysicalPixelBoundary();
 

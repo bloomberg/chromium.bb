@@ -1116,6 +1116,14 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
                   : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
+InputEventAckState RenderWidgetHostViewAura::FilterChildGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  if (overscroll_controller_ &&
+      overscroll_controller_->WillHandleEvent(gesture_event))
+    return INPUT_EVENT_ACK_STATE_CONSUMED;
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
 BrowserAccessibilityManager*
 RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
@@ -2101,6 +2109,11 @@ void RenderWidgetHostViewAura::SetOverscrollControllerEnabled(bool enabled) {
     overscroll_controller_.reset();
   else if (!overscroll_controller_)
     overscroll_controller_.reset(new OverscrollController());
+}
+
+void RenderWidgetHostViewAura::SetOverscrollControllerForTesting(
+    std::unique_ptr<OverscrollController> controller) {
+  overscroll_controller_ = std::move(controller);
 }
 
 void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
