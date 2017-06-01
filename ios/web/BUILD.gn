@@ -357,21 +357,6 @@ source_set("reload_type") {
   ]
 }
 
-# TODO(crbug.com/727860): Remove this when nothing depends on it.
-source_set("test_support") {
-  testonly = true
-
-  public_deps = [
-    "//ios/web/public/test",
-    "//ios/web/public/test/fakes",
-    "//ios/web/public/test/http_server",
-  ]
-
-  sources = [
-    "public/test/http_server.h",
-  ]
-}
-
 source_set("earl_grey_test_support") {
   testonly = true
 
