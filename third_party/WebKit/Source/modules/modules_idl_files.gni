@@ -237,6 +237,7 @@ modules_idl_files =
                     "sensor/Gyroscope.idl",
                     "sensor/Magnetometer.idl",
                     "sensor/OrientationSensor.idl",
+                    "sensor/RelativeOrientationSensor.idl",
                     "sensor/Sensor.idl",
                     "sensor/SensorErrorEvent.idl",
                     "serviceworkers/Client.idl",

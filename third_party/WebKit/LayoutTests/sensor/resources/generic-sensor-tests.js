@@ -5,6 +5,7 @@
 // is called so that the value read in JavaScript are the values expected (the ones
 // sent by |updateReading|).
 function runGenericSensorTests(sensorType, updateReading, verifyReading) {
+  const prefix = sensorType.name + ': ';
   sensor_test(sensor => {
     sensor.mockSensorProvider.setGetSensorShouldFail(true);
     let sensorObject = new sensorType;
@@ -19,7 +20,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
       sensorObject.onerror = wrapper.callback;
     });
-  }, 'Test that "onerror" is send when sensor is not supported.');
+  }, prefix + 'Test that "onerror" is send when sensor is not supported.');
 
   sensor_test(sensor => {
       let sensorObject = new sensorType({frequency: 560});
@@ -42,7 +43,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           });
         });
       return testPromise;
-  }, 'Test that "onerror" is send when start() call has failed.');
+  }, prefix + 'Test that "onerror" is send when start() call has failed.');
 
   sensor_test(sensor => {
       let sensorObject = new sensorType({frequency: 560});
@@ -65,7 +66,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           })
           .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
       return testPromise;
-  }, 'Test that frequency is capped to 60.0 Hz.');
+  }, prefix + 'Test that frequency is capped to 60.0 Hz.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType();
@@ -89,7 +90,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           return mockSensor;
         })
         .then(mockSensor => mockSensor.removeConfigurationCalled());
-  }, 'Test that configuration is removed for a stopped sensor.');
+  }, prefix + 'Test that configuration is removed for a stopped sensor.');
 
   sensor_test(sensor => {
     let maxSupportedFrequency = 15;
@@ -113,7 +114,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         })
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
     return testPromise;
-  }, 'Test that frequency is capped to the maximum supported from frequency.');
+  }, prefix + 'Test that frequency is capped to the maximum supported from frequency.');
 
   sensor_test(sensor => {
     let minSupportedFrequency = 2;
@@ -137,7 +138,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         })
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
     return testPromise;
-  }, 'Test that frequency is limited to the minimum supported from frequency.');
+  }, prefix + 'Test that frequency is limited to the minimum supported from frequency.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType({frequency: 60});
@@ -159,7 +160,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
       })
       .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
     return testPromise;
-  }, 'Test that sensor can be successfully created and its states are correct.');
+  }, prefix + 'Test that sensor can be successfully created and its states are correct.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType();
@@ -180,7 +181,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         })
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
     return testPromise;
-  }, 'Test that sensor can be constructed with default configuration.');
+  }, prefix + 'Test that sensor can be constructed with default configuration.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType({frequency: 60});
@@ -203,7 +204,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
 
     return testPromise;
-  }, 'Test that addConfiguration and removeConfiguration is called.');
+  }, prefix + 'Test that addConfiguration and removeConfiguration is called.');
 
   function checkOnChangeIsCalledAndReadingIsValid(sensor) {
     let sensorObject = new sensorType({frequency: 60});
@@ -232,12 +233,12 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   sensor_test(sensor => {
     return checkOnChangeIsCalledAndReadingIsValid(sensor);
-  }, 'Test that onChange is called and sensor reading is valid (onchange reporting).');
+  }, prefix + 'Test that onChange is called and sensor reading is valid (onchange reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();
     return checkOnChangeIsCalledAndReadingIsValid(sensor);
-  }, 'Test that onChange is called and sensor reading is valid (continuous reporting).');
+  }, prefix + 'Test that onChange is called and sensor reading is valid (continuous reporting).');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType;
@@ -275,7 +276,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
 
     return testPromise;
-  }, 'Test that sensor receives suspend / resume notifications when page'
+  }, prefix + 'Test that sensor receives suspend / resume notifications when page'
       + ' visibility changes.');
 
   sensor_test(sensor => {
@@ -315,7 +316,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
 
     return testPromise;
-  }, 'Test that sensor reading is correct.');
+  }, prefix + 'Test that sensor reading is correct.');
 
   function checkFrequencyHintWorks(sensor) {
     let fastSensor = new sensorType({frequency: 30});
@@ -366,10 +367,10 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   sensor_test(sensor => {
     return checkFrequencyHintWorks(sensor);
-  }, 'Test that frequency hint works (onchange reporting).');
+  }, prefix + 'Test that frequency hint works (onchange reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();
     return checkFrequencyHintWorks(sensor);
-  }, 'Test that frequency hint works (continuous reporting).');
+  }, prefix + 'Test that frequency hint works (continuous reporting).');
 }

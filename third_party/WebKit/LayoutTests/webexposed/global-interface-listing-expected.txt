@@ -5196,6 +5196,9 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
+interface RelativeOrientationSensor : OrientationSensor
+    attribute @@toStringTag
+    method constructor
 interface RemotePlayback : EventTarget
     attribute @@toStringTag
     getter onconnect
