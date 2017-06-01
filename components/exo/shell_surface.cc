@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/shell_port.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -167,10 +166,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 class CustomWindowResizer : public ash::WindowResizer {
  public:
   explicit CustomWindowResizer(ash::wm::WindowState* window_state)
-      : WindowResizer(window_state) {
-    ash::ShellPort::Get()->LockCursor();
-  }
-  ~CustomWindowResizer() override { ash::ShellPort::Get()->UnlockCursor(); }
+      : WindowResizer(window_state) {}
 
   // Overridden from ash::WindowResizer:
   void Drag(const gfx::Point& location, int event_flags) override {}
