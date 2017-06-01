@@ -333,6 +333,10 @@ const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 const char kDisableAcceleratedJpegDecoding[] =
     "disable-accelerated-jpeg-decoding";
 
+// Logs Runtime Call Stats for Blink. --single-process also needs to be
+// used along with this for the stats to be logged.
+const char kDumpBlinkRuntimeCallStats[] = "dump-blink-runtime-call-stats";
+
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 

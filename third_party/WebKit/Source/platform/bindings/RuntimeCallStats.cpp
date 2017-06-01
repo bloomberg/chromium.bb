@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 #include <algorithm>
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -43,6 +44,11 @@ RuntimeCallStats::RuntimeCallStats() {
   }
 }
 
+// static
+RuntimeCallStats* RuntimeCallStats::From(v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->GetRuntimeCallStats();
+}
+
 void RuntimeCallStats::Reset() {
   for (int i = 0; i < number_of_counters_; i++) {
     counters_[i].Reset();
@@ -55,7 +61,7 @@ String RuntimeCallStats::ToString() const {
   builder.Append("Name                              Count     Time (ms)\n\n");
   for (int i = 0; i < number_of_counters_; i++) {
     const RuntimeCallCounter* counter = &counters_[i];
-    builder.Append(String::Format("%-32s  %8" PRIu64 "%8.3f\n",
+    builder.Append(String::Format("%-32s  %8" PRIu64 "  %9.3f\n",
                                   counter->GetName(), counter->GetCount(),
                                   counter->GetTime().InMillisecondsF()));
   }
