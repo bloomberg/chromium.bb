@@ -12,12 +12,10 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/resources/grit/views_resources.h"
 
 namespace ash {
 

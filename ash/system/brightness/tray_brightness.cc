@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"

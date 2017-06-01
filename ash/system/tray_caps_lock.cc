@@ -5,7 +5,6 @@
 #include "ash/system/tray_caps_lock.h"
 
 #include "ash/accessibility_delegate.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"

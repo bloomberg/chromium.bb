@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/common_palette_tool.h"
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/system/palette/palette_ids.h"

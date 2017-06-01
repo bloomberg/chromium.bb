@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/palette_tray.h"
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
