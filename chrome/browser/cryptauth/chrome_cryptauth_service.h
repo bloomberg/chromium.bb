@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -20,9 +21,11 @@ class CryptAuthGCMManager;
 }  // namespace cryptauth
 
 // Implementation of cryptauth::CryptAuthService.
-class ChromeCryptAuthService : public KeyedService,
-                               public cryptauth::CryptAuthService,
-                               public OAuth2TokenService::Observer {
+class ChromeCryptAuthService
+    : public KeyedService,
+      public cryptauth::CryptAuthService,
+      public cryptauth::CryptAuthEnrollmentManager::Observer,
+      public OAuth2TokenService::Observer {
  public:
   static std::unique_ptr<ChromeCryptAuthService> Create(Profile* profile);
   ~ChromeCryptAuthService() override;
@@ -41,6 +44,10 @@ class ChromeCryptAuthService : public KeyedService,
   std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
 
+  // cryptauth::CryptAuthEnrollmentManager::Observer:
+  void OnEnrollmentStarted() override;
+  void OnEnrollmentFinished(bool success) override;
+
  protected:
   // Note: ChromeCryptAuthServiceFactory DependsOn(OAuth2TokenServiceFactory),
   // so |token_service| is guaranteed to outlast this service.
@@ -54,6 +61,8 @@ class ChromeCryptAuthService : public KeyedService,
  private:
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  void PerformEnrollmentAndDeviceSync();
 
   std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager_;
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager_;
