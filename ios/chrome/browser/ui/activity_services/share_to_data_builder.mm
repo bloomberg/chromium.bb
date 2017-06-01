@@ -31,7 +31,7 @@ ShareToData* ShareToDataForTab(Tab* tab) {
   BOOL isPagePrintable = [tab viewForPrinting] != nil;
   ThumbnailGeneratorBlock thumbnailGenerator =
       activity_services::ThumbnailGeneratorForTab(tab);
-  return [[ShareToData alloc] initWithURL:tab.url
+  return [[ShareToData alloc] initWithURL:tab.visibleURL
                                     title:tab.title
                           isOriginalTitle:(tab.originalTitle != nil)
                           isPagePrintable:isPagePrintable
