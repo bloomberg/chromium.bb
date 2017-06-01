@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_select.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -89,9 +90,9 @@
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
         on-timezone-button-clicked="onWelcomeTimezoneButtonClicked_"
         on-next-button-clicked="onWelcomeNextButtonClicked_"
-        timezone-button-visible="[[isTimezoneButtonVisible_(highlightStrength)]]"
-        debugging-link-visible="[[debuggingLinkVisible]]"
-        >
+        timezone-button-visible=
+            "[[isTimezoneButtonVisible_(highlightStrength)]]"
+        debugging-link-visible="[[debuggingLinkVisible]]">
     </oobe-welcome-dialog>
     <oobe-dialog id="languageScreen" role="dialog" hidden has-buttons
         i18n-values="aria-label:languageSectionTitle">
@@ -99,15 +100,16 @@
           icon1x="oobe-welcome-32:language" icon2x="oobe-welcome-64:language">
       </hd-iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="languageSectionTitle"></h1>
+        <h1 class="title">[[i18nDynamic(locale, 'languageSectionTitle')]]</h1>
       </div>
       <div class="footer layout vertical">
         <template is="dom-if" if="[[enabled]]">
           <div id="languageDropdownContainer"
               class="flex layout center horizontal justified
                   language-selection-entry">
-            <div class="language-selection-title layout vertical center-justified"
-                i18n-content="languageDropdownTitle">
+            <div class=
+                "language-selection-title layout vertical center-justified">
+              [[i18nDynamic(locale, 'languageDropdownTitle')]]
             </div>
             <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
                 on-select-item="onLanguageSelected_"
@@ -118,8 +120,9 @@
           <div id="keyboardDropdownContainer"
               class="flex layout center horizontal justified
                  language-selection-entry">
-            <div class="language-selection-title layout vertical center-justified"
-                i18n-content="keyboardDropdownTitle">
+            <div class=
+                "language-selection-title layout vertical center-justified">
+              [[i18nDynamic(locale, 'keyboardDropdownTitle')]]
             </div>
             <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
                 on-select-item="onKeyboardSelected_"
@@ -130,7 +133,7 @@
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeLanguageSection_">
-          <div i18n-content="oobeOKButtonText"></div>
+          <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -141,8 +144,12 @@
           icon2x="oobe-welcome-64:accessibility">
       </hd-iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="accessibilitySectionTitle"></h1>
-        <div class="subtitle" i18n-content="accessibilitySectionHint"></div>
+        <h1 class="title">
+          [[i18nDynamic(locale, 'accessibilitySectionTitle')]]
+        </h1>
+        <div class="subtitle">
+          [[i18nDynamic(locale, 'accessibilitySectionHint')]]
+        </div>
       </div>
       <div class="footer layout vertical">
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
@@ -150,56 +157,76 @@
             chrome-message="enableSpokenFeedback"
             i18n-values="label-for-aria:spokenFeedbackOption"
             class="focus-on-show">
-          <span class="title" i18n-content="spokenFeedbackOption"></span>
-          <span class="checked-value" i18n-content="spokenFeedbackOptionOn">
+          <span class="title">
+            [[i18nDynamic(locale, 'spokenFeedbackOption')]]
           </span>
-          <span class="unchecked-value" i18n-content="spokenFeedbackOptionOff">
+          <span class="checked-value">
+            [[i18nDynamic(locale, 'spokenFeedbackOptionOn')]]
+          </span>
+          <span class="unchecked-value">
+            [[i18nDynamic(locale, 'spokenFeedbackOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableLargeCursor"
             i18n-values="label-for-aria:largeCursorOption">
-          <span class="title" i18n-content="largeCursorOption"></span>
-          <span class="checked-value" i18n-content="largeCursorOptionOn">
+          <span class="title">
+            [[i18nDynamic(locale, 'largeCursorOption')]]
           </span>
-          <span class="unchecked-value" i18n-content="largeCursorOptionOff">
+          <span class="checked-value">
+            [[i18nDynamic(locale, 'largeCursorOptionOn')]]
+          </span>
+          <span class="unchecked-value">
+            [[i18nDynamic(locale, 'largeCursorOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableHighContrast"
             i18n-values="label-for-aria:highContrastOption">
-          <span class="title" i18n-content="highContrastOption"></span>
-          <span class="checked-value" i18n-content="highContrastOptionOn">
+          <span class="title">
+            [[i18nDynamic(locale, 'highContrastOption')]]
           </span>
-          <span class="unchecked-value" i18n-content="highContrastOptionOff">
+          <span class="checked-value">
+            [[i18nDynamic(locale, 'highContrastOptionOn')]]
+          </span>
+          <span class="unchecked-value">
+            [[i18nDynamic(locale, 'highContrastOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableScreenMagnifier"
             i18n-values="label-for-aria:screenMagnifierOption">
-          <span class="title" i18n-content="screenMagnifierOption"></span>
-          <span class="checked-value" i18n-content="screenMagnifierOptionOn">
+          <span class="title">
+            [[i18nDynamic(locale, 'screenMagnifierOption')]]
           </span>
-          <span class="unchecked-value" i18n-content="screenMagnifierOptionOff">
+          <span class="checked-value">
+            [[i18nDynamic(locale, 'screenMagnifierOptionOn')]]
+          </span>
+          <span class="unchecked-value">
+            [[i18nDynamic(locale, 'screenMagnifierOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableVirtualKeyboard"
             i18n-values="label-for-aria:virtualKeyboardOption">
-          <span class="title" i18n-content="virtualKeyboardOption"></span>
-          <span class="checked-value" i18n-content="virtualKeyboardOptionOn">
+          <span class="title">
+            [[i18nDynamic(locale, 'virtualKeyboardOption')]]
           </span>
-          <span class="unchecked-value" i18n-content="virtualKeyboardOptionOff">
+          <span class="checked-value">
+            [[i18nDynamic(locale, 'virtualKeyboardOptionOn')]]
+          </span>
+          <span class="unchecked-value">
+            [[i18nDynamic(locale, 'virtualKeyboardOptionOff')]]
           </span>
         </oobe-a11y-option>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeAccessibilitySection_">
-          <div i18n-content="oobeOKButtonText"></div>
+          <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -209,13 +236,14 @@
           icon1x="oobe-welcome-32:timezone" icon2x="oobe-welcome-64:timezone">
       </hd-iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="timezoneSectionTitle"></h1>
+        <h1 class="title">[[i18nDynamic(locale, 'timezoneSectionTitle')]]</h1>
       </div>
       <div class="footer layout vertical">
         <div class="flex layout center horizontal justified
               timezone-selection-entry">
-          <div class="timezone-selection-title layout vertical center-justified"
-              i18n-content="timezoneDropdownTitle">
+          <div class=
+              "timezone-selection-title layout vertical center-justified">
+            [[i18nDynamic(locale, 'timezoneDropdownTitle')]]
           </div>
           <oobe-i18n-dropdown id="timezoneSelect" items="[[timezones]]"
               on-select-item="onTimezoneSelected_"
@@ -226,7 +254,7 @@
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeTimezoneSection_">
-          <div i18n-content="oobeOKButtonText"></div>
+          <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -237,8 +265,10 @@
           icon1x="oobe-welcome-32:wifi" icon2x="oobe-welcome-64:wifi">
       </hd-iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="networkSectionTitle"></h1>
-        <div class="subtitle" i18n-content="networkSectionHint"></div>
+        <h1 class="title">[[i18nDynamic(locale, 'networkSectionTitle')]]</h1>
+        <div class="subtitle">
+          [[i18nDynamic(locale, 'networkSectionHint')]]
+        </div>
       </div>
       <div class="footer layout vertical">
         <cr-network-select id="networkSelect"

@@ -4,17 +4,23 @@
 
 /**
  * @fileoverview
- * 'I18nBehavior' is a behavior to mix in loading of
- * internationalization strings.
- *
- * Example:
- *   behaviors: [
- *     I18nBehavior,
- *   ],
+ * 'I18nBehavior' is a behavior to mix in loading of internationalization
+ * strings.
  */
 
 /** @polymerBehavior */
 var I18nBehavior = {
+  properties: {
+    /**
+     * The language the UI is presented in. Used to signal dynamic language
+     * change.
+     */
+    locale: {
+      type: String,
+      value: '',
+    },
+  },
+
   /**
    * Returns a translated string where $1 to $9 are replaced by the given
    * values.
@@ -60,12 +66,33 @@ var I18nBehavior = {
   },
 
   /**
+   * Similar to 'i18n', with an unused |locale| parameter used to trigger
+   * updates when |this.locale| changes.
+   * @param {string} locale The UI language used.
+   * @param {string} id The ID of the string to translate.
+   * @param {...string} var_args Values to replace the placeholders $1 to $9
+   *     in the string.
+   * @return {string} A translated, sanitized, substituted string.
+   */
+  i18nDynamic: function(locale, id, var_args) {
+    return this.i18n.apply(this, Array.prototype.slice.call(arguments, 1));
+  },
+
+  /**
    * Returns true if a translation exists for |id|.
    * @param {string} id
    * @return {boolean}
    */
   i18nExists: function(id) {
     return loadTimeData.valueExists(id);
+  },
+
+  /**
+   * Call this when UI strings may have changed. This will send an update to any
+   * data bindings to i18nDynamic(locale, ...).
+   */
+  i18nUpdateLocale: function() {
+    this.locale = loadTimeData.getString('language');
   },
 };
 
