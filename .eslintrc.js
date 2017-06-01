@@ -11,6 +11,7 @@ module.exports = {
   'rules': {
     // Enabled checks.
     'no-extra-semi': 'error',
+    'no-new-wrappers': 'error',
     'no-restricted-properties': ['error', {
       'object': 'document',
       'property': 'getElementById',

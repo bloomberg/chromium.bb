@@ -21,28 +21,35 @@ class JsCheckerEsLintTest(unittest.TestCase):
   def tearDown(self):
     os.remove(self._tmp_file)
 
-  def testGetElementByIdCheck(self):
+  def _runChecks(self, file_contents):
     tmp_args = {'suffix': '.js', 'dir': _HERE_PATH, 'delete': False}
     with tempfile.NamedTemporaryFile(**tmp_args) as f:
       self._tmp_file = f.name
-      f.write('var a = document.getElementById(\'foo\');')
+      f.write(file_contents)
 
     input_api = MockInputApi()
     input_api.files = [MockFile(os.path.abspath(self._tmp_file), '')]
     input_api.presubmit_local_path = _HERE_PATH
 
     checker = js_checker.JSChecker(input_api, MockOutputApi())
-    results_json = checker.RunEsLintChecks(
-        input_api.AffectedFiles(), format='json')
-    self.assertEqual(1, len(results_json))
+    return checker.RunEsLintChecks(input_api.AffectedFiles(), format='json')
 
+  def _assertError(self, results_json, rule_id, line):
+    self.assertEqual(1, len(results_json))
     results = json.loads(results_json[0].message)
     self.assertEqual(1, len(results))
-
     self.assertEqual(1, len(results[0].get('messages')))
     message = results[0].get('messages')[0]
-    self.assertEqual('no-restricted-properties', message.get('ruleId'))
-    self.assertEqual(1, message.get('line'))
+    self.assertEqual(rule_id, message.get('ruleId'))
+    self.assertEqual(line, message.get('line'))
+
+  def testGetElementByIdCheck(self):
+    results_json = self._runChecks('var a = document.getElementById(\'foo\');')
+    self._assertError(results_json, 'no-restricted-properties', 1)
+
+  def testPrimitiveWrappersCheck(self):
+    results_json = self._runChecks('var a = new Number(1);')
+    self._assertError(results_json, 'no-new-wrappers', 1)
 
 
 if __name__ == '__main__':
