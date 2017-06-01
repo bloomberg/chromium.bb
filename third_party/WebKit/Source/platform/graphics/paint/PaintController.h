@@ -318,7 +318,6 @@ class PLATFORM_EXPORT PaintController {
                                     PaintInvalidationReason);
   void TrackRasterInvalidation(const DisplayItemClient&,
                                PaintChunk&,
-                               const FloatRect&,
                                PaintInvalidationReason);
 
   // The following two methods are for checking under-invalidations

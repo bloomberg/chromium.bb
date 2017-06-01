@@ -148,6 +148,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   static bool CanDecompositeEffect(const EffectPaintPropertyNode*,
                                    const PendingLayer&);
 
+  static IntRect MapRasterInvalidationRectFromChunkToLayer(
+      const FloatRect&,
+      const PaintChunk&,
+      const PendingLayer&,
+      const gfx::Vector2dF& layer_offset);
+
   // Builds a leaf layer that represents a single paint chunk.
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
   // bounding box of a paint chunk does not necessarily start at (0, 0) (and
