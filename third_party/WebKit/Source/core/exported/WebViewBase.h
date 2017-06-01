@@ -132,13 +132,16 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual LocalDOMWindow* PagePopupWindow() const = 0;
 
   virtual void InvalidateRect(const IntRect&) = 0;
-  // Indicates two things:
+
+  // These functions only apply to the main frame.
+  //
+  // LayoutUpdated() indicates two things:
   //   1) This view may have a new layout now.
-  //   2) Calling updateAllLifecyclePhases() is a no-op.
-  // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
+  //   2) Calling UpdateAllLifecyclePhases() is a now a no-op.
+  // After calling WebWidget::UpdateAllLifecyclePhases(), expect to get this
   // notification unless the view did not need a layout.
-  virtual void LayoutUpdated(WebLocalFrameBase*) = 0;
-  virtual void ResizeAfterLayout(WebLocalFrameBase*) = 0;
+  virtual void LayoutUpdated() = 0;
+  virtual void ResizeAfterLayout() = 0;
 
   virtual void UpdatePageDefinedViewportConstraints(
       const ViewportDescription&) = 0;
