@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//content/public/common/referrer.typemap" ]
+typemaps = [
+  "//content/public/common/referrer.typemap",
+  "//content/public/common/resource_type.typemap",
+]

@@ -1348,6 +1348,7 @@ test("content_unittests") {
     "../child/site_isolation_stats_gatherer_unittest.cc",
     "../child/test_request_peer.cc",
     "../child/test_request_peer.h",
+    "../child/throttling_url_loader_unittest.cc",
     "../child/url_loader_client_impl_unittest.cc",
     "../child/url_response_body_consumer_unittest.cc",
     "../child/v8_value_converter_impl_unittest.cc",

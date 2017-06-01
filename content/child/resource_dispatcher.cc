@@ -27,6 +27,7 @@
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/child/sync_load_response.h"
+#include "content/child/throttling_url_loader.h"
 #include "content/child/url_loader_client_impl.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
@@ -579,12 +580,18 @@ void ResourceDispatcher::StartSync(
     int routing_id,
     SyncLoadResponse* response,
     blink::WebURLRequest::LoadingIPCType ipc_type,
-    mojom::URLLoaderFactory* url_loader_factory) {
+    mojom::URLLoaderFactory* url_loader_factory,
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
   SyncLoadResult result;
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
+    // TODO(yzshen): There is no way to apply a throttle to sync loading. We
+    // could use async loading + sync handle watching to emulate this behavior.
+    // That may require to extend the bindings API to change the priority of
+    // messages. It would result in more messages during this blocking
+    // operation, but sync loading is discouraged anyway.
     if (!url_loader_factory->SyncLoad(
             routing_id, MakeRequestID(), *request, &result)) {
       response->error_code = net::ERR_FAILED;
@@ -625,6 +632,7 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     mojo::ScopedDataPipeConsumerHandle consumer_handle) {
   CheckSchemeForReferrerPolicy(*request);
 
@@ -659,12 +667,10 @@ int ResourceDispatcher::StartAsync(
         loading_task_runner ? loading_task_runner : thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(
         new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
-    mojom::URLLoaderPtr url_loader;
-    mojom::URLLoaderClientPtr client_ptr;
-    client->Bind(&client_ptr);
-    url_loader_factory->CreateLoaderAndStart(
-        MakeRequest(&url_loader), routing_id, request_id,
-        mojom::kURLLoadOptionNone, *request, std::move(client_ptr));
+    std::unique_ptr<ThrottlingURLLoader> url_loader =
+        ThrottlingURLLoader::CreateLoaderAndStart(
+            url_loader_factory, std::move(throttles), routing_id, request_id,
+            mojom::kURLLoadOptionNone, std::move(request), client.get());
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {

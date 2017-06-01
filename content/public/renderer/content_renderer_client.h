@@ -66,6 +66,7 @@ class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
+class URLLoaderThrottle;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -223,11 +224,15 @@ class CONTENT_EXPORT ContentRendererClient {
                           bool* send_referrer);
 
   // Notifies the embedder that the given frame is requesting the resource at
-  // |url|.  If the function returns true, the url is changed to |new_url|.
-  virtual bool WillSendRequest(blink::WebLocalFrame* frame,
-                               ui::PageTransition transition_type,
-                               const blink::WebURL& url,
-                               GURL* new_url);
+  // |url|. |throttles| is appended with URLLoaderThrottle instances that should
+  // be applied to the resource loading. It is only used when network service is
+  // enabled. If the function returns true, the url is changed to |new_url|.
+  virtual bool WillSendRequest(
+      blink::WebLocalFrame* frame,
+      ui::PageTransition transition_type,
+      const blink::WebURL& url,
+      std::vector<std::unique_ptr<URLLoaderThrottle>>* throttles,
+      GURL* new_url);
 
   // Returns true if the request is associated with a document that is in
   // ""prefetch only" mode, and will not be rendered.

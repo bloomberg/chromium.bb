@@ -1,0 +1,117 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_CHILD_THROTTLING_URL_LOADER_H_
+#define CONTENT_CHILD_THROTTLING_URL_LOADER_H_
+
+#include <memory>
+
+#include "content/common/content_export.h"
+#include "content/common/url_loader.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/child/url_loader_throttle.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+
+namespace mojom {
+class URLLoaderFactory;
+}
+
+// ThrottlingURLLoader is a wrapper around the mojom::URLLoader[Factory]
+// interfaces. It applies a list of URLLoaderThrottle instances which could
+// defer, resume or cancel the URL loading.
+class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
+                                           public URLLoaderThrottle::Delegate {
+ public:
+  // |factory| and |client| must stay alive during the lifetime of the returned
+  // object.
+  static std::unique_ptr<ThrottlingURLLoader> CreateLoaderAndStart(
+      mojom::URLLoaderFactory* factory,
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      std::unique_ptr<ResourceRequest> url_request,
+      mojom::URLLoaderClient* client);
+
+  ~ThrottlingURLLoader() override;
+
+  void FollowRedirect();
+  void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
+
+ private:
+  ThrottlingURLLoader(std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+                      mojom::URLLoaderClient* client);
+
+  void Start(mojom::URLLoaderFactory* factory,
+             int32_t routing_id,
+             int32_t request_id,
+             uint32_t options,
+             std::unique_ptr<ResourceRequest> url_request);
+
+  // mojom::URLLoaderClient implementation:
+  void OnReceiveResponse(const ResourceResponseHead& response_head,
+                         const base::Optional<net::SSLInfo>& ssl_info,
+                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override;
+  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback ack_callback) override;
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override;
+  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+
+  // URLLoaderThrottle::Delegate:
+  void CancelWithError(int error_code) override;
+  void Resume() override;
+
+  enum DeferredStage {
+    DEFERRED_NONE,
+    DEFERRED_START,
+    DEFERRED_REDIRECT,
+    DEFERRED_RESPONSE
+  };
+  DeferredStage deferred_stage_ = DEFERRED_NONE;
+  bool cancelled_by_throttle_ = false;
+
+  std::unique_ptr<URLLoaderThrottle> throttle_;
+
+  mojom::URLLoaderClient* forwarding_client_;
+  mojo::Binding<mojom::URLLoaderClient> client_binding_;
+
+  mojom::URLLoaderPtr url_loader_;
+
+  // Set if start is deferred.
+  mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
+  int32_t routing_id_ = -1;
+  int32_t request_id_ = -1;
+  uint32_t options_ = mojom::kURLLoadOptionNone;
+  std::unique_ptr<ResourceRequest> url_request_;
+
+  // Set if either response or redirect is deferred.
+  ResourceResponseHead response_head_;
+
+  // Set if response is deferred.
+  base::Optional<net::SSLInfo> ssl_info_;
+  mojom::DownloadedTempFilePtr downloaded_file_;
+
+  // Set if redirect is deferred.
+  net::RedirectInfo redirect_info_;
+
+  // Set if request is deferred and SetPriority() is called.
+  bool set_priority_cached_ = false;
+  net::RequestPriority priority_ = net::MINIMUM_PRIORITY;
+  int32_t intra_priority_value_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_CHILD_THROTTLING_URL_LOADER_H_

@@ -175,6 +175,8 @@ target(link_target_type, "child") {
     "sync_load_response.h",
     "thread_safe_sender.cc",
     "thread_safe_sender.h",
+    "throttling_url_loader.cc",
+    "throttling_url_loader.h",
     "url_loader_client_impl.cc",
     "url_loader_client_impl.h",
     "url_response_body_consumer.cc",

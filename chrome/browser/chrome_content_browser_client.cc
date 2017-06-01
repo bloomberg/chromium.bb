@@ -74,6 +74,8 @@
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
+#include "chrome/browser/safe_browsing/mojo_safe_browsing_impl.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -3089,6 +3091,18 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     registry->AddInterface(
         base::Bind(&NetBenchmarking::Create, profile, context));
   }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    registry->AddInterface(
+        base::Bind(
+            &safe_browsing::MojoSafeBrowsingImpl::Create,
+            g_browser_process->safe_browsing_service()->database_manager(),
+            g_browser_process->safe_browsing_service()->ui_manager(),
+            render_process_host->GetID()),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  }
+
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
     // Add the ModuleDatabase interface. This is the interface used by renderer
