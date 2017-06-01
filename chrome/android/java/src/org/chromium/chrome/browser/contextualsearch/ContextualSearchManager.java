@@ -1475,13 +1475,14 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             @Override
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
+
                 // Ranker will handle the suppression, but our legacy implementation uses
                 // TapSuppressionHeuristics (run from the ContextualSearchSelectionConroller).
                 // Usage includes tap-far-from-previous suppression.
                 mTapSuppressionRankerLogger.setupLoggingForPage(getBasePageUrl());
 
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
-                mSelectionController.handleShouldSuppressTap(mTapSuppressionRankerLogger);
+                mSelectionController.handleShouldSuppressTap(mContext, mTapSuppressionRankerLogger);
             }
 
             /** Starts showing the Tap UI by selecting a word around the current caret. */

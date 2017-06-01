@@ -48,6 +48,10 @@ public class ContextualSearchFieldTrial {
     private static final String SCREEN_TOP_SUPPRESSION_DPS = "screen_top_suppression_dps";
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
+    private static final String WORD_EDGE_SUPPRESSION_ENABLED = "enable_word_edge_suppression";
+    private static final String SHORT_WORD_SUPPRESSION_ENABLED = "enable_short_word_suppression";
+    private static final String NOT_LONG_WORD_SUPPRESSION_ENABLED =
+            "enable_not_long_word_suppression";
 
     private static final String MINIMUM_SELECTION_LENGTH = "minimum_selection_length";
 
@@ -67,6 +71,7 @@ public class ContextualSearchFieldTrial {
             "disable_page_content_notification";
 
     // Cached values to avoid repeated and redundant JNI operations.
+    // TODO(donnd): consider creating a single Map to cache these static values.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
     private static Boolean sIsMandatoryPromoEnabled;
@@ -78,6 +83,9 @@ public class ContextualSearchFieldTrial {
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
+    private static Boolean sIsWordEdgeSuppressionEnabled;
+    private static Boolean sIsShortWordSuppressionEnabled;
+    private static Boolean sIsNotLongWordSuppressionEnabled;
     private static Integer sMinimumSelectionLength;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
@@ -245,6 +253,36 @@ public class ContextualSearchFieldTrial {
             sIsBarOverlapSuppressionEnabled = getBooleanParam(BAR_OVERLAP_SUPPRESSION_ENABLED);
         }
         return sIsBarOverlapSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed by a tap that's near the edge of a word.
+     */
+    static boolean isWordEdgeSuppressionEnabled() {
+        if (sIsWordEdgeSuppressionEnabled == null) {
+            sIsWordEdgeSuppressionEnabled = getBooleanParam(WORD_EDGE_SUPPRESSION_ENABLED);
+        }
+        return sIsWordEdgeSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed by a tap that's in a short word.
+     */
+    static boolean isShortWordSuppressionEnabled() {
+        if (sIsShortWordSuppressionEnabled == null) {
+            sIsShortWordSuppressionEnabled = getBooleanParam(SHORT_WORD_SUPPRESSION_ENABLED);
+        }
+        return sIsShortWordSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed by a tap that's not in a long word.
+     */
+    static boolean isNotLongWordSuppressionEnabled() {
+        if (sIsNotLongWordSuppressionEnabled == null) {
+            sIsNotLongWordSuppressionEnabled = getBooleanParam(NOT_LONG_WORD_SUPPRESSION_ENABLED);
+        }
+        return sIsNotLongWordSuppressionEnabled.booleanValue();
     }
 
     /**

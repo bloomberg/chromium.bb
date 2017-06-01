@@ -803,6 +803,47 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Log whether results were seen due to a Tap on a short word.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param isTapOnShortWord Whether this tap was on a "short" word.
+     */
+    public static void logTapShortWordSeen(
+            boolean wasSearchContentViewSeen, boolean isTapOnShortWord) {
+        if (!isTapOnShortWord) return;
+
+        // We just record CTR of short words.
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapShortWordSeen",
+                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
+     * Log whether results were seen due to a Tap on a long word.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param isTapOnLongWord Whether this tap was on a long word.
+     */
+    public static void logTapLongWordSeen(
+            boolean wasSearchContentViewSeen, boolean isTapOnLongWord) {
+        if (!isTapOnLongWord) return;
+
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapLongWordSeen",
+                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
+     * Log whether results were seen due to a Tap that was on the middle of a word.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param isTapOnWordMiddle Whether this tap was on the middle of a word.
+     */
+    public static void logTapOnWordMiddleSeen(
+            boolean wasSearchContentViewSeen, boolean isTapOnWordMiddle) {
+        if (!isTapOnWordMiddle) return;
+
+        // We just record CTR of words tapped in the "middle".
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapOnWordMiddleSeen",
+                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
      * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression

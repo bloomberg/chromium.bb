@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -17,7 +18,10 @@ import javax.annotation.Nullable;
  * or changed.
  */
 public abstract class ContextualSearchContext {
-    static final int INVALID_SELECTION_OFFSET = -1;
+    static final int INVALID_OFFSET = -1;
+
+    // Non-visible word-break marker.
+    private static final int SOFT_HYPHEN_CHAR = '\u00AD';
 
     // Pointer to the native instance of this class.
     private long mNativePointer;
@@ -30,14 +34,24 @@ public abstract class ContextualSearchContext {
     private String mSurroundingText;
 
     // The start and end offsets of the selection within the text content.
-    private int mSelectionStartOffset = INVALID_SELECTION_OFFSET;
-    private int mSelectionEndOffset = INVALID_SELECTION_OFFSET;
+    private int mSelectionStartOffset = INVALID_OFFSET;
+    private int mSelectionEndOffset = INVALID_OFFSET;
+
+    // The offset of an initial Tap gesture within the text content.
+    private int mTapOffset = INVALID_OFFSET;
 
     // The initial word selected by a Tap, or null.
     private String mInitialSelectedWord;
 
     // The original encoding of the base page.
     private String mEncoding;
+
+    // The tapped word, as analyzed internally before selection takes place, or {@code null} if no
+    // analysis has been done yet.
+    private String mTappedWord;
+
+    // The offset of the tap within the tapped word or {@code INVALID_OFFSET} if not yet analyzed.
+    private int mTappedWordOffset = INVALID_OFFSET;
 
     /**
      * Constructs a context that tracks the selection and some amount of page content.
@@ -85,6 +99,9 @@ public abstract class ContextualSearchContext {
         mSurroundingText = surroundingText;
         mSelectionStartOffset = startOffset;
         mSelectionEndOffset = endOffset;
+        if (startOffset == endOffset && !hasAnalyzedTap()) {
+            analyzeTap(startOffset);
+        }
         // Notify of an initial selection if it's not empty.
         if (endOffset > startOffset) onSelectionChanged();
     }
@@ -99,7 +116,7 @@ public abstract class ContextualSearchContext {
 
     /**
      * @return The offset into the surrounding text of the start of the selection, or
-     *         {@link #INVALID_SELECTION_OFFSET} if not yet established.
+     *         {@link #INVALID_OFFSET} if not yet established.
      */
     int getSelectionStartOffset() {
         return mSelectionStartOffset;
@@ -107,7 +124,7 @@ public abstract class ContextualSearchContext {
 
     /**
      * @return The offset into the surrounding text of the end of the selection, or
-     *         {@link #INVALID_SELECTION_OFFSET} if not yet established.
+     *         {@link #INVALID_OFFSET} if not yet established.
      */
     int getSelectionEndOffset() {
         return mSelectionEndOffset;
@@ -143,9 +160,7 @@ public abstract class ContextualSearchContext {
      * @return Whether this context can Resolve the Search Term.
      */
     boolean canResolve() {
-        return mHasSetResolveProperties && mSelectionStartOffset != INVALID_SELECTION_OFFSET
-                && mSelectionEndOffset != INVALID_SELECTION_OFFSET
-                && mSelectionEndOffset > mSelectionStartOffset;
+        return mHasSetResolveProperties && hasValidSelection();
     }
 
     /**
@@ -180,7 +195,138 @@ public abstract class ContextualSearchContext {
      */
     abstract void onSelectionChanged();
 
-    // TODO(donnd): Add a test for this class!
+    // ============================================================================================
+    // Content Analysis.
+    // ============================================================================================
+
+    /**
+     * @return Whether this context has valid Surrounding text and initial Tap offset.
+     */
+    private boolean hasValidTappedText() {
+        return !TextUtils.isEmpty(mSurroundingText) && mTapOffset >= 0
+                && mTapOffset <= mSurroundingText.length();
+    }
+
+    /**
+     * @return Whether this context has a valid selection.
+     */
+    private boolean hasValidSelection() {
+        if (!hasValidTappedText()) return false;
+
+        return mSelectionStartOffset != INVALID_OFFSET && mSelectionEndOffset != INVALID_OFFSET
+                && mSelectionStartOffset < mSelectionEndOffset
+                && mSelectionEndOffset < mSurroundingText.length();
+    }
+
+    /**
+     * @return Whether a Tap gesture has occurred and been analyzed.
+     */
+    private boolean hasAnalyzedTap() {
+        return mTapOffset >= 0;
+    }
+
+    /**
+     * @return The tapped word, or {@code null} if the tapped word cannot be identified by the
+     *         current limited parsing capability.
+     * @see #analyzeTap
+     */
+    String getTappedWord() {
+        return mTappedWord;
+    }
+
+    /**
+     * @return The offset of the tap within the tapped word, or {@code -1} if the tapped word cannot
+     *         be identified by the current parsing capability.
+     * @see #analyzeTap
+     */
+    int getTappedWordOffset() {
+        return mTappedWordOffset;
+    }
+
+    /**
+     * Finds the tapped word by expanding from the initial Tap offset looking for word-breaks.
+     * This mimics the Blink word-segmentation invoked by SelectWordAroundCaret and similar
+     * selection logic, but is only appropriate for limited use.  Does not work on ideographic
+     * languages and possibly many other cases.  Should only be used only for ML signal evaluation.
+     * @param tapOffset The offset of the Tap within the surrounding text.
+     */
+    private void analyzeTap(int tapOffset) {
+        mTapOffset = tapOffset;
+        mTappedWord = null;
+        mTappedWordOffset = INVALID_OFFSET;
+
+        assert hasValidTappedText();
+
+        int wordStartOffset = findWordStartOffset(mSurroundingText, mTapOffset);
+        int wordEndOffset = findWordEndOffset(mSurroundingText, mTapOffset);
+        if (wordStartOffset == INVALID_OFFSET || wordEndOffset == INVALID_OFFSET) return;
+
+        mTappedWord = mSurroundingText.substring(wordStartOffset, wordEndOffset);
+        mTappedWordOffset = mTapOffset - wordStartOffset;
+    }
+
+    /**
+     * Finds the offset of the start of the word that includes the given initial offset.
+     * The character at the initial offset is not examined, but the one before it is, and scanning
+     * continues on to earlier characters until a non-word character is found.  The offset just
+     * before the non-word character is returned.  If the initial offset is a space immediately
+     * following a word then the start offset of that word is returned.
+     * @param text The text to scan.
+     * @param initial The initial offset to scan before.
+     * @return The start of the word that contains the given initial offset, within {@code text}.
+     */
+    private int findWordStartOffset(String text, int initial) {
+        // Scan before, aborting if we hit any ideographic letter.
+        for (int offset = initial - 1; offset >= 0; offset--) {
+            if (isIdeographicAtIndex(text, offset)) return INVALID_OFFSET;
+
+            if (isWordBreakAtIndex(text, offset)) {
+                // The start of the word is after this word break.
+                return offset + 1;
+            }
+        }
+        return INVALID_OFFSET;
+    }
+
+    /**
+     * Finds the offset of the end of the word that includes the given initial offset.
+     * NOTE: this is the index of the character just past the last character of the word,
+     * so a 3 character word "who" has start index 0 and end index 3.
+     * The character at the initial offset is examined and each one after that too until a non-word
+     * character is encountered, and that offset will be returned.
+     * @param text The text to scan.
+     * @param initial The initial offset to scan from.
+     * @return The end of the word that contains the given initial offset, within {@code text}.
+     */
+    private int findWordEndOffset(String text, int initial) {
+        // Scan after, aborting if we hit any CJKN letter.
+        for (int offset = initial; offset < text.length(); offset++) {
+            if (isIdeographicAtIndex(text, offset)) return INVALID_OFFSET;
+
+            if (isWordBreakAtIndex(text, offset)) {
+                // The end of the word is the offset of this word break.
+                return offset;
+            }
+        }
+        return INVALID_OFFSET;
+    }
+
+    /**
+     * @return Whether the character at the given index in the text is "Ideographic" (as in CJKV
+     *         languages), which means there may not be reliable word breaks.
+     */
+    @SuppressLint("NewApi")
+    private boolean isIdeographicAtIndex(String text, int index) {
+        return Character.isIdeographic(text.charAt(index));
+    }
+
+    /**
+     * @return Whether the character at the given index is a word-break.
+     */
+    private boolean isWordBreakAtIndex(String text, int index) {
+        return !Character.isLetterOrDigit(text.charAt(index))
+                && text.codePointAt(index) != SOFT_HYPHEN_CHAR;
+    }
 
     // ============================================================================================
     // Native callback support.
