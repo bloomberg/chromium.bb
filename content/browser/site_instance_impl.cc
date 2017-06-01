@@ -318,19 +318,11 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
     return src_origin == dest_origin;
 
   // If the schemes differ, they aren't part of the same site.
-  //
-  // Note that this happens after the isolated origin check, since blob or
-  // filesystem URLs will fail this check even though they might have the
-  // same origin.
-  //
-  // TODO(alexmos): This check seems broken for nested URLs involving
-  // non-isolated origins too.  See https://crbug.com/726370.
-  if (src_url.scheme() != dest_url.scheme())
+  if (src_origin.scheme() != dest_origin.scheme())
     return false;
 
   return net::registry_controlled_domains::SameDomainOrHost(
-      src_url,
-      dest_url,
+      src_origin, dest_origin,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
