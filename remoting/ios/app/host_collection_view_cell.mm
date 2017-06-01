@@ -10,8 +10,6 @@
 
 #import "remoting/ios/app/host_collection_view_cell.h"
 
-#import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
-#import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "remoting/ios/domain/host_info.h"
 
@@ -24,7 +22,7 @@ static const CGFloat kHostCardIconSize = 45.f;
   UIImageView* _imageView;
   UILabel* _statusLabel;
   UILabel* _titleLabel;
-  UIView* _cellView;
+  UIView* _labelView;
 }
 @end
 
@@ -37,10 +35,6 @@ static const CGFloat kHostCardIconSize = 45.f;
 
 @synthesize hostInfo = _hostInfo;
 
-+ (Class)layerClass {
-  return [MDCShadowLayer class];
-}
-
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -51,49 +45,81 @@ static const CGFloat kHostCardIconSize = 45.f;
 }
 
 - (void)commonInit {
-  _cellView = [[UIView alloc] initWithFrame:self.bounds];
-  _cellView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  _cellView.backgroundColor = [UIColor whiteColor];
-  _cellView.clipsToBounds = YES;
-  [self addSubview:_cellView];
-
-  MDCShadowLayer* shadowLayer = (MDCShadowLayer*)self.layer;
-  shadowLayer.shadowMaskEnabled = NO;
-  [shadowLayer setElevation:MDCShadowElevationCardResting];
-
-  CGRect imageViewFrame =
-      CGRectMake(kHostCardIconInset,
-                 self.frame.size.height / 2.f - kHostCardIconSize / 2.f,
-                 kHostCardIconSize, kHostCardIconSize);
-  _imageView = [[UIImageView alloc] initWithFrame:imageViewFrame];
+  _imageView = [[UIImageView alloc] init];
+  _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   _imageView.contentMode = UIViewContentModeCenter;
   _imageView.alpha = 0.87f;
   _imageView.backgroundColor = UIColor.lightGrayColor;
   _imageView.layer.cornerRadius = kHostCardIconSize / 2.f;
   _imageView.layer.masksToBounds = YES;
-  [_cellView addSubview:_imageView];
+  [self.contentView addSubview:_imageView];
+
+  // Holds both of the labels.
+  _labelView = [[UIView alloc] init];
+  _labelView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:_labelView];
 
   _titleLabel = [[UILabel alloc] init];
+  _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _titleLabel.font = [MDCTypography titleFont];
   _titleLabel.alpha = [MDCTypography titleFontOpacity];
   _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:0.87f];
-  _titleLabel.frame = CGRectMake(
-      imageViewFrame.origin.x + imageViewFrame.size.width + kHostCardIconInset,
-      (self.frame.size.height / 2.f) -
-          (_titleLabel.font.pointSize + kHostCardPadding / 2.f),
-      self.frame.size.width, _titleLabel.font.pointSize + kLinePadding);
-  [_cellView addSubview:_titleLabel];
+  [_labelView addSubview:_titleLabel];
 
   _statusLabel = [[UILabel alloc] init];
+  _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _statusLabel.font = [MDCTypography captionFont];
   _statusLabel.alpha = [MDCTypography captionFontOpacity];
   _statusLabel.textColor = [UIColor colorWithWhite:0 alpha:0.60f];
-  _statusLabel.frame = CGRectMake(
-      imageViewFrame.origin.x + imageViewFrame.size.width + kHostCardIconInset,
-      (self.frame.size.height / 2.f) + kHostCardPadding / 2.f,
-      self.frame.size.width, _statusLabel.font.pointSize + kLinePadding);
-  [_cellView addSubview:_statusLabel];
+  [_labelView addSubview:_statusLabel];
+
+  // Constraints
+  NSArray* constraints = @[
+    // +------------+---------------+
+    // | +--------+ |               |
+    // | |        | | [Host Name]   |
+    // | |  Icon  | | - - - - - - - | <- Center Y
+    // | |        | | [Host Status] |
+    // | +---^----+ |               |
+    // +-----|------+-------^-------+
+    //       |              |
+    //  Image View     Label View
+    [[_imageView leadingAnchor]
+        constraintEqualToAnchor:[self.contentView leadingAnchor]
+                       constant:kHostCardIconInset],
+    [[_imageView centerYAnchor]
+        constraintEqualToAnchor:[self.contentView centerYAnchor]],
+    [[_imageView widthAnchor] constraintEqualToConstant:kHostCardIconSize],
+    [[_imageView heightAnchor] constraintEqualToConstant:kHostCardIconSize],
+
+    [[_labelView leadingAnchor]
+        constraintEqualToAnchor:[_imageView trailingAnchor]
+                       constant:kHostCardIconInset],
+    [[_labelView trailingAnchor]
+        constraintEqualToAnchor:[self.contentView trailingAnchor]
+                       constant:-kHostCardPadding / 2.f],
+    [[_labelView topAnchor]
+        constraintEqualToAnchor:[self.contentView topAnchor]],
+    [[_labelView bottomAnchor]
+        constraintEqualToAnchor:[self.contentView bottomAnchor]],
+
+    // Put titleLable and statusLable symmetrically around centerY.
+    [[_titleLabel leadingAnchor]
+        constraintEqualToAnchor:[_labelView leadingAnchor]],
+    [[_titleLabel trailingAnchor]
+        constraintEqualToAnchor:[_labelView trailingAnchor]],
+    [[_titleLabel bottomAnchor]
+        constraintEqualToAnchor:[_labelView centerYAnchor]],
+
+    [[_statusLabel leadingAnchor]
+        constraintEqualToAnchor:[_labelView leadingAnchor]],
+    [[_statusLabel trailingAnchor]
+        constraintEqualToAnchor:[_labelView trailingAnchor]],
+    [[_statusLabel topAnchor] constraintEqualToAnchor:[_labelView centerYAnchor]
+                                             constant:kLinePadding],
+  ];
+
+  [NSLayoutConstraint activateConstraints:constraints];
 }
 
 #pragma mark - HostCollectionViewCell Public

@@ -49,9 +49,7 @@ static UIColor* kBackgroundColor =
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-  self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeGrid;
-  self.styler.gridPadding = 0;
-  self.styler.gridColumnCount = 1;
+  self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeList;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
