@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,8 +45,7 @@ const CGFloat kDesiredHeight = 48;
     _label = [[UILabel alloc] initWithFrame:CGRectZero];
     [_label setLineBreakMode:NSLineBreakByTruncatingTail];
     [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [_label
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [_label setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
     [_label setTextAlignment:NSTextAlignmentNatural];
     [_label setTextColor:recent_tabs::GetTextColorGray()];
     [_label setHighlightedTextColor:[_label textColor]];

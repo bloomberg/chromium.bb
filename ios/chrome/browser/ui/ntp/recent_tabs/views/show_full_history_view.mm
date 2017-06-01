@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,7 +33,7 @@ const CGFloat kDesiredHeight = 48;
 
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [label setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [label setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
     [label setTextAlignment:NSTextAlignmentNatural];
     [label setTextColor:recent_tabs::GetTextColorGray()];
     [label setText:l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK)];

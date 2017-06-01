@@ -6,7 +6,7 @@
 
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -54,8 +54,7 @@
     _textLabel.shadowColor = [UIColor whiteColor];
     [self addSubview:_textLabel];
 
-    _textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette greyPalette] tint900];
 
     // Set up the constraints.

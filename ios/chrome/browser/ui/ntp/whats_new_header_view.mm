@@ -10,7 +10,7 @@
 #include "ios/chrome/common/string_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 namespace {
 
@@ -183,8 +183,8 @@ const int kLinkColorRgb = 0x5595FE;
 + (UILabel*)promoLabel {
   base::scoped_nsobject<UILabel> promoLabel(
       [[UILabel alloc] initWithFrame:CGRectZero]);
-  [promoLabel setFont:[[MDFRobotoFontLoader sharedInstance]
-                          regularFontOfSize:kLabelFontSize]];
+  [promoLabel
+      setFont:[[MDCTypography fontLoader] regularFontOfSize:kLabelFontSize]];
   [promoLabel setTextColor:UIColorFromRGB(kTextColorRgb, 1.0)];
   [promoLabel setNumberOfLines:0];
   [promoLabel setTextAlignment:NSTextAlignmentNatural];

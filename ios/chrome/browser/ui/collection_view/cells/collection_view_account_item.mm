@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -140,10 +140,9 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   _imageView.contentMode = UIViewContentModeCenter;
   _imageView.layer.masksToBounds = YES;
 
-  _textLabel.font = [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+  _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
   _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-  _detailTextLabel.font =
-      [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+  _detailTextLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
   _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
   _imageView.contentMode = UIViewContentModeScaleAspectFit;
 }

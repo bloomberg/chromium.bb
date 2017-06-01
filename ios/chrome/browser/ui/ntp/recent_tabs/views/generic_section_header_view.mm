@@ -12,7 +12,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -49,8 +49,7 @@ const CGFloat kDesiredHeight = 48;
     [_icon setTranslatesAutoresizingMaskIntoConstraints:NO];
     _label = [[UILabel alloc] initWithFrame:CGRectZero];
     [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [_label
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [_label setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
     [_label setTextAlignment:NSTextAlignmentNatural];
     [_label setBackgroundColor:[UIColor whiteColor]];
 

@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,7 +36,7 @@
 
 - (UIFont*)textFont {
   if (!_textFont) {
-    _textFont = [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textFont = [[MDCTypography fontLoader] mediumFontOfSize:14];
   }
   return _textFont;
 }
@@ -50,8 +50,7 @@
 
 - (UIFont*)detailTextFont {
   if (!_detailTextFont) {
-    _detailTextFont =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+    _detailTextFont = [[MDCTypography fontLoader] regularFontOfSize:14];
   }
   return _detailTextFont;
 }

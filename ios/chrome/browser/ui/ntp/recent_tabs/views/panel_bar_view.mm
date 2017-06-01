@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,8 +43,7 @@ const CGFloat kFontSize = 20;
     // Create and add the bar's title.
     UILabel* title = [[UILabel alloc] initWithFrame:CGRectZero];
     [title setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [title setFont:[[MDFRobotoFontLoader sharedInstance]
-                       mediumFontOfSize:kFontSize]];
+    [title setFont:[[MDCTypography fontLoader] mediumFontOfSize:kFontSize]];
     [title setTextColor:recent_tabs::GetTextColorGray()];
     [title setTextAlignment:NSTextAlignmentNatural];
     [title setText:l10n_util::GetNSString(IDS_IOS_NEW_TAB_RECENT_TABS)];

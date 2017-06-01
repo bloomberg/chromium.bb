@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -240,18 +240,16 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
     _faviconViewContainer = [[UIView alloc] initWithFrame:CGRectZero];
 
     _textLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    [_textLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:16]];
+    [_textLabel setFont:[[MDCTypography fontLoader] mediumFontOfSize:16]];
     [_textLabel setTextColor:[[MDCPalette greyPalette] tint900]];
 
     _detailTextLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_detailTextLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14]];
+        setFont:[[MDCTypography fontLoader] regularFontOfSize:14]];
     [_detailTextLabel setTextColor:[[MDCPalette greyPalette] tint600]];
 
     _timeLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    [_timeLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14]];
+    [_timeLabel setFont:[[MDCTypography fontLoader] mediumFontOfSize:14]];
     [_timeLabel setTextColor:[[MDCPalette greyPalette] tint600]];
     _timeLabel.textAlignment =
         UseRTLLayout() ? NSTextAlignmentLeft : NSTextAlignmentRight;

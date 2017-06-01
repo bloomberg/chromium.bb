@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -98,11 +98,10 @@ const CGFloat kLabelAndFieldGap = 5;
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_textField];
 
-    _textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette greyPalette] tint900];
 
-    _textField.font = [[MDFRobotoFontLoader sharedInstance] lightFontOfSize:16];
+    _textField.font = [[MDCTypography fontLoader] lightFontOfSize:16];
     _textField.textColor = [[MDCPalette greyPalette] tint500];
     _textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
     _textField.autocorrectionType = UITextAutocorrectionTypeNo;

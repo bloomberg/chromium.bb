@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -73,8 +73,7 @@ const CGFloat kTooltipButtonTrailingSpacing = 30;
 
     _textLabel.text = l10n_util::GetNSString(
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX);
-    _textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette greyPalette] tint500];
     _textLabel.numberOfLines = 0;
     [_textLabel

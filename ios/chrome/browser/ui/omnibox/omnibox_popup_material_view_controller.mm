@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "net/base/escape.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -472,14 +471,14 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12],
+        font : [[MDCTypography fontLoader] regularFontOfSize:12],
         baselineOffset : @10.0f,
         foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
+        font : [[MDCTypography fontLoader] regularFontOfSize:16],
         foregroundColor : [UIColor colorWithRed:11 / 255.0
                                           green:128 / 255.0
                                            blue:67 / 255.0
@@ -488,7 +487,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       break;
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
+        font : [[MDCTypography fontLoader] regularFontOfSize:16],
         foregroundColor : [UIColor colorWithRed:197 / 255.0
                                           green:57 / 255.0
                                            blue:41 / 255.0
@@ -497,30 +496,30 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       break;
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
+        font : [[MDCTypography fontLoader] regularFontOfSize:16],
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:20],
+        font : [[MDCTypography fontLoader] regularFontOfSize:20],
         foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:24],
+        font : [[MDCTypography fontLoader] regularFontOfSize:24],
         foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12],
+        font : [[MDCTypography fontLoader] regularFontOfSize:12],
         foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14],
+        font : [[MDCTypography fontLoader] regularFontOfSize:14],
         foregroundColor : [UIColor grayColor],
       };
       break;
@@ -528,7 +527,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
     // Fall through.
     default:
       attributes = @{
-        font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
+        font : [[MDCTypography fontLoader] regularFontOfSize:16],
       };
   }
 
@@ -697,8 +696,8 @@ attributedStringWithString:(NSString*)text
   [as addAttributes:dict range:NSMakeRange(0, [text length])];
 
   if (classifications != NULL) {
-    UIFont* boldFontRef = [[MDFRobotoFontLoader sharedInstance]
-        mediumFontOfSize:fontRef.pointSize];
+    UIFont* boldFontRef =
+        [[MDCTypography fontLoader] mediumFontOfSize:fontRef.pointSize];
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {

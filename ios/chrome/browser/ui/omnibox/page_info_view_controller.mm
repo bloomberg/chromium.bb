@@ -25,7 +25,6 @@
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
@@ -81,7 +80,7 @@ inline UIColor* PageInfoHelpButtonColor() {
 }
 
 inline UIFont* PageInfoHeadlineFont() {
-  return [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:16];
+  return [[MDCTypography fontLoader] mediumFontOfSize:16];
 }
 
 inline CATransform3D PageInfoAnimationScale() {

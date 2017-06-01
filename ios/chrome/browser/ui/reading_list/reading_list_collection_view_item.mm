@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #import "url/gurl.h"
@@ -249,7 +249,7 @@ const CGFloat kInfoTextTransparency = 0.38;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    MDFRobotoFontLoader* fontLoader = [MDFRobotoFontLoader sharedInstance];
+    id<MDCTypographyFontLoading> fontLoader = [MDCTypography fontLoader];
     CGFloat faviconSize = kFaviconPreferredSize;
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.font = [fontLoader mediumFontOfSize:16];

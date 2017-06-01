@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/payments/cells/page_info_item.h"
 
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -72,8 +72,7 @@ const CGFloat kHorizontalPadding = 16;
 
     // Page title
     _pageTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _pageTitleLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:12];
+    _pageTitleLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:12];
     _pageTitleLabel.textColor = [[MDCPalette greyPalette] tint900];
     _pageTitleLabel.backgroundColor = [UIColor clearColor];
     _pageTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -81,8 +80,7 @@ const CGFloat kHorizontalPadding = 16;
 
     // Page host
     _pageHostLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _pageHostLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12];
+    _pageHostLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
     _pageHostLabel.textColor = [[MDCPalette greyPalette] tint600];
     // Allow the label to break to multiple lines. This should be very rare but
     // will prevent malicious domains from suppling very long host names and

@@ -8,7 +8,7 @@
 
 #include "base/format_macros.h"
 #import "ios/chrome/common/material_timing.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,7 +46,7 @@ const CGFloat labelMargin = 2.5f;
 
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     _label = label;
-    [label setFont:[[MDFRobotoFontLoader sharedInstance] boldFontOfSize:10]];
+    [label setFont:[[MDCTypography fontLoader] boldFontOfSize:10]];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
     [label setTextColor:[UIColor whiteColor]];
     [self addSubview:label];

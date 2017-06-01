@@ -52,7 +52,7 @@ TEST(MDCCollectionViewCellChrome, PreferredHeight) {
                                                      forItem:footerItem];
   };
   EXPECT_NEAR(heightForWidth(300), 50, 5);
-  EXPECT_NEAR(heightForWidth(100), 110, 5);
+  EXPECT_NEAR(heightForWidth(100), 115, 5);
 }
 
 }  // namespace

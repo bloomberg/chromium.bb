@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -313,7 +313,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
              }];
 
   _footerLabelLinkController.linkFont =
-      [MDFRobotoFontLoader.sharedInstance boldFontOfSize:kFooterLabelFontSize];
+      [[MDCTypography fontLoader] boldFontOfSize:kFooterLabelFontSize];
   _footerLabelLinkController.linkUnderlineStyle = NSUnderlineStyleSingle;
   NSRange linkRange = [label.text rangeOfString:linkText];
   DCHECK(linkRange.location != NSNotFound);
@@ -351,7 +351,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     [_titleLabel
         setTextColor:[UIColor colorWithWhite:kTitleLabelTextColorBrightness
                                        alpha:1.0]];
-    [_titleLabel setFont:[[MDFRobotoFontLoader sharedInstance]
+    [_titleLabel setFont:[[MDCTypography fontLoader]
                              regularFontOfSize:kTitleLabelFontSize]];
   }
   return _titleLabel;
@@ -366,7 +366,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     [_messageTextView
         setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
                                        alpha:1.0]];
-    [_messageTextView setFont:[[MDFRobotoFontLoader sharedInstance]
+    [_messageTextView setFont:[[MDCTypography fontLoader]
                                   regularFontOfSize:kMessageTextViewFontSize]];
   }
   return _messageTextView;
@@ -377,7 +377,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     _footerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_footerLabel setBackgroundColor:self.backgroundColor];
     [_footerLabel setNumberOfLines:0];
-    [_footerLabel setFont:[[MDFRobotoFontLoader sharedInstance]
+    [_footerLabel setFont:[[MDCTypography fontLoader]
                               regularFontOfSize:kFooterLabelFontSize]];
     [_footerLabel
         setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness

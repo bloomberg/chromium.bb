@@ -33,7 +33,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -403,7 +403,7 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 }
 
 - (UIFont*)fontForSize:(NSInteger)size {
-  return [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:size];
+  return [[MDCTypography fontLoader] boldFontOfSize:size];
 }
 
 - (void)dealloc {

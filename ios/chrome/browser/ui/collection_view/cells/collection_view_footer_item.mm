@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -90,8 +90,7 @@ const CGFloat kVerticalPadding = 16;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_imageView];
 
-    _textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette greyPalette] tint900];
     _textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
     _textLabel.shadowColor = [UIColor whiteColor];

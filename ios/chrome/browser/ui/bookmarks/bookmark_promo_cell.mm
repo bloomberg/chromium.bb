@@ -15,7 +15,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,8 +76,7 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     UILabel* titleLabel = [[UILabel alloc] init];
     _titleLabel = titleLabel;
     _titleLabel.textColor = bookmark_utils_ios::darkTextColor();
-    _titleLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:16];
+    _titleLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:16];
     _titleLabel.numberOfLines = 0;
     SetTextWithLineHeight(_titleLabel,
                           l10n_util::GetNSString(IDS_IOS_BOOKMARK_PROMO_TITLE),
@@ -89,8 +88,7 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     UILabel* subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel = subtitleLabel;
     _subtitleLabel.textColor = bookmark_utils_ios::darkTextColor();
-    _subtitleLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+    _subtitleLabel.font = [[MDCTypography fontLoader] regularFontOfSize:14];
     _subtitleLabel.numberOfLines = 0;
     SetTextWithLineHeight(
         _subtitleLabel, l10n_util::GetNSString(IDS_IOS_BOOKMARK_PROMO_MESSAGE),

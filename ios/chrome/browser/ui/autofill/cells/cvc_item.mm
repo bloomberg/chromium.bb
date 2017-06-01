@@ -11,7 +11,7 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -117,7 +117,7 @@ const CGFloat kCVCTextFieldWidth = 60;
 
     _instructionsTextLabel = [[UILabel alloc] init];
     _instructionsTextLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+        [[MDCTypography fontLoader] mediumFontOfSize:14];
     _instructionsTextLabel.textColor = [[MDCPalette greyPalette] tint500];
     _instructionsTextLabel.numberOfLines = 0;
     _instructionsTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -125,8 +125,7 @@ const CGFloat kCVCTextFieldWidth = 60;
     [contentView addSubview:_instructionsTextLabel];
 
     _errorLabel = [[UILabel alloc] init];
-    _errorLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12];
+    _errorLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
     _errorLabel.textColor = [[MDCPalette cr_redPalette] tint500];
     _errorLabel.numberOfLines = 0;
     _errorLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -180,7 +179,7 @@ const CGFloat kCVCTextFieldWidth = 60;
 
     _buttonForNewCard = [UIButton buttonWithType:UIButtonTypeCustom];
     _buttonForNewCard.titleLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12];
+        [[MDCTypography fontLoader] regularFontOfSize:12];
     [_buttonForNewCard
         setTitle:l10n_util::GetNSString(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK)
         forState:UIControlStateNormal];
