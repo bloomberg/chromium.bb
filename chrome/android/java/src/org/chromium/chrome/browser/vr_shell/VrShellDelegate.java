@@ -936,7 +936,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // mListeningForWebVrActivate for them.
         if (mVrSupportLevel != VR_DAYDREAM) return;
         mListeningForWebVrActivate = listening;
-        if (listening && !mPaused) {
+        if (mPaused) return;
+        if (listening) {
             registerDaydreamIntent(mVrDaydreamApi, mActivity);
             if (mAutopresentWebVr) {
                 // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
@@ -946,7 +947,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 // UI which is suboptimal.
                 nativeDisplayActivate(mNativeVrShellDelegate);
             }
-        } else {
+        } else if (!canEnterVr(mActivity.getActivityTab())) {
             unregisterDaydreamIntent(mVrDaydreamApi);
         }
     }
