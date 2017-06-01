@@ -401,7 +401,10 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         } else if (itemId == R.id.info_menu_id) {
             description = resources.getString(R.string.menu_page_info);
         } else if (itemId == R.id.reload_menu_id) {
-            description = resources.getString(R.string.menu_refresh);
+            description = (menuItem.getIcon().getLevel()
+                                  == resources.getInteger(R.integer.reload_button_level_reload))
+                    ? resources.getString(R.string.menu_refresh)
+                    : resources.getString(R.string.menu_stop_refresh);
         }
         return AccessibilityUtil.showAccessibilityToast(context, view, description);
     }

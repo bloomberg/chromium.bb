@@ -2359,6 +2359,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_REFRESH" desc="Tooltip on Android for the button to refresh the current web page. [CHAR-LIMIT=27]">
         Refresh
       </message>
+      <message name="IDS_MENU_STOP_REFRESH" desc="Tooltip on Android for the button to stop refreshing the current web page. [CHAR-LIMIT=27]">
+        Stop refreshing
+      </message>
       <message name="IDS_MENU_NEW_TAB" desc="Menu item for opening a new tab. [CHAR-LIMIT=27]">
         New tab
       </message>
