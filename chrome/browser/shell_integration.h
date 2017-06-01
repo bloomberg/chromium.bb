@@ -18,6 +18,7 @@
 
 namespace base {
 class CommandLine;
+class SequencedTaskRunner;
 }
 
 namespace shell_integration {
@@ -129,9 +130,9 @@ using DefaultWebClientWorkerCallback =
 
 //  Helper objects that handle checking if Chrome is the default browser
 //  or application for a url protocol on Windows and Linux, and also setting
-//  it as the default. These operations are performed asynchronously on the
-//  file thread since registry access (on Windows) or the preference database
-//  (on Linux) are involved and this can be slow.
+//  it as the default. These operations are performed asynchronously on a
+//  blocking sequence since registry access (on Windows) or the preference
+//  database (on Linux) are involved and this can be slow.
 //  By default, the worker will present the user with an interactive flow if
 //  required by the platform. This can be suppressed via
 //  set_interactive_permitted(), in which case an attempt to set Chrome as
@@ -174,12 +175,18 @@ class DefaultWebClientWorker
   bool interactive_permitted_ = true;
 
  private:
-  // Checks whether Chrome is the default web client. Always called on the
-  // FILE thread. When |is_following_set_as_default| is true, The default state
-  // will be reported to UMA as the result of the set-as-default operation.
+  // Returns the global task runner that sequences all the file operations of
+  // each workers.
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+
+  // Checks whether Chrome is the default web client. Always called on a
+  // blocking sequence. When |is_following_set_as_default| is true, The default
+  // state will be reported to UMA as the result of the set-as-default
+  // operation.
   void CheckIsDefault(bool is_following_set_as_default);
 
-  // Sets Chrome as the default web client. Always called on the FILE thread.
+  // Sets Chrome as the default web client. Always called on a blocking
+  // sequence.
   void SetAsDefault();
 
   // Implementation of CheckIsDefault() and SetAsDefault() for subclasses.

@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/policy_path_parser.h"
@@ -43,6 +44,18 @@ namespace shell_integration {
 namespace {
 
 const struct AppModeInfo* gAppModeInfo = nullptr;
+
+scoped_refptr<base::SequencedTaskRunner>
+CreateTaskRunnerForDefaultWebClientWorker() {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    // TODO(pmonette): Windows 10's implementation uses a base::Timer which
+    // currently still requires a SingleThreadTaskRunner. Change this to a
+    // SequencedTaskRunner when crbug.com/552633 is fixed.
+    return base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
+#endif  // defined(OS_WIN)
+  return base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+}
 
 }  // namespace
 
@@ -136,15 +149,14 @@ base::string16 GetAppShortcutsSubdirName() {
 //
 
 void DefaultWebClientWorker::StartCheckIsDefault() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, false));
 }
 
 void DefaultWebClientWorker::StartSetAsDefault() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
+  GetTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,8 +182,27 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker, private:
 
+// static
+scoped_refptr<base::SequencedTaskRunner>
+DefaultWebClientWorker::GetTaskRunner() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(pmonette): The better way to make sure all instances of
+  // DefaultWebClient share a SequencedTaskRunner is to make the worker a
+  // singleton.
+  static scoped_refptr<base::SequencedTaskRunner>* task_runner = nullptr;
+
+  if (!task_runner) {
+    task_runner = new scoped_refptr<base::SequencedTaskRunner>(
+        CreateTaskRunnerForDefaultWebClientWorker());
+  }
+
+  return *task_runner;
+}
+
 void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   DefaultWebClientState state = CheckIsDefaultImpl();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -180,7 +211,7 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
 }
 
 void DefaultWebClientWorker::SetAsDefault() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // SetAsDefaultImpl will make sure the callback is executed exactly once.
   SetAsDefaultImpl(
