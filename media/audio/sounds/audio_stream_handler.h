@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
@@ -21,7 +21,7 @@
 namespace media {
 
 // This class sends a sound to the audio manager.
-class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
+class MEDIA_EXPORT AudioStreamHandler {
  public:
   class TestObserver {
    public:
@@ -70,6 +70,8 @@ class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
 
   base::TimeDelta duration_;
   std::unique_ptr<AudioStreamContainer> stream_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };

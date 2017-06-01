@@ -197,7 +197,7 @@ AudioStreamHandler::AudioStreamHandler(const base::StringPiece& wav_data) {
 }
 
 AudioStreamHandler::~AudioStreamHandler() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (IsInitialized()) {
     AudioManager::Get()->GetTaskRunner()->PostTask(
         FROM_HERE, base::Bind(&AudioStreamContainer::Stop,
@@ -208,12 +208,12 @@ AudioStreamHandler::~AudioStreamHandler() {
 }
 
 bool AudioStreamHandler::IsInitialized() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !!stream_;
 }
 
 bool AudioStreamHandler::Play() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsInitialized())
     return false;
@@ -226,7 +226,7 @@ bool AudioStreamHandler::Play() {
 }
 
 void AudioStreamHandler::Stop() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsInitialized())
     return;
@@ -237,7 +237,7 @@ void AudioStreamHandler::Stop() {
 }
 
 base::TimeDelta AudioStreamHandler::duration() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return duration_;
 }
 
