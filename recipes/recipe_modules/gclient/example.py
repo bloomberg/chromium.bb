@@ -20,6 +20,7 @@ TEST_CONFIGS = [
   'crashpad',
   'custom_tabs_client',
   'dart',
+  'disable_syntax_validation',
   'gerrit_test_cq_normal',
   'gyp',
   'infra',

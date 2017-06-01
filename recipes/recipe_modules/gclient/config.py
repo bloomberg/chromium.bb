@@ -90,6 +90,8 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
         required=False,
         hidden=True),
 
+    disable_syntax_validation = Single(bool, empty_val=False, required=False),
+
     USE_MIRROR = Static(bool(USE_MIRROR)),
     # TODO(tandrii): remove PATCH_PROJECT field.
     # DON'T USE THIS. WILL BE REMOVED.
@@ -105,6 +107,10 @@ def ChromiumGitURL(_c, *pieces):
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
   return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
+
+@config_ctx()
+def disable_syntax_validation(c):
+  c.disable_syntax_validation = True
 
 @config_ctx()
 def android(c):

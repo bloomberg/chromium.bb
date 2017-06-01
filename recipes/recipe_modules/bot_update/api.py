@@ -243,7 +243,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_reset')
     if gerrit_no_rebase_patch_ref:
       cmd.append('--gerrit_no_rebase_patch_ref')
-    if disable_syntax_validation:
+    if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
 
     # Inject Json output for testing.
