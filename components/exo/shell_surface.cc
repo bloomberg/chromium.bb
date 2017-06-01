@@ -1495,9 +1495,7 @@ void ShellSurface::UpdateWidgetBounds() {
   const gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
   if (widget_bounds != new_widget_bounds) {
     if (bounds_mode_ != BoundsMode::CLIENT || !resizer_) {
-      // TODO(domlaskowski): Use screen coordinates once multi-display support
-      // lands in ARC. See crbug.com/718627.
-      widget_->GetNativeWindow()->SetBounds(new_widget_bounds);
+      widget_->SetBounds(new_widget_bounds);
       UpdateSurfaceBounds();
     } else {
       // TODO(domlaskowski): Synchronize window state transitions with the
