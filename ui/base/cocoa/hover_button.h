@@ -27,9 +27,14 @@ UI_BASE_EXPORT
  @private
   // Tracking area for button mouseover states. Nil if not enabled.
   ui::ScopedCrTrackingArea trackingArea_;
+  BOOL mouseDown_;
 }
 
 @property(nonatomic) HoverState hoverState;
+
+// Common initialization called from initWithFrame: and awakeFromNib.
+// Subclassers should call [super commonInit].
+- (void)commonInit;
 
 // Text that would be announced by screen readers.
 - (void)setAccessibilityTitle:(NSString*)accessibilityTitle;
