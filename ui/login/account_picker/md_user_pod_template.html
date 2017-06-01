@@ -59,8 +59,8 @@
             <span class="action-box-menu-title-name"></span>
             <span class="action-box-menu-title-email"></span>
           </div>
-          <div class="action-box-menu-remove"
-              i18n-content="removeUserWarningButtonTitle">
+          <div class="action-box-menu-remove">
+            $i18n{removeUserWarningButtonTitle}
           </div>
           <div class="action-box-remove-user-warning" hidden>
             <div class="action-box-remove-user-warning-text"></div>
@@ -68,38 +68,45 @@
                           non-sync has-stats">
               <tbody>
                 <tr>
-                  <td i18n-content="removeUserWarningTextHistory"></td>
+                  <td>$i18n{removeUserWarningTextHistory}</td>
                   <td class="action-box-remove-user-warning-history
-                             action-box-remove-user-warning-table-numbers"
-                      i18n-content="removeUserWarningTextCalculating"></td>
+                             action-box-remove-user-warning-table-numbers">
+                    $i18n{removeUserWarningTextCalculating}
+                  </td>
                 </tr>
                 <tr>
-                  <td i18n-content="removeUserWarningTextPasswords"></td>
+                  <td>$i18n{removeUserWarningTextPasswords}</td>
                   <td class="action-box-remove-user-warning-passwords
-                             action-box-remove-user-warning-table-numbers"
-                      i18n-content="removeUserWarningTextCalculating"></td>
+                             action-box-remove-user-warning-table-numbers">
+                    $i18n{removeUserWarningTextCalculating}
+                  </td>
                 </tr>
                 <tr>
-                  <td i18n-content="removeUserWarningTextBookmarks"></td>
+                  <td>$i18n{removeUserWarningTextBookmarks}</td>
                   <td class="action-box-remove-user-warning-bookmarks
-                             action-box-remove-user-warning-table-numbers"
-                      i18n-content="removeUserWarningTextCalculating"></td>
+                             action-box-remove-user-warning-table-numbers">
+                    $i18n{removeUserWarningTextCalculating}
+                  </td>
                 </tr>
                 <tr>
-                  <td i18n-content="removeUserWarningTextSettings"></td>
+                  <td>$i18n{removeUserWarningTextSettings}</td>
                   <td class="action-box-remove-user-warning-settings
-                             action-box-remove-user-warning-table-numbers"
-                      i18n-content="removeUserWarningTextCalculating"></td>
+                             action-box-remove-user-warning-table-numbers">
+                    $i18n{removeUserWarningTextCalculating}
+                  </td>
                 </tr>
               </tbody>
             </table>
-            <div class="action-box-remove-legacy-supervised-user-warning-text"
-                i18n-content="removeLegacySupervisedUserWarningText"></div>
-            <div class="action-box-remove-non-owner-user-warning-text"
-                i18n-content="removeNonOwnerUserWarningText"></div>
+            <div class="action-box-remove-legacy-supervised-user-warning-text">
+              $i18n{removeLegacySupervisedUserWarningText}
+            </div>
+            <div class="action-box-remove-non-owner-user-warning-text">
+              $i18n{removeNonOwnerUserWarningText}
+            </div>
             <!-- paper-button is imported inside user_manager.html -->
-            <paper-button class="remove-warning-button"
-                i18n-content="removeUserWarningButtonTitle"></paper-button>
+            <paper-button class="remove-warning-button">
+              $i18n{removeUserWarningButtonTitle}
+            </paper-button>
           </div>
         </div>
       </div>
@@ -108,14 +115,14 @@
         <div class="custom-icon-container" hidden></div>
 <if expr="chromeos">
         <div class="fingerprint-icon-container" hidden
-             i18n-values="aria-label:fingerprintIconMessage">
+            aria-label="$i18n{fingerprintIconMessage}">
           <div class="custom-icon fingerprint-icon-image"></div>
         </div>
 </if>
         <div class="password-entry-container">
           <div class="password-container">
             <input type="password" class="password"
-                   i18n-values="placeholder:passwordHint">
+                placeholder="$i18n{passwordHint}">
           </div>
 <if expr="chromeos">
           <div class="capslock-hint-container">
@@ -131,7 +138,7 @@
         <!-- User Click Authentication -->
         <div class="password-label"></div>
         <div class="signin-transition-container">
-          <span class="signing-in-label" i18n-content="signingIn"></span>
+          <span class="signing-in-label">$i18n{signingIn}</span>
           <span class="animated-ellipsis-component0">.</span>
           <span class="animated-ellipsis-component1">.</span>
           <span class="animated-ellipsis-component2">.</span>
@@ -141,8 +148,7 @@
           <span class="reauth-name-hint"></span>
         </div>
         <div class="launch-app-button-container" hidden>
-          <button class="launch-app-button" i18n-content="launchAppButton">
-          </button>
+          <button class="launch-app-button">$i18n{launchAppButton}</button>
         </div>
         <div id="input-line">
           <svg>
@@ -158,16 +164,20 @@
     </div>
     <div class="user-type-bubble">
       <div class="user-type-bubble-header">
-        <span class="mp-policy-title"
-            i18n-content="multiProfilesRestrictedPolicyTitle"></span>
+        <span class="mp-policy-title">
+          $i18n{multiProfilesRestrictedPolicyTitle}
+        </span>
       </div>
       <div class="user-type-bubble-body">
-        <span class="mp-policy-not-allowed-msg"
-            i18n-content="multiProfilesNotAllowedPolicyMsg" hidden></span>
-        <span class="mp-policy-primary-only-msg"
-            i18n-content="multiProfilesPrimaryOnlyPolicyMsg" hidden></span>
-        <span class="mp-owner-primary-only-msg"
-            i18n-content="multiProfilesOwnerPrimaryOnlyMsg" hidden></span>
+        <span class="mp-policy-not-allowed-msg" hidden>
+          $i18n{multiProfilesNotAllowedPolicyMsg}
+        </span>
+        <span class="mp-policy-primary-only-msg" hidden>
+          $i18n{multiProfilesPrimaryOnlyPolicyMsg}
+        </span>
+        <span class="mp-owner-primary-only-msg" hidden>
+          $i18n{multiProfilesOwnerPrimaryOnlyMsg}
+        </span>
       </div>
     </div>
   </div>
@@ -193,24 +203,26 @@
           </div>
           <div class="info"></div>
           <div class="monitoring-container">
-            <span class="monitoring-warning"
-                  i18n-content="publicAccountMonitoringWarning"></span>
-            <a class="monitoring-learn-more" href="#" role="button"
-               i18n-content="publicAccountLearnMore"></a>
+            <span class="monitoring-warning">
+              $i18n{publicAccountMonitoringWarning}
+            </span>
+            <a class="monitoring-learn-more" href="#" role="button">
+              $i18n{publicAccountLearnMore}
+            </a>
           </div>
-          <div class="reminder" i18n-content="publicAccountReminder"></div>
+          <div class="reminder">$i18n{publicAccountReminder}</div>
           <div class="language-and-input-section">
             <div class="select-with-label">
-              <label class="language-select-label"
-                     i18n-content="publicSessionSelectLanguage">
+              <label class="language-select-label">
+                $i18n{publicSessionSelectLanguage}
               </label>
               <div class="select-container">
                 <select class="language-select"></select>
               </div>
             </div>
             <div class="select-with-label">
-              <label class="keyboard-select-label"
-                     i18n-content="publicSessionSelectKeyboard">
+              <label class="keyboard-select-label">
+                $i18n{publicSessionSelectKeyboard}
               </label>
               <div class="select-container">
                 <select class="keyboard-select"></select>
@@ -222,12 +234,13 @@
       <div class="horizontal-line"></div>
       <div class="bottom-container">
         <paper-button raised class="enter-button"
-                i18n-content="publicAccountEnter"
-                i18n-values="aria-label:publicAccountEnterAccessibleName">
+            aria-label="$i18n{publicAccountEnterAccessibleName}">
+          $i18n{publicAccountEnter}
         </paper-button>
         <div class="language-and-input-container">
-          <a class="language-and-input" href="#" role="button"
-             i18n-content="publicSessionLanguageAndInput"></a>
+          <a class="language-and-input" href="#" role="button">
+            $i18n{publicSessionLanguageAndInput}
+          </a>
         </div>
       </div>
     </div>
