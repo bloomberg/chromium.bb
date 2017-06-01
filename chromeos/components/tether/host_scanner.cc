@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
+#include "chromeos/components/tether/device_status_util.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_state.h"
@@ -16,22 +17,6 @@
 namespace chromeos {
 
 namespace tether {
-
-namespace {
-
-const char kDefaultCellCarrierName[] = "unknown-carrier";
-
-// Android signal strength is measured between 0 and 4 (inclusive), but Chrome
-// OS signal strength is measured between 0 and 100 (inclusive). In order to
-// convert between Android signal strength to Chrome OS signal strength, the
-// value must be multiplied by the below value.
-const int32_t kAndroidTetherHostToChromeOSSignalStrengthMultiplier = 25;
-
-int32_t ForceBetweenZeroAndOneHundred(int32_t value) {
-  return std::min(std::max(value, 0), 100);
-}
-
-}  // namespace
 
 HostScanner::HostScanner(
     TetherHostFetcher* tether_host_fetcher,
@@ -142,27 +127,11 @@ void HostScanner::SetCacheEntry(
   const cryptauth::RemoteDevice& remote_device =
       scanned_device_info.remote_device;
 
-  // Use a sentinel value if carrier information is not available. This value is
-  // special-cased and replaced with a localized string in the settings UI.
-  const std::string carrier =
-      (!status.has_cell_provider() || status.cell_provider().empty())
-          ? kDefaultCellCarrierName
-          : status.cell_provider();
-
-  // If battery or signal strength are missing, assume they are 100. For
-  // battery percentage, force the value to be between 0 and 100. For signal
-  // strength, convert from Android signal strength to Chrome OS signal
-  // strength and force the value to be between 0 and 100.
-  const int32_t battery_percentage =
-      status.has_battery_percentage()
-          ? ForceBetweenZeroAndOneHundred(status.battery_percentage())
-          : 100;
-  const int32_t signal_strength =
-      status.has_connection_strength()
-          ? ForceBetweenZeroAndOneHundred(
-                kAndroidTetherHostToChromeOSSignalStrengthMultiplier *
-                status.connection_strength())
-          : 100;
+  std::string carrier;
+  int32_t battery_percentage;
+  int32_t signal_strength;
+  NormalizeDeviceStatus(status, &carrier, &battery_percentage,
+                        &signal_strength);
 
   host_scan_cache_->SetHostScanResult(
       device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
