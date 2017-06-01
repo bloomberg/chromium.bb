@@ -790,26 +790,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // will also activate the text field.
   if (point.y < 0)
     point.y = 0;
-  UIView* view = [super hitTest:point withEvent:event];
-
-  // For some reason when the |leftView| has interaction enabled, hitTest
-  // returns the leftView even when |point| is 50 pixels to the right.  Tapping
-  // the hint text will fire the leftView, causing b/6281652. Fails especially
-  // on iPad and iPhone devices in landscape mode.
-  // TODO(crbug.com/546295): Check to see if this UIKit bug is fixed, and remove
-  // this workaround.
-  UIView* leftView = [self leftView];
-  if (leftView) {
-    if (leftView == view && !CGRectContainsPoint([leftView frame], point)) {
-      return self;
-    } else if ([self leftViewMode] == UITextFieldViewModeAlways) {
-      CGRect targetFrame = CGRectInset([leftView frame], -5, -5);
-      if (CGRectContainsPoint(targetFrame, point)) {
-        return leftView;
-      }
-    }
-  }
-  return view;
+  return [super hitTest:point withEvent:event];
 }
 
 - (BOOL)isTextFieldLTR {
