@@ -21587,6 +21587,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
+  <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
@@ -22321,6 +22322,7 @@ from previous Chrome versions.
   <int value="504994663" label="GenericSensor:disabled"/>
   <int value="506680761" label="WebNFC:disabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
+  <int value="535131384" label="OmniboxTailSuggestions:enabled"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
   <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>

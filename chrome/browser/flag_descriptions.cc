@@ -2849,9 +2849,14 @@ const char kEnableCustomFeedbackUiDescription[] =
     defined(OS_WIN)
 
 const char kOmniboxEntitySuggestionsName[] = "Omnibox entity suggestions";
-
 const char kOmniboxEntitySuggestionsDescription[] =
-    "Enable receiving entity suggestions in Omnibox.";
+    "Enable receiving entity suggestions - disambiguation descriptions - for "
+    "Omnibox suggestions.";
+
+const char kOmniboxTailSuggestionsName[] = "Omnibox tail suggestions";
+const char kOmniboxTailSuggestionsDescription[] =
+    "Enable receiving tail suggestions, a type of search suggestion "
+    "based on the last few words in the query, for the Omnibox.";
 
 const char kPauseBackgroundTabsName[] = "Pause background tabs";
 const char kPauseBackgroundTabsDescription[] =
