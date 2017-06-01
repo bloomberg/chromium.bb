@@ -1056,10 +1056,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         /** Indicates whether the summary is displayed in a single line. */
         private boolean mSummaryInSingleLine;
 
-        /** Indicates whether the summary is set to display in a single line in DISPLAY_MODE_NORMAL
+        /**
+         * Indicates whether the summary is set to display in a single line in DISPLAY_MODE_NORMAL
          * by caller.
          */
-        boolean mSetDisplaySummaryInSingleLineInNormalMode = true;
+        private boolean mSetDisplaySummaryInSingleLineInNormalMode = true;
 
         /** Indicates whether the summary is set to R.style.PaymentsUiSectionDescriptiveText. */
         private boolean mSummaryInDescriptiveText;
