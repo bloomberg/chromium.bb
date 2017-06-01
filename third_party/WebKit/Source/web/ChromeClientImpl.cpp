@@ -557,7 +557,7 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
 
 void ChromeClientImpl::ScheduleAnimation(
     const PlatformFrameView* platform_frame_view) {
-  DCHECK(platform_frame_view->IsFrameView());
+  DCHECK(platform_frame_view->IsLocalFrameView());
   LocalFrame& frame =
       ToLocalFrameView(platform_frame_view)->GetFrame().LocalFrameRoot();
   // If the frame is still being created, it might not yet have a WebWidget.
@@ -574,7 +574,7 @@ IntRect ChromeClientImpl::ViewportToScreen(
     const PlatformFrameView* platform_frame_view) const {
   WebRect screen_rect(rect_in_viewport);
 
-  DCHECK(platform_frame_view->IsFrameView());
+  DCHECK(platform_frame_view->IsLocalFrameView());
   const LocalFrameView* view = ToLocalFrameView(platform_frame_view);
   LocalFrame& frame = view->GetFrame().LocalFrameRoot();
 

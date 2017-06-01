@@ -661,7 +661,7 @@ class CORE_EXPORT LocalFrameView final
       const Scrollbar&,
       const IntPoint&) const override;
 
-  bool IsFrameView() const override { return true; }
+  bool IsLocalFrameView() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
   void NotifyPageThatContentAreaWillPaint() const;
@@ -1259,18 +1259,18 @@ inline void LocalFrameView::IncrementVisuallyNonEmptyPixelCount(
 DEFINE_TYPE_CASTS(LocalFrameView,
                   PlatformFrameView,
                   platform_frame_view,
-                  platform_frame_view->IsFrameView(),
-                  platform_frame_view.IsFrameView());
+                  platform_frame_view->IsLocalFrameView(),
+                  platform_frame_view.IsLocalFrameView());
 DEFINE_TYPE_CASTS(LocalFrameView,
                   FrameOrPlugin,
                   frame_or_plugin,
-                  frame_or_plugin->IsFrameView(),
-                  frame_or_plugin.IsFrameView());
+                  frame_or_plugin->IsLocalFrameView(),
+                  frame_or_plugin.IsLocalFrameView());
 DEFINE_TYPE_CASTS(LocalFrameView,
                   ScrollableArea,
                   scrollableArea,
-                  scrollableArea->IsFrameView(),
-                  scrollableArea.IsFrameView());
+                  scrollableArea->IsLocalFrameView(),
+                  scrollableArea.IsLocalFrameView());
 
 }  // namespace blink
 
