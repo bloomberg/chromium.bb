@@ -16,6 +16,7 @@ FakeNotificationPresenter::FakeNotificationPresenter()
     : NotificationPresenter(),
       potential_hotspot_state_(
           PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN),
+      is_setup_required_notification_shown_(false),
       is_connection_failed_notification_shown_(false) {}
 
 FakeNotificationPresenter::~FakeNotificationPresenter() {}
@@ -42,6 +43,15 @@ void FakeNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
 void FakeNotificationPresenter::RemovePotentialHotspotNotification() {
   potential_hotspot_state_ =
       PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN;
+}
+
+void FakeNotificationPresenter::NotifySetupRequired(
+    const std::string& device_name) {
+  is_setup_required_notification_shown_ = true;
+}
+
+void FakeNotificationPresenter::RemoveSetupRequiredNotification() {
+  is_setup_required_notification_shown_ = false;
 }
 
 void FakeNotificationPresenter::NotifyConnectionToHostFailed() {
