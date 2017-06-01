@@ -101,7 +101,8 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
 
 void ScriptModule::ReportException(ScriptState* script_state,
                                    v8::Local<v8::Value> exception,
-                                   const String& file_name) {
+                                   const String& file_name,
+                                   const TextPosition& start_position) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
@@ -111,7 +112,8 @@ void ScriptModule::ReportException(ScriptState* script_state,
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
-  V8ScriptRunner::ReportExceptionForModule(isolate, exception, file_name);
+  V8ScriptRunner::ReportExceptionForModule(isolate, exception, file_name,
+                                           start_position);
 }
 
 Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {

@@ -77,6 +77,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   }
   const String& Nonce() const { return nonce_; }
 
+  const TextPosition& StartPosition() const { return start_position_; }
+
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
@@ -87,7 +89,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                const String& nonce,
                ParserDisposition parser_state,
                WebURLRequest::FetchCredentialsMode credentials_mode,
-               const String& source_text);
+               const String& source_text,
+               const TextPosition& start_position);
 
   static ModuleScript* CreateInternal(const String& source_text,
                                       Modulator*,
@@ -95,7 +98,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                                       const KURL& base_url,
                                       const String& nonce,
                                       ParserDisposition,
-                                      WebURLRequest::FetchCredentialsMode);
+                                      WebURLRequest::FetchCredentialsMode,
+                                      const TextPosition&);
 
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
   bool IsEmpty() const override;
@@ -147,6 +151,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // For CSP check.
   const String source_text_;
+
+  const TextPosition start_position_;
 };
 
 }  // namespace blink
