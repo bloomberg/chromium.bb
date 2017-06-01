@@ -20,7 +20,7 @@ namespace gl {
 // This class serves as a bridge for native code to call java functions inside
 // android SurfaceTexture class.
 class GL_EXPORT SurfaceTexture
-    : public base::RefCountedThreadSafe<SurfaceTexture>{
+    : public base::RefCountedThreadSafe<SurfaceTexture> {
  public:
   static scoped_refptr<SurfaceTexture> Create(int texture_id);
 
@@ -46,11 +46,11 @@ class GL_EXPORT SurfaceTexture
 
   // Attach the SurfaceTexture to the texture currently bound to
   // GL_TEXTURE_EXTERNAL_OES.
-  virtual void AttachToGLContext();
+  void AttachToGLContext();
 
   // Detaches the SurfaceTexture from the context that owns its current GL
   // texture. Must be called with that context current on the calling thread.
-  virtual void DetachFromGLContext();
+  void DetachFromGLContext();
 
   // Creates a native render surface for this surface texture.
   // The caller must release the underlying reference when done with the handle
@@ -58,9 +58,10 @@ class GL_EXPORT SurfaceTexture
   ANativeWindow* CreateSurface();
 
   // Release the SurfaceTexture back buffers.  The SurfaceTexture is no longer
-  // usable after calling this.  Note that this is not called 'Release', like
-  // the android API, because scoped_refptr<> calls that quite a bit.
-  void ReleaseSurfaceTexture();
+  // usable after calling this but the front buffer is still valid. Note that
+  // this is not called 'Release', like the Android API, because scoped_refptr
+  // calls that quite a bit.
+  void ReleaseBackBuffers();
 
   // Set the default buffer size for the surface texture.
   void SetDefaultBufferSize(int width, int height);
@@ -70,19 +71,12 @@ class GL_EXPORT SurfaceTexture
   }
 
  protected:
-  static base::android::ScopedJavaLocalRef<jobject> CreateJavaSurfaceTexture(
-      int texture_id);
-
   explicit SurfaceTexture(
       const base::android::ScopedJavaLocalRef<jobject>& j_surface_texture);
 
-  virtual ~SurfaceTexture();
-
-  // Destroy |j_surface_texture| if it hasn't been destroyed already.
-  void DestroyJavaObject();
-
  private:
   friend class base::RefCountedThreadSafe<SurfaceTexture>;
+  virtual ~SurfaceTexture();
 
   // Java SurfaceTexture instance.
   base::android::ScopedJavaGlobalRef<jobject> j_surface_texture_;

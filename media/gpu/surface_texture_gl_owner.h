@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -18,56 +19,87 @@ namespace media {
 
 struct FrameAvailableEvent;
 
-// Handy subclass of SurfaceTexture which creates and maintains ownership of the
-// GL texture also.  This texture is only destroyed with the object; one may
-// ReleaseSurfaceTexture without destroying the GL texture.  It must be deleted
-// on the same thread on which it is constructed.
-class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public gl::SurfaceTexture {
+// A SurfaceTexture wrapper that creates and maintains ownership of the
+// attached GL texture. The texture is destroyed with the object but it's
+// possible to call ReleaseSurfaceTexture() without destroying the GL texture.
+// It must be deleted on the thread it was constructed on.
+// This is a virtual interface to make it mockable; see
+// SurfaceTextureGLOwnerImpl.
+class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
+    : public base::RefCountedThreadSafe<SurfaceTextureGLOwner> {
  public:
-  // Must be called with a platform gl context current.  Creates the GL texture
-  // using this context, and memorizes it to delete the texture later.
-  static scoped_refptr<SurfaceTextureGLOwner> Create();
+  SurfaceTextureGLOwner() = default;
 
-  // Return the GL texture id that we created.
-  GLuint texture_id() const { return texture_id_; }
+  // Returns the GL texture id that the SurfaceTexture is attached to.
+  virtual GLuint GetTextureId() const = 0;
+  virtual gl::GLContext* GetContext() const = 0;
+  virtual gl::GLSurface* GetSurface() const = 0;
 
-  gl::GLContext* context() const { return context_.get(); }
-  gl::GLSurface* surface() const { return surface_.get(); }
+  // Create a java surface for the SurfaceTexture.
+  virtual gl::ScopedJavaSurface CreateJavaSurface() const = 0;
 
-  // Start expecting a new frame because a buffer was just released to this
-  // surface.
-  void SetReleaseTimeToNow();
+  // See gl::SurfaceTexture for the following.
+  virtual void UpdateTexImage() = 0;
+  virtual void GetTransformMatrix(float mtx[16]) = 0;
+  virtual void ReleaseBackBuffers() = 0;
+
+  // Sets the expectation of onFrameAVailable for a new frame because a buffer
+  // was just released to this surface.
+  virtual void SetReleaseTimeToNow() = 0;
 
   // Ignores a pending release that was previously indicated with
   // SetReleaseTimeToNow().
   // TODO(watk): This doesn't seem necessary. It actually may be detrimental
   // because the next time we release a buffer we may confuse its
   // onFrameAvailable with the one we're ignoring.
-  void IgnorePendingRelease();
+  virtual void IgnorePendingRelease() = 0;
 
   // Whether we're expecting onFrameAvailable. True when SetReleaseTimeToNow()
   // was called but neither IgnorePendingRelease() nor WaitForFrameAvailable()
   // have been called since.
-  bool IsExpectingFrameAvailable();
+  virtual bool IsExpectingFrameAvailable() = 0;
 
   // Waits for onFrameAvailable until it's been 5ms since the buffer was
   // released. This must only be called if IsExpectingFrameAvailable().
-  void WaitForFrameAvailable();
+  virtual void WaitForFrameAvailable() = 0;
 
-  // We don't support these.  In principle, we could, but they're fairly buggy
-  // anyway on many devices.
-  void AttachToGLContext() override;
-  void DetachFromGLContext() override;
+ protected:
+  friend class base::RefCountedThreadSafe<SurfaceTextureGLOwner>;
+  virtual ~SurfaceTextureGLOwner() = default;
 
  private:
-  SurfaceTextureGLOwner(GLuint texture_id);
-  ~SurfaceTextureGLOwner() override;
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
+};
 
-  // Context and surface that were used to create |texture_id_|.
+class MEDIA_GPU_EXPORT SurfaceTextureGLOwnerImpl
+    : public SurfaceTextureGLOwner {
+ public:
+  // Creates a GL texture using the current platform GL context and returns a
+  // new SurfaceTextureGLOwnerImpl attached to it. Returns null on failure.
+  static scoped_refptr<SurfaceTextureGLOwner> Create();
+
+  GLuint GetTextureId() const override;
+  gl::GLContext* GetContext() const override;
+  gl::GLSurface* GetSurface() const override;
+  gl::ScopedJavaSurface CreateJavaSurface() const override;
+  void UpdateTexImage() override;
+  void GetTransformMatrix(float mtx[16]) override;
+  void ReleaseBackBuffers() override;
+  void SetReleaseTimeToNow() override;
+  void IgnorePendingRelease() override;
+  bool IsExpectingFrameAvailable() override;
+  void WaitForFrameAvailable() override;
+
+ private:
+  SurfaceTextureGLOwnerImpl(GLuint texture_id);
+  ~SurfaceTextureGLOwnerImpl() override;
+
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+  GLuint texture_id_;
+
+  // The context and surface that were used to create |texture_id_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
-
-  GLuint texture_id_;
 
   // When SetReleaseTimeToNow() was last called. i.e., when the last
   // codec buffer was released to this surface. Or null if
@@ -76,6 +108,7 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public gl::SurfaceTexture {
   scoped_refptr<FrameAvailableEvent> frame_available_event_;
 
   base::ThreadChecker thread_checker_;
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwnerImpl);
 };
 
 }  // namespace media

@@ -54,12 +54,12 @@ bool AVDAPictureBufferManager::Initialize(
 
   if (!surface_bundle->overlay) {
     // Create the surface texture.
-    surface_texture_ = SurfaceTextureGLOwner::Create();
+    surface_texture_ = SurfaceTextureGLOwnerImpl::Create();
     if (!surface_texture_)
       return false;
 
     surface_bundle->surface_texture_surface =
-        gl::ScopedJavaSurface(surface_texture_.get());
+        surface_texture_->CreateJavaSurface();
     surface_bundle->surface_texture = surface_texture_;
   }
 

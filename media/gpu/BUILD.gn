@@ -459,6 +459,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android_video_surface_chooser_impl_unittest.cc",
       "avda_codec_allocator_unittest.cc",
       "content_video_view_overlay_allocator_unittest.cc",
+      "mock_surface_texture_gl_owner.cc",
+      "mock_surface_texture_gl_owner.h",
       "surface_texture_gl_owner_unittest.cc",
     ]
     if (enable_media_codec_video_decoder) {
