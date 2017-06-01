@@ -33,6 +33,29 @@
 
 namespace blink {
 
+namespace {
+
+bool CheckEmptyToken(const String& token, ExceptionState& exception_state) {
+  if (!token.IsEmpty())
+    return true;
+  exception_state.ThrowDOMException(kSyntaxError,
+                                    "The token provided must not be empty.");
+  return false;
+}
+
+bool CheckTokenWithWhitespace(const String& token,
+                              ExceptionState& exception_state) {
+  if (token.Find(IsHTMLSpace) == kNotFound)
+    return true;
+  exception_state.ThrowDOMException(kInvalidCharacterError,
+                                    "The token provided ('" + token +
+                                        "') contains HTML space characters, "
+                                        "which are not valid in tokens.");
+  return false;
+}
+
+}  // anonymous namespace
+
 DEFINE_TRACE(DOMTokenList) {
   visitor->Trace(element_);
 }
@@ -45,23 +68,12 @@ DEFINE_TRACE(DOMTokenList) {
 bool DOMTokenList::ValidateToken(const String& token,
                                  ExceptionState& exception_state) const {
   // 1. If token is the empty string, then throw a SyntaxError.
-  if (token.IsEmpty()) {
-    exception_state.ThrowDOMException(kSyntaxError,
-                                      "The token provided must not be empty.");
+  if (!CheckEmptyToken(token, exception_state))
     return false;
-  }
 
   // 2. If token contains any ASCII whitespace, then throw an
   // InvalidCharacterError.
-  if (token.Find(IsHTMLSpace) != kNotFound) {
-    exception_state.ThrowDOMException(kInvalidCharacterError,
-                                      "The token provided ('" + token +
-                                          "') contains HTML space characters, "
-                                          "which are not valid in tokens.");
-    return false;
-  }
-
-  return true;
+  return CheckTokenWithWhitespace(token, exception_state);
 }
 
 bool DOMTokenList::ValidateTokens(const Vector<String>& tokens,
@@ -160,6 +172,60 @@ bool DOMTokenList::toggle(const AtomicString& token,
   }
 
   return force;
+}
+
+// https://dom.spec.whatwg.org/#dom-domtokenlist-replace
+void DOMTokenList::replace(const AtomicString& token,
+                           const AtomicString& new_token,
+                           ExceptionState& exception_state) {
+  // 1. If either token or newToken is the empty string, then throw a
+  // SyntaxError.
+  if (!CheckEmptyToken(token, exception_state) ||
+      !CheckEmptyToken(new_token, exception_state))
+    return;
+
+  // 2. If either token or newToken contains any ASCII whitespace, then throw an
+  // InvalidCharacterError.
+  if (!CheckTokenWithWhitespace(token, exception_state) ||
+      !CheckTokenWithWhitespace(new_token, exception_state))
+    return;
+
+  // https://infra.spec.whatwg.org/#set-replace
+  // To replace within an ordered set set, given item and replacement: if set
+  // contains item or replacement, then replace the first instance of either
+  // with replacement and remove all other instances.
+  bool found_old_token = false;
+  bool found_new_token = false;
+  bool did_update = false;
+  for (size_t i = 0; i < tokens_.size(); ++i) {
+    const AtomicString& existing_token = tokens_[i];
+    if (found_old_token) {
+      if (existing_token == new_token) {
+        tokens_.Remove(i);
+        break;
+      }
+    } else if (found_new_token) {
+      if (existing_token == token) {
+        tokens_.Remove(i);
+        did_update = true;
+        break;
+      }
+    } else if (existing_token == token) {
+      found_old_token = true;
+      tokens_.ReplaceAt(i, new_token);
+      did_update = true;
+    } else if (existing_token == new_token) {
+      found_new_token = true;
+    }
+  }
+
+  // TODO(tkent): This check doesn't conform to the DOM specification, but it's
+  // interoperable with Firefox and Safari.
+  // https://github.com/whatwg/dom/issues/462
+  if (!did_update)
+    return;
+
+  UpdateWithTokenSet(tokens_);
 }
 
 bool DOMTokenList::supports(const AtomicString& token,

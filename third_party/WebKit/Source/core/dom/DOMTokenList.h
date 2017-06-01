@@ -57,6 +57,9 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   void remove(const Vector<String>&, ExceptionState&);
   bool toggle(const AtomicString&, ExceptionState&);
   bool toggle(const AtomicString&, bool force, ExceptionState&);
+  void replace(const AtomicString& token,
+               const AtomicString& new_token,
+               ExceptionState&);
   bool supports(const AtomicString&, ExceptionState&);
   const AtomicString& value() const { return value_; }
   void setValue(const AtomicString&);

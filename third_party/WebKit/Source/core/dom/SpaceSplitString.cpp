@@ -138,6 +138,18 @@ bool SpaceSplitString::Remove(const AtomicString& string) {
   return changed;
 }
 
+void SpaceSplitString::Remove(size_t index) {
+  DCHECK_LT(index, size());
+  EnsureUnique();
+  data_->Remove(index);
+}
+
+void SpaceSplitString::ReplaceAt(size_t index, const AtomicString& token) {
+  DCHECK_LT(index, size());
+  EnsureUnique();
+  (*data_)[index] = token;
+}
+
 SpaceSplitString::DataMap& SpaceSplitString::SharedDataMap() {
   DEFINE_STATIC_LOCAL(DataMap, map, ());
   return map;
