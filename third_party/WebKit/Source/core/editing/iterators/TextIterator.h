@@ -194,6 +194,16 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
                        int position,
                        int copy_length) const;
 
+  // The range.
+  const Member<Node> start_container_;
+  const int start_offset_;
+  const Member<Node> end_container_;
+  const int end_offset_;
+  // |m_endNode| stores |Strategy::childAt(*m_endContainer, m_endOffset - 1)|,
+  // if it exists, or |nullptr| otherwise.
+  const Member<Node> end_node_;
+  const Member<Node> past_end_node_;
+
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
   Member<Node> node_;
@@ -201,20 +211,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
   int shadow_depth_;
 
-  // The range.
-  Member<Node> start_container_;
-  int start_offset_;
-  Member<Node> end_container_;
-  int end_offset_;
-  // |m_endNode| stores |Strategy::childAt(*m_endContainer, m_endOffset - 1)|,
-  // if it exists, or |nullptr| otherwise.
-  Member<Node> end_node_;
-  Member<Node> past_end_node_;
-
   // Used when there is still some pending text from the current node; when
   // these are false, we go back to normal iterating.
-  bool needs_another_newline_;
-  bool needs_handle_replaced_element_;
+  bool needs_another_newline_ = false;
+  bool needs_handle_replaced_element_ = false;
 
   Member<Text> last_text_node_;
 
@@ -222,10 +222,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   // Used when stopsOnFormControls() is true to determine if the iterator should
   // keep advancing.
-  bool should_stop_;
+  bool should_stop_ = false;
   // Used for use counter |InnerTextWithShadowTree| and
   // |SelectionToStringWithShadowTree|, we should not use other purpose.
-  bool handle_shadow_root_;
+  bool handle_shadow_root_ = false;
 
   // Contains state of emitted text.
   TextIteratorTextState text_state_;

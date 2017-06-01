@@ -85,6 +85,24 @@ static bool NotSkipping(const Node& node) {
          (node.IsShadowRoot() && node.OwnerShadowHost()->GetLayoutObject());
 }
 
+template <typename Strategy>
+Node* StartNode(Node* start_container, int start_offset) {
+  if (start_container->IsCharacterDataNode())
+    return start_container;
+  if (Node* child = Strategy::ChildAt(*start_container, start_offset))
+    return child;
+  if (!start_offset)
+    return start_container;
+  return Strategy::NextSkippingChildren(*start_container);
+}
+
+template <typename Strategy>
+Node* EndNode(const Node& end_container, int end_offset) {
+  if (!end_container.IsCharacterDataNode() && end_offset > 0)
+    return Strategy::ChildAt(end_container, end_offset - 1);
+  return nullptr;
+}
+
 // This function is like Range::pastLastNode, except for the fact that it can
 // climb up out of shadow trees and ignores all nodes that will be skipped in
 // |advance()|.
@@ -144,7 +162,6 @@ bool IsRenderedAsTable(const Node* node) {
 
 }  // namespace
 
-// TODO(xiaochengh): Most members should be initialized in-place, not here.
 template <typename Strategy>
 TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
     const EphemeralRangeTemplate<Strategy>& range,
@@ -158,20 +175,21 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     const TextIteratorBehavior& behavior)
-    : start_container_(nullptr),
-      start_offset_(0),
-      end_container_(nullptr),
-      end_offset_(0),
-      needs_another_newline_(false),
-      needs_handle_replaced_element_(false),
-      last_text_node_(nullptr),
+    : start_container_(start.ComputeContainerNode()),
+      start_offset_(start.ComputeOffsetInContainerNode()),
+      end_container_(end.ComputeContainerNode()),
+      end_offset_(end.ComputeOffsetInContainerNode()),
+      end_node_(EndNode<Strategy>(*end_container_, end_offset_)),
+      past_end_node_(PastLastNode<Strategy>(*end_container_, end_offset_)),
+      node_(StartNode<Strategy>(start_container_, start_offset_)),
+      iteration_progress_(kHandledNone),
+      shadow_depth_(
+          ShadowDepthOf<Strategy>(*start_container_, *end_container_)),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
-      should_stop_(false),
-      handle_shadow_root_(false),
       text_state_(behavior_),
       text_node_handler_(behavior_, &text_state_) {
-  DCHECK(start.IsNotNull());
-  DCHECK(end.IsNotNull());
+  DCHECK(start_container_);
+  DCHECK(end_container_);
 
   // TODO(dglazkov): TextIterator should not be created for documents that don't
   // have a frame, but it currently still happens in some cases. See
@@ -183,43 +201,10 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   // in release build.
   CHECK_LE(start, end);
 
-  Node* const start_container = start.ComputeContainerNode();
-  const int start_offset = start.ComputeOffsetInContainerNode();
-  Node* const end_container = end.ComputeContainerNode();
-  const int end_offset = end.ComputeOffsetInContainerNode();
-
-  // Remember the range - this does not change.
-  start_container_ = start_container;
-  start_offset_ = start_offset;
-  end_container_ = end_container;
-  end_offset_ = end_offset;
-  end_node_ =
-      end_container && !end_container->IsCharacterDataNode() && end_offset > 0
-          ? Strategy::ChildAt(*end_container, end_offset - 1)
-          : nullptr;
-
-  shadow_depth_ = ShadowDepthOf<Strategy>(*start_container, *end_container);
-
-  // Set up the current node for processing.
-  if (start_container->IsCharacterDataNode())
-    node_ = start_container;
-  else if (Node* child = Strategy::ChildAt(*start_container, start_offset))
-    node_ = child;
-  else if (!start_offset)
-    node_ = start_container;
-  else
-    node_ = Strategy::NextSkippingChildren(*start_container);
-
   if (!node_)
     return;
 
   fully_clipped_stack_.SetUpFullyClippedStack(node_);
-  iteration_progress_ = kHandledNone;
-
-  // Calculate first out of bounds node.
-  past_end_node_ = end_container
-                       ? PastLastNode<Strategy>(*end_container, end_offset)
-                       : nullptr;
 
   // Identify the first run.
   Advance();
