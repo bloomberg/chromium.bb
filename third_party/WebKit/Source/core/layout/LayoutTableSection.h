@@ -295,13 +295,17 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
-  bool IsRepeatingHeaderGroup() const;
+  bool IsRepeatingHeaderGroup() const { return is_repeating_header_group_; };
 
   void UpdateLayout() override;
 
   CellSpan FullSectionRowSpan() const { return CellSpan(0, grid_.size()); }
   CellSpan FullTableEffectiveColumnSpan() const {
     return CellSpan(0, Table()->NumEffectiveColumns());
+  }
+
+  void DetermineIfHeaderGroupShouldRepeat() {
+    is_repeating_header_group_ = HeaderGroupShouldRepeat();
   }
 
  protected:
@@ -393,6 +397,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
+  bool HeaderGroupShouldRepeat() const;
+
   struct TableGridRow {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -455,6 +461,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // Whether any cell spans multiple rows or cols.
   bool has_spanning_cells_;
+
+  // Header group should be painted on every page.
+  bool is_repeating_header_group_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, IsTableSection());

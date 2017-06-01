@@ -470,8 +470,10 @@ void LayoutTable::LayoutSection(
   bool needed_layout = section.NeedsLayout();
   if (needed_layout)
     section.UpdateLayout();
-  if (needed_layout || table_height_changing == kTableHeightChanging)
+  if (needed_layout || table_height_changing == kTableHeightChanging) {
     section.SetLogicalHeight(LayoutUnit(section.CalcRowLogicalHeight()));
+    section.DetermineIfHeaderGroupShouldRepeat();
+  }
 
   if (View()->GetLayoutState()->IsPaginated())
     UpdateFragmentationInfoForChild(section);
@@ -661,15 +663,15 @@ void LayoutTable::UpdateLayout() {
         // If the repeating header group allows at least one row of content,
         // then store the offset for other sections to offset their rows
         // against.
-        LayoutUnit section_logical_height = section->LogicalHeight();
-        if (section_logical_height <
-                section->PageLogicalHeightForOffset(section->LogicalTop()) &&
-            section->GetPaginationBreakability() != kAllowAnyBreaks) {
+        if (section->IsRepeatingHeaderGroup()) {
+          LayoutUnit offset_for_table_headers =
+              state.HeightOffsetForTableHeaders();
+          offset_for_table_headers += section->LogicalHeight();
           // Don't include any strut in the header group - we only want the
           // height from its content.
-          LayoutUnit offset_for_table_headers = section_logical_height;
           if (LayoutTableRow* row = section->FirstRow())
             offset_for_table_headers -= row->PaginationStrut();
+          state.SetHeightOffsetForTableHeaders(offset_for_table_headers);
           SetRowOffsetFromRepeatingHeader(offset_for_table_headers);
         }
       }
