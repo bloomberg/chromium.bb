@@ -259,15 +259,16 @@ struct zcr_remote_shell_v1_listener {
 				      int32_t work_area_inset_right,
 				      int32_t work_area_inset_bottom,
 				      uint32_t layout_mode);
-        /**
-         * area of remote shell
-         *
-         * Defines an area of the remote shell used for layout. Each
-         * series of "workspace" events must be terminated by a "configure"
-         * event.
-         * @since 5
-         */
-        void (*workspace)(void *data,
+	/**
+	 * area of remote shell
+	 *
+	 * Defines an area of the remote shell used for layout. Each
+	 * series of "workspace" events must be terminated by a "configure"
+	 * event.
+	 * @param is_internal 1 if screen is built-in
+	 * @since 5
+	 */
+	void (*workspace)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
 			  uint32_t id_hi,
 			  uint32_t id_lo,
@@ -280,15 +281,16 @@ struct zcr_remote_shell_v1_listener {
 			  int32_t inset_right,
 			  int32_t inset_bottom,
 			  int32_t transform,
-			  wl_fixed_t scale_factor);
-        /**
-         * suggests configuration of remote shell
-         *
-         * Suggests a new configuration of the remote shell. Preceded by
-         * a series of "workspace" events.
-         * @since 5
-         */
-        void (*configure)(void *data,
+			  wl_fixed_t scale_factor,
+			  uint32_t is_internal);
+	/**
+	 * suggests configuration of remote shell
+	 *
+	 * Suggests a new configuration of the remote shell. Preceded by
+	 * a series of "workspace" events.
+	 * @since 5
+	 */
+	void (*configure)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
 			  uint32_t layout_mode);
 };
@@ -425,18 +427,18 @@ zcr_remote_shell_v1_get_notification_surface(struct zcr_remote_shell_v1 *zcr_rem
  * Determine the visibility behavior of the system UI.
  */
 enum zcr_remote_surface_v1_systemui_visibility_state {
-  /**
-   * system ui is visible
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE = 1,
-  /**
-   * system ui autohides and is not sticky
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY = 2,
-  /**
-   * system ui autohides and is sticky
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_STICKY = 3,
+	/**
+	 * system ui is visible
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE = 1,
+	/**
+	 * system ui autohides and is not sticky
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY = 2,
+	/**
+	 * system ui autohides and is sticky
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_STICKY = 3,
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM */
 
@@ -473,28 +475,28 @@ struct zcr_remote_surface_v1_listener {
 	void (*state_type_changed)(void *data,
 				   struct zcr_remote_surface_v1 *zcr_remote_surface_v1,
 				   uint32_t state_type);
-        /**
-         * suggest a surface change
-         *
-         * The configure event asks the client to change surface state.
-         *
-         * The client must apply the origin offset to window positions in
-         * set_window_geometry requests.
-         *
-         * The states listed in the event are state_type values, and might
-         * change due to a client request or an event directly handled by
-         * the compositor.
-         *
-         * Clients should arrange their surface for the new state, and then
-         * send an ack_configure request with the serial sent in this
-         * configure event at some point before committing the new surface.
-         *
-         * If the client receives multiple configure events before it can
-         * respond to one, it is free to discard all but the last event it
-         * received.
-         * @since 5
-         */
-        void (*configure)(void *data,
+	/**
+	 * suggest a surface change
+	 *
+	 * The configure event asks the client to change surface state.
+	 *
+	 * The client must apply the origin offset to window positions in
+	 * set_window_geometry requests.
+	 *
+	 * The states listed in the event are state_type values, and might
+	 * change due to a client request or an event directly handled by
+	 * the compositor.
+	 *
+	 * Clients should arrange their surface for the new state, and then
+	 * send an ack_configure request with the serial sent in this
+	 * configure event at some point before committing the new surface.
+	 *
+	 * If the client receives multiple configure events before it can
+	 * respond to one, it is free to discard all but the last event it
+	 * received.
+	 * @since 5
+	 */
+	void (*configure)(void *data,
 			  struct zcr_remote_surface_v1 *zcr_remote_surface_v1,
 			  int32_t origin_offset_x,
 			  int32_t origin_offset_y,
@@ -983,14 +985,13 @@ zcr_remote_surface_v1_set_rectangular_surface_shadow(struct zcr_remote_surface_v
 /**
  * @ingroup iface_zcr_remote_surface_v1
  *
- * Requests how the surface will change the visibility of the system UI when it
- * is made active.
+ * Requests how the surface will change the visibility of the system UI when it is made active.
  */
-static inline void zcr_remote_surface_v1_set_systemui_visibility(
-    struct zcr_remote_surface_v1* zcr_remote_surface_v1,
-    uint32_t visibility) {
-  wl_proxy_marshal((struct wl_proxy*)zcr_remote_surface_v1,
-                   ZCR_REMOTE_SURFACE_V1_SET_SYSTEMUI_VISIBILITY, visibility);
+static inline void
+zcr_remote_surface_v1_set_systemui_visibility(struct zcr_remote_surface_v1 *zcr_remote_surface_v1, uint32_t visibility)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_SYSTEMUI_VISIBILITY, visibility);
 }
 
 /**
@@ -1002,10 +1003,11 @@ static inline void zcr_remote_surface_v1_set_systemui_visibility(
  * The compositor may choose to ignore this request.
  *
  */
-static inline void zcr_remote_surface_v1_set_always_on_top(
-    struct zcr_remote_surface_v1* zcr_remote_surface_v1) {
-  wl_proxy_marshal((struct wl_proxy*)zcr_remote_surface_v1,
-                   ZCR_REMOTE_SURFACE_V1_SET_ALWAYS_ON_TOP);
+static inline void
+zcr_remote_surface_v1_set_always_on_top(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_ALWAYS_ON_TOP);
 }
 
 /**
@@ -1016,10 +1018,11 @@ static inline void zcr_remote_surface_v1_set_always_on_top(
  * This is only a request that the window should be not always on top.
  * The compositor may choose to ignore this request.
  */
-static inline void zcr_remote_surface_v1_unset_always_on_top(
-    struct zcr_remote_surface_v1* zcr_remote_surface_v1) {
-  wl_proxy_marshal((struct wl_proxy*)zcr_remote_surface_v1,
-                   ZCR_REMOTE_SURFACE_V1_UNSET_ALWAYS_ON_TOP);
+static inline void
+zcr_remote_surface_v1_unset_always_on_top(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_UNSET_ALWAYS_ON_TOP);
 }
 
 /**

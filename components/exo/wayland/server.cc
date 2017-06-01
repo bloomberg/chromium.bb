@@ -2185,6 +2185,10 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
         const gfx::Rect& bounds = display.bounds();
         const gfx::Insets& insets = display.GetWorkAreaInsets();
 
+        double device_scale_factor =
+            WMHelper::GetInstance()->GetDisplayInfo(display.id())
+                .device_scale_factor();
+
         zcr_remote_shell_v1_send_workspace(
             remote_shell_resource_,
             static_cast<uint32_t>(display.id() >> 32),
@@ -2192,7 +2196,8 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
             bounds.x(), bounds.y(), bounds.width(), bounds.height(),
             insets.left(), insets.top(), insets.right(), insets.bottom(),
             OutputTransform(display.rotation()),
-            wl_fixed_from_double(display.device_scale_factor()));
+            wl_fixed_from_double(device_scale_factor),
+            display.IsInternal());
       }
 
       zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);

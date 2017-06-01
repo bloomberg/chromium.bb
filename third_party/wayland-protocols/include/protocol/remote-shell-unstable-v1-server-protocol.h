@@ -340,11 +340,12 @@ zcr_remote_shell_v1_send_configuration_changed(struct wl_resource *resource_, in
  * @ingroup iface_zcr_remote_shell_v1
  * Sends an workspace event to the client owning the resource.
  * @param resource_ The client's resource
+ * @param is_internal 1 if screen is built-in
  */
 static inline void
-zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi, uint32_t id_lo, int32_t x, int32_t y, int32_t width, int32_t height, int32_t inset_left, int32_t inset_top, int32_t inset_right, int32_t inset_bottom, int32_t transform, wl_fixed_t scale_factor)
+zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi, uint32_t id_lo, int32_t x, int32_t y, int32_t width, int32_t height, int32_t inset_left, int32_t inset_top, int32_t inset_right, int32_t inset_bottom, int32_t transform, wl_fixed_t scale_factor, uint32_t is_internal)
 {
-	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_WORKSPACE, id_hi, id_lo, x, y, width, height, inset_left, inset_top, inset_right, inset_bottom, transform, scale_factor);
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_WORKSPACE, id_hi, id_lo, x, y, width, height, inset_left, inset_top, inset_right, inset_bottom, transform, scale_factor, is_internal);
 }
 
 /**
@@ -367,18 +368,18 @@ zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t layou
  * Determine the visibility behavior of the system UI.
  */
 enum zcr_remote_surface_v1_systemui_visibility_state {
-  /**
-   * system ui is visible
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE = 1,
-  /**
-   * system ui autohides and is not sticky
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY = 2,
-  /**
-   * system ui autohides and is sticky
-   */
-  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_STICKY = 3,
+	/**
+	 * system ui is visible
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE = 1,
+	/**
+	 * system ui autohides and is not sticky
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY = 2,
+	/**
+	 * system ui autohides and is sticky
+	 */
+	ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_STICKY = 3,
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM */
 
@@ -631,85 +632,86 @@ struct zcr_remote_surface_v1_interface {
 					       int32_t y,
 					       int32_t width,
 					       int32_t height);
-        /**
-         * requests the system ui visibility behavior for the surface
-         *
-         * Requests how the surface will change the visibility of the
-         * system UI when it is made active.
-         * @since 3
-         */
-        void (*set_systemui_visibility)(struct wl_client* client,
-                                        struct wl_resource* resource,
-                                        uint32_t visibility);
-        /**
-         * set always on top
-         *
-         * Request that surface is made to be always on top.
-         *
-         * This is only a request that the window should be always on top.
-         * The compositor may choose to ignore this request.
-         * @since 4
-         */
-        void (*set_always_on_top)(struct wl_client* client,
-                                  struct wl_resource* resource);
-        /**
-         * unset always on top
-         *
-         * Request that surface is made to be not always on top.
-         *
-         * This is only a request that the window should be not always on
-         * top. The compositor may choose to ignore this request.
-         * @since 4
-         */
-        void (*unset_always_on_top)(struct wl_client* client,
-                                    struct wl_resource* resource);
-        /**
-         * ack a configure event
-         *
-         * When a configure event is received, if a client commits the
-         * surface in response to the configure event, then the client must
-         * make an ack_configure request sometime before the commit
-         * request, passing along the serial of the configure event.
-         *
-         * For instance, the compositor might use this information during
-         * display configuration to change its coordinate space for
-         * set_window_geometry requests only when the client has switched
-         * to the new coordinate space.
-         *
-         * If the client receives multiple configure events before it can
-         * respond to one, it only has to ack the last configure event.
-         *
-         * A client is not required to commit immediately after sending an
-         * ack_configure request - it may even ack_configure several times
-         * before its next surface commit.
-         *
-         * A client may send multiple ack_configure requests before
-         * committing, but only the last request sent before a commit
-         * indicates which configure event the client really is responding
-         * to.
-         * @param serial the serial from the configure event
-         * @since 5
-         */
-        void (*ack_configure)(struct wl_client* client,
-                              struct wl_resource* resource,
-                              uint32_t serial);
-        /**
-         * start an interactive move
-         *
-         * Start an interactive, user-driven move of the surface.
-         *
-         * The compositor responds to this request with a configure event
-         * that transitions to the "moving" state. The client must only
-         * initiate motion after acknowledging the state change. The
-         * compositor can assume that subsequent set_window_geometry
-         * requests are position updates until the next state transition is
-         * acknowledged.
-         *
-         * The compositor may ignore move requests depending on the state
-         * of the surface, e.g. fullscreen or maximized.
-         * @since 5
-         */
-        void (*move)(struct wl_client* client, struct wl_resource* resource);
+	/**
+	 * requests the system ui visibility behavior for the surface
+	 *
+	 * Requests how the surface will change the visibility of the
+	 * system UI when it is made active.
+	 * @since 3
+	 */
+	void (*set_systemui_visibility)(struct wl_client *client,
+					struct wl_resource *resource,
+					uint32_t visibility);
+	/**
+	 * set always on top
+	 *
+	 * Request that surface is made to be always on top.
+	 *
+	 * This is only a request that the window should be always on top.
+	 * The compositor may choose to ignore this request.
+	 * @since 4
+	 */
+	void (*set_always_on_top)(struct wl_client *client,
+				  struct wl_resource *resource);
+	/**
+	 * unset always on top
+	 *
+	 * Request that surface is made to be not always on top.
+	 *
+	 * This is only a request that the window should be not always on
+	 * top. The compositor may choose to ignore this request.
+	 * @since 4
+	 */
+	void (*unset_always_on_top)(struct wl_client *client,
+				    struct wl_resource *resource);
+	/**
+	 * ack a configure event
+	 *
+	 * When a configure event is received, if a client commits the
+	 * surface in response to the configure event, then the client must
+	 * make an ack_configure request sometime before the commit
+	 * request, passing along the serial of the configure event.
+	 *
+	 * For instance, the compositor might use this information during
+	 * display configuration to change its coordinate space for
+	 * set_window_geometry requests only when the client has switched
+	 * to the new coordinate space.
+	 *
+	 * If the client receives multiple configure events before it can
+	 * respond to one, it only has to ack the last configure event.
+	 *
+	 * A client is not required to commit immediately after sending an
+	 * ack_configure request - it may even ack_configure several times
+	 * before its next surface commit.
+	 *
+	 * A client may send multiple ack_configure requests before
+	 * committing, but only the last request sent before a commit
+	 * indicates which configure event the client really is responding
+	 * to.
+	 * @param serial the serial from the configure event
+	 * @since 5
+	 */
+	void (*ack_configure)(struct wl_client *client,
+			      struct wl_resource *resource,
+			      uint32_t serial);
+	/**
+	 * start an interactive move
+	 *
+	 * Start an interactive, user-driven move of the surface.
+	 *
+	 * The compositor responds to this request with a configure event
+	 * that transitions to the "moving" state. The client must only
+	 * initiate motion after acknowledging the state change. The
+	 * compositor can assume that subsequent set_window_geometry
+	 * requests are position updates until the next state transition is
+	 * acknowledged.
+	 *
+	 * The compositor may ignore move requests depending on the state
+	 * of the surface, e.g. fullscreen or maximized.
+	 * @since 5
+	 */
+	void (*move)(struct wl_client *client,
+		     struct wl_resource *resource);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0

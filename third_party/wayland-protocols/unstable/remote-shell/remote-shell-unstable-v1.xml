@@ -159,6 +159,7 @@
       <arg name="inset_bottom" type="int"/>
       <arg name="transform" type="int"/>
       <arg name="scale_factor" type="fixed"/>
+      <arg name="is_internal" type="uint" summary="1 if screen is built-in"/>
     </event>
 
     <event name="configure" since="5">
