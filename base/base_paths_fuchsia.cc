@@ -9,14 +9,23 @@
 namespace base {
 
 bool PathProviderFuchsia(int key, FilePath* result) {
+  // TODO(fuchsia): There's no API to retrieve these on Fuchsia. The app name
+  // itself should be dynamic (i.e. not always "chrome") but other paths are
+  // correct as fixed paths like this. See https://crbug.com/726124.
   switch (key) {
     case FILE_EXE:
-    case FILE_MODULE: {
-      // TODO(fuchsia): There's no API to retrieve this on Fuchsia currently.
-      // See https://crbug.com/726124.
-      *result = FilePath("/system/chrome");
+      *result = FilePath("/pkg/bin/chrome");
       return true;
-    }
+    case FILE_MODULE:
+      *result = FilePath("/pkg/lib/chrome");
+      return true;
+    case DIR_SOURCE_ROOT:
+      // This is only used for tests, so we return the binary location for now.
+      *result = FilePath("/system");
+      return true;
+    case DIR_CACHE:
+      *result = FilePath("/data");
+      return true;
   }
 
   return false;
