@@ -107,16 +107,6 @@ int av1_active_h_edge(const struct AV1_COMP *cpi, int mi_row, int mi_step);
 int av1_active_v_edge(const struct AV1_COMP *cpi, int mi_col, int mi_step);
 int av1_active_edge_sb(const struct AV1_COMP *cpi, int mi_row, int mi_col);
 
-void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
-                                   struct TileDataEnc *tile_data,
-                                   struct macroblock *x, int mi_row, int mi_col,
-                                   struct RD_STATS *rd_cost,
-#if CONFIG_SUPERTX
-                                   int *returnrate_nocoef,
-#endif  // CONFIG_SUPERTX
-                                   BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
-                                   int64_t best_rd_so_far);
-
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
 void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
                          int mi_row, int mi_col);

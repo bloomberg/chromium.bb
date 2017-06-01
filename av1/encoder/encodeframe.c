@@ -1323,7 +1323,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   struct macroblockd_plane *const pd = xd->plane;
   const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
   int i, orig_rdmult;
-  const int unify_bsize = CONFIG_CB4X4;
 
   aom_clear_system_state();
 
@@ -1424,38 +1423,21 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     *totalrate_nocoef = 0;
 #endif  // CONFIG_SUPERTX
   } else {
-    if (bsize >= BLOCK_8X8 || unify_bsize) {
-      if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-        av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, mi_row, mi_col,
-                                           rd_cost, bsize, ctx, best_rd);
+    if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+      av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, mi_row, mi_col,
+                                         rd_cost, bsize, ctx, best_rd);
 #if CONFIG_SUPERTX
-        *totalrate_nocoef = rd_cost->rate;
+      *totalrate_nocoef = rd_cost->rate;
 #endif  // CONFIG_SUPERTX
-      } else {
-        av1_rd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col, rd_cost,
-#if CONFIG_SUPERTX
-                                  totalrate_nocoef,
-#endif  // CONFIG_SUPERTX
-                                  bsize, ctx, best_rd);
-#if CONFIG_SUPERTX
-        assert(*totalrate_nocoef >= 0);
-#endif  // CONFIG_SUPERTX
-      }
     } else {
-      if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-        // The decoder rejects sub8x8 partitions when SEG_LVL_SKIP is set.
-        rd_cost->rate = INT_MAX;
-      } else {
-        av1_rd_pick_inter_mode_sub8x8(cpi, tile_data, x, mi_row, mi_col,
-                                      rd_cost,
+      av1_rd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col, rd_cost,
 #if CONFIG_SUPERTX
-                                      totalrate_nocoef,
+                                totalrate_nocoef,
 #endif  // CONFIG_SUPERTX
-                                      bsize, ctx, best_rd);
+                                bsize, ctx, best_rd);
 #if CONFIG_SUPERTX
-        assert(*totalrate_nocoef >= 0);
+      assert(*totalrate_nocoef >= 0);
 #endif  // CONFIG_SUPERTX
-      }
     }
   }
 
@@ -1525,7 +1507,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int unify_bsize = CONFIG_CB4X4;
 
 #if CONFIG_DELTA_Q
   // delta quant applies to both intra and inter
@@ -1697,79 +1678,54 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     if (inter_block &&
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       int16_t mode_ctx;
-      if (bsize >= BLOCK_8X8 || unify_bsize) {
-        const PREDICTION_MODE mode = mbmi->mode;
+      const PREDICTION_MODE mode = mbmi->mode;
 #if CONFIG_EXT_INTER
-        if (has_second_ref(mbmi)) {
-          mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
-          ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
-        } else {
-#endif  // CONFIG_EXT_INTER
-          mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
-                                               mbmi->ref_frame, bsize, -1);
-          update_inter_mode_stats(counts, mode, mode_ctx);
-#if CONFIG_EXT_INTER
-        }
-#endif  // CONFIG_EXT_INTER
-
-#if CONFIG_EXT_INTER
-        if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
-#else
-        if (mbmi->mode == NEWMV) {
-#endif
-          uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-          int idx;
-
-          for (idx = 0; idx < 2; ++idx) {
-            if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-              uint8_t drl_ctx =
-                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
-              ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
-
-              if (mbmi->ref_mv_idx == idx) break;
-            }
-          }
-        }
-
-#if CONFIG_EXT_INTER
-        if (have_nearmv_in_inter_mode(mbmi->mode)) {
-#else
-        if (mbmi->mode == NEARMV) {
-#endif
-          uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-          int idx;
-
-          for (idx = 1; idx < 3; ++idx) {
-            if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-              uint8_t drl_ctx =
-                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
-              ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
-
-              if (mbmi->ref_mv_idx == idx - 1) break;
-            }
-          }
-        }
+      if (has_second_ref(mbmi)) {
+        mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
+        ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
       } else {
-        const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
-        const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
-        int idx, idy;
-        for (idy = 0; idy < 2; idy += num_4x4_h) {
-          for (idx = 0; idx < 2; idx += num_4x4_w) {
-            const int j = idy * 2 + idx;
-            const PREDICTION_MODE b_mode = mi->bmi[j].as_mode;
-#if CONFIG_EXT_INTER
-            if (has_second_ref(mbmi)) {
-              mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
-              ++counts->inter_compound_mode[mode_ctx]
-                                           [INTER_COMPOUND_OFFSET(b_mode)];
-            } else {
 #endif  // CONFIG_EXT_INTER
-              mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
-                                                   mbmi->ref_frame, bsize, j);
-              update_inter_mode_stats(counts, b_mode, mode_ctx);
+        mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
+                                             mbmi->ref_frame, bsize, -1);
+        update_inter_mode_stats(counts, mode, mode_ctx);
 #if CONFIG_EXT_INTER
-            }
+      }
 #endif  // CONFIG_EXT_INTER
+
+#if CONFIG_EXT_INTER
+      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
+#else
+      if (mbmi->mode == NEWMV) {
+#endif
+        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+        int idx;
+
+        for (idx = 0; idx < 2; ++idx) {
+          if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+            uint8_t drl_ctx =
+                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+            ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
+
+            if (mbmi->ref_mv_idx == idx) break;
+          }
+        }
+      }
+
+#if CONFIG_EXT_INTER
+      if (have_nearmv_in_inter_mode(mbmi->mode)) {
+#else
+      if (mbmi->mode == NEARMV) {
+#endif
+        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+        int idx;
+
+        for (idx = 1; idx < 3; ++idx) {
+          if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+            uint8_t drl_ctx =
+                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+            ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
+
+            if (mbmi->ref_mv_idx == idx - 1) break;
           }
         }
       }
