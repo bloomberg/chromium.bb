@@ -560,7 +560,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (NSString*)description {
   return [NSString stringWithFormat:@"%p ... %@ - %s", self, self.title,
-                                    self.url.spec().c_str()];
+                                    self.visibleURL.spec().c_str()];
 }
 
 - (CRWWebController*)webController {
@@ -627,8 +627,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (NSString*)urlDisplayString {
   base::string16 urlText = url_formatter::FormatUrl(
-      self.url, url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::SPACES,
-      nullptr, nullptr, nullptr);
+      self.visibleURL, url_formatter::kFormatUrlOmitNothing,
+      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   return base::SysUTF16ToNSString(urlText);
 }
 
@@ -661,7 +661,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)fetchFavicon {
-  const GURL& url = self.url;
+  const GURL& url = self.visibleURL;
   if (!url.is_valid())
     return;
 
@@ -844,7 +844,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       ios::HistoryServiceFactory::GetForBrowserState(
           _browserState, ServiceAccessType::IMPLICIT_ACCESS);
   DCHECK(historyService);
-  historyService->SetPageTitle(self.url, base::SysNSStringToUTF16(title));
+  historyService->SetPageTitle(self.lastCommittedURL,
+                               base::SysNSStringToUTF16(title));
 }
 
 - (void)addCurrentEntryToHistoryDB {
@@ -1122,10 +1123,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         [self navigationManager]->GetLastCommittedItem()->GetURL().GetOrigin();
 
     // Compose u2f-x-callback URL and update urlToOpen.
-    finalURL = [_secondFactorController XCallbackFromRequestURL:finalURL
-                                                      originURL:origin
-                                                         tabURL:self.url
-                                                          tabID:self.tabId];
+    finalURL =
+        [_secondFactorController XCallbackFromRequestURL:finalURL
+                                               originURL:origin
+                                                  tabURL:self.lastCommittedURL
+                                                   tabID:self.tabId];
 
     if (!finalURL.is_valid())
       return NO;
@@ -1214,27 +1216,30 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       postNotificationName:kTabIsShowingExportableNotificationForCrashReporting
                     object:self];
   // Try to generate a filename by first looking at |content_disposition_|, then
-  // at the last component of |self.url| and if both of these fail use the
-  // default filename "document".
+  // at the last component of |lastCommittedURL| and if both of these fail use
+  // the default filename "document".
   std::string contentDisposition;
   if (headers)
     headers->GetNormalizedHeader("content-disposition", &contentDisposition);
   std::string defaultFilename =
       l10n_util::GetStringUTF8(IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE);
+  const GURL& committedURL = self.lastCommittedURL;
   base::string16 filename =
-      net::GetSuggestedFilename(self.url, contentDisposition,
+      net::GetSuggestedFilename(committedURL, contentDisposition,
                                 "",                 // referrer-charset
                                 "",                 // suggested-name
                                 "application/pdf",  // mime-type
                                 defaultFilename);
   [[self openInController]
-      enableWithDocumentURL:self.url
+      enableWithDocumentURL:committedURL
           suggestedFilename:base::SysUTF16ToNSString(filename)];
 }
 
 - (void)countMainFrameLoad {
-  if ([self isPrerenderTab] || [self url].SchemeIs(kChromeUIScheme))
+  if ([self isPrerenderTab] ||
+      self.lastCommittedURL.SchemeIs(kChromeUIScheme)) {
     return;
+  }
   base::RecordAction(base::UserMetricsAction("MobilePageLoaded"));
 }
 
@@ -1289,7 +1294,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // not changed since reader mode was requested. This could happen for example
   // if the page does a late redirect itself or if the user tapped on a link and
   // triggered reader mode before the page load is detected by webState.
-  if (url == self.url)
+  if (url == self.lastCommittedURL)
     [self.webController loadHTMLForCurrentURL:html];
 
   [self.readerModeController exitReaderMode];
@@ -1390,7 +1395,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // into a NavigationManager observer callback, so it doesn't need to be
   // checked in several places.
   if (isUserNavigationEvent && !_isPrerenderTab &&
-      ![self navigationManager]->GetPendingItem() && url != self.url) {
+      ![self navigationManager]->GetPendingItem() &&
+      url != self.lastCommittedURL) {
     base::RecordAction(base::UserMetricsAction("MobileTabClobbered"));
     if ([_parentTabModel tabUsageRecorder])
       [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self);
