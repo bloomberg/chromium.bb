@@ -150,7 +150,7 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   lazy_init_pending_ = false;
   // TODO(watk): Initialize surface_texture_ properly.
-  surface_texture_ = SurfaceTextureGLOwner::Create();
+  surface_texture_ = SurfaceTextureGLOwnerImpl::Create();
   InitializeSurfaceChooser();
 }
 

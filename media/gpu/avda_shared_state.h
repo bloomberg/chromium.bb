@@ -29,7 +29,7 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   AVDASharedState(scoped_refptr<AVDASurfaceBundle> surface_bundle);
 
   GLuint surface_texture_service_id() const {
-    return surface_texture() ? surface_texture()->texture_id() : 0;
+    return surface_texture() ? surface_texture()->GetTextureId() : 0;
   }
 
   SurfaceTextureGLOwner* surface_texture() const {
@@ -43,11 +43,11 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // Context and surface that |surface_texture_| is bound to, if
   // |surface_texture_| is not null.
   gl::GLContext* context() const {
-    return surface_texture() ? surface_texture()->context() : nullptr;
+    return surface_texture() ? surface_texture()->GetContext() : nullptr;
   }
 
   gl::GLSurface* surface() const {
-    return surface_texture() ? surface_texture()->surface() : nullptr;
+    return surface_texture() ? surface_texture()->GetSurface() : nullptr;
   }
 
   // Helper method for coordinating the interactions between

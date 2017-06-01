@@ -27,15 +27,17 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   // implementation of their respective functions.  This allows tests to set
   // expectations on them.
   MOCK_METHOD2(MockCreateMediaCodecSync,
-               void(AndroidOverlay*, gl::SurfaceTexture*));
+               void(AndroidOverlay*, SurfaceTextureGLOwner*));
   MOCK_METHOD2(MockCreateMediaCodecAsync,
-               void(AndroidOverlay*, gl::SurfaceTexture*));
+               void(AndroidOverlay*, SurfaceTextureGLOwner*));
 
   // Note that this doesn't exactly match the signature, since unique_ptr
   // doesn't work.  plus, we expand |surface_bundle| a bit to make it more
   // convenient to set expectations.
   MOCK_METHOD3(MockReleaseMediaCodec,
-               void(MediaCodecBridge*, AndroidOverlay*, gl::SurfaceTexture*));
+               void(MediaCodecBridge*,
+                    AndroidOverlay*,
+                    SurfaceTextureGLOwner*));
 
   std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
       scoped_refptr<CodecConfig> codec_config) override;
@@ -69,7 +71,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   // Returns the most recent overlay / etc. that we were given during codec
   // allocation (sync or async).
   AndroidOverlay* most_recent_overlay() { return most_recent_overlay_; }
-  gl::SurfaceTexture* most_recent_surface_texture() {
+  SurfaceTextureGLOwner* most_recent_surface_texture() {
     return most_recent_surface_texture_;
   }
 
@@ -90,7 +92,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   AndroidOverlay* most_recent_overlay_ = nullptr;
 
   // The most recent surface texture provided during codec allocation.
-  gl::SurfaceTexture* most_recent_surface_texture_ = nullptr;
+  SurfaceTextureGLOwner* most_recent_surface_texture_ = nullptr;
 
   // Whether CreateMediaCodecSync() is allowed to succeed.
   bool allow_sync_creation = true;
