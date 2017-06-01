@@ -54,7 +54,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
   void HideCursor() override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
-  std::vector<WmWindow*> GetAllRootWindows() override;
+  std::vector<aura::Window*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;
   void RecordTaskSwitchMetric(TaskSwitchSource source) override;

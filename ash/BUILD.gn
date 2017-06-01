@@ -820,9 +820,6 @@ component("ash") {
     "wm/workspace_controller.cc",
     "wm/workspace_controller.h",
     "wm_display_observer.h",
-    "wm_transient_window_observer.h",
-    "wm_window.cc",
-    "wm_window.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
