@@ -2203,6 +2203,7 @@ void RenderFrameHostImpl::OnBeginNavigation(
     // Kills the process. http://crbug.com/726142
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED);
+    return;
   }
 
   BeginNavigationParams validated_begin_params = begin_params;
