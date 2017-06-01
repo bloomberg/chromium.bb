@@ -81,8 +81,8 @@ cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
-const cc::RendererSettings& MusContextFactory::GetRendererSettings() const {
-  return renderer_settings_;
+const cc::ResourceSettings& MusContextFactory::GetResourceSettings() const {
+  return renderer_settings_.resource_settings;
 }
 
 }  // namespace aura

@@ -374,12 +374,12 @@ ResourceProvider::Child::~Child() {}
 ResourceProvider::Settings::Settings(
     ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
-    bool use_gpu_memory_buffer_resources,
-    bool enable_color_correct_rasterization)
-    : default_resource_type(use_gpu_memory_buffer_resources
+    const ResourceSettings& resource_settings)
+    : default_resource_type(resource_settings.use_gpu_memory_buffer_resources
                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
                                 : RESOURCE_TYPE_GL_TEXTURE),
-      enable_color_correct_rasterization(enable_color_correct_rasterization),
+      enable_color_correct_rasterization(
+          resource_settings.enable_color_correct_rasterization),
       delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
     default_resource_type = RESOURCE_TYPE_BITMAP;
@@ -419,15 +419,11 @@ ResourceProvider::ResourceProvider(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
-    size_t id_allocation_chunk_size,
     bool delegated_sync_points_required,
-    bool use_gpu_memory_buffer_resources,
-    bool enable_color_correct_rasterization,
-    const BufferToTextureTargetMap& buffer_to_texture_target_map)
+    const ResourceSettings& resource_settings)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
-                use_gpu_memory_buffer_resources,
-                enable_color_correct_rasterization),
+                resource_settings),
       compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -435,9 +431,10 @@ ResourceProvider::ResourceProvider(
       lost_context_provider_(false),
       next_id_(1),
       next_child_(1),
-      buffer_to_texture_target_map_(buffer_to_texture_target_map),
+      buffer_to_texture_target_map_(
+          resource_settings.buffer_to_texture_target_map),
       tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
-  DCHECK(id_allocation_chunk_size);
+  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
@@ -453,8 +450,8 @@ ResourceProvider::ResourceProvider(
 
   DCHECK(!texture_id_allocator_);
   GLES2Interface* gl = ContextGL();
-  texture_id_allocator_.reset(
-      new TextureIdAllocator(gl, id_allocation_chunk_size));
+  texture_id_allocator_.reset(new TextureIdAllocator(
+      gl, resource_settings.texture_id_allocation_chunk_size));
 }
 
 ResourceProvider::~ResourceProvider() {

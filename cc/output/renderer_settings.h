@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "cc/cc_export.h"
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "cc/resources/resource_settings.h"
 
 namespace cc {
 
@@ -18,6 +18,7 @@ class CC_EXPORT RendererSettings {
   RendererSettings(const RendererSettings& other);
   ~RendererSettings();
 
+  ResourceSettings resource_settings;
   bool allow_antialiasing = true;
   bool force_antialiasing = false;
   bool force_blending_with_shaders = false;
@@ -29,11 +30,10 @@ class CC_EXPORT RendererSettings {
   bool show_overdraw_feedback = false;
   bool enable_color_correct_rendering = false;
 
+  // TODO(staraz): Move |refresh_rate| out. It's only used by
+  // TestCompositorFrameSink
   double refresh_rate = 60.0;
   int highp_threshold_min = 0;
-  size_t texture_id_allocation_chunk_size = 64;
-  bool use_gpu_memory_buffer_resources = false;
-  BufferToTextureTargetMap buffer_to_texture_target_map;
 
   // Determines whether we disallow non-exact matches when finding resources
   // in ResourcePool. Only used for layout or pixel tests, as non-deterministic
