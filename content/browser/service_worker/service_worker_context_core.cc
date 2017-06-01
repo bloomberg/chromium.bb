@@ -846,11 +846,11 @@ void ServiceWorkerContextCore::OnControlleeAdded(
     ServiceWorkerProviderHost* provider_host) {
   if (!observer_list_)
     return;
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextObserver::OnControlleeAdded,
-                         version->version_id(), provider_host->client_uuid(),
-                         provider_host->process_id(), provider_host->route_id(),
-                         provider_host->provider_type());
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextObserver::OnControlleeAdded,
+      version->version_id(), provider_host->client_uuid(),
+      provider_host->process_id(), provider_host->route_id(),
+      provider_host->web_contents_getter(), provider_host->provider_type());
 }
 
 void ServiceWorkerContextCore::OnControlleeRemoved(

@@ -276,13 +276,14 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
     const std::string& uuid,
     int process_id,
     int route_id,
+    const base::Callback<WebContents*(void)>& web_contents_getter,
     ServiceWorkerProviderType type) {
   auto it = version_info_map_.find(version_id);
   if (it == version_info_map_.end())
     return;
   ServiceWorkerVersionInfo* version = it->second.get();
-  version->clients[uuid] =
-      ServiceWorkerVersionInfo::ClientInfo(process_id, route_id, type);
+  version->clients[uuid] = ServiceWorkerVersionInfo::ClientInfo(
+      process_id, route_id, web_contents_getter, type);
   SendVersionInfo(*version);
 }
 

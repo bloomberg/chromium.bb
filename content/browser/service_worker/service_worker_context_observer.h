@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -72,11 +73,14 @@ class ServiceWorkerContextObserver {
                                       int process_id,
                                       int thread_id,
                                       const ConsoleMessage& message) {}
-  virtual void OnControlleeAdded(int64_t version_id,
-                                 const std::string& uuid,
-                                 int process_id,
-                                 int route_id,
-                                 ServiceWorkerProviderType type) {}
+  // |web_contents_getter| is only set in PlzNavigate.
+  virtual void OnControlleeAdded(
+      int64_t version_id,
+      const std::string& uuid,
+      int process_id,
+      int route_id,
+      const base::Callback<WebContents*(void)>& web_contents_getter,
+      ServiceWorkerProviderType type) {}
   virtual void OnControlleeRemoved(int64_t version_id,
                                    const std::string& uuid) {}
   virtual void OnRegistrationStored(int64_t registration_id,

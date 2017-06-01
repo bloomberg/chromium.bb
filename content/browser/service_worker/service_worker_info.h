@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
@@ -24,10 +25,16 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   struct CONTENT_EXPORT ClientInfo {
    public:
     ClientInfo();
-    ClientInfo(int process_id, int route_id, ServiceWorkerProviderType type);
+    ClientInfo(int process_id,
+               int route_id,
+               const base::Callback<WebContents*(void)>& web_contents_getter,
+               ServiceWorkerProviderType type);
+    ClientInfo(const ClientInfo& other);
     ~ClientInfo();
     int process_id;
     int route_id;
+    // |web_contents_getter| is only set for PlzNavigate.
+    base::Callback<WebContents*(void)> web_contents_getter;
     ServiceWorkerProviderType type;
   };
 

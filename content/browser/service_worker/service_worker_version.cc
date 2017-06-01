@@ -369,7 +369,8 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     info.clients.insert(std::make_pair(
         host->client_uuid(),
         ServiceWorkerVersionInfo::ClientInfo(
-            host->process_id(), host->route_id(), host->provider_type())));
+            host->process_id(), host->route_id(), host->web_contents_getter(),
+            host->provider_type())));
   }
   if (!main_script_http_info_)
     return info;
