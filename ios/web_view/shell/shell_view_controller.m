@@ -42,7 +42,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 - (void)forward;
 - (void)stopLoading;
 // Disconnects and release the |webView|.
-- (void)resetWebView;
+- (void)removeWebView;
 @end
 
 @implementation ShellViewController
@@ -157,33 +157,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
   [CWVWebView setUserAgentProduct:@"Dummy/1.0"];
 
-  CWVWebViewConfiguration* configuration =
-      [CWVWebViewConfiguration defaultConfiguration];
-  self.webView = [[CWVWebView alloc] initWithFrame:[_containerView bounds]
-                                     configuration:configuration];
-  // Gives a restoration identifier so that state restoration works.
-  _webView.restorationIdentifier = @"webView";
-  _webView.navigationDelegate = self;
-  _webView.UIDelegate = self;
-  _translationDelegate = [[ShellTranslationDelegate alloc] init];
-  _webView.translationController.delegate = _translationDelegate;
-
-  [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                UIViewAutoresizingFlexibleHeight];
-  [_containerView addSubview:_webView];
-
-  [_webView addObserver:self
-             forKeyPath:@"canGoBack"
-                options:NSKeyValueObservingOptionNew
-                context:nil];
-  [_webView addObserver:self
-             forKeyPath:@"canGoForward"
-                options:NSKeyValueObservingOptionNew
-                context:nil];
-
-  NSURLRequest* request = [NSURLRequest
-      requestWithURL:[NSURL URLWithString:@"https://www.google.com/"]];
-  [_webView loadRequest:request];
+  [self createWebViewWithConfiguration:[CWVWebViewConfiguration
+                                           defaultConfiguration]];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -239,20 +214,73 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                          [weakSelf.webView reload];
                                        }]];
 
-  // Removes the web view from the view hierarchy and releases it. For
-  // testing deallocation behavior, because there have been multiple crash bugs
-  // on deallocation of CWVWebView.
+  // Toggles the incognito mode.
+  NSString* incognitoActionTitle = _webView.configuration.persistent
+                                       ? @"Enter incognito"
+                                       : @"Exit incognito";
   [alertController
-      addAction:[UIAlertAction actionWithTitle:@"Deallocate web view"
+      addAction:[UIAlertAction actionWithTitle:incognitoActionTitle
                                          style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction* action) {
-                                         [weakSelf resetWebView];
+                                         [weakSelf toggleIncognito];
                                        }]];
+
+  // Removes the web view from the view hierarchy, releases it, and recreates
+  // the web view with the same configuration. This is for testing deallocation
+  // and sharing configuration.
+  [alertController
+      addAction:[UIAlertAction
+                    actionWithTitle:@"Recreate web view"
+                              style:UIAlertActionStyleDefault
+                            handler:^(UIAlertAction* action) {
+                              CWVWebViewConfiguration* configuration =
+                                  weakSelf.webView.configuration;
+                              [weakSelf removeWebView];
+                              [weakSelf
+                                  createWebViewWithConfiguration:configuration];
+                            }]];
 
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
-- (void)resetWebView {
+- (void)toggleIncognito {
+  BOOL wasPersistent = _webView.configuration.persistent;
+  [self removeWebView];
+  CWVWebViewConfiguration* newConfiguration =
+      wasPersistent ? [CWVWebViewConfiguration incognitoConfiguration]
+                    : [CWVWebViewConfiguration defaultConfiguration];
+  [self createWebViewWithConfiguration:newConfiguration];
+}
+
+- (void)createWebViewWithConfiguration:(CWVWebViewConfiguration*)configuration {
+  self.webView = [[CWVWebView alloc] initWithFrame:[_containerView bounds]
+                                     configuration:configuration];
+  // Gives a restoration identifier so that state restoration works.
+  _webView.restorationIdentifier = @"webView";
+  _webView.navigationDelegate = self;
+  _webView.UIDelegate = self;
+  _translationDelegate = [[ShellTranslationDelegate alloc] init];
+  _webView.translationController.delegate = _translationDelegate;
+
+  [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                UIViewAutoresizingFlexibleHeight];
+  [_containerView addSubview:_webView];
+
+  [_webView addObserver:self
+             forKeyPath:@"canGoBack"
+                options:NSKeyValueObservingOptionNew
+                context:nil];
+  [_webView addObserver:self
+             forKeyPath:@"canGoForward"
+                options:NSKeyValueObservingOptionNew
+                context:nil];
+
+  NSURLRequest* request = [NSURLRequest
+      requestWithURL:[NSURL URLWithString:@"https://www.google.com/"]];
+  [_webView loadRequest:request];
+}
+
+- (void)removeWebView {
   [_webView removeFromSuperview];
   [_webView removeObserver:self forKeyPath:@"canGoBack"];
   [_webView removeObserver:self forKeyPath:@"canGoForward"];
