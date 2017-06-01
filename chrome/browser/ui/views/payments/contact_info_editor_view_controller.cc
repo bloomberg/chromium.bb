@@ -82,7 +82,7 @@ base::string16 ContactInfoEditorViewController::GetInitialValueForType(
 bool ContactInfoEditorViewController::ValidateModelAndSave() {
   // TODO(crbug.com/712224): Move this method and its helpers to a base class
   // shared with the Shipping Address editor.
-  if (!ValidateModel())
+  if (!ValidateInputFields())
     return false;
 
   if (profile_to_edit_) {
@@ -123,16 +123,6 @@ base::string16 ContactInfoEditorViewController::GetSheetTitle() {
                                 IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL)
                           : l10n_util::GetStringUTF16(
                                 IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
-}
-
-bool ContactInfoEditorViewController::ValidateModel() {
-  for (const auto& field : text_fields()) {
-    // Force a blur, as validation only occurs after the first blur.
-    field.first->OnBlur();
-    if (field.first->invalid())
-      return false;
-  }
-  return true;
 }
 
 void ContactInfoEditorViewController::PopulateProfile(

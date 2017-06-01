@@ -129,6 +129,18 @@ std::unique_ptr<views::View> EditorViewController::CreateExtraViewForField(
   return nullptr;
 }
 
+bool EditorViewController::ValidateInputFields() {
+  for (const auto& field : text_fields()) {
+    if (!field.first->IsValid())
+      return false;
+  }
+  for (const auto& field : comboboxes()) {
+    if (!field.first->IsValid())
+      return false;
+  }
+  return true;
+}
+
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
@@ -208,11 +220,15 @@ EditorViewController::CreateComboboxForField(const EditorField& field) {
 
 void EditorViewController::ContentsChanged(views::Textfield* sender,
                                            const base::string16& new_contents) {
-  static_cast<ValidatingTextfield*>(sender)->OnContentsChanged();
+  ValidatingTextfield* sender_cast = static_cast<ValidatingTextfield*>(sender);
+  sender_cast->OnContentsChanged();
+  primary_button()->SetEnabled(ValidateInputFields());
 }
 
 void EditorViewController::OnPerformAction(views::Combobox* sender) {
-  static_cast<ValidatingCombobox*>(sender)->OnContentsChanged();
+  ValidatingCombobox* sender_cast = static_cast<ValidatingCombobox*>(sender);
+  sender_cast->OnContentsChanged();
+  primary_button()->SetEnabled(ValidateInputFields());
 }
 
 std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
@@ -305,6 +321,9 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
 
   if (!initial_focus_field_view_)
     initial_focus_field_view_ = first_field;
+
+  // Validate all fields and disable the primary (Done) button if necessary.
+  primary_button()->SetEnabled(ValidateInputFields());
 
   // Adds the "* indicates a required field" label in "disabled" grey text.
   std::unique_ptr<views::Label> required_field = base::MakeUnique<views::Label>(
