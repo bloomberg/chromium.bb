@@ -1372,6 +1372,7 @@ test("content_unittests") {
     "../common/input/input_param_traits_unittest.cc",
     "../common/input/touch_event_stream_validator_unittest.cc",
     "../common/inter_process_time_ticks_converter_unittest.cc",
+    "../common/mac/app_nap_activity_unittest.mm",
     "../common/mac/attributed_string_coder_unittest.mm",
     "../common/mac/font_descriptor_unittest.mm",
     "../common/manifest_util_unittest.cc",
