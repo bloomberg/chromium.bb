@@ -106,6 +106,7 @@ class _ArticleBrowsingStory(_BrowsingStory):
 ##############################################################################
 
 
+@decorators.Disabled('mac')  # crbug.com/728576
 class CnnStory(_ArticleBrowsingStory):
   """The second top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:cnn'
