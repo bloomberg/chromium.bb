@@ -36,6 +36,10 @@ def bool_to_str(b):
   return "true" if b else "false"
 
 
+def make_policies_string(policies):
+  return '"' + ','.join(policies) + '"'
+
+
 def output_test(test_case_name, test_number, raw_test_name, subpart_number,
                 info, certs, crls, sanitized_test_names, output):
   '''Writes a test case to |output|, and appends the test name to
@@ -43,17 +47,18 @@ def output_test(test_case_name, test_number, raw_test_name, subpart_number,
   sanitized_test_name = 'Section%s%s' % (test_number.split('.')[1],
                                          sanitize_name(raw_test_name))
 
+  subpart_comment = ''
   if subpart_number is not None:
     sanitized_test_name += "Subpart%d" % (subpart_number)
+    subpart_comment = ' (Subpart %d)' % (subpart_number)
 
   sanitized_test_names.append(sanitized_test_name)
 
   certs_formatted = ', '.join('"%s"' % n for n in certs)
   crls_formatted = ', '.join('"%s"' % n for n in crls)
-  assert_function = 'ASSERT_TRUE' if info.should_validate else 'ASSERT_FALSE'
 
   output.write('''
-// %(test_number)s %(raw_test_name)s
+// %(test_number)s %(raw_test_name)s%(subpart_comment)s
 WRAPPED_TYPED_TEST_P(%(test_case_name)s, %(sanitized_test_name)s) {
   const char* const certs[] = {
     %(certs_formatted)s
@@ -63,43 +68,39 @@ WRAPPED_TYPED_TEST_P(%(test_case_name)s, %(sanitized_test_name)s) {
   };
 ''' % vars())
 
-  default_settings = TestInfo(False)
+  default_info = TestInfo(None)
 
-  settings_str = ''
+  output.write('''PkitsTestInfo info;
+  info.should_validate = %s;
+''' % (bool_to_str(info.should_validate)))
 
-  # Output any non-default settings. Only settings that differ from
-  # the default settings are written, so as to keep the generated
-  # file more readable.
-  if info.initial_policy_set != default_settings.initial_policy_set:
-    settings_str += '''  settings.SetInitialPolicySet("%s");
-''' % (','.join(info.initial_policy_set))
+  # Output any non-default inputs/outputs. Only properties that differ from
+  # the defaults are written, so as to keep the generated file more readable.
+  if info.initial_policy_set != default_info.initial_policy_set:
+    output.write('''  info.SetInitialPolicySet(%s);
+''' % make_policies_string(info.initial_policy_set))
 
-  if info.initial_explicit_policy != default_settings.initial_explicit_policy:
-    settings_str += '''  settings.initial_explicit_policy = %s;
-''' % bool_to_str(info.initial_explicit_policy)
+  if info.initial_explicit_policy != default_info.initial_explicit_policy:
+    output.write('''  info.SetInitialExplicitPolicy(%s);
+''' % bool_to_str(info.initial_explicit_policy))
 
   if (info.initial_policy_mapping_inhibit !=
-          default_settings.initial_policy_mapping_inhibit):
-    settings_str += '''  settings.initial_policy_mapping_inhibit = %s;
-''' % bool_to_str(info.initial_policy_mapping_inhibit)
+          default_info.initial_policy_mapping_inhibit):
+    output.write('''  info.SetInitialPolicyMappingInhibit(%s);
+''' % bool_to_str(info.initial_policy_mapping_inhibit))
 
   if (info.initial_inhibit_any_policy !=
-          default_settings.initial_inhibit_any_policy):
-    settings_str += '''settings.initial_inhibit_any_policy = %s;
-''' % bool_to_str(info.initial_inhibit_any_policy)
+          default_info.initial_inhibit_any_policy):
+    output.write('''  info.SetInitialInhibitAnyPolicy(%s);
+''' % bool_to_str(info.initial_inhibit_any_policy))
 
-  settings_param_str = '{}'
+  if (info.user_constrained_policy_set !=
+          default_info.user_constrained_policy_set):
+    output.write('''  info.SetUserConstrainedPolicySet(%s);
+''' % make_policies_string(info.user_constrained_policy_set))
 
-  if settings_str != '':
-    output.write('''
-  // Custom settings
-  PkitsTestSettings settings;
-''')
-    output.write(settings_str)
-    output.write('\n')
-    settings_param_str = 'settings'
-
-  output.write('''  %(assert_function)s(this->Verify(certs, crls, %(settings_param_str)s));
+  output.write('''
+  this->RunTest(certs, crls, info);
 }
 ''' % vars())
 
@@ -225,14 +226,10 @@ TEST_POLICY_2 = 'NIST-test-policy-2'
 TEST_POLICY_3 = 'NIST-test-policy-3'
 TEST_POLICY_6 = 'NIST-test-policy-6'
 
-# TODO(eroman): This omits a few outputs from PKITS:
+# Note: This omits some outputs from PKITS:
 #
 #  * authorities-constrained-policy-set
-#  * user-constrained-policy-set
 #  * explicit-policy-indicator
-#
-#  Consider adding the constrained policy sets in the future, if our
-#  verification code supports outputting them.
 class TestInfo(object):
   """This structure describes a test inputs and outputs"""
 
@@ -241,61 +238,72 @@ class TestInfo(object):
                initial_policy_set = [ANY_POLICY],
                initial_explicit_policy = False,
                initial_policy_mapping_inhibit = False,
-               initial_inhibit_any_policy = False):
+               initial_inhibit_any_policy = False,
+               # In all of the tests that are not related to policy processing,
+               # each certificate in the path asserts the certificate policy
+               # 2.16.840.1.101.3.2.1.48.1
+               user_constrained_policy_set = [TEST_POLICY_1]):
     self.should_validate = should_validate
     self.initial_policy_set = initial_policy_set
     self.initial_explicit_policy = initial_explicit_policy
     self.initial_policy_mapping_inhibit = initial_policy_mapping_inhibit
     self.initial_inhibit_any_policy = initial_inhibit_any_policy
+    self.user_constrained_policy_set = user_constrained_policy_set
 
 
 TEST_OVERRIDES = {
   '4.8.1': [ # All Certificates Same Policy Test1
     # 1. default settings, but with initial-explicit-policy set. The path
     # should validate successfully
-    TestInfo(True, initial_explicit_policy=True),
+    TestInfo(True, initial_explicit_policy=True,
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-explicit-policy set and
     # initial-policy-set = {NIST-test-policy-1}. The path should validate
     # successfully. 
     TestInfo(True, initial_explicit_policy=True,
-             initial_policy_set=[TEST_POLICY_1]),
+             initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 3. default settings, but with initial-explicit-policy set and
     # initial-policy-set = {NIST-test-policy-2}. The path should not validate
     # successfully. 
     TestInfo(False, initial_explicit_policy=True,
-             initial_policy_set=[TEST_POLICY_2]),
+             initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[]),
 
     # 4. default settings, but with initial-explicit-policy set and
     # initial-policy-set = {NIST-test-policy-1, NIST-test-policy-2}. The path
     # should validate successfully. 
     TestInfo(True, initial_explicit_policy=True,
-             initial_policy_set=[TEST_POLICY_1, TEST_POLICY_2]),
+             initial_policy_set=[TEST_POLICY_1, TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.2': [ # All Certificates No Policies Test2
     # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[]),
 
     # 2. default settings, but with initial-explicit-policy set. The path
     # should not validate successfully
-    TestInfo(False, initial_explicit_policy=True),
+    TestInfo(False, initial_explicit_policy=True,
+             user_constrained_policy_set=[]),
   ],
 
   '4.8.3': [ # Different Policies Test3
     # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[]),
 
     # 2. default settings, but with initial-explicit-policy set. The path
     # should not validate successfully.
-    TestInfo(False, initial_explicit_policy=True),
+    TestInfo(False, initial_explicit_policy=True, user_constrained_policy_set=[]),
 
     # 3. default settings, but with initial-explicit-policy set and
     # initial-policy-set = {NIST-test-policy-1, NIST-test-policy-2}. The path
     # should not validate successfully. 
     TestInfo(False, initial_explicit_policy=True,
-             initial_policy_set=[TEST_POLICY_1, TEST_POLICY_2]),
+             initial_policy_set=[TEST_POLICY_1, TEST_POLICY_2],
+             user_constrained_policy_set=[]),
   ],
 
   '4.8.4': [ # Different Policies Test4 
@@ -310,7 +318,7 @@ TEST_OVERRIDES = {
     # then the path should not validate successfully. If the application can
     # not process the policyConstraints extension, then the path should
     # validate successfully.
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.5': [ # 4.8.5 Different Policies Test5
@@ -325,20 +333,22 @@ TEST_OVERRIDES = {
     # then the path should not validate successfully. If the application can
     # not process the policyConstraints extension, then the path should
     # validate successfully
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.6': [ # Overlapping Policies Test6
     # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 3. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should not validate successfully. 
-    TestInfo(False, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[]),
   ],
 
   '4.8.7': [ # Different Policies Test7
@@ -353,7 +363,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension, then the path should not validate
     # successfully. If the application can not process the policyConstraints
     # extension, then the path should validate successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.8': [ # Different Policies Test8 
@@ -368,7 +378,7 @@ TEST_OVERRIDES = {
     # then the path should not validate successfully. If the application can
     # not process the policyConstraints extension, then the path should
     # validate successfully.
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.9': [ # Different Policies Test9
@@ -383,29 +393,32 @@ TEST_OVERRIDES = {
     # extension, then the path should not validate successfully. If the
     # application can not process the policyConstraints extension, then the
     # path should validate successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.10': [ # All Certificates Same Policies Test10
     # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1, TEST_POLICY_2]),
     
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 3. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_2]),
   ],
 
   '4.8.11': [ # All Certificates AnyPolicy Test11
     # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[ANY_POLICY]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully. 
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.12': [ # Different Policies Test12
@@ -420,31 +433,36 @@ TEST_OVERRIDES = {
     # extension, then the path should not validate successfully. If the
     # application can not process the policyConstraints extension, then the
     # path should validate successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.8.13': [ # All Certificates Same Policies Test13
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_2]),
 
     # 3. default settings, but with initial-policy-set = {NIST-test-policy-3}.
     # The path should validate successfully. 
-    TestInfo(True, initial_policy_set=[TEST_POLICY_3]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_3],
+             user_constrained_policy_set=[TEST_POLICY_3]),
   ],
 
   '4.8.14': [ # AnyPolicy Test14
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should not validate successfully. 
-    TestInfo(False, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[]),
   ],
 
   '4.8.15': [ # User Notice Qualifier Test15
@@ -462,7 +480,7 @@ TEST_OVERRIDES = {
     # NIST-test-policy-1, then the path should be rejected, otherwise it should
     # validate successfully. If the path validates successfully, then the
     # application should display the user notice.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.16': [ # User Notice Qualifier Test16
@@ -482,7 +500,7 @@ TEST_OVERRIDES = {
     # application should display the user notice associated with
     # NIST-test-policy-1. The user notice associated with NIST-test-policy-2
     # should not be displayed. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.17': [ # User Notice Qualifier Test17
@@ -500,19 +518,21 @@ TEST_OVERRIDES = {
     # NIST-test-policy-1, then the path should be rejected, otherwise it should
     # validate successfully. If the path validates successfully, then the
     # application should display the user notice associated with anyPolicy. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.18': [ # User Notice Qualifier Test18 
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully and the qualifier associated with
     # NIST-test-policy-1 in the end entity certificate should be displayed.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should validate successfully and the qualifier associated with
     # anyPolicy in the end entity certificate should be displayed. 
-    TestInfo(True, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_2]),
   ],
 
   '4.8.19': [ # User Notice Qualifier Test19
@@ -532,7 +552,7 @@ TEST_OVERRIDES = {
     # of 200 characters, the application may choose to reject the certificate.
     # If the application accepts the certificate, display of the user notice is
     # optional. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.8.20': [ # CPS Pointer Qualifier Test20
@@ -557,40 +577,77 @@ TEST_OVERRIDES = {
     # if NIST-test-policy-1 is in that set). There are no processing
     # requirements associated with the CPS pointer qualifier. 
     TestInfo(True, initial_explicit_policy=True,
-             initial_policy_set=[TEST_POLICY_1]),
+             initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
+  ],
+
+  '4.9.1': [ # Valid RequireExplicitPolicy Test1
+    # Procedure: Validate Valid requireExplicitPolicy Test1 EE using the
+    # default settings or open and verify Signed Test Message 6.2.2.86 using
+    # the default settings.
+    #
+    # Expected Result: The path should validate successfully since the
+    # explicit-policy-indicator is not set.
+    TestInfo(True, user_constrained_policy_set=[]),
+  ],
+
+  '4.9.2': [ # Valid RequireExplicitPolicy Test2
+    # Procedure: Validate Valid requireExplicitPolicy Test2 EE using the
+    # default settings or open and verify Signed Test Message 6.2.2.87 using
+    # the default settings.
+    #
+    # Expected Result: The path should validate successfully since the
+    # explicit-policy-indicator is not set
+    TestInfo(True, user_constrained_policy_set=[]),
+  ],
+
+  '4.9.6': [ # Valid Self-Issued requireExplicitPolicy Test6
+    # Procedure: Validate Valid Self-Issued requireExplicitPolicy Test6 EE using
+    # the default settings or open and verify Signed Test Message 6.2.2.91 using
+    # the default settings.
+    #
+    # Expected Result: The path should validate successfully since the
+    # explicit-policy-indicator is not set.
+    TestInfo(True, user_constrained_policy_set=[]),
   ],
 
   '4.10.1': [ # Valid Policy Mapping Test1
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should not validate successfully. 
-    TestInfo(False, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[]),
 
     # 3. default settings, but with initial-policy-mapping-inhibit set. The
     # path should not validate successfully.
-    TestInfo(False, initial_policy_mapping_inhibit=True),
+    TestInfo(False, initial_policy_mapping_inhibit=True,
+             user_constrained_policy_set=[]),
   ],
 
   '4.10.2': [ # Invalid Policy Mapping Test2
     # 1. default settings. The path should not validate successfully.
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
 
     # 2. default settings, but with initial-policy-mapping-inhibit set. The
     # path should not validate successfully. 
-    TestInfo(False, initial_policy_mapping_inhibit=True),
+    TestInfo(False, initial_policy_mapping_inhibit=True,
+             user_constrained_policy_set=[]),
   ],
 
   '4.10.3': [ # Valid Policy Mapping Test3
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should not validate successfully.
-    TestInfo(False, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should validate successfully. 
-    TestInfo(True, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_2]),
   ],
 
   '4.10.4': [ # Invalid Policy Mapping Test4
@@ -604,27 +661,44 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should be rejected, otherwise
     # it should validate successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.10.5': [ # Valid Policy Mapping Test5
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-6}.
     # The path should not validate successfully. 
-    TestInfo(False, initial_policy_set=[TEST_POLICY_6]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_6],
+             user_constrained_policy_set=[]),
   ],
 
   '4.10.6': [ # Valid Policy Mapping Test6
     # 1. default settings, but with initial-policy-set = {NIST-test-policy-1}.
     # The path should validate successfully.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+                   user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-6}.
     # The path should not validate successfully. 
-    TestInfo(False, initial_policy_set=[TEST_POLICY_6]),
+    TestInfo(False, initial_policy_set=[TEST_POLICY_6],
+             user_constrained_policy_set=[]),
+  ],
+
+  '4.10.8': [ # Invalid Mapping To anyPolicy Test8
+    # Procedure: Validate Invalid Mapping To anyPolicy Test8 EE using the
+    # default settings or open and verify Signed Test Message 6.2.2.101 using
+    # the default settings.
+    #
+    # Expected Result: The path should not validate successfully since the
+    # intermediate certificate includes a policy mapping extension in which
+    # anyPolicy appears as an subjectDomainPolicy.
+    #
+    # TODO(eroman): What should user_constrained_policy_set be?
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.10.9': [ # Valid Policy Mapping Test9
@@ -655,7 +729,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should be rejected, otherwise
     # it should validate successfully.
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.10.11': [ # Valid Policy Mapping Test11
@@ -672,7 +746,7 @@ TEST_OVERRIDES = {
     # empty. If the initial-policy-set does not include NIST-test-policy-1 (and
     # the application can process the policyConstraints extension), then the
     # path should be rejected, otherwise it should validate successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.10.12': [ # Valid Policy Mapping Test12
@@ -680,12 +754,14 @@ TEST_OVERRIDES = {
     # The path should validate successfully and the application should display
     # the user notice associated with NIST-test-policy-3 in the end entity
     # certificate.
-    TestInfo(True, initial_policy_set=[TEST_POLICY_1]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_1],
+             user_constrained_policy_set=[TEST_POLICY_1]),
 
     # 2. default settings, but with initial-policy-set = {NIST-test-policy-2}.
     # The path should validate successfully and the application should display
     # the user notice associated with anyPolicy in the end entity certificate. 
-    TestInfo(True, initial_policy_set=[TEST_POLICY_2]),
+    TestInfo(True, initial_policy_set=[TEST_POLICY_2],
+             user_constrained_policy_set=[TEST_POLICY_2]),
   ],
 
   '4.10.13': [ # Valid Policy Mapping Test13
@@ -704,7 +780,7 @@ TEST_OVERRIDES = {
     # path should be rejected, otherwise it should validate successfully. If
     # the path is accepted, the application should display the user notice
     # associated with NIST-testpolicy-1 in the intermediate certificate. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.10.14': [ # Valid Policy Mapping Test14
@@ -723,7 +799,7 @@ TEST_OVERRIDES = {
     # path should be rejected, otherwise it should validate successfully. If
     # the path is accepted, the application should display the user notice
     # associated with anyPolicy in the intermediate certificate
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.11.1': [ # Invalid inhibitPolicyMapping Test1 
@@ -734,7 +810,7 @@ TEST_OVERRIDES = {
     # Expected Result: The authorities-constrained-policy-set and the
     # user-constrained-policy-set will be empty. The explicit-policy-indicator
     # will be set.  The path should not validate successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.2': [ # Valid inhibitPolicyMapping Test2
@@ -746,7 +822,7 @@ TEST_OVERRIDES = {
     # {NIST-test-policy-1} and the explicit-policy-indicator will be set. If
     # the initial-policy-set is any-policy or otherwise includes
     # NIST-test-policy-1, then the path should validate successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.11.3': [ # Invalid inhibitPolicyMapping Test3 
@@ -758,7 +834,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set.  The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.4': [ # Valid inhibitPolicyMapping Test4
@@ -770,7 +846,7 @@ TEST_OVERRIDES = {
     # {NIST-test-policy-2} and the explicit-policy-indicator will be set. If
     # the initial-policy-set is any-policy or otherwise includes
     # NIST-test-policy-2, then the path should validate successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_2]),
   ],
 
   '4.11.5': [ # Invalid inhibitPolicyMapping Test5
@@ -782,7 +858,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set.  The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.6': [ # Invalid inhibitPolicyMapping Test6
@@ -794,7 +870,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set. The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.7': [ # Valid Self-Issued inhibitPolicyMapping Test7
@@ -806,7 +882,7 @@ TEST_OVERRIDES = {
     # {NIST-test-policy-1} and the explicit-policy-indicator will be set. If
     # the initial-policy-set is any-policy or otherwise includes
     # NIST-test-policy-1, then the path should validate successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.11.8': [ # Invalid Self-Issued inhibitPolicyMapping Test8
@@ -818,7 +894,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set. The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.9': [ # Invalid Self-Issued inhibitPolicyMapping Test9
@@ -830,7 +906,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set. The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.10': [ # Invalid Self-Issued inhibitPolicyMapping Test10
@@ -842,7 +918,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set. The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.11.11': [ # Invalid Self-Issued inhibitPolicyMapping Test11
@@ -854,7 +930,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set will be empty and the
     # explicit-policy-indicator will be set. The path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.1': [ # Invalid inhibitAnyPolicy Test1
@@ -868,7 +944,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.2': [ # Valid inhibitAnyPolicy Test2
@@ -886,17 +962,17 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set is empty and the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.12.3': [ # inhibitAnyPolicy Test3 
      # 1. default settings. The path should validate successfully.
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
 
      # 2. default settings, but with initial-inhibit-any-policy set. The path
      # should not validate successfully. 
-    TestInfo(False, initial_inhibit_any_policy=True),
+    TestInfo(False, initial_inhibit_any_policy=True,
+             user_constrained_policy_set=[]),
   ],
 
   '4.12.4': [ # Invalid inhibitAnyPolicy Test4
@@ -910,7 +986,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.5': [ # Invalid inhibitAnyPolicy Test5 
@@ -924,7 +1000,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully.
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.6': [ # Invalid inhibitAnyPolicy Test6
@@ -938,7 +1014,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.7': [ # Valid Self-Issued inhibitAnyPolicy Test7
@@ -956,7 +1032,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set is empty and the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.12.8': [ # Invalid Self-Issued inhibitAnyPolicy Test8 
@@ -970,7 +1046,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 
   '4.12.9': [ # Valid Self-Issued inhibitAnyPolicy Test9
@@ -988,7 +1064,7 @@ TEST_OVERRIDES = {
     # user-constrained-policy-set is empty and the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(True),
+    TestInfo(True, user_constrained_policy_set=[TEST_POLICY_1]),
   ],
 
   '4.12.10': [ # Invalid Self-Issued inhibitAnyPolicy Test10
@@ -1002,7 +1078,7 @@ TEST_OVERRIDES = {
     # policyConstraints extension). If the application can process the
     # policyConstraints extension, then the path should not validate
     # successfully. 
-    TestInfo(False),
+    TestInfo(False, user_constrained_policy_set=[]),
   ],
 }
 
@@ -1047,6 +1123,21 @@ def parse_test(lines, i, test_case_name, test_number, test_name,
       sys.exit(1)
     # Initializes with default settings.
     info = TestInfo(result_match.group(1) == 'should validate')
+
+    # Special case the 4.9 test failures (require explicit policy) to set
+    # user_constrained_policy_set to empty. This is only done for the 4.9
+    # tests, because the other policy tests are special cased as overrides and
+    # hence set this manually on a per-test basis.
+    #
+    # user_constrained_policy_set enumerates the subset of the initial policy
+    # set (anyPolicy in the default case) that were valid for the path. For
+    # non-policy tests the expectation for user_constrained_policy_set is
+    # [TEST_POLICY_1] since each policy asserts that. However for these tests,
+    # the expectation is an empty user_constrained_policy_set since there was
+    # no valid policy for the path (in fact, that is why the path validation is
+    # expected to fail).
+    if test_number.startswith('4.9.') and not info.should_validate:
+      info.user_constrained_policy_set = []
 
     output_test(test_case_name, test_number, test_name, None, info, certs,
                 crls, sanitized_test_names, output)

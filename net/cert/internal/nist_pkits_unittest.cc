@@ -27,33 +27,56 @@ const uint8_t kTestPolicy3[] = {0x60, 0x86, 0x48, 0x01, 0x65,
 const uint8_t kTestPolicy6[] = {0x60, 0x86, 0x48, 0x01, 0x65,
                                 0x03, 0x02, 0x01, 0x30, 0x06};
 
-}  // namespace
-
-PkitsTestSettings::PkitsTestSettings() {
-  SetInitialPolicySet("anyPolicy");
-}
-
-PkitsTestSettings::~PkitsTestSettings() = default;
-
-void PkitsTestSettings::SetInitialPolicySet(const char* const policy_names) {
-  initial_policy_set.clear();
+void SetPolicySetFromString(const char* const policy_names,
+                            std::set<der::Input>* out) {
+  out->clear();
   std::vector<std::string> names = base::SplitString(
       policy_names, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const std::string& policy_name : names) {
     if (policy_name == "anyPolicy") {
-      initial_policy_set.insert(AnyPolicy());
+      out->insert(AnyPolicy());
     } else if (policy_name == "NIST-test-policy-1") {
-      initial_policy_set.insert(der::Input(kTestPolicy1));
+      out->insert(der::Input(kTestPolicy1));
     } else if (policy_name == "NIST-test-policy-2") {
-      initial_policy_set.insert(der::Input(kTestPolicy2));
+      out->insert(der::Input(kTestPolicy2));
     } else if (policy_name == "NIST-test-policy-3") {
-      initial_policy_set.insert(der::Input(kTestPolicy3));
+      out->insert(der::Input(kTestPolicy3));
     } else if (policy_name == "NIST-test-policy-6") {
-      initial_policy_set.insert(der::Input(kTestPolicy6));
+      out->insert(der::Input(kTestPolicy6));
     } else {
       ADD_FAILURE() << "Unknown policy name: " << policy_name;
     }
   }
+}
+
+}  // namespace
+
+PkitsTestInfo::PkitsTestInfo() {
+  SetInitialPolicySet("anyPolicy");
+  SetUserConstrainedPolicySet("NIST-test-policy-1");
+}
+
+void PkitsTestInfo::SetInitialExplicitPolicy(bool b) {
+  initial_explicit_policy = b;
+}
+
+void PkitsTestInfo::SetInitialPolicyMappingInhibit(bool b) {
+  initial_policy_mapping_inhibit = b;
+}
+
+void PkitsTestInfo::SetInitialInhibitAnyPolicy(bool b) {
+  initial_inhibit_any_policy = b;
+}
+
+PkitsTestInfo::~PkitsTestInfo() = default;
+
+void PkitsTestInfo::SetInitialPolicySet(const char* const policy_names) {
+  SetPolicySetFromString(policy_names, &initial_policy_set);
+}
+
+void PkitsTestInfo::SetUserConstrainedPolicySet(
+    const char* const policy_names) {
+  SetPolicySetFromString(policy_names, &user_constrained_policy_set);
 }
 
 }  // namespace net
