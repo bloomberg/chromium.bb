@@ -44,9 +44,9 @@ var innerFrameY = 200;
 
 function logEvent(event) {
   if (event.type.includes('pointer')) {
-    debug(event.target.id + ' recieved ' + event.type + ' with id=' + event.pointerId);
+    debug(event.target.id + ' received ' + event.type + ' with id=' + event.pointerId);
   } else if (event.type.startsWith('touch')) {
-    debug(event.type + ' is recieved with changedTouches.length=' + event.changedTouches.length + ':');
+    debug(event.type + ' is received with changedTouches.length=' + event.changedTouches.length + ':');
     for(var i=0; i<event.changedTouches.length; i++) {
       debug('  Touch with id=' + event.changedTouches[i].identifier + ' with target = ' + event.changedTouches[i].target.id);
     }

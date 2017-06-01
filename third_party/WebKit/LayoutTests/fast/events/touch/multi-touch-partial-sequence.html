@@ -30,7 +30,7 @@ window.addEventListener('touchstart', function(e) {
     shouldBe('event.target', 'target');
 
     // Touch ID 0 is the one we never got a touchstart for, so it should
-    // be targetted at the document.
+    // be targeted at the document.
     shouldBe('event.touches.length', '2');
     shouldBe('event.touches[0].identifier', '0');
     shouldBe('event.touches[0].pageX', '12');

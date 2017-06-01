@@ -1,4 +1,4 @@
-Test the continous checking and unchecking of checkbox when clicking on associated label
+Test the continuous checking and unchecking of checkbox when clicking on associated label
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

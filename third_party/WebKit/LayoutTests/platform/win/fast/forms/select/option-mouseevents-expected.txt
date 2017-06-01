@@ -1,4 +1,4 @@
-This page tests whether a click event on a list box item propogates with the correct target and positioning values.
+This page tests whether a click event on a list box item propagates with the correct target and positioning values.
 Bug 3248: Mouse events on OPTION element seem to be ignored
 https://bugs.webkit.org/show_bug.cgi?id=3248
 

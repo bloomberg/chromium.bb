@@ -8,7 +8,7 @@ description(
 // this test can simply be changed to reflect that.
 
 // It is important that the closing braces be on the same line as the commas, so
-// that a newline doesn't act as a terminator when lexing inbetween.
+// that a newline doesn't act as a terminator when lexing in between.
 
 function commaTest() { a = 1 }
 

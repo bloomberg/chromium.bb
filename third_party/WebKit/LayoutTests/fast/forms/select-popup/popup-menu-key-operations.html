@@ -105,7 +105,7 @@ function testProvisionalSelectionAndBlur() {
     shouldBeEqualToString('menu.value', 'foo');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
 
-    // Blur should close the popup and select the provisonal item.
+    // Blur should close the popup and select the provisional item.
     menu.blur();
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'bar');

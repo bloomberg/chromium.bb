@@ -77,18 +77,18 @@ function dumpEvents()
 {
   document.events.forEach(function(event) {
     if (event.type.startsWith('pointer')) {
-      debug(event.type + " of " + event.pointerType + " is recieved:");
+      debug(event.type + " of " + event.pointerType + " is received:");
       attributes.forEach(function(att) {
         debug(att + " = " + event[att]);
       });
       debug("view.name = " + event.view.name);
     } else if (event.type.startsWith('touch')) {
-      debug(event.type + " is recieved:");
+      debug(event.type + " is received:");
       attributes.forEach(function(att) {
         debug(att + " = " + event.changedTouches[0][att]);
       });
     } else {
-      debug(event.type + " is recieved:");
+      debug(event.type + " is received:");
       attributes.forEach(function(att) {
         debug(att + " = " + event[att]);
       });

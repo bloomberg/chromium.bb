@@ -1,5 +1,5 @@
 
-Verifies that a tap occuring on an iframe that gets removed during tap handling doesn't cause a crash.
+Verifies that a tap occurring on an iframe that gets removed during tap handling doesn't cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

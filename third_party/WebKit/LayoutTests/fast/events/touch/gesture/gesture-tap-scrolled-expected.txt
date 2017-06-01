@@ -1,4 +1,4 @@
-Verifies that a tap occuring in a scrolled page has the correct co-ordinates
+Verifies that a tap occurring in a scrolled page has the correct co-ordinates
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

@@ -25,7 +25,7 @@ function tryToCrash() {
     // The test is somewhat flaky, in that the test may pass as correct
     // despite the bug being the code. The exact conditions
     // are unclear, but 1, asan helps detect the crash and 2, the
-    // preceeding gc()s increase the likelihood of it occurring.
+    // preceding gc()s increase the likelihood of it occurring.
     gc();
     gc();
     gc();

@@ -37,7 +37,7 @@ var eventTypes = ['mousemove', 'mousedown', 'mouseup', 'click'];
 for (var i = 0; i < eventTypes.length; i++)
     document.addEventListener(eventTypes[i],onEvent);
 
-description("Verifies that a tap occuring in a scrolled page has the correct co-ordinates");
+description("Verifies that a tap occurring in a scrolled page has the correct co-ordinates");
 
 if (window.eventSender) {
     jsTestIsAsync = true;

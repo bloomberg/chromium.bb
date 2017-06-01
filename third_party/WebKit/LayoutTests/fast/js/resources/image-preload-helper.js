@@ -1,7 +1,7 @@
 // This is used by several tests to help get images reliably preloaded.
 
 // Given a node, loads all urls specified in style declarations
-// attached to the node or it's decendants.
+// attached to the node or it's descendants.
 // imageCount specifies the number of images we expect to find (to try to add some
 // protection against brittleness due to imperfect url parsing, since other missing a preload
 // will typically result in a test that fails only occasionally).

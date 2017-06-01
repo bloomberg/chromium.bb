@@ -12,7 +12,7 @@ function endTest()
 
 function errorCallback(error)
 {
-    debug("Error occured:" + error.name);
+    debug("Error occurred:" + error.name);
     endTest();
 }
 
