@@ -6,6 +6,8 @@ static_library("common") {
   sources = [
     "language_detection_details.cc",
     "language_detection_details.h",
+    "language_detection_logging_helper.cc",
+    "language_detection_logging_helper.h",
     "translate_constants.cc",
     "translate_constants.h",
     "translate_errors.h",
@@ -19,6 +21,7 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//components/sync/protocol",
     "//url",
   ]
 }
@@ -26,12 +29,14 @@ static_library("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "language_detection_logging_helper_unittest.cc",
     "translate_metrics_unittest.cc",
     "translate_util_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
+    "//components/sync/protocol",
     "//testing/gtest",
     "//url",
   ]

@@ -42,6 +42,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/language_detection_logging_helper.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -70,28 +71,6 @@ metrics::TranslateEventProto::EventType BubbleResultToTranslateEvent(
   }
 }
 
-std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
-    const int entry_id,
-    const translate::LanguageDetectionDetails& details) {
-  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
-  specifics->set_event_time_usec(base::Time::Now().ToInternalValue());
-
-  // TODO(renjieliu): Revisit this field when the best way to identify
-  // navigations is determined.
-  specifics->set_navigation_id(base::Time::Now().ToInternalValue());
-
-  sync_pb::LanguageDetection lang_detection;
-  auto* const lang = lang_detection.add_detected_languages();
-  lang->set_language_code(details.cld_language);
-  lang->set_is_reliable(details.is_cld_reliable);
-  // Only set adopted_language when it's different from cld_language.
-  if (details.adopted_language != details.cld_language) {
-    lang_detection.set_adopted_language_code(details.adopted_language);
-  }
-  *specifics->mutable_language_detection() = lang_detection;
-  return specifics;
-}
-
 void LogLanguageDetectionEvent(
     const content::WebContents* const web_contents,
     const translate::LanguageDetectionDetails& details) {
@@ -109,7 +88,7 @@ void LogLanguageDetectionEvent(
   // blank page.
   if (entry != nullptr) {
     user_event_service->RecordUserEvent(
-        ConstructLanguageDetectionEvent(entry->GetUniqueID(), details));
+        translate::ConstructLanguageDetectionEvent(details));
   }
 }
 
