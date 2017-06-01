@@ -292,10 +292,13 @@ message PolicyData {
   // anything like that.
   optional int64 timestamp = 2;
 
-  // The DM token that was used by the client in the HTTP POST header
-  // for authenticating the request. It is included here again so that
-  // the client can verify that the response is meant for them (and not
-  // issued by a replay or man-in-the-middle attack).
+  // The DM token that was used by the client in the HTTP POST header for
+  // authenticating the request. It is included here again so that the client
+  // can verify that the response is meant for them (and not issued by a replay
+  // or man-in-the-middle attack).
+  // Note that the existence or non-existence of the DM token is not the correct
+  // way to determine whether the device is managed. Cf. |management_mode| below
+  // for details.
   optional string request_token = 3;
 
   // The serialized value of the actual policy protobuf.  This can be
@@ -370,8 +373,8 @@ message PolicyData {
     // The device is owned locally. The policies are set by the local owner of
     // the device.
     LOCAL_OWNER = 0;
-    // The device is enterprise-managed. The policies come from the enterprise
-    // server. See the comment above for backward compatibility.
+    // The device is enterprise-managed (either via DM server or through Active
+    // Directory). See the comment above for backward compatibility.
     ENTERPRISE_MANAGED = 1;
     // Obsolete. Don't use.
     OBSOLETE_CONSUMER_MANAGED = 2;

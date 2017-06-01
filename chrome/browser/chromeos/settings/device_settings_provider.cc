@@ -742,8 +742,18 @@ void DeviceSettingsProvider::UpdateValuesCache(
     TrustedStatus trusted_status) {
   PrefValueMap new_values_cache;
 
+  // Determine whether device is managed. See PolicyData::management_mode docs
+  // for details.
+  bool managed = false;
+  if (policy_data.has_management_mode()) {
+    managed =
+        (policy_data.management_mode() == em::PolicyData::ENTERPRISE_MANAGED);
+  } else {
+    managed = policy_data.has_request_token();
+  }
+
   // If the device is not managed, we set the device owner value.
-  if (policy_data.has_username() && !policy_data.has_request_token())
+  if (policy_data.has_username() && !managed)
     new_values_cache.SetString(kDeviceOwner, policy_data.username());
 
   if (policy_data.has_service_account_identity()) {
