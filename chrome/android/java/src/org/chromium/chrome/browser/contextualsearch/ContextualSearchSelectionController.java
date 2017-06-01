@@ -205,7 +205,7 @@ public class ContextualSearchSelectionController {
         if (baseContentView != null) {
             baseContentView.clearSelection();
         }
-        resetAllStates();
+        resetSelectionStates();
     }
 
     /**
@@ -351,10 +351,12 @@ public class ContextualSearchSelectionController {
      * or #handleNonSuppressedTap() after a possible delay.
      * This should be called when the context is fully built (by gathering surrounding text
      * if needed, etc) but before showing any UX.
+     * @param contextualSearchContext The {@link ContextualSearchContext} for the Tap gesture.
      * @param rankerLogger The {@link ContextualSearchRankerLogger} currently being used to measure
      *        or suppress the UI by Ranker.
      */
-    void handleShouldSuppressTap(ContextualSearchRankerLogger rankerLogger) {
+    void handleShouldSuppressTap(ContextualSearchContext contextualSearchContext,
+            ContextualSearchRankerLogger rankerLogger) {
         int x = (int) mX;
         int y = (int) mY;
 
@@ -362,9 +364,8 @@ public class ContextualSearchSelectionController {
         ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
         int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
                 - prefs.getContextualSearchTapQuickAnswerCount();
-        TapSuppressionHeuristics tapHeuristics =
-                new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen);
-
+        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(
+                this, mLastTapState, x, y, adjustedTapsSinceOpen, contextualSearchContext);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 
