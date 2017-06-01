@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -41,42 +41,21 @@ void SimulateUserTypingInField(content::RenderViewHost* render_view_host,
 
 namespace password_manager {
 
-// TODO(crbug.com/616627): Flaky on Mac, CrOS and Linux.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_UsernameChanged DISABLED_UsernameChanged
-#else
-#define MAYBE_UsernameChanged UsernameChanged
-#endif
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_UsernameChanged) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
+  // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("random");
+  password_store->AddLogin(signin_form);
 
+  // Load the page to have the saved credentials autofilled.
   NavigateToFile("/password/signup_form.html");
-
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_submit =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random';"
-      "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
-
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_FALSE(password_store->IsEmpty());
-
-  // Reload the original page to have the saved credentials autofilled.
-  NavigationObserver reload_observer(WebContents());
-  NavigateToFile("/password/signup_form.html");
-  reload_observer.Wait();
 
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
@@ -89,25 +68,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_UsernameChanged) {
   // Change username and submit. This should add the characters "ORARY" to the
   // already autofilled username.
   SimulateUserTypingInField(RenderViewHost(), WebContents(), "username_field");
-  // TODO(gcasto): Not sure why this click is required.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
+
+  // Move the focus out of the inputs before waiting because WaitForElementValue
+  // uses "onchange" event. The event is triggered only when the control looses
+  // focus.
+  chrome::FocusLocationBar(browser());
   WaitForElementValue("username_field", "tempORARY");
 
-  NavigationObserver second_observer(WebContents());
-  std::unique_ptr<BubbleObserver> second_prompt_observer(
-      new BubbleObserver(WebContents()));
+  NavigationObserver navigation_observer(WebContents());
+  BubbleObserver prompt_observer(WebContents());
   std::string submit =
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
-  second_observer.Wait();
-  EXPECT_TRUE(second_prompt_observer->IsShowingSavePrompt());
-  second_prompt_observer->AcceptSavePrompt();
+  navigation_observer.Wait();
+  EXPECT_TRUE(prompt_observer.IsShowingSavePrompt());
+  prompt_observer.AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.
-  base::RunLoop third_run_loop;
-  third_run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_FALSE(password_store->IsEmpty());
 
   // Verify that there are two saved password, the old password and the new
