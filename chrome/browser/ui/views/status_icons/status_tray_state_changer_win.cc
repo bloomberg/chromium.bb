@@ -62,7 +62,7 @@ StatusTrayStateChangerWin::StatusTrayStateChangerWin(UINT icon_id, HWND window)
 }
 
 void StatusTrayStateChangerWin::EnsureTrayIconVisible() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!CreateTrayNotify()) {
     VLOG(1) << "Unable to create COM object for ITrayNotify.";
@@ -86,18 +86,18 @@ void StatusTrayStateChangerWin::EnsureTrayIconVisible() {
 }
 
 STDMETHODIMP_(ULONG) StatusTrayStateChangerWin::AddRef() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return base::win::IUnknownImpl::AddRef();
 }
 
 STDMETHODIMP_(ULONG) StatusTrayStateChangerWin::Release() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return base::win::IUnknownImpl::Release();
 }
 
 STDMETHODIMP StatusTrayStateChangerWin::QueryInterface(REFIID riid,
                                                        PVOID* ptr_void) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (riid == __uuidof(INotificationCB)) {
     *ptr_void = static_cast<INotificationCB*>(this);
     AddRef();
@@ -109,7 +109,7 @@ STDMETHODIMP StatusTrayStateChangerWin::QueryInterface(REFIID riid,
 
 STDMETHODIMP StatusTrayStateChangerWin::Notify(ULONG event,
                                                NOTIFYITEM* notify_item) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(notify_item);
   if (notify_item->hwnd != window_ || notify_item->id != icon_id_ ||
       base::string16(notify_item->exe_name) != file_name_) {
@@ -121,11 +121,11 @@ STDMETHODIMP StatusTrayStateChangerWin::Notify(ULONG event,
 }
 
 StatusTrayStateChangerWin::~StatusTrayStateChangerWin() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 bool StatusTrayStateChangerWin::CreateTrayNotify() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   tray_notify_.Reset();  // Reset so this method can be called more than once.
 
