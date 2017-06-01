@@ -1170,21 +1170,22 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
     state.SetApplyPropertyToVisitedLinkStyle(true);
   }
 
-  const ActiveInterpolationsMap& active_interpolations_map_for_animations =
-      state.AnimationUpdate().ActiveInterpolationsForAnimations();
+  const ActiveInterpolationsMap&
+      active_interpolations_map_for_standard_animations =
+          state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
   const ActiveInterpolationsMap&
       active_interpolations_map_for_standard_transitions =
           state.AnimationUpdate().ActiveInterpolationsForStandardTransitions();
   // TODO(crbug.com/644148): Apply animations on custom properties.
   ApplyAnimatedProperties<kHighPropertyPriority>(
-      state, active_interpolations_map_for_animations);
+      state, active_interpolations_map_for_standard_animations);
   ApplyAnimatedProperties<kHighPropertyPriority>(
       state, active_interpolations_map_for_standard_transitions);
 
   UpdateFont(state);
 
   ApplyAnimatedProperties<kLowPropertyPriority>(
-      state, active_interpolations_map_for_animations);
+      state, active_interpolations_map_for_standard_animations);
   ApplyAnimatedProperties<kLowPropertyPriority>(
       state, active_interpolations_map_for_standard_transitions);
 
@@ -1229,6 +1230,7 @@ void StyleResolver::ApplyAnimatedProperties(
     CSSPropertyID property = entry.key.IsCSSProperty()
                                  ? entry.key.CssProperty()
                                  : entry.key.PresentationAttribute();
+    DCHECK_EQ(entry.key.IsCSSCustomProperty(), priority == kResolveVariables);
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property))
       continue;
     const Interpolation& interpolation = *entry.value.front();
@@ -1751,7 +1753,8 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
       needs_apply_pass);
   if (apply_animations == kIncludeAnimations) {
     ApplyAnimatedProperties<kResolveVariables>(
-        state, state.AnimationUpdate().ActiveInterpolationsForAnimations());
+        state,
+        state.AnimationUpdate().ActiveInterpolationsForCustomAnimations());
     ApplyAnimatedProperties<kResolveVariables>(
         state,
         state.AnimationUpdate().ActiveInterpolationsForCustomTransitions());
@@ -1770,7 +1773,8 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
           needs_apply_pass);
       if (apply_animations == kIncludeAnimations) {
         ApplyAnimatedProperties<kResolveVariables>(
-            state, state.AnimationUpdate().ActiveInterpolationsForAnimations());
+            state,
+            state.AnimationUpdate().ActiveInterpolationsForCustomAnimations());
         ApplyAnimatedProperties<kResolveVariables>(
             state,
             state.AnimationUpdate().ActiveInterpolationsForCustomTransitions());
@@ -1815,17 +1819,12 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state,
     return;
   }
   if (!state.AnimationUpdate()
+           .ActiveInterpolationsForCustomAnimations()
+           .IsEmpty() ||
+      !state.AnimationUpdate()
            .ActiveInterpolationsForCustomTransitions()
            .IsEmpty()) {
     state.SetIsAnimatingCustomProperties(true);
-    return;
-  }
-  for (const auto& property_handle :
-       state.AnimationUpdate().ActiveInterpolationsForAnimations().Keys()) {
-    if (CSSAnimations::IsCustomPropertyHandle(property_handle)) {
-      state.SetIsAnimatingCustomProperties(true);
-      return;
-    }
   }
 }
 

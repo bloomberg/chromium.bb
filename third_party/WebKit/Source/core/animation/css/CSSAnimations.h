@@ -64,7 +64,6 @@ class CSSAnimations final {
   static bool IsAnimationAffectingProperty(CSSPropertyID);
   static bool IsAffectedByKeyframesFromScope(const Element&, const TreeScope&);
   static bool IsAnimatingCustomProperties(const ElementAnimations*);
-  static bool IsCustomPropertyHandle(const PropertyHandle&);
   static void CalculateAnimationUpdate(CSSAnimationUpdate&,
                                        const Element* animating_element,
                                        Element&,
@@ -157,7 +156,9 @@ class CSSAnimations final {
 
   CSSAnimationUpdate pending_update_;
 
-  ActiveInterpolationsMap previous_active_interpolations_for_animations_;
+  ActiveInterpolationsMap previous_active_interpolations_for_custom_animations_;
+  ActiveInterpolationsMap
+      previous_active_interpolations_for_standard_animations_;
 
   struct TransitionUpdateState {
     STACK_ALLOCATED();
