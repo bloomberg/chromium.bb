@@ -46,7 +46,6 @@ class MultiThreadedTest : public testing::Test {
  public:
   // RunOnThreads run a closure num_threads * callbacks_per_thread times.
   // The default for this is 10*100 = 1000 times.
-
   template <typename FunctionType, typename... Ps>
   void RunOnThreads(FunctionType function, Ps&&... parameters) {
     Vector<std::unique_ptr<WebThreadSupportingGC>> threads;
