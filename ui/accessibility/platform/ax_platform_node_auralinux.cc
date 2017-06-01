@@ -476,8 +476,6 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   if (data.HasState(ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
-  if (data.HasState(ui::AX_STATE_PRESSED))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_PRESSED);
   if (data.HasState(ui::AX_STATE_SELECTABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
   if (data.HasState(ui::AX_STATE_SELECTED))
@@ -491,7 +489,10 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       atk_state_set_add_state(atk_state_set, ATK_STATE_INDETERMINATE);
       break;
     case ui::AX_CHECKED_STATE_TRUE:
-      atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKED);
+      atk_state_set_add_state(atk_state_set,
+                              data.role == ui::AX_ROLE_TOGGLE_BUTTON
+                                  ? ATK_STATE_PRESSED
+                                  : ATK_STATE_CHECKED);
       break;
     default:
       break;

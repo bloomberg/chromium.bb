@@ -100,8 +100,10 @@ class VolumeButton : public ButtonListenerActionableView {
     node_data->SetName(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME_MUTE));
     node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-    if (CrasAudioHandler::Get()->IsOutputMuted())
-      node_data->AddState(ui::AX_STATE_PRESSED);
+    const bool is_pressed = CrasAudioHandler::Get()->IsOutputMuted();
+    node_data->AddIntAttribute(
+        ui::AX_ATTR_CHECKED_STATE,
+        is_pressed ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE);
   }
 
   views::ImageView* image_;

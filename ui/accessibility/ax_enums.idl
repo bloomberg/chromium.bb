@@ -229,7 +229,6 @@
     multiline,
     multiselectable,
     offscreen,
-    pressed,
     protected,
     read_only,
     required,

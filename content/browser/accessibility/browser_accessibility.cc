@@ -744,31 +744,6 @@ bool BrowserAccessibility::GetHtmlAttribute(
   return GetData().GetHtmlAttribute(html_attr, value);
 }
 
-bool BrowserAccessibility::GetAriaTristate(
-    const char* html_attr,
-    bool* is_defined,
-    bool* is_mixed) const {
-  *is_defined = false;
-  *is_mixed = false;
-
-  base::string16 value;
-  if (!GetHtmlAttribute(html_attr, &value) ||
-      value.empty() ||
-      base::EqualsASCII(value, "undefined")) {
-    return false;  // Not set (and *is_defined is also false)
-  }
-
-  *is_defined = true;
-
-  if (base::EqualsASCII(value, "true"))
-    return true;
-
-  if (base::EqualsASCII(value, "mixed"))
-    *is_mixed = true;
-
-  return false;  // Not set.
-}
-
 BrowserAccessibility* BrowserAccessibility::GetTable() const {
   BrowserAccessibility* table = const_cast<BrowserAccessibility*>(this);
   while (table && !table->IsTableLikeRole())

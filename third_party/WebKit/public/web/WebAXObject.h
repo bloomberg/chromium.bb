@@ -149,7 +149,6 @@ class WebAXObject {
   BLINK_EXPORT bool IsMultiSelectable() const;
   BLINK_EXPORT bool IsOffScreen() const;
   BLINK_EXPORT bool IsPasswordField() const;
-  BLINK_EXPORT bool IsPressed() const;
   BLINK_EXPORT bool IsReadOnly() const;
   BLINK_EXPORT bool IsRequired() const;
   BLINK_EXPORT bool IsSelected() const;

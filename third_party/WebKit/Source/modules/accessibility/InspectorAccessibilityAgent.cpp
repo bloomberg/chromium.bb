@@ -149,13 +149,6 @@ bool RoleAllowsSort(AccessibilityRole role) {
   return role == kColumnHeaderRole || role == kRowHeaderRole;
 }
 
-bool RoleAllowsChecked(AccessibilityRole role) {
-  return role == kMenuItemCheckBoxRole || role == kMenuItemRadioRole ||
-         role == kRadioButtonRole || role == kCheckBoxRole ||
-         role == kTreeItemRole || role == kListBoxOptionRole ||
-         role == kSwitchRole;
-}
-
 bool RoleAllowsSelected(AccessibilityRole role) {
   return role == kCellRole || role == kListBoxOptionRole || role == kRowRole ||
          role == kTabRole || role == kColumnHeaderRole ||
@@ -252,25 +245,27 @@ void FillWidgetProperties(AXObjectImpl& ax_object,
 void FillWidgetStates(AXObjectImpl& ax_object,
                       protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
-  if (RoleAllowsChecked(role)) {
-    AccessibilityButtonState checked = ax_object.CheckedState();
-    switch (checked) {
-      case kButtonStateOff:
-        properties.addItem(
-            CreateProperty(AXWidgetStatesEnum::Checked,
-                           CreateValue("false", AXValueTypeEnum::Tristate)));
-        break;
-      case kButtonStateOn:
-        properties.addItem(
-            CreateProperty(AXWidgetStatesEnum::Checked,
-                           CreateValue("true", AXValueTypeEnum::Tristate)));
-        break;
-      case kButtonStateMixed:
-        properties.addItem(
-            CreateProperty(AXWidgetStatesEnum::Checked,
-                           CreateValue("mixed", AXValueTypeEnum::Tristate)));
-        break;
-    }
+  const char* checked_prop_val = 0;
+  switch (ax_object.CheckedState()) {
+    case kCheckedStateTrue:
+      checked_prop_val = "true";
+      break;
+    case kCheckedStateMixed:
+      checked_prop_val = "mixed";
+      break;
+    case kCheckedStateFalse:
+      checked_prop_val = "false";
+      break;
+    case kCheckedStateUndefined:
+      break;
+  }
+  if (checked_prop_val) {
+    const auto checked_prop_name = role == kToggleButtonRole
+                                       ? AXWidgetStatesEnum::Pressed
+                                       : AXWidgetStatesEnum::Checked;
+    properties.addItem(CreateProperty(
+        checked_prop_name,
+        CreateValue(checked_prop_val, AXValueTypeEnum::Tristate)));
   }
 
   AccessibilityExpanded expanded = ax_object.IsExpanded();
@@ -287,25 +282,6 @@ void FillWidgetStates(AXObjectImpl& ax_object,
           AXWidgetStatesEnum::Expanded,
           CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
       break;
-  }
-
-  if (role == kToggleButtonRole) {
-    if (!ax_object.IsPressed()) {
-      properties.addItem(
-          CreateProperty(AXWidgetStatesEnum::Pressed,
-                         CreateValue("false", AXValueTypeEnum::Tristate)));
-    } else {
-      const AtomicString& pressed_attr =
-          ax_object.GetAttribute(HTMLNames::aria_pressedAttr);
-      if (EqualIgnoringASCIICase(pressed_attr, "mixed"))
-        properties.addItem(
-            CreateProperty(AXWidgetStatesEnum::Pressed,
-                           CreateValue("mixed", AXValueTypeEnum::Tristate)));
-      else
-        properties.addItem(
-            CreateProperty(AXWidgetStatesEnum::Pressed,
-                           CreateValue("true", AXValueTypeEnum::Tristate)));
-    }
   }
 
   if (RoleAllowsSelected(role)) {

@@ -140,28 +140,12 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
 }
 
 bool BrowserAccessibilityAndroid::IsCheckable() const {
-  bool checkable = false;
-  bool is_aria_pressed_defined;
-  bool is_mixed;
-  GetAriaTristate("aria-pressed", &is_aria_pressed_defined, &is_mixed);
-  if (GetRole() == ui::AX_ROLE_CHECK_BOX ||
-      GetRole() == ui::AX_ROLE_RADIO_BUTTON ||
-      GetRole() == ui::AX_ROLE_MENU_ITEM_CHECK_BOX ||
-      GetRole() == ui::AX_ROLE_MENU_ITEM_RADIO ||
-      is_aria_pressed_defined) {
-    checkable = true;
-  }
-  // TODO(aleventhal) does this ever happen when checkable is not true yet?
-  if (HasIntAttribute(ui::AX_ATTR_CHECKED_STATE))
-    checkable = true;
-  return checkable;
+  return HasIntAttribute(ui::AX_ATTR_CHECKED_STATE);
 }
 
 bool BrowserAccessibilityAndroid::IsChecked() const {
-  const auto checked_state = static_cast<ui::AXCheckedState>(
-      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
-  return (checked_state == ui::AX_CHECKED_STATE_TRUE ||
-          HasState(ui::AX_STATE_PRESSED));
+  return GetIntAttribute(ui::AX_ATTR_CHECKED_STATE) ==
+         ui::AX_CHECKED_STATE_TRUE;
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
@@ -197,8 +181,9 @@ bool BrowserAccessibilityAndroid::IsCollectionItem() const {
 }
 
 bool BrowserAccessibilityAndroid::IsContentInvalid() const {
-  std::string invalid;
-  return GetHtmlAttribute("aria-invalid", &invalid);
+  return HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
+         GetIntAttribute(ui::AX_ATTR_INVALID_STATE) !=
+             ui::AX_INVALID_STATE_FALSE;
 }
 
 bool BrowserAccessibilityAndroid::IsDismissable() const {

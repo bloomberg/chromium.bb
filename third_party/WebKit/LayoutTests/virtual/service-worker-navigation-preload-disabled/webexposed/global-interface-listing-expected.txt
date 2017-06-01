@@ -38,6 +38,7 @@ interface AccessibleNode
     getter orientation
     getter placeholder
     getter posInSet
+    getter pressed
     getter readOnly
     getter relevant
     getter required
@@ -76,6 +77,7 @@ interface AccessibleNode
     setter orientation
     setter placeholder
     setter posInSet
+    setter pressed
     setter readOnly
     setter relevant
     setter required

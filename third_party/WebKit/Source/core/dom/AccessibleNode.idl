@@ -30,6 +30,7 @@
     attribute DOMString? orientation;
     attribute DOMString? placeholder;
     attribute unsigned long? posInSet;
+    attribute DOMString? pressed;
     attribute boolean? readOnly;
     attribute DOMString? relevant;
     attribute boolean? required;

@@ -1368,17 +1368,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
           ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
     return NSAccessibilityGroupRole;
   }
-  if (role == ui::AX_ROLE_BUTTON || role == ui::AX_ROLE_TOGGLE_BUTTON) {
-    bool isAriaPressedDefined;
-    bool isMixed;
-    browserAccessibility_->GetAriaTristate("aria-pressed",
-                                           &isAriaPressedDefined,
-                                           &isMixed);
-    if (isAriaPressedDefined)
-      return NSAccessibilityCheckBoxRole;
-    else
-      return NSAccessibilityButtonRole;
-  }
+
   if ((browserAccessibility_->IsSimpleTextControl() &&
        browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) ||
       browserAccessibility_->IsRichTextControl()) {
@@ -1870,22 +1860,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([role isEqualToString:NSAccessibilityButtonRole]) {
     // AXValue does not make sense for pure buttons.
     return @"";
-  } else if ([self internalRole] == ui::AX_ROLE_TOGGLE_BUTTON) {
-    int value = 0;
-    bool isAriaPressedDefined;
-    bool isMixed;
-    value = browserAccessibility_->GetAriaTristate(
-        "aria-pressed", &isAriaPressedDefined, &isMixed) ? 1 : 0;
-
-    if (isMixed)
-      value = 2;
-
-    return [NSNumber numberWithInt:value];
-
-  } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
-             [role isEqualToString:NSAccessibilityRadioButtonRole] ||
-             [self internalRole] == ui::AX_ROLE_MENU_ITEM_CHECK_BOX ||
-             [self internalRole] == ui::AX_ROLE_MENU_ITEM_RADIO) {
+  } else if (browserAccessibility_->HasIntAttribute(
+                 ui::AX_ATTR_CHECKED_STATE) ||
+             [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     int value;
     const auto checkedState = static_cast<ui::AXCheckedState>(
         browserAccessibility_->GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
