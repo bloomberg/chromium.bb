@@ -55,9 +55,10 @@ using RasterWithFlagsFunction = void (*)(const PaintOpWithFlags* op,
 NOINLINE static void RasterWithAlphaInternal(RasterFunction raster_fn,
                                              const PaintOp* op,
                                              SkCanvas* canvas,
+                                             const SkRect& bounds,
                                              uint8_t alpha) {
-  // TODO(enne): is it ok to just drop the bounds here?
-  canvas->saveLayerAlpha(nullptr, alpha);
+  bool unset = bounds.x() == PaintOp::kUnsetRect.x();
+  canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
   SkMatrix unused_matrix;
   raster_fn(op, canvas, unused_matrix);
   canvas->restore();
@@ -67,12 +68,15 @@ NOINLINE static void RasterWithAlphaInternal(RasterFunction raster_fn,
 // have or don't have PaintFlags.
 template <typename T, bool HasFlags>
 struct Rasterizer {
-  static void RasterWithAlpha(const T* op, SkCanvas* canvas, uint8_t alpha) {
+  static void RasterWithAlpha(const T* op,
+                              SkCanvas* canvas,
+                              const SkRect& bounds,
+                              uint8_t alpha) {
     static_assert(
         !T::kHasPaintFlags,
         "This function should not be used for a PaintOp that has PaintFlags");
     DCHECK(T::kIsDrawOp);
-    RasterWithAlphaInternal(&T::Raster, op, canvas, alpha);
+    RasterWithAlphaInternal(&T::Raster, op, canvas, bounds, alpha);
   }
 };
 
@@ -80,6 +84,7 @@ NOINLINE static void RasterWithAlphaInternalForFlags(
     RasterWithFlagsFunction raster_fn,
     const PaintOpWithFlags* op,
     SkCanvas* canvas,
+    const SkRect& bounds,
     uint8_t alpha) {
   SkMatrix unused_matrix;
   if (alpha == 255) {
@@ -89,7 +94,8 @@ NOINLINE static void RasterWithAlphaInternalForFlags(
     flags.setAlpha(SkMulDiv255Round(flags.getAlpha(), alpha));
     raster_fn(op, &flags, canvas, unused_matrix);
   } else {
-    canvas->saveLayerAlpha(nullptr, alpha);
+    bool unset = bounds.x() == PaintOp::kUnsetRect.x();
+    canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
     raster_fn(op, &op->flags, canvas, unused_matrix);
     canvas->restore();
   }
@@ -97,11 +103,15 @@ NOINLINE static void RasterWithAlphaInternalForFlags(
 
 template <typename T>
 struct Rasterizer<T, true> {
-  static void RasterWithAlpha(const T* op, SkCanvas* canvas, uint8_t alpha) {
+  static void RasterWithAlpha(const T* op,
+                              SkCanvas* canvas,
+                              const SkRect& bounds,
+                              uint8_t alpha) {
     static_assert(T::kHasPaintFlags,
                   "This function expects the PaintOp to have PaintFlags");
     DCHECK(T::kIsDrawOp);
-    RasterWithAlphaInternalForFlags(&T::RasterWithFlags, op, canvas, alpha);
+    RasterWithAlphaInternalForFlags(&T::RasterWithFlags, op, canvas, bounds,
+                                    alpha);
   }
 };
 
@@ -109,6 +119,7 @@ template <>
 struct Rasterizer<DrawRecordOp, false> {
   static void RasterWithAlpha(const DrawRecordOp* op,
                               SkCanvas* canvas,
+                              const SkRect& bounds,
                               uint8_t alpha) {
     // This "looking into records" optimization is done here instead of
     // in the PaintOpBuffer::Raster function as DisplayItemList calls
@@ -117,12 +128,13 @@ struct Rasterizer<DrawRecordOp, false> {
       PaintOp* single_op = op->record->GetFirstOp();
       // RasterWithAlpha only supported for draw ops.
       if (single_op->IsDrawOp()) {
-        single_op->RasterWithAlpha(canvas, alpha);
+        single_op->RasterWithAlpha(canvas, bounds, alpha);
         return;
       }
     }
 
-    canvas->saveLayerAlpha(nullptr, alpha);
+    bool unset = bounds.x() == PaintOp::kUnsetRect.x();
+    canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
     SkMatrix unused_matrix;
     DrawRecordOp::Raster(op, canvas, unused_matrix);
     canvas->restore();
@@ -148,12 +160,13 @@ static const RasterFunction g_raster_functions[kNumOpTypes] = {TYPES(M)};
 
 using RasterAlphaFunction = void (*)(const PaintOp* op,
                                      SkCanvas* canvas,
+                                     const SkRect& bounds,
                                      uint8_t alpha);
 #define M(T) \
-  T::kIsDrawOp ? \
-  [](const PaintOp* op, SkCanvas* canvas, uint8_t alpha) { \
+  T::kIsDrawOp ? [](const PaintOp* op, SkCanvas* canvas, const SkRect& bounds, \
+                    uint8_t alpha) { \
     Rasterizer<T, T::kHasPaintFlags>::RasterWithAlpha( \
-        static_cast<const T*>(op), canvas, alpha); \
+        static_cast<const T*>(op), canvas, bounds, alpha); \
   } : static_cast<RasterAlphaFunction>(nullptr),
 static const RasterAlphaFunction g_raster_alpha_functions[kNumOpTypes] = {
     TYPES(M)};
@@ -446,8 +459,10 @@ void PaintOp::Raster(SkCanvas* canvas, const SkMatrix& original_ctm) const {
   g_raster_functions[type](this, canvas, original_ctm);
 }
 
-void PaintOp::RasterWithAlpha(SkCanvas* canvas, uint8_t alpha) const {
-  g_raster_alpha_functions[type](this, canvas, alpha);
+void PaintOp::RasterWithAlpha(SkCanvas* canvas,
+                              const SkRect& bounds,
+                              uint8_t alpha) const {
+  g_raster_alpha_functions[type](this, canvas, bounds, alpha);
 }
 
 int ClipPathOp::CountSlowPaths() const {
@@ -723,7 +738,7 @@ void PaintOpBuffer::PlaybackRanges(const std::vector<size_t>& range_starts,
           if (third && third->GetType() == PaintOpType::Restore) {
             const SaveLayerAlphaOp* save_op =
                 static_cast<const SaveLayerAlphaOp*>(op);
-            second->RasterWithAlpha(canvas, save_op->alpha);
+            second->RasterWithAlpha(canvas, save_op->bounds, save_op->alpha);
             continue;
           }
         }

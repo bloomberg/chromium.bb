@@ -183,7 +183,8 @@ static bool MergeAndDrawIfPossible(const CompositingDisplayItem& save_item,
   if (!op->IsDrawOp())
     return false;
 
-  op->RasterWithAlpha(canvas, save_item.alpha);
+  SkRect bounds = save_item.has_bounds ? save_item.bounds : PaintOp::kUnsetRect;
+  op->RasterWithAlpha(canvas, bounds, save_item.alpha);
   return true;
 }
 

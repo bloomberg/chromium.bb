@@ -86,7 +86,9 @@ struct CC_PAINT_EXPORT PaintOp {
   bool IsDrawOp() const;
 
   // Only valid for draw ops.
-  void RasterWithAlpha(SkCanvas* canvas, uint8_t alpha) const;
+  void RasterWithAlpha(SkCanvas* canvas,
+                       const SkRect& bounds,
+                       uint8_t alpha) const;
 
   int CountSlowPaths() const { return 0; }
   int CountSlowPathsFromFlags() const { return 0; }
