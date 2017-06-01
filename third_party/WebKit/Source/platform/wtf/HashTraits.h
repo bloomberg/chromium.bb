@@ -37,6 +37,8 @@ namespace WTF {
 
 template <bool isInteger, typename T>
 struct GenericHashTraitsBase;
+template <bool is_enum, typename T>
+struct EnumOrGenericHashTraits;
 template <typename T>
 struct HashTraits;
 
@@ -138,7 +140,22 @@ struct GenericHashTraits
 };
 
 template <typename T>
-struct HashTraits : GenericHashTraits<T> {};
+struct EnumOrGenericHashTraits<false, T> : GenericHashTraits<T> {};
+
+// Default traits for an enum type.  0 is very popular, and -1 is also popular.
+// So we use -128 and -127.
+template <typename T>
+struct EnumOrGenericHashTraits<true, T> : GenericHashTraits<T> {
+  static const bool kEmptyValueIsZero = false;
+  static T EmptyValue() { return static_cast<T>(-128); }
+  static void ConstructDeletedValue(T& slot, bool) {
+    slot = static_cast<T>(-127);
+  }
+  static bool IsDeletedValue(T value) { return value == static_cast<T>(-127); }
+};
+
+template <typename T>
+struct HashTraits : EnumOrGenericHashTraits<std::is_enum<T>::value, T> {};
 
 template <typename T>
 struct FloatHashTraits : GenericHashTraits<T> {

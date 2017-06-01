@@ -214,7 +214,9 @@ struct DefaultHashImpl<T, true> {
 
 // Canonical implementation of DefaultHash.
 template <typename T>
-struct DefaultHash : DefaultHashImpl<T, std::is_integral<T>::value> {};
+struct DefaultHash
+    : DefaultHashImpl<T, std::is_integral<T>::value || std::is_enum<T>::value> {
+};
 
 // Specializations of DefaultHash follow.
 template <>
