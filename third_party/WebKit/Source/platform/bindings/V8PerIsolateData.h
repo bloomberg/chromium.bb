@@ -31,6 +31,7 @@
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "platform/PlatformExport.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
@@ -119,6 +120,8 @@ class PLATFORM_EXPORT V8PerIsolateData {
   v8::Isolate* GetIsolate() { return isolate_holder_.isolate(); }
 
   StringCache* GetStringCache() { return string_cache_.get(); }
+
+  RuntimeCallStats* GetRuntimeCallStats() { return &runtime_call_stats_; }
 
   bool IsHandlingRecursionLevelError() const {
     return is_handling_recursion_level_error_;
@@ -267,6 +270,8 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
   std::unique_ptr<ScriptWrappableVisitor> script_wrappable_visitor_;
+
+  RuntimeCallStats runtime_call_stats_;
 };
 
 }  // namespace blink

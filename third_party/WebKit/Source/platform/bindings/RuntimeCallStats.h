@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file contains the Blink version of RuntimeCallStats which is implemented
+// by V8 in //v8/src/counters.h
+
 #ifndef RuntimeCallStats_h
 #define RuntimeCallStats_h
 
@@ -9,6 +12,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/WTFString.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -90,6 +94,8 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 class PLATFORM_EXPORT RuntimeCallStats {
  public:
   RuntimeCallStats();
+  // Get RuntimeCallStats object associated with the given isolate.
+  static RuntimeCallStats* From(v8::Isolate*);
 
 // Counters
 #define FOR_EACH_COUNTER(V) \
