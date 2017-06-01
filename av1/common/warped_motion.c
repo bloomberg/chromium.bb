@@ -999,7 +999,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
 
-          uint32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
+          int32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
           for (m = 0; m < 8; ++m) {
             int sample_x = ix + m;
             if (sample_x < 0)
@@ -1009,8 +1009,9 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
             sum += ref[iy * stride + sample_x] * coeffs[m];
           }
           sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
-          assert(sum < (1U << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
-                               HORSHEAR_REDUCE_PREC_BITS)));
+          assert(0 <= sum &&
+                 sum < (1 << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
+                              HORSHEAR_REDUCE_PREC_BITS)));
           tmp[(k + 7) * 8 + (l + 4)] = sum;
           sx += alpha;
         }
@@ -1027,13 +1028,13 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
 
-          uint32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
-                               HORSHEAR_REDUCE_PREC_BITS);
+          int32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
+                              HORSHEAR_REDUCE_PREC_BITS);
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
           sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);
-          assert(sum < (1U << (bd + 2)));
+          assert(0 <= sum && sum < (1 << (bd + 2)));
           uint16_t px =
               clip_pixel_highbd(sum - (1 << (bd - 1)) - (1 << bd), bd);
           if (comp_avg)
@@ -1288,7 +1289,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
 
-          uint16_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
+          int32_t sum = 1 << (bd + WARPEDPIXEL_FILTER_BITS - 1);
           for (m = 0; m < 8; ++m) {
             // Clamp to left/right edge of the frame
             int sample_x = ix + m;
@@ -1300,7 +1301,8 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
             sum += ref[iy * stride + sample_x] * coeffs[m];
           }
           sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
-          assert(sum < (1 << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
+          assert(0 <= sum &&
+                 sum < (1 << (bd + WARPEDPIXEL_FILTER_BITS + 1 -
                               HORSHEAR_REDUCE_PREC_BITS)));
           tmp[(k + 7) * 8 + (l + 4)] = sum;
           sx += alpha;
@@ -1319,13 +1321,13 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           const int16_t *coeffs = warped_filter[offs];
 
-          uint32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
-                               HORSHEAR_REDUCE_PREC_BITS);
+          int32_t sum = 1 << (bd + 2 * WARPEDPIXEL_FILTER_BITS -
+                              HORSHEAR_REDUCE_PREC_BITS);
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
           sum = ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS);
-          assert(sum < (1 << (bd + 2)));
+          assert(0 <= sum && sum < (1 << (bd + 2)));
           uint8_t px = clip_pixel(sum - (1 << (bd - 1)) - (1 << bd));
           if (comp_avg)
             *p = ROUND_POWER_OF_TWO(*p + px, 1);
