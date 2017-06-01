@@ -24,6 +24,7 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
+#include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -214,9 +215,9 @@ class ResourcePrefetchPredictor
   ~ResourcePrefetchPredictor() override;
 
   // Starts initialization by posting a task to the DB thread to read the
-  // predictor database.
-  void StartInitialization();
-  void Shutdown();
+  // predictor database. Virtual for testing.
+  virtual void StartInitialization();
+  virtual void Shutdown();
 
   // Thread safe.
   static bool ShouldRecordRequest(net::URLRequest* request,
@@ -258,7 +259,7 @@ class ResourcePrefetchPredictor
       std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats);
 
   // Returns true if prefetching data exists for the |main_frame_url|.
-  virtual bool IsUrlPrefetchable(const GURL& main_frame_url);
+  virtual bool IsUrlPrefetchable(const GURL& main_frame_url) const;
 
   // Returns true iff |resource| has sufficient confidence level and required
   // number of hits.
@@ -274,9 +275,9 @@ class ResourcePrefetchPredictor
   void SetObserverForTesting(TestObserver* observer);
 
  private:
-  // Starts prefetching if it is enabled for |origin| and prefetching data
-  // exists for the |main_frame_url| either at the URL or at the host level.
-  void StartPrefetching(const GURL& main_frame_url, HintOrigin origin);
+  // Starts prefetching if it is enabled and prefetching data exists for the
+  // |main_frame_url| either at the URL or at the host level.
+  void StartPrefetching(const GURL& main_frame_url);
 
   // Stops prefetching that may be in progress corresponding to
   // |main_frame_url|.
@@ -360,7 +361,6 @@ class ResourcePrefetchPredictor
   // Functions called on different network events pertaining to the loading of
   // main frame resource or sub resources.
   void OnMainFrameRequest(const URLRequestSummary& request);
-  void OnMainFrameResponse(const URLRequestSummary& response);
   void OnMainFrameRedirect(const URLRequestSummary& response);
   void OnSubresourceResponse(const URLRequestSummary& response);
   void OnSubresourceRedirect(const URLRequestSummary& response);
@@ -405,7 +405,7 @@ class ResourcePrefetchPredictor
   // database has been read.
   void OnHistoryAndCacheLoaded();
 
-  // Cleanup inflight_navigations_, inflight_prefetches_, and prefetcher_stats_.
+  // Cleanup inflight_navigations_, and prefetcher_stats_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
 
   // Deletes all URLs from the predictor database, the caches and removes all
@@ -463,6 +463,12 @@ class ResourcePrefetchPredictor
     tables_ = tables;
   }
 
+  // For testing.
+  void set_mock_resource_prefetcher_manager(
+      scoped_refptr<ResourcePrefetcherManager> prefetch_manager) {
+    prefetch_manager_ = prefetch_manager;
+  }
+
   Profile* const profile_;
   TestObserver* observer_;
   const LoadingPredictorConfig config_;
@@ -478,7 +484,6 @@ class ResourcePrefetchPredictor
   std::unique_ptr<ManifestDataMap> manifest_data_;
   std::unique_ptr<OriginDataMap> origin_data_;
 
-  std::map<GURL, base::TimeTicks> inflight_prefetches_;
   NavigationMap inflight_navigations_;
 
   std::map<GURL, std::unique_ptr<ResourcePrefetcher::PrefetcherStats>>

@@ -14,8 +14,10 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
+#include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -259,7 +261,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   }
 
   void InitializePredictor() {
-    predictor_->StartInitialization();
+    loading_predictor_->StartInitialization();
     base::RunLoop loop;
     loop.RunUntilIdle();  // Runs the DB lookup.
     profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -267,20 +269,10 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   void ResetPredictor(bool small_db = true) {
     LoadingPredictorConfig config;
-    if (small_db) {
-      config.max_urls_to_track = 3;
-      config.max_hosts_to_track = 2;
-      config.max_resources_per_entry = 4;
-      config.max_consecutive_misses = 2;
-      config.max_redirect_consecutive_misses = 2;
-      config.min_resource_confidence_to_trigger_prefetch = 0.5;
-    }
-    config.is_url_learning_enabled = true;
-    config.is_manifests_enabled = true;
-    config.is_origin_learning_enabled = true;
-
-    config.mode |= LoadingPredictorConfig::LEARNING;
-    predictor_.reset(new ResourcePrefetchPredictor(config, profile_.get()));
+    PopulateTestConfig(&config, small_db);
+    loading_predictor_ =
+        base::MakeUnique<LoadingPredictor>(config, profile_.get());
+    predictor_ = loading_predictor_->resource_prefetch_predictor();
     predictor_->set_mock_tables(mock_tables_);
   }
 
@@ -296,7 +288,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   net::TestURLRequestContext url_request_context_;
 
-  std::unique_ptr<ResourcePrefetchPredictor> predictor_;
+  std::unique_ptr<LoadingPredictor> loading_predictor_;
+  ResourcePrefetchPredictor* predictor_;
   scoped_refptr<StrictMock<MockResourcePrefetchPredictorTables>> mock_tables_;
 
   PrefetchDataMap test_url_data_;
@@ -355,7 +348,8 @@ void ResourcePrefetchPredictorTest::TearDown() {
             mock_tables_->manifest_table_.data_);
   EXPECT_EQ(*predictor_->origin_data_->data_cache_,
             mock_tables_->origin_table_.data_);
-  predictor_.reset(NULL);
+  loading_predictor_ = nullptr;
+  predictor_ = nullptr;
   profile_->DestroyHistoryService();
 }
 
@@ -624,8 +618,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationLowHistoryCount) {
       content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
   predictor_->RecordURLResponse(resource3);
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(
       mock_observer,
       OnNavigationLearned(kVisitCount,
@@ -724,8 +717,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
 
   predictor_->RecordURLResponse(redirected);
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer,
               OnNavigationLearned(
                   kVisitCount, CreatePageRequestSummary("http://www.google.com",
@@ -839,8 +831,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   no_store.is_no_store = true;
   predictor_->RecordURLResponse(no_store);
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer,
               OnNavigationLearned(
                   kVisitCount, CreatePageRequestSummary("http://www.google.com",
@@ -942,8 +933,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
       content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false);
   predictor_->RecordURLResponse(resource2);
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer,
               OnNavigationLearned(
                   kVisitCount, CreatePageRequestSummary(
@@ -1013,8 +1003,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
   predictor_->RecordURLRedirect(fb3);
   NavigationID fb_end = CreateNavigationID(1, "https://facebook.com/google");
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(
       mock_observer,
       OnNavigationLearned(kVisitCount, CreatePageRequestSummary(
@@ -1064,8 +1053,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   predictor_->RecordURLRedirect(fb3);
   NavigationID fb_end = CreateNavigationID(1, "https://facebook.com/google");
 
-  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(
-      predictor_.get());
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(
       mock_observer,
       OnNavigationLearned(kVisitCount, CreatePageRequestSummary(
@@ -2067,28 +2055,6 @@ TEST_F(ResourcePrefetchPredictorTest,
       "google.com", "www.google.com", "http://google.com?query=cats",
       "http://www.google.com?query=cats",
       ResourcePrefetchPredictor::RedirectStatus::REDIRECT_CORRECTLY_PREDICTED);
-}
-
-TEST_F(ResourcePrefetchPredictorTest, TestPrefetchingDurationHistogram) {
-  // Prefetching duration for an url without resources in the database
-  // shouldn't be recorded.
-  const std::string main_frame_url = "http://google.com/?query=cats";
-  predictor_->StartPrefetching(GURL(main_frame_url), HintOrigin::EXTERNAL);
-  predictor_->StopPrefetching(GURL(main_frame_url));
-  histogram_tester_->ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 0);
-
-  // Fill the database to record a duration.
-  PrefetchData google = CreatePrefetchData("google.com", 1);
-  InitializeResourceData(
-      google.add_resources(), "https://cdn.google.com/script.js",
-      content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1, net::MEDIUM, false, false);
-  predictor_->host_resource_data_->UpdateData(google.primary_key(), google);
-
-  predictor_->StartPrefetching(GURL(main_frame_url), HintOrigin::EXTERNAL);
-  predictor_->StopPrefetching(GURL(main_frame_url));
-  histogram_tester_->ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
 }
 
 TEST_F(ResourcePrefetchPredictorTest, TestRecordFirstContentfulPaint) {

@@ -1,14 +1,15 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
-#define CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
+#ifndef CHROME_BROWSER_NET_LOADING_PREDICTOR_OBSERVER_H_
+#define CHROME_BROWSER_NET_LOADING_PREDICTOR_OBSERVER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
@@ -22,17 +23,16 @@ class GURL;
 namespace chrome_browser_net {
 
 // Observes resource requests in the ResourceDispatcherHostDelegate and notifies
-// the ResourcePrefetchPredictor about the ones it is interested in.
+// the LoadingPredictor about the ones it is interested in.
 //  - Has an instance per profile, and is owned by the corresponding
 //    ProfileIOData.
 //  - Needs to be constructed on UI thread. Can be destroyed on UI or IO thread.
 //    As for member functions, public members are meant to be called on the IO
 //    thread and private members from the UI thread.
-class ResourcePrefetchPredictorObserver {
+class LoadingPredictorObserver {
  public:
-  explicit ResourcePrefetchPredictorObserver(
-      predictors::ResourcePrefetchPredictor* predictor);
-  ~ResourcePrefetchPredictorObserver();
+  explicit LoadingPredictorObserver(predictors::LoadingPredictor* predictor);
+  ~LoadingPredictorObserver();
 
   // Parts of the ResourceDispatcherHostDelegate that we want to observe.
   void OnRequestStarted(net::URLRequest* request,
@@ -72,11 +72,11 @@ class ResourcePrefetchPredictorObserver {
       const base::TimeTicks& creation_time) const;
 
   // Owned by profile.
-  base::WeakPtr<predictors::ResourcePrefetchPredictor> predictor_;
+  base::WeakPtr<predictors::LoadingPredictor> predictor_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorObserver);
+  DISALLOW_COPY_AND_ASSIGN(LoadingPredictorObserver);
 };
 
 }  // namespace chrome_browser_net
 
-#endif  // CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
+#endif  // CHROME_BROWSER_NET_LOADING_PREDICTOR_OBSERVER_H_

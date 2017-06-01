@@ -63,7 +63,6 @@ class ResourcePrefetcherManager
  private:
   friend class base::RefCountedThreadSafe<ResourcePrefetcherManager>;
   friend class MockResourcePrefetcherManager;
-
   ~ResourcePrefetcherManager() override;
 
   ResourcePrefetchPredictor* predictor_;

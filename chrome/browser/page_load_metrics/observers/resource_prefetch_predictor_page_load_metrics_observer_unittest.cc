@@ -23,7 +23,7 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
       Profile* profile)
       : ResourcePrefetchPredictor(config, profile) {}
 
-  MOCK_METHOD1(IsUrlPrefetchable, bool(const GURL& main_frame_url));
+  MOCK_CONST_METHOD1(IsUrlPrefetchable, bool(const GURL& main_frame_url));
 
   ~MockResourcePrefetchPredictor() override {}
 };
