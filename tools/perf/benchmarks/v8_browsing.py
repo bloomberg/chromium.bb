@@ -30,7 +30,25 @@ _V8_GC_HIGH_LEVEL_STATS_RE = re.compile(r'^v8-gc-('
     r'total_)')
 
 
-class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
+class _v8BrowsingBenchmarkBaseClass(perf_benchmark.PerfBenchmark):
+  """Base class for all v8 browsing benchmarks."""
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
+
+  def GetExpectations(self):
+    if self.PLATFORM is 'desktop':
+      return page_sets.V8BrowsingDesktopExpecations()
+    if self.PLATFORM is 'mobile':
+      return page_sets.V8BrowsingMobileExpecations()
+    raise NotImplementedError, ('Only have expectations for mobile and desktop '
+                                'platforms for v8_browsing tests.')
+
+
+class _V8BrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
   """Base class for V8 browsing benchmarks.
   This benchmark measures memory usage with periodic memory dumps and v8 times.
   See browsing_stories._BrowsingStory for workload description.
@@ -71,17 +89,6 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
       'expectedQueueingTimeMetric', 'v8AndMemoryMetrics'])
     return options
 
-  def CreateStorySet(self, options):
-    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
-
-  def GetExpectations(self):
-    if self.PLATFORM is 'desktop':
-      return page_sets.V8BrowsingDesktopExpecations()
-    if self.PLATFORM is 'mobile':
-      return page_sets.V8BrowsingMobileExpecations()
-    raise NotImplementedError, ('Only have expectations for mobile and desktop '
-                                'platforms for v8_browsing tests.')
-
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     # TODO(crbug.com/610962): Remove this stopgap when the perf dashboard
@@ -95,12 +102,8 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     # Allow all other metrics.
     return True
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
 
-
-class _V8RuntimeStatsBrowsingBenchmark(perf_benchmark.PerfBenchmark):
+class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
   """Base class for V8 browsing benchmarks that measure RuntimeStats.
   RuntimeStats measure the time spent by v8 in different phases like
   compile, JS execute, runtime etc.,
@@ -141,13 +144,6 @@ class _V8RuntimeStatsBrowsingBenchmark(perf_benchmark.PerfBenchmark):
     options.SetTimelineBasedMetrics([
       'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric'])
     return options
-
-  def CreateStorySet(self, options):
-    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
 
 
 @benchmark.Owner(emails=['ulan@chromium.org'])
