@@ -40,7 +40,7 @@ source_set("unit_tests") {
     "//components/proxy_config",
     "//components/ssl_config",
     "//ios/web",
-    "//ios/web:test_support",
+    "//ios/web/public/test",
     "//net",
     "//net:test_support",
     "//testing/gtest",
