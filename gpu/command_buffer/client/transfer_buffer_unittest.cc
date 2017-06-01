@@ -106,12 +106,16 @@ TEST_F(TransferBufferTest, Basic) {
   EXPECT_EQ(
       kTransferBufferSize - kStartingOffset,
       transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
 }
 
 TEST_F(TransferBufferTest, Free) {
   Initialize(0);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -120,9 +124,13 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  EXPECT_EQ(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
   // See that it gets reallocated.
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -131,9 +139,13 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  EXPECT_EQ(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
   // See that it gets reallocated.
   EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != NULL);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -142,11 +154,15 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  EXPECT_EQ(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
   // See that it gets reallocated.
   unsigned int size = 0;
   void* data = transfer_buffer_->AllocUpTo(1, &size);
   EXPECT_TRUE(data != NULL);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
   transfer_buffer_->FreePendingToken(data, 1);
 
   // Free buffer.
@@ -156,9 +172,13 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  EXPECT_EQ(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
   // See that it gets reallocated.
   transfer_buffer_->GetResultOffset();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+  EXPECT_NE(base::UnguessableToken(),
+            transfer_buffer_->shared_memory_handle().GetGUID());
 
   EXPECT_EQ(
       kTransferBufferSize - kStartingOffset,
@@ -486,5 +506,3 @@ TEST_F(TransferBufferExpandContractTest, ReallocsToDefault) {
 }
 
 }  // namespace gpu
-
-

@@ -17,6 +17,12 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/gpu_export.h"
 
+namespace base {
+
+class SharedMemoryHandle;
+
+}  // namespace base
+
 namespace gpu {
 
 class CommandBufferHelper;
@@ -26,6 +32,10 @@ class GPU_EXPORT TransferBufferInterface {
  public:
   TransferBufferInterface() { }
   virtual ~TransferBufferInterface() { }
+
+  // Returns the shared memory's handle when the back end is base::SharedMemory.
+  // Otherwise, this returns an invalid handle.
+  virtual base::SharedMemoryHandle shared_memory_handle() const = 0;
 
   virtual bool Initialize(
       unsigned int buffer_size,
@@ -68,6 +78,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   ~TransferBuffer() override;
 
   // Overridden from TransferBufferInterface.
+  base::SharedMemoryHandle shared_memory_handle() const override;
   bool Initialize(unsigned int default_buffer_size,
                   unsigned int result_size,
                   unsigned int min_buffer_size,
