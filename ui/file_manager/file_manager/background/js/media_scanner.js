@@ -454,7 +454,7 @@ importer.DefaultScanResult.prototype.canceled = function() {
  *     rejected as a dupe.
  */
 importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
-  return new Promise(entry.getMetadata.bind(entry)).then(
+  return metadataProxy.getEntryMetadata(entry).then(
       /**
        * @param {!Metadata} metadata
        * @this {importer.DefaultScanResult}
@@ -487,7 +487,7 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
                   return true;
                 }.bind(this));
 
-    }.bind(this));
+      }.bind(this));
 };
 
 /**

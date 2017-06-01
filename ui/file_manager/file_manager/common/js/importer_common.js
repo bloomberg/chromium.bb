@@ -643,42 +643,6 @@ importer.inflateAppUrl = function(deflated) {
 };
 
 /**
- * @param {!FileEntry} fileEntry
- * @return {!Promise<string>} Resolves with a "hashcode" consisting of
- *     just the last modified time and the file size.
- */
-importer.createMetadataHashcode = function(fileEntry) {
-  var entry = new importer.PromisingFileEntry(fileEntry);
-  return new Promise(
-      /**
-       * @param {function()} resolve
-       * @param {function()} reject
-       * @this {importer.PersistentImportHistory}
-       */
-      function(resolve, reject) {
-        entry.getMetadata()
-            .then(
-                /**
-                 * @param {!Object} metadata
-                 * @return {!Promise<string>}
-                 * @this {importer.PersistentImportHistory}
-                 */
-                function(metadata) {
-                  if (!('modificationTime' in metadata)) {
-                    reject('File entry missing "modificationTime" field.');
-                  } else if (!('size' in metadata)) {
-                    reject('File entry missing "size" field.');
-                  } else {
-                    var secondsSinceEpoch =
-                        importer.toSecondsFromEpoch(metadata.modificationTime);
-                    resolve(secondsSinceEpoch + '_' + metadata.size);
-                  }
-                }.bind(this));
-      }.bind(this))
-      .catch(importer.getLogger().catcher('importer-common-create-hashcode'));
-};
-
-/**
  * @param {string} date A date string in the form
  *     expected by Date.parse.
  * @return {string} The number of seconds from epoch to the date...as a string.
