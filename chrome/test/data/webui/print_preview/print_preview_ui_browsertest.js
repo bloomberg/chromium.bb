@@ -25,7 +25,7 @@ PrintPreviewUIBrowserTest.prototype = {
   runAccessibilityChecks: true,
 
   /** @override */
-  accessibilityIssuesAreErrors: false,
+  accessibilityIssuesAreErrors: true,
 
   /** @override */
   isAsync: true,
@@ -82,15 +82,35 @@ PrintPreviewUIBrowserTest.prototype = {
   'ZeroTopAndBottomMarginsHideHeaderFooter',
   'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
   'SmallPaperSizeHeaderFooter',
-  'TestColorSettingsMonochrome',
-  'TestColorSettingsCustomMonochrome',
-  'TestColorSettingsColor',
-  'TestColorSettingsCustomColor',
-  'TestColorSettingsBothStandardDefaultColor',
-  'TestColorSettingsBothStandardDefaultMonochrome',
-  'TestColorSettingsBothCustomDefaultColor',
+  'ColorSettingsMonochrome',
+  'ColorSettingsCustomMonochrome',
+  'ColorSettingsColor',
+  'ColorSettingsCustomColor',
+  'ColorSettingsBothStandardDefaultColor',
+  'ColorSettingsBothStandardDefaultMonochrome',
+  'ColorSettingsBothCustomDefaultColor',
+  'DuplexSettingsTrue',
+  'DuplexSettingsFalse',
+  'PrinterChangeUpdatesPreview',
+  'NoPDFPluginErrorMessage',
+  'CustomPaperNames',
+  'InitIssuesOneRequest',
+  'InvalidSettingsError',
+  'GenerateDraft',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
+    mocha.grep(new RegExp(testName + '\\b')).run();
+  });
+});
+
+
+// Disable accessibility errors for some tests.
+[
+  'AdvancedSettings1Option',
+  'AdvancedSettings2Options',
+].forEach(function(testName) {
+  TEST_F('PrintPreviewUIBrowserTest', testName, function() {
+    this.accessibilityIssuesAreErrors = false;
     mocha.grep(new RegExp(testName + '\\b')).run();
   });
 });
