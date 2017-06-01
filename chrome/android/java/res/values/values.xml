@@ -38,6 +38,10 @@
     <!-- TabSwitcher - Maximum amount to tilt tabs in over scroll in degrees. -->
     <integer name="over_scroll_angle">15</integer>
 
+    <!-- Toolbar/AppMenu - Drawable level on reload image button -->
+    <integer name="reload_button_level_reload">0</integer>
+    <integer name="reload_button_level_stop">1</integer>
+
     <!-- Help and Feedback
          These constants should be in sync with the context names on go/mobilehelprecs.
          If the context ID cannot be found, the default help page will be shown to the user.-->

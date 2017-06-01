@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
@@ -43,12 +44,6 @@ import java.util.concurrent.TimeUnit;
  * App Menu helper that handles hiding and showing menu items based on activity state.
  */
 public class AppMenuPropertiesDelegate {
-    // Indices for different levels in drawable.btn_reload_stop.
-    // Used only when preparing menu and refresh reload button in menu when tab
-    // page load status changes.
-    static final int RELOAD_BUTTON_LEVEL_RELOAD = 0;
-    static final int RELOAD_BUTTON_LEVEL_STOP_LOADING = 1;
-
     protected MenuItem mReloadMenuItem;
 
     protected final ChromeActivity mActivity;
@@ -291,8 +286,10 @@ public class AppMenuPropertiesDelegate {
      */
     public void loadingStateChanged(boolean isLoading) {
         if (mReloadMenuItem != null) {
+            Resources resources = mActivity.getResources();
             mReloadMenuItem.getIcon().setLevel(isLoading
-                    ? RELOAD_BUTTON_LEVEL_STOP_LOADING : RELOAD_BUTTON_LEVEL_RELOAD);
+                            ? resources.getInteger(R.integer.reload_button_level_stop)
+                            : resources.getInteger(R.integer.reload_button_level_reload));
             mReloadMenuItem.setTitle(isLoading
                     ? R.string.accessibility_btn_stop_loading : R.string.accessibility_btn_refresh);
         } else if (mAppMenuIconRowFooter != null) {
