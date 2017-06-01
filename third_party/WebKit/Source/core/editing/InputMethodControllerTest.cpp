@@ -1526,7 +1526,7 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceStartOfMarker) {
   // Add marker under "Initial text"
   EphemeralRange marker_range = PlainTextRange(0, 12).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Replace "Initial" with "Original"
   Vector<CompositionUnderline> empty_underlines;
@@ -1546,7 +1546,7 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "initial text"
   EphemeralRange marker_range = PlainTextRange(13, 25).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Replace "some initial" with "boring"
   Vector<CompositionUnderline> empty_underlines;
@@ -1564,7 +1564,7 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceEndOfMarker) {
   // Add marker under "Initial text"
   EphemeralRange marker_range = PlainTextRange(0, 12).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Replace "text" with "string"
   Vector<CompositionUnderline> empty_underlines;
@@ -1584,7 +1584,7 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "some initial"
   EphemeralRange marker_range = PlainTextRange(8, 20).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Replace "initial text" with "content"
   Vector<CompositionUnderline> empty_underlines;
@@ -1604,7 +1604,7 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_ReplaceEntireMarker) {
   // Add marker under "text"
   EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Replace "text" with "string"
   Vector<CompositionUnderline> empty_underlines;
@@ -1623,7 +1623,7 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "Initial"
   EphemeralRange marker_range = PlainTextRange(0, 7).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -1644,7 +1644,7 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "text"
   EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -1664,23 +1664,23 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_Deletions) {
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(10, 15).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(15, 20).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(20, 25).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(5u, GetDocument().Markers().Markers().size());
 
@@ -1707,7 +1707,7 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -1725,7 +1725,7 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_DeleteMiddleOfMarker) {
 
   EphemeralRange marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Delete middle of marker
   Vector<CompositionUnderline> empty_underlines;
@@ -1744,15 +1744,15 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(10, 15).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
 
@@ -1777,15 +1777,15 @@ TEST_F(InputMethodControllerTest, ContentDependentMarker_InsertBetweenMarkers) {
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(5, 15).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   marker_range = PlainTextRange(15, 20).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
 

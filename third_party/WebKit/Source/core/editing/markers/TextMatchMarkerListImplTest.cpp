@@ -15,7 +15,7 @@ class TextMatchMarkerListImplTest : public EditingTestBase {
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
     return new TextMatchMarker(start_offset, end_offset,
-                               DocumentMarker::MatchStatus::kInactive);
+                               TextMatchMarker::MatchStatus::kInactive);
   }
 
   Persistent<TextMatchMarkerListImpl> marker_list_;

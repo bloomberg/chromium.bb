@@ -41,6 +41,8 @@ class TextMatchMarker final : public DocumentMarker {
   enum class State { kInvalid, kValidNull, kValidNotNull };
 
  public:
+  enum class MatchStatus { kInactive, kActive };
+
   TextMatchMarker(unsigned start_offset,
                   unsigned end_offset,
                   MatchStatus status)

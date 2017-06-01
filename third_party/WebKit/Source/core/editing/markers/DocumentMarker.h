@@ -128,8 +128,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     MisspellingMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
-  enum class MatchStatus { kInactive, kActive };
-
   DocumentMarker(MarkerType,
                  unsigned start_offset,
                  unsigned end_offset,

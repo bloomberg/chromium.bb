@@ -146,7 +146,7 @@ void DocumentMarkerController::AddSpellCheckMarker(
 
 void DocumentMarkerController::AddTextMatchMarker(
     const EphemeralRange& range,
-    DocumentMarker::MatchStatus match_status) {
+    TextMatchMarker::MatchStatus match_status) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [match_status](int start_offset, int end_offset) {
     return new TextMatchMarker(start_offset, end_offset, match_status);
