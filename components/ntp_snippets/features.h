@@ -40,6 +40,9 @@ extern const base::Feature kIncreasedVisibility;
 // Feature to prefer AMP URLs over regular URLs when available.
 extern const base::Feature kPreferAmpUrlsFeature;
 
+// Feature to listen for GCM push updates from the server.
+extern const base::Feature kContentSuggestionsPushFeature;
+
 // Feature to choose a category ranker.
 extern const base::Feature kCategoryRanker;
 

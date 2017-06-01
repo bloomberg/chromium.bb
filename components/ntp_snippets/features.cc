@@ -18,6 +18,7 @@ const base::Feature*(kAllFeatures[]) = {&kArticleSuggestionsFeature,
                                         &kBookmarkSuggestionsFeature,
                                         &kCategoryOrder,
                                         &kCategoryRanker,
+                                        &kContentSuggestionsPushFeature,
                                         &kForeignSessionsSuggestionsFeature,
                                         &kIncreasedVisibility,
                                         &kNotificationsFeature,
@@ -44,6 +45,9 @@ const base::Feature kPhysicalWebPageSuggestionsFeature{
 
 const base::Feature kForeignSessionsSuggestionsFeature{
     "NTPForeignSessionsSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsPushFeature{
+    "ContentSuggestionsPush", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPreferAmpUrlsFeature{"NTPPreferAmpUrls",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
