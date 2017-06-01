@@ -216,7 +216,7 @@ v8::Local<v8::Object> AccessibilityController::FocusedElement() {
     return v8::Local<v8::Object>();
 
   blink::WebAXObject focused_element =
-      frame->GetDocument().FocusedAccessibilityObject();
+      blink::WebAXObject::FromWebDocumentFocused(frame->GetDocument());
   if (focused_element.IsNull())
     focused_element = blink::WebAXObject::FromWebView(*web_view());
   return elements_.GetOrCreate(focused_element);

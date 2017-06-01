@@ -96,6 +96,9 @@ class WebAXObject {
 
   BLINK_EXPORT static WebAXObject FromWebNode(WebNode&);
   BLINK_EXPORT static WebAXObject FromWebView(WebView&);
+  BLINK_EXPORT static WebAXObject FromWebDocument(const WebDocument&);
+  BLINK_EXPORT static WebAXObject FromWebDocumentByID(const WebDocument&, int);
+  BLINK_EXPORT static WebAXObject FromWebDocumentFocused(const WebDocument&);
 
   BLINK_EXPORT void Reset();
   BLINK_EXPORT void Assign(const WebAXObject&);

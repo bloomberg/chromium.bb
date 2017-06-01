@@ -58,7 +58,7 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
   blink::WebNode start_node = document;
   if (acc_obj_id > 0) {
     blink::WebAXObject start_acc_obj =
-        document.AccessibilityObjectFromID(acc_obj_id);
+        blink::WebAXObject::FromWebDocumentByID(document, acc_obj_id);
     if (start_acc_obj.IsNull()) {
       error.value =
           ExtensionHostMsg_AutomationQuerySelector_Error::kNodeDestroyed;
