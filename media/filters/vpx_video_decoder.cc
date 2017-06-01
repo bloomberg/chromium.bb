@@ -22,6 +22,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
@@ -380,6 +381,12 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK_NE(state_, kUninitialized)
       << "Called Decode() before successful Initialize()";
 
+  // If abort has been triggered, do nothing.
+  if (should_abort_decodes_ && should_abort_decodes_->IsSet()) {
+    bound_decode_cb.Run(DecodeStatus::ABORTED);
+    return;
+  }
+
   if (state_ == kError) {
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -442,12 +449,36 @@ void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void VpxVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (offload_task_runner_)
-    GetOffloadThread()->WaitForOutstandingTasks();
+  if (offload_task_runner_) {
+    should_abort_decodes_->Set();
+    offload_task_runner_->PostTask(
+        FROM_HERE,
+        BindToCurrentLoop(base::Bind(&VpxVideoDecoder::ResetHelper,
+                                     base::Unretained(this), closure)));
+    return;
+  }
 
+  // BindToCurrentLoop() to avoid calling |closure| inmediately.
+  ResetHelper(BindToCurrentLoop(closure));
+}
+
+void VpxVideoDecoder::ResetHelper(const base::Closure& closure) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   state_ = kNormal;
-  // PostTask() to avoid calling |closure| inmediately.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+  if (offload_task_runner_)
+    should_abort_decodes_.reset(new base::AtomicFlag());
+  closure.Run();
+}
+
+int VpxVideoDecoder::GetMaxDecodeRequests() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Maximum number of concurrent Decode() operations allowed. Since this
+  // requires queuing of the decode requests, it can only be enabled when we
+  // have the offload thread. Higher values allow better pipelining, but also
+  // require more resources. Arbitrarily, we've chosen the same value as used by
+  // GpuVideoDecoder.
+  return offload_task_runner_ ? 4 : 1;
 }
 
 bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
@@ -485,7 +516,9 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     // Move high resolution vp9 decodes off of the main media thread (otherwise
     // decode may block audio decoding, demuxing, and other control activities).
     if (config.coded_size().width() >= 1024) {
+      DCHECK(!offload_task_runner_);
       offload_task_runner_ = GetOffloadThread()->RequestOffloadThread();
+      should_abort_decodes_.reset(new base::AtomicFlag());
     }
 
     DCHECK(!memory_pool_);
@@ -513,6 +546,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 
 void VpxVideoDecoder::CloseDecoder() {
   if (offload_task_runner_) {
+    should_abort_decodes_->Set();
     GetOffloadThread()->WaitForOutstandingTasksAndReleaseOffloadThread();
     offload_task_runner_ = nullptr;
   }
