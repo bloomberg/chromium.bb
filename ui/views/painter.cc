@@ -4,25 +4,13 @@
 
 #include "ui/views/painter.h"
 
-#include <memory>
-
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "cc/paint/paint_shader.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
-#include "third_party/skia/include/pathops/SkPathOps.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_f.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/nine_image_painter.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/view.h"
@@ -154,71 +142,6 @@ void SolidFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   canvas->DrawSolidFocusRect(rect, color_, thickness_);
 }
 
-// GradientPainter ------------------------------------------------------------
-
-class GradientPainter : public Painter {
- public:
-  GradientPainter(bool horizontal,
-                  SkColor* colors,
-                  SkScalar* pos,
-                  size_t count);
-  ~GradientPainter() override;
-
-  // Painter:
-  gfx::Size GetMinimumSize() const override;
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
-
- private:
-  // If |horizontal_| is true then the gradient is painted horizontally.
-  bool horizontal_;
-  // The gradient colors.
-  std::unique_ptr<SkColor[]> colors_;
-  // The relative positions of the corresponding gradient colors.
-  std::unique_ptr<SkScalar[]> pos_;
-  // The number of elements in |colors_| and |pos_|.
-  size_t count_;
-
-  DISALLOW_COPY_AND_ASSIGN(GradientPainter);
-};
-
-GradientPainter::GradientPainter(bool horizontal,
-                                 SkColor* colors,
-                                 SkScalar* pos,
-                                 size_t count)
-    : horizontal_(horizontal),
-      colors_(new SkColor[count]),
-      pos_(new SkScalar[count]),
-      count_(count) {
-  for (size_t i = 0; i < count_; ++i) {
-    pos_[i] = pos[i];
-    colors_[i] = colors[i];
-  }
-}
-
-GradientPainter::~GradientPainter() {
-}
-
-gfx::Size GradientPainter::GetMinimumSize() const {
-  return gfx::Size();
-}
-
-void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  cc::PaintFlags flags;
-  SkPoint p[2];
-  p[0].iset(0, 0);
-  if (horizontal_)
-    p[1].iset(size.width(), 0);
-  else
-    p[1].iset(0, size.height());
-
-  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
-      p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode)));
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-
-  canvas->sk_canvas()->drawRect(SkRect::MakeIWH(size.width(), size.height()),
-                                flags);
-}
-
 // ImagePainter ---------------------------------------------------------------
 
 // ImagePainter stores and paints nine images as a scalable grid.
@@ -311,16 +234,6 @@ std::unique_ptr<Painter> Painter::CreateRoundRectWith1PxBorderPainter(
 }
 
 // static
-std::unique_ptr<Painter> Painter::CreateVerticalGradient(SkColor c1,
-                                                         SkColor c2) {
-  SkColor colors[2];
-  colors[0] = c1;
-  colors[1] = c2;
-  SkScalar pos[] = {0, 1};
-  return base::MakeUnique<GradientPainter>(false, colors, pos, 2);
-}
-
-// static
 std::unique_ptr<Painter> Painter::CreateImagePainter(
     const gfx::ImageSkia& image,
     const gfx::Insets& insets) {
@@ -362,38 +275,6 @@ std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     int thickness,
     const gfx::InsetsF& insets) {
   return base::MakeUnique<SolidFocusPainter>(color, thickness, insets);
-}
-
-// HorizontalPainter ----------------------------------------------------------
-
-HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  for (int i = 0; i < 3; ++i)
-    images_[i] = rb.GetImageNamed(image_resource_names[i]).ToImageSkia();
-  DCHECK_EQ(images_[LEFT]->height(), images_[CENTER]->height());
-  DCHECK_EQ(images_[LEFT]->height(), images_[RIGHT]->height());
-}
-
-HorizontalPainter::~HorizontalPainter() {
-}
-
-gfx::Size HorizontalPainter::GetMinimumSize() const {
-  return gfx::Size(
-      images_[LEFT]->width() + images_[CENTER]->width() +
-          images_[RIGHT]->width(), images_[LEFT]->height());
-}
-
-void HorizontalPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  if (size.width() < GetMinimumSize().width())
-    return;  // No room to paint.
-
-  canvas->DrawImageInt(*images_[LEFT], 0, 0);
-  canvas->DrawImageInt(*images_[RIGHT], size.width() - images_[RIGHT]->width(),
-                       0);
-  canvas->TileImageInt(
-      *images_[CENTER], images_[LEFT]->width(), 0,
-      size.width() - images_[LEFT]->width() - images_[RIGHT]->width(),
-      images_[LEFT]->height());
 }
 
 }  // namespace views

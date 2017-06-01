@@ -7,12 +7,14 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/paint_flags.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/painter.h"
 #include "ui/views/view.h"
 
 using base::ASCIIToUTF16;
@@ -30,16 +32,9 @@ class ScrollViewExample::ScrollableView : public View {
     AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(width(), height());
-  }
-
   void SetColor(SkColor from, SkColor to) {
-    Background* background = Background::CreateBackgroundPainter(
-        Painter::CreateVerticalGradient(from, to));
-    background->SetNativeControlColor(
-        color_utils::AlphaBlend(from, to, 128));
-    set_background(background);
+    from_color_ = from;
+    to_color_ = to;
   }
 
   void PlaceChildY(int index, int y) {
@@ -48,13 +43,29 @@ class ScrollViewExample::ScrollableView : public View {
     view->SetBounds(0, y, size.width(), size.height());
   }
 
+  // View
   void Layout() override {
     PlaceChildY(0, 0);
     PlaceChildY(1, height() / 2);
     SizeToPreferredSize();
   }
 
+  void OnPaintBackground(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setShader(
+        gfx::CreateGradientShader(0, height(), from_color_, to_color_));
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawRect(GetLocalBounds(), flags);
+  }
+
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(width(), height());
+  }
+
  private:
+  SkColor from_color_;
+  SkColor to_color_;
+
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);
 };
 
