@@ -5,127 +5,99 @@
 var initialize_CacheStorageTest = function() {
 InspectorTest.preloadPanel("resources");
 
-InspectorTest.dumpCacheTree = function()
+InspectorTest.dumpCacheTree = async function()
 {
     UI.panels.resources._sidebar.cacheStorageListTreeElement.expand();
     InspectorTest.addResult("Dumping CacheStorage tree:");
     var cachesTreeElement = UI.panels.resources._sidebar.cacheStorageListTreeElement;
-    var promise = new Promise(function(resolve, reject) {
-        InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames").then(crawlCacheTree).catch(reject);
-
-        function crawlCacheTree()
-        {
-            if (!cachesTreeElement.childCount()) {
-                InspectorTest.addResult("    (empty)");
-                return resolve();
-            }
-
-            queryView(0);
-
-            function queryView(i)
-            {
-                var cacheTreeElement = cachesTreeElement.childAt(i);
-                InspectorTest.addResult("    cache: " + cacheTreeElement.title);
-                var view = cacheTreeElement._view;
-                InspectorTest.addSniffer(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback", addDataResult, false);
-                if (!view)
-                    cacheTreeElement.onselect(false);
-                else
-                    view._updateData(true);
-                view = cacheTreeElement._view;
-
-                function addDataResult()
-                {
-                    if (view._entries.length == 0) {
-                        InspectorTest.addResult("        (cache empty)");
-                        nextOrResolve();
-                        return;
-                    }
-                    var dataGrid = view._dataGrid;
-                    for (var node of dataGrid.rootNode().children) {
-                        var entries = [];
-                        for (var j = 0; j < node.element().children.length; j++) {
-                            var td = node.element().children[j];
-                            if (td.textContent)
-                                entries.push(td.textContent);
-                        }
-                        InspectorTest.addResult("        " + entries.join(", "));
-                    }
-                    nextOrResolve();
-                }
-
-                function nextOrResolve()
-                {
-                    var next = i + 1;
-                    if (next < cachesTreeElement.childCount())
-                        queryView(next);
-                    else
-                        resolve();
-                }
-            }
-        }
-    });
+    var promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames");
     UI.panels.resources._sidebar.cacheStorageListTreeElement._refreshCaches();
-    return promise;
+
+    await promise;
+
+    if (!cachesTreeElement.childCount()) {
+        InspectorTest.addResult("    (empty)");
+        return;
+    }
+
+    for (var i = 0; i < cachesTreeElement.childCount(); ++i) {
+        var cacheTreeElement = cachesTreeElement.childAt(i);
+        InspectorTest.addResult("    cache: " + cacheTreeElement.title);
+        var view = cacheTreeElement._view;
+        promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback");
+        if (!view)
+            cacheTreeElement.onselect(false);
+        else
+            view._updateData(true);
+        view = cacheTreeElement._view;
+
+        await promise;
+
+        if (view._entries.length == 0) {
+            InspectorTest.addResult("        (cache empty)");
+            continue;
+        }
+        var dataGrid = view._dataGrid;
+        for (var node of dataGrid.rootNode().children) {
+            var entries = Array.from(node.element().children, td => td.textContent).filter(text => text);
+            InspectorTest.addResult("        " + entries.join(", "));
+        }
+    }
 }
 
 // If optionalEntry is not specified, then the whole cache is deleted.
-InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
+InspectorTest.deleteCacheFromInspector = async function(cacheName, optionalEntry)
 {
     UI.panels.resources._sidebar.cacheStorageListTreeElement.expand();
-    if (optionalEntry) {
+    if (optionalEntry)
         InspectorTest.addResult("Deleting CacheStorage entry " + optionalEntry + " in cache " + cacheName);
-    } else {
+    else
         InspectorTest.addResult("Deleting CacheStorage cache " + cacheName);
-    }
     var cachesTreeElement = UI.panels.resources._sidebar.cacheStorageListTreeElement;
-    var promise = new Promise(function(resolve, reject) {
-        InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames")
-            .then(function() {
-                if (!cachesTreeElement.childCount()) {
-                    reject("Error: Could not find CacheStorage cache " + cacheName);
-                    return;
-                }
-                for (var i = 0; i < cachesTreeElement.childCount(); i++) {
-                    var cacheTreeElement = cachesTreeElement.childAt(i);
-                    var title = cacheTreeElement.title;
-                    var elementCacheName = title.substring(0, title.lastIndexOf(" - "));
-                    if (elementCacheName != cacheName)
-                        continue;
-                    if (!optionalEntry) {
-                        // Here we're deleting the whole cache.
-                        InspectorTest.addSniffer(SDK.ServiceWorkerCacheModel.prototype, "_cacheRemoved", resolve)
-                        cacheTreeElement._clearCache();
-                        return;
-                    }
-
-                    // Here we're deleting only the entry.  We verify that it is present in the table.
-                    var view = cacheTreeElement._view;
-                    InspectorTest.addSniffer(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback", deleteEntryOrReject, false);
-                    if (!view)
-                        cacheTreeElement.onselect(false);
-                    else
-                        view._updateData(true);
-                    view = cacheTreeElement._view;
-
-                    function deleteEntryOrReject()
-                    {
-                        for (var entry of view._entries) {
-                            if (entry.request == optionalEntry) {
-                                view._model.deleteCacheEntry(view._cache, entry.request, resolve);
-                                return;
-                            }
-                        }
-                        reject("Error: Could not find cache entry to delete: " + optionalEntry);
-                        return;
-                    }
-                    return;
-                }
-                reject("Error: Could not find CacheStorage cache " + cacheName);
-            }).catch(reject);
-    });
+    var promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames");
     UI.panels.resources._sidebar.cacheStorageListTreeElement._refreshCaches();
-    return promise;
+
+    await promise;
+
+    if (!cachesTreeElement.childCount()) {
+        throw "Error: Could not find CacheStorage cache " + cacheName;
+        return;
+    }
+
+    for (var i = 0; i < cachesTreeElement.childCount(); i++) {
+        var cacheTreeElement = cachesTreeElement.childAt(i);
+        var title = cacheTreeElement.title;
+        var elementCacheName = title.substring(0, title.lastIndexOf(" - "));
+        if (elementCacheName != cacheName)
+            continue;
+        if (!optionalEntry) {
+            // Here we're deleting the whole cache.
+            promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_cacheRemoved");
+            cacheTreeElement._clearCache();
+            await promise;
+            return;
+        }
+
+        promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback");
+        // Here we're deleting only the entry.  We verify that it is present in the table.
+        var view = cacheTreeElement._view;
+        if (!view)
+            cacheTreeElement.onselect(false);
+        else
+            view._updateData(true);
+        view = cacheTreeElement._view;
+
+        await promise;
+
+        var entry = view._entries.find(entry => entry.request === optionalEntry);
+        if (!entry) {
+            throw "Error: Could not find cache entry to delete: " + optionalEntry;
+            return;
+        }
+        await view._model.deleteCacheEntry(view._cache, entry.request);
+        return;
+    }
+    throw "Error: Could not find CacheStorage cache " + cacheName;
 }
 
 InspectorTest.waitForCacheRefresh = function(callback)
