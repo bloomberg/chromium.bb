@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/buffering_state.h"
@@ -106,49 +105,6 @@ class MEDIA_EXPORT MediaLog {
   void SetStringProperty(const std::string& key, const std::string& value);
   void SetDoubleProperty(const std::string& key, double value);
   void SetBooleanProperty(const std::string& key, bool value);
-
-  // Histogram names used for reporting; also double as MediaLog key names.
-  // NOTE: If you add to this list you must update GetWatchTimeKeys() and if
-  // necessary, GetWatchTimePowerKeys().
-  static const char kWatchTimeAudioAll[];
-  static const char kWatchTimeAudioMse[];
-  static const char kWatchTimeAudioEme[];
-  static const char kWatchTimeAudioSrc[];
-  static const char kWatchTimeAudioBattery[];
-  static const char kWatchTimeAudioAc[];
-  static const char kWatchTimeAudioEmbeddedExperience[];
-  static const char kWatchTimeAudioVideoAll[];
-  static const char kWatchTimeAudioVideoMse[];
-  static const char kWatchTimeAudioVideoEme[];
-  static const char kWatchTimeAudioVideoSrc[];
-  static const char kWatchTimeAudioVideoBattery[];
-  static const char kWatchTimeAudioVideoAc[];
-  static const char kWatchTimeAudioVideoEmbeddedExperience[];
-  static const char kWatchTimeAudioVideoBackgroundAll[];
-  static const char kWatchTimeAudioVideoBackgroundMse[];
-  static const char kWatchTimeAudioVideoBackgroundEme[];
-  static const char kWatchTimeAudioVideoBackgroundSrc[];
-  static const char kWatchTimeAudioVideoBackgroundBattery[];
-  static const char kWatchTimeAudioVideoBackgroundAc[];
-  static const char kWatchTimeAudioVideoBackgroundEmbeddedExperience[];
-
-  // Markers which signify the watch time should be finalized immediately.
-  static const char kWatchTimeFinalize[];
-  static const char kWatchTimeFinalizePower[];
-
-  // Count of the number of underflow events during a media session.
-  static const char kUnderflowCount[];
-
-  // UMA keys for MTBR samples.
-  static const char kMeanTimeBetweenRebuffersAudioSrc[];
-  static const char kMeanTimeBetweenRebuffersAudioMse[];
-  static const char kMeanTimeBetweenRebuffersAudioEme[];
-  static const char kMeanTimeBetweenRebuffersAudioVideoSrc[];
-  static const char kMeanTimeBetweenRebuffersAudioVideoMse[];
-  static const char kMeanTimeBetweenRebuffersAudioVideoEme[];
-
-  static base::flat_set<base::StringPiece> GetWatchTimeKeys();
-  static base::flat_set<base::StringPiece> GetWatchTimePowerKeys();
 
  private:
   // A unique (to this process) id for this MediaLog.

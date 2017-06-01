@@ -21,6 +21,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
+#include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -344,8 +345,8 @@ class MediaInternalsWatchTimeTest : public testing::Test,
         media_log_(new DirectMediaLog(render_process_id_)),
         histogram_tester_(new base::HistogramTester()),
         test_recorder_(new ukm::TestUkmRecorder()),
-        watch_time_keys_(media::MediaLog::GetWatchTimeKeys()),
-        watch_time_power_keys_(media::MediaLog::GetWatchTimePowerKeys()) {
+        watch_time_keys_(media::GetWatchTimeKeys()),
+        watch_time_power_keys_(media::GetWatchTimePowerKeys()) {
     media_log_->AddEvent(media_log_->CreateCreatedEvent(kTestOrigin));
   }
 
@@ -438,13 +439,12 @@ TEST_F(MediaInternalsWatchTimeTest, BasicAudio) {
   CycleWatchTimeReporter();
   wtr_.reset();
 
-  ExpectWatchTime(
-      {media::MediaLog::kWatchTimeAudioAll, media::MediaLog::kWatchTimeAudioMse,
-       media::MediaLog::kWatchTimeAudioEme, media::MediaLog::kWatchTimeAudioAc,
-       media::MediaLog::kWatchTimeAudioEmbeddedExperience},
-      kWatchTimeLate);
-  ExpectMtbrTime({media::MediaLog::kMeanTimeBetweenRebuffersAudioMse,
-                  media::MediaLog::kMeanTimeBetweenRebuffersAudioEme},
+  ExpectWatchTime({media::kWatchTimeAudioAll, media::kWatchTimeAudioMse,
+                   media::kWatchTimeAudioEme, media::kWatchTimeAudioAc,
+                   media::kWatchTimeAudioEmbeddedExperience},
+                  kWatchTimeLate);
+  ExpectMtbrTime({media::kMeanTimeBetweenRebuffersAudioMse,
+                  media::kMeanTimeBetweenRebuffersAudioEme},
                  kWatchTimeLate / 2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
@@ -472,14 +472,13 @@ TEST_F(MediaInternalsWatchTimeTest, BasicVideo) {
   CycleWatchTimeReporter();
   wtr_.reset();
 
-  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
-                   media::MediaLog::kWatchTimeAudioVideoSrc,
-                   media::MediaLog::kWatchTimeAudioVideoEme,
-                   media::MediaLog::kWatchTimeAudioVideoAc,
-                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
-                  kWatchTimeLate);
-  ExpectMtbrTime({media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoSrc,
-                  media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoEme},
+  ExpectWatchTime(
+      {media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoSrc,
+       media::kWatchTimeAudioVideoEme, media::kWatchTimeAudioVideoAc,
+       media::kWatchTimeAudioVideoEmbeddedExperience},
+      kWatchTimeLate);
+  ExpectMtbrTime({media::kMeanTimeBetweenRebuffersAudioVideoSrc,
+                  media::kMeanTimeBetweenRebuffersAudioVideoEme},
                  kWatchTimeLate / 2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
@@ -514,18 +513,17 @@ TEST_F(MediaInternalsWatchTimeTest, BasicPower) {
   CycleWatchTimeReporter();
 
   // This should finalize the power watch time on battery.
-  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoBattery}, kWatchTime2);
+  ExpectWatchTime({media::kWatchTimeAudioVideoBattery}, kWatchTime2);
   ResetHistogramTester();
   wtr_.reset();
 
   std::vector<base::StringPiece> normal_keys = {
-      media::MediaLog::kWatchTimeAudioVideoAll,
-      media::MediaLog::kWatchTimeAudioVideoSrc,
-      media::MediaLog::kWatchTimeAudioVideoEme,
-      media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience};
+      media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoSrc,
+      media::kWatchTimeAudioVideoEme,
+      media::kWatchTimeAudioVideoEmbeddedExperience};
 
   for (auto key : watch_time_keys_) {
-    if (key == media::MediaLog::kWatchTimeAudioVideoAc) {
+    if (key == media::kWatchTimeAudioVideoAc) {
       histogram_tester_->ExpectUniqueSample(
           key.as_string(), (kWatchTime3 - kWatchTime2).InMilliseconds(), 1);
       continue;
@@ -576,13 +574,12 @@ TEST_F(MediaInternalsWatchTimeTest, BasicHidden) {
   CycleWatchTimeReporter();
   wtr_.reset();
 
-  ExpectWatchTime(
-      {media::MediaLog::kWatchTimeAudioVideoBackgroundAll,
-       media::MediaLog::kWatchTimeAudioVideoBackgroundSrc,
-       media::MediaLog::kWatchTimeAudioVideoBackgroundEme,
-       media::MediaLog::kWatchTimeAudioVideoBackgroundAc,
-       media::MediaLog::kWatchTimeAudioVideoBackgroundEmbeddedExperience},
-      kWatchTimeLate);
+  ExpectWatchTime({media::kWatchTimeAudioVideoBackgroundAll,
+                   media::kWatchTimeAudioVideoBackgroundSrc,
+                   media::kWatchTimeAudioVideoBackgroundEme,
+                   media::kWatchTimeAudioVideoBackgroundAc,
+                   media::kWatchTimeAudioVideoBackgroundEmbeddedExperience},
+                  kWatchTimeLate);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 4, kWatchTimeLate);
@@ -609,12 +606,11 @@ TEST_F(MediaInternalsWatchTimeTest, PlayerDestructionFinalizes) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
-                   media::MediaLog::kWatchTimeAudioVideoSrc,
-                   media::MediaLog::kWatchTimeAudioVideoEme,
-                   media::MediaLog::kWatchTimeAudioVideoAc,
-                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
-                  kWatchTimeLate);
+  ExpectWatchTime(
+      {media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoSrc,
+       media::kWatchTimeAudioVideoEme, media::kWatchTimeAudioVideoAc,
+       media::kWatchTimeAudioVideoEmbeddedExperience},
+      kWatchTimeLate);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 4, kWatchTimeLate);
@@ -641,12 +637,11 @@ TEST_F(MediaInternalsWatchTimeTest, ProcessDestructionFinalizes) {
   // Also verify that if UKM has already been destructed, we don't crash.
   test_recorder_.reset();
   internals_->OnProcessTerminatedForTesting(render_process_id_);
-  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
-                   media::MediaLog::kWatchTimeAudioVideoSrc,
-                   media::MediaLog::kWatchTimeAudioVideoEme,
-                   media::MediaLog::kWatchTimeAudioVideoAc,
-                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
-                  kWatchTimeLate);
+  ExpectWatchTime(
+      {media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoSrc,
+       media::kWatchTimeAudioVideoEme, media::kWatchTimeAudioVideoAc,
+       media::kWatchTimeAudioVideoEmbeddedExperience},
+      kWatchTimeLate);
 }
 
 }  // namespace content

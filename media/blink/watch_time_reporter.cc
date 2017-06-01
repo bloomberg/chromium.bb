@@ -5,6 +5,7 @@
 #include "media/blink/watch_time_reporter.h"
 
 #include "base/power_monitor/power_monitor.h"
+#include "media/base/watch_time_keys.h"
 
 namespace media {
 
@@ -271,14 +272,13 @@ void WatchTimeReporter::UpdateWatchTime() {
   std::unique_ptr<MediaLogEvent> log_event =
       media_log_->CreateEvent(MediaLogEvent::Type::WATCH_TIME_UPDATE);
 
-#define RECORD_WATCH_TIME(key, value)                                         \
-  do {                                                                        \
-    log_event->params.SetDoubleWithoutPathExpansion(                          \
-        has_video_                                                            \
-            ? MediaLog::kWatchTimeAudioVideo##key                             \
-            : (is_background_ ? MediaLog::kWatchTimeAudioVideoBackground##key \
-                              : MediaLog::kWatchTimeAudio##key),              \
-        value.InSecondsF());                                                  \
+#define RECORD_WATCH_TIME(key, value)                                      \
+  do {                                                                     \
+    log_event->params.SetDoubleWithoutPathExpansion(                       \
+        has_video_ ? kWatchTimeAudioVideo##key                             \
+                   : (is_background_ ? kWatchTimeAudioVideoBackground##key \
+                                     : kWatchTimeAudio##key),              \
+        value.InSecondsF());                                               \
   } while (0)
 
   // Only report watch time after some minimum amount has elapsed. Don't update
@@ -339,16 +339,16 @@ void WatchTimeReporter::UpdateWatchTime() {
       }
     }
 
-    log_event->params.SetInteger(MediaLog::kUnderflowCount, underflow_count_);
+    log_event->params.SetInteger(kWatchTimeUnderflowCount, underflow_count_);
     pending_underflow_events_.clear();
   }
 
   // Always send finalize, even if we don't currently have any data, it's
   // harmless to send since nothing will be logged if we've already finalized.
   if (is_finalizing)
-    log_event->params.SetBoolean(MediaLog::kWatchTimeFinalize, true);
+    log_event->params.SetBoolean(kWatchTimeFinalize, true);
   else if (is_power_change_pending)
-    log_event->params.SetBoolean(MediaLog::kWatchTimeFinalizePower, true);
+    log_event->params.SetBoolean(kWatchTimeFinalizePower, true);
 
   if (!log_event->params.empty())
     media_log_->AddEvent(std::move(log_event));

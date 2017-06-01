@@ -31,6 +31,7 @@
 #include "content/public/browser/web_ui.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
+#include "media/base/watch_time_keys.h"
 #include "media/filters/gpu_video_decoder.h"
 
 #if !defined(OS_ANDROID)
@@ -463,20 +464,20 @@ class MediaInternals::MediaInternalsUMAHandler {
 
 MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler(
     content::MediaInternals* media_internals)
-    : watch_time_keys_(media::MediaLog::GetWatchTimeKeys()),
-      watch_time_power_keys_(media::MediaLog::GetWatchTimePowerKeys()),
-      mtbr_keys_({{media::MediaLog::kWatchTimeAudioSrc,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioSrc},
-                  {media::MediaLog::kWatchTimeAudioMse,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioMse},
-                  {media::MediaLog::kWatchTimeAudioEme,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioEme},
-                  {media::MediaLog::kWatchTimeAudioVideoSrc,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoSrc},
-                  {media::MediaLog::kWatchTimeAudioVideoMse,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoMse},
-                  {media::MediaLog::kWatchTimeAudioVideoEme,
-                   media::MediaLog::kMeanTimeBetweenRebuffersAudioVideoEme}},
+    : watch_time_keys_(media::GetWatchTimeKeys()),
+      watch_time_power_keys_(media::GetWatchTimePowerKeys()),
+      mtbr_keys_({{media::kWatchTimeAudioSrc,
+                   media::kMeanTimeBetweenRebuffersAudioSrc},
+                  {media::kWatchTimeAudioMse,
+                   media::kMeanTimeBetweenRebuffersAudioMse},
+                  {media::kWatchTimeAudioEme,
+                   media::kMeanTimeBetweenRebuffersAudioEme},
+                  {media::kWatchTimeAudioVideoSrc,
+                   media::kMeanTimeBetweenRebuffersAudioVideoSrc},
+                  {media::kWatchTimeAudioVideoMse,
+                   media::kMeanTimeBetweenRebuffersAudioVideoMse},
+                  {media::kWatchTimeAudioVideoEme,
+                   media::kMeanTimeBetweenRebuffersAudioVideoEme}},
                  base::KEEP_FIRST_OF_DUPES),
       media_internals_(media_internals) {}
 
@@ -574,24 +575,23 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
             base::TimeDelta::FromSecondsD(it.value().GetDouble());
       }
 
-      if (event.params.HasKey(media::MediaLog::kUnderflowCount)) {
-        event.params.GetInteger(media::MediaLog::kUnderflowCount,
+      if (event.params.HasKey(media::kWatchTimeUnderflowCount)) {
+        event.params.GetInteger(media::kWatchTimeUnderflowCount,
                                 &player_info.underflow_count);
       }
 
-      if (event.params.HasKey(media::MediaLog::kWatchTimeFinalize)) {
+      if (event.params.HasKey(media::kWatchTimeFinalize)) {
         bool should_finalize;
-        DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalize,
+        DCHECK(event.params.GetBoolean(media::kWatchTimeFinalize,
                                        &should_finalize) &&
                should_finalize);
         FinalizeWatchTime(player_info.has_video, player_info.origin_url,
                           &player_info.underflow_count,
                           &player_info.watch_time_info,
                           FinalizeType::EVERYTHING);
-      } else if (event.params.HasKey(
-                     media::MediaLog::kWatchTimeFinalizePower)) {
+      } else if (event.params.HasKey(media::kWatchTimeFinalizePower)) {
         bool should_finalize;
-        DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalizePower,
+        DCHECK(event.params.GetBoolean(media::kWatchTimeFinalizePower,
                                        &should_finalize) &&
                should_finalize);
         FinalizeWatchTime(player_info.has_video, player_info.origin_url,

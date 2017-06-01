@@ -269,6 +269,8 @@ target(link_target_type, "base") {
     "video_util.h",
     "wall_clock_time_source.cc",
     "wall_clock_time_source.h",
+    "watch_time_keys.cc",
+    "watch_time_keys.h",
   ]
 
   allow_circular_includes_from = []
