@@ -50,7 +50,7 @@ typedef void (^HtmlCallback)(NSString*);
 @interface StaticHtmlViewController : NSObject
 
 // The web view that is displaying the content. It is lazily created.
-@property(nonatomic, readonly) WKWebView* webView;
+@property(nonatomic, readonly, weak) WKWebView* webView;
 
 // Returns the web controller scrollview.
 - (UIScrollView*)scrollView;

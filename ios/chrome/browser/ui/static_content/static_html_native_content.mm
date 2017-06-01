@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/referrer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface StaticHtmlNativeContent ()
 // Designated initializer.
@@ -25,12 +28,11 @@
   BOOL _webUsageEnabled;
   // The static HTML view controller that is used to display the content in
   // a web view.
-  base::scoped_nsobject<StaticHtmlViewController> _staticHTMLViewController;
+  StaticHtmlViewController* _staticHTMLViewController;
   // Responsible for loading a particular URL.
   id<UrlLoader> _loader;  // weak
   // The controller handling the overscroll actions.
-  base::scoped_nsobject<OverscrollActionsController>
-      _overscrollActionsController;
+  OverscrollActionsController* _overscrollActionsController;
 }
 
 #pragma mark -
@@ -47,7 +49,7 @@
     [HTMLViewController setLoader:loader referrer:referrer];
     _URL = URL;
     _loader = loader;
-    _staticHTMLViewController.reset([HTMLViewController retain]);
+    _staticHTMLViewController = HTMLViewController;
   }
   return self;
 }
@@ -60,9 +62,9 @@
   DCHECK(browserState);
   DCHECK(URL.is_valid());
   DCHECK(resourcePath);
-  base::scoped_nsobject<StaticHtmlViewController> HTMLViewController(
+  StaticHtmlViewController* HTMLViewController =
       [[StaticHtmlViewController alloc] initWithResource:resourcePath
-                                            browserState:browserState]);
+                                            browserState:browserState];
   return [self initWithLoader:loader
       staticHTMLViewController:HTMLViewController
                            URL:URL];
@@ -70,7 +72,6 @@
 
 - (void)dealloc {
   [[self scrollView] setDelegate:nil];
-  [super dealloc];
 }
 
 - (void)loadURL:(const GURL&)URL
@@ -84,12 +85,12 @@
 }
 
 - (OverscrollActionsController*)overscrollActionsController {
-  return _overscrollActionsController.get();
+  return _overscrollActionsController;
 }
 
 - (void)setOverscrollActionsController:
     (OverscrollActionsController*)controller {
-  _overscrollActionsController.reset([controller retain]);
+  _overscrollActionsController = controller;
   [[self scrollView] setDelegate:controller];
 }
 
@@ -155,7 +156,7 @@
   }
   _webUsageEnabled = webUsageEnabled;
   if (!_webUsageEnabled) {
-    _staticHTMLViewController.reset();
+    _staticHTMLViewController = nil;
   }
 }
 
