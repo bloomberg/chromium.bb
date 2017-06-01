@@ -593,6 +593,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
+  // Signals that a frame with token |frame_token| was finished processing. If
+  // there are any queued messages belonging to it, they will be processed.
+  void DidProcessFrame(uint32_t frame_token);
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -753,10 +757,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Used for UMA logging how long the renderer was unresponsive.
   void LogHangMonitorUnresponsive();
-
-  // Signals that a frame with token |frame_token| was finished processing. If
-  // there are any queued messages belonging to it, they will be processed.
-  void DidProcessFrame(uint32_t frame_token);
 
   // Once both the frame and its swap messages arrive, we call this method to
   // process the messages. Virtual for tests.

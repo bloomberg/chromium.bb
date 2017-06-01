@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "cc/output/swap_promise.h"
 #include "content/common/content_export.h"
 #include "content/renderer/message_delivery_policy.h"
@@ -37,7 +38,7 @@ class CONTENT_EXPORT FrameSwapMessageQueue
     virtual ~SendMessageScope() {}
   };
 
-  FrameSwapMessageQueue();
+  explicit FrameSwapMessageQueue(int32_t routing_id);
 
   // Queues message to be returned on a matching DrainMessages call.
   //
@@ -98,6 +99,11 @@ class CONTENT_EXPORT FrameSwapMessageQueue
 
   uint32_t AllocateFrameToken();
 
+  int32_t routing_id() const { return routing_id_; }
+
+  void NotifyFramesAreDiscarded(bool frames_are_discarded);
+  bool AreFramesDiscarded();
+
  private:
   friend class base::RefCountedThreadSafe<FrameSwapMessageQueue>;
 
@@ -110,6 +116,9 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   std::unique_ptr<FrameSwapMessageSubQueue> swap_queue_;
   std::vector<std::unique_ptr<IPC::Message>> next_drain_messages_;
   uint32_t last_used_frame_token_ = 0;
+  int32_t routing_id_ = 0;
+  bool frames_are_discarded_ = false;
+  THREAD_CHECKER(impl_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(FrameSwapMessageQueue);
 };

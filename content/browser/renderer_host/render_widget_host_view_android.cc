@@ -1281,6 +1281,9 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
         is_mobile_optimized);
   }
 
+  if (host_ && frame_metadata.frame_token)
+    host_->DidProcessFrame(frame_metadata.frame_token);
+
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
   OnFrameMetadataUpdated(frame_metadata.Clone(), false);
