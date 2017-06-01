@@ -63,6 +63,9 @@ class ASH_EXPORT ShellObserver {
   virtual void OnVirtualKeyboardStateChanged(bool activated,
                                              aura::Window* root_window) {}
 
+  // Called when a new KeyboardController is created.
+  virtual void OnKeyboardControllerCreated() {}
+
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 
