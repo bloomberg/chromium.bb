@@ -86,7 +86,6 @@
 #include "platform/transforms/TransformOperations.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefVector.h"
 #include "platform/wtf/Vector.h"
@@ -254,16 +253,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   ALWAYS_INLINE ComputedStyle();
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
-  static PassRefPtr<ComputedStyle> CreateInitialStyle();
+  static RefPtr<ComputedStyle> CreateInitialStyle();
   // TODO(shend): Remove this. Initial style should not be mutable.
   static ComputedStyle& MutableInitialStyle();
 
  public:
-  static PassRefPtr<ComputedStyle> Create();
-  static PassRefPtr<ComputedStyle> CreateAnonymousStyleWithDisplay(
+  static RefPtr<ComputedStyle> Create();
+  static RefPtr<ComputedStyle> CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
-  static PassRefPtr<ComputedStyle> Clone(const ComputedStyle&);
+  static RefPtr<ComputedStyle> Clone(const ComputedStyle&);
   static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
   static void InvalidateInitialStyle();
 
@@ -1298,7 +1297,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Independent transform properties.
   // translate
-  static PassRefPtr<TranslateTransformOperation> InitialTranslate() {
+  static RefPtr<TranslateTransformOperation> InitialTranslate() {
     return nullptr;
   }
   TranslateTransformOperation* Translate() const {
@@ -1310,9 +1309,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // rotate
-  static PassRefPtr<RotateTransformOperation> InitialRotate() {
-    return nullptr;
-  }
+  static RefPtr<RotateTransformOperation> InitialRotate() { return nullptr; }
   RotateTransformOperation* Rotate() const {
     return rare_non_inherited_data_->transform_->rotate_.Get();
   }
@@ -1322,7 +1319,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
 
   // scale
-  static PassRefPtr<ScaleTransformOperation> InitialScale() { return nullptr; }
+  static RefPtr<ScaleTransformOperation> InitialScale() { return nullptr; }
   ScaleTransformOperation* Scale() const {
     return rare_non_inherited_data_->transform_->scale_.Get();
   }

@@ -92,11 +92,11 @@ ASSERT_SIZE(ComputedStyleBase<ComputedStyle>, SameSizeAsComputedStyleBase);
 // ComputedStyle.
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
-PassRefPtr<ComputedStyle> ComputedStyle::Create() {
+RefPtr<ComputedStyle> ComputedStyle::Create() {
   return AdoptRef(new ComputedStyle(InitialStyle()));
 }
 
-PassRefPtr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
+RefPtr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
   return AdoptRef(new ComputedStyle());
 }
 
@@ -111,7 +111,7 @@ void ComputedStyle::InvalidateInitialStyle() {
   MutableInitialStyle().SetTapHighlightColor(InitialTapHighlightColor());
 }
 
-PassRefPtr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
+RefPtr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
     const ComputedStyle& parent_style,
     EDisplay display) {
   RefPtr<ComputedStyle> new_style = ComputedStyle::Create();
@@ -121,7 +121,7 @@ PassRefPtr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
   return new_style;
 }
 
-PassRefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
+RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
   return AdoptRef(new ComputedStyle(other));
 }
 
