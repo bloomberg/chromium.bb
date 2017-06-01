@@ -46,7 +46,6 @@ class ICCProfile;
 
 namespace blink {
 
-class WebAXObject;
 class WebCredentialManagerClient;
 class WebFrame;
 class WebHitTestResult;
@@ -370,10 +369,6 @@ class WebView : protected WebWidget {
   // Cancel emulation started via |enableDeviceEmulation| call.
   virtual void DisableDeviceEmulation() = 0;
 
-  // Accessibility -------------------------------------------------------
-
-  // Returns the accessibility object for this view.
-  virtual WebAXObject AccessibilityObject() = 0;
 
   // Context menu --------------------------------------------------------
 

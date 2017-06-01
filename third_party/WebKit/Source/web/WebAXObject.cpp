@@ -58,6 +58,7 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebNode.h"
+#include "public/web/WebView.h"
 
 namespace blink {
 
@@ -1567,6 +1568,16 @@ WebAXObject WebAXObject::FromWebNode(WebNode& web_node) {
   AXObjectCacheBase* cache = ToAXObjectCacheBase(doc->ExistingAXObjectCache());
   Node* node = web_node.Unwrap<Node>();
   return cache ? WebAXObject(cache->Get(node)) : WebAXObject();
+}
+
+// static
+WebAXObject WebAXObject::FromWebView(WebView& web_view) {
+  auto main_frame = web_view.MainFrame();
+  if (!main_frame)
+    return WebAXObject();
+
+  Document* document = main_frame->GetDocument();
+  return WebAXObject(ToAXObjectCacheImpl(document->AxObjectCache())->Root());
 }
 
 }  // namespace blink

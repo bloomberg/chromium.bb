@@ -223,7 +223,6 @@ class WEB_EXPORT WebViewImpl final
   unsigned long CreateUniqueIdentifierForRequest() override;
   void EnableDeviceEmulation(const WebDeviceEmulationParams&) override;
   void DisableDeviceEmulation() override;
-  WebAXObject AccessibilityObject() override;
   void SetSelectionColors(unsigned active_background_color,
                           unsigned active_foreground_color,
                           unsigned inactive_background_color,
