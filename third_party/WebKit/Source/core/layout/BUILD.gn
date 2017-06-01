@@ -323,6 +323,8 @@ blink_core_sources("layout") {
     "line/TrailingObjects.cpp",
     "line/TrailingObjects.h",
     "line/WordMeasurement.h",
+    "ng/geometry/ng_border_edges.cc",
+    "ng/geometry/ng_border_edges.h",
     "ng/geometry/ng_box_strut.cc",
     "ng/geometry/ng_box_strut.h",
     "ng/geometry/ng_edge.h",

@@ -6,6 +6,7 @@
 #define NGPhysicalFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
@@ -41,15 +42,6 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     // enough to store.
   };
 
-  // Which border edges should be painted. Due to fragmentation one or more may
-  // be skipped.
-  enum NGPaintBorderEdge {
-    kTopBorder = 1,
-    kRightBorder = 2,
-    kBottomBorder = 4,
-    kLeftBorder = 8
-  };
-
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
   bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
@@ -63,7 +55,9 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   NGPhysicalSize Size() const { return size_; }
 
   // Bitmask for border edges, see NGPaintBorderEdge.
-  unsigned BorderEdges() const { return paint_border_edge_; }
+  NGBorderEdges::Physical BorderEdges() const {
+    return static_cast<NGBorderEdges::Physical>(border_edge_);
+  }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
   // Returns the offset relative to the parent fragment's content-box.
@@ -110,7 +104,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   unsigned type_ : 2;  // NGFragmentType
   unsigned is_placed_ : 1;
-  unsigned paint_border_edge_ : 4;  // NGPaintBorderEdge
+  unsigned border_edge_ : 4;  // NGPhysicalBorderEdges
 
  private:
   void Destroy() const;
