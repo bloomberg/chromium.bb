@@ -203,6 +203,13 @@ static CGFloat kHostInset = 5.f;
 
 - (void)didSelectCell:(HostCollectionViewCell*)cell
            completion:(void (^)())completionBlock {
+  if (![cell.hostInfo isOnline]) {
+    MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
+    message.text = @"Host is offline.";
+    [MDCSnackbarManager showMessage:message];
+    return;
+  }
+
   _client = [[RemotingClient alloc] init];
 
   [_remotingService.authentication
