@@ -75,7 +75,6 @@ class CORE_EXPORT ContextMenuController final
   std::unique_ptr<ContextMenu> CreateContextMenu(Event*);
   std::unique_ptr<ContextMenu> CreateContextMenu(LocalFrame*,
                                                  const LayoutPoint&);
-  void PopulateCustomContextMenu(const Event&);
   void ShowContextMenu(Event*);
 
   ContextMenuClient* client_;

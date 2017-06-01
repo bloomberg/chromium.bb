@@ -255,10 +255,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
-  StringBuilder runtime_css;
-  if (RuntimeEnabledFeatures::contextMenuEnabled())
-    runtime_css.Append("menu[type=\"context\" i] { display: none; }");
-  return runtime_css.ToString();
+  return g_empty_string;
 }
 
 static String FormatChromiumMediaControlsTime(float time,

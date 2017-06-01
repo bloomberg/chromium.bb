@@ -37,7 +37,6 @@ interface HTMLElement : Element {
     void blur();
     [CEReactions, Reflect] attribute DOMString accessKey;
     [CEReactions, CustomElementCallbacks] attribute boolean draggable;
-    [CEReactions, RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
     [CEReactions] attribute boolean spellcheck;
 
     // HTMLElement implements ElementContentEditable

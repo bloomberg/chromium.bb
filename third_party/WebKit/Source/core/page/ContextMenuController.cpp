@@ -31,20 +31,15 @@
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
 #include "core/events/MouseEvent.h"
-#include "core/events/RelatedEvent.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLMenuElement.h"
 #include "core/input/EventHandler.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
-#include "core/page/CustomContextMenuProvider.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
     : client_(client) {
@@ -81,35 +76,10 @@ void ContextMenuController::DocumentDetached(Document* document) {
   }
 }
 
-void ContextMenuController::PopulateCustomContextMenu(const Event& event) {
-  if (!RuntimeEnabledFeatures::contextMenuEnabled())
-    return;
-
-  Node* node = event.target()->ToNode();
-  if (!node || !node->IsHTMLElement())
-    return;
-
-  HTMLElement& element = ToHTMLElement(*node);
-  HTMLMenuElement* menu_element = element.AssignedContextMenu();
-  if (!menu_element || !DeprecatedEqualIgnoringCase(
-                           menu_element->FastGetAttribute(typeAttr), "context"))
-    return;
-  RelatedEvent* related_event =
-      RelatedEvent::Create(EventTypeNames::show, true, true, node);
-  if (menu_element->DispatchEvent(related_event) !=
-      DispatchEventResult::kNotCanceled)
-    return;
-  if (menu_element != element.AssignedContextMenu())
-    return;
-  menu_provider_ = CustomContextMenuProvider::Create(*menu_element, element);
-  menu_provider_->PopulateContextMenu(context_menu_.get());
-}
-
 void ContextMenuController::HandleContextMenuEvent(Event* event) {
   context_menu_ = CreateContextMenu(event);
   if (!context_menu_)
     return;
-  PopulateCustomContextMenu(*event);
   ShowContextMenu(event);
 }
 

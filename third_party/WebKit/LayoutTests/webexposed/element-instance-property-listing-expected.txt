@@ -54,7 +54,6 @@ namespace http://www.w3.org/1999/xhtml
     property computedRole
     property contains
     property contentEditable
-    property contextMenu
     property createShadowRoot
     property dataset
     property dir
@@ -721,16 +720,6 @@ html element marquee
     property width
 html element menu
     property compact
-    property label
-    property type
-html element menuitem
-    property checked
-    property default
-    property disabled
-    property icon
-    property label
-    property radiogroup
-    property type
 html element meta
     property content
     property httpEquiv
@@ -1160,7 +1149,6 @@ namespace http://www.w3.org/2000/svg
     property computedRole
     property contains
     property contentEditable
-    property contextMenu
     property createShadowRoot
     property dataset
     property dir

@@ -2318,7 +2318,6 @@ interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
     getter contentEditable
-    getter contextMenu
     getter dataset
     getter dir
     getter draggable
@@ -2420,7 +2419,6 @@ interface HTMLElement : Element
     method focus
     setter accessKey
     setter contentEditable
-    setter contextMenu
     setter dir
     setter draggable
     setter hidden
@@ -3029,29 +3027,8 @@ interface HTMLMediaElement : HTMLElement
 interface HTMLMenuElement : HTMLElement
     attribute @@toStringTag
     getter compact
-    getter label
-    getter type
     method constructor
     setter compact
-    setter label
-    setter type
-interface HTMLMenuItemElement : HTMLElement
-    attribute @@toStringTag
-    getter checked
-    getter default
-    getter disabled
-    getter icon
-    getter label
-    getter radiogroup
-    getter type
-    method constructor
-    setter checked
-    setter default
-    setter disabled
-    setter icon
-    setter label
-    setter radiogroup
-    setter type
 interface HTMLMetaElement : HTMLElement
     attribute @@toStringTag
     getter content
@@ -5218,10 +5195,6 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
-interface RelatedEvent : Event
-    attribute @@toStringTag
-    getter relatedTarget
-    method constructor
 interface RemotePlayback : EventTarget
     attribute @@toStringTag
     getter onconnect

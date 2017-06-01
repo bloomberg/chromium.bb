@@ -269,11 +269,6 @@
     },
     "marquee",
     "menu",
-    {
-      name: "menuitem",
-      interfaceName: "HTMLMenuItemElement",
-      runtimeEnabled: "contextMenu",
-    },
     "meta",
     {
       name: "meter",
