@@ -298,6 +298,16 @@ var allTests = [
     assertTrue(Boolean(checkTest4));
     assertEq(checkTest4.checked, undefined);
 
+    // Treeitem can be checked
+    var checkTest5 = rootNode.find({ attributes: { name: 'check-test-5' } });
+    assertTrue(Boolean(checkTest5));
+    assertEq(checkTest5.checked, 'true');
+
+    // button with aria-pressed shows up as checked
+    var checkTest6 = rootNode.find({ attributes: { name: 'check-test-6' } });
+    assertTrue(Boolean(checkTest6));
+    assertEq(checkTest6.checked, 'true');
+
     chrome.test.succeed();
   },
 

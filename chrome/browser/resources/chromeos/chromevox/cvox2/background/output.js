@@ -372,11 +372,6 @@ Output.STATE_INFO_ = {
   disabled: {on: {msgId: 'aria_disabled_true'}},
   expanded: {on: {msgId: 'aria_expanded_true'}},
   multiselectable: {on: {msgId: 'aria_multiselectable_true'}},
-  pressed: {
-    isRoleSpecific: true,
-    on: {msgId: 'aria_pressed_true'},
-    off: {msgId: 'aria_pressed_false'}
-  },
   required: {on: {msgId: 'aria_required_true'}},
   selected: {on: {msgId: 'aria_selected_true'}},
   visited: {on: {msgId: 'visited_state'}}
@@ -395,6 +390,28 @@ Output.INPUT_TYPE_MESSAGE_IDS_ = {
   'tel': 'input_type_number',
   'text': 'input_type_text',
   'url': 'input_type_url',
+};
+
+/**
+ * Rules for mapping the checked property to a msg id
+ * @const {Object<string>}
+ * @private
+ */
+Output.CHECKED_STATE_MAP = {
+  'true': 'checked_true',
+  'false': 'checked_false',
+  'mixed': 'checked_mixed'
+};
+
+/**
+ * Rules for mapping the checked property to a msg id
+ * @const {Object<string>}
+ * @private
+ */
+Output.PRESSED_STATE_MAP = {
+  'true': 'aria_pressed_true',
+  'false': 'aria_pressed_false',
+  'mixed': 'aria_pressed_mixed'
 };
 
 /**
@@ -586,7 +603,7 @@ Output.RULES = {
       speak: '$nameFromNode $descendants $value $state $description'
     },
     toggleButton: {
-      speak: '$if($pressed, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+      speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$name $role $pressed $description $state'
     },
     toolbar: {
@@ -1177,19 +1194,15 @@ Output.prototype = {
             this.append_(buff, String(count));
           }
         } else if (token == 'checked') {
-          var msg;
-          switch (node.checked) {
-            case 'mixed':
-              msg = 'checked_mixed';
-              break;
-            case 'true':
-              msg = 'checked_true';
-              break;
-            default:
-              msg = 'checked_false';
-              break;
+          var msg = Output.CHECKED_STATE_MAP[node.checked];
+          if (msg) {
+            this.format_(node, '@' + msg, buff);
           }
-          this.format_(node, '@' + msg, buff);
+        } else if (token == 'pressed') {
+          var msg = Output.PRESSED_STATE_MAP[node.checked];
+          if (msg) {
+            this.format_(node, '@' + msg, buff);
+          }
         } else if (token == 'state') {
           if (node.state) {
             Object.getOwnPropertyNames(node.state).forEach(function(s) {

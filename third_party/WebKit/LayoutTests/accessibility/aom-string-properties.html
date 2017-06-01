@@ -35,23 +35,17 @@ test(function(t) {
 test(function(t) {
     var node = document.getElementById("checked");
     var axNode = accessibilityController.accessibleElementById("checked");
-    assert_equals(axNode.isChecked, false);
-    assert_equals(axNode.isButtonStateMixed, false);
+    assert_equals(axNode.checked, "false");
     node.accessibleNode.checked = "true";
-    assert_equals(axNode.isChecked, true);
-    assert_equals(axNode.isButtonStateMixed, false);
+    assert_equals(axNode.checked, "true");
     node.accessibleNode.checked = "mixed";
-    assert_equals(axNode.isChecked, true);
-    assert_equals(axNode.isButtonStateMixed, true);
+    assert_equals(axNode.checked, "mixed");
 
     // It also works to set it to just true or false (no quotes).
     node.accessibleNode.checked = true;
-    assert_equals(axNode.isChecked, true);
-    assert_equals(axNode.isButtonStateMixed, false);
+    assert_equals(axNode.checked, "true");
     node.accessibleNode.checked = false;
-    assert_equals(axNode.isChecked, false);
-    assert_equals(axNode.isButtonStateMixed, false);
-
+    assert_equals(axNode.checked, "false");
 }, "AccessibleNode.checked");
 </script>
 

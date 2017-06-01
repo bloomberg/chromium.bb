@@ -370,7 +370,8 @@ void CustomButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       node_data->AddState(ui::AX_STATE_HOVERED);
       break;
     case STATE_PRESSED:
-      node_data->AddState(ui::AX_STATE_PRESSED);
+      node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                                 ui::AX_CHECKED_STATE_TRUE);
       break;
     case STATE_DISABLED:
       node_data->AddState(ui::AX_STATE_DISABLED);

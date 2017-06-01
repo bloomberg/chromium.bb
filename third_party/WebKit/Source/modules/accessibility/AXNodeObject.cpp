@@ -1217,26 +1217,6 @@ bool AXNodeObject::IsModal() const {
   return false;
 }
 
-bool AXNodeObject::IsPressed() const {
-  if (!IsButton())
-    return false;
-
-  Node* node = this->GetNode();
-  if (!node)
-    return false;
-
-  // ARIA button with aria-pressed not undefined, then check for aria-pressed
-  // attribute rather than getNode()->active()
-  if (AriaRoleAttribute() == kToggleButtonRole) {
-    if (EqualIgnoringASCIICase(GetAttribute(aria_pressedAttr), "true") ||
-        EqualIgnoringASCIICase(GetAttribute(aria_pressedAttr), "mixed"))
-      return true;
-    return false;
-  }
-
-  return node->IsActive();
-}
-
 bool AXNodeObject::IsReadOnly() const {
   Node* node = this->GetNode();
   if (!node)

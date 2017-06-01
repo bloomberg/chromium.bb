@@ -493,10 +493,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                               src.AriaInvalidValue().Utf8());
     }
 
-    if (src.IsCheckable()) {
-      const blink::WebAXCheckedState checked_state = src.CheckedState();
+    if (src.CheckedState()) {
       dst->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                           AXCheckedStateFromBlink(checked_state));
+                           AXCheckedStateFromBlink(src.CheckedState()));
     }
 
     if (src.GetTextDirection()) {

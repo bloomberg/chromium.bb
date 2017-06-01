@@ -3692,13 +3692,8 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   IntAttributeToIA2(ui::AX_ATTR_SET_SIZE, "setsize");
   IntAttributeToIA2(ui::AX_ATTR_POS_IN_SET, "posinset");
 
-  if (ia_role() == ROLE_SYSTEM_CHECKBUTTON ||
-      ia_role() == ROLE_SYSTEM_RADIOBUTTON ||
-      ia2_role() == IA2_ROLE_CHECK_MENU_ITEM ||
-      ia2_role() == IA2_ROLE_RADIO_MENU_ITEM ||
-      ia2_role() == IA2_ROLE_TOGGLE_BUTTON) {
+  if (owner()->HasIntAttribute(ui::AX_ATTR_CHECKED_STATE))
     win_attributes_->ia2_attributes.push_back(L"checkable:true");
-  }
 
   // Expose live region attributes.
   StringAttributeToIA2(ui::AX_ATTR_LIVE_STATUS, "live");
@@ -5039,15 +5034,20 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
 
   const auto checked_state = static_cast<ui::AXCheckedState>(
       owner()->GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
-  switch (checked_state) {
-    case ui::AX_CHECKED_STATE_TRUE:
-      ia_state |= STATE_SYSTEM_CHECKED;
-      break;
-    case ui::AX_CHECKED_STATE_MIXED:
-      ia_state |= STATE_SYSTEM_MIXED;
-      break;
-    default:
-      break;
+  if (checked_state) {
+    ia2_state |= IA2_STATE_CHECKABLE;
+    switch (checked_state) {
+      case ui::AX_CHECKED_STATE_TRUE:
+        ia_state |= owner()->GetRole() == ui::AX_ROLE_TOGGLE_BUTTON
+                        ? STATE_SYSTEM_PRESSED
+                        : STATE_SYSTEM_CHECKED;
+        break;
+      case ui::AX_CHECKED_STATE_MIXED:
+        ia_state |= STATE_SYSTEM_MIXED;
+        break;
+      default:
+        break;
+    }
   }
 
   if (owner()->HasState(ui::AX_STATE_COLLAPSED))
@@ -5073,8 +5073,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
   if (owner()->HasState(ui::AX_STATE_OFFSCREEN))
     ia_state |= STATE_SYSTEM_OFFSCREEN;
-  if (owner()->HasState(ui::AX_STATE_PRESSED))
-    ia_state |= STATE_SYSTEM_PRESSED;
   if (owner()->HasState(ui::AX_STATE_PROTECTED))
     ia_state |= STATE_SYSTEM_PROTECTED;
   if (owner()->HasState(ui::AX_STATE_REQUIRED))
@@ -5166,7 +5164,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_CHECK_BOX:
       ia_role = ROLE_SYSTEM_CHECKBUTTON;
-      ia2_state |= IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_COLOR_WELL:
       ia_role = ROLE_SYSTEM_TEXT;
@@ -5355,7 +5352,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
       ia_role = ROLE_SYSTEM_MENUITEM;
       ia2_role = IA2_ROLE_CHECK_MENU_ITEM;
-      ia2_state |= IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_MENU_ITEM_RADIO:
       ia_role = ROLE_SYSTEM_MENUITEM;
@@ -5406,7 +5402,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_RADIO_BUTTON:
       ia_role = ROLE_SYSTEM_RADIOBUTTON;
-      ia2_state = IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_RADIO_GROUP:
       ia_role = ROLE_SYSTEM_GROUPING;
@@ -5569,7 +5564,8 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
   // We always set the READONLY state for elements that have the
   // aria-readonly attribute and for a few roles (in the switch above),
   // including read-only text fields.
-  // The majority of focusable controls should not have the read-only state set.
+  // The majority of focusable controls should not have the read-only state
+  // set.
   if (owner()->HasState(ui::AX_STATE_FOCUSABLE) &&
       ia_role != ROLE_SYSTEM_DOCUMENT && ia_role != ROLE_SYSTEM_TEXT) {
     ia_state &= ~(STATE_SYSTEM_READONLY);

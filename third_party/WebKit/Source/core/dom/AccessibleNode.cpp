@@ -141,6 +141,8 @@ const AtomicString& AccessibleNode::GetPropertyOrARIAAttribute(
       return element->FastGetAttribute(aria_orientationAttr);
     case AOMStringProperty::kPlaceholder:
       return element->FastGetAttribute(aria_placeholderAttr);
+    case AOMStringProperty::kPressed:
+      return element->FastGetAttribute(aria_pressedAttr);
     case AOMStringProperty::kRelevant:
       return element->FastGetAttribute(aria_relevantAttr);
     case AOMStringProperty::kRole:
@@ -509,6 +511,15 @@ uint32_t AccessibleNode::posInSet(bool& is_null) const {
 void AccessibleNode::setPosInSet(uint32_t pos_in_set, bool is_null) {
   SetUIntProperty(AOMUIntProperty::kPosInSet, pos_in_set, is_null);
   NotifyAttributeChanged(aria_posinsetAttr);
+}
+
+AtomicString AccessibleNode::pressed() const {
+  return GetProperty(element_, AOMStringProperty::kPressed);
+}
+
+void AccessibleNode::setPressed(const AtomicString& pressed) {
+  SetStringProperty(AOMStringProperty::kPressed, pressed);
+  NotifyAttributeChanged(aria_pressedAttr);
 }
 
 bool AccessibleNode::readOnly(bool& is_null) const {

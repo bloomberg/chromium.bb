@@ -1,12 +1,12 @@
 AXWebArea
 ++AXOutline
-++++AXRow AXTitle='Animals ' AXARIASetSize='2' AXARIAPosInSet='1'
+++++AXRow AXTitle='Animals ' AXValue='2' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++AXStaticText AXValue='Animals'
 ++++++AXRow AXTitle='Domesticated ' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++++AXStaticText AXValue='Domesticated'
-++++++++AXRow AXTitle='Dog' AXARIASetSize='2' AXARIAPosInSet='1'
+++++++++AXRow AXTitle='Dog' AXValue='1' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++++++AXStaticText AXValue='Dog'
-++++++++AXRow AXTitle='Cat' AXARIASetSize='2' AXARIAPosInSet='2'
+++++++++AXRow AXTitle='Cat' AXValue='0' AXARIASetSize='2' AXARIAPosInSet='2'
 ++++++++++AXStaticText AXValue='Cat'
 ++++++AXRow AXTitle='Wild' AXARIASetSize='2' AXARIAPosInSet='2'
 ++++++++AXStaticText AXValue='Wild'

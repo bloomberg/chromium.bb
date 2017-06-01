@@ -30,6 +30,7 @@ enum class AOMStringProperty {
   kLive,
   kOrientation,
   kPlaceholder,
+  kPressed,
   kRelevant,
   kRole,
   kRoleDescription,
@@ -180,6 +181,9 @@ class CORE_EXPORT AccessibleNode
 
   uint32_t posInSet(bool& is_null) const;
   void setPosInSet(uint32_t, bool is_null);
+
+  AtomicString pressed() const;
+  void setPressed(const AtomicString&);
 
   bool readOnly(bool& is_null) const;
   void setReadOnly(bool, bool is_null);

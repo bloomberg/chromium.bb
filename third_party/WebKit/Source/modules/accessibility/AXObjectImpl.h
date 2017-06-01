@@ -97,10 +97,11 @@ enum AXObjectInclusion {
   kDefaultBehavior,
 };
 
-enum AccessibilityButtonState {
-  kButtonStateOff = 0,
-  kButtonStateOn,
-  kButtonStateMixed,
+enum AccessibilityCheckedState {
+  kCheckedStateUndefined = 0,
+  kCheckedStateFalse,
+  kCheckedStateTrue,
+  kCheckedStateMixed
 };
 
 enum AccessibilityOptionalBool {
@@ -379,7 +380,6 @@ class MODULES_EXPORT AXObjectImpl
   virtual bool IsAXTable() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
-  bool IsCheckable() const;
   bool IsCanvas() const { return RoleValue() == kCanvasRole; }
   bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
@@ -452,7 +452,6 @@ class MODULES_EXPORT AXObjectImpl
   virtual bool IsModal() const { return false; }
   virtual bool IsMultiSelectable() const { return false; }
   virtual bool IsOffScreen() const { return false; }
-  virtual bool IsPressed() const { return false; }
   virtual bool IsReadOnly() const { return false; }
   virtual bool IsRequired() const { return false; }
   virtual bool IsSelected() const { return false; }
@@ -613,7 +612,7 @@ class MODULES_EXPORT AXObjectImpl
 
   // Properties of interactive elements.
   AXDefaultActionVerb Action() const;
-  AccessibilityButtonState CheckedState() const;
+  AccessibilityCheckedState CheckedState() const;
   virtual AriaCurrentState GetAriaCurrentState() const {
     return kAriaCurrentStateUndefined;
   }
@@ -638,6 +637,7 @@ class MODULES_EXPORT AXObjectImpl
   virtual bool IsEditable() const { return false; }
   bool IsMultiline() const;
   virtual bool IsRichlyEditable() const { return false; }
+  bool AriaCheckedIsPresent() const;
   bool AriaPressedIsPresent() const;
   virtual AccessibilityRole AriaRoleAttribute() const { return kUnknownRole; }
   virtual bool AriaRoleHasPresentationalChildren() const { return false; }
@@ -884,7 +884,10 @@ class MODULES_EXPORT AXObjectImpl
   void UpdateCachedAttributeValuesIfNeeded() const;
 
  private:
+  bool IsCheckable() const;
   static bool IsNativeInputInMixedState(const Node*);
+  static bool IncludesARIAWidgetRole(const String&);
+  static bool HasInteractiveARIAAttribute(const Element&);
 
   static unsigned number_of_live_ax_objects_;
 };

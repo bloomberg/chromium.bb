@@ -107,7 +107,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsMultiSelectable();
   bool IsSelectedOptionActive();
   bool IsExpanded();
-  bool IsChecked();
+  std::string Checked();
   bool IsVisible();
   bool IsOffScreen();
   bool IsCollapsed();
@@ -139,7 +139,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int32_t ColumnCount();
   int32_t ColumnHeadersCount();
   bool IsClickable();
-  bool IsButtonStateMixed();
   float BoundsX();
   float BoundsY();
   float BoundsWidth();

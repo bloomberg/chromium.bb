@@ -216,7 +216,6 @@
     multiline,
     multiselectable,
     offscreen,
-    pressed,
     protected,
     readOnly,
     required,

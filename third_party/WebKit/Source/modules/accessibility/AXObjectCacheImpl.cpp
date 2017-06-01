@@ -993,7 +993,7 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   else if (attr_name == aria_labelAttr || attr_name == aria_labeledbyAttr ||
            attr_name == aria_labelledbyAttr)
     TextChanged(element);
-  else if (attr_name == aria_checkedAttr)
+  else if (attr_name == aria_checkedAttr || attr_name == aria_pressedAttr)
     CheckedStateChanged(element);
   else if (attr_name == aria_selectedAttr)
     HandleAriaSelectedChanged(element);

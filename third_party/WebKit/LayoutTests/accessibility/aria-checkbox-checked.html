@@ -38,7 +38,7 @@
                 var checkbox = document.getElementById(answers[i][0]);
                 checkbox.focus();
                 checkbox = accessibilityController.focusedElement;
-                shouldBe("checkbox.isChecked", answers[i][1]);
+                shouldBeEqualToString("checkbox.checked", answers[i][1]);
           }
     }
 
