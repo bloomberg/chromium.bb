@@ -246,21 +246,6 @@ function testDeflateAppUrl() {
       'Deflated then inflated URLs must match original URL.');
 };
 
-function testCreateMetadataHashcode(callback) {
-  var promise = importer.createMetadataHashcode(cameraFileEntry)
-      .then(
-          function(hashcode) {
-            // Note that the expression matches at least 4 numbers
-            // in the last segment, since we hard code the byte
-            // size in our test file to a four digit size.
-            // In reality it will vary.
-            assertEquals(0, hashcode.search(/[0-9]{9,}_[0-9]{4,}/),
-                'Hashcode (' + hashcode + ') does not match next pattern.');
-          });
-
-  reportPromise(promise, callback);
-}
-
 function testHasMediaDirectory(callback) {
   var dir = createDirectoryEntry(sdVolume, '/DCIM');
   var promise = importer.hasMediaDirectory(sdVolume.fileSystem.root)

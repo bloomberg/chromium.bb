@@ -152,7 +152,7 @@ fileOperationUtil.resolveRecursively_ = function(
           onError);
     } else {
       // For a file, annotate the file size.
-      entry.getMetadata(function(metadata) {
+      metadataProxy.getEntryMetadata(entry).then(function(metadata) {
         entry.size = metadata.size;
         --numRunningTasks;
         maybeInvokeCallback();
