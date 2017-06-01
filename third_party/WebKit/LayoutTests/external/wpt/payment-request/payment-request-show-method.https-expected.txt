@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL If the user agent's "payment request is showing" boolean is true, then return a promise rejected with an "AbortError" DOMException. Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+
