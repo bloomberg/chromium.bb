@@ -655,15 +655,9 @@ void Editor::ReplaceSelectionWithFragment(DocumentFragment* fragment,
                                           bool match_style,
                                           InputEvent::InputType input_type) {
   DCHECK(!GetFrame().GetDocument()->NeedsLayoutTreeUpdate());
-  if (GetFrame()
-          .Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .IsNone() ||
-      !GetFrame()
-           .Selection()
-           .ComputeVisibleSelectionInDOMTreeDeprecated()
-           .IsContentEditable() ||
-      !fragment)
+  const VisibleSelection& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
+  if (selection.IsNone() || !selection.IsContentEditable() || !fragment)
     return;
 
   ReplaceSelectionCommand::CommandOptions options =
