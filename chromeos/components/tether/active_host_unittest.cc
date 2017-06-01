@@ -37,13 +37,6 @@ struct GetActiveHostResult {
       devices_equal = !other.remote_device;
     }
 
-    LOG(ERROR) << (active_host_status == other.active_host_status);
-    LOG(ERROR) << devices_equal;
-    LOG(ERROR) << (other.tether_network_guid);
-    LOG(ERROR) << (tether_network_guid);
-    LOG(ERROR) << (other.wifi_network_guid);
-    LOG(ERROR) << (wifi_network_guid);
-
     return active_host_status == other.active_host_status && devices_equal &&
            tether_network_guid == other.tether_network_guid &&
            wifi_network_guid == other.wifi_network_guid;
