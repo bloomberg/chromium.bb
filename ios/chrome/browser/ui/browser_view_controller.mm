@@ -1113,11 +1113,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 // Whether the sharing menu should be shown.
 - (BOOL)canShowShareMenu {
-  Tab* tab = [_model currentTab];
-  // TODO(shreyasv): Make it so the URL returned by the tab is always valid and
-  // remove check on net::NSURLWithGURL(tab.url) ( http://crbug.com/400999 ).
-  return tab && !tab.url.SchemeIs(kChromeUIScheme) &&
-         net::NSURLWithGURL(tab.url);
+  const GURL& URL = [_model currentTab].lastCommittedURL;
+  return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
 }
 
 - (BOOL)canShowFindBar {
@@ -1596,7 +1593,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // Create the new page image, and load with the new tab page snapshot.
     CGFloat newPageOffset = 0;
     UIImageView* newPage;
-    if (tab.url == GURL(kChromeUINewTabURL) && !_isOffTheRecord &&
+    if (tab.lastCommittedURL == GURL(kChromeUINewTabURL) && !_isOffTheRecord &&
         !IsIPadIdiom()) {
       animationParentView = self.view;
       newPage = [self pageFullScreenOpenCloseAnimationView];
@@ -2545,6 +2542,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   bool isLink = link.is_valid();
   GURL imageUrl = params.src_url;
   bool isImage = imageUrl.is_valid();
+  const GURL& committedURL = [_model currentTab].lastCommittedURL;
 
   if (isLink) {
     if (link.SchemeIs(url::kJavaScriptScheme)) {
@@ -2558,7 +2556,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     }
 
     if (web::UrlHasWebScheme(link)) {
-      web::Referrer referrer([_model currentTab].url, params.referrer_policy);
+      web::Referrer referrer(committedURL, params.referrer_policy);
 
       // Open in New Tab.
       title = l10n_util::GetNSStringWithFixup(
@@ -2608,7 +2606,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [_contextMenuCoordinator addItemWithTitle:title action:action];
   }
   if (isImage) {
-    web::Referrer referrer([_model currentTab].url, params.referrer_policy);
+    web::Referrer referrer(committedURL, params.referrer_policy);
     // Save Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
@@ -3115,7 +3113,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // that native controllers vended here always correspond to the current tab.
   Tab* currentTab = [_model currentTab];
   NSString* nativeControllerKey = currentTab.tabId;
-  if (!currentTab || currentTab.url != url ||
+  if (!currentTab || currentTab.lastCommittedURL != url ||
       [[_nativeControllersForTabIDs objectForKey:nativeControllerKey]
           isKindOfClass:[nativeController class]]) {
     nativeControllerKey = kNativeControllerTemporaryKey;
@@ -4475,7 +4473,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     std::string base64HTML;
     base::Base64Encode(base::SysNSStringToUTF8(result), &base64HTML);
     GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
-    web::Referrer referrer([strongTab url], web::ReferrerPolicyDefault);
+    web::Referrer referrer([strongTab lastCommittedURL],
+                           web::ReferrerPolicyDefault);
 
     [[weakSelf tabModel]
         insertTabWithURL:URL
@@ -4522,7 +4521,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   ToolbarController* relinquishedToolbarController = nil;
   if ([_toolbarController view].hidden) {
     Tab* currentTab = [_model currentTab];
-    if (currentTab && UrlHasChromeScheme(currentTab.url)) {
+    if (currentTab && UrlHasChromeScheme(currentTab.lastCommittedURL)) {
       // Use the native content controller's toolbar when the BVC's is hidden.
       id nativeController = [self nativeControllerForTab:currentTab];
       if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
@@ -4982,8 +4981,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // If an added or removed bookmark is the same as the current url, update the
 // toolbar so the star highlight is kept in sync.
 - (void)bookmarkNodeModified:(const BookmarkNode*)node {
-  if ([_model currentTab] && node->url() == [_model currentTab].url)
+  if ([_model currentTab] &&
+      node->url() == [_model currentTab].lastCommittedURL) {
     [self updateToolbar];
+  }
 }
 
 // If all bookmarks are removed, update the toolbar so the star highlight is
