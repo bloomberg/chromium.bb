@@ -82,11 +82,15 @@ using web::WebStateImpl;
 @end
 
 @interface BVCTestTabMock : OCMockComplexTypeHelper {
-  GURL url_;
-  WebStateImpl* webState_;
+  GURL _url;
+  GURL _lastCommittedURL;
+  GURL _visibleURL;
+  WebStateImpl* _webState;
 }
 
 @property(nonatomic, assign) const GURL& url;
+@property(nonatomic, assign) const GURL& lastCommittedURL;
+@property(nonatomic, assign) const GURL& visibleURL;
 @property(nonatomic, assign) WebStateImpl* webState;
 
 - (web::NavigationManager*)navigationManager;
@@ -96,22 +100,34 @@ using web::WebStateImpl;
 
 @implementation BVCTestTabMock
 - (const GURL&)url {
-  return url_;
+  return _url;
 }
 - (void)setUrl:(const GURL&)url {
-  url_ = url;
+  _url = url;
+}
+- (const GURL&)lastCommittedURL {
+  return _lastCommittedURL;
+}
+- (void)setLastCommittedURL:(const GURL&)lastCommittedURL {
+  _lastCommittedURL = lastCommittedURL;
+}
+- (const GURL&)visibleURL {
+  return _visibleURL;
+}
+- (void)setVisibleURL:(const GURL&)visibleURL {
+  _visibleURL = visibleURL;
 }
 - (WebStateImpl*)webState {
-  return webState_;
+  return _webState;
 }
 - (void)setWebState:(WebStateImpl*)webState {
-  webState_ = webState;
+  _webState = webState;
 }
 - (web::NavigationManager*)navigationManager {
-  return &(webState_->GetNavigationManagerImpl());
+  return &(_webState->GetNavigationManagerImpl());
 }
 - (web::NavigationManagerImpl*)navigationManagerImpl {
-  return &(webState_->GetNavigationManagerImpl());
+  return &(_webState->GetNavigationManagerImpl());
 }
 @end
 
@@ -422,7 +438,9 @@ TEST_F(BrowserViewControllerTest,
 TEST_F(BrowserViewControllerTest, TestSharePageCommandHandling) {
   GURL expectedUrl("http://www.testurl.net");
   NSString* expectedTitle = @"title";
-  [static_cast<BVCTestTabMock*>(tab_.get()) setUrl:expectedUrl];
+  static_cast<BVCTestTabMock*>(tab_.get()).url = expectedUrl;
+  static_cast<BVCTestTabMock*>(tab_.get()).lastCommittedURL = expectedUrl;
+  static_cast<BVCTestTabMock*>(tab_.get()).visibleURL = expectedUrl;
   OCMockObject* tabMock = static_cast<OCMockObject*>(tab_.get());
   ios::ChromeBrowserState* ptr = chrome_browser_state_.get();
   [[[tabMock stub] andReturnValue:OCMOCK_VALUE(ptr)] browserState];
@@ -470,8 +488,10 @@ TEST_F(BrowserViewControllerTest, TestSharePageWhenClosing) {
   GURL expectedUrl("http://www.testurl.net");
   NSString* expectedTitle = @"title";
   // Sets WebState to nil because [tab close] clears the WebState.
-  [static_cast<BVCTestTabMock*>(tab_.get()) setWebState:nil];
-  [static_cast<BVCTestTabMock*>(tab_.get()) setUrl:expectedUrl];
+  static_cast<BVCTestTabMock*>(tab_.get()).webState = nil;
+  static_cast<BVCTestTabMock*>(tab_.get()).url = expectedUrl;
+  static_cast<BVCTestTabMock*>(tab_.get()).lastCommittedURL = expectedUrl;
+  static_cast<BVCTestTabMock*>(tab_.get()).visibleURL = expectedUrl;
   OCMockObject* tabMock = static_cast<OCMockObject*>(tab_.get());
   [[[tabMock stub] andReturn:expectedTitle] title];
   [[[tabMock stub] andReturn:expectedTitle] originalTitle];
