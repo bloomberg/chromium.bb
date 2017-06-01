@@ -132,20 +132,12 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
                  unsigned start_offset,
                  unsigned end_offset,
                  const String& description);
-  DocumentMarker(unsigned start_offset,
-                 unsigned end_offset,
-                 Color underline_color,
-                 bool thick,
-                 Color background_color);
 
   MarkerType GetType() const { return type_; }
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
 
   const String& Description() const;
-  Color UnderlineColor() const;
-  bool Thick() const;
-  Color BackgroundColor() const;
   DocumentMarkerDetails* Details() const;
 
   void ClearDetails() { details_.Clear(); }
@@ -191,7 +183,6 @@ class DocumentMarkerDetails
   DocumentMarkerDetails() {}
   virtual ~DocumentMarkerDetails();
   virtual bool IsDescription() const { return false; }
-  virtual bool IsComposition() const { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

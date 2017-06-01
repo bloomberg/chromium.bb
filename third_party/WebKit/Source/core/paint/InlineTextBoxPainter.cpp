@@ -6,6 +6,7 @@
 
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/Editor.h"
+#include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "core/frame/LocalFrame.h"
@@ -676,9 +677,12 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         }
         break;
       case DocumentMarker::kComposition: {
-        CompositionUnderline underline(marker.StartOffset(), marker.EndOffset(),
-                                       marker.UnderlineColor(), marker.Thick(),
-                                       marker.BackgroundColor());
+        const CompositionMarker& composition_marker =
+            ToCompositionMarker(marker);
+        CompositionUnderline underline(
+            composition_marker.StartOffset(), composition_marker.EndOffset(),
+            composition_marker.UnderlineColor(), composition_marker.Thick(),
+            composition_marker.BackgroundColor());
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
           PaintSingleCompositionBackgroundRun(
               paint_info.context, box_origin, style, font,

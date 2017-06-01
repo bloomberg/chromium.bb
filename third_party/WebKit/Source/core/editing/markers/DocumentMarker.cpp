@@ -63,45 +63,6 @@ inline DocumentMarkerDescription* ToDocumentMarkerDescription(
   return 0;
 }
 
-class TextCompositionMarkerDetails final : public DocumentMarkerDetails {
- public:
-  static TextCompositionMarkerDetails* Create(Color underline_color,
-                                              bool thick,
-                                              Color background_color);
-
-  bool IsComposition() const override { return true; }
-  Color UnderlineColor() const { return underline_color_; }
-  bool Thick() const { return thick_; }
-  Color BackgroundColor() const { return background_color_; }
-
- private:
-  TextCompositionMarkerDetails(Color underline_color,
-                               bool thick,
-                               Color background_color)
-      : underline_color_(underline_color),
-        background_color_(background_color),
-        thick_(thick) {}
-
-  Color underline_color_;
-  Color background_color_;
-  bool thick_;
-};
-
-TextCompositionMarkerDetails* TextCompositionMarkerDetails::Create(
-    Color underline_color,
-    bool thick,
-    Color background_color) {
-  return new TextCompositionMarkerDetails(underline_color, thick,
-                                          background_color);
-}
-
-inline TextCompositionMarkerDetails* ToTextCompositionMarkerDetails(
-    DocumentMarkerDetails* details) {
-  if (details && details->IsComposition())
-    return static_cast<TextCompositionMarkerDetails*>(details);
-  return nullptr;
-}
-
 DocumentMarker::DocumentMarker(MarkerType type,
                                unsigned start_offset,
                                unsigned end_offset)
@@ -119,18 +80,6 @@ DocumentMarker::DocumentMarker(MarkerType type,
       details_(description.IsEmpty()
                    ? nullptr
                    : DocumentMarkerDescription::Create(description)) {}
-
-DocumentMarker::DocumentMarker(unsigned start_offset,
-                               unsigned end_offset,
-                               Color underline_color,
-                               bool thick,
-                               Color background_color)
-    : type_(DocumentMarker::kComposition),
-      start_offset_(start_offset),
-      end_offset_(end_offset),
-      details_(TextCompositionMarkerDetails::Create(underline_color,
-                                                    thick,
-                                                    background_color)) {}
 
 Optional<DocumentMarker::MarkerOffsets>
 DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
@@ -188,27 +137,6 @@ const String& DocumentMarker::Description() const {
           ToDocumentMarkerDescription(details_.Get()))
     return details->Description();
   return g_empty_string;
-}
-
-Color DocumentMarker::UnderlineColor() const {
-  if (TextCompositionMarkerDetails* details =
-          ToTextCompositionMarkerDetails(details_.Get()))
-    return details->UnderlineColor();
-  return Color::kTransparent;
-}
-
-bool DocumentMarker::Thick() const {
-  if (TextCompositionMarkerDetails* details =
-          ToTextCompositionMarkerDetails(details_.Get()))
-    return details->Thick();
-  return false;
-}
-
-Color DocumentMarker::BackgroundColor() const {
-  if (TextCompositionMarkerDetails* details =
-          ToTextCompositionMarkerDetails(details_.Get()))
-    return details->BackgroundColor();
-  return Color::kTransparent;
 }
 
 DEFINE_TRACE(DocumentMarker) {
