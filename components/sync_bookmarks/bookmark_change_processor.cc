@@ -968,7 +968,9 @@ void BookmarkChangeProcessor::SetSyncNodeFavicon(
         sync_node->GetBookmarkSpecifics());
     updated_specifics.set_favicon(favicon_bytes->front(),
                                   favicon_bytes->size());
-    updated_specifics.set_icon_url(bookmark_node->icon_url().spec());
+    updated_specifics.set_icon_url(bookmark_node->icon_url()
+                                       ? bookmark_node->icon_url()->spec()
+                                       : std::string());
     sync_node->SetBookmarkSpecifics(updated_specifics);
   }
 }

@@ -482,7 +482,7 @@ void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
 
     base::AutoLock url_lock(url_lock_);
     for (const BookmarkNode* node : nodes_ordered_by_url_set_) {
-      if (icon_url == node->icon_url())
+      if (node->icon_url() && icon_url == *node->icon_url())
         to_update.insert(node);
     }
   }

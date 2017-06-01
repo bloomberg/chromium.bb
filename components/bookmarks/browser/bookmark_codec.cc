@@ -433,6 +433,11 @@ void BookmarkCodec::DecodeMetaInfoHelper(
     const std::string& prefix,
     BookmarkNode::MetaInfoMap* meta_info_map) {
   for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
+    // Deprecated keys should be excluded after removing enhanced bookmarks
+    // feature crrev.com/1638413003.
+    if (base::StartsWith(it.key(), "stars.", base::CompareCase::SENSITIVE))
+      continue;
+
     if (it.value().IsType(base::Value::Type::DICTIONARY)) {
       const base::DictionaryValue* subdict;
       it.value().GetAsDictionary(&subdict);

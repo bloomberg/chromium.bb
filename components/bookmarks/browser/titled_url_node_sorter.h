@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_NODE_SORTER_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_NODE_SORTER_H_
 
-#include <set>
 #include <vector>
+
+#include "base/containers/flat_set.h"
 
 namespace bookmarks {
 
@@ -15,7 +16,7 @@ class TitledUrlNode;
 class TitledUrlNodeSorter {
  public:
   using TitledUrlNodes = std::vector<const TitledUrlNode*>;
-  using TitledUrlNodeSet = std::set<const TitledUrlNode*>;
+  using TitledUrlNodeSet = base::flat_set<const TitledUrlNode*>;
 
   virtual ~TitledUrlNodeSorter() {};
 
