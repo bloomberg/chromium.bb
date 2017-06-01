@@ -4,8 +4,10 @@
 
 #include "core/paint/SVGInlineTextBoxPainter.h"
 
+#include <memory>
 #include "core/editing/Editor.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/TextMatchMarker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
@@ -22,7 +24,6 @@
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ShadowList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include <memory>
 
 namespace blink {
 
@@ -592,7 +593,7 @@ SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
 void SVGInlineTextBoxPainter::PaintTextMatchMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
@@ -634,7 +635,7 @@ void SVGInlineTextBoxPainter::PaintTextMatchMarkerForeground(
 void SVGInlineTextBoxPainter::PaintTextMatchMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =

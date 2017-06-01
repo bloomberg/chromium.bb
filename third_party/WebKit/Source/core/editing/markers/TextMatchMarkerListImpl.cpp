@@ -95,7 +95,7 @@ bool TextMatchMarkerListImpl::SetTextMatchMarkersActive(unsigned start_offset,
     // range.
     if (marker.StartOffset() >= end_offset)
       break;
-    marker.SetIsActiveMatch(active);
+    ToTextMatchMarker(marker).SetIsActiveMatch(active);
     doc_dirty = true;
   }
   return doc_dirty;

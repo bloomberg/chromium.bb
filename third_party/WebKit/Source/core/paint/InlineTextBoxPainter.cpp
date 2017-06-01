@@ -7,6 +7,7 @@
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/TextMatchMarker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutTheme.h"
@@ -677,12 +678,13 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
                                              marker, style, font, true);
         break;
       case DocumentMarker::kTextMatch:
-        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           inline_text_box_.PaintTextMatchMarkerBackground(
-              paint_info, box_origin, marker, style, font);
-        else
+              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+        } else {
           inline_text_box_.PaintTextMatchMarkerForeground(
-              paint_info, box_origin, marker, style, font);
+              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+        }
         break;
       case DocumentMarker::kComposition: {
         CompositionUnderline underline(marker.StartOffset(), marker.EndOffset(),
@@ -1120,7 +1122,7 @@ void InlineTextBoxPainter::PaintCompositionUnderline(
 void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   if (!InlineLayoutObject()
@@ -1162,7 +1164,7 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
 void InlineTextBoxPainter::PaintTextMatchMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   if (!LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())

@@ -32,6 +32,10 @@
 
 namespace blink {
 
+// A subclass of DocumentMarker used to store information specific to TextMatch
+// markers. We store whether or not the match is active, a LayoutRect used for
+// rendering the marker, and whether or not the LayoutRect is currently
+// up-to-date.
 class TextMatchMarker final : public DocumentMarker {
  private:
   enum class State { kInvalid, kValidNull, kValidNotNull };

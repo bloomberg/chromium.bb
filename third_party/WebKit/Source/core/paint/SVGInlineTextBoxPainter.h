@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class DocumentMarker;
 class Font;
 struct PaintInfo;
 class LayoutPoint;
@@ -18,8 +19,8 @@ class LayoutSVGInlineText;
 class ComputedStyle;
 class SVGInlineTextBox;
 struct SVGTextFragment;
+class TextMatchMarker;
 class TextRun;
-class DocumentMarker;
 
 struct SVGTextFragmentWithRange {
   SVGTextFragmentWithRange(const SVGTextFragment& fragment,
@@ -43,12 +44,12 @@ class SVGInlineTextBoxPainter {
   void PaintSelectionBackground(const PaintInfo&);
   void PaintTextMatchMarkerForeground(const PaintInfo&,
                                       const LayoutPoint&,
-                                      const DocumentMarker&,
+                                      const TextMatchMarker&,
                                       const ComputedStyle&,
                                       const Font&);
   void PaintTextMatchMarkerBackground(const PaintInfo&,
                                       const LayoutPoint&,
-                                      const DocumentMarker&,
+                                      const TextMatchMarker&,
                                       const ComputedStyle&,
                                       const Font&);
 

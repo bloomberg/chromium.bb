@@ -242,7 +242,7 @@ void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
 void SVGInlineTextBox::PaintTextMatchMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   SVGInlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
@@ -252,7 +252,7 @@ void SVGInlineTextBox::PaintTextMatchMarkerForeground(
 void SVGInlineTextBox::PaintTextMatchMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   SVGInlineTextBoxPainter(*this).PaintTextMatchMarkerBackground(

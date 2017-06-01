@@ -182,23 +182,12 @@ void DocumentMarker::ShiftOffsets(int delta) {
   start_offset_ += delta;
   end_offset_ += delta;
 }
-void DocumentMarker::SetIsActiveMatch(bool active) {
-  if (GetType() != DocumentMarker::kTextMatch)
-    return;
-  ToTextMatchMarker(this)->SetIsActiveMatch(active);
-}
 
 const String& DocumentMarker::Description() const {
   if (DocumentMarkerDescription* details =
           ToDocumentMarkerDescription(details_.Get()))
     return details->Description();
   return g_empty_string;
-}
-
-bool DocumentMarker::IsActiveMatch() const {
-  if (GetType() != DocumentMarker::kTextMatch)
-    return false;
-  return ToTextMatchMarker(this)->IsActiveMatch();
 }
 
 Color DocumentMarker::UnderlineColor() const {
