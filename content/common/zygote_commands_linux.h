@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/posix/global_descriptors.h"
-#include "ipc/ipc_descriptors.h"
 
 namespace content {
 
