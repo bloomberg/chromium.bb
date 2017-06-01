@@ -159,6 +159,12 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // should not be considered changes in the structure of the form.
 }
 
+bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
+  return label == field.label && name == field.name && id == field.id &&
+         form_control_type == field.form_control_type &&
+         IsCheckable(check_status) == IsCheckable(field.check_status);
+}
+
 bool FormFieldData::operator==(const FormFieldData& field) const {
   return SameFieldAs(field) && is_autofilled == field.is_autofilled &&
          check_status == field.check_status &&

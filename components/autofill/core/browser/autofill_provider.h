@@ -1,0 +1,55 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROVIDER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROVIDER_H_
+
+#include "base/time/time.h"
+#include "components/autofill/core/common/form_data.h"
+
+namespace gfx {
+class RectF;
+}
+
+namespace autofill {
+
+class AutofillHandlerProxy;
+
+// This class defines the interface for the autofill implementation other than
+// default AutofillManager.
+class AutofillProvider {
+ public:
+  AutofillProvider();
+  virtual ~AutofillProvider();
+
+  virtual void OnQueryFormFieldAutofill(AutofillHandlerProxy* handler,
+                                        int32_t id,
+                                        const FormData& form,
+                                        const FormFieldData& field,
+                                        const gfx::RectF& bounding_box) = 0;
+
+  virtual void OnTextFieldDidChange(AutofillHandlerProxy* handler,
+                                    const FormData& form,
+                                    const FormFieldData& field,
+                                    const base::TimeTicks timestamp) = 0;
+
+  virtual bool OnWillSubmitForm(AutofillHandlerProxy* handler,
+                                const FormData& form,
+                                const base::TimeTicks timestamp) = 0;
+
+  virtual void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) = 0;
+
+  virtual void OnDidFillAutofillFormData(AutofillHandlerProxy* handler,
+                                         const FormData& form,
+                                         base::TimeTicks timestamp) = 0;
+
+  virtual void Reset(AutofillHandlerProxy* handler) = 0;
+
+  void SendFormDataToRenderer(AutofillHandlerProxy* handler,
+                              int requestId,
+                              const FormData& formData);
+};
+}
+
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROVIDER_H_

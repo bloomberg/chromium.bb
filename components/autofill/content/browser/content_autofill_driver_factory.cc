@@ -23,9 +23,10 @@ std::unique_ptr<AutofillDriver> CreateDriver(
     content::RenderFrameHost* render_frame_host,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
+    AutofillManager::AutofillDownloadManagerState enable_download_manager,
+    AutofillProvider* provider) {
   return base::MakeUnique<ContentAutofillDriver>(
-      render_frame_host, client, app_locale, enable_download_manager);
+      render_frame_host, client, app_locale, enable_download_manager, provider);
 }
 
 }  // namespace
@@ -42,11 +43,21 @@ void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
     AutofillClient* client,
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager) {
+  CreateForWebContentsAndDelegate(contents, client, app_locale,
+                                  enable_download_manager, nullptr);
+}
+
+void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+    content::WebContents* contents,
+    AutofillClient* client,
+    const std::string& app_locale,
+    AutofillManager::AutofillDownloadManagerState enable_download_manager,
+    AutofillProvider* provider) {
   if (FromWebContents(contents))
     return;
 
   auto new_factory = base::WrapUnique(new ContentAutofillDriverFactory(
-      contents, client, app_locale, enable_download_manager));
+      contents, client, app_locale, enable_download_manager, provider));
   const std::vector<content::RenderFrameHost*> frames =
       contents->GetAllFrames();
   for (content::RenderFrameHost* frame : frames) {
@@ -94,11 +105,13 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
     content::WebContents* web_contents,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager)
+    AutofillManager::AutofillDownloadManagerState enable_download_manager,
+    AutofillProvider* provider)
     : AutofillDriverFactory(client),
       content::WebContentsObserver(web_contents),
       app_locale_(app_locale),
-      enable_download_manager_(enable_download_manager) {}
+      enable_download_manager_(enable_download_manager),
+      provider_(provider) {}
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
@@ -112,7 +125,7 @@ void ContentAutofillDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   AddForKey(render_frame_host,
             base::Bind(CreateDriver, render_frame_host, client(), app_locale_,
-                       enable_download_manager_));
+                       enable_download_manager_, provider_));
 }
 
 void ContentAutofillDriverFactory::RenderFrameDeleted(

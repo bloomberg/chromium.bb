@@ -245,7 +245,11 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
-      : ContentAutofillDriver(rfh, client, kAppLocale, kDownloadState) {
+      : ContentAutofillDriver(rfh,
+                              client,
+                              kAppLocale,
+                              kDownloadState,
+                              nullptr) {
     std::unique_ptr<AutofillManager> autofill_manager(
         new MockAutofillManager(this, client));
     SetAutofillManager(std::move(autofill_manager));

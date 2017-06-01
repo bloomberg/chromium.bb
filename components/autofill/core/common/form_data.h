@@ -23,6 +23,10 @@ struct FormData {
   // form elements.
   bool SameFormAs(const FormData& other) const;
 
+  // Same as SameFormAs() except calling FormFieldData.SimilarFieldAs() to
+  // compare fields.
+  bool SimilarFormAs(const FormData& other) const;
+
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFormAs(), which ignores comparison for those "values" of
   // all form fields, just like what FormFieldData::SameFieldAs() ignores.

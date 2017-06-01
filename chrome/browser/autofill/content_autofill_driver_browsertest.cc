@@ -60,11 +60,11 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
-      : ContentAutofillDriver(
-            rfh,
-            client,
-            g_browser_process->GetApplicationLocale(),
-            AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
+      : ContentAutofillDriver(rfh,
+                              client,
+                              g_browser_process->GetApplicationLocale(),
+                              AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
+                              nullptr) {}
   ~TestContentAutofillDriver() override {}
 
  private:

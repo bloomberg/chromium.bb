@@ -683,6 +683,7 @@ source_set("common") {
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//cc/surfaces",
+    "//components/autofill/android:provider",
     "//components/autofill/content/browser",
     "//components/autofill/content/renderer",
     "//components/cdm/browser",

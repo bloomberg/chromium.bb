@@ -30,6 +30,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -57,6 +58,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.AppWebMessagePort;
@@ -247,6 +249,10 @@ public class AwContents implements SmartClipProvider {
                 AwScrollOffsetManager.Delegate delegate) {
             return new AwScrollOffsetManager(delegate);
         }
+
+        public AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
+            return null;
+        }
     }
 
     /**
@@ -363,6 +369,8 @@ public class AwContents implements SmartClipProvider {
     // True if this AwContents is in no operation state.
     // Do not use directly, call isNoOperation() instead.
     private boolean mIsNoOperation;
+
+    private AutofillProvider mAutofillProvider;
 
     private static String sCurrentLocales = "";
 
@@ -753,6 +761,7 @@ public class AwContents implements SmartClipProvider {
 
         mHandler = new Handler();
         mContext = context;
+        mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
         mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
         mInternalAccessAdapter = internalAccessAdapter;
         mNativeDrawGLFunctorFactory = nativeDrawGLFunctorFactory;
@@ -962,6 +971,7 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
         mContainerView.requestLayout();
+        if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
     }
 
     // This class destroys the WindowAndroid when after it is gc-ed.
@@ -1069,11 +1079,12 @@ public class AwContents implements SmartClipProvider {
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
-                mIoThreadClient, mInterceptNavigationDelegate);
+                mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
+        if (mAutofillProvider != null) mAutofillProvider.setWebContents(webContents);
 
         if (textClassifier != null) mContentViewCore.setTextClassifier(textClassifier);
 
@@ -2336,6 +2347,18 @@ public class AwContents implements SmartClipProvider {
         mContentViewCore.onProvideVirtualStructure(structure, true);
     }
 
+    public void onProvideAutoFillVirtualStructure(ViewStructure structure, int flags) {
+        if (mAutofillProvider != null) {
+            mAutofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
+        }
+    }
+
+    public void autofill(final SparseArray<String> values) {
+        if (mAutofillProvider != null) {
+            mAutofillProvider.autofill(values);
+        }
+    }
+
     public boolean isSelectActionModeAllowed(int actionModeItem) {
         return (mSettings.getDisabledActionModeMenuItems() & actionModeItem) != actionModeItem;
     }
@@ -3463,9 +3486,9 @@ public class AwContents implements SmartClipProvider {
     private native void nativeCallDontProceedOnInterstitialForTesting(long nativeAwContents);
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
-            AwContentsClientBridge contentsClientBridge,
-            AwContentsIoThreadClient ioThreadClient,
-            InterceptNavigationDelegate navigationInterceptionDelegate);
+            AwContentsClientBridge contentsClientBridge, AwContentsIoThreadClient ioThreadClient,
+            InterceptNavigationDelegate navigationInterceptionDelegate,
+            AutofillProvider autofillProvider);
     private native WebContents nativeGetWebContents(long nativeAwContents);
     private native void nativeSetAwGLFunctor(long nativeAwContents, long nativeAwGLFunctor);
 

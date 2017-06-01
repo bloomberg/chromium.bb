@@ -86,6 +86,19 @@ bool FormData::SameFormAs(const FormData& form) const {
   return true;
 }
 
+bool FormData::SimilarFormAs(const FormData& form) const {
+  if (name != form.name || origin != form.origin || action != form.action ||
+      is_form_tag != form.is_form_tag ||
+      is_formless_checkout != form.is_formless_checkout ||
+      fields.size() != form.fields.size())
+    return false;
+  for (size_t i = 0; i < fields.size(); ++i) {
+    if (!fields[i].SimilarFieldAs(form.fields[i]))
+      return false;
+  }
+  return true;
+}
+
 bool FormData::operator==(const FormData& form) const {
   return name == form.name && origin == form.origin && action == form.action &&
          is_form_tag == form.is_form_tag &&
