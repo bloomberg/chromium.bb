@@ -195,30 +195,36 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   for (auto& observer : observers_)
     observer.OnPageResourceLoad(*request, &entry->data_use());
 
-  bool will_datause_complete = false;
+  const auto frame_iter =
+      main_render_frame_data_use_map_.find(entry->main_frame_id());
+
+  // Check whether the frame is tracked in the main render frame map, and if it
+  // is, check if |entry| is currently tracked by that frame.
+  bool frame_is_tracked = frame_iter != main_render_frame_data_use_map_.end() &&
+                          frame_iter->second == entry;
+
+  // For non-main frame requests, the page load can only be tracked in the frame
+  // map.
+  bool page_load_is_tracked = frame_is_tracked;
+
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
-  if (request_info &&
+  // If the frame is not tracked, but this is a main frame request, it might be
+  // the case that the navigation has not commit yet.
+  if (!frame_is_tracked && request_info &&
       request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
-    will_datause_complete =
-        pending_navigation_data_use_map_.find(entry->main_frame_request_id()) ==
+    page_load_is_tracked =
+        pending_navigation_data_use_map_.find(entry->main_frame_request_id()) !=
         pending_navigation_data_use_map_.end();
-  } else {
-    // Non-mainframe, Services, and other requests.
-    const auto frame_iter =
-        main_render_frame_data_use_map_.find(entry->main_frame_id());
-    will_datause_complete =
-        frame_iter == main_render_frame_data_use_map_.end() ||
-        !frame_iter->second->HasPendingURLRequest(request);
   }
 
   DataUseAscriber::OnUrlRequestDestroyed(request);
-  request->RemoveUserData(DataUseRecorderEntryAsUserData::kUserDataKey);
 
-  if (entry->IsDataUseComplete() && will_datause_complete) {
+  // If all requests are done for |entry| and no more requests can be attributed
+  // to it, it is safe to delete.
+  if (entry->IsDataUseComplete() && !page_load_is_tracked) {
     NotifyDataUseCompleted(entry);
-    main_render_frame_data_use_map_.erase(entry->main_frame_id());
     data_use_recorders_.erase(entry);
   }
 }
