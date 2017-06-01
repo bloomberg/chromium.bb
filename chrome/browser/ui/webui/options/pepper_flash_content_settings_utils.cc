@@ -57,8 +57,8 @@ void PepperFlashContentSettingsUtils::FlashSiteSettingsToMediaExceptions(
     MediaExceptions* media_exceptions) {
   media_exceptions->clear();
 
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(false));
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder =
+      ContentSettingsPattern::CreateBuilder();
   builder->WithSchemeWildcard()->WithPortWildcard();
   for (ppapi::FlashSiteSettings::const_iterator iter = site_settings.begin();
        iter != site_settings.end(); ++iter) {
