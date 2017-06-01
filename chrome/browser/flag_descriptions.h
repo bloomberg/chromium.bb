@@ -908,9 +908,6 @@ extern const char kEnableDataReductionProxyMainMenuDescription[];
 extern const char kEnableDataReductionProxySiteBreakdownName[];
 extern const char kEnableDataReductionProxySiteBreakdownDescription[];
 
-extern const char kEnableIphDemoModeName[];
-extern const char kEnableIphDemoModeDescription[];
-
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
 
@@ -987,6 +984,9 @@ extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 extern const char kHerbPrototypeChoicesName[];
 extern const char kHerbPrototypeChoicesDescription[];
 extern const char kHerbPrototypeFlavorElderberry[];
+
+extern const char kIphDemoModeChoiceName[];
+extern const char kIphDemoModeChoiceDescription[];
 
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];

@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
   "+jni",
+  "+components/flags_ui",
   "+components/keyed_service",
   "+components/leveldb_proto",
 ]
