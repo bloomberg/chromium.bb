@@ -1244,7 +1244,11 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
                            xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y))
     return;
-#endif
+#else
+  (void)xd;
+  (void)mi_row;
+  (void)mi_col;
+#endif  // CONFIG_CB4X4
 
   if (mbmi->uv_mode == DC_PRED
 #if CONFIG_PALETTE
