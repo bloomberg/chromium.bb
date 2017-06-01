@@ -45,11 +45,13 @@ void LayoutPagedFlowThread::UpdateLayout() {
   LayoutMultiColumnSet* column_set = FirstMultiColumnSet();
   if (!column_set)
     return;
+  if (!IsPageLogicalHeightKnown()) {
+    // Page height not calculated yet. Happens in the first layout pass when
+    // height is auto.
+    return;
+  }
   LayoutUnit page_logical_height =
       column_set->PageLogicalHeightForOffset(LayoutUnit());
-  if (!page_logical_height)
-    return;  // Page height not calculated yet. Happens in the first layout pass
-             // when height is auto.
   // Ensure uniform page height. We don't want the last page to be shorter than
   // the others, or it'll be impossible to scroll that whole page into view.
   LayoutUnit padded_logical_bottom_in_flow_thread =

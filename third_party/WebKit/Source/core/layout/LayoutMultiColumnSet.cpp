@@ -87,42 +87,38 @@ LayoutMultiColumnSet::FragmentainerGroupAtVisualPoint(
 
 LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
     LayoutUnit offset_in_flow_thread) const {
+  DCHECK(IsPageLogicalHeightKnown());
   const MultiColumnFragmentainerGroup& last_row = LastFragmentainerGroup();
-  if (!last_row.GroupLogicalHeight() && fragmentainer_groups_.size() == 1) {
-    // In the first layout pass of an auto-height multicol container, height
-    // isn't set. No need to perform the series of complicated dance steps below
-    // to figure out that we should simply return 0. Bail now.
-    return LayoutUnit();
-  }
   if (offset_in_flow_thread >= last_row.LogicalTopInFlowThread() +
                                    FragmentainerGroupCapacity(last_row)) {
     // The offset is outside the bounds of the fragmentainer groups that we have
     // established at this point. If we're nested inside another fragmentation
     // context, we need to calculate the height on our own.
     const LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread();
-    if (FragmentationContext* enclosing_fragmentation_context =
-            flow_thread->EnclosingFragmentationContext()) {
-      // We'd ideally like to translate |offsetInFlowThread| to an offset in the
-      // coordinate space of the enclosing fragmentation context here, but
+    FragmentationContext* enclosing_fragmentation_context =
+        flow_thread->EnclosingFragmentationContext();
+    if (enclosing_fragmentation_context &&
+        enclosing_fragmentation_context->IsFragmentainerLogicalHeightKnown()) {
+      // We'd ideally like to translate |offset_in_flow_thread| to an offset in
+      // the coordinate space of the enclosing fragmentation context here, but
       // that's hard, since the offset is out of bounds. So just use the bottom
       // we have found so far.
       LayoutUnit enclosing_context_bottom =
           last_row.BlockOffsetInEnclosingFragmentationContext() +
           last_row.GroupLogicalHeight();
-      LayoutUnit enclosing_fragmentainer_height =
+      LayoutUnit extra_row_height =
           enclosing_fragmentation_context->FragmentainerLogicalHeightAt(
               enclosing_context_bottom);
-      // Constrain against specified height / max-height.
       LayoutUnit current_multicol_height = LogicalTopFromMulticolContentEdge() +
                                            last_row.LogicalTop() +
                                            last_row.GroupLogicalHeight();
+      // Constrain against specified height / max-height.
       LayoutUnit multicol_height_with_extra_row =
-          current_multicol_height + enclosing_fragmentainer_height;
-      multicol_height_with_extra_row =
-          std::min(multicol_height_with_extra_row,
+          std::min(current_multicol_height + extra_row_height,
                    flow_thread->MaxColumnLogicalHeight());
-      return std::max(LayoutUnit(1),
-                      multicol_height_with_extra_row - current_multicol_height);
+      extra_row_height =
+          multicol_height_with_extra_row - current_multicol_height;
+      return extra_row_height.ClampNegativeToZero();
     }
   }
   return FragmentainerGroupAtFlowThreadOffset(offset_in_flow_thread,
@@ -161,7 +157,7 @@ LayoutUnit LayoutMultiColumnSet::PageRemainingLogicalHeightForOffset(
 }
 
 bool LayoutMultiColumnSet::IsPageLogicalHeightKnown() const {
-  return FirstFragmentainerGroup().ColumnLogicalHeight();
+  return FirstFragmentainerGroup().IsLogicalHeightKnown();
 }
 
 bool LayoutMultiColumnSet::NewFragmentainerGroupsAllowed() const {
@@ -462,8 +458,15 @@ void LayoutMultiColumnSet::ComputeLogicalHeight(
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
   LayoutUnit logical_height;
-  for (const auto& group : fragmentainer_groups_)
-    logical_height += group.GroupLogicalHeight();
+  // Under some circumstances column heights are unknown at this point. This
+  // happens e.g. when this column set got pushed down by a preceding spanner
+  // (and when that affects the available space for this column set). Just set
+  // the height to 0 for now. Another layout pass has already been scheduled, to
+  // calculate the correct height.
+  if (IsPageLogicalHeightKnown()) {
+    for (const auto& group : fragmentainer_groups_)
+      logical_height += group.GroupLogicalHeight();
+  }
   computed_values.extent_ = logical_height;
   computed_values.position_ = logical_top;
 }
@@ -511,6 +514,10 @@ LayoutRect LayoutMultiColumnSet::FragmentsBoundingBox(
 }
 
 void LayoutMultiColumnSet::AddOverflowFromChildren() {
+  // It's useless to calculate overflow if we haven't determined the page
+  // logical height yet.
+  if (!IsPageLogicalHeightKnown())
+    return;
   LayoutRect overflow_rect;
   for (const auto& group : fragmentainer_groups_) {
     LayoutRect rect = group.CalculateOverflow();

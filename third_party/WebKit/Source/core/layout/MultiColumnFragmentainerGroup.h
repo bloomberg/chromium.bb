@@ -46,19 +46,24 @@ class MultiColumnFragmentainerGroup {
 
   // Return the amount of block space that this fragmentainer group takes up in
   // its containing LayoutMultiColumnSet.
-  LayoutUnit GroupLogicalHeight() const { return logical_height_; }
+  LayoutUnit GroupLogicalHeight() const {
+    DCHECK(IsLogicalHeightKnown());
+    return logical_height_;
+  }
 
   // Return the block size of a column (or fragmentainer) in this fragmentainer
   // group. The spec says that this value must always be >= 1px, to ensure
   // progress.
   LayoutUnit ColumnLogicalHeight() const {
-    // If the height hasn't been calculated yet, though, we allow returning 0
-    // (and the caller is then expected to refrain from attempting to fragment).
-    if (!logical_height_)
-      return logical_height_;
-
+    DCHECK(IsLogicalHeightKnown());
     return std::max(LayoutUnit(1), logical_height_);
   }
+
+  // Return whether we have some column height to work with. This doesn't have
+  // to be the final height. It will only return false in the first layout pass,
+  // and even then only if column height is auto and there's no way to even make
+  // a guess (i.e. when there are no usable constraints).
+  bool IsLogicalHeightKnown() const { return is_logical_height_known_; }
 
   LayoutSize OffsetFromColumnSet() const;
 
@@ -191,6 +196,8 @@ class MultiColumnFragmentainerGroup {
 
   // Maximum logical height allowed.
   LayoutUnit max_logical_height_;
+
+  bool is_logical_height_known_ = false;
 };
 
 // List of all fragmentainer groups within a column set. There will always be at
