@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("static_content") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "static_html_native_content.h",
     "static_html_native_content.mm",

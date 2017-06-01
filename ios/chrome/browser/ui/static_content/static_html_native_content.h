@@ -55,7 +55,7 @@ struct Referrer;
 // The overscroll actions controller of the native content.
 // Setting this value to non-nil will enable Overscroll Actions.
 // Invalidated when |close| is called on this object.
-@property(nonatomic, assign)
+@property(nonatomic, strong)
     OverscrollActionsController* overscrollActionsController;
 
 @end

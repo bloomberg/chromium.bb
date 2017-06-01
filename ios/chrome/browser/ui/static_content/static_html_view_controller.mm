@@ -8,11 +8,9 @@
 
 #include <stdlib.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -20,6 +18,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation IdrHtmlGenerator
 - (id)initWithResourceId:(int)resourceId encoding:(NSStringEncoding)encoding {
@@ -37,10 +39,9 @@
 - (void)generateHtml:(HtmlCallback)callback {
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId_));
-  base::scoped_nsobject<NSString> result([[NSString alloc]
-      initWithBytes:html.data()
-             length:html.size()
-           encoding:encoding_]);
+  NSString* result = [[NSString alloc] initWithBytes:html.data()
+                                              length:html.size()
+                                            encoding:encoding_];
   callback(result);
 }
 @end
@@ -55,32 +56,32 @@
   // If the page is displaying a local HTML file, it contains the file URL to
   // the file.
   // If the page is a generated HTML, it contains a random resource URL.
-  base::scoped_nsobject<NSURL> resourceUrl_;
+  NSURL* resourceUrl_;
 
   // If the view is displaying a local file, contains the URL of the root
   // directory containing all resources needed by the page.
   // The web view will get access to this page.
-  base::scoped_nsobject<NSURL> resourcesRootDirectory_;
+  NSURL* resourcesRootDirectory_;
 
   // If the view is displaying a resources, contains the name of the resource.
-  base::scoped_nsobject<NSString> resource_;
+  NSString* resource_;
 
   // If the view displayes a generated HTML, contains the |HtmlGenerator| to
   // generate it.
-  base::scoped_nsprotocol<id<HtmlGenerator>> generator_;
+  id<HtmlGenerator> generator_;
 
   // Browser state associated with the view controller, used to create the
   // WKWebView.
   web::BrowserState* browserState_;  // Weak.
 
   // The web view that is used to display the content.
-  base::scoped_nsobject<WKWebView> webView_;
+  WKWebView* webView_;
 
   // The delegate of the native content.
-  base::WeakNSProtocol<id<CRWNativeContentDelegate>> delegate_;  // weak
+  __weak id<CRWNativeContentDelegate> delegate_;
 
   // The loader to navigate from the page.
-  base::WeakNSProtocol<id<UrlLoader>> loader_;  // weak
+  __weak id<UrlLoader> loader_;
 }
 
 // Returns the URL of the static page to display.
@@ -100,7 +101,7 @@
   DCHECK(resource);
   DCHECK(browserState);
   if ((self = [super init])) {
-    resource_.reset([resource copy]);
+    resource_ = [resource copy];
     browserState_ = browserState;
   }
   return self;
@@ -111,7 +112,7 @@
   DCHECK(generator);
   DCHECK(browserState);
   if ((self = [super init])) {
-    generator_.reset([generator retain]);
+    generator_ = generator;
     browserState_ = browserState;
   }
   return self;
@@ -124,8 +125,8 @@
   DCHECK(URL.SchemeIsFile());
   DCHECK(browserState);
   if ((self = [super init])) {
-    resourceUrl_.reset([net::NSURLWithGURL(URL) retain]);
-    resourcesRootDirectory_.reset([net::NSURLWithGURL(resourcesRoot) retain]);
+    resourceUrl_ = net::NSURLWithGURL(URL);
+    resourcesRootDirectory_ = net::NSURLWithGURL(resourcesRoot);
     browserState_ = browserState;
   }
   return self;
@@ -133,7 +134,6 @@
 
 - (void)dealloc {
   [self removeWebViewObservers];
-  [super dealloc];
 }
 
 - (void)removeWebViewObservers {
@@ -142,7 +142,7 @@
 
 - (void)setLoader:(id<UrlLoader>)loader
          referrer:(const web::Referrer&)referrer {
-  loader_.reset(loader);
+  loader_ = loader;
   referrer_ = referrer;
 }
 
@@ -162,11 +162,11 @@
 
 - (void)handleLowMemory {
   [self removeWebViewObservers];
-  webView_.reset();
+  webView_ = nil;
 }
 
 - (BOOL)isViewAlive {
-  return webView_.get() != nil;
+  return webView_ != nil;
 }
 
 - (NSString*)title {
@@ -190,7 +190,7 @@
 }
 
 - (void)setDelegate:(id<CRWNativeContentDelegate>)delegate {
-  delegate_.reset(delegate);
+  delegate_ = delegate;
 }
 
 - (void)setScrollEnabled:(BOOL)enabled {
@@ -263,14 +263,14 @@
 
 - (NSURL*)resourceURL {
   if (resourceUrl_)
-    return resourceUrl_.get();
+    return resourceUrl_;
 
   DCHECK(resource_ || generator_);
   NSString* path = nil;
   if (resource_) {
     NSBundle* bundle = base::mac::FrameworkBundle();
     NSString* bundlePath = [bundle bundlePath];
-    path = [bundlePath stringByAppendingPathComponent:resource_.get()];
+    path = [bundlePath stringByAppendingPathComponent:resource_];
   } else {
     // Generate a random resource URL to whitelist the load in
     // |webView:shouldStartLoadWithRequest:navigationType:| method.
@@ -281,13 +281,12 @@
   // Necessary because the |fileURLWithPath:| method adds a localhost in the
   // URL, and this prevents the URL from being comparable with the ones that
   // UIWebView uses when calling the delegate.
-  base::scoped_nsobject<NSURLComponents> components(
-      [[NSURLComponents alloc] init]);
+  NSURLComponents* components = [[NSURLComponents alloc] init];
   [components setScheme:@"file"];
   [components setHost:@""];
   [components setPath:path];
-  resourceUrl_.reset([[components URL] retain]);
-  resourcesRootDirectory_.reset([resourceUrl_ copy]);
+  resourceUrl_ = [components URL];
+  resourcesRootDirectory_ = [resourceUrl_ copy];
   return resourceUrl_;
 }
 
@@ -300,7 +299,7 @@
                                  UIViewAutoresizingFlexibleHeight];
     [self loadWebViewContents:webView];
     [webView setNavigationDelegate:self];
-    webView_.reset([webView retain]);
+    webView_ = webView;
   }
 }
 
