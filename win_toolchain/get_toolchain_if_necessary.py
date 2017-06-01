@@ -38,6 +38,10 @@ import tempfile
 import time
 import zipfile
 
+# Environment variable that, if set, specifies the default Visual Studio
+# toolchain root directory to use.
+ENV_TOOLCHAIN_ROOT = 'DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'
+
 # winreg isn't natively available under CygWin
 if sys.platform == "win32":
   try:
@@ -394,6 +398,9 @@ def main():
                     help='write information about toolchain to FILE')
   parser.add_option('--force', action='store_true',
                     help='force script to run on non-Windows hosts')
+  parser.add_option('--toolchain-dir',
+                    default=os.getenv(ENV_TOOLCHAIN_ROOT, BASEDIR),
+                    help='directory to install toolchain into')
   options, args = parser.parse_args()
 
   if not (sys.platform.startswith(('cygwin', 'win32')) or options.force):
@@ -415,14 +422,18 @@ def main():
     sys.exit('Desired hash is required.')
   desired_hash = args[0]
 
+  # Create our toolchain destination and "chdir" to it.
+  toolchain_dir = os.path.abspath(options.toolchain_dir)
+  if not os.path.isdir(toolchain_dir):
+    os.makedirs(toolchain_dir)
+  os.chdir(toolchain_dir)
+
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
-  os.chdir(os.path.normpath(os.path.join(BASEDIR)))
-  toolchain_dir = '.'
   if os.environ.get('GYP_MSVS_VERSION') == '2013':
-    target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
+    target_dir = 'vs2013_files'
   else:
-    target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs_files'))
+    target_dir = 'vs_files'
   if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
   toolchain_target_dir = os.path.join(target_dir, desired_hash)
