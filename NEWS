@@ -15,6 +15,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   to Christian Egli
 - Major internal changes to improve MSVC compatibilty. Thanks to Davy
   Kager
+- Enhance documentation on usage of display tables in particular
+  in conjunction with Unicode dot patterns. Thanks to Bert Frees
 ** Braille table improvements
 - Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
   Kevin Derome
