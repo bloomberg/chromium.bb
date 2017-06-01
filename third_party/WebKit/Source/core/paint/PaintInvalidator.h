@@ -12,7 +12,7 @@
 
 namespace blink {
 
-struct PaintInvalidatorContext {
+struct CORE_EXPORT PaintInvalidatorContext {
   USING_FAST_MALLOC(PaintInvalidatorContext);
 
  public:

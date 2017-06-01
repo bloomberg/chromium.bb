@@ -123,6 +123,14 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   DCHECK(border_box_changed);
 
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // Incremental invalidation is not applicable if there is border in the
+    // direction of border box size change because we don't know the border
+    // width when issuing incremental raster invalidations.
+    if (box_.BorderRight() || box_.BorderBottom())
+      return PaintInvalidationReason::kGeometry;
+  }
+
   if (style.HasVisualOverflowingEffect() || style.HasAppearance() ||
       style.HasFilterInducingProperty() || style.HasMask())
     return PaintInvalidationReason::kGeometry;
