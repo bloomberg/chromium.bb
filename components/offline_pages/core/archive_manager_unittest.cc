@@ -43,15 +43,10 @@ class ArchiveManagerTest : public testing::Test {
   void GetAllArchivesCallback(const std::set<base::FilePath>& archive_paths);
   void GetStorageStatsCallback(
       const ArchiveManager::StorageStats& storage_sizes);
-  void ArchivesDirCreationCallback(
-      ArchiveManager::ArchivesDirCreationResult result);
 
   ArchiveManager* manager() { return manager_.get(); }
   const base::FilePath& temp_path() const { return temp_dir_.GetPath(); }
   CallbackStatus callback_status() const { return callback_status_; }
-  ArchiveManager::ArchivesDirCreationResult creation_result() const {
-    return creation_result_;
-  }
   const std::set<base::FilePath>& last_archive_paths() const {
     return last_archvie_paths_;
   }
@@ -66,7 +61,6 @@ class ArchiveManagerTest : public testing::Test {
 
   std::unique_ptr<ArchiveManager> manager_;
   CallbackStatus callback_status_;
-  ArchiveManager::ArchivesDirCreationResult creation_result_;
   std::set<base::FilePath> last_archvie_paths_;
   ArchiveManager::StorageStats last_storage_sizes_;
 };
@@ -111,11 +105,6 @@ void ArchiveManagerTest::GetStorageStatsCallback(
   last_storage_sizes_ = storage_sizes;
 }
 
-void ArchiveManagerTest::ArchivesDirCreationCallback(
-    ArchiveManager::ArchivesDirCreationResult result) {
-  creation_result_ = result;
-}
-
 TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
   base::FilePath archive_dir =
       temp_path().Append(FILE_PATH_LITERAL("test_path"));
@@ -124,21 +113,17 @@ TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
 
   // Ensure archives dir exists, when it doesn't.
   manager()->EnsureArchivesDirCreated(
-      base::Bind(&ArchiveManagerTest::ArchivesDirCreationCallback,
-                 base::Unretained(this)));
+      base::Bind(&ArchiveManagerTest::Callback, base::Unretained(this), true));
   PumpLoop();
-  EXPECT_EQ(ArchiveManager::ArchivesDirCreationResult::SUCCESS,
-            creation_result());
+  EXPECT_EQ(CallbackStatus::CALLED_TRUE, callback_status());
   EXPECT_TRUE(base::PathExists(archive_dir));
 
   // Try again when the file already exists.
   ResetResults();
   manager()->EnsureArchivesDirCreated(
-      base::Bind(&ArchiveManagerTest::ArchivesDirCreationCallback,
-                 base::Unretained(this)));
+      base::Bind(&ArchiveManagerTest::Callback, base::Unretained(this), true));
   PumpLoop();
-  EXPECT_EQ(ArchiveManager::ArchivesDirCreationResult::ALREADY_EXISTS,
-            creation_result());
+  EXPECT_EQ(CallbackStatus::CALLED_TRUE, callback_status());
   EXPECT_TRUE(base::PathExists(archive_dir));
 }
 

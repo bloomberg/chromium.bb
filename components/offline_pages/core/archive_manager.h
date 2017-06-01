@@ -28,19 +28,12 @@ class ArchiveManager {
     int64_t total_archives_size;
   };
 
-  enum class ArchivesDirCreationResult {
-    SUCCESS,
-    ALREADY_EXISTS,
-    FAILURE,
-  };
-
   ArchiveManager(const base::FilePath& archives_dir,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~ArchiveManager();
 
   // Creates archives directory if one does not exist yet;
-  virtual void EnsureArchivesDirCreated(
-      const base::Callback<void(ArchivesDirCreationResult)>& callback);
+  virtual void EnsureArchivesDirCreated(const base::Closure& callback);
 
   // Checks whether an archive with specified |archive_path| exists.
   virtual void ExistsArchive(const base::FilePath& archive_path,

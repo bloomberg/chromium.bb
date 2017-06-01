@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -326,10 +325,9 @@ OfflinePageModelImpl::OfflinePageModelImpl(
       archive_manager_(new ArchiveManager(archives_dir, task_runner)),
       testing_clock_(nullptr),
       weak_ptr_factory_(this) {
-  const int kResetAttemptsLeft = 1;
-  store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::TimeTicks::Now(), kResetAttemptsLeft));
+  archive_manager_->EnsureArchivesDirCreated(
+      base::Bind(&OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone,
+                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 OfflinePageModelImpl::~OfflinePageModelImpl() {}
@@ -359,38 +357,6 @@ void OfflinePageModelImpl::SavePage(
   // The web contents is not available if archiver is not created and passed.
   if (!archiver.get()) {
     InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE,
-                       save_page_params.client_id, kInvalidOfflineId);
-    return;
-  }
-
-  archive_manager_->EnsureArchivesDirCreated(base::Bind(
-      &OfflinePageModelImpl::ContinueSavingPageWithArchivesDir,
-      weak_ptr_factory_.GetWeakPtr(), save_page_params,
-      base::Passed(std::move(archiver)), callback, base::TimeTicks::Now()));
-}
-
-void OfflinePageModelImpl::ContinueSavingPageWithArchivesDir(
-    const SavePageParams& save_page_params,
-    std::unique_ptr<OfflinePageArchiver> archiver,
-    const SavePageCallback& callback,
-    const base::TimeTicks& start_time,
-    ArchiveManager::ArchivesDirCreationResult result) {
-  // Since the archive folder might be missing when saving a page (especially
-  // temporary pages if they live in cache directory which is vulnerable to
-  // 'clear cache' actions). After the attempt to create the archive directory,
-  // as long as the result of creation is not ALREADY_EXISTS, we need to start
-  // a consistency check for saved pages.
-  // This is going to be primarily applicable when we start to use cache
-  // directory for temporary pages.
-  if (result != ArchiveManager::ArchivesDirCreationResult::ALREADY_EXISTS)
-    CheckMetadataConsistency();
-
-  if (result == ArchiveManager::ArchivesDirCreationResult::SUCCESS) {
-    UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
-                        base::TimeTicks::Now() - start_time);
-  }
-  if (result == ArchiveManager::ArchivesDirCreationResult::FAILURE) {
-    InformSavePageDone(callback, SavePageResult::ARCHIVE_DIR_MISSING,
                        save_page_params.client_id, kInvalidOfflineId);
     return;
   }
@@ -805,6 +771,17 @@ void OfflinePageModelImpl::OnMarkPageAccesseDone(
 
   // No need to fire OfflinePageModelChanged event since updating access info
   // should not have any impact to the UI.
+}
+
+void OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone(
+    const base::TimeTicks& start_time) {
+  UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
+                      base::TimeTicks::Now() - start_time);
+
+  const int kResetAttemptsLeft = 1;
+  store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
+                                weak_ptr_factory_.GetWeakPtr(), start_time,
+                                kResetAttemptsLeft));
 }
 
 void OfflinePageModelImpl::OnStoreInitialized(const base::TimeTicks& start_time,
