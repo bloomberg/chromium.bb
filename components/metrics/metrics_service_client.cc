@@ -4,22 +4,9 @@
 
 #include "components/metrics/metrics_service_client.h"
 
-#include "base/feature_list.h"
 #include "components/metrics/url_constants.h"
 
 namespace metrics {
-
-namespace {
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-const base::Feature kNewMetricsUrlFeature{"NewMetricsUrl",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kNewMetricsUrlFeature{"NewMetricsUrl",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-}  // namespace
 
 MetricsServiceClient::MetricsServiceClient() : update_running_services_() {}
 
@@ -46,9 +33,7 @@ bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
 }
 
 std::string MetricsServiceClient::GetMetricsServerUrl() {
-  return base::FeatureList::IsEnabled(kNewMetricsUrlFeature)
-             ? kNewMetricsServerUrl
-             : kOldMetricsServerUrl;
+  return kNewMetricsServerUrl;
 }
 
 bool MetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {

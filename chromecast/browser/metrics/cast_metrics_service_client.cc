@@ -243,7 +243,9 @@ std::string CastMetricsServiceClient::GetMetricsServerUrl() {
     return command_line->GetSwitchValueASCII(
         switches::kOverrideMetricsUploadUrl);
   }
-  return ::metrics::MetricsServiceClient::GetMetricsServerUrl();
+  // Note: This uses the old metrics service URL because some server-side
+  // provisioning is needed to support the extra Cast traffic on the new URL.
+  return ::metrics::kOldMetricsServerUrl;
 }
 
 std::unique_ptr<::metrics::MetricsLogUploader>
