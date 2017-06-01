@@ -106,6 +106,10 @@ void FakeRendererScheduler::SuspendTimerQueue() {}
 
 void FakeRendererScheduler::ResumeTimerQueue() {}
 
+void FakeRendererScheduler::VirtualTimePaused() {}
+
+void FakeRendererScheduler::VirtualTimeResumed() {}
+
 void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
     bool enabled) {}
 

@@ -219,6 +219,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       in_idle_period_for_testing(false),
       use_virtual_time(false),
       is_audio_playing(false),
+      virtual_time_paused(false),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       task_duration_reporter("RendererScheduler.TaskDurationPerQueueType2"),
@@ -369,6 +370,8 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
       TimeDomainType::THROTTLED) {
     task_queue_throttler_->IncreaseThrottleRefCount(timer_task_queue.get());
   }
+  if (GetMainThreadOnly().virtual_time_paused)
+    timer_task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
   timer_task_queue->AddTaskObserver(
       &GetMainThreadOnly().timer_task_cost_estimator);
   AddQueueToWakeUpBudgetPool(timer_task_queue.get());
@@ -1404,6 +1407,25 @@ void RendererSchedulerImpl::ResumeTimerQueue() {
   ForceUpdatePolicy();
 }
 
+void RendererSchedulerImpl::VirtualTimePaused() {
+  DCHECK(!GetMainThreadOnly().virtual_time_paused);
+  GetMainThreadOnly().virtual_time_paused = true;
+  for (const auto& pair : timer_task_runners_) {
+    DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
+    DCHECK(!pair.first->HasFence());
+    pair.first->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  }
+}
+
+void RendererSchedulerImpl::VirtualTimeResumed() {
+  DCHECK(GetMainThreadOnly().virtual_time_paused);
+  GetMainThreadOnly().virtual_time_paused = false;
+  for (const auto& pair : timer_task_runners_) {
+    DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
+    pair.first->RemoveFence();
+  }
+}
+
 void RendererSchedulerImpl::SetTimerQueueSuspensionWhenBackgroundedEnabled(
     bool enabled) {
   // Note that this will only take effect for the next backgrounded signal.
@@ -1518,6 +1540,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                        .timer_task_cost_estimator.expected_task_duration()
                        .InMillisecondsF());
   state->SetBoolean("is_audio_playing", GetMainThreadOnly().is_audio_playing);
+  state->SetBoolean("virtual_time_paused",
+                    GetMainThreadOnly().virtual_time_paused);
 
   state->BeginDictionary("web_view_schedulers");
   for (WebViewSchedulerImpl* web_view_scheduler :

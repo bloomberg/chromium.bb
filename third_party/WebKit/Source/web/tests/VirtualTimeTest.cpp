@@ -208,10 +208,11 @@ TEST_F(VirtualTimeTest,
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
   WebView().Scheduler()->EnableVirtualTime();
 
-  // Schedule a normal DOM timer to run at 1s in the future.
+  // Schedule normal DOM timers to run at 1s and 1.001s in the future.
   ExecuteJavaScript(
       "var run_order = [];"
-      "setTimeout(() => { run_order.push(1); }, 1000);");
+      "setTimeout(() => { run_order.push(1); }, 1000);"
+      "setTimeout(() => { run_order.push(2); }, 1001);");
 
   RefPtr<WebTaskRunner> runner =
       TaskRunnerHelper::Get(TaskType::kTimer, Window().GetExecutionContext());
@@ -226,13 +227,13 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
                               WTF::Unretained(WebView().Scheduler())),
                           TimeDelta::FromMilliseconds(1000));
 
-  // ALso schedule a second timer for the same point in time.
+  // ALso schedule a third timer for the same point in time.
   ExecuteJavaScript("setTimeout(() => { run_order.push(2); }, 1000);");
 
-  // The second DOM timer shouldn't have run because pausing virtual time also
-  // atomically pauses DOM timers.
+  // The second DOM timer shouldn't have run because the virtual time budget
+  // expired.
   testing::RunPendingTasks();
-  EXPECT_EQ("1", ExecuteJavaScript("run_order.join(', ')"));
+  EXPECT_EQ("1, 2", ExecuteJavaScript("run_order.join(', ')"));
 }
 
 }  // namespace blink

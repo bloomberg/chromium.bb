@@ -53,6 +53,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void Shutdown() override;
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
+  void VirtualTimePaused() override;
+  void VirtualTimeResumed() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;

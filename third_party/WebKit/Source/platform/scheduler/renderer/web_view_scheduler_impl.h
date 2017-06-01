@@ -112,7 +112,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool should_throttle_frames_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;
-  bool timers_suspended_;
+  bool virtual_time_paused_;
   bool have_seen_loading_task_;
   bool virtual_time_;
   bool is_audio_playing_;
