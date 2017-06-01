@@ -464,10 +464,11 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordLinuxGlibcVersion();
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager",
-                            GetLinuxWindowManager(),
+#if defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS)
+  UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
                             UMA_LINUX_WINDOW_MANAGER_COUNT);
+#endif
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BACKGROUND},
                            base::BindOnce(&RecordLinuxDistro));
