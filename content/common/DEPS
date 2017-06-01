@@ -27,6 +27,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebKeyboardEvent.h",
   "+third_party/WebKit/public/platform/WebMixedContentContextType.h",
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
+  "+third_party/WebKit/public/platform/WebPointerProperties.h",
   "+third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h",
   "+third_party/WebKit/public/platform/WebPageVisibilityState.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
