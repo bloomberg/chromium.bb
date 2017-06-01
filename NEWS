@@ -13,6 +13,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Chris Brannon
 - lou_checkyaml is now only installed if libyaml is available. Thanks
   to Christian Egli
+- Major internal changes to improve MSVC compatibilty. Thanks to Davy
+  Kager
 ** Braille table improvements
 - Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
   Kevin Derome
