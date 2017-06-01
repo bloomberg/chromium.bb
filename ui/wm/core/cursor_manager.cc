@@ -165,7 +165,15 @@ bool CursorManager::IsMouseEventsEnabled() const {
 }
 
 void CursorManager::SetDisplay(const display::Display& display) {
+  display_ = display;
+  for (auto& observer : observers_)
+    observer.OnCursorDisplayChanged(display);
+
   delegate_->SetDisplay(display, this);
+}
+
+const display::Display& CursorManager::GetDisplay() const {
+  return display_;
 }
 
 void CursorManager::LockCursor() {

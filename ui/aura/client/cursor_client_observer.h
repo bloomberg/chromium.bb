@@ -8,6 +8,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 
+namespace display {
+class Display;
+}
+
 namespace aura {
 namespace client {
 
@@ -15,6 +19,7 @@ class AURA_EXPORT CursorClientObserver {
  public:
   virtual void OnCursorVisibilityChanged(bool is_visible) {}
   virtual void OnCursorSetChanged(ui::CursorSetType cursor_set) {}
+  virtual void OnCursorDisplayChanged(const display::Display& display) {}
 
  protected:
   virtual ~CursorClientObserver() {}

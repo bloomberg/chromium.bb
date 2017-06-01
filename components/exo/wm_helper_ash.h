@@ -29,12 +29,13 @@ class WMHelperAsh : public WMHelper,
   ~WMHelperAsh() override;
 
   // Overridden from WMHelper:
-  const display::ManagedDisplayInfo GetDisplayInfo(
+  const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override;
-  aura::Window* GetContainer(int container_id) override;
+  aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
   aura::Window* GetFocusedWindow() const override;
   ui::CursorSetType GetCursorSet() const override;
+  const display::Display& GetCursorDisplay() const override;
   void AddPreTargetHandler(ui::EventHandler* handler) override;
   void PrependPreTargetHandler(ui::EventHandler* handler) override;
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
@@ -54,6 +55,7 @@ class WMHelperAsh : public WMHelper,
   // Overridden from aura::client::CursorClientObserver:
   void OnCursorVisibilityChanged(bool is_visible) override;
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+  void OnCursorDisplayChanged(const display::Display& display) override;
 
   // Overridden from ash::ShellObserver:
   void OnMaximizeModeStarted() override;

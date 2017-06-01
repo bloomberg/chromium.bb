@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
@@ -54,6 +55,7 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
   void DisableMouseEvents() override;
   bool IsMouseEventsEnabled() const override;
   void SetDisplay(const display::Display& display) override;
+  const display::Display& GetDisplay() const override;
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsCursorLocked() const override;
@@ -69,6 +71,9 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
   void CommitMouseEventsEnabled(bool enabled) override;
 
   std::unique_ptr<NativeCursorManager> delegate_;
+
+  // Display where the cursor is located.
+  display::Display display_;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().

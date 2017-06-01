@@ -103,6 +103,11 @@ void WMHelper::NotifyCursorSetChanged(ui::CursorSetType cursor_set) {
     observer.OnCursorSetChanged(cursor_set);
 }
 
+void WMHelper::NotifyCursorDisplayChanged(const display::Display& display) {
+  for (CursorObserver& observer : cursor_observers_)
+    observer.OnCursorDisplayChanged(display);
+}
+
 void WMHelper::NotifyMaximizeModeStarted() {
   for (MaximizeModeObserver& observer : maximize_mode_observers_)
     observer.OnMaximizeModeStarted();
