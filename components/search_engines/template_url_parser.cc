@@ -303,8 +303,7 @@ void TemplateURLParsingContext::CharactersImpl(void* ctx,
 std::unique_ptr<TemplateURL> TemplateURLParsingContext::GetTemplateURL(
     const SearchTermsData& search_terms_data) {
   // TODO(jcampan): Support engines that use POST; see http://crbug.com/18107
-  if (method_ == TemplateURLParsingContext::POST ||
-      data_.short_name().empty() || !IsHTTPRef(data_.url()) ||
+  if (method_ == TemplateURLParsingContext::POST || !IsHTTPRef(data_.url()) ||
       !IsHTTPRef(data_.suggestions_url))
     return nullptr;
   if (suggestion_method_ == TemplateURLParsingContext::POST)
@@ -320,6 +319,10 @@ std::unique_ptr<TemplateURL> TemplateURLParsingContext::GetTemplateURL(
   // in the imported data.
   if (!has_custom_keyword_)
     data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
+
+  // If the OSDD omits or has an empty short name, use the keyword.
+  if (data_.short_name().empty())
+    data_.SetShortName(data_.keyword());
 
   // Bail if the search URL is empty or if either TemplateURLRef is invalid.
   std::unique_ptr<TemplateURL> template_url =
