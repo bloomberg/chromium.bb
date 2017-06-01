@@ -189,9 +189,7 @@ class CORE_EXPORT LocalFrameView final
 
   // If this is set to false, the layout size will need to be explicitly set by
   // the owner.  E.g. WebViewImpl sets its mainFrame's layout size manually
-  void SetLayoutSizeFixedToFrameSize(bool is_fixed) {
-    layout_size_fixed_to_frame_size_ = is_fixed;
-  }
+  void SetLayoutSizeFixedToFrameSize(bool);
   bool LayoutSizeFixedToFrameSize() { return layout_size_fixed_to_frame_size_; }
 
   void SetInitialViewportSize(const IntSize&);

@@ -11,6 +11,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 
 namespace blink {
@@ -60,6 +61,14 @@ PaintLayer* PaintLayerForRootScroller(const Node* node) {
 
   LayoutBox* box = ToLayoutBox(element->GetLayoutObject());
   return box->Layer();
+}
+
+bool IsEffective(const LayoutBox& box) {
+  if (!box.GetNode())
+    return false;
+
+  return box.GetNode() ==
+         &box.GetDocument().GetRootScrollerController().EffectiveRootScroller();
 }
 
 }  // namespace RootScrollerUtil
