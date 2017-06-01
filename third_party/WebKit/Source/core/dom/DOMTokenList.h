@@ -52,18 +52,15 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
 
   unsigned length() const { return tokens_.size(); }
   const AtomicString item(unsigned index) const;
-
   bool contains(const AtomicString&) const;
   void add(const Vector<String>&, ExceptionState&);
-  void add(const AtomicString&, ExceptionState&);
   void remove(const Vector<String>&, ExceptionState&);
-  void remove(const AtomicString&, ExceptionState&);
   bool toggle(const AtomicString&, ExceptionState&);
   bool toggle(const AtomicString&, bool force, ExceptionState&);
   bool supports(const AtomicString&, ExceptionState&);
-
   const AtomicString& value() const { return value_; }
   void setValue(const AtomicString&);
+  const AtomicString& toString() const { return value(); }
 
   // This function should be called when the associated attribute value was
   // updated.
@@ -71,8 +68,9 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
                                const AtomicString& new_value);
 
   const SpaceSplitString& Tokens() const { return tokens_; }
-
-  const AtomicString& toString() const { return value(); }
+  // Add() and Remove() have DCHECK for syntax of the specified token.
+  void Add(const AtomicString&);
+  void Remove(const AtomicString&);
 
  protected:
   DOMTokenList(Element& element, const QualifiedName& attr)
