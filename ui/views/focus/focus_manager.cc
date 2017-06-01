@@ -550,12 +550,6 @@ void FocusManager::OnViewIsDeleting(View* view) {
   // such that ViewRemoved() is never called.
   CHECK_EQ(view, focused_view_);
   SetFocusedView(nullptr);
-  if (GetStoredFocusView() == view) {
-    // SetFocusedView() stored |view|. As |view| is being deleting and because
-    // a ViewObserver was just added, ViewTracker won't get
-    // OnViewIsDeleting() to properly clean up. Force that cleanup by
-    SetStoredFocusView(nullptr);
-  }
 }
 
 }  // namespace views
