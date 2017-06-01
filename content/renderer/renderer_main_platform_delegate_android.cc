@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "content/public/renderer/seccomp_sandbox_status_android.h"
 #include "sandbox/sandbox_features.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
@@ -48,8 +49,7 @@ class RecordSeccompStatus {
 #if BUILDFLAG(USE_SECCOMP_BPF)
 // Determines if the running device should support Seccomp, based on the Android
 // SDK version.
-bool IsSeccompBPFSupportedBySDK() {
-  auto* info = base::android::BuildInfo::GetInstance();
+bool IsSeccompBPFSupportedBySDK(const base::android::BuildInfo* info) {
   if (info->sdk_int() < 22) {
     // Seccomp was never available pre-Lollipop.
     return false;
@@ -91,8 +91,10 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   RecordSeccompStatus status_uma;
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
+  auto* info = base::android::BuildInfo::GetInstance();
+
   // Determine if Seccomp is available via the Android SDK version.
-  if (!IsSeccompBPFSupportedBySDK())
+  if (!IsSeccompBPFSupportedBySDK(info))
     return true;
 
   // Do run-time detection to ensure that support is present.
@@ -108,12 +110,15 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   if (base::FeatureList::IsEnabled(features::kSeccompSandboxAndroid)) {
     status_uma.set_status(SeccompSandboxStatus::FEATURE_ENABLED);
 
-    // TODO(rsesek): When "the thing after N" has an sdk_int(), restrict this to
-    // that platform version or higher.
     sig_t old_handler = signal(SIGSYS, SIG_DFL);
     if (old_handler != SIG_DFL) {
-      DLOG(WARNING) << "Un-hooking existing SIGSYS handler before "
-                    << "starting Seccomp sandbox";
+      // On Android O and later, the zygote applies a seccomp filter to all
+      // apps. It has its own SIGSYS handler that must be un-hooked so that
+      // the Chromium one can be used instead. If pre-O devices have a SIGSYS
+      // handler, then warn about that.
+      DLOG_IF(WARNING, info->sdk_int() < 26)
+          << "Un-hooking existing SIGSYS handler before starting "
+          << "Seccomp sandbox";
     }
 
     sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
