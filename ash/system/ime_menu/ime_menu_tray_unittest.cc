@@ -25,6 +25,8 @@
 #include "ui/views/controls/label.h"
 
 using base::UTF8ToUTF16;
+using chromeos::input_method::InputMethodManager;
+using chromeos::input_method::MockInputMethodManager;
 
 namespace ash {
 
@@ -32,10 +34,38 @@ ImeMenuTray* GetTray() {
   return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->ime_menu_tray();
 }
 
+// An InputMethodManager that always returns an active IME state.
+class TestInputMethodManager : public MockInputMethodManager {
+ public:
+  TestInputMethodManager() : state_(new MockInputMethodManager::State) {}
+  ~TestInputMethodManager() override = default;
+
+  // MockInputMethodManager:
+  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
+    return state_;
+  }
+
+  scoped_refptr<MockInputMethodManager::State> state_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
+};
+
 class ImeMenuTrayTest : public test::AshTestBase {
  public:
-  ImeMenuTrayTest() {}
-  ~ImeMenuTrayTest() override {}
+  ImeMenuTrayTest() = default;
+  ~ImeMenuTrayTest() override = default;
+
+  // test::AshTestBase:
+  void SetUp() override {
+    test::AshTestBase::SetUp();
+    // Takes ownership.
+    InputMethodManager::Initialize(new TestInputMethodManager);
+  }
+  void TearDown() override {
+    InputMethodManager::Shutdown();
+    test::AshTestBase::TearDown();
+  }
 
  protected:
   // Returns true if the IME menu tray is visible.
@@ -304,20 +334,22 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
 }
 
 TEST_F(ImeMenuTrayTest, ShowEmojiHandwritingVoiceButtons) {
-  FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+  InputMethodManager* input_method_manager = InputMethodManager::Get();
+  ASSERT_TRUE(input_method_manager);
+  // Feature is enabled.
+  ASSERT_TRUE(input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
 
-  chromeos::input_method::InputMethodManager* input_method_manager =
-      chromeos::input_method::InputMethodManager::Get();
-  EXPECT_FALSE(input_method_manager);
-  chromeos::input_method::InputMethodManager::Initialize(
-      new chromeos::input_method::MockInputMethodManager);
-  input_method_manager = chromeos::input_method::InputMethodManager::Get();
-  EXPECT_TRUE(input_method_manager &&
-              input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
+  // Text fields should show the buttons.
+  FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_TRUE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
 
+  // Password fields should not show the buttons.
   FocusInInputContext(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+
+  // Lock screen should not show the buttons.
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
 }
 

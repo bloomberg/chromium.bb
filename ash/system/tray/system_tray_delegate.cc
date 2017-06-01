@@ -22,10 +22,6 @@ void SystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {}
 
 void SystemTrayDelegate::GetCurrentIMEProperties(IMEPropertyInfoList* list) {}
 
-base::string16 SystemTrayDelegate::GetIMEManagedMessage() {
-  return base::string16();
-}
-
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;
