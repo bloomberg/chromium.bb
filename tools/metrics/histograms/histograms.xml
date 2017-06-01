@@ -76735,6 +76735,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.Uninstallable" enum="BooleanUninstallable">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Records whether or not a loaded third party module could be uninstalled
+    using the Windows Apps &amp; Features page.
+  </summary>
+</histogram>
+
 <histogram name="ThreadWatcher.ResponseTime" units="ms">
   <owner>rch@chromium.org</owner>
   <summary>

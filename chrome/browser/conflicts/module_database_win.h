@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
+#include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
 class ModuleDatabaseObserver;
@@ -174,6 +175,8 @@ class ModuleDatabase {
   ProcessMap processes_;
 
   base::ObserverList<ModuleDatabaseObserver> observer_list_;
+
+  ThirdPartyMetricsRecorder third_party_metrics_;
 
   // Weak pointer factory for this object. This is used when bouncing
   // incoming events to |task_runner_|.

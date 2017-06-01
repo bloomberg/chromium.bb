@@ -3197,6 +3197,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Translated"/>
 </enum>
 
+<enum name="BooleanUninstallable" type="int">
+  <int value="0" label="Not uninstallable"/>
+  <int value="1" label="Uninstallable"/>
+</enum>
+
 <enum name="BooleanUnknown" type="int">
   <int value="0" label="Known"/>
   <int value="1" label="Unknown"/>

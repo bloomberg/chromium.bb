@@ -31,6 +31,7 @@ ModuleDatabase::ModuleDatabase(
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))),
+      third_party_metrics_(this),
       weak_ptr_factory_(this) {}
 
 ModuleDatabase::~ModuleDatabase() {
