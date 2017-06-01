@@ -192,51 +192,6 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
       max_size(0) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() {}
 
-URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
-    : ignore_certificate_errors(false),
-      testing_fixed_http_port(0),
-      testing_fixed_https_port(0),
-      enable_http2(true),
-      enable_quic(false),
-      quic_max_server_configs_stored_in_properties(0),
-      quic_close_sessions_on_ip_change(false),
-      quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
-      quic_migrate_sessions_on_network_change(false),
-      quic_migrate_sessions_early(false),
-      quic_disable_bidirectional_streams(false),
-      quic_race_cert_verification(false) {}
-
-URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
-{}
-
-void URLRequestContextBuilder::HttpNetworkSessionParams::ConfigureSessionParams(
-    HttpNetworkSession::Params* network_session_params) const {
-  network_session_params->host_mapping_rules = host_mapping_rules;
-  network_session_params->ignore_certificate_errors = ignore_certificate_errors;
-  network_session_params->testing_fixed_http_port = testing_fixed_http_port;
-  network_session_params->testing_fixed_https_port = testing_fixed_https_port;
-
-  network_session_params->enable_http2 = enable_http2;
-
-  network_session_params->enable_quic = enable_quic;
-  network_session_params->quic_user_agent_id = quic_user_agent_id;
-  network_session_params->quic_max_server_configs_stored_in_properties =
-      quic_max_server_configs_stored_in_properties;
-  network_session_params->quic_connection_options = quic_connection_options;
-  network_session_params->quic_close_sessions_on_ip_change =
-      quic_close_sessions_on_ip_change;
-  network_session_params->quic_idle_connection_timeout_seconds =
-      quic_idle_connection_timeout_seconds;
-  network_session_params->quic_migrate_sessions_on_network_change =
-      quic_migrate_sessions_on_network_change;
-  network_session_params->quic_migrate_sessions_early =
-      quic_migrate_sessions_early;
-  network_session_params->quic_disable_bidirectional_streams =
-      quic_disable_bidirectional_streams;
-  network_session_params->quic_race_cert_verification =
-      quic_race_cert_verification;
-}
-
 URLRequestContextBuilder::URLRequestContextBuilder()
     : name_(nullptr),
       enable_brotli_(false),
@@ -457,8 +412,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   HttpNetworkSession::Context network_session_context;
   SetHttpNetworkSessionComponents(context.get(), &network_session_context);
-  HttpNetworkSession::Params network_session_params;
-  http_network_session_params_.ConfigureSessionParams(&network_session_params);
 
   if (proxy_delegate_) {
     network_session_context.proxy_delegate = proxy_delegate_.get();
@@ -470,7 +423,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   storage->set_http_network_session(base::MakeUnique<HttpNetworkSession>(
-      network_session_params, network_session_context));
+      http_network_session_params_, network_session_context));
 
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {

@@ -39,6 +39,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
 #include "net/net_features.h"
@@ -83,7 +84,7 @@ void ApplyCmdlineOverridesToHostResolver(
 }
 
 void ApplyCmdlineOverridesToNetworkSessionParams(
-    net::URLRequestContextBuilder::HttpNetworkSessionParams* params) {
+    net::HttpNetworkSession::Params* params) {
   int value;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -255,8 +256,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.SetFileTaskRunner(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
 
-  net::URLRequestContextBuilder::HttpNetworkSessionParams
-      network_session_params;
+  net::HttpNetworkSession::Params network_session_params;
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
   builder.SetSpdyAndQuicEnabled(true, false);
