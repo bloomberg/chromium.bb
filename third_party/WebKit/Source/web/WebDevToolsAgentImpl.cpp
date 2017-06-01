@@ -37,6 +37,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreProbeSink.h"
 #include "core/events/WebInputEventConversion.h"
+#include "core/exported/WebSettingsImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -89,7 +90,6 @@
 #include "public/web/WebSettings.h"
 #include "web/InspectorOverlayAgent.h"
 #include "web/WebFrameWidgetImpl.h"
-#include "web/WebSettingsImpl.h"
 
 namespace blink {
 

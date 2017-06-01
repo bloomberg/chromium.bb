@@ -158,8 +158,6 @@ component("web") {
     "WebScopedWindowFocusAllowedIndicator.cpp",
     "WebSearchableFormData.cpp",
     "WebSelectElement.cpp",
-    "WebSettingsImpl.cpp",
-    "WebSettingsImpl.h",
     "WebSharedWorkerImpl.cpp",
     "WebSharedWorkerImpl.h",
     "WebSharedWorkerReportingProxyImpl.cpp",
