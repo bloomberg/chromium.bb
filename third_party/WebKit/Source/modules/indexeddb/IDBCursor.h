@@ -87,7 +87,10 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   bool isPrimaryKeyDirty() const { return primary_key_dirty_; }
   bool isValueDirty() const { return value_dirty_; }
 
-  void Continue(IDBKey*, IDBKey* primary_key, ExceptionState&);
+  void Continue(IDBKey*,
+                IDBKey* primary_key,
+                IDBRequest::AsyncTraceState,
+                ExceptionState&);
   void PostSuccessHandlerCallback();
   bool IsDeleted() const;
   void Close();

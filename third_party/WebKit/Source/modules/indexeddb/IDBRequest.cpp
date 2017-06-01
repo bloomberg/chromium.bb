@@ -48,6 +48,7 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "modules/indexeddb/IDBValueWrapping.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PtrUtil.h"
@@ -57,10 +58,29 @@ using blink::WebIDBCursor;
 
 namespace blink {
 
+IDBRequest::AsyncTraceState::AsyncTraceState(const char* tracing_name, void* id)
+    : tracing_name_(tracing_name), id_(id) {
+  if (tracing_name_)
+    TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", tracing_name_, id);
+}
+
+void IDBRequest::AsyncTraceState::RecordAndReset() {
+  if (tracing_name_)
+    TRACE_EVENT_ASYNC_END0("IndexedDB", tracing_name_, id_);
+  tracing_name_ = nullptr;
+}
+
+IDBRequest::AsyncTraceState::~AsyncTraceState() {
+  if (tracing_name_)
+    TRACE_EVENT_ASYNC_END0("IndexedDB", tracing_name_, id_);
+}
+
 IDBRequest* IDBRequest::Create(ScriptState* script_state,
                                IDBAny* source,
-                               IDBTransaction* transaction) {
-  IDBRequest* request = new IDBRequest(script_state, source, transaction);
+                               IDBTransaction* transaction,
+                               IDBRequest::AsyncTraceState metrics) {
+  IDBRequest* request =
+      new IDBRequest(script_state, source, transaction, std::move(metrics));
   request->SuspendIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
   // do not have an associated transaction.
@@ -71,15 +91,17 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
 
 IDBRequest::IDBRequest(ScriptState* script_state,
                        IDBAny* source,
-                       IDBTransaction* transaction)
+                       IDBTransaction* transaction,
+                       AsyncTraceState metrics)
     : SuspendableObject(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
-      source_(source) {}
+      source_(source),
+      metrics_(std::move(metrics)) {}
 
 IDBRequest::~IDBRequest() {
-  DCHECK(ready_state_ == DONE || ready_state_ == kEarlyDeath ||
-         !GetExecutionContext());
+  DCHECK((ready_state_ == DONE && !metrics_.is_valid()) ||
+         ready_state_ == kEarlyDeath || !GetExecutionContext());
 }
 
 DEFINE_TRACE(IDBRequest) {
@@ -346,24 +368,30 @@ void IDBRequest::HandleResponse(IDBKey* key,
 
 void IDBRequest::EnqueueResponse(DOMException* error) {
   IDB_TRACE("IDBRequest::EnqueueResponse(DOMException)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   error_ = error;
   SetResult(IDBAny::CreateUndefined());
   pending_cursor_.Clear();
   EnqueueEvent(Event::CreateCancelableBubble(EventTypeNames::error));
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   IDB_TRACE("IDBRequest::onSuccess(StringList)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   DOMStringList* dom_string_list = DOMStringList::Create();
   for (size_t i = 0; i < string_list.size(); ++i)
     dom_string_list->Append(string_list[i]);
   EnqueueResultInternal(IDBAny::Create(dom_string_list));
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
@@ -371,8 +399,10 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
                                  IDBKey* primary_key,
                                  RefPtr<IDBValue>&& value) {
   IDB_TRACE("IDBRequest::EnqueueResponse(IDBCursor)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   DCHECK(!pending_cursor_);
   IDBCursor* cursor = nullptr;
@@ -390,26 +420,33 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
       NOTREACHED();
   }
   SetResultCursor(cursor, key, primary_key, std::move(value));
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(IDBKey* idb_key) {
   IDB_TRACE("IDBRequest::EnqueueResponse(IDBKey)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   if (idb_key && idb_key->IsValid())
     EnqueueResultInternal(IDBAny::Create(idb_key));
   else
     EnqueueResultInternal(IDBAny::CreateUndefined());
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(const Vector<RefPtr<IDBValue>>& values) {
   IDB_TRACE("IDBRequest::EnqueueResponse([IDBValue])");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   AckReceivedBlobs(values);
   EnqueueResultInternal(IDBAny::Create(values));
+  metrics_.RecordAndReset();
 }
 
 #if DCHECK_IS_ON()
@@ -426,8 +463,10 @@ static IDBObjectStore* EffectiveObjectStore(IDBAny* source) {
 
 void IDBRequest::EnqueueResponse(RefPtr<IDBValue>&& value) {
   IDB_TRACE("IDBRequest::EnqueueResponse(IDBValue)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   AckReceivedBlobs(value.Get());
 
@@ -445,20 +484,27 @@ void IDBRequest::EnqueueResponse(RefPtr<IDBValue>&& value) {
 #endif
 
   EnqueueResultInternal(IDBAny::Create(std::move(value)));
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(int64_t value) {
   IDB_TRACE("IDBRequest::EnqueueResponse(int64_t)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
   EnqueueResultInternal(IDBAny::Create(value));
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse() {
   IDB_TRACE("IDBRequest::EnqueueResponse()");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
   EnqueueResultInternal(IDBAny::CreateUndefined());
+  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResultInternal(IDBAny* result) {
@@ -478,12 +524,15 @@ void IDBRequest::EnqueueResponse(IDBKey* key,
                                  IDBKey* primary_key,
                                  RefPtr<IDBValue>&& value) {
   IDB_TRACE("IDBRequest::EnqueueResponse(IDBKey, IDBKey primaryKey, IDBValue)");
-  if (!ShouldEnqueueEvent())
+  if (!ShouldEnqueueEvent()) {
+    metrics_.RecordAndReset();
     return;
+  }
 
   DCHECK(pending_cursor_);
   SetResultCursor(pending_cursor_.Release(), key, primary_key,
                   std::move(value));
+  metrics_.RecordAndReset();
 }
 
 bool IDBRequest::HasPendingActivity() const {

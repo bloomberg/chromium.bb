@@ -148,8 +148,10 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, live_transactions.size());
 
-  Persistent<IDBRequest> request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  Persistent<IDBRequest> request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+
   DeactivateNewTransactions(scope.GetIsolate());
 
   request.Clear();  // The transaction is holding onto the request.
@@ -178,8 +180,9 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1U, live_transactions.size());
 
-  Persistent<IDBRequest> request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  Persistent<IDBRequest> request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
   // This response should result in an event being enqueued immediately.
@@ -216,8 +219,9 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1U, live_transactions.size());
 
-  Persistent<IDBRequest> request = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  Persistent<IDBRequest> request =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
   request->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));
@@ -250,10 +254,12 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1U, live_transactions.size());
 
-  Persistent<IDBRequest> request1 = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
-  Persistent<IDBRequest> request2 = IDBRequest::Create(
-      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction_.Get());
+  Persistent<IDBRequest> request1 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+  Persistent<IDBRequest> request2 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
   request1->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));

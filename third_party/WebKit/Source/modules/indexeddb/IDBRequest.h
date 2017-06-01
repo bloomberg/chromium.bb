@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/SuspendableObject.h"
@@ -47,6 +48,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -66,7 +68,39 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
  public:
-  static IDBRequest* Create(ScriptState*, IDBAny* source, IDBTransaction*);
+  // Records async tracing, starting on contruction and ending on destruction or
+  // a call to |RecordAndReset()|.
+  class AsyncTraceState {
+   public:
+    AsyncTraceState() {}
+    AsyncTraceState(const char* tracing_name, void*);
+    ~AsyncTraceState();
+    AsyncTraceState(AsyncTraceState&& other) {
+      this->tracing_name_ = other.tracing_name_;
+      this->id_ = other.id_;
+      other.tracing_name_ = nullptr;
+    }
+    AsyncTraceState& operator=(AsyncTraceState&& rhs) {
+      this->tracing_name_ = rhs.tracing_name_;
+      this->id_ = rhs.id_;
+      rhs.tracing_name_ = nullptr;
+      return *this;
+    }
+
+    bool is_valid() const { return tracing_name_; }
+    void RecordAndReset();
+
+   private:
+    const char* tracing_name_ = nullptr;
+    void* id_;
+
+    DISALLOW_COPY_AND_ASSIGN(AsyncTraceState);
+  };
+
+  static IDBRequest* Create(ScriptState*,
+                            IDBAny* source,
+                            IDBTransaction*,
+                            AsyncTraceState);
   ~IDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -218,8 +252,13 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   inline IDBRequestQueueItem* QueueItem() const { return queue_item_; }
 #endif  // DCHECK_IS_ON()
 
+  void AssignNewMetrics(AsyncTraceState metrics) {
+    DCHECK(!metrics_.is_valid());
+    metrics_ = std::move(metrics);
+  }
+
  protected:
-  IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
+  IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*, AsyncTraceState);
   void EnqueueEvent(Event*);
   void DequeueEvent(Event*);
   virtual bool ShouldEnqueueEvent() const;
@@ -265,9 +304,13 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void EnqueueResponse(const Vector<RefPtr<IDBValue>>&);
   void EnqueueResponse();
 
+  void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
+
   Member<IDBAny> source_;
   Member<IDBAny> result_;
   Member<DOMException> error_;
+
+  AsyncTraceState metrics_;
 
   bool has_pending_activity_ = true;
   HeapVector<Member<Event>> enqueued_events_;
