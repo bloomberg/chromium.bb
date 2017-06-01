@@ -71,6 +71,9 @@ CrOnc.APNProperties;
 /** @typedef {chrome.networkingPrivate.CellularSimState} */
 CrOnc.CellularSimState;
 
+/** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
+CrOnc.DeviceStateProperties;
+
 /** @typedef {chrome.networkingPrivate.IPConfigProperties} */
 CrOnc.IPConfigProperties;
 
@@ -105,6 +108,9 @@ CrOnc.ActivationState = chrome.networkingPrivate.ActivationStateType;
 
 /** @enum {string} */
 CrOnc.ConnectionState = chrome.networkingPrivate.ConnectionStateType;
+
+/** @enum {string} */
+CrOnc.DeviceState = chrome.networkingPrivate.DeviceStateType;
 
 /** @enum {string} */
 CrOnc.IPConfigType = chrome.networkingPrivate.IPConfigType;

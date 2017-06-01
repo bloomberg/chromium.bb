@@ -30,7 +30,7 @@ Polymer({
 
     /**
      * The device state for each network device type. Set by network-summary.
-     * @type {!Object<chrome.networkingPrivate.DeviceStateProperties>|undefined}
+     * @type {!Object<!CrOnc.DeviceStateProperties>|undefined}
      * @private
      */
     deviceStates: {
@@ -392,13 +392,12 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties} deviceState
    * @return {boolean}
    * @private
    */
   deviceIsEnabled_: function(deviceState) {
-    return !!deviceState &&
-        deviceState.State == chrome.networkingPrivate.DeviceStateType.ENABLED;
+    return !!deviceState && deviceState.State == CrOnc.DeviceState.ENABLED;
   },
 
   /**
@@ -449,7 +448,7 @@ Polymer({
         }
         console.error(
             'Unexpected networkingPrivate.startConnect error: ' + message +
-                ' For: ' + properties.GUID);
+            ' For: ' + properties.GUID);
       }
     });
   },

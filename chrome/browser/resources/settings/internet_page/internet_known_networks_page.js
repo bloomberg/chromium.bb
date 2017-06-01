@@ -15,7 +15,7 @@ Polymer({
   properties: {
     /**
      * The type of networks to list.
-     * @type {chrome.networkingPrivate.NetworkType}
+     * @type {CrOnc.Type}
      */
     networkType: {
       type: String,
