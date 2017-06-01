@@ -14,11 +14,12 @@
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/app_menu_animation.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -46,12 +47,7 @@ bool AppMenuButton::g_open_app_immediately_for_testing = false;
 
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(base::string16(), toolbar_view, false),
-      severity_(AppMenuIconController::Severity::NONE),
-      type_(AppMenuIconController::IconType::NONE),
-      toolbar_view_(toolbar_view),
-      should_use_new_icon_(false),
-      margin_trailing_(0),
-      weak_factory_(this) {
+      toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
 
@@ -133,7 +129,8 @@ gfx::Size AppMenuButton::CalculatePreferredSize() const {
 }
 
 void AppMenuButton::Layout() {
-  if (animation_) {
+  if (new_icon_) {
+    new_icon_->SetBoundsRect(GetContentsBounds());
     ink_drop_container()->SetBoundsRect(GetLocalBounds());
     image()->SetBoundsRect(GetLocalBounds());
     return;
@@ -142,15 +139,8 @@ void AppMenuButton::Layout() {
   views::MenuButton::Layout();
 }
 
-void AppMenuButton::PaintButtonContents(gfx::Canvas* canvas) {
-  if (!animation_) {
-    views::MenuButton::PaintButtonContents(canvas);
-    return;
-  }
-
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(gfx::Insets(ToolbarButton::kInteriorPadding));
-  animation_->PaintAppMenu(canvas, bounds);
+void AppMenuButton::OnThemeChanged() {
+  UpdateIcon(false);
 }
 
 void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
@@ -158,19 +148,6 @@ void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
                                   int index,
                                   bool foreground) {
   AnimateIconIfPossible();
-}
-
-void AppMenuButton::AppMenuAnimationStarted() {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-}
-
-void AppMenuButton::AppMenuAnimationEnded() {
-  DestroyLayer();
-}
-
-void AppMenuButton::InvalidateIcon() {
-  SchedulePaint();
 }
 
 void AppMenuButton::UpdateIcon(bool should_animate) {
@@ -197,10 +174,21 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
   }
 
   if (should_use_new_icon_) {
-    if (!animation_)
-      animation_ = base::MakeUnique<AppMenuAnimation>(this, toolbar_icon_color);
+    if (!new_icon_) {
+      new_icon_ = new views::AnimatedIconView(kBrowserToolsAnimatedIcon);
+      new_icon_->set_can_process_events_within_subtree(false);
+      AddChildView(new_icon_);
+    }
 
-    animation_->set_target_color(severity_color);
+    // Only show a special color for severity when using the classic Chrome
+    // theme. Otherwise, we can't be sure that it contrasts with the toolbar
+    // background.
+    new_icon_->set_color(
+        ThemeServiceFactory::GetForProfile(toolbar_view_->browser()->profile())
+                ->UsingDefaultTheme()
+            ? severity_color
+            : toolbar_icon_color);
+
     if (should_animate)
       AnimateIconIfPossible();
 
@@ -233,12 +221,12 @@ void AppMenuButton::SetTrailingMargin(int margin) {
 }
 
 void AppMenuButton::AnimateIconIfPossible() {
-  if (!animation_ || !should_use_new_icon_ ||
+  if (!new_icon_ || !should_use_new_icon_ ||
       severity_ == AppMenuIconController::Severity::NONE) {
     return;
   }
 
-  animation_->StartAnimation();
+  new_icon_->Animate(views::AnimatedIconView::END);
 }
 
 const char* AppMenuButton::GetClassName() const {

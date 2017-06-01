@@ -112,6 +112,8 @@ component("views") {
     "color_chooser/color_chooser_view.cc",
     "color_chooser/color_chooser_view.h",
     "context_menu_controller.h",
+    "controls/animated_icon_view.cc",
+    "controls/animated_icon_view.h",
     "controls/button/blue_button.cc",
     "controls/button/blue_button.h",
     "controls/button/button.cc",
