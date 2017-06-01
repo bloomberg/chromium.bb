@@ -21,7 +21,6 @@
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enroller_impl.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -226,8 +225,7 @@ ChromeCryptAuthService::ChromeCryptAuthService(
                  << "waiting before starting CryptAuth managers.";
     token_service_->AddObserver(this);
   } else {
-    enrollment_manager_->Start();
-    device_manager_->Start();
+    PerformEnrollmentAndDeviceSync();
   }
 }
 
@@ -268,11 +266,36 @@ ChromeCryptAuthService::CreateCryptAuthClientFactory() {
   return CreateCryptAuthClientFactoryImpl(profile_);
 }
 
+void ChromeCryptAuthService::OnEnrollmentStarted() {}
+
+void ChromeCryptAuthService::OnEnrollmentFinished(bool success) {
+  if (success)
+    device_manager_->Start();
+  else
+    PA_LOG(ERROR) << "CryptAuth enrollment failed. Device manager was not "
+                  << " started.";
+
+  enrollment_manager_->RemoveObserver(this);
+}
+
 void ChromeCryptAuthService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (account_id == GetAccountId()) {
     token_service_->RemoveObserver(this);
-    enrollment_manager_->Start();
-    device_manager_->Start();
+    PerformEnrollmentAndDeviceSync();
   }
+}
+
+void ChromeCryptAuthService::PerformEnrollmentAndDeviceSync() {
+  if (enrollment_manager_->IsEnrollmentValid()) {
+    device_manager_->Start();
+  } else {
+    // If enrollment is not valid, wait for the new enrollment attempt to finish
+    // before starting CryptAuthDeviceManager. See OnEnrollmentFinished(),
+    enrollment_manager_->AddObserver(this);
+  }
+
+  // Even if enrollment was valid, CryptAuthEnrollmentManager must be started in
+  // order to schedule the next enrollment attempt.
+  enrollment_manager_->Start();
 }
