@@ -79,11 +79,9 @@ void EasyUnlockAppManagerImpl::EnsureReady(
 }
 
 void EasyUnlockAppManagerImpl::LaunchSetup() {
-  PA_LOG(WARNING) << "LaunchSetup()";
   ExtensionService* extension_service = extension_system_->extension_service();
   if (!extension_service)
     return;
-  PA_LOG(WARNING) << "got extension service";
 
   const extensions::Extension* extension =
       extension_service->GetExtensionById(app_id_, false);
@@ -92,7 +90,6 @@ void EasyUnlockAppManagerImpl::LaunchSetup() {
     return;
   }
 
-  PA_LOG(WARNING) << "launching app...";
   OpenApplication(AppLaunchParams(extension_service->profile(), extension,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
                                   WindowOpenDisposition::NEW_WINDOW,
