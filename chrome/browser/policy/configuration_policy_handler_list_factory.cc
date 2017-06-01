@@ -78,6 +78,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/download/download_dir_policy_handler.h"
+#include "chrome/browser/policy/local_sync_policy_handler.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -669,9 +670,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kRoamingProfileSupportEnabled,
     syncer::prefs::kEnableLocalSyncBackend,
     base::Value::Type::BOOLEAN },
-  { key::kRoamingProfileLocation,
-    syncer::prefs::kLocalSyncBackendDir,
-    base::Value::Type::STRING },
 
   { key::kNetworkTimeQueriesEnabled,
     network_time::prefs::kNetworkTimeQueriesEnabled,
@@ -922,6 +920,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 
 #if !defined(OS_ANDROID)
   handlers->AddHandler(base::WrapUnique(new DownloadDirPolicyHandler));
+  handlers->AddHandler(base::MakeUnique<LocalSyncPolicyHandler>());
 
   handlers->AddHandler(base::MakeUnique<SimpleSchemaValidatingPolicyHandler>(
       key::kRegisteredProtocolHandlers,

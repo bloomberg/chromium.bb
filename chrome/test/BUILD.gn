@@ -3724,6 +3724,7 @@ test("unit_tests") {
       "../browser/media/router/mojo/media_route_controller_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
+      "../browser/policy/local_sync_policy_handler_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc",
