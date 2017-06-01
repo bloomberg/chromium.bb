@@ -1117,6 +1117,8 @@ void Shell::InitKeyboard() {
     keyboard::KeyboardController::ResetInstance(
         new keyboard::KeyboardController(shell_delegate_->CreateKeyboardUI(),
                                          virtual_keyboard_controller_.get()));
+    for (auto& observer : shell_observers_)
+      observer.OnKeyboardControllerCreated();
   }
 }
 

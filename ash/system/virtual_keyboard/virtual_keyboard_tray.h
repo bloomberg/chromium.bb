@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
 #include "ash/keyboard/keyboard_ui_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -19,7 +20,8 @@ namespace ash {
 // TODO(sky): make this visible on non-chromeos platforms.
 class VirtualKeyboardTray : public TrayBackgroundView,
                             public KeyboardUIObserver,
-                            public keyboard::KeyboardControllerObserver {
+                            public keyboard::KeyboardControllerObserver,
+                            public ShellObserver {
  public:
   explicit VirtualKeyboardTray(Shelf* shelf);
   ~VirtualKeyboardTray() override;
@@ -36,6 +38,9 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
+
+  // ShellObserver:
+  void OnKeyboardControllerCreated() override;
 
  private:
   void ObserveKeyboardController();

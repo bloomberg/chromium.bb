@@ -39,8 +39,10 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance())
+  if (Shell::HasInstance()) {
     Shell::Get()->keyboard_ui()->AddObserver(this);
+    Shell::Get()->AddShellObserver(this);
+  }
   // Try observing keyboard controller, in case it is already constructed.
   ObserveKeyboardController();
 }
@@ -49,8 +51,10 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
   // Try unobserving keyboard controller, in case it still exists.
   UnobserveKeyboardController();
   // The Shell may not exist in some unit tests.
-  if (Shell::HasInstance())
+  if (Shell::HasInstance()) {
+    Shell::Get()->RemoveShellObserver(this);
     Shell::Get()->keyboard_ui()->RemoveObserver(this);
+  }
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
@@ -96,10 +100,14 @@ void VirtualKeyboardTray::OnKeyboardBoundsChanging(
 
 void VirtualKeyboardTray::OnKeyboardClosed() {}
 
+void VirtualKeyboardTray::OnKeyboardControllerCreated() {
+  ObserveKeyboardController();
+}
+
 void VirtualKeyboardTray::ObserveKeyboardController() {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
+  if (keyboard_controller && !keyboard_controller->HasObserver(this))
     keyboard_controller->AddObserver(this);
 }
 
