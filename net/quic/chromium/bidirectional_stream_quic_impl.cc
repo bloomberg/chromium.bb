@@ -266,27 +266,29 @@ void BidirectionalStreamQuicImpl::OnError(int error) {
 void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK(rv == OK || !stream_);
-  if (rv == OK) {
-    stream_ = session_->ReleaseStream(this);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::ReadInitialHeaders,
-                              weak_factory_.GetWeakPtr()));
-
-    NotifyStreamReady();
-  } else {
+  if (rv != OK) {
     NotifyError(rv);
+    return;
   }
+
+  stream_ = session_->ReleaseStream(this);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::ReadInitialHeaders,
+                            weak_factory_.GetWeakPtr()));
+
+  NotifyStreamReady();
 }
 
 void BidirectionalStreamQuicImpl::OnSendDataComplete(int rv) {
   DCHECK(rv == OK || !stream_);
-  if (rv == OK) {
-    if (delegate_)
-      delegate_->OnDataSent();
-  } else {
+  if (rv != 0) {
     NotifyError(rv);
+    return;
   }
+
+  if (delegate_)
+    delegate_->OnDataSent();
 }
 
 void BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete(int rv) {
