@@ -52,7 +52,7 @@ DEFINE_TRACE(ElementVisibilityObserver) {
 
 void ElementVisibilityObserver::OnVisibilityChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool is_visible = entries.back()->intersectionRatio() >
+  bool is_visible = entries.back()->intersectionRatio() >=
                     intersection_observer_->thresholds()[0];
   (*callback_.get())(is_visible);
 }
