@@ -2921,12 +2921,6 @@ const char kNewZipUnpackerName[] = "New ZIP unpacker";
 const char kNewZipUnpackerDescription[] =
     "New ZIP unpacker flow, based on the File System Provider API.";
 
-const char kShowArcFilesAppName[] = "Show Android Files app";
-
-const char kShowArcFilesAppDescription[] =
-    "Show Android Files app in Chrome OS launcher. This is only effective "
-    "on a device with access to Play Store.";
-
 const char kOfficeEditingComponentAppName[] =
     "Office Editing for Docs, Sheets & Slides";
 

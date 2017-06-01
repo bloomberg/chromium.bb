@@ -2777,12 +2777,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
-    {"show-arc-files-app", flag_descriptions::kShowArcFilesAppName,
-     flag_descriptions::kShowArcFilesAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kShowArcFilesAppFeature)},
-#endif // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"force-enable-stylus-tools",
      flag_descriptions::kForceEnableStylusToolsName,
      flag_descriptions::kForceEnableStylusToolsDescription, kOsCrOS,
