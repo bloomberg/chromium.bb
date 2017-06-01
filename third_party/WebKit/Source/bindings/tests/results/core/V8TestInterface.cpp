@@ -36,7 +36,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebFeature.h"
@@ -375,18 +374,7 @@ static void staticReadOnlyStringAttributeAttributeGetter(const v8::FunctionCallb
 }
 
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* cppValue(WTF::GetPtr(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute()));
-
-  // Keep the wrapper object for the return value alive as long as |this|
-  // object is alive in order to save creation time of the wrapper object.
-  if (cppValue && DOMDataStore::SetReturnValue(info.GetReturnValue(), cppValue))
-    return;
-  v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute")
-      .Set(holder, v8Value);
-
-  V8SetReturnValue(info, v8Value);
+  V8SetReturnValue(info, WTF::GetPtr(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute()), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
