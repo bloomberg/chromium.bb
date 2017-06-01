@@ -1384,9 +1384,6 @@ bool HTMLTreeBuilder::ProcessBodyEndTagForInBody(AtomicHTMLToken* token) {
 
 void HTMLTreeBuilder::ProcessAnyOtherEndTagForInBody(AtomicHTMLToken* token) {
   DCHECK_EQ(token->GetType(), HTMLToken::kEndTag);
-  if (token->GetName() == menuitemTag)
-    UseCounter::Count(tree_.CurrentNode()->GetDocument(),
-                      UseCounter::kMenuItemCloseTag);
   HTMLElementStack::ElementRecord* record = tree_.OpenElements()->TopRecord();
   while (1) {
     HTMLStackItem* item = record->StackItem();

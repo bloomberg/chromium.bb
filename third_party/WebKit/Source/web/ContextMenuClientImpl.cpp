@@ -529,7 +529,6 @@ static void PopulateSubMenuItems(const Vector<ContextMenuItem>& input_menu,
 
     WebMenuItemInfo output_item;
     output_item.label = input_item->Title();
-    output_item.icon = input_item->Icon();
     output_item.enabled = input_item->Enabled();
     output_item.checked = input_item->Checked();
     output_item.action = static_cast<unsigned>(input_item->Action() -

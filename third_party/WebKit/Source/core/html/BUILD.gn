@@ -120,8 +120,6 @@ blink_core_sources("html") {
     "HTMLMediaElement.h",
     "HTMLMenuElement.cpp",
     "HTMLMenuElement.h",
-    "HTMLMenuItemElement.cpp",
-    "HTMLMenuItemElement.h",
     "HTMLMetaElement.cpp",
     "HTMLMetaElement.h",
     "HTMLMeterElement.cpp",

@@ -17,8 +17,8 @@ PASS draggable on HTMLElement must enqueue an attributeChanged reaction when add
 PASS draggable on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute 
 FAIL dropzone on HTMLElement must enqueue an attributeChanged reaction when adding dropzone content attribute assert_array_equals: lengths differ, expected 1 got 0
 FAIL dropzone on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute assert_array_equals: lengths differ, expected 2 got 1
-FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when adding contextmenu content attribute Failed to set the 'contextMenu' property on 'HTMLElement': The provided value is not of type 'HTMLMenuElement'.
-FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute Failed to set the 'contextMenu' property on 'HTMLElement': The provided value is not of type 'HTMLMenuElement'.
+FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when adding contextmenu content attribute assert_array_equals: lengths differ, expected 1 got 0
+FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute assert_array_equals: lengths differ, expected 2 got 1
 PASS spellcheck on HTMLElement must enqueue an attributeChanged reaction when adding spellcheck content attribute 
 PASS spellcheck on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute 
 PASS innerText on HTMLElement must enqueue a disconnected reaction 

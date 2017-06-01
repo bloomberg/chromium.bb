@@ -702,7 +702,6 @@ html element marquee
     property width
 html element menu
     property compact
-html element menuitem
 html element meta
     property content
     property httpEquiv

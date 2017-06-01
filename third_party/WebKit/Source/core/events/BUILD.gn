@@ -83,8 +83,6 @@ blink_core_sources("events") {
     "PromiseRejectionEvent.cpp",
     "PromiseRejectionEvent.h",
     "RegisteredEventListener.h",
-    "RelatedEvent.cpp",
-    "RelatedEvent.h",
     "ResourceProgressEvent.cpp",
     "ResourceProgressEvent.h",
     "ScopedEventQueue.cpp",

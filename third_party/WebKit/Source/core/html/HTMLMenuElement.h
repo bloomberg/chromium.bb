@@ -31,8 +31,6 @@ class HTMLMenuElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  const String type() const;
-  void setType(const AtomicString&);
   DECLARE_NODE_FACTORY(HTMLMenuElement);
 
  private:

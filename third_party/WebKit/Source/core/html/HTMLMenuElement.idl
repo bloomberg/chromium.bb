@@ -20,9 +20,6 @@
 // https://html.spec.whatwg.org/#the-menu-element
 
 interface HTMLMenuElement : HTMLElement {
-    [CEReactions, RuntimeEnabled=ContextMenu] attribute DOMString type;
-    [CEReactions, RuntimeEnabled=ContextMenu, Reflect] attribute DOMString label;
-
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLMenuElement-partial
     [CEReactions, Reflect] attribute boolean compact;

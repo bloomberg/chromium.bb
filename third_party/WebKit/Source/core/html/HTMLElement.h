@@ -32,7 +32,6 @@ class DocumentFragment;
 class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
-class HTMLMenuElement;
 class KeyboardEvent;
 
 enum TranslateAttributeMode {
@@ -106,10 +105,6 @@ class CORE_EXPORT HTMLElement : public Element {
   bool MatchesReadWritePseudoClass() const override;
 
   static const AtomicString& EventParameterName();
-
-  HTMLMenuElement* AssignedContextMenu() const;
-  HTMLMenuElement* contextMenu() const;
-  void setContextMenu(HTMLMenuElement*);
 
   virtual String AltText() const { return String(); }
 

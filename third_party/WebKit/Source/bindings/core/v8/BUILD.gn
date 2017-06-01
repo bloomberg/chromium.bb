@@ -93,8 +93,6 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/events/ProgressEventInit.h",
   "$blink_core_output_dir/events/PromiseRejectionEventInit.cpp",
   "$blink_core_output_dir/events/PromiseRejectionEventInit.h",
-  "$blink_core_output_dir/events/RelatedEventInit.cpp",
-  "$blink_core_output_dir/events/RelatedEventInit.h",
   "$blink_core_output_dir/events/SecurityPolicyViolationEventInit.cpp",
   "$blink_core_output_dir/events/SecurityPolicyViolationEventInit.h",
   "$blink_core_output_dir/events/TouchEventInit.cpp",
