@@ -1769,6 +1769,7 @@ static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 
 #if CONFIG_DUAL_FILTER
+#if USE_EXTRA_FILTER
 static const aom_prob default_switchable_interp_prob
     [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
       { 235, 192, 128 }, { 36, 243, 48 },   { 34, 16, 128 },
@@ -1779,6 +1780,15 @@ static const aom_prob default_switchable_interp_prob
       { 235, 192, 128 }, { 36, 243, 48 },   { 34, 16, 128 },
       { 34, 16, 128 },   { 149, 160, 128 },
     };
+#else   // USE_EXTRA_FILTER
+static const aom_prob default_switchable_interp_prob
+    [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
+      { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
+      { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
+      { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
+      { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
+    };
+#endif  // USE_EXTRA_FILTER
 #else   // CONFIG_DUAL_FILTER
 static const aom_prob default_switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
                                                     [SWITCHABLE_FILTERS - 1] = {
@@ -2230,6 +2240,7 @@ static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
 // clang-format on
 
 #if CONFIG_DUAL_FILTER
+#if USE_EXTRA_FILTER
 static const aom_cdf_prob
     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
         SWITCHABLE_FILTERS)] = {
@@ -2254,7 +2265,29 @@ static const aom_cdf_prob
       { AOM_ICDF(4352), AOM_ICDF(5240), AOM_ICDF(6128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(19072), AOM_ICDF(23352), AOM_ICDF(27632), AOM_ICDF(32768), 0 }
     };
-#else
+#else   // USE_EXTRA_FILTER
+static const aom_cdf_prob
+    default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
+        SWITCHABLE_FILTERS)] = {
+      { AOM_ICDF(30080), AOM_ICDF(31781), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4608), AOM_ICDF(32658), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4352), AOM_ICDF(4685), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19072), AOM_ICDF(26776), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(30080), AOM_ICDF(31781), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4608), AOM_ICDF(32658), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4352), AOM_ICDF(4685), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19072), AOM_ICDF(26776), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(30080), AOM_ICDF(31781), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4608), AOM_ICDF(32658), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4352), AOM_ICDF(4685), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19072), AOM_ICDF(26776), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(30080), AOM_ICDF(31781), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4608), AOM_ICDF(32658), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4352), AOM_ICDF(4685), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19072), AOM_ICDF(26776), AOM_ICDF(32768), 0 },
+    };
+#endif  // USE_EXTRA_FILTER
+#else   // CONFIG_DUAL_FILTER
 static const aom_cdf_prob
     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
         SWITCHABLE_FILTERS)] = {
@@ -2263,7 +2296,7 @@ static const aom_cdf_prob
       { AOM_ICDF(4352), AOM_ICDF(4685), AOM_ICDF(32768), 0 },
       { AOM_ICDF(19072), AOM_ICDF(26776), AOM_ICDF(32768), 0 },
     };
-#endif
+#endif  // CONFIG_DUAL_FILTER
 
 static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
   AOM_ICDF(4096),  AOM_ICDF(8192),  AOM_ICDF(12288),
@@ -4641,7 +4674,7 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
 }
 #endif  // !CONFIG_EC_ADAPT
 
-#if CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
     {
       -EIGHTTAP_REGULAR, 2, 4, -MULTITAP_SHARP, -EIGHTTAP_SMOOTH,

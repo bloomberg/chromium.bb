@@ -48,7 +48,7 @@ DECLARE_ALIGNED(16, static const int16_t,
 };
 #endif  // USE_TEMPORALFILTER_12TAP
 
-#if CONFIG_DUAL_FILTER
+#if USE_EXTRA_FILTER
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8[SUBPEL_SHIFTS]) = {
 #if CONFIG_FILTER_7BIT
@@ -229,7 +229,7 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, 1, -8, 31, 100, 8, -4, 0 }, { 0, 1, -7, 24, 102, 13, -5, 0 },
 #endif
 };
-#else  // CONFIG_DUAL_FILTER
+#else  // USE_EXTRA_FILTER
 
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8[SUBPEL_SHIFTS]) = {
@@ -299,7 +299,7 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, -3, 2, 41, 63, 29, -2, -2 },   { 0, -3, 1, 38, 64, 32, -1, -3 }
 #endif
 };
-#endif  // CONFIG_DUAL_FILTER
+#endif  // USE_EXTRA_FILTER
 
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
@@ -312,7 +312,7 @@ const InterpKernel *av1_intra_filter_kernels[INTRA_FILTERS] = {
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_DUAL_FILTER
+#if USE_EXTRA_FILTER
 static const InterpFilterParams
     av1_interp_filter_params_list[SWITCHABLE_FILTERS + EXTRA_FILTERS] = {
       { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS,
@@ -353,7 +353,7 @@ static const InterpFilterParams
       { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS,
         BILINEAR }
     };
-#endif  // CONFIG_DUAL_FILTER
+#endif  // USE_EXTRA_FILTER
 
 #if USE_TEMPORALFILTER_12TAP
 static const InterpFilterParams av1_interp_temporalfilter_12tap = {
@@ -384,11 +384,17 @@ const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter) {
 InterpFilter av1_get_plane_interp_filter(InterpFilter interp_filter,
                                          int plane) {
 #if USE_TEMPORALFILTER_12TAP
+#if USE_EXTRA_FILTER
   assert(interp_filter <= EIGHTTAP_SHARP ||
          interp_filter == TEMPORALFILTER_12TAP);
+#else   // USE_EXTRA_FILTER
+  assert(interp_filter <= SWITCHABLE_FILTERS ||
+         interp_filter == TEMPORALFILTER_12TAP);
+#endif  // USE_EXTRA_FILTER
 #else
   assert(interp_filter <= EIGHTTAP_SHARP);
 #endif
+#if USE_EXTRA_FILTER
   if (plane == 0) {
     return interp_filter;
   } else {
@@ -400,5 +406,9 @@ InterpFilter av1_get_plane_interp_filter(InterpFilter interp_filter,
       default: return interp_filter;
     }
   }
+#else   // USE_EXTRA_FILTER
+  (void)plane;
+  return interp_filter;
+#endif  // USE_EXTRA_FILTER
 }
 #endif
