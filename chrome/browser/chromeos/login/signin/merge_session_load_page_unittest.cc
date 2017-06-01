@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/login/signin/merge_session_load_page.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -52,19 +51,7 @@ class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
 
 class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  protected:
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-#if defined OS_CHROMEOS
-  test_user_manager_.reset(new chromeos::ScopedTestUserManager());
-#endif
-  }
-
   void TearDown() override {
-#if defined OS_CHROMEOS
-    // Clean up pending tasks that might depend on the user manager.
-    base::RunLoop().RunUntilIdle();
-    test_user_manager_.reset();
-#endif
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -118,7 +105,6 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  private:
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 };
 
 TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShown) {

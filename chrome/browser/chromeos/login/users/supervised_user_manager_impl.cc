@@ -134,7 +134,9 @@ SupervisedUserManagerImpl::SupervisedUserManagerImpl(
     ChromeUserManagerImpl* owner)
     : owner_(owner), cros_settings_(CrosSettings::Get()) {
   // SupervisedUserManager instance should be used only on UI thread.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // (or in unit_tests)
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
   authentication_.reset(new SupervisedUserAuthentication(this));
 }
 

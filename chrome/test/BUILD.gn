@@ -223,6 +223,8 @@ static_library("test_support") {
     sources += [
       "../browser/chromeos/accessibility/speech_monitor.cc",
       "../browser/chromeos/accessibility/speech_monitor.h",
+      "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
+      "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
     ]
     public_deps += [
       "//components/ownership",
@@ -2262,8 +2264,6 @@ test("browser_tests") {
         "../browser/chromeos/power/peripheral_battery_observer_browsertest.cc",
         "../browser/chromeos/preferences_chromeos_browsertest.cc",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
-        "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
-        "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",
