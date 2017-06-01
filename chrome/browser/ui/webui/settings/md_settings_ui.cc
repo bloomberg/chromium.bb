@@ -83,6 +83,12 @@
 
 namespace settings {
 
+bool IsValidOrigin(const GURL& url) {
+  const GURL origin = url.GetOrigin();
+  return origin == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
+         origin == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin();
+}
+
 // static
 void MdSettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -161,8 +167,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   // Host must be derived from the visible URL, since this might be serving
   // either chrome://settings or chrome://md-settings.
-  CHECK(url.GetOrigin() == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
-        url.GetOrigin() == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin());
+  CHECK(IsValidOrigin(url));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());

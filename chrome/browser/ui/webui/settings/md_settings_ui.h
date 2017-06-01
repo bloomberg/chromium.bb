@@ -22,6 +22,9 @@ namespace settings {
 
 class SettingsPageUIHandler;
 
+// Exposed for testing.
+bool IsValidOrigin(const GURL& url);
+
 // The WebUI handler for chrome://md-settings.
 class MdSettingsUI : public content::WebUIController,
                      public content::WebContentsObserver {
