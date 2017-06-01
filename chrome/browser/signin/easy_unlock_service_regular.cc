@@ -443,7 +443,6 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
-  PA_LOG(INFO) << "Initializing EasyUnlockService inside the user session.";
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
