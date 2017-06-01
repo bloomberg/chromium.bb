@@ -1,1 +1,4 @@
 file://services/resource_coordinator/OWNERS
+
+# ChromeOS tab manager related implementation.
+per-file *chromeos*=cylee@chromium.org

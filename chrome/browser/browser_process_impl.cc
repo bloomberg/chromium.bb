@@ -174,7 +174,7 @@
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#include "chrome/browser/memory/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -808,11 +808,11 @@ gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
   return gcm_driver_.get();
 }
 
-memory::TabManager* BrowserProcessImpl::GetTabManager() {
+resource_coordinator::TabManager* BrowserProcessImpl::GetTabManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (!tab_manager_.get())
-    tab_manager_.reset(new memory::TabManager());
+    tab_manager_.reset(new resource_coordinator::TabManager());
   return tab_manager_.get();
 #else
   return nullptr;

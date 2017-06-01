@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/memory/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 
 namespace memory {
 

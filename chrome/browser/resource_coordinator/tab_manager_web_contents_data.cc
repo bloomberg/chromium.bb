@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
@@ -15,9 +15,10 @@
 using base::TimeTicks;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(memory::TabManager::WebContentsData);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    resource_coordinator::TabManager::WebContentsData);
 
-namespace memory {
+namespace resource_coordinator {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
@@ -201,4 +202,4 @@ bool TabManager::WebContentsData::IsAutoDiscardable() {
   return tab_data_.is_auto_discardable;
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator

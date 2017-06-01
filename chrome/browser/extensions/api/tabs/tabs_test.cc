@@ -27,9 +27,9 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1317,7 +1317,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
 // TODO(georgesak): change this browsertest to an unittest.
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   ASSERT_TRUE(g_browser_process && g_browser_process->GetTabManager());
-  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
 
   // Create two aditional tabs.
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
@@ -1459,7 +1460,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
           discard.get(), base::StringPrintf("[%u]", tab_id), browser())));
 
   // Confirms that TabManager sees the tab as discarded.
-  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
   EXPECT_TRUE(tab_manager->IsTabDiscarded(web_contents));
 
@@ -1526,7 +1528,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
   discard->set_extension(extension.get());
 
   // Disable protection time to discard the tab without passing id.
-  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
   tab_manager->set_minimum_protection_time_for_tests(
       base::TimeDelta::FromSeconds(0));
 

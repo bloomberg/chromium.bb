@@ -4,9 +4,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/memory/tab_manager.h"
-#include "chrome/browser/memory/tab_manager_observer.h"
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -19,7 +19,7 @@ using content::WebContents;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-namespace memory {
+namespace resource_coordinator {
 
 class TabManagerObserverTest : public InProcessBrowserTest {
  public:
@@ -184,6 +184,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
   EXPECT_EQ(ContentsId(contents), ContentsId(observer.content()));
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
 #endif  // OS_WIN || OS_MAXOSX || OS_LINUX

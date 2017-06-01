@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -15,7 +15,7 @@
 using content::WebContents;
 using content::WebContentsTester;
 
-namespace memory {
+namespace resource_coordinator {
 namespace {
 
 class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
@@ -204,4 +204,4 @@ TEST_F(TabManagerWebContentsDataTest, HistogramsInactiveToReloadTime) {
   histograms.ExpectBucketCount(kHistogramName, 12000, 1);
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator

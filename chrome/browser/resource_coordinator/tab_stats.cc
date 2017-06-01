@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "build/build_config.h"
-#include "chrome/browser/memory/tab_stats.h"
 
-namespace memory {
+namespace resource_coordinator {
 
 TabStats::TabStats() = default;
 
@@ -17,4 +17,4 @@ TabStats::~TabStats() {}
 
 TabStats& TabStats::operator=(const TabStats& other) = default;
 
-}  // namespace memory
+}  // namespace resource_coordinator

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_TAB_STATS_H_
-#define CHROME_BROWSER_MEMORY_TAB_STATS_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_STATS_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_STATS_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ namespace content {
 class RenderProcessHost;
 }  // namespace content
 
-namespace memory {
+namespace resource_coordinator {
 
 struct TabStats {
   TabStats();
@@ -52,6 +52,6 @@ struct TabStats {
 
 typedef std::vector<TabStats> TabStatsList;
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_MEMORY_TAB_STATS_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_STATS_H_

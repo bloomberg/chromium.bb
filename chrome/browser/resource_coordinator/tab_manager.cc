@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 
 #include <stddef.h>
 
@@ -32,9 +32,9 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/memory/tab_manager_observer.h"
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -56,7 +56,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/multi_profile_uma.h"
 #include "ash/shell_port.h"
-#include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
+#include "chrome/browser/resource_coordinator/tab_manager_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -65,7 +65,7 @@ using base::TimeTicks;
 using content::BrowserThread;
 using content::WebContents;
 
-namespace memory {
+namespace resource_coordinator {
 namespace {
 
 // The default interval in seconds after which to adjust the oom_score_adj
@@ -156,8 +156,8 @@ void TabManager::Start() {
                         this, &TabManager::UpdateTimerCallback);
   }
 
-  // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
-  // discarded.
+// MemoryPressureMonitor is not implemented on Linux so far and tabs are never
+// discarded.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (!recent_tab_discard_timer_.IsRunning()) {
     recent_tab_discard_timer_.Start(
@@ -334,7 +334,7 @@ void TabManager::LogMemoryAndDiscardTab() {
 void TabManager::LogMemory(const std::string& title,
                            const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  OomMemoryDetails::Log(title, callback);
+  memory::OomMemoryDetails::Log(title, callback);
 }
 
 void TabManager::set_test_tick_clock(base::TickClock* test_tick_clock) {
@@ -875,4 +875,4 @@ bool TabManager::CanOnlyDiscardOnce() const {
 #endif
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator

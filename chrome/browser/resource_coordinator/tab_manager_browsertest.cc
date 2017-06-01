@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/memory/tab_manager.h"
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -33,10 +33,9 @@ using content::OpenURLParams;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-namespace memory {
+namespace resource_coordinator {
 
-class TabManagerTest : public InProcessBrowserTest {
-};
+class TabManagerTest : public InProcessBrowserTest {};
 
 bool ObserveNavEntryCommitted(const GURL& expected_url,
                               const content::NotificationSource& source,
@@ -582,6 +581,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, PurgeBackgroundRenderer) {
   tsm->CloseAllTabs();
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
 #endif  // OS_WIN || OS_MAXOSX || OS_LINUX

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
 
 namespace content {
 class WebContents;
 }
 
-namespace memory {
+namespace resource_coordinator {
 
 void TabManagerObserver::OnDiscardedStateChange(content::WebContents* contents,
                                                 bool is_discarded) {}
@@ -19,4 +19,4 @@ void TabManagerObserver::OnAutoDiscardableStateChange(
 
 TabManagerObserver::~TabManagerObserver() {}
 
-}  // namespace memory
+}  // namespace resource_coordinator

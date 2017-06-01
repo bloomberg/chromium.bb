@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
+#include "chrome/browser/resource_coordinator/tab_manager_delegate_chromeos.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
-#include "chrome/browser/memory/tab_stats.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -52,7 +52,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 
-namespace memory {
+namespace resource_coordinator {
 namespace {
 
 // When switching to a new tab the tab's renderer's OOM score needs to be
@@ -105,8 +105,8 @@ std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
 }
 
 // TabManagerDelegate::Candidate implementation.
-std::ostream& operator<<(
-    std::ostream& out, const TabManagerDelegate::Candidate& candidate) {
+std::ostream& operator<<(std::ostream& out,
+                         const TabManagerDelegate::Candidate& candidate) {
   if (candidate.app()) {
     out << "app " << *candidate.app();
   } else if (candidate.tab()) {
@@ -214,8 +214,8 @@ class TabManagerDelegate::FocusedProcess {
 // TabManagerDelegate::MemoryStat implementation.
 
 // static
-int TabManagerDelegate::MemoryStat::ReadIntFromFile(
-    const char* file_name, const int default_val) {
+int TabManagerDelegate::MemoryStat::ReadIntFromFile(const char* file_name,
+                                                    const int default_val) {
   std::string file_string;
   if (!base::ReadFileToString(base::FilePath(file_name), &file_string)) {
     LOG(WARNING) << "Unable to read file" << file_name;
@@ -223,8 +223,7 @@ int TabManagerDelegate::MemoryStat::ReadIntFromFile(
   }
   int val = default_val;
   if (!base::StringToInt(
-          base::TrimWhitespaceASCII(file_string, base::TRIM_TRAILING),
-          &val)) {
+          base::TrimWhitespaceASCII(file_string, base::TRIM_TRAILING), &val)) {
     LOG(WARNING) << "Unable to parse string" << file_string;
     return default_val;
   }
@@ -236,8 +235,8 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
   static const int kDefaultLowMemoryMarginMb = 50;
   static const char kLowMemoryMarginConfig[] =
       "/sys/kernel/mm/chromeos-low_mem/margin";
-  return ReadIntFromFile(
-      kLowMemoryMarginConfig, kDefaultLowMemoryMarginMb) * 1024;
+  return ReadIntFromFile(kLowMemoryMarginConfig, kDefaultLowMemoryMarginMb) *
+         1024;
 }
 
 // The logic of available memory calculation is copied from
@@ -260,10 +259,9 @@ int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
   // kernel to calculate how much memory should be released. In the future,
   // kernel should try to report the amount of memory to release directly to
   // eliminate the duplication here.
-  const int available_mem_kb = system_mem.free +
-      file_mem_kb - system_mem.dirty - min_filelist_kb +
-      system_mem.swap_free / kRamVsSwapWeight -
-      min_free_kb;
+  const int available_mem_kb =
+      system_mem.free + file_mem_kb - system_mem.dirty - min_filelist_kb +
+      system_mem.swap_free / kRamVsSwapWeight - min_free_kb;
 
   return LowMemoryMarginKB() - available_mem_kb;
 }
@@ -279,8 +277,7 @@ int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
 
 TabManagerDelegate::TabManagerDelegate(
     const base::WeakPtr<TabManager>& tab_manager)
-  : TabManagerDelegate(tab_manager, new MemoryStat()) {
-}
+    : TabManagerDelegate(tab_manager, new MemoryStat()) {}
 
 TabManagerDelegate::TabManagerDelegate(
     const base::WeakPtr<TabManager>& tab_manager,
@@ -340,8 +337,8 @@ void TabManagerDelegate::OnWindowActivated(
     // here.
     focus_process_score_adjust_timer_.Start(
         FROM_HERE,
-        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs),
-        this, &TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment);
+        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs), this,
+        &TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment);
   }
   if (arc::IsArcAppWindow(lost_active)) {
     // Do not bother adjusting OOM score if the ARC window is deactivated
@@ -361,8 +358,7 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
-void TabManagerDelegate::LowMemoryKill(
-    const TabStatsList& tab_list) {
+void TabManagerDelegate::LowMemoryKill(const TabStatsList& tab_list) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service &&
       arc_process_service->RequestAppProcessList(
@@ -429,8 +425,8 @@ void TabManagerDelegate::AdjustFocusedTabScore(base::ProcessHandle pid) {
     // would be replaced by a new task.
     focus_process_score_adjust_timer_.Start(
         FROM_HERE,
-        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs),
-        this, &TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
+        TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs), this,
+        &TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
   }
 }
 
@@ -463,8 +459,8 @@ void TabManagerDelegate::Observe(int type,
       if (visible) {
         content::RenderProcessHost* render_host =
             content::Source<content::RenderWidgetHost>(source)
-            .ptr()
-            ->GetProcess();
+                .ptr()
+                ->GetProcess();
         AdjustFocusedTabScore(render_host->GetHandle());
       }
       // Do not handle the "else" case when it changes to invisible because
@@ -557,11 +553,9 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 
 bool TabManagerDelegate::KillTab(int64_t tab_id) {
   // Check |tab_manager_| is alive before taking tabs into consideration.
-  return tab_manager_ &&
-      tab_manager_->CanDiscardTab(tab_id) &&
-      tab_manager_->DiscardTabById(tab_id);
+  return tab_manager_ && tab_manager_->CanDiscardTab(tab_id) &&
+         tab_manager_->DiscardTabById(tab_id);
 }
-
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
   return chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
@@ -612,7 +606,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
       if (KillArcProcess(it->app()->nspid())) {
         recently_killed_arc_processes_[it->app()->process_name()] = now;
         target_memory_to_free_kb -= estimated_memory_freed_kb;
-        MemoryKillsMonitor::LogLowMemoryKill("APP", estimated_memory_freed_kb);
+        memory::MemoryKillsMonitor::LogLowMemoryKill("APP",
+                                                     estimated_memory_freed_kb);
         MEMORY_LOG(ERROR) << "Killed app " << it->app()->process_name() << " ("
                           << it->app()->pid() << ")"
                           << ", estimated " << estimated_memory_freed_kb
@@ -629,7 +624,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
           mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
       if (KillTab(tab_id)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
-        MemoryKillsMonitor::LogLowMemoryKill("TAB", estimated_memory_freed_kb);
+        memory::MemoryKillsMonitor::LogLowMemoryKill("TAB",
+                                                     estimated_memory_freed_kb);
         MEMORY_LOG(ERROR) << "Killed tab " << it->tab()->title << " ("
                           << it->tab()->renderer_handle << "), estimated "
                           << estimated_memory_freed_kb << " KB freed";
@@ -768,9 +764,9 @@ void TabManagerDelegate::DistributeOomScoreInRange(
   }
 
   if (oom_scores_to_change.size()) {
-    GetDebugDaemonClient()->SetOomScoreAdj(
-        oom_scores_to_change, base::Bind(&OnSetOomScoreAdj));
+    GetDebugDaemonClient()->SetOomScoreAdj(oom_scores_to_change,
+                                           base::Bind(&OnSetOomScoreAdj));
   }
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator
