@@ -28,11 +28,11 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/forms/ColorChooserClient.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/PagePopup.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebColorChooser.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ enum ColorPickerPopupAction {
 
 ColorChooserPopupUIController::ColorChooserPopupUIController(
     LocalFrame* frame,
-    ChromeClientImpl* chrome_client,
+    ChromeClient* chrome_client,
     ColorChooserClient* client)
     : ColorChooserUIController(frame, client),
       chrome_client_(chrome_client),
