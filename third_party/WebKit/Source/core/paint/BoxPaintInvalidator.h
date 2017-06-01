@@ -5,6 +5,7 @@
 #ifndef BoxPaintInvalidator_h
 #define BoxPaintInvalidator_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/wtf/Allocator.h"
 
@@ -14,7 +15,7 @@ class LayoutBox;
 class LayoutRect;
 struct PaintInvalidatorContext;
 
-class BoxPaintInvalidator {
+class CORE_EXPORT BoxPaintInvalidator {
   STACK_ALLOCATED();
 
  public:
@@ -27,6 +28,8 @@ class BoxPaintInvalidator {
   PaintInvalidationReason InvalidatePaint();
 
  private:
+  friend class BoxPaintInvalidatorTest;
+
   bool BackgroundGeometryDependsOnLayoutOverflowRect();
   bool BackgroundPaintsOntoScrollingContentsLayer();
   bool ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(

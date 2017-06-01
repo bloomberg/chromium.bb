@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/paint/BoxPaintInvalidator.h"
+
 #include "core/HTMLNames.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -28,6 +30,49 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
         .Layer()
         ->GraphicsLayerBacking()
         ->GetRasterInvalidationTracking();
+  }
+
+  PaintInvalidationReason ComputePaintInvalidationReason(
+      const LayoutBox& box,
+      const LayoutRect& old_visual_rect,
+      const LayoutPoint& old_location,
+      const LayoutPoint& new_location) {
+    PaintInvalidatorContext context;
+    context.old_visual_rect = old_visual_rect;
+    context.old_location = old_location;
+    context.new_location = new_location;
+    return BoxPaintInvalidator(box, context).ComputePaintInvalidationReason();
+  }
+
+  // This applies when the target is set to meet conditions that we should do
+  // full paint invalidation instead of incremental invalidation on geometry
+  // change.
+  void ExpectFullPaintInvalidationOnGeometryChange(const char* test_title) {
+    SCOPED_TRACE(test_title);
+
+    GetDocument().View()->UpdateAllLifecyclePhases();
+    auto& target = *GetDocument().getElementById("target");
+    const auto& box = *ToLayoutBox(target.GetLayoutObject());
+    LayoutRect visual_rect = box.VisualRect();
+
+    // No geometry change.
+    EXPECT_EQ(
+        PaintInvalidationReason::kNone,
+        ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location(),
+                                       visual_rect.Location()));
+
+    target.setAttribute(
+        HTMLNames::styleAttr,
+        target.getAttribute(HTMLNames::styleAttr) + "; width: 200px");
+    GetDocument().View()->UpdateLifecycleToLayoutClean();
+    // Simulate that PaintInvalidator updates visual rect.
+    box.GetMutableForPainting().SetVisualRect(
+        LayoutRect(visual_rect.Location(), box.Size()));
+
+    EXPECT_EQ(
+        PaintInvalidationReason::kGeometry,
+        ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location(),
+                                       box.VisualRect().Location()));
   }
 
  private:
@@ -68,6 +113,132 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
 };
 
 INSTANTIATE_TEST_CASE_P(All, BoxPaintInvalidatorTest, ::testing::Bool());
+
+TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
+  ScopedSlimmingPaintV2ForTest spv2(true);
+
+  auto& target = *GetDocument().getElementById("target");
+  auto& box = *ToLayoutBox(target.GetLayoutObject());
+  // Remove border.
+  target.setAttribute(HTMLNames::classAttr, "");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
+  LayoutRect visual_rect = box.VisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
+
+  // No geometry change.
+  EXPECT_EQ(
+      PaintInvalidationReason::kNone,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location(),
+                                     visual_rect.Location()));
+
+  // Location change.
+  EXPECT_EQ(PaintInvalidationReason::kNone,
+            ComputePaintInvalidationReason(
+                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20),
+                visual_rect.Location()));
+
+  // Visual rect size change.
+  LayoutRect old_visual_rect = visual_rect;
+  LayoutRect new_visual_rect = box.VisualRect();
+  target.setAttribute(HTMLNames::styleAttr, "width: 200px");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  // Simulate that PaintInvalidator updates visual rect.
+  box.GetMutableForPainting().SetVisualRect(
+      LayoutRect(visual_rect.Location(), box.Size()));
+
+  EXPECT_EQ(PaintInvalidationReason::kNone,
+            ComputePaintInvalidationReason(box, old_visual_rect,
+                                           old_visual_rect.Location(),
+                                           new_visual_rect.Location()));
+}
+
+TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
+  ScopedSlimmingPaintV2ForTest spv2(true);
+
+  auto& target = *GetDocument().getElementById("target");
+  auto& box = *ToLayoutBox(target.GetLayoutObject());
+  // Remove border.
+  target.setAttribute(HTMLNames::classAttr, "");
+  target.setAttribute(HTMLNames::styleAttr, "background: blue");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  LayoutRect visual_rect = box.VisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
+
+  // No geometry change.
+  EXPECT_EQ(
+      PaintInvalidationReason::kNone,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location(),
+                                     visual_rect.Location()));
+
+  // Location change.
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
+            ComputePaintInvalidationReason(
+                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20),
+                visual_rect.Location()));
+
+  // Visual rect size change.
+  LayoutRect old_visual_rect = visual_rect;
+  LayoutRect new_visual_rect = box.VisualRect();
+  target.setAttribute(HTMLNames::styleAttr, "background: blue; width: 200px");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  // Simulate that PaintInvalidator updates visual rect.
+  box.GetMutableForPainting().SetVisualRect(
+      LayoutRect(visual_rect.Location(), box.Size()));
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            ComputePaintInvalidationReason(box, old_visual_rect,
+                                           old_visual_rect.Location(),
+                                           new_visual_rect.Location()));
+
+  // Visual rect size change, with location in backing different from location
+  // of visual rect.
+  LayoutPoint fake_location = visual_rect.Location() + LayoutSize(10, 20);
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
+            ComputePaintInvalidationReason(box, old_visual_rect, fake_location,
+                                           fake_location));
+
+  // Should use the existing full paint invalidation reason regardless of
+  // geometry change.
+  box.SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
+  EXPECT_EQ(
+      PaintInvalidationReason::kStyle,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location(),
+                                     visual_rect.Location()));
+  EXPECT_EQ(PaintInvalidationReason::kStyle,
+            ComputePaintInvalidationReason(
+                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20),
+                visual_rect.Location()));
+}
+
+TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
+  ScopedSlimmingPaintV2ForTest spv2(true);
+  auto& target = *GetDocument().getElementById("target");
+
+  // The target initially has border.
+  ExpectFullPaintInvalidationOnGeometryChange("With border");
+
+  // Clear border.
+  target.setAttribute(HTMLNames::classAttr, "");
+  target.setAttribute(HTMLNames::styleAttr, "border-radius: 5px");
+  ExpectFullPaintInvalidationOnGeometryChange("With border-radius");
+
+  target.setAttribute(HTMLNames::styleAttr, "-webkit-mask: url(#)");
+  ExpectFullPaintInvalidationOnGeometryChange("With mask");
+
+  target.setAttribute(HTMLNames::styleAttr, "filter: blur(5px)");
+  ExpectFullPaintInvalidationOnGeometryChange("With filter");
+
+  target.setAttribute(HTMLNames::styleAttr, "outline: 2px solid blue");
+  ExpectFullPaintInvalidationOnGeometryChange("With outline");
+
+  target.setAttribute(HTMLNames::styleAttr, "box-shadow: inset 3px 2px");
+  ExpectFullPaintInvalidationOnGeometryChange("With box-shadow");
+
+  target.setAttribute(HTMLNames::styleAttr, "-webkit-appearance: button");
+  ExpectFullPaintInvalidationOnGeometryChange("With appearance");
+}
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
   GetDocument().View()->SetTracksPaintInvalidations(true);

@@ -141,9 +141,11 @@ class PLATFORM_EXPORT DisplayItemClient {
     }
 
     PaintInvalidationReason GetPaintInvalidationReason() const {
-      return value_ < kJustCreated
-                 ? static_cast<PaintInvalidationReason>(value_)
-                 : PaintInvalidationReason::kNone;
+      if (value_ == kJustCreated)
+        return PaintInvalidationReason::kAppeared;
+      if (value_ < kJustCreated)
+        return static_cast<PaintInvalidationReason>(value_);
+      return PaintInvalidationReason::kNone;
     }
 
     bool IsJustCreated() const { return value_ == kJustCreated; }
