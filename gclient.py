@@ -736,6 +736,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     parsed_url = self.LateOverride(self.url)
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(self.name, None)
+    if not revision_override and parsed_url:
+      revision_override = revision_overrides.get(parsed_url.split('@')[0], None)
     if run_scm and parsed_url:
       # Create a shallow copy to mutate revision.
       options = copy.copy(options)
