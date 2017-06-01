@@ -119,8 +119,8 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
     bool omit_animation_tainted =
         CSSAnimations::IsAnimationAffectingProperty(id);
     const CSSValue* resolved_value =
-        CSSVariableResolver::ResolveVariableReferences(state, id, value,
-                                                       omit_animation_tainted);
+        CSSVariableResolver(state).ResolveVariableReferences(
+            id, value, omit_animation_tainted);
     ApplyProperty(id, state, *resolved_value);
 
     if (!state.Style()->HasVariableReferenceFromNonInheritedProperty() &&

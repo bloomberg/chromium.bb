@@ -48,8 +48,8 @@ class ResolvedVariableChecker
     // full CSSValue resolve.
     bool omit_animation_tainted = false;
     const CSSValue* resolved_value =
-        CSSVariableResolver::ResolveVariableReferences(
-            state, property_, *variable_reference_, omit_animation_tainted);
+        CSSVariableResolver(state).ResolveVariableReferences(
+            property_, *variable_reference_, omit_animation_tainted);
     return DataEquivalent(resolved_value_.Get(), resolved_value);
   }
 
@@ -144,8 +144,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
       value->IsPendingSubstitutionValue()) {
     bool omit_animation_tainted = false;
     const CSSValue* resolved_value =
-        CSSVariableResolver::ResolveVariableReferences(
-            state, CssProperty(), *value, omit_animation_tainted);
+        CSSVariableResolver(state).ResolveVariableReferences(
+            CssProperty(), *value, omit_animation_tainted);
     conversion_checkers.push_back(
         ResolvedVariableChecker::Create(CssProperty(), value, resolved_value));
     value = resolved_value;
