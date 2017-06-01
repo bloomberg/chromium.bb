@@ -1919,12 +1919,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kDisableCaptivePortalBypassProxy)},
 #endif  // OS_CHROMEOS
-#if defined(OS_ANDROID)
-    {"enable-seccomp-sandbox-android",
-     flag_descriptions::kSeccompFilterSandboxAndroidName,
-     flag_descriptions::kSeccompFilterSandboxAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kSeccompSandboxAndroid)},
-#endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"enable-wifi-credential-sync", flag_descriptions::kWifiCredentialSyncName,
      flag_descriptions::kWifiCredentialSyncDescription, kOsCrOS,

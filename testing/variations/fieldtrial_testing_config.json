@@ -2841,21 +2841,6 @@
             ]
         }
     ],
-    "SeccompSandboxAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "SandboxEnabled",
-                    "enable_features": [
-                        "SeccompSandboxAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "SecurityChip": [
         {
             "platforms": [
