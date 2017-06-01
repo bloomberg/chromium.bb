@@ -19,6 +19,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -105,7 +106,8 @@ class CONTENT_EXPORT DownloadRequestCore
 
   static std::unique_ptr<net::URLRequest> CreateRequestOnIOThread(
       uint32_t download_id,
-      DownloadUrlParameters* params);
+      DownloadUrlParameters* params,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Size of the buffer used between the DownloadRequestCore and the
   // downstream receiver of its output.

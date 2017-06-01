@@ -13,6 +13,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/origin.h"
 
@@ -158,7 +159,7 @@ void BackgroundFetchContext::CreateController(
   if (request_context_getter_) {
     // Start fetching the |initial_requests| immediately. At some point in the
     // future we may want a more elaborate scheduling mechanism here.
-    controller->Start(std::move(initial_requests));
+    controller->Start(std::move(initial_requests), NO_TRAFFIC_ANNOTATION_YET);
   }
 
   active_fetches_.insert(

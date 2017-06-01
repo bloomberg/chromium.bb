@@ -115,7 +115,8 @@ const int DownloadRequestCore::kDownloadByteStreamSize = 100 * 1024;
 // static
 std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
     uint32_t download_id,
-    DownloadUrlParameters* params) {
+    DownloadUrlParameters* params,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(download_id == DownloadItem::kInvalidId ||
          !params->content_initiated())
@@ -128,7 +129,8 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
   std::unique_ptr<net::URLRequest> request(
       params->url_request_context_getter()
           ->GetURLRequestContext()
-          ->CreateRequest(params->url(), net::DEFAULT_PRIORITY, nullptr));
+          ->CreateRequest(params->url(), net::DEFAULT_PRIORITY, nullptr,
+                          traffic_annotation));
   request->set_method(params->method());
 
   if (!params->post_body().empty()) {

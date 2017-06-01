@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -367,7 +368,7 @@ void OfflinePageDownloadBridge::StartDownload(
 
     dl_params->set_prefer_cache(true);
     dl_params->set_prompt(false);
-    dlm->DownloadUrl(std::move(dl_params));
+    dlm->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
     return;
   }
 

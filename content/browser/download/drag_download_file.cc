@@ -20,6 +20,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 
@@ -77,7 +78,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
     BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext())
-        ->DownloadUrl(std::move(params));
+        ->DownloadUrl(std::move(params), NO_TRAFFIC_ANNOTATION_YET);
   }
 
   void Cancel() {

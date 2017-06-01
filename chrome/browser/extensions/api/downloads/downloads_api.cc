@@ -79,6 +79,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1041,7 +1042,7 @@ bool DownloadsDownloadFunction::RunAsync() {
 
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       current_profile);
-  manager->DownloadUrl(std::move(download_params));
+  manager->DownloadUrl(std::move(download_params), NO_TRAFFIC_ANNOTATION_YET);
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_EXTENSION);
   RecordApiFunctions(DOWNLOADS_FUNCTION_DOWNLOAD);
   return true;

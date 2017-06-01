@@ -112,6 +112,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -890,7 +891,8 @@ class DownloadTest : public InProcessBrowserTest {
           DownloadUrlParameters::CreateForWebContentsMainFrame(
               web_contents, starting_url));
       params->set_callback(creation_observer->callback());
-      DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
+      DownloadManagerForBrowser(browser())->DownloadUrl(
+          std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
 
       // Wait until the item is created, or we have determined that it
       // won't be.
@@ -1723,7 +1725,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           new_tab, slow_download_url));
   params->set_prompt(true);
-  manager->DownloadUrl(std::move(params));
+  manager->DownloadUrl(std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
 
   DownloadManager::DownloadVector items;
@@ -2200,7 +2202,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           web_contents, url));
   params->set_prompt(true);
-  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -2230,7 +2233,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           web_contents, url));
   params->set_file_path(target_file_full_path);
-  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -2267,7 +2271,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TransientDownload) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(web_contents, url));
   params->set_file_path(target_file_full_path);
   params->set_transient(true);
-  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -3837,7 +3842,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           web_contents, url));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
-  download_manager->DownloadUrl(std::move(params));
+  download_manager->DownloadUrl(std::move(params),
+                                TRAFFIC_ANNOTATION_FOR_TESTS);
   observer->WaitForFinished();
 
   // Verify that download shelf is not shown.

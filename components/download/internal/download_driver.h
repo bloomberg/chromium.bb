@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "components/download/internal/driver_entry.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class FilePath;
@@ -57,7 +58,9 @@ class DownloadDriver {
   virtual bool IsReady() const = 0;
 
   // Starts a new download.
-  virtual void Start(const DownloadParams& params) = 0;
+  virtual void Start(
+      const DownloadParams& params,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Cancels an existing download, all data associated with this download should
   // be removed.

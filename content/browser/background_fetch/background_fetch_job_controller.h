@@ -17,6 +17,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -49,7 +50,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   // Starts fetching the |initial_fetches|. The controller will continue to
   // fetch new content until all requests have been handled.
   void Start(
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Updates the representation of this Background Fetch in the user interface
   // to match the given |title|.
@@ -73,7 +75,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   class Core;
 
   // Requests the download manager to start fetching |request|.
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
+                    const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Called when the given |request| has started fetching, after having been
   // assigned the |download_guid| by the download system.

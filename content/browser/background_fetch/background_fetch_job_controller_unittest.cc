@@ -20,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -148,7 +149,8 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   EXPECT_EQ(controller->state(),
             BackgroundFetchJobController::State::INITIALIZED);
 
-  controller->Start(initial_requests /* deliberate copy */);
+  controller->Start(initial_requests /* deliberate copy */,
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
 
   // Mark the single download item as finished, completing the job.
@@ -192,7 +194,8 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
 
-    controller->Start(initial_requests /* deliberate copy */);
+    controller->Start(initial_requests /* deliberate copy */,
+                      TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_EQ(controller->state(),
               BackgroundFetchJobController::State::FETCHING);
 
@@ -223,7 +226,8 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
 
-    controller->Start(initial_requests /* deliberate copy */);
+    controller->Start(initial_requests /* deliberate copy */,
+                      TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_EQ(controller->state(),
               BackgroundFetchJobController::State::FETCHING);
 
