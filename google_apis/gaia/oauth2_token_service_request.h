@@ -11,16 +11,15 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 // OAuth2TokenServiceRequest represents an asynchronous request to an
 // OAuth2TokenService that may live in another thread.
 //
 // An OAuth2TokenServiceRequest can be created and started from any thread.
-class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
-                                  public base::NonThreadSafe {
+class OAuth2TokenServiceRequest : public OAuth2TokenService::Request {
  public:
   class Core;
 
@@ -100,6 +99,8 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
 
   const std::string account_id_;
   scoped_refptr<Core> core_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceRequest);
 };
