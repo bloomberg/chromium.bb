@@ -21,6 +21,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -96,8 +97,36 @@ static std::unique_ptr<URLFetcher> CreateFetcher(
     const std::string& body,
     URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("oauth2_access_token_fetcher", R"(
+        semantics {
+          sender: "OAuth 2.0 Access Token Fetcher"
+          description:
+            "This request is used by the Token Service to fetch an OAuth 2.0 "
+            "access token for a known Google account."
+          trigger:
+            "This request can be triggered at any moment when any service "
+            "requests an OAuth 2.0 access token from the Token Service."
+          data:
+            "Chrome OAuth 2.0 client id and secret, the set of OAuth 2.0 "
+            "scopes and the OAuth 2.0 refresh token."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings, but if user signs "
+            "out of Chrome, this request would not be made."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   std::unique_ptr<URLFetcher> result = net::URLFetcher::Create(
-      0, url, empty_body ? URLFetcher::GET : URLFetcher::POST, delegate);
+      0, url, empty_body ? URLFetcher::GET : URLFetcher::POST, delegate,
+      traffic_annotation);
 
   gaia::MarkURLFetcherAsGaia(result.get());
   result->SetRequestContext(getter);
