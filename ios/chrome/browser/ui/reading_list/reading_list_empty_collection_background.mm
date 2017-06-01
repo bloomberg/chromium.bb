@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,7 +76,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
         stringByAppendingString:l10n_util::GetNSString(
                                     IDS_IOS_SHARE_MENU_READING_LIST_ACTION)];
 
-    MDFRobotoFontLoader* fontLoader = [MDFRobotoFontLoader sharedInstance];
+    id<MDCTypographyFontLoading> fontLoader = [MDCTypography fontLoader];
 
     UIColor* textColor = [[MDCPalette greyPalette] tint700];
     UIFont* textFont = [fontLoader regularFontOfSize:kFontSize];

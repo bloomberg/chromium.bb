@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,8 +33,7 @@ const CGFloat kInset = 8.0f;
     [self setBackgroundColor:[UIColor colorWithWhite:0.0 alpha:0.9]];
     [[self layer] setCornerRadius:kCornerRadius];
     [[self layer] setMasksToBounds:YES];
-    [self setFont:[[MDFRobotoFontLoader sharedInstance]
-                      regularFontOfSize:kFontSize]];
+    [self setFont:[[MDCTypography fontLoader] regularFontOfSize:kFontSize]];
     [self setNumberOfLines:0];  // Allows multi-line layout.
   }
   return self;

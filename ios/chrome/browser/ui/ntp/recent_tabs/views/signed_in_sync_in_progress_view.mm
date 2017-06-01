@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,7 +40,7 @@ const CGFloat kDesiredHeight = 48;
 
     label = [[UILabel alloc] initWithFrame:CGRectZero];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [label setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [label setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
     [label setText:l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES)];
     [label setBackgroundColor:[UIColor whiteColor]];
 

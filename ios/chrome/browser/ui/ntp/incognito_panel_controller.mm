@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,8 +86,7 @@ const int kLinkColor = 0x03A9F4;
     [_containerView addSubview:incognitoImage];
 
     // Title.
-    UIFont* titleFont =
-        [[MDFRobotoFontLoader sharedInstance] lightFontOfSize:24];
+    UIFont* titleFont = [[MDCTypography fontLoader] lightFontOfSize:24];
     base::scoped_nsobject<UILabel> incognitoTabHeading(
         [[self labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_HEADING)
                           font:titleFont
@@ -95,8 +94,7 @@ const int kLinkColor = 0x03A9F4;
     [_containerView addSubview:incognitoTabHeading];
 
     // Description paragraph.
-    UIFont* regularFont =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+    UIFont* regularFont = [[MDCTypography fontLoader] regularFontOfSize:14];
     base::scoped_nsobject<UILabel> incognitoTabDescription([[self
         labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_DESCRIPTION)
                    font:regularFont
@@ -120,8 +118,7 @@ const int kLinkColor = 0x03A9F4;
                forState:UIControlStateNormal];
     [learnMore setTitleColor:UIColorFromRGB(kLinkColor)
                     forState:UIControlStateNormal];
-    UIFont* buttonFont =
-        [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
+    UIFont* buttonFont = [[MDCTypography fontLoader] boldFontOfSize:14];
     [[learnMore titleLabel] setFont:buttonFont];
     [learnMore addTarget:self
                   action:@selector(learnMoreButtonPressed)

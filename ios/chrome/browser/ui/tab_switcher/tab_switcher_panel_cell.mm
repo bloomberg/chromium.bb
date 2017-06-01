@@ -14,7 +14,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_text_accessibility_ios/src/src/MDFTextAccessibility.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -167,8 +167,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     // Title label.
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [_titleLabel setFont:[[MDFRobotoFontLoader sharedInstance]
-                             regularFontOfSize:kFontSize]];
+    [_titleLabel
+        setFont:[[MDCTypography fontLoader] regularFontOfSize:kFontSize]];
     [_topBar addSubview:_titleLabel];
 
     // Favicon.
@@ -354,8 +354,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_titleLabel setNumberOfLines:5];
     [_titleLabel setTextAlignment:NSTextAlignmentCenter];
-    [_titleLabel setFont:[[MDFRobotoFontLoader sharedInstance]
-                             regularFontOfSize:kFontSize]];
+    [_titleLabel
+        setFont:[[MDCTypography fontLoader] regularFontOfSize:kFontSize]];
     [_verticallyCenteredView addSubview:_titleLabel];
 
     // Create and add new tab icon to |_verticallyCenteredContent|.

@@ -18,7 +18,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -184,7 +184,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 
 - (UILabel*)titleLabel {
   NSMutableDictionary* attrsDictionary = [NSMutableDictionary
-      dictionaryWithObject:[[MDFRobotoFontLoader sharedInstance]
+      dictionaryWithObject:[[MDCTypography fontLoader]
                                mediumFontOfSize:kTitleLabelFontSize]
                     forKey:NSFontAttributeName];
   [attrsDictionary setObject:UIColorFromRGB(kTitleLabelFontColor)
@@ -206,7 +206,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   base::scoped_nsobject<UILabel> passwordLabel([[UILabel alloc] init]);
   [passwordLabel setText:password];
   [passwordLabel setTextColor:UIColorFromRGB(kPasswordLabelFontColor)];
-  [passwordLabel setFont:[[MDFRobotoFontLoader sharedInstance]
+  [passwordLabel setFont:[[MDCTypography fontLoader]
                              regularFontOfSize:kPasswordLabelFontSize]];
   [passwordLabel setNumberOfLines:1];
   [passwordLabel sizeToFit];
@@ -228,7 +228,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
                         UIColorFromRGB(kDescriptionLabelFontColor),
                         NSForegroundColorAttributeName, paragraphStyle.get(),
                         NSParagraphStyleAttributeName,
-                        [[MDFRobotoFontLoader sharedInstance]
+                        [[MDCTypography fontLoader]
                             regularFontOfSize:kDescriptionLabelFontSize],
                         NSFontAttributeName, nil];
 

@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/navigation_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -65,8 +65,7 @@ NS_INLINE CGFloat HeaderLineRadius() {
 - (void)commonInitialization {
   _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [_titleLabel setTextColor:UIColorFromRGB(kTitleTextRGB)];
-  [_titleLabel
-      setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+  [_titleLabel setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
   [[self contentView] addSubview:_titleLabel];
 }
 

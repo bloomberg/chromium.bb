@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/util/text_region_mapper.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -120,7 +120,7 @@ TEST_F(TextRegionMapperTest, CJKTest) {
   NSMutableDictionary* attributes = [NSMutableDictionary
       dictionaryWithDictionary:AttributesForTextAlignment(NSTextAlignmentLeft)];
   attributes[NSFontAttributeName] =
-      [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16];
+      [[MDCTypography fontLoader] regularFontOfSize:16];
   NSAttributedString* string =
       [[NSAttributedString alloc] initWithString:CJKString
                                       attributes:attributes];

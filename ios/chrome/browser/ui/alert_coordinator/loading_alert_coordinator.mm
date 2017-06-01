@@ -14,7 +14,7 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -119,7 +119,7 @@ const CGFloat kPrefHeight = 300;
 
   // Title.
   NSMutableDictionary* attrsDictionary = [NSMutableDictionary
-      dictionaryWithObject:[[MDFRobotoFontLoader sharedInstance]
+      dictionaryWithObject:[[MDCTypography fontLoader]
                                mediumFontOfSize:kTitleLabelFontSize]
                     forKey:NSFontAttributeName];
   [attrsDictionary setObject:UIColorFromRGB(kTitleLabelFontColor)

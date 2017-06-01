@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -57,8 +56,7 @@ const int kRelativeTimeMaxHours = 4;
     [_nameLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_nameLabel setHighlightedTextColor:[_nameLabel textColor]];
     [_nameLabel setTextAlignment:NSTextAlignmentNatural];
-    [_nameLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [_nameLabel setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
     [_nameLabel setBackgroundColor:[UIColor whiteColor]];
     [_nameLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow

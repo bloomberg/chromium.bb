@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/material_timing.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/navigation_item.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -145,7 +145,7 @@ static const CGFloat kHeightPercentage = 0.85;
   }
   // Increase the width to fit the text to display but don't exceed maxWidth.
   CGFloat cellWidth = kTabHistoryMinWidth;
-  UIFont* font = [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16];
+  UIFont* font = [[MDCTypography fontLoader] regularFontOfSize:16];
   for (web::NavigationItem* item : items) {
     // TODO(rohitrao): Can this be replaced with GetTitleForDisplay()?
     NSString* cellText = item->GetTitle().empty()

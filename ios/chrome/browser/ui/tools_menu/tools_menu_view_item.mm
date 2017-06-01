@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/objc_property_releaser.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -99,7 +99,7 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 - (void)initializeTitleView {
   _title = [[UILabel alloc] initWithFrame:self.bounds];
   [_title setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_title setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+  [_title setFont:[[MDCTypography fontLoader] regularFontOfSize:16]];
   [_title setBackgroundColor:[self backgroundColor]];
   [_title setTextAlignment:(base::i18n::IsRTL() ? NSTextAlignmentRight
                                                 : NSTextAlignmentLeft)];

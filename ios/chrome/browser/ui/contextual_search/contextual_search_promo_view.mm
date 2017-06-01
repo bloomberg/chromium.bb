@@ -12,7 +12,7 @@
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -95,7 +95,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   NSDictionary* attributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName :
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:kTextFontSize],
+        [[MDCTypography fontLoader] regularFontOfSize:kTextFontSize],
     NSForegroundColorAttributeName :
         [UIColor colorWithWhite:kTextColorGrayShade alpha:1]
   };
@@ -111,7 +111,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   text.numberOfLines = 0;
 
   UIFont* buttonFont =
-      [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:kButtonFontSize];
+      [[MDCTypography fontLoader] mediumFontOfSize:kButtonFontSize];
 
   // Create accept and decline buttons with dimensions defined by the
   // minimum height and width constants.

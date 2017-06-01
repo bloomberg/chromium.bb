@@ -8,7 +8,7 @@
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,8 +54,7 @@ const CGFloat kHorizontalPadding = 16;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     _textLabel.textColor = [[MDCPalette cr_redPalette] tint500];
     [contentView addSubview:_textLabel];
 

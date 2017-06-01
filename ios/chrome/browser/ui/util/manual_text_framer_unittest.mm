@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -19,12 +19,8 @@
 #endif
 
 namespace {
-// Copy of ManualTextFramer's alignment function.
-enum class AlignmentFunction : short { CEIL = 0, FLOOR };
-CGFloat AlignValueToPixel(CGFloat value, AlignmentFunction function) {
-  static CGFloat scale = [[UIScreen mainScreen] scale];
-  return function == AlignmentFunction::CEIL ? ceil(value * scale) / scale
-                                             : floor(value * scale) / scale;
+void ExpectNearPoint(CGFloat value1, CGFloat value2) {
+  EXPECT_NEAR(value1, value2, 1);
 }
 
 class ManualTextFramerTest : public PlatformTest {
@@ -51,8 +47,8 @@ class ManualTextFramerTest : public PlatformTest {
     text_frame_ = frame;
   }
 
-  UIFont* RobotoFontWithSize(CGFloat size) {
-    return [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:size];
+  UIFont* TypographyFontWithSize(CGFloat size) {
+    return [[MDCTypography fontLoader] regularFontOfSize:size];
   }
 
   NSParagraphStyle* CreateParagraphStyle(CGFloat line_height,
@@ -88,7 +84,7 @@ class ManualTextFramerTest : public PlatformTest {
 // multiple lines.
 TEST_F(ManualTextFramerTest, NewlineTest) {
   SetText(@"line one\nline two\nline three");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -103,7 +99,7 @@ TEST_F(ManualTextFramerTest, NoSpacesText) {
   // whirlpool of Llantysilio of the red cave."
   SetText(
       @"Llanfair­pwllgwyngyll­gogery­chwyrn­drobwll­llan­tysilio­gogo­goch");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(16.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(16.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -128,7 +124,7 @@ TEST_F(ManualTextFramerTest, MultipleNewlineTest) {
 // corresponds with the actual range of the text.
 TEST_F(ManualTextFramerTest, LigatureTest) {
   SetText(@"fffi");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -140,7 +136,7 @@ TEST_F(ManualTextFramerTest, LigatureTest) {
 // Tests that ManualTextFramer correctly frames Å
 TEST_F(ManualTextFramerTest, DiacriticTest) {
   SetText(@"A\u030A");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -158,7 +154,7 @@ TEST_F(ManualTextFramerTest, TOSTextTest) {
   NSString* const kTOSText =
       @"By using this application, you agree to Chrome’s Terms of Service.";
   SetText(kTOSText);
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentCenter, NSLineBreakByTruncatingTail);
   attributes()[NSForegroundColorAttributeName] = [UIColor blackColor];
@@ -172,7 +168,7 @@ TEST_F(ManualTextFramerTest, TOSTextTest) {
 // Tests that the origin of a left-aligned single line is correct.
 TEST_F(ManualTextFramerTest, SimpleOriginTest) {
   SetText(@"test");
-  UIFont* font = RobotoFontWithSize(14.0);
+  UIFont* font = TypographyFontWithSize(14.0);
   attributes()[NSFontAttributeName] = font;
   CGFloat line_height = 20.0;
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
@@ -183,10 +179,8 @@ TEST_F(ManualTextFramerTest, SimpleOriginTest) {
   CheckForLineCountAndFramedRange(1, text_range());
   FramedLine* line = [text_frame().lines firstObject];
   EXPECT_EQ(0, line.origin.x);
-  EXPECT_EQ(
-      AlignValueToPixel(CGRectGetHeight(bounds) - line_height - font.descender,
-                        AlignmentFunction::FLOOR),
-      line.origin.y);
+  ExpectNearPoint(CGRectGetHeight(bounds) - line_height - font.descender,
+                  line.origin.y);
 }
 
 // Tests that lines that are laid out in RTL are right aligned.
@@ -200,7 +194,7 @@ TEST_F(ManualTextFramerTest, OriginRTLTest) {
           @"\u064e\u0649\u0020\u0627\u0644\u0648\u064e\u0642\u0652\u062a\u0650"
           @"\u0020\u002e\u0020\u0641\u064e\u0627\u0644\u062d\u064e\u064a\u064e"
           @"\u0627\u0629\u064f");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -208,10 +202,9 @@ TEST_F(ManualTextFramerTest, OriginRTLTest) {
   FrameTextInBounds(bounds);
   CheckForLineCountAndFramedRange(3, text_range());
   for (FramedLine* line in text_frame().lines) {
-    CGFloat line_width =
-        AlignValueToPixel(core_text_util::GetTrimmedLineWidth(line.line),
-                          AlignmentFunction::CEIL);
-    EXPECT_EQ(CGRectGetMaxX(bounds), line.origin.x + line_width);
+    ExpectNearPoint(
+        CGRectGetMaxX(bounds),
+        line.origin.x + core_text_util::GetTrimmedLineWidth(line.line));
   }
 }
 
@@ -222,7 +215,7 @@ TEST_F(ManualTextFramerTest, CJKLineBreakTest) {
   SetText(@"“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。"
           @"您可以在设置中停用此功能。");
   // clang-format on
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(16.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(16.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       16 * 1.15, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -231,11 +224,9 @@ TEST_F(ManualTextFramerTest, CJKLineBreakTest) {
   CheckForLineCountAndFramedRange(3, NSMakeRange(0, 53));
 
   // Example without any space-ish characters:
-  // clang-format off
   SetText(@"会将所选字词和当前页面（作为上下文）一起发送给Google搜索。"
           @"您可以在设置中停用此功能。");
-  // clang-format on
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(16.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(16.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       16 * 1.15, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -246,7 +237,7 @@ TEST_F(ManualTextFramerTest, CJKLineBreakTest) {
 // Tests that paragraphs with NSTextAlignmentCenter are actually centered.
 TEST_F(ManualTextFramerTest, CenterAlignedTest) {
   SetText(@"xxxx\nyyy\nwww");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentCenter, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
@@ -254,12 +245,9 @@ TEST_F(ManualTextFramerTest, CenterAlignedTest) {
   FrameTextInBounds(bounds);
   CheckForLineCountAndFramedRange(3, text_range());
   for (FramedLine* line in text_frame().lines) {
-    CGFloat line_width =
-        AlignValueToPixel(core_text_util::GetTrimmedLineWidth(line.line),
-                          AlignmentFunction::CEIL);
-    EXPECT_EQ(AlignValueToPixel(CGRectGetMidX(bounds) - 0.5 * line_width,
-                                AlignmentFunction::FLOOR),
-              line.origin.x);
+    ExpectNearPoint(CGRectGetMidX(bounds) -
+                        0.5 * core_text_util::GetTrimmedLineWidth(line.line),
+                    line.origin.x);
   }
 }
 
@@ -267,7 +255,7 @@ TEST_F(ManualTextFramerTest, CenterAlignedTest) {
 // fit in the bounding height.
 TEST_F(ManualTextFramerTest, LargeLineHeightTest) {
   SetText(@"the last word is very LARGE");
-  attributes()[NSFontAttributeName] = RobotoFontWithSize(14.0);
+  attributes()[NSFontAttributeName] = TypographyFontWithSize(14.0);
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentCenter, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());

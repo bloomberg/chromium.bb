@@ -35,7 +35,6 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
@@ -869,7 +868,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     [_timeLeftLabel setFont:[MDCTypography captionFont]];
     [_fileNameLabel setFont:[MDCTypography body1Font]];
     [_errorOrSizeLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:10]];
+        setFont:[[MDCTypography fontLoader] regularFontOfSize:10]];
   }
 }
 

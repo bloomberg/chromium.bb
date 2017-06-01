@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,15 +62,14 @@
   _decorationLabel = [[UILabel alloc] init];
   _decorationLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _decorationLabel.text = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_BUTTON);
-  _decorationLabel.font =
-      [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12];
+  _decorationLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
   _decorationLabel.textColor = bookmark_utils_ios::lightTextColor();
   [self.contentView addSubview:_decorationLabel];
 
   _parentFolderNameLabel = [[UILabel alloc] init];
   _parentFolderNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _parentFolderNameLabel.font =
-      [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16];
+      [[MDCTypography fontLoader] regularFontOfSize:16];
   _parentFolderNameLabel.textColor =
       [UIColor colorWithWhite:33.0 / 255.0 alpha:1.0];
   _parentFolderNameLabel.textAlignment = NSTextAlignmentNatural;

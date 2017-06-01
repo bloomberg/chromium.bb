@@ -16,7 +16,7 @@
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
 #import "ios/chrome/browser/ui/history/favicon_view.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
@@ -147,7 +147,7 @@
 
     CGFloat fontSize = floorf(_faviconSize / 2);
     _faviconView.faviconFallbackLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:fontSize];
+        [[MDCTypography fontLoader] regularFontOfSize:fontSize];
   }
   return _faviconView;
 }

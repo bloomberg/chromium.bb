@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -62,8 +62,8 @@ const CGFloat kImageViewOffsetFromText = 5.0;
 - (UILabel*)newEmptyBookmarkLabel {
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   label.backgroundColor = [UIColor clearColor];
-  label.font = [[MDFRobotoFontLoader sharedInstance]
-      mediumFontOfSize:kEmptyBookmarkTextSize];
+  label.font =
+      [[MDCTypography fontLoader] mediumFontOfSize:kEmptyBookmarkTextSize];
   label.textColor = [UIColor colorWithWhite:0 alpha:110.0 / 255];
   label.textAlignment = NSTextAlignmentCenter;
   return label;

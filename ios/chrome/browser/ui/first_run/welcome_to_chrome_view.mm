@@ -18,7 +18,7 @@
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -493,7 +493,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 }
 
 - (void)configureTitleLabel {
-  self.titleLabel.font = [[MDFRobotoFontLoader sharedInstance]
+  self.titleLabel.font = [[MDCTypography fontLoader]
       regularFontOfSize:kTitleLabelFontSize[self.cr_widthSizeClass]];
 }
 
@@ -510,13 +510,13 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 }
 
 - (void)configureTOSLabel {
-  self.TOSLabel.font = [[MDFRobotoFontLoader sharedInstance]
+  self.TOSLabel.font = [[MDCTypography fontLoader]
       regularFontOfSize:kTOSLabelFontSize[self.cr_widthSizeClass]];
   self.TOSLabel.cr_lineHeight = kTOSLabelLineHeight[self.cr_widthSizeClass];
 }
 
 - (void)configureOptInLabel {
-  self.optInLabel.font = [[MDFRobotoFontLoader sharedInstance]
+  self.optInLabel.font = [[MDCTypography fontLoader]
       regularFontOfSize:kOptInLabelFontSize[self.cr_widthSizeClass]];
   self.optInLabel.cr_lineHeight = kOptInLabelLineHeight[self.cr_widthSizeClass];
 }
@@ -531,7 +531,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 }
 
 - (void)configureOKButton {
-  self.OKButton.titleLabel.font = [[MDFRobotoFontLoader sharedInstance]
+  self.OKButton.titleLabel.font = [[MDCTypography fontLoader]
       mediumFontOfSize:kOKButtonTitleLabelFontSize[self.cr_widthSizeClass]];
   CGSize size = [self.OKButton
       sizeThatFits:CGSizeMake(CGFLOAT_MAX,

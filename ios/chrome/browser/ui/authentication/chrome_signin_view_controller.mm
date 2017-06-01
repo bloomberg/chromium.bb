@@ -53,7 +53,7 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -840,10 +840,10 @@ void HideButton(UIButton* button) {
 }
 
 - (void)layoutButtons:(const AuthenticationViewConstants&)constants {
-  [_primaryButton titleLabel].font = [[MDFRobotoFontLoader sharedInstance]
-      mediumFontOfSize:constants.SecondaryFontSize];
-  [_secondaryButton titleLabel].font = [[MDFRobotoFontLoader sharedInstance]
-      mediumFontOfSize:constants.SecondaryFontSize];
+  [_primaryButton titleLabel].font =
+      [[MDCTypography fontLoader] mediumFontOfSize:constants.SecondaryFontSize];
+  [_secondaryButton titleLabel].font =
+      [[MDCTypography fontLoader] mediumFontOfSize:constants.SecondaryFontSize];
 
   LayoutRect primaryButtonLayout = LayoutRectZero;
   primaryButtonLayout.boundingWidth = CGRectGetWidth(self.view.bounds);
