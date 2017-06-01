@@ -794,6 +794,48 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   DrainMessageLoop();
 }
 
+// Check that an URL is considered same-site with blob: and filesystem: URLs
+// with a matching inner origin.  See https://crbug.com/726370.
+TEST_F(SiteInstanceTest, IsSameWebsiteForNestedURLs) {
+  GURL foo_url("http://foo.com/");
+  GURL bar_url("http://bar.com/");
+  GURL blob_foo_url("blob:http://foo.com/uuid");
+  GURL blob_bar_url("blob:http://bar.com/uuid");
+  GURL fs_foo_url("filesystem:http://foo.com/path/");
+  GURL fs_bar_url("filesystem:http://bar.com/path/");
+
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, foo_url, blob_foo_url));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, blob_foo_url, foo_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, foo_url, blob_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, blob_foo_url, bar_url));
+
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, foo_url, fs_foo_url));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, fs_foo_url, foo_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, foo_url, fs_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, fs_foo_url, bar_url));
+
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, blob_foo_url, fs_foo_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, blob_foo_url, fs_bar_url));
+  EXPECT_FALSE(
+      SiteInstance::IsSameWebSite(nullptr, blob_foo_url, blob_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, fs_foo_url, fs_bar_url));
+
+  // Verify that the scheme and ETLD+1 are used for comparison.
+  GURL www_bar_url("http://www.bar.com/");
+  GURL bar_org_url("http://bar.org/");
+  GURL https_bar_url("https://bar.com/");
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, www_bar_url, bar_url));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, www_bar_url, blob_bar_url));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, www_bar_url, fs_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, bar_org_url, bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, bar_org_url, blob_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, bar_org_url, fs_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, https_bar_url, bar_url));
+  EXPECT_FALSE(
+      SiteInstance::IsSameWebSite(nullptr, https_bar_url, blob_bar_url));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, https_bar_url, fs_bar_url));
+}
+
 TEST_F(SiteInstanceTest, DefaultSubframeSiteInstance) {
   if (AreAllSitesIsolatedForTesting())
     return;  // --top-document-isolation is not possible.
