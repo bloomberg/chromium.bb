@@ -79,6 +79,7 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 @property(nonatomic, readwrite) double estimatedProgress;
 @property(nonatomic, readwrite) BOOL canGoBack;
 @property(nonatomic, readwrite) BOOL canGoForward;
+@property(nonatomic, readwrite, copy) NSString* title;
 
 // Updates the availability of the back/forward navigation properties exposed
 // through |canGoBack| and |canGoForward|.
@@ -95,6 +96,7 @@ static NSString* gUserAgentProduct = nil;
 @synthesize configuration = _configuration;
 @synthesize estimatedProgress = _estimatedProgress;
 @synthesize navigationDelegate = _navigationDelegate;
+@synthesize title = _title;
 @synthesize translationController = _translationController;
 @synthesize UIDelegate = _UIDelegate;
 @synthesize scrollView = _scrollView;
@@ -143,10 +145,6 @@ static NSString* gUserAgentProduct = nil;
 
 - (NSURL*)lastCommittedURL {
   return net::NSURLWithGURL(_webState->GetLastCommittedURL());
-}
-
-- (NSString*)title {
-  return base::SysUTF16ToNSString(_webState->GetTitle());
 }
 
 - (void)goBack {
@@ -229,6 +227,10 @@ static NSString* gUserAgentProduct = nil;
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
   self.estimatedProgress = progress;
+}
+
+- (void)webStateDidChangeTitle:(web::WebState*)webState {
+  self.title = base::SysUTF16ToNSString(_webState->GetTitle());
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {

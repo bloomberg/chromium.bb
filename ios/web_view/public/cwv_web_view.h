@@ -48,7 +48,7 @@ CWV_EXPORT
 // The URL of the current document.
 @property(nonatomic, readonly) NSURL* lastCommittedURL;
 
-// The current page title.
+// The current page title. KVO compliant.
 @property(nonatomic, readonly, copy) NSString* title;
 
 // Page loading progress from 0.0 to 1.0. KVO compliant.

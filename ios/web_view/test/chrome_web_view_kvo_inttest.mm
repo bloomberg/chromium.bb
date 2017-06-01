@@ -6,8 +6,10 @@
 #import <Foundation/Foundation.h>
 
 #import "base/mac/scoped_nsobject.h"
-#import "ios/web_view/test/boolean_observer.h"
+#include "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web_view/test/chrome_web_view_test.h"
+#import "ios/web_view/test/observer.h"
 #import "ios/web_view/test/web_view_interaction_test_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
@@ -37,10 +39,10 @@ namespace ios_web_view {
 
 // Tests that CWVWebView correctly reports |canGoBack| and |canGoForward| state.
 TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
-  BooleanObserver* back_observer = [[BooleanObserver alloc] init];
+  Observer* back_observer = [[Observer alloc] init];
   [back_observer setObservedObject:web_view_ keyPath:@"canGoBack"];
 
-  BooleanObserver* forward_observer = [[BooleanObserver alloc] init];
+  Observer* forward_observer = [[Observer alloc] init];
   [forward_observer setObservedObject:web_view_ keyPath:@"canGoForward"];
 
   ASSERT_FALSE(back_observer.lastValue);
@@ -51,11 +53,11 @@ TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
 
   std::string page_2_html =
       "<a id='link_2' href='" + page_3_url.spec() + "'>Link 2</a>";
-  GURL page_2_url = GetUrlForPageWithHTMLBody(page_2_html);
+  GURL page_2_url = GetUrlForPageWithHtmlBody(page_2_html);
 
   std::string page_1_html =
       "<a id='link_1' href='" + page_2_url.spec() + "'>Link 1</a>";
-  GURL page_1_url = GetUrlForPageWithHTMLBody(page_1_html);
+  GURL page_1_url = GetUrlForPageWithHtmlBody(page_1_html);
 
   LoadUrl(web_view_, net::NSURLWithGURL(page_1_url));
   // Loading initial URL should not affect back/forward navigation state.
@@ -91,6 +93,35 @@ TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
   WaitForPageLoadCompletion(web_view_);
   EXPECT_TRUE([back_observer.lastValue boolValue]);
   EXPECT_TRUE([forward_observer.lastValue boolValue]);
+}
+
+// Tests that CWVWebView correctly reports current |title|.
+TEST_F(ChromeWebViewKvoTest, Title) {
+  Observer* observer = [[Observer alloc] init];
+  [observer setObservedObject:web_view_ keyPath:@"title"];
+
+  NSString* page_2_title = @"Page 2";
+  GURL page_2_url =
+      GetUrlForPageWithTitle(base::SysNSStringToUTF8(page_2_title));
+
+  NSString* page_1_title = @"Page 1";
+  std::string page_1_html = base::StringPrintf(
+      "<a id='link_1' href='%s'>Link 1</a>", page_2_url.spec().c_str());
+  GURL page_1_url = GetUrlForPageWithTitleAndBody(
+      base::SysNSStringToUTF8(page_1_title), page_1_html);
+
+  LoadUrl(web_view_, net::NSURLWithGURL(page_1_url));
+  EXPECT_NSEQ(page_1_title, observer.lastValue);
+
+  // Navigate to page 2.
+  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_1"));
+  WaitForPageLoadCompletion(web_view_);
+  EXPECT_NSEQ(page_2_title, observer.lastValue);
+
+  // Navigate back to page 1.
+  [web_view_ goBack];
+  WaitForPageLoadCompletion(web_view_);
+  EXPECT_NSEQ(page_1_title, observer.lastValue);
 }
 
 }  // namespace ios_web_view
