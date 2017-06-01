@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("material_components") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "activity_indicator.h",
     "activity_indicator.mm",
