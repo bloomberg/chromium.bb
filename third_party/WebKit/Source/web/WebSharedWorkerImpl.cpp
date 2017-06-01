@@ -227,9 +227,9 @@ WebSharedWorkerImpl::CreateClientMessageLoop() {
   return client_->CreateDevToolsMessageLoop();
 }
 
-void WebSharedWorkerImpl::CountFeature(UseCounter::Feature feature) {
+void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
-  client_->CountFeature(feature);
+  client_->CountFeature(static_cast<uint32_t>(feature));
 }
 
 void WebSharedWorkerImpl::PostMessageToPageInspector(const String& message) {

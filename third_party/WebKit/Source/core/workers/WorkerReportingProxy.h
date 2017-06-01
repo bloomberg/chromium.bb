@@ -48,8 +48,8 @@ class CORE_EXPORT WorkerReportingProxy {
  public:
   virtual ~WorkerReportingProxy() {}
 
-  virtual void CountFeature(UseCounter::Feature) {}
-  virtual void CountDeprecation(UseCounter::Feature) {}
+  virtual void CountFeature(WebFeature) {}
+  virtual void CountDeprecation(WebFeature) {}
   virtual void ReportException(const String& error_message,
                                std::unique_ptr<SourceLocation>,
                                int exception_id) {}

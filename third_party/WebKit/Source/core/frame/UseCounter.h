@@ -118,11 +118,17 @@ class CORE_EXPORT UseCounter {
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
-  static void CountCrossOriginIframe(const Document&, Feature);
+  static void CountCrossOriginIframe(const Document&, WebFeature);
+  static void CountCrossOriginIframe(const Document& doc, Feature feature) {
+    return CountCrossOriginIframe(doc, static_cast<WebFeature>(feature));
+  }
 
   // Return whether the Feature was previously counted for this document.
   // NOTE: only for use in testing.
-  static bool IsCounted(Document&, Feature);
+  static bool IsCounted(Document&, WebFeature);
+  static bool IsCounted(Document& doc, Feature feature) {
+    return IsCounted(doc, static_cast<WebFeature>(feature));
+  }
   // Return whether the CSSPropertyID was previously counted for this document.
   // NOTE: only for use in testing.
   static bool IsCounted(Document&, const String&);

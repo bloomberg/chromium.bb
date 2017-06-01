@@ -53,7 +53,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   }
 
   // Emulates API use on DedicatedWorkerGlobalScope.
-  void CountFeature(UseCounter::Feature feature) {
+  void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
     GetParentFrameTaskRunners()
@@ -62,7 +62,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   }
 
   // Emulates deprecated API use on DedicatedWorkerGlobalScope.
-  void CountDeprecation(UseCounter::Feature feature) {
+  void CountDeprecation(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountDeprecation(feature);
 
@@ -85,23 +85,23 @@ class InProcessWorkerObjectProxyForTest final
       ParentFrameTaskRunners* parent_frame_task_runners)
       : InProcessWorkerObjectProxy(messaging_proxy_weak_ptr,
                                    parent_frame_task_runners),
-        reported_features_(UseCounter::kNumberOfFeatures) {
+        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
     default_interval_in_sec_ = kDefaultIntervalInSec;
     next_interval_in_sec_ = kNextIntervalInSec;
     max_interval_in_sec_ = kMaxIntervalInSec;
   }
 
-  void CountFeature(UseCounter::Feature feature) override {
+  void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     InProcessWorkerObjectProxy::CountFeature(feature);
   }
 
-  void CountDeprecation(UseCounter::Feature feature) override {
+  void CountDeprecation(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     InProcessWorkerObjectProxy::CountDeprecation(feature);
   }
 
@@ -408,7 +408,7 @@ TEST_F(DedicatedWorkerTest, DISABLED_UseCounter) {
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
   // This feature is randomly selected.
-  const UseCounter::Feature kFeature1 = UseCounter::Feature::kRequestFileSystem;
+  const WebFeature kFeature1 = WebFeature::kRequestFileSystem;
 
   // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
   // on the Document.
@@ -431,8 +431,7 @@ TEST_F(DedicatedWorkerTest, DISABLED_UseCounter) {
   testing::EnterRunLoop();
 
   // This feature is randomly selected from Deprecation::deprecationMessage().
-  const UseCounter::Feature kFeature2 =
-      UseCounter::Feature::kPrefixedStorageInfo;
+  const WebFeature kFeature2 = WebFeature::kPrefixedStorageInfo;
 
   // Deprecated API use on the DedicatedWorkerGlobalScope should be recorded in
   // UseCounter on the Document.

@@ -24,28 +24,28 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     : worker_clients_(worker_clients),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),
-      used_features_(UseCounter::kNumberOfFeatures) {
+      used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }
 
 WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() = default;
 
-void WorkerOrWorkletGlobalScope::CountFeature(UseCounter::Feature feature) {
-  DCHECK_NE(UseCounter::kOBSOLETE_PageDestruction, feature);
-  DCHECK_GT(UseCounter::kNumberOfFeatures, feature);
-  if (used_features_.QuickGet(feature))
+void WorkerOrWorkletGlobalScope::CountFeature(WebFeature feature) {
+  DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
+  DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
+  if (used_features_.QuickGet(static_cast<int>(feature)))
     return;
-  used_features_.QuickSet(feature);
+  used_features_.QuickSet(static_cast<int>(feature));
   ReportFeature(feature);
 }
 
-void WorkerOrWorkletGlobalScope::CountDeprecation(UseCounter::Feature feature) {
-  DCHECK_NE(UseCounter::kOBSOLETE_PageDestruction, feature);
-  DCHECK_GT(UseCounter::kNumberOfFeatures, feature);
-  if (used_features_.QuickGet(feature))
+void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
+  DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
+  DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
+  if (used_features_.QuickGet(static_cast<int>(feature)))
     return;
-  used_features_.QuickSet(feature);
+  used_features_.QuickSet(static_cast<int>(feature));
 
   // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());

@@ -34,15 +34,14 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
-void MainThreadWorkletGlobalScope::ReportFeature(UseCounter::Feature feature) {
+void MainThreadWorkletGlobalScope::ReportFeature(WebFeature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.
   UseCounter::Count(GetFrame(), feature);
 }
 
-void MainThreadWorkletGlobalScope::ReportDeprecation(
-    UseCounter::Feature feature) {
+void MainThreadWorkletGlobalScope::ReportDeprecation(WebFeature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.

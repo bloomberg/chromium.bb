@@ -33,8 +33,8 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   bool IsMainThreadWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
-  void ReportFeature(UseCounter::Feature) override;
-  void ReportDeprecation(UseCounter::Feature) override;
+  void ReportFeature(WebFeature) override;
+  void ReportDeprecation(WebFeature) override;
   WorkerThread* GetThread() const final;
 
   // Implementation of the "fetch and invoke a worklet script" algorithm:
