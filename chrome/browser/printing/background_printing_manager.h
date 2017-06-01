@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -26,8 +26,7 @@ namespace printing {
 // The hidden WebContents are no longer part of any Browser / TabStripModel.
 // The WebContents started life as a ConstrainedWebDialog.
 // They get deleted when the printing finishes.
-class BackgroundPrintingManager : public base::NonThreadSafe,
-                                  public content::NotificationObserver {
+class BackgroundPrintingManager : public content::NotificationObserver {
  public:
   class Observer;
 
@@ -64,6 +63,8 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
       printing_contents_map_;
 
   content::NotificationRegistrar registrar_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundPrintingManager);
 };

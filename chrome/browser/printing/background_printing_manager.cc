@@ -56,7 +56,7 @@ BackgroundPrintingManager::BackgroundPrintingManager() {
 }
 
 BackgroundPrintingManager::~BackgroundPrintingManager() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The might be some WebContentses still in |printing_contents_map_| at this
   // point (e.g. when the last remaining tab closes and there is still a print
   // preview WebContents trying to print). In such a case it will fail to print,
@@ -66,7 +66,7 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
 
 void BackgroundPrintingManager::OwnPrintPreviewDialog(
     WebContents* preview_dialog) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PrintPreviewDialogController::IsPrintPreviewDialog(preview_dialog));
   CHECK(!HasPrintPreviewDialog(preview_dialog));
 
