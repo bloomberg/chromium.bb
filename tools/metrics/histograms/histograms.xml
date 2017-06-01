@@ -35388,6 +35388,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
 </histogram>
 
+<histogram name="Net.DNSNameCompliantIfValid" enum="Boolean">
+  <owner>palmer@chromium.org</owner>
+  <summary>
+    True if |net::IsCanonicalizedHostCompliant| returns true. Used to see if
+    IsCanonicalizedHostCompliant() runs afoul of real websites. This histogram
+    is recorded when converting dotted DNS names into DNS query form, in
+    preparation for issuing a DNS request. This histogram is only recorded if
+    Net.ValidDNSName is true.
+  </summary>
+</histogram>
+
 <histogram name="Net.DoubleGetExperiment_InitialResponseMethod"
     enum="DoubleGetExperimentMethods">
   <obsolete>
