@@ -19,6 +19,8 @@ IF "%~nx0"=="update_depot_tools.bat" (
 set DEPOT_TOOLS_DIR=%~1
 SHIFT
 
+IF EXIST "%DEPOT_TOOLS_DIR%.disable_auto_update" GOTO :EOF
+
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 :: Will download git, svn and python.

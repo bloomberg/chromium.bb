@@ -6,6 +6,9 @@
 /.cipd_client*
 /.versions
 
+# Ignore "disable auto update" sentinel file.
+.disable_auto_update
+
 # Ignore the batch files produced by the Windows bootstrapping.
 /git-bash
 /git.bat
