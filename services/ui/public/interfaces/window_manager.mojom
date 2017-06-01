@@ -44,6 +44,9 @@ interface WindowManager {
   // Whether the window should be initially focusable or not. Type: bool.
   const string kFocusable_InitProperty = "init:focusable";
 
+  // Whether the window should be opaque.
+  const string kTranslucent_InitProperty = "init:translucent";
+
   // Initial bounds to create the window at. If empty the WindowManager decides
   // the initial bounds. Type: gfx::Rect.
   const string kBounds_InitProperty = "init:bounds";

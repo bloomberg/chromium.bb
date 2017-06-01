@@ -76,7 +76,8 @@ void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
         fallback_device_scale_factor, fallback_surface_info->size_in_pixels());
   }
   gfx::Rect window_bounds(window_->bounds());
-  if (fallback_surface_size_in_dip.width() < window_bounds.width()) {
+  if (!window_->transparent() &&
+      fallback_surface_size_in_dip.width() < window_bounds.width()) {
     right_gutter_ = base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     // TODO(fsamuel): Use the embedded client's background color.
     right_gutter_->SetColor(SK_ColorWHITE);
@@ -93,7 +94,7 @@ void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
 
   // Only create a bottom gutter if a fallback surface is available. Otherwise,
   // the right gutter will fill the whole window until a fallback is available.
-  if (!fallback_surface_size_in_dip.IsEmpty() &&
+  if (!window_->transparent() && !fallback_surface_size_in_dip.IsEmpty() &&
       fallback_surface_size_in_dip.height() < window_bounds.height()) {
     bottom_gutter_ = base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     // TODO(fsamuel): Use the embedded client's background color.
