@@ -50,7 +50,6 @@ class ContactInfoEditorViewController : public EditorViewController {
   base::string16 GetSheetTitle() override;
 
  private:
-  bool ValidateModel();
   // Uses the values in the UI fields to populate the corresponding values in
   // |profile|.
   void PopulateProfile(autofill::AutofillProfile* profile);

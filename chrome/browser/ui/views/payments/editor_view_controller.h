@@ -113,7 +113,9 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual std::unique_ptr<views::View> CreateHeaderView();
   // |focusable_field| is to be set with a pointer to the view that should get
   // default focus within the custom view. |valid| should be set to the initial
-  // validity state of the custom view.
+  // validity state of the custom view. If a custom view requires model
+  // validation, it should be tracked in |text_fields_| or |comboboxes_| (e.g.,
+  // by using CreateComboboxForField).
   virtual std::unique_ptr<views::View> CreateCustomFieldView(
       autofill::ServerFieldType type,
       views::View** focusable_field,
@@ -129,12 +131,16 @@ class EditorViewController : public PaymentRequestSheetController,
       autofill::ServerFieldType type) = 0;
   // Validates the data entered and attempts to save; returns true on success.
   virtual bool ValidateModelAndSave() = 0;
+
   // Creates a ValidationDelegate which knows how to validate for a given
   // |field| definition.
   virtual std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
       const EditorField& field) = 0;
   virtual std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) = 0;
+
+  // Returns true if all fields are valid.
+  bool ValidateInputFields();
 
   // PaymentRequestSheetController;
   std::unique_ptr<views::Button> CreatePrimaryButton() override;

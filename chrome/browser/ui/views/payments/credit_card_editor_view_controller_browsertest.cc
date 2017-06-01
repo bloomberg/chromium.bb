@@ -176,6 +176,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+
   InvokePaymentRequestUI();
 
   OpenCreditCardEditorScreen();
@@ -184,12 +187,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                           autofill::CREDIT_CARD_NAME_FULL);
   SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
                           autofill::CREDIT_CARD_NUMBER);
+
+  SelectBillingAddress(billing_profile.guid());
+
   // The card is expired.
   SetComboboxValue(base::ASCIIToUTF16("01"), autofill::CREDIT_CARD_EXP_MONTH);
   SetComboboxValue(base::ASCIIToUTF16("2017"),
                    autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
 
   EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NAME_FULL));
   EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NUMBER));
@@ -199,8 +203,18 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                 IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED),
             GetErrorLabelForType(autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
 
+  views::View* save_button = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
+
+  EXPECT_FALSE(save_button->enabled());
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
+
+  SetComboboxValue(base::ASCIIToUTF16("12"), autofill::CREDIT_CARD_EXP_MONTH);
+
+  EXPECT_TRUE(save_button->enabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
@@ -781,6 +795,47 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
           autofill::CREDIT_CARD_NAME_FULL)));
   EXPECT_TRUE(textfield);
   EXPECT_FALSE(textfield->IsValid());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, DoneButtonDisabled) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+  InvokePaymentRequestUI();
+
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+
+  OpenCreditCardEditorScreen();
+
+  views::View* save_button = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
+
+  EXPECT_FALSE(save_button->enabled());
+
+  // Set all fields but one:
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
+                          autofill::CREDIT_CARD_NAME_FULL);
+  SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
+                          autofill::CREDIT_CARD_NUMBER);
+  SetComboboxValue(base::ASCIIToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
+  SetComboboxValue(base::ASCIIToUTF16("2026"),
+                   autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  // Still disabled.
+  EXPECT_FALSE(save_button->enabled());
+
+  // Set the last field.
+  SelectBillingAddress(billing_profile.guid());
+
+  // Should be good to go.
+  EXPECT_TRUE(save_button->enabled());
+
+  // Change a field to something invalid, to make sure it works both ways.
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Ni!"),
+                          autofill::CREDIT_CARD_NUMBER);
+
+  // Back to being disabled.
+  EXPECT_FALSE(save_button->enabled());
 }
 
 }  // namespace payments

@@ -55,6 +55,20 @@ namespace payments {
 
 namespace {
 const auto kBillingAddressType = autofill::ADDRESS_BILLING_LINE1;
+
+// This is preferred to SelectValue, since only SetSelectedRow fires the events
+// as if done by a user.
+void SelectComboboxRowForValue(views::Combobox* combobox,
+                               const base::string16& text) {
+  int i;
+  for (i = 0; i < combobox->GetRowCount(); i++) {
+    if (combobox->GetTextForRow(i) == text)
+      break;
+  }
+  DCHECK(i < combobox->GetRowCount()) << "Combobox does not contain " << text;
+  combobox->SetSelectedRow(i);
+}
+
 }  // namespace
 
 PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
@@ -571,8 +585,8 @@ void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
       static_cast<ValidatingTextfield*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
-  textfield->SetText(value);
-  textfield->OnContentsChanged();
+  textfield->SetText(base::string16());
+  textfield->InsertText(value);
   textfield->OnBlur();
 }
 
@@ -592,8 +606,7 @@ void PaymentRequestBrowserTestBase::SetComboboxValue(
       static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
-  combobox->SelectValue(value);
-  combobox->OnContentsChanged();
+  SelectComboboxRowForValue(combobox, value);
   combobox->OnBlur();
 }
 

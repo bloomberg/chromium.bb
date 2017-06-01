@@ -389,21 +389,19 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   autofill::CreditCard credit_card;
   credit_card.set_origin(autofill::kSettingsOrigin);
 
+  if (!ValidateInputFields())
+    return false;
+
   for (const auto& field : text_fields()) {
     // ValidatingTextfield* is the key, EditorField is the value.
     DCHECK_EQ(autofill::CREDIT_CARD,
               autofill::AutofillType(field.second.type).group());
-    if (field.first->invalid())
-      return false;
-
     credit_card.SetInfo(autofill::AutofillType(field.second.type),
                         field.first->text(), locale);
   }
   for (const auto& field : comboboxes()) {
     // ValidatingCombobox* is the key, EditorField is the value.
     ValidatingCombobox* combobox = field.first;
-    if (combobox->invalid())
-      return false;
 
     if (field.second.type == kBillingAddressType) {
       autofill::AddressComboboxModel* model =
