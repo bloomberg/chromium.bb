@@ -302,20 +302,35 @@ void MessageListView::OnBoundsAnimatorProgressed(
 }
 
 void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
+  bool need_update = false;
+
+  if (clear_all_started_) {
+    clear_all_started_ = false;
+    // TODO(yoshiki): we shouldn't touch views in OnAllNotificationsCleared().
+    // Or rename it to like OnAllNotificationsClearing().
+    for (auto& observer : observers_)
+      observer.OnAllNotificationsCleared();
+
+    // Need to update layout after deleting the views.
+    if (!deleted_when_done_.empty())
+      need_update = true;
+  }
+
+  // None of these views should be deleted.
+  DCHECK(std::all_of(deleted_when_done_.begin(), deleted_when_done_.end(),
+                     [this](views::View* view) { return Contains(view); }));
+
   for (auto* view : deleted_when_done_)
     delete view;
   deleted_when_done_.clear();
 
-  if (clear_all_started_) {
-    clear_all_started_ = false;
-    for (auto& observer : observers_)
-      observer.OnAllNotificationsCleared();
-  }
-
   if (has_deferred_task_) {
     has_deferred_task_ = false;
-    DoUpdateIfPossible();
+    need_update = true;
   }
+
+  if (need_update)
+    DoUpdateIfPossible();
 
   if (GetWidget())
     GetWidget()->SynthesizeMouseMoveEvent();
