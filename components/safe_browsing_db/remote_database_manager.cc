@@ -258,6 +258,13 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   return false;
 }
 
+AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
+    const GURL& url,
+    Client* client) {
+  NOTREACHED();
+  return AsyncMatch::MATCH;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   NOTREACHED();
   return true;

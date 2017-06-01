@@ -427,6 +427,14 @@ bool LocalSafeBrowsingDatabaseManager::MatchMalwareIP(
   return database_->ContainsMalwareIP(ip_address);
 }
 
+AsyncMatch LocalSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
+    const GURL& url,
+    Client* Client) {
+  // Pver3 DB does not support actual partial-hash whitelists, so we emulate
+  // it.  All this code will go away soon (~M62).
+  return (MatchCsdWhitelistUrl(url) ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH);
+}
+
 bool LocalSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!enabled_ || !enable_csd_whitelist_ || !MakeDatabaseAvailable()) {
