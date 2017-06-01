@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -48,8 +48,7 @@ extern const char kAutofillProfileTag[];
 class AutofillProfileSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread,
-      public base::NonThreadSafe {
+      public AutofillWebDataServiceObserverOnDBThread {
  public:
   ~AutofillProfileSyncableService() override;
 
@@ -193,6 +192,8 @@ class AutofillProfileSyncableService
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   syncer::SyncableService::StartSyncFlare flare_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncableService);
 };
