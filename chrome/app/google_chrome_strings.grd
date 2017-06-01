@@ -1193,9 +1193,11 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       </message>
 
       <!-- Plugin Placeholders -->
-      <message name="IDS_PLUGIN_RESTART_REQUIRED" desc="The placeholder text for a plugin that can't be loaded until the browser is restarted.">
-        Restart Chrome to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
-      </message>
+      <if expr="is_linux">
+        <message name="IDS_PLUGIN_RESTART_REQUIRED" desc="The placeholder text for a plugin that can't be loaded until the browser is restarted.">
+          Restart Chrome to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
+        </message>
+      </if>
 
       <!-- Desktop to iOS promotion -->
       <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">

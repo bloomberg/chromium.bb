@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -497,10 +498,10 @@ void PluginInfoMessageFilter::ComponentPluginLookupDone(
       output->status =
           ChromeViewHostMsg_GetPluginInfo_Status::kRestartRequired;
     }
-#endif  // defined(OS_LINUX)
-    plugin_metadata.reset(new PluginMetadata(
+#endif
+    plugin_metadata = base::MakeUnique<PluginMetadata>(
         cus_plugin_info->id, cus_plugin_info->name, false, GURL(), GURL(),
-        base::ASCIIToUTF16(cus_plugin_info->id), std::string()));
+        base::ASCIIToUTF16(cus_plugin_info->id), std::string());
   }
   GetPluginInfoReply(params, std::move(output), std::move(plugin_metadata),
                      reply_msg);

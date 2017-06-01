@@ -956,6 +956,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             identifier));
         break;
       }
+#if defined(OS_LINUX)
       case ChromeViewHostMsg_GetPluginInfo_Status::kRestartRequired: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
@@ -963,6 +964,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                                        group_name));
         break;
       }
+#endif
     }
   }
   placeholder->SetStatus(status);
