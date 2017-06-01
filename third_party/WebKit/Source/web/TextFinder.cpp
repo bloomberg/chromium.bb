@@ -403,8 +403,8 @@ void TextFinder::ScopeStringMatches(int identifier,
 
     OwnerFrame().GetFrame()->GetDocument()->Markers().AddTextMatchMarker(
         EphemeralRange(result_range),
-        found_active_match ? DocumentMarker::MatchStatus::kActive
-                           : DocumentMarker::MatchStatus::kInactive);
+        found_active_match ? TextMatchMarker::MatchStatus::kActive
+                           : TextMatchMarker::MatchStatus::kInactive);
 
     find_matches_cache_.push_back(
         FindMatch(result_range, last_match_count_ + match_count));

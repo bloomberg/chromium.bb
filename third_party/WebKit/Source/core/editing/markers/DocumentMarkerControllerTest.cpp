@@ -81,7 +81,7 @@ void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
   GetDocument().UpdateStyleAndLayout();
   auto range = EphemeralRange::RangeOfContents(*node);
   MarkerController().AddTextMatchMarker(range,
-                                        DocumentMarker::MatchStatus::kActive);
+                                        TextMatchMarker::MatchStatus::kActive);
 }
 
 void DocumentMarkerControllerTest::SetBodyInnerHTML(const char* body_content) {
@@ -241,8 +241,8 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
   EXPECT_FALSE(MarkerController().SetTextMatchMarkersActive(range, true));
 
   // Add a marker and try it once more.
-  MarkerController().AddTextMatchMarker(range,
-                                        DocumentMarker::MatchStatus::kInactive);
+  MarkerController().AddTextMatchMarker(
+      range, TextMatchMarker::MatchStatus::kInactive);
   EXPECT_EQ(1u, MarkerController().Markers().size());
   EXPECT_TRUE(MarkerController().SetTextMatchMarkersActive(range, true));
 }
@@ -257,7 +257,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
   EphemeralRange marker_range =
       EphemeralRange(Position(text, 0), Position(text, 3));
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Remove markers that overlap "a"
   marker_range = EphemeralRange(Position(text, 0), Position(text, 1));
@@ -277,7 +277,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveMiddleOfMarker) {
   EphemeralRange marker_range =
       EphemeralRange(Position(text, 0), Position(text, 3));
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Remove markers that overlap "b"
   marker_range = EphemeralRange(Position(text, 1), Position(text, 2));
@@ -297,7 +297,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
   EphemeralRange marker_range =
       EphemeralRange(Position(text, 0), Position(text, 3));
   GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   // Remove markers that overlap "c"
   marker_range = EphemeralRange(Position(text, 2), Position(text, 3));
@@ -316,8 +316,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
   // Add a spelling marker and a text match marker to "foo".
   const EphemeralRange marker_range(Position(text, 0), Position(text, 3));
   MarkerController().AddSpellingMarker(marker_range);
-  MarkerController().AddTextMatchMarker(marker_range,
-                                        DocumentMarker::MatchStatus::kInactive);
+  MarkerController().AddTextMatchMarker(
+      marker_range, TextMatchMarker::MatchStatus::kInactive);
 
   MarkerController().RemoveSpellingMarkersUnderWords({"foo"});
 

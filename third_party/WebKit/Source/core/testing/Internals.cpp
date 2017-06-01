@@ -1015,12 +1015,12 @@ String Internals::markerDescriptionForNode(Node* node,
   return marker->Description();
 }
 
-static WTF::Optional<DocumentMarker::MatchStatus> MatchStatusFrom(
+static WTF::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(
     const String& match_status) {
   if (EqualIgnoringASCIICase(match_status, "kActive"))
-    return DocumentMarker::MatchStatus::kActive;
+    return TextMatchMarker::MatchStatus::kActive;
   if (EqualIgnoringASCIICase(match_status, "kInactive"))
-    return DocumentMarker::MatchStatus::kInactive;
+    return TextMatchMarker::MatchStatus::kInactive;
   return WTF::nullopt;
 }
 
@@ -1031,7 +1031,7 @@ void Internals::addTextMatchMarker(const Range* range,
   if (!range->OwnerDocument().View())
     return;
 
-  WTF::Optional<DocumentMarker::MatchStatus> match_status_enum =
+  WTF::Optional<TextMatchMarker::MatchStatus> match_status_enum =
       MatchStatusFrom(match_status);
   if (!match_status_enum) {
     exception_state.ThrowDOMException(
