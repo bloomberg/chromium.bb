@@ -57194,6 +57194,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.PrinterAdded" enum="PrinterProtocol">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The protocol for a printer that was added.  Used to track printer churn by
+    protocol.  Only on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.PrinterRemoved" enum="PrinterProtocol">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    The protocol for a printer that was removed.  Used to track printer churn by
+    protocol.  Only on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Printing.CUPS.PrintersDiscovered" units="printers">
   <owner>skau@chromium.org</owner>
   <summary>
