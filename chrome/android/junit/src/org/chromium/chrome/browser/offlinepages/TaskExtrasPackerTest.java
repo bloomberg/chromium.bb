@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Unit tests for {@link TaskExtrasPacker}. */
@@ -33,15 +31,6 @@ public class TaskExtrasPackerTest {
         long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(taskExtras);
         assertTrue(scheduledTimeMillis >= beforeMillis);
         assertTrue(scheduledTimeMillis <= afterMillis);
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testHoldWakelock() {
-        Bundle taskExtras = new Bundle();
-        assertFalse(taskExtras.getBoolean(ChromeBackgroundService.HOLD_WAKELOCK, false));
-        TaskExtrasPacker.packHoldWakelock(taskExtras);
-        assertTrue(taskExtras.getBoolean(ChromeBackgroundService.HOLD_WAKELOCK, false));
     }
 
     @Test

@@ -75,7 +75,7 @@ public class ChromeBackgroundServiceTest {
         protected void reschedulePrecacheTasksOnUpgrade() {}
 
         @Override
-        protected void rescheduleOfflinePagesTasksOnUpgrade() {}
+        protected void rescheduleOfflinePages() {}
 
         // Posts an assertion task to the UI thread. Since this is only called after the call
         // to onRunTask, it will be enqueued after any possible call to launchBrowser, and we
