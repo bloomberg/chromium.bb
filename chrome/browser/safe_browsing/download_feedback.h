@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/safe_browsing/two_phase_uploader.h"
 
 namespace safe_browsing {
@@ -20,7 +19,7 @@ class DownloadFeedbackFactory;
 
 // Handles the uploading of a single downloaded binary to the safebrowsing
 // download feedback service.
-class DownloadFeedback : public base::NonThreadSafe {
+class DownloadFeedback {
  public:
   // Takes ownership of the file pointed to be |file_path|, it will be deleted
   // when the DownloadFeedback is destructed.
