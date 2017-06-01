@@ -10,14 +10,16 @@
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    [self setTrackingEnabled:YES];
-    hoverState_ = kHoverStateNone;
-    [self updateTrackingAreas];
+    [self commonInit];
   }
   return self;
 }
 
 - (void)awakeFromNib {
+  [self commonInit];
+}
+
+- (void)commonInit {
   [self setTrackingEnabled:YES];
   self.hoverState = kHoverStateNone;
   [self updateTrackingAreas];
@@ -33,30 +35,53 @@
     self.hoverState = kHoverStateMouseOver;
 }
 
+- (void)mouseMoved:(NSEvent*)theEvent {
+  [self checkImageState];
+}
+
 - (void)mouseExited:(NSEvent*)theEvent {
   if (trackingArea_.get())
     self.hoverState = kHoverStateNone;
 }
 
-- (void)mouseMoved:(NSEvent*)theEvent {
-  [self checkImageState];
-}
-
 - (void)mouseDown:(NSEvent*)theEvent {
+  mouseDown_ = YES;
   self.hoverState = kHoverStateMouseDown;
+
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
-  // it can be freed while |super mouseDown:| is in its loop, and the
-  // |checkImageState| call will crash.
+  // it can be freed while in the tracking loop below.
   // http://crbug.com/28220
   base::scoped_nsobject<HoverButton> myself([self retain]);
 
-  [super mouseDown:theEvent];
-  // We need to check the image state after the mouseDown event loop finishes.
-  // It's possible that we won't get a mouseExited event if the button was
-  // moved under the mouse during tab resize, instead of the mouse moving over
-  // the button.
-  // http://crbug.com/31279
-  [self checkImageState];
+  // Begin tracking the mouse.
+  if ([theEvent type] == NSLeftMouseDown) {
+    NSWindow* window = [self window];
+    NSEvent* nextEvent = nil;
+
+    // For the tracking loop ignore key events so that they don't pile up in
+    // the queue and get processed after the user releases the mouse.
+    const NSEventMask eventMask = (NSLeftMouseDraggedMask | NSLeftMouseUpMask |
+                                   NSKeyDownMask | NSKeyUpMask);
+
+    while ((nextEvent = [window nextEventMatchingMask:eventMask])) {
+      // Update the image state, which will change if the user moves the mouse
+      // into or out of the button.
+      [self checkImageState];
+
+      if ([nextEvent type] == NSLeftMouseUp) {
+        break;
+      }
+    }
+  }
+
+  // If the mouse is still over the button, it means the user clicked the
+  // button.
+  if (self.hoverState == kHoverStateMouseDown) {
+    [self performClick:nil];
+  }
+
+  // Clean up.
+  mouseDown_ = NO;
 }
 
 - (void)setAccessibilityTitle:(NSString*)accessibilityTitle {
@@ -108,8 +133,12 @@
   // Update the button's state if the button has moved.
   NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
   mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-  self.hoverState = NSPointInRect(mouseLoc, [self bounds]) ?
-      kHoverStateMouseOver : kHoverStateNone;
+  BOOL mouseInBounds = NSPointInRect(mouseLoc, [self bounds]);
+  if (mouseDown_ && mouseInBounds) {
+    self.hoverState = kHoverStateMouseDown;
+  } else {
+    self.hoverState = mouseInBounds ? kHoverStateMouseOver : kHoverStateNone;
+  }
 }
 
 - (void)setHoverState:(HoverState)state {

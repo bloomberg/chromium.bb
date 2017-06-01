@@ -59,16 +59,18 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
     gTooltip = [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_CLOSE_TAB) copy];
 }
 
-- (id)initWithFrame:(NSRect)frameRect {
-  if ((self = [super initWithFrame:frameRect])) {
-    [self commonInit];
-  }
-  return self;
-}
+- (void)commonInit {
+  [super commonInit];
 
-- (void)awakeFromNib {
-  [super awakeFromNib];
-  [self commonInit];
+  [self setAccessibilityTitle:nil];
+
+  // Add a tooltip. Using 'owner:self' means that
+  // -view:stringForToolTip:point:userData: will be called to provide the
+  // tooltip contents immediately before showing it.
+  [self addToolTipRect:[self bounds] owner:self userData:NULL];
+
+  previousState_ = kHoverStateNone;
+  iconColor_ = kDefaultIconColor;
 }
 
 - (void)removeFromSuperview {
@@ -196,18 +198,6 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
       [fadeOutAnimation_ stopAnimation];
     }
   }
-}
-
-- (void)commonInit {
-  [self setAccessibilityTitle:nil];
-
-  // Add a tooltip. Using 'owner:self' means that
-  // -view:stringForToolTip:point:userData: will be called to provide the
-  // tooltip contents immediately before showing it.
-  [self addToolTipRect:[self bounds] owner:self userData:NULL];
-
-  previousState_ = kHoverStateNone;
-  iconColor_ = kDefaultIconColor;
 }
 
 // Called each time a tooltip is about to be shown.
