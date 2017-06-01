@@ -46794,6 +46794,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ClipboardSuggestionShownNumTimes">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Recorded every time the omnibox is focussed and a recent URL from the user's
+    clipboard is suggested.  The number emitted is the number of times the URL
+    has been suggested within the same session including the current time. Thus,
+    the third time it is shown, we'll emit a three to this histogram, and this
+    histogram will have previously seen emits of one and two.  If the clipboard
+    content was the same during a previous run of Chrome and this URL was
+    suggested during that run, those impressions are not counted.  Also, if the
+    clipboard content changes during a particular run of Chrome to another URL,
+    the omnibox is focused and that URL is suggested, then content changes back
+    and Chrome starts suggesting the older URL again, the counts start again
+    from scratch. Chrome only remembers the number of times the URL was shown
+    consecutively.
+
+    This value is useful to compare with the number of times a clipboard
+    suggestion has been shown when it is clicked.  This value can be obtained
+    from OmniboxEvent records in which the selected suggestion is from Clipboard
+    provider.  In those cases, look in the Clipboard provider's ProviderInfo
+    field for |times_returned_results_in_session|.  Note that at the time of
+    this writing that OmniboxEvent logs aren't recorded in incognito whereas
+    histograms are.  Thus, the total counts will not be comparable, though the
+    distributions should be.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.ClipboardSuggestionShownWithCurrentURL"
     enum="BooleanPresent">
   <owner>mpearson@chromium.org</owner>

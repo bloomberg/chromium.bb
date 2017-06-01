@@ -22,6 +22,7 @@ class ClipboardURLProvider : public AutocompleteProvider {
 
   // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
+  void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
  private:
   ~ClipboardURLProvider() override;
@@ -31,6 +32,11 @@ class ClipboardURLProvider : public AutocompleteProvider {
 
   // Used for efficiency when creating the verbatim match.  Can be NULL.
   HistoryURLProvider* history_url_provider_;
+
+  // The current URL suggested and the number of times it has been offered.
+  // Used for recording metrics.
+  GURL current_url_suggested_;
+  size_t current_url_suggested_times_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardURLProvider);
 };
