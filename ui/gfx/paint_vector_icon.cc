@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -26,6 +27,17 @@
 namespace gfx {
 
 namespace {
+
+struct CompareIconDescription {
+  bool operator()(const IconDescription& a, const IconDescription& b) const {
+    const VectorIcon* a_icon = &a.icon;
+    const VectorIcon* b_icon = &b.icon;
+    const VectorIcon* a_badge = &a.badge_icon;
+    const VectorIcon* b_badge = &b.badge_icon;
+    return std::tie(a_icon, a.dip_size, a.color, a.elapsed_time, a_badge) <
+           std::tie(b_icon, b.dip_size, b.color, b.elapsed_time, b_badge);
+  }
+};
 
 // Helper that simplifies iterating over a sequence of PathElements.
 class PathParser {
@@ -437,43 +449,36 @@ void PaintPath(Canvas* canvas,
 
 class VectorIconSource : public CanvasImageSource {
  public:
-  VectorIconSource(const VectorIcon& icon,
-                   int dip_size,
-                   SkColor color,
-                   const VectorIcon& badge_icon)
-      : CanvasImageSource(Size(dip_size, dip_size), false),
-        color_(color),
-        icon_(icon),
-        badge_(badge_icon) {}
+  explicit VectorIconSource(const IconDescription& data)
+      : CanvasImageSource(Size(data.dip_size, data.dip_size), false),
+        data_(data) {}
 
   VectorIconSource(const std::string& definition, int dip_size, SkColor color)
       : CanvasImageSource(Size(dip_size, dip_size), false),
-        color_(color),
-        icon_(kNoneIcon),
-        badge_(kNoneIcon),
+        data_(kNoneIcon, dip_size, color, base::TimeDelta(), kNoneIcon),
         path_(PathFromSource(definition)) {}
 
   ~VectorIconSource() override {}
 
   // CanvasImageSource:
   bool HasRepresentationAtAllScales() const override {
-    return !icon_.is_empty();
+    return !data_.icon.is_empty();
   }
 
   void Draw(Canvas* canvas) override {
     if (path_.empty()) {
-      PaintVectorIcon(canvas, icon_, size_.width(), color_);
-      if (!badge_.is_empty())
-        PaintVectorIcon(canvas, badge_, size_.width(), color_);
+      PaintVectorIcon(canvas, data_.icon, size_.width(), data_.color,
+                      data_.elapsed_time);
+      if (!data_.badge_icon.is_empty())
+        PaintVectorIcon(canvas, data_.badge_icon, size_.width(), data_.color);
     } else {
-      PaintPath(canvas, path_.data(), size_.width(), color_, base::TimeDelta());
+      PaintPath(canvas, path_.data(), size_.width(), data_.color,
+                base::TimeDelta());
     }
   }
 
  private:
-  const SkColor color_;
-  const VectorIcon& icon_;
-  const VectorIcon& badge_;
+  const IconDescription data_;
   const std::vector<PathElement> path_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorIconSource);
@@ -487,46 +492,19 @@ class VectorIconCache {
   VectorIconCache() {}
   ~VectorIconCache() {}
 
-  ImageSkia GetOrCreateIcon(const VectorIcon& icon,
-                            int dip_size,
-                            SkColor color,
-                            const VectorIcon& badge_icon) {
-    IconDescription description(&icon, dip_size, color, &badge_icon);
+  ImageSkia GetOrCreateIcon(const IconDescription& description) {
     auto iter = images_.find(description);
     if (iter != images_.end())
       return iter->second;
 
-    ImageSkia icon_image(
-        new VectorIconSource(icon, dip_size, color, badge_icon),
-        Size(dip_size, dip_size));
+    ImageSkia icon_image(new VectorIconSource(description),
+                         Size(description.dip_size, description.dip_size));
     images_.insert(std::make_pair(description, icon_image));
     return icon_image;
   }
 
  private:
-  struct IconDescription {
-    IconDescription(const VectorIcon* icon,
-                    int dip_size,
-                    SkColor color,
-                    const VectorIcon* badge_icon)
-        : icon(icon),
-          dip_size(dip_size),
-          color(color),
-          badge_icon(badge_icon) {}
-
-    bool operator<(const IconDescription& other) const {
-      return std::tie(icon, dip_size, color, badge_icon) <
-             std::tie(other.icon, other.dip_size, other.color,
-                      other.badge_icon);
-    }
-
-    const VectorIcon* icon;
-    int dip_size;
-    SkColor color;
-    const VectorIcon* badge_icon;
-  };
-
-  std::map<IconDescription, ImageSkia> images_;
+  std::map<IconDescription, ImageSkia, CompareIconDescription> images_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorIconCache);
 };
@@ -535,6 +513,24 @@ static base::LazyInstance<VectorIconCache>::DestructorAtExit g_icon_cache =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+IconDescription::IconDescription(const IconDescription& other) = default;
+
+IconDescription::IconDescription(const VectorIcon& icon,
+                                 int dip_size,
+                                 SkColor color,
+                                 const base::TimeDelta& elapsed_time,
+                                 const VectorIcon& badge_icon)
+    : icon(icon),
+      dip_size(dip_size),
+      color(color),
+      elapsed_time(elapsed_time),
+      badge_icon(badge_icon) {
+  if (dip_size == 0)
+    this->dip_size = GetDefaultSizeOfVectorIcon(icon);
+}
+
+IconDescription::~IconDescription() {}
 
 const VectorIcon kNoneIcon = {};
 
@@ -557,6 +553,13 @@ void PaintVectorIcon(Canvas* canvas,
   PaintPath(canvas, path, dip_size, color, elapsed_time);
 }
 
+ImageSkia CreateVectorIcon(const IconDescription& params) {
+  if (params.icon.is_empty())
+    return gfx::ImageSkia();
+
+  return g_icon_cache.Get().GetOrCreateIcon(params);
+}
+
 ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
   return CreateVectorIcon(icon, GetDefaultSizeOfVectorIcon(icon), color);
 }
@@ -564,16 +567,16 @@ ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
 ImageSkia CreateVectorIcon(const VectorIcon& icon,
                            int dip_size,
                            SkColor color) {
-  return CreateVectorIconWithBadge(icon, dip_size, color, kNoneIcon);
+  return CreateVectorIcon(
+      IconDescription(icon, dip_size, color, base::TimeDelta(), kNoneIcon));
 }
 
 ImageSkia CreateVectorIconWithBadge(const VectorIcon& icon,
                                     int dip_size,
                                     SkColor color,
                                     const VectorIcon& badge_icon) {
-  return icon.is_empty() ? ImageSkia()
-                         : g_icon_cache.Get().GetOrCreateIcon(
-                               icon, dip_size, color, badge_icon);
+  return CreateVectorIcon(
+      IconDescription(icon, dip_size, color, base::TimeDelta(), badge_icon));
 }
 
 ImageSkia CreateVectorIconFromSource(const std::string& source,

@@ -19,6 +19,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "autologin.icon",
     "blocked_badge.icon",
     "bluetooth_connected.icon",
+    "browser_tools_animated.1x.icon",
+    "browser_tools_animated.icon",
     "browser_tools.1x.icon",
     "browser_tools.icon",
     "browser_tools_error.icon",

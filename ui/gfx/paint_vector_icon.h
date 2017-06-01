@@ -15,6 +15,26 @@ namespace gfx {
 class Canvas;
 struct VectorIcon;
 
+// Describes an instance of an icon: an icon definition and a set of drawing
+// parameters.
+struct GFX_EXPORT IconDescription {
+  IconDescription(const IconDescription& other);
+
+  IconDescription(const VectorIcon& icon,
+                  int dip_size,
+                  SkColor color,
+                  const base::TimeDelta& elapsed_time,
+                  const VectorIcon& badge_icon);
+
+  ~IconDescription();
+
+  const VectorIcon& icon;
+  int dip_size;
+  SkColor color;
+  const base::TimeDelta elapsed_time;
+  const VectorIcon& badge_icon;
+};
+
 GFX_EXPORT extern const VectorIcon kNoneIcon;
 
 // Draws a vector icon identified by |id| onto |canvas| at (0, 0). |color| is
@@ -35,6 +55,11 @@ GFX_EXPORT void PaintVectorIcon(
     int dip_size,
     SkColor color,
     const base::TimeDelta& elapsed_time = base::TimeDelta());
+
+// Creates an ImageSkia which will render the icon on demand.
+// TODO(estade): update clients to use this version and remove the other
+// CreateVectorIcon()s.
+GFX_EXPORT ImageSkia CreateVectorIcon(const IconDescription& params);
 
 // Creates an ImageSkia which will render the icon on demand. The size will come
 // from the .icon file (the 1x version, if multiple versions exist).
@@ -66,7 +91,7 @@ GFX_EXPORT int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon);
 
 // Calculates and returns the elapsed time at which all animations/transitions
 // will be finished.
-base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon);
+GFX_EXPORT base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon);
 
 }  // namespace gfx
 
