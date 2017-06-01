@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -15,7 +16,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync/user_events/no_op_user_event_service.h"
+#include "components/sync/user_events/user_event_service_impl.h"
 #include "components/sync/user_events/user_event_sync_bridge.h"
 
 namespace browser_sync {
@@ -41,6 +43,10 @@ UserEventServiceFactory::~UserEventServiceFactory() {}
 
 KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  if (context->IsOffTheRecord()) {
+    return new syncer::NoOpUserEventService();
+  }
+
   Profile* profile = Profile::FromBrowserContext(context);
   syncer::ModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
@@ -51,8 +57,13 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
                                               chrome::GetChannel()));
   auto bridge = base::MakeUnique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(processor_factory));
-  return new syncer::UserEventService(
+  return new syncer::UserEventServiceImpl(
       ProfileSyncServiceFactory::GetForProfile(profile), std::move(bridge));
+}
+
+content::BrowserContext* UserEventServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace browser_sync

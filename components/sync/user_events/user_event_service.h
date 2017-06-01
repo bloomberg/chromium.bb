@@ -16,45 +16,30 @@
 namespace syncer {
 
 class ModelTypeSyncBridge;
-class SyncService;
-class UserEventSyncBridge;
 
 class UserEventService : public KeyedService {
  public:
-  UserEventService(SyncService* sync_service,
-                   std::unique_ptr<UserEventSyncBridge> bridge);
-
+  UserEventService();
   ~UserEventService() override;
-
-  // KeyedService implementation
-  void Shutdown() override;
 
   // Records a given event to be reported. Relevant settings will be checked to
   // verify user events should be emitted and this will no-op if the the
   // requisite permissions are not present.
-  void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
-  void RecordUserEvent(const sync_pb::UserEventSpecifics& specifics);
+  virtual void RecordUserEvent(
+      std::unique_ptr<sync_pb::UserEventSpecifics> specifics) = 0;
+  virtual void RecordUserEvent(
+      const sync_pb::UserEventSpecifics& specifics) = 0;
 
   // Register that knowledge about a given field trial is important when
   // interpreting specified user event type, and should be recorded if assigned.
-  void RegisterDependentFieldTrial(
+  virtual void RegisterDependentFieldTrial(
       const std::string& trial_name,
-      sync_pb::UserEventSpecifics::EventCase event_case);
+      sync_pb::UserEventSpecifics::EventCase event_case) = 0;
 
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge();
+  // Returns the underlying Sync integration point.
+  virtual base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge() = 0;
 
  private:
-  bool CanRecordEvent(const sync_pb::UserEventSpecifics& specifics);
-
-  SyncService* sync_service_;
-
-  std::unique_ptr<UserEventSyncBridge> bridge_;
-
-  // Holds onto a random number for the duration of this execution of chrome. On
-  // restart it will be regenerated. This can be attached to events to know
-  // which events came from the same session.
-  uint64_t session_id_;
-
   DISALLOW_COPY_AND_ASSIGN(UserEventService);
 };
 
