@@ -346,6 +346,8 @@ component("views") {
     "view_targeter.h",
     "view_targeter_delegate.cc",
     "view_targeter_delegate.h",
+    "view_tracker.cc",
+    "view_tracker.h",
     "views_delegate.cc",
     "views_delegate.h",
     "views_export.h",

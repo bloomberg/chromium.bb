@@ -16,9 +16,9 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_search.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -29,10 +29,7 @@ bool FocusManager::arrow_key_traversal_enabled_ = false;
 
 FocusManager::FocusManager(Widget* widget,
                            std::unique_ptr<FocusManagerDelegate> delegate)
-    : widget_(widget),
-      delegate_(std::move(delegate)),
-      stored_focused_view_storage_id_(
-          ViewStorage::GetInstance()->CreateStorageID()) {
+    : widget_(widget), delegate_(std::move(delegate)) {
   DCHECK(widget_);
 }
 
@@ -424,37 +421,23 @@ bool FocusManager::RestoreFocusedView() {
 }
 
 void FocusManager::SetStoredFocusView(View* focus_view) {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
+  if (focus_view == GetStoredFocusView())
     return;
-  }
-
-  // TODO(jcivelli): when a TabContents containing a popup is closed, the focus
-  // is stored twice causing an assert. We should find a better alternative than
-  // removing the view from the storage explicitly.
-  view_storage->RemoveView(stored_focused_view_storage_id_);
-
+  view_tracker_for_stored_view_.reset();
   if (!focus_view)
     return;
 
-  view_storage->StoreView(stored_focused_view_storage_id_, focus_view);
+  view_tracker_for_stored_view_ = base::MakeUnique<ViewTracker>();
+  view_tracker_for_stored_view_->Add(focus_view);
 }
 
 View* FocusManager::GetStoredFocusView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return NULL;
+  if (!view_tracker_for_stored_view_ ||
+      view_tracker_for_stored_view_->views().empty()) {
+    return nullptr;
   }
-
-  return view_storage->RetrieveView(stored_focused_view_storage_id_);
-}
-
-void FocusManager::ClearStoredFocusedView() {
-  SetStoredFocusView(NULL);
+  DCHECK_EQ(1u, view_tracker_for_stored_view_->views().size());
+  return view_tracker_for_stored_view_->views()[0];
 }
 
 // Find the next (previous if reverse is true) focusable view for the specified
@@ -572,9 +555,17 @@ bool FocusManager::IsFocusable(View* view) const {
 }
 
 void FocusManager::OnViewIsDeleting(View* view) {
+  // Typically ViewRemoved() is called and all the cleanup happens there. With
+  // child widgets it's possible to change the parent out from under the Widget
+  // such that ViewRemoved() is never called.
   CHECK_EQ(view, focused_view_);
-  focused_view_->RemoveObserver(this);
-  focused_view_ = nullptr;
+  SetFocusedView(nullptr);
+  if (GetStoredFocusView() == view) {
+    // SetFocusedView() stored |view|. As |view| is being deleting and because
+    // a ViewObserver was just added, ViewTracker won't get
+    // OnViewIsDeleting() to properly clean up. Force that cleanup by
+    SetStoredFocusView(nullptr);
+  }
 }
 
 }  // namespace views
