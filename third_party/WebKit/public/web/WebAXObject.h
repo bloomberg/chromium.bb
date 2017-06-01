@@ -93,6 +93,8 @@ class WebAXObject {
     return *this;
   }
 
+  BLINK_EXPORT static WebAXObject FromWebNode(WebNode&);
+
   BLINK_EXPORT void Reset();
   BLINK_EXPORT void Assign(const WebAXObject&);
   BLINK_EXPORT bool Equals(const WebAXObject&) const;

@@ -1560,4 +1560,13 @@ WebAXObject::operator AXObjectImpl*() const {
   return private_.Get();
 }
 
+// static
+WebAXObject WebAXObject::FromWebNode(WebNode& web_node) {
+  WebDocument web_document = web_node.GetDocument();
+  const Document* doc = web_document.ConstUnwrap<Document>();
+  AXObjectCacheBase* cache = ToAXObjectCacheBase(doc->ExistingAXObjectCache());
+  Node* node = web_node.Unwrap<Node>();
+  return cache ? WebAXObject(cache->Get(node)) : WebAXObject();
+}
+
 }  // namespace blink

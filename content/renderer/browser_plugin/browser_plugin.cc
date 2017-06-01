@@ -173,7 +173,7 @@ void BrowserPlugin::Attach() {
       RenderFrameImpl::FromRoutingID(render_frame_routing_id());
   if (render_frame && render_frame->render_accessibility() && Container()) {
     blink::WebElement element = Container()->GetElement();
-    blink::WebAXObject ax_element = element.AccessibilityObject();
+    blink::WebAXObject ax_element = blink::WebAXObject::FromWebNode(element);
     if (!ax_element.IsDetached()) {
       render_frame->render_accessibility()->HandleAXEvent(
           ax_element,
