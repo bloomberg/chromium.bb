@@ -75,8 +75,10 @@ class ThreadedWorkletMessagingProxy::LoaderClient final
 };
 
 ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
-    ExecutionContext* execution_context)
-    : ThreadedMessagingProxyBase(execution_context), weak_ptr_factory_(this) {
+    ExecutionContext* execution_context,
+    WorkerClients* worker_clients)
+    : ThreadedMessagingProxyBase(execution_context, worker_clients),
+      weak_ptr_factory_(this) {
   worklet_object_proxy_ = ThreadedWorkletObjectProxy::Create(
       weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
 }
@@ -103,7 +105,7 @@ void ThreadedWorkletMessagingProxy::Initialize() {
       WorkerThreadStartupData::Create(
           script_url, document->UserAgent(), String(), nullptr, start_mode,
           csp->Headers().get(), /* referrerPolicy */ String(), starter_origin,
-          nullptr, document->AddressSpace(),
+          ReleaseWorkerClients(), document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           std::move(worker_settings), WorkerV8Settings::Default());
 

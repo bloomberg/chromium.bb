@@ -9,7 +9,6 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -61,9 +60,10 @@ class WorkerFetchContextHolder final
 WorkerFetchContext::~WorkerFetchContext() {}
 
 WorkerFetchContext* WorkerFetchContext::Create(
-    WorkerGlobalScope& worker_global_scope) {
-  DCHECK(worker_global_scope.IsContextThread());
-  WorkerClients* worker_clients = worker_global_scope.Clients();
+    WorkerOrWorkletGlobalScope& global_scope) {
+  DCHECK(global_scope.IsContextThread());
+  DCHECK(!global_scope.IsMainThreadWorkletGlobalScope());
+  WorkerClients* worker_clients = global_scope.Clients();
   DCHECK(worker_clients);
   WorkerFetchContextHolder* holder =
       static_cast<WorkerFetchContextHolder*>(Supplement<WorkerClients>::From(
@@ -72,13 +72,13 @@ WorkerFetchContext* WorkerFetchContext::Create(
     return nullptr;
   std::unique_ptr<WebWorkerFetchContext> web_context = holder->TakeContext();
   DCHECK(web_context);
-  return new WorkerFetchContext(worker_global_scope, std::move(web_context));
+  return new WorkerFetchContext(global_scope, std::move(web_context));
 }
 
 WorkerFetchContext::WorkerFetchContext(
-    WorkerGlobalScope& worker_global_scope,
+    WorkerOrWorkletGlobalScope& global_scope,
     std::unique_ptr<WebWorkerFetchContext> web_context)
-    : worker_global_scope_(worker_global_scope),
+    : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       loading_task_runner_(Platform::Current()
                                ->CurrentThread()
@@ -139,11 +139,11 @@ bool WorkerFetchContext::IsSVGImageChromeClient() const {
 }
 
 void WorkerFetchContext::CountUsage(UseCounter::Feature feature) const {
-  UseCounter::Count(worker_global_scope_, feature);
+  UseCounter::Count(global_scope_, feature);
 }
 
 void WorkerFetchContext::CountDeprecation(UseCounter::Feature feature) const {
-  Deprecation::CountDeprecation(worker_global_scope_, feature);
+  Deprecation::CountDeprecation(global_scope_, feature);
 }
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
@@ -152,20 +152,20 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     SecurityViolationReportingPolicy reporting_policy) const {
   // TODO(horo): We need more detailed check which is implemented in
   // MixedContentChecker::ShouldBlockFetch().
-  return MixedContentChecker::IsMixedContent(
-      worker_global_scope_->GetSecurityOrigin(), url);
+  return MixedContentChecker::IsMixedContent(global_scope_->GetSecurityOrigin(),
+                                             url);
 }
 
 ReferrerPolicy WorkerFetchContext::GetReferrerPolicy() const {
-  return worker_global_scope_->GetReferrerPolicy();
+  return global_scope_->GetReferrerPolicy();
 }
 
 String WorkerFetchContext::GetOutgoingReferrer() const {
-  return worker_global_scope_->OutgoingReferrer();
+  return global_scope_->OutgoingReferrer();
 }
 
 const KURL& WorkerFetchContext::Url() const {
-  return worker_global_scope_->Url();
+  return global_scope_->Url();
 }
 
 const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
@@ -177,21 +177,20 @@ const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
 }
 
 Optional<WebAddressSpace> WorkerFetchContext::GetAddressSpace() const {
-  return WTF::make_optional(
-      worker_global_scope_->GetSecurityContext().AddressSpace());
+  return WTF::make_optional(global_scope_->GetSecurityContext().AddressSpace());
 }
 
 const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()
     const {
-  return worker_global_scope_->GetContentSecurityPolicy();
+  return global_scope_->GetContentSecurityPolicy();
 }
 
 void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
-  return worker_global_scope_->AddConsoleMessage(message);
+  return global_scope_->AddConsoleMessage(message);
 }
 
 SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
-  return worker_global_scope_->GetSecurityOrigin();
+  return global_scope_->GetSecurityOrigin();
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
@@ -244,7 +243,11 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
-  WorkerGlobalScopePerformance::performance(*worker_global_scope_)
+  // TODO(nhiroki): Add ResourceTiming API support once it's spec'ed for
+  // worklets.
+  if (global_scope_->IsWorkletGlobalScope())
+    return;
+  WorkerGlobalScopePerformance::performance(*ToWorkerGlobalScope(global_scope_))
       ->AddResourceTiming(info);
 }
 
@@ -271,7 +274,7 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
 }
 
 DEFINE_TRACE(WorkerFetchContext) {
-  visitor->Trace(worker_global_scope_);
+  visitor->Trace(global_scope_);
   visitor->Trace(resource_fetcher_);
   BaseFetchContext::Trace(visitor);
 }

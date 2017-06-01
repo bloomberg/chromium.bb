@@ -16,20 +16,21 @@ class ResourceFetcher;
 class WebTaskRunner;
 class WebURLLoader;
 class WebWorkerFetchContext;
-class WorkerGlobalScope;
 class WorkerClients;
+class WorkerOrWorkletGlobalScope;
 
 CORE_EXPORT void ProvideWorkerFetchContextToWorker(
     WorkerClients*,
     std::unique_ptr<WebWorkerFetchContext>);
 
 // The WorkerFetchContext is a FetchContext for workers (dedicated, shared and
-// service workers). This class is used only when off-main-thread-fetch is
-// enabled, and is still under development.
+// service workers) and threaded worklets (animation and audio worklets). This
+// class is used only when off-main-thread-fetch is enabled, and is still under
+// development.
 // TODO(horo): Implement all methods of FetchContext. crbug.com/443374
 class WorkerFetchContext final : public BaseFetchContext {
  public:
-  static WorkerFetchContext* Create(WorkerGlobalScope&);
+  static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&);
   virtual ~WorkerFetchContext();
 
   ResourceFetcher* GetResourceFetcher();
@@ -89,10 +90,10 @@ class WorkerFetchContext final : public BaseFetchContext {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  WorkerFetchContext(WorkerGlobalScope&,
+  WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      std::unique_ptr<WebWorkerFetchContext>);
 
-  Member<WorkerGlobalScope> worker_global_scope_;
+  Member<WorkerOrWorkletGlobalScope> global_scope_;
   std::unique_ptr<WebWorkerFetchContext> web_context_;
   Member<ResourceFetcher> resource_fetcher_;
   RefPtr<WebTaskRunner> loading_task_runner_;

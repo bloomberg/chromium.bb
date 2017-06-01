@@ -49,8 +49,6 @@ namespace blink {
 class ConsoleMessage;
 class ExceptionState;
 class V8AbstractEventListener;
-class WorkerClients;
-class WorkerFetchContext;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -144,10 +142,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   double TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
-  WorkerClients* Clients() const { return worker_clients_.Get(); }
-
-  // Available only when off-main-thread-fetch is enabled.
-  WorkerFetchContext* GetFetchContext();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -193,8 +187,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   Member<WorkerEventQueue> event_queue_;
 
-  CrossThreadPersistent<WorkerClients> worker_clients_;
-
   DOMTimerCoordinator timers_;
 
   const double time_origin_;
@@ -203,8 +195,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   HeapHashMap<int, Member<ErrorEvent>> pending_error_events_;
   int last_pending_error_event_id_ = 0;
-
-  Member<WorkerFetchContext> fetch_context_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,

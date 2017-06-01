@@ -28,7 +28,8 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
                                          const String& user_agent,
                                          PassRefPtr<SecurityOrigin>,
                                          v8::Isolate*,
-                                         WorkerThread*);
+                                         WorkerThread*,
+                                         WorkerClients*);
   ~AudioWorkletGlobalScope() override;
   void Dispose() final;
   bool IsAudioWorkletGlobalScope() const final { return true; }
@@ -56,7 +57,8 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
                           const String& user_agent,
                           PassRefPtr<SecurityOrigin>,
                           v8::Isolate*,
-                          WorkerThread*);
+                          WorkerThread*,
+                          WorkerClients*);
 
   typedef HeapHashMap<String, Member<AudioWorkletProcessorDefinition>>
       ProcessorDefinitionMap;

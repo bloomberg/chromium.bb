@@ -21,9 +21,11 @@ AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
-    WorkerThread* thread) {
-  return new AnimationWorkletGlobalScope(
-      url, user_agent, std::move(security_origin), isolate, thread);
+    WorkerThread* thread,
+    WorkerClients* worker_clients) {
+  return new AnimationWorkletGlobalScope(url, user_agent,
+                                         std::move(security_origin), isolate,
+                                         thread, worker_clients);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
@@ -31,12 +33,14 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
-    WorkerThread* thread)
+    WorkerThread* thread,
+    WorkerClients* worker_clients)
     : ThreadedWorkletGlobalScope(url,
                                  user_agent,
                                  std::move(security_origin),
                                  isolate,
-                                 thread) {}
+                                 thread,
+                                 worker_clients) {}
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() {}
 

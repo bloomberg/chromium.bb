@@ -31,7 +31,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   void Initialize();
 
  protected:
-  explicit ThreadedWorkletMessagingProxy(ExecutionContext*);
+  ThreadedWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
 
   ThreadedWorkletObjectProxy& WorkletObjectProxy() {
     return *worklet_object_proxy_;

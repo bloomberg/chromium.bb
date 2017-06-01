@@ -22,9 +22,11 @@ AudioWorkletGlobalScope* AudioWorkletGlobalScope::Create(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
-    WorkerThread* thread) {
-  return new AudioWorkletGlobalScope(
-      url, user_agent, std::move(security_origin), isolate, thread);
+    WorkerThread* thread,
+    WorkerClients* worker_clients) {
+  return new AudioWorkletGlobalScope(url, user_agent,
+                                     std::move(security_origin), isolate,
+                                     thread, worker_clients);
 }
 
 AudioWorkletGlobalScope::AudioWorkletGlobalScope(
@@ -32,12 +34,14 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
-    WorkerThread* thread)
+    WorkerThread* thread,
+    WorkerClients* worker_clients)
     : ThreadedWorkletGlobalScope(url,
                                  user_agent,
                                  std::move(security_origin),
                                  isolate,
-                                 thread) {}
+                                 thread,
+                                 worker_clients) {}
 
 AudioWorkletGlobalScope::~AudioWorkletGlobalScope() {}
 

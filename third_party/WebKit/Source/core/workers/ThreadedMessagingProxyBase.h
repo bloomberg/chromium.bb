@@ -9,6 +9,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/workers/ParentFrameTaskRunners.h"
+#include "core/workers/WorkerClients.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -58,7 +59,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
   void SetWorkerThreadForTest(std::unique_ptr<WorkerThread>);
 
  protected:
-  ThreadedMessagingProxyBase(ExecutionContext*);
+  ThreadedMessagingProxyBase(ExecutionContext*, WorkerClients*);
   virtual ~ThreadedMessagingProxyBase();
 
   void InitializeWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
@@ -68,6 +69,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
   WorkerThread* GetWorkerThread() const { return worker_thread_.get(); }
 
   bool AskedToTerminate() const { return asked_to_terminate_; }
+
+  WorkerClients* ReleaseWorkerClients();
 
   WorkerInspectorProxy* GetWorkerInspectorProxy() const {
     return worker_inspector_proxy_.Get();
@@ -85,7 +88,9 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
   void ParentObjectDestroyedInternal();
 
   Persistent<ExecutionContext> execution_context_;
+  Persistent<WorkerClients> worker_clients_;
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
+
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
 
