@@ -5,13 +5,13 @@
 This is a collection of JavaScript (aka ECMAScript) code snipplets
 used to test the KDE JavaScript library (dubbed kjs). Most of them
 once triggered a bug in the implementation of the
-interpreter. Allthough these bugs are probably fixed by now theses
+interpreter. Although these bugs are probably fixed by now theses
 tests can still be used for regression testing.
 
 NOTE:
 
 Don't confuse this code with the HTML bindings for the khtml
-widget. Those are implemented in a seperate module residing in
+widget. Those are implemented in a separate module residing in
 kdelibs/khtml/ecma. Test for those can be found elsewhere.
 
 USAGE:

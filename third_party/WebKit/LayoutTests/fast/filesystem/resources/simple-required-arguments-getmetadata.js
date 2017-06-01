@@ -9,7 +9,7 @@ description("DirectoryEntry.getMetadata required arguments test.");
 var fileSystem = null;
 
 function errorCallback(error) {
-    debug("Error occured while requesting a TEMPORARY file system:" + error.name);
+    debug("Error occurred while requesting a TEMPORARY file system:" + error.name);
     finishJSTest();
 }
 

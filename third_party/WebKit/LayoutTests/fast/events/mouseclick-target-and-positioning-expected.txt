@@ -1,4 +1,4 @@
-This page tests whether a click event propogates with the correct target and positioning. See rdar://problem/4477126.
+This page tests whether a click event propagates with the correct target and positioning. See rdar://problem/4477126.
 
 click inside the red box:[]
 PASS: event target should be [object HTMLSpanElement] and is

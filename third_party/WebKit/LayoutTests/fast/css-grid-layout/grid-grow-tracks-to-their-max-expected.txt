@@ -1,4 +1,4 @@
-Check that tracks are not shrinked if the available space is indefinite.
+Check that tracks are not shrunk if the available space is indefinite.
 PASS window.getComputedStyle(gridContentSizedColumn, '').getPropertyValue('grid-template-columns') is "50px"
 PASS window.getComputedStyle(gridContentSizedColumn, '').getPropertyValue('grid-template-rows') is "10px"
 PASS window.getComputedStyle(gridContentSizedRow, '').getPropertyValue('grid-template-columns') is "40px"

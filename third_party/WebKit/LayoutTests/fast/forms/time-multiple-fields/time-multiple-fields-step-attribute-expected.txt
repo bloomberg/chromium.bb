@@ -1,4 +1,4 @@
-Check step attribute change causes apperance change
+Check step attribute change causes appearance change
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

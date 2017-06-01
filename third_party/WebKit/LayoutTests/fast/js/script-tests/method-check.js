@@ -14,7 +14,7 @@ function func()
         GCController.collect();
     else {
         // The following 3 lines cause gc() flush on a Debian
-        // Linux machine, but there is no garantee, it works on
+        // Linux machine, but there is no guarantee, it works on
         // any other computer. (Not even another Debian Linux)
         // If func2() is not called or a much bigger or lower
         // value than 5000 is chosen, the crash won't happen

@@ -7,7 +7,7 @@ description(
 );
 
 description(
-"For times that happen twice the behavior of all major browsers seems to be to pick the second occurance, i.e. Standard Time not Daylight Time"
+"For times that happen twice the behavior of all major browsers seems to be to pick the second occurrence, i.e. Standard Time not Daylight Time"
 );
 
 var testCases = [];

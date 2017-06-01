@@ -11,7 +11,7 @@ var testFileName = 'testFileEntry.txt';
 var testFileURI = null;
 
 function errorCallback(error) {
-    testFailed("Error occured:" + error.name);
+    testFailed("Error occurred:" + error.name);
     finishJSTest();
 }
 

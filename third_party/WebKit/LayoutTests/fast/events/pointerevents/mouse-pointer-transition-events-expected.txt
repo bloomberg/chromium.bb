@@ -1,4 +1,4 @@
-Verifies that pointerenter/leave/over/out are fired correctly for correponding mouse events.
+Verifies that pointerenter/leave/over/out are fired correctly for corresponding mouse events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
