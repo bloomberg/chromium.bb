@@ -13,7 +13,7 @@ Loaded modules:
     help
     host
     main
-    network_conditions
+    mobile_throttling
     network_log
     persistence
     platform
@@ -41,7 +41,7 @@ Loaded modules:
     host
     inline_editor
     main
-    network_conditions
+    mobile_throttling
     network_log
     object_ui
     persistence
@@ -75,9 +75,10 @@ Loaded modules:
     host
     inline_editor
     main
+    mobile_throttling
     network
-    network_conditions
     network_log
+    network_priorities
     object_ui
     perf_ui
     persistence
@@ -114,9 +115,10 @@ Loaded modules:
     host
     inline_editor
     main
+    mobile_throttling
     network
-    network_conditions
     network_log
+    network_priorities
     object_ui
     perf_ui
     persistence
@@ -156,9 +158,10 @@ Loaded modules:
     host
     inline_editor
     main
+    mobile_throttling
     network
-    network_conditions
     network_log
+    network_priorities
     object_ui
     perf_ui
     persistence
