@@ -40,12 +40,18 @@ class ScopedPrefConnectionBuilder
   void ProvidePersistentPrefStore(
       PersistentPrefStoreImpl* persistent_pref_store);
 
+  void ProvideIncognitoConnector(
+      const mojom::PrefStoreConnectorPtr& incognito_connector);
+
  private:
   friend class base::RefCounted<ScopedPrefConnectionBuilder>;
   ~ScopedPrefConnectionBuilder();
 
   void OnConnect(PrefValueStore::PrefStoreType type,
                  mojom::PrefStoreConnectionPtr connection_ptr);
+
+  void OnIncognitoConnect(
+      mojom::PersistentPrefStoreConnectionPtr connection_ptr);
 
   mojom::PrefStoreConnector::ConnectCallback callback_;
   std::vector<std::string> observed_prefs_;
@@ -57,6 +63,7 @@ class ScopedPrefConnectionBuilder
       connections_;
 
   mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection_;
+  mojom::PersistentPrefStoreConnectionPtr incognito_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPrefConnectionBuilder);
 };

@@ -46,8 +46,16 @@ void ScopedPrefConnectionBuilder::ProvidePersistentPrefStore(
                                              observed_prefs_.end()));
 }
 
+void ScopedPrefConnectionBuilder::ProvideIncognitoConnector(
+    const mojom::PrefStoreConnectorPtr& incognito_connector) {
+  incognito_connector->ConnectToUserPrefStore(
+      observed_prefs_,
+      base::Bind(&ScopedPrefConnectionBuilder::OnIncognitoConnect, this));
+}
+
 ScopedPrefConnectionBuilder::~ScopedPrefConnectionBuilder() {
   std::move(callback_).Run(std::move(persistent_pref_store_connection_),
+                           std::move(incognito_connection_),
                            std::move(connections_));
 }
 
@@ -56,6 +64,12 @@ void ScopedPrefConnectionBuilder::OnConnect(
     mojom::PrefStoreConnectionPtr connection_ptr) {
   bool inserted = connections_.emplace(type, std::move(connection_ptr)).second;
   DCHECK(inserted);
+}
+
+void ScopedPrefConnectionBuilder::OnIncognitoConnect(
+    mojom::PersistentPrefStoreConnectionPtr connection_ptr) {
+  DCHECK(!incognito_connection_);
+  incognito_connection_ = std::move(connection_ptr);
 }
 
 }  // namespace prefs

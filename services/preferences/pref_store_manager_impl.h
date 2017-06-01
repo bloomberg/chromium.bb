@@ -54,13 +54,18 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   void Register(PrefValueStore::PrefStoreType type,
                 mojom::PrefStorePtr pref_store_ptr) override;
 
-  // mojom::PrefStoreConnector: |already_connected_types| must not include
-  // PrefValueStore::DEFAULT_STORE and PrefValueStore::USER_STORE as these must
-  // always be accessed through the service.
+  // mojom::PrefStoreConnector:
+  // |already_connected_types| must not include PrefValueStore::DEFAULT_STORE
+  // and PrefValueStore::USER_STORE as these must always be accessed through the
+  // service.
   void Connect(
       mojom::PrefRegistryPtr pref_registry,
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
       ConnectCallback callback) override;
+  void ConnectToUserPrefStore(
+      const std::vector<std::string>& observed_prefs,
+      mojom::PrefStoreConnector::ConnectToUserPrefStoreCallback callback)
+      override;
 
   void BindPrefStoreConnectorRequest(
       const service_manager::BindSourceInfo& source_info,
@@ -86,6 +91,9 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
 
   void OnPersistentPrefStoreReady();
 
+  // Has |Init| been called?
+  bool Initialized() const;
+
   // PrefStores that need to register before replying to any Connect calls. This
   // does not include the PersistentPrefStore, which is handled separately.
   std::set<PrefValueStore::PrefStoreType> expected_pref_stores_;
@@ -99,6 +107,8 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
   mojo::Binding<mojom::PrefServiceControl> init_binding_;
 
+  mojom::PrefStoreConnectorPtr incognito_connector_;
+
   const scoped_refptr<DefaultPrefStore> defaults_;
   const std::unique_ptr<PrefStoreImpl> defaults_wrapper_;
 
@@ -110,6 +120,8 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
       pending_connections_;
   std::vector<scoped_refptr<ScopedPrefConnectionBuilder>>
       pending_persistent_connections_;
+  std::vector<scoped_refptr<ScopedPrefConnectionBuilder>>
+      pending_incognito_connections_;
 
   const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "services/preferences/persistent_pref_store_impl.h"
@@ -43,6 +44,10 @@ std::unique_ptr<PersistentPrefStoreImpl> CreatePersistentPrefStore(
         CreateTrackedPersistentPrefStore(
             std::move(configuration->get_tracked_configuration()), worker_pool),
         std::move(on_initialized));
+  }
+  if (configuration->is_incognito_configuration()) {
+    return base::MakeUnique<PersistentPrefStoreImpl>(
+        base::MakeRefCounted<InMemoryPrefStore>(), std::move(on_initialized));
   }
   NOTREACHED();
   return nullptr;
