@@ -16,11 +16,11 @@ group("all_tests") {
 test("ios_web_view_inttests") {
   testonly = true
   sources = [
-    "boolean_observer.h",
-    "boolean_observer.mm",
     "chrome_web_view_kvo_inttest.mm",
     "chrome_web_view_test.h",
     "chrome_web_view_test.mm",
+    "observer.h",
+    "observer.mm",
     "web_view_interaction_test_util.h",
     "web_view_interaction_test_util.mm",
   ]

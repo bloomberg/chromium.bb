@@ -23,9 +23,8 @@ class GURL;
 namespace ios_web_view {
 
 // A test fixture for testing CWVWebView. A test server is also created to
-// support loading content. The server supports the urls defined by
-// RegisterDefaultHandlers in net/test/embedded_test_server/default_handlers.h
-// as well as urls returned by the GetUrl* methods below.
+// support loading content. The server supports the urls returned by the GetUrl*
+// methods below.
 class ChromeWebViewTest : public PlatformTest {
  protected:
   ChromeWebViewTest();
@@ -35,7 +34,12 @@ class ChromeWebViewTest : public PlatformTest {
   GURL GetUrlForPageWithTitle(const std::string& title);
 
   // Returns URL to an html page with |html| within page's body tags.
-  GURL GetUrlForPageWithHTMLBody(const std::string& html);
+  GURL GetUrlForPageWithHtmlBody(const std::string& html);
+
+  // Returns URL to an html page with title set to |title| and |body| within
+  // the page's body tags.
+  GURL GetUrlForPageWithTitleAndBody(const std::string& title,
+                                     const std::string& body);
 
   // Loads |URL| in |web_view| and waits until the load completes. Asserts if
   // loading does not complete.
@@ -47,9 +51,8 @@ class ChromeWebViewTest : public PlatformTest {
   // PlatformTest methods.
   void SetUp() override;
 
-  // Embedded server for handling responses to urls as registered by
-  // net/test/embedded_test_server/default_handlers.h and the GetURLForPageWith*
-  // methods.
+  // Embedded server for handling requests sent to the URLs returned by the
+  // GetURL* methods.
   std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
 };
 

@@ -9,8 +9,9 @@
 
 #include "base/base64.h"
 #import "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #import "ios/testing/wait_util.h"
-#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -22,33 +23,71 @@
 
 namespace {
 
-// Test server path which echos the remainder of the url as html. The html
-// must be base64 encoded.
-const char kPageHtmlBodyPath[] = "/PageHtmlBody?";
+// Test server path which renders a basic html page.
+const char kPageHtmlPath[] = "/PageHtml?";
+// URL parameter for html body. Value must be base64 encoded.
+const char kPageHtmlBodyParamName[] = "body";
+// URL parameter for page title. Value must be base64 encoded.
+const char kPageHtmlTitleParamName[] = "title";
 
-// Generates an html response from a request to |kPageHtmlBodyPath|.
-std::unique_ptr<net::test_server::HttpResponse> EchoPageHTMLBodyInResponse(
-    const net::test_server::HttpRequest& request) {
-  DCHECK(base::StartsWith(request.relative_url, kPageHtmlBodyPath,
-                          base::CompareCase::INSENSITIVE_ASCII));
-
-  std::string body = request.relative_url.substr(strlen(kPageHtmlBodyPath));
-
-  std::string unescaped_body;
-  base::Base64Decode(body, &unescaped_body);
-  std::string html = "<html><body>" + unescaped_body + "</body></html>";
+// Generates an html response.
+std::unique_ptr<net::test_server::HttpResponse> CreatePageHTMLResponse(
+    const std::string& title,
+    const std::string& body) {
+  std::string html = base::StringPrintf(
+      "<html><head><title>%s</title></head><body>%s</body></html>",
+      title.c_str(), body.c_str());
 
   auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
   http_response->set_content(html);
   return std::move(http_response);
 }
 
+// Returns true if |string| starts with |prefix|. String comparison is case
+// insensitive.
+bool StartsWith(std::string string, std::string prefix) {
+  return base::StartsWith(string, prefix, base::CompareCase::SENSITIVE);
+}
+
+// Encodes the |string| for use as the value of a url parameter.
+std::string EncodeQueryParamValue(std::string string) {
+  std::string encoded_string;
+  base::Base64Encode(string, &encoded_string);
+  return encoded_string;
+}
+
+// Decodes the |encoded_string|. Undoes the encoding performed by
+// |EncodeQueryParamValue|.
+std::string DecodeQueryParamValue(std::string encoded_string) {
+  std::string decoded_string;
+  base::Base64Decode(encoded_string, &decoded_string);
+  return decoded_string;
+}
+
 // Maps test server requests to responses.
 std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
     const net::test_server::HttpRequest& request) {
-  if (base::StartsWith(request.relative_url, kPageHtmlBodyPath,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return EchoPageHTMLBodyInResponse(request);
+  if (StartsWith(request.relative_url, kPageHtmlPath)) {
+    std::string title;
+    std::string body;
+
+    GURL request_url = request.GetURL();
+
+    std::string encoded_title;
+    bool title_found = net::GetValueForKeyInQuery(
+        request_url, kPageHtmlTitleParamName, &encoded_title);
+    if (title_found) {
+      title = DecodeQueryParamValue(encoded_title);
+    }
+
+    std::string encoded_body;
+    bool body_found = net::GetValueForKeyInQuery(
+        request_url, kPageHtmlBodyParamName, &encoded_body);
+    if (body_found) {
+      body = DecodeQueryParamValue(encoded_body);
+    }
+
+    return CreatePageHTMLResponse(title, body);
   }
   return nullptr;
 }
@@ -60,7 +99,6 @@ namespace ios_web_view {
 ChromeWebViewTest::ChromeWebViewTest()
     : test_server_(base::MakeUnique<net::EmbeddedTestServer>(
           net::test_server::EmbeddedTestServer::TYPE_HTTP)) {
-  net::test_server::RegisterDefaultHandlers(test_server_.get());
   test_server_->RegisterRequestHandler(base::Bind(&TestRequestHandler));
 }
 
@@ -72,13 +110,25 @@ void ChromeWebViewTest::SetUp() {
 }
 
 GURL ChromeWebViewTest::GetUrlForPageWithTitle(const std::string& title) {
-  return test_server_->GetURL("/echotitle/" + title);
+  return GetUrlForPageWithTitleAndBody(title, std::string());
 }
 
-GURL ChromeWebViewTest::GetUrlForPageWithHTMLBody(const std::string& html) {
-  std::string base64_html;
-  base::Base64Encode(html, &base64_html);
-  return test_server_->GetURL(kPageHtmlBodyPath + base64_html);
+GURL ChromeWebViewTest::GetUrlForPageWithHtmlBody(const std::string& html) {
+  return GetUrlForPageWithTitleAndBody(std::string(), html);
+}
+
+GURL ChromeWebViewTest::GetUrlForPageWithTitleAndBody(const std::string& title,
+                                                      const std::string& body) {
+  GURL url = test_server_->GetURL(kPageHtmlPath);
+
+  // Encode |title| and |body| in url query in order to build the server
+  // response later in TestRequestHandler.
+  std::string encoded_title = EncodeQueryParamValue(title);
+  url = net::AppendQueryParameter(url, kPageHtmlTitleParamName, encoded_title);
+  std::string encoded_body = EncodeQueryParamValue(body);
+  url = net::AppendQueryParameter(url, kPageHtmlBodyParamName, encoded_body);
+
+  return url;
 }
 
 void ChromeWebViewTest::LoadUrl(CWVWebView* web_view, NSURL* url) {

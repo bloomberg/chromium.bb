@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/test/boolean_observer.h"
+#import "ios/web_view/test/observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation BooleanObserver
+@implementation Observer
 
 @synthesize keyPath = _keyPath;
 @synthesize lastValue = _lastValue;
@@ -20,12 +20,10 @@
   _lastValue = nil;
   _keyPath = [keyPath copy];
   _object = object;
-  if (keyPath) {
-    [_object addObserver:self
-              forKeyPath:_keyPath
-                 options:NSKeyValueObservingOptionNew
-                 context:nil];
-  }
+  [_object addObserver:self
+            forKeyPath:_keyPath
+               options:NSKeyValueObservingOptionNew
+               context:nil];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
