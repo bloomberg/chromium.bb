@@ -26,30 +26,25 @@ class CSSVariableResolver {
   STACK_ALLOCATED();
 
  public:
-  static void ResolveVariableDefinitions(const StyleResolverState&);
-
-  // Shorthand properties are not supported.
-  static const CSSValue* ResolveVariableReferences(
-      const StyleResolverState&,
-      CSSPropertyID,
-      const CSSValue&,
-      bool disallow_animation_tainted);
-
-  static void ComputeRegisteredVariables(const StyleResolverState&);
-
- private:
   CSSVariableResolver(const StyleResolverState&);
 
-  static const CSSValue* ResolvePendingSubstitutions(
-      const StyleResolverState&,
+  void ResolveVariableDefinitions();
+
+  // Shorthand properties are not supported.
+  const CSSValue* ResolveVariableReferences(CSSPropertyID,
+                                            const CSSValue&,
+                                            bool disallow_animation_tainted);
+
+  void ComputeRegisteredVariables();
+
+ private:
+  const CSSValue* ResolvePendingSubstitutions(
       CSSPropertyID,
       const CSSPendingSubstitutionValue&,
       bool disallow_animation_tainted);
-  static const CSSValue* ResolveVariableReferences(
-      const StyleResolverState&,
-      CSSPropertyID,
-      const CSSVariableReferenceValue&,
-      bool disallow_animation_tainted);
+  const CSSValue* ResolveVariableReferences(CSSPropertyID,
+                                            const CSSVariableReferenceValue&,
+                                            bool disallow_animation_tainted);
 
   // These return false if we encounter a reference to an invalid variable with
   // no fallback.
@@ -87,6 +82,7 @@ class CSSVariableResolver {
   PassRefPtr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                     const CSSVariableData&);
 
+  const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
   StyleNonInheritedVariables* non_inherited_variables_;
   Member<const PropertyRegistry> registry_;

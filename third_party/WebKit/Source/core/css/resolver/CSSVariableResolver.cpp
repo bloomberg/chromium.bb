@@ -202,21 +202,18 @@ bool CSSVariableResolver::ResolveTokenRange(
 }
 
 const CSSValue* CSSVariableResolver::ResolveVariableReferences(
-    const StyleResolverState& state,
     CSSPropertyID id,
     const CSSValue& value,
     bool disallow_animation_tainted) {
   DCHECK(!isShorthandProperty(id));
 
   if (value.IsPendingSubstitutionValue()) {
-    return ResolvePendingSubstitutions(state, id,
-                                       ToCSSPendingSubstitutionValue(value),
+    return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
                                        disallow_animation_tainted);
   }
 
   if (value.IsVariableReferenceValue()) {
-    return ResolveVariableReferences(state, id,
-                                     ToCSSVariableReferenceValue(value),
+    return ResolveVariableReferences(id, ToCSSVariableReferenceValue(value),
                                      disallow_animation_tainted);
   }
 
@@ -225,18 +222,17 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 }
 
 const CSSValue* CSSVariableResolver::ResolveVariableReferences(
-    const StyleResolverState& state,
     CSSPropertyID id,
     const CSSVariableReferenceValue& value,
     bool disallow_animation_tainted) {
-  CSSVariableResolver resolver(state);
   Vector<CSSParserToken> tokens;
   Vector<String> backing_strings;
   bool is_animation_tainted = false;
-  if (!resolver.ResolveTokenRange(value.VariableDataValue()->Tokens(),
-                                  disallow_animation_tainted, tokens,
-                                  backing_strings, is_animation_tainted))
+  if (!ResolveTokenRange(value.VariableDataValue()->Tokens(),
+                         disallow_animation_tainted, tokens, backing_strings,
+                         is_animation_tainted)) {
     return CSSUnsetValue::Create();
+  }
   const CSSValue* result =
       CSSPropertyParser::ParseSingleValue(id, tokens, value.ParserContext());
   if (!result)
@@ -245,13 +241,12 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 }
 
 const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
-    const StyleResolverState& state,
     CSSPropertyID id,
     const CSSPendingSubstitutionValue& pending_value,
     bool disallow_animation_tainted) {
   // Longhands from shorthand references follow this path.
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& property_cache =
-      state.ParsedPropertiesForPendingSubstitutionCache(pending_value);
+      state_.ParsedPropertiesForPendingSubstitutionCache(pending_value);
 
   const CSSValue* value = property_cache.at(id);
   if (!value) {
@@ -260,15 +255,12 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSVariableReferenceValue* shorthand_value = pending_value.ShorthandValue();
     CSSPropertyID shorthand_property_id = pending_value.ShorthandPropertyId();
 
-    CSSVariableResolver resolver(state);
-
     Vector<CSSParserToken> tokens;
     Vector<String> backing_strings;
     bool is_animation_tainted = false;
-    if (resolver.ResolveTokenRange(
-            shorthand_value->VariableDataValue()->Tokens(),
-            disallow_animation_tainted, tokens, backing_strings,
-            is_animation_tainted)) {
+    if (ResolveTokenRange(shorthand_value->VariableDataValue()->Tokens(),
+                          disallow_animation_tainted, tokens, backing_strings,
+                          is_animation_tainted)) {
       HeapVector<CSSProperty, 256> parsed_properties;
 
       if (CSSPropertyParser::ParseValue(
@@ -291,62 +283,52 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
   return CSSUnsetValue::Create();
 }
 
-void CSSVariableResolver::ResolveVariableDefinitions(
-    const StyleResolverState& state) {
-  StyleInheritedVariables* inherited_variables =
-      state.Style()->InheritedVariables();
-  StyleNonInheritedVariables* non_inherited_variables =
-      state.Style()->NonInheritedVariables();
-  if (!inherited_variables && !non_inherited_variables)
+void CSSVariableResolver::ResolveVariableDefinitions() {
+  if (!inherited_variables_ && !non_inherited_variables_)
     return;
 
-  CSSVariableResolver resolver(state);
   int variable_count = 0;
-  if (inherited_variables) {
-    for (auto& variable : inherited_variables->data_)
-      resolver.ValueForCustomProperty(variable.key);
-    variable_count += inherited_variables->data_.size();
+  if (inherited_variables_) {
+    for (auto& variable : inherited_variables_->data_)
+      ValueForCustomProperty(variable.key);
+    variable_count += inherited_variables_->data_.size();
   }
-  if (non_inherited_variables) {
-    for (auto& variable : non_inherited_variables->data_)
-      resolver.ValueForCustomProperty(variable.key);
-    variable_count += non_inherited_variables->data_.size();
+  if (non_inherited_variables_) {
+    for (auto& variable : non_inherited_variables_->data_)
+      ValueForCustomProperty(variable.key);
+    variable_count += non_inherited_variables_->data_.size();
   }
-  INCREMENT_STYLE_STATS_COUNTER(state.GetDocument().GetStyleEngine(),
+  INCREMENT_STYLE_STATS_COUNTER(state_.GetDocument().GetStyleEngine(),
                                 custom_properties_applied, variable_count);
 }
 
-void CSSVariableResolver::ComputeRegisteredVariables(
-    const StyleResolverState& state) {
+void CSSVariableResolver::ComputeRegisteredVariables() {
   // const_cast is needed because Persistent<const ...> doesn't work properly.
 
-  StyleInheritedVariables* inherited_variables =
-      state.Style()->InheritedVariables();
-  if (inherited_variables) {
-    for (auto& variable : inherited_variables->registered_data_) {
+  if (inherited_variables_) {
+    for (auto& variable : inherited_variables_->registered_data_) {
       if (variable.value) {
         variable.value = const_cast<CSSValue*>(
             &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-                state, *variable.value));
+                state_, *variable.value));
       }
     }
   }
 
-  StyleNonInheritedVariables* non_inherited_variables =
-      state.Style()->NonInheritedVariables();
-  if (non_inherited_variables) {
-    for (auto& variable : non_inherited_variables->registered_data_) {
+  if (non_inherited_variables_) {
+    for (auto& variable : non_inherited_variables_->registered_data_) {
       if (variable.value) {
         variable.value = const_cast<CSSValue*>(
             &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-                state, *variable.value));
+                state_, *variable.value));
       }
     }
   }
 }
 
 CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
-    : inherited_variables_(state.Style()->InheritedVariables()),
+    : state_(state),
+      inherited_variables_(state.Style()->InheritedVariables()),
       non_inherited_variables_(state.Style()->NonInheritedVariables()),
       registry_(state.GetDocument().GetPropertyRegistry()) {}
 

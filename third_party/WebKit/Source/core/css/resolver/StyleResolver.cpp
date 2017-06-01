@@ -1760,7 +1760,7 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
         state.AnimationUpdate().ActiveInterpolationsForCustomTransitions());
   }
   // TODO(leviw): stop recalculating every time
-  CSSVariableResolver::ResolveVariableDefinitions(state);
+  CSSVariableResolver(state).ResolveVariableDefinitions();
 
   if (RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
     if (CacheCustomPropertiesForApplyAtRules(state,
@@ -1779,7 +1779,7 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
             state,
             state.AnimationUpdate().ActiveInterpolationsForCustomTransitions());
       }
-      CSSVariableResolver::ResolveVariableDefinitions(state);
+      CSSVariableResolver(state).ResolveVariableDefinitions();
     }
   }
 }
@@ -1887,7 +1887,7 @@ void StyleResolver::ApplyMatchedStandardProperties(
     apply_inherited_only = false;
 
   // Registered custom properties are computed after high priority properties.
-  CSSVariableResolver::ComputeRegisteredVariables(state);
+  CSSVariableResolver(state).ComputeRegisteredVariables();
 
   // Now do the normal priority UA properties.
   ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
