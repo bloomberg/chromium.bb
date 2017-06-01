@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -35,7 +35,7 @@ class SequencedTaskRunner;
 //
 // Also note that ImportantFileWriter can be *really* slow (cf. File::Flush()
 // for details) and thus please don't block shutdown on ImportantFileWriter.
-class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
+class BASE_EXPORT ImportantFileWriter {
  public:
   // Used by ScheduleSave to lazily provide the data to be saved. Allows us
   // to also batch data serializations.
@@ -142,6 +142,8 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
   // Time delta after which scheduled data will be written to disk.
   const TimeDelta commit_interval_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   WeakPtrFactory<ImportantFileWriter> weak_factory_;
 

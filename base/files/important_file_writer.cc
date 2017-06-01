@@ -152,11 +152,11 @@ ImportantFileWriter::ImportantFileWriter(
       serializer_(nullptr),
       commit_interval_(interval),
       weak_factory_(this) {
-  DCHECK(CalledOnValidThread());
   DCHECK(task_runner_);
 }
 
 ImportantFileWriter::~ImportantFileWriter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We're usually a member variable of some other object, which also tends
   // to be our serializer. It may not be safe to call back to the parent object
   // being destructed.
@@ -164,12 +164,12 @@ ImportantFileWriter::~ImportantFileWriter() {
 }
 
 bool ImportantFileWriter::HasPendingWrite() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return timer().IsRunning();
 }
 
 void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsValueInRangeForNumericType<int32_t>(data->length())) {
     NOTREACHED();
     return;
@@ -192,7 +192,7 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
 }
 
 void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(serializer);
   serializer_ = serializer;
