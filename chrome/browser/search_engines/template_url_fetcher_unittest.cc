@@ -182,6 +182,25 @@ TEST_F(TemplateURLFetcherTest, BasicAutodetectedTest) {
   EXPECT_TRUE(t_url->safe_for_autoreplace());
 }
 
+// This test is similar to the BasicAutodetectedTest except the xml file
+// provided doesn't include a short name for the search engine.  We should
+// fall back to the hostname.
+TEST_F(TemplateURLFetcherTest, InvalidShortName) {
+  base::string16 keyword(ASCIIToUTF16("test"));
+
+  test_util()->ChangeModelToLoadState();
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
+
+  std::string osdd_file_name("simple_open_search_no_name.xml");
+  StartDownload(keyword, osdd_file_name, true);
+  WaitForDownloadToFinish();
+
+  const TemplateURL* t_url =
+      test_util()->model()->GetTemplateURLForKeyword(keyword);
+  ASSERT_TRUE(t_url);
+  EXPECT_EQ(ASCIIToUTF16("example.com"), t_url->short_name());
+}
+
 TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   base::string16 keyword(ASCIIToUTF16("test"));
 
