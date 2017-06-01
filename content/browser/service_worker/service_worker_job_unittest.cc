@@ -1803,7 +1803,7 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
   // Allow the activation to continue. It will fail, and the worker
   // should not be promoted to ACTIVATED because failure occur
   // during shutdown.
-  runner->RunUntilIdle();
+  runner->RunPendingTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(new_version.get(), registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());

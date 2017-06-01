@@ -664,6 +664,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void TimeoutWorkerOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    EXPECT_TRUE(version_->timeout_timer_.IsRunning());
     version_->SimulatePingTimeoutForTesting();
   }
 
@@ -1177,7 +1178,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
 
   // Simulate execution timeout. Use a delay to prevent killing the worker
   // before it's started execution.
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   RunOnIOThreadWithDelay(
       base::Bind(&self::TimeoutWorkerOnIOThread, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(100));
@@ -1211,7 +1211,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
 
   // Simulate execution timeout. Use a delay to prevent killing the worker
   // before it's started execution.
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   RunOnIOThreadWithDelay(
       base::Bind(&self::TimeoutWorkerOnIOThread, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(100));

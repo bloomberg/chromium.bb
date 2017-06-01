@@ -10,16 +10,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "net/base/upload_progress.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace tracked_objects {
 class Location;
@@ -41,12 +37,14 @@ class CONTENT_EXPORT UploadProgressTracker {
   UploadProgressTracker(const tracked_objects::Location& location,
                         UploadProgressReportCallback report_progress,
                         net::URLRequest* request,
-                        scoped_refptr<base::SingleThreadTaskRunner>
-                            task_runner = base::ThreadTaskRunnerHandle::Get());
+                        scoped_refptr<base::SequencedTaskRunner> task_runner =
+                            base::SequencedTaskRunnerHandle::Get());
   ~UploadProgressTracker();
 
   void OnAckReceived();
   void OnUploadCompleted();
+
+  static base::TimeDelta GetUploadProgressIntervalForTesting();
 
  private:
   // Overridden by tests to use a fake time and progress.

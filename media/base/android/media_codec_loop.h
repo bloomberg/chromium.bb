@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -100,10 +102,6 @@
 // (Flush ok) (Flush fails)
 //    |             |
 // [Ready]       [Error]
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace media {
 
@@ -197,15 +195,15 @@ class MEDIA_EXPORT MediaCodecLoop {
     virtual ~Client() {}
   };
 
-  // We will take ownership of |media_codec|.  We will not destroy it until
-  // we are destructed.  |media_codec| may not be null.
-  // |sdk_level| is temporary.  It is used only to decouple MediaCodecLoop from
-  // BuildInfo, until we get BuildInfo into a mockable state.
+  // We will take ownership of |media_codec|.  We will not destroy it until we
+  // are destructed.  |media_codec| may not be null. |sdk_level| is temporary.
+  // It is used only to decouple MediaCodecLoop from BuildInfo, until we get
+  // BuildInfo into a mockable state. If |timer_task_runner| is non-null,
+  // timers are redirected to it.
   MediaCodecLoop(int sdk_level,
                  Client* client,
                  std::unique_ptr<MediaCodecBridge> media_codec,
-                 scoped_refptr<base::SingleThreadTaskRunner> =
-                     scoped_refptr<base::SingleThreadTaskRunner>());
+                 scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner);
   ~MediaCodecLoop();
 
   // Optionally set the tick clock used for testing.  It is our caller's

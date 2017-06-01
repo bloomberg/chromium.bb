@@ -19,7 +19,7 @@ UploadProgressTracker::UploadProgressTracker(
     const tracked_objects::Location& location,
     UploadProgressReportCallback report_progress,
     net::URLRequest* request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : request_(request), report_progress_(std::move(report_progress)) {
   DCHECK(report_progress_);
 
@@ -38,6 +38,11 @@ void UploadProgressTracker::OnUploadCompleted() {
   waiting_for_upload_progress_ack_ = false;
   ReportUploadProgressIfNeeded();
   progress_timer_.Stop();
+}
+
+// static
+base::TimeDelta UploadProgressTracker::GetUploadProgressIntervalForTesting() {
+  return kUploadProgressInterval;
 }
 
 base::TimeTicks UploadProgressTracker::GetCurrentTime() const {

@@ -39,15 +39,15 @@ MediaCodecLoop::MediaCodecLoop(
     int sdk_int,
     Client* client,
     std::unique_ptr<MediaCodecBridge> media_codec,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner)
     : state_(STATE_READY),
       client_(client),
       media_codec_(std::move(media_codec)),
       pending_input_buf_index_(kInvalidBufferIndex),
       sdk_int_(sdk_int),
       weak_factory_(this) {
-  if (task_runner)
-    io_timer_.SetTaskRunner(task_runner);
+  if (timer_task_runner)
+    io_timer_.SetTaskRunner(timer_task_runner);
   // TODO(liberato): should this DCHECK?
   if (media_codec_ == nullptr)
     SetState(STATE_ERROR);
