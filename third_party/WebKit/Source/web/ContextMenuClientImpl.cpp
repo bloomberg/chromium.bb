@@ -197,7 +197,7 @@ bool ContextMenuClientImpl::ShouldShowContextMenuFromTouch(
          !data.link_url.IsEmpty() ||
          data.media_type == WebContextMenuData::kMediaTypeImage ||
          data.media_type == WebContextMenuData::kMediaTypeVideo ||
-         data.is_editable;
+         data.is_editable || !data.selected_text.IsEmpty();
 }
 
 static HTMLFormElement* AssociatedFormElement(HTMLElement& element) {

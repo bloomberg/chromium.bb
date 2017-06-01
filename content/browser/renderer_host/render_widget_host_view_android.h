@@ -35,6 +35,7 @@
 #include "ui/android/view_android.h"
 #include "ui/android/view_client.h"
 #include "ui/android/window_android_observer.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -210,7 +211,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
   void OnStylusSelectUpdate(float x, float y) override;
-  void OnStylusSelectEnd() override {};
+  void OnStylusSelectEnd(float x, float y) override;
   void OnStylusSelectTap(base::TimeTicks time, float x, float y) override;
 
   // ui::TouchSelectionControllerClient implementation.
@@ -264,7 +265,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
-  void ShowContextMenuAtTouchHandle(const gfx::Point& point);
+  void ShowContextMenuAtPoint(const gfx::Point& point, ui::MenuSourceType);
   void DismissTextHandles();
   void SetTextHandlesTemporarilyHidden(bool hidden);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);

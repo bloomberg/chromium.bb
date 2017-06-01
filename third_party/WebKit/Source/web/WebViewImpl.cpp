@@ -840,9 +840,13 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         }
       }
 
-      event_result =
-          MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureEvent(
-              targeted_event);
+      {
+        ContextMenuAllowedScope scope;
+        event_result =
+            MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureEvent(
+                targeted_event);
+      }
+
       if (page_popup_ && last_hidden_page_popup_ &&
           page_popup_->HasSamePopupClient(last_hidden_page_popup_.Get())) {
         // The tap triggered a page popup that is the same as the one we just

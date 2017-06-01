@@ -35,7 +35,7 @@ class CONTENT_EXPORT ContentViewCore {
 
   // May return null reference.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-  virtual bool ShowPastePopup(const ContextMenuParams& params) = 0;
+  virtual bool ShowSelectionMenu(const ContextMenuParams& params) = 0;
 
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
 

@@ -83,7 +83,7 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
     case MotionEvent::ACTION_CANCEL:
       if (drag_state_ == DRAGGING_WITH_BUTTON_PRESSED ||
           drag_state_ == DRAGGING_WITH_BUTTON_RELEASED)
-        client_->OnStylusSelectEnd();
+        client_->OnStylusSelectEnd(event.GetX(), event.GetY());
       drag_state_ = NO_DRAG;
       break;
 

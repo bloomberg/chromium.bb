@@ -118,10 +118,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
 
-    // Tracks whether a selection is currently active.  When applied to selected text, indicates
-    // whether the last selected text is still highlighted.
-    private boolean mHasSelection;
-
     // Lazily created paste popup menu, triggered either via long press in an
     // editable region or from tapping the insertion handle.
     private PastePopupMenu mPastePopupMenu;
@@ -176,6 +172,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mSelectionClient =
                 SmartSelectionClient.create(new SmartSelectionCallback(), window, webContents);
 
+        mLastSelectedText = "";
         // TODO(timav): Use android.R.id.textAssist for the Assist item id once we switch to
         // Android O SDK and remove |mAssistMenuItemId|.
         if (BuildInfo.isAtLeastO()) {
@@ -223,6 +220,31 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mAllowedMenuItems = allowedMenuItems;
     }
 
+    public void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
+            boolean isPasswordType, String selectionText, boolean canSelectAll,
+            boolean canRichlyEdit, boolean shouldSuggest) {
+        mSelectionRect.set(left, top, right, bottom);
+        mEditable = isEditable;
+        mLastSelectedText = selectionText;
+        mIsPasswordType = isPasswordType;
+        mCanSelectAllForPastePopup = canSelectAll;
+        mCanEditRichlyForPastePopup = canRichlyEdit;
+        mUnselectAllOnDismiss = true;
+        if (hasSelection()) {
+            if (mSelectionClient != null
+                    && mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
+                // Rely on |mSelectionClient| sending a classification request and the request
+                // always calling onClassified() callback.
+                mPendingShowActionMode = true;
+            } else {
+                showActionModeOrClearOnFailure();
+            }
+
+        } else {
+            createAndShowPastePopup();
+        }
+    }
+
     /**
      * Show (activate) android action mode by starting it.
      *
@@ -268,17 +290,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return actionMode;
     }
 
-    void createAndShowPastePopup(
-            int left, int top, int right, int bottom, boolean canSelectAll, boolean canEditRichly) {
+    private void createAndShowPastePopup() {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
 
         if (!supportsFloatingActionMode() && !canPaste()) return;
         destroyPastePopup();
-        mSelectionRect.set(left, top, right, bottom);
-        mCanSelectAllForPastePopup = canSelectAll;
-        mCanEditRichlyForPastePopup = canEditRichly;
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
             public void paste() {
@@ -494,7 +512,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             descriptor.removeItem(R.id.select_action_menu_paste);
         }
 
-        if (isInsertion()) {
+        if (!hasSelection()) {
             descriptor.removeItem(R.id.select_action_menu_select_all);
             descriptor.removeItem(R.id.select_action_menu_cut);
             descriptor.removeItem(R.id.select_action_menu_copy);
@@ -731,8 +749,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     void selectAll() {
         mWebContents.selectAll();
         mClassificationResult = null;
-        if (needsActionMenuUpdate()) showActionModeOrClearOnFailure();
-
         // Even though the above statement logged a SelectAll user action, we want to
         // track whether the focus was in an editable field, so log that too.
         if (isSelectionEditable()) {
@@ -934,17 +950,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (top == bottom) ++bottom;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
-                mSelectionRect.set(left, top, right, bottom);
-                mHasSelection = true;
-                mUnselectAllOnDismiss = true;
-                if (mSelectionClient != null
-                        && mSelectionClient.requestSelectionPopupUpdates(true /* suggest */)) {
-                    // Rely on |mSelectionClient| sending a classification request and the request
-                    // always calling onClassified() callback.
-                    mPendingShowActionMode = true;
-                } else {
-                    showActionModeOrClearOnFailure();
-                }
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:
@@ -957,7 +962,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
-                mHasSelection = false;
+                mLastSelectedText = "";
                 mUnselectAllOnDismiss = false;
                 mSelectionRect.setEmpty();
                 if (mSelectionClient != null) mSelectionClient.cancelAllRequests();
@@ -969,13 +974,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                if (mSelectionClient != null
-                        && mSelectionClient.requestSelectionPopupUpdates(false /* suggest */)) {
-                    // Rely on |mSelectionClient| sending a classification request and the request
-                    // always calling onClassified() callback.
-                } else {
-                    hideActionMode(false);
-                }
+                mWebContents.showContextMenuAtTouchHandle(left, bottom);
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
@@ -1097,12 +1096,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @VisibleForTesting
     public boolean hasSelection() {
-        return mHasSelection;
+        return mLastSelectedText.length() != 0;
     }
 
     @Override
     public String getSelectedText() {
-        return hasSelection() ? mLastSelectedText : "";
+        return mLastSelectedText;
     }
 
     private boolean isShareAvailable() {

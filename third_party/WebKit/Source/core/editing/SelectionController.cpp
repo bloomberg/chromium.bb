@@ -41,12 +41,14 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/AutoReset.h"
+#include "public/web/WebMenuSourceType.h"
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {
@@ -191,9 +193,14 @@ bool SelectionController::HandleSingleClick(
         return false;
 
       if (!this->Selection().IsHandleVisible()) {
-        UpdateSelectionForMouseDownDispatchingSelectStart(
-            inner_node, selection, kCharacterGranularity,
-            HandleVisibility::kVisible);
+        const bool did_select =
+            UpdateSelectionForMouseDownDispatchingSelectStart(
+                inner_node, selection, kCharacterGranularity,
+                HandleVisibility::kVisible);
+        if (did_select) {
+          frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                              kMenuSourceTouch);
+        }
         return false;
       }
     }
@@ -551,10 +558,10 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
       kWordGranularity, HandleVisibility::kNotVisible);
 }
 
-void SelectionController::SelectClosestWordFromMouseEvent(
+bool SelectionController::SelectClosestWordFromMouseEvent(
     const MouseEventWithHitTestResults& result) {
   if (!mouse_down_may_start_select_)
-    return;
+    return false;
 
   AppendTrailingWhitespace append_trailing_whitespace =
       (result.Event().click_count == 2 &&
@@ -564,7 +571,7 @@ void SelectionController::SelectClosestWordFromMouseEvent(
 
   DCHECK(!frame_->GetDocument()->NeedsLayoutTreeUpdate());
 
-  SelectClosestWordFromHitTestResult(
+  return SelectClosestWordFromHitTestResult(
       result.GetHitTestResult(), append_trailing_whitespace,
       result.Event().FromTouch() ? SelectInputEventType::kTouch
                                  : SelectInputEventType::kMouse);
@@ -585,8 +592,10 @@ void SelectionController::SelectClosestMisspellingFromMouseEvent(
 
 void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
     const MouseEventWithHitTestResults& result) {
-  if (!result.GetHitTestResult().IsLiveLink())
-    return SelectClosestWordFromMouseEvent(result);
+  if (!result.GetHitTestResult().IsLiveLink()) {
+    SelectClosestWordFromMouseEvent(result);
+    return;
+  }
 
   Node* inner_node = result.InnerNode();
 
@@ -771,7 +780,11 @@ bool SelectionController::HandleDoubleClick(
     // from setting caret selection.
     selection_state_ = SelectionState::kExtendedSelection;
   } else {
-    SelectClosestWordFromMouseEvent(event);
+    const bool did_select = SelectClosestWordFromMouseEvent(event);
+    if (did_select && Selection().IsHandleVisible()) {
+      frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                          kMenuSourceTouch);
+    }
   }
   return true;
 }
@@ -811,12 +824,20 @@ bool SelectionController::HandleTripleClick(
   const bool is_handle_visible =
       event.Event().FromTouch() && new_selection.IsRange();
 
-  return UpdateSelectionForMouseDownDispatchingSelectStart(
+  const bool did_select = UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
       ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
       kParagraphGranularity,
       is_handle_visible ? HandleVisibility::kVisible
                         : HandleVisibility::kNotVisible);
+  if (!did_select)
+    return false;
+
+  if (Selection().IsHandleVisible()) {
+    frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                        kMenuSourceTouch);
+  }
+  return true;
 }
 
 bool SelectionController::HandleMousePressEvent(

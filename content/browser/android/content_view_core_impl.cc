@@ -75,6 +75,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebContextMenuData;
 using blink::WebGestureEvent;
+using blink::WebContextMenuData;
 using blink::WebInputEvent;
 
 namespace content {
@@ -573,9 +574,13 @@ void ContentViewCoreImpl::RequestDisallowInterceptTouchEvent() {
     Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj);
 }
 
-bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
+bool ContentViewCoreImpl::ShowSelectionMenu(const ContextMenuParams& params) {
   // Display paste pop-up only when selection is empty and editable.
-  if (!(params.is_editable && params.selection_text.empty()))
+  const bool from_touch = params.source_type == ui::MENU_SOURCE_TOUCH ||
+                          params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
+                          params.source_type == ui::MENU_SOURCE_TOUCH_HANDLE ||
+                          params.source_type == ui::MENU_SOURCE_STYLUS;
+  if (!from_touch || (!params.is_editable && params.selection_text.empty()))
     return false;
 
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
@@ -591,13 +596,21 @@ bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
       !!(params.edit_flags & WebContextMenuData::kCanSelectAll);
   const bool can_edit_richly =
       !!(params.edit_flags & blink::WebContextMenuData::kCanEditRichly);
-
   int handle_height = GetRenderWidgetHostViewAndroid()->GetTouchHandleHeight();
-  Java_ContentViewCore_showPastePopup(
+  const bool is_password_type =
+      params.input_field_type ==
+      blink::WebContextMenuData::kInputFieldTypePassword;
+  const ScopedJavaLocalRef<jstring> jselected_text =
+      ConvertUTF16ToJavaString(env, params.selection_text);
+  const bool should_suggest = params.source_type == ui::MENU_SOURCE_TOUCH ||
+                              params.source_type == ui::MENU_SOURCE_LONG_PRESS;
+
+  Java_ContentViewCore_showSelectionMenu(
       env, obj, params.selection_rect.x(), params.selection_rect.y(),
       params.selection_rect.right(),
-      params.selection_rect.bottom() + handle_height, can_select_all,
-      can_edit_richly);
+      params.selection_rect.bottom() + handle_height, params.is_editable,
+      is_password_type, jselected_text, can_select_all, can_edit_richly,
+      should_suggest);
   return true;
 }
 

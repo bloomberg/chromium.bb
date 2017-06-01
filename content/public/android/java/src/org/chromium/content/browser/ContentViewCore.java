@@ -1678,10 +1678,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     @CalledByNative
-    private void showPastePopup(
-            int left, int top, int right, int bottom, boolean canSelectAll, boolean canEditRichly) {
-        mSelectionPopupController.createAndShowPastePopup(
-                left, top, right, bottom, canSelectAll, canEditRichly);
+    private void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
+            boolean isPasswordType, String selectionText, boolean canSelectAll,
+            boolean canEditRichly, boolean shouldSuggest) {
+        mSelectionPopupController.showSelectionMenu(left, top, right, bottom, isEditable,
+                isPasswordType, selectionText, canSelectAll, canEditRichly, shouldSuggest);
     }
 
     private void destroyPastePopup() {

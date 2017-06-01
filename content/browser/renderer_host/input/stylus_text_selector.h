@@ -31,7 +31,7 @@ class CONTENT_EXPORT StylusTextSelectorClient {
   // (x0, y0) and (x1, y1) indicate the bounds of the initial selection.
   virtual void OnStylusSelectBegin(float x0, float y0, float x1, float y1) = 0;
   virtual void OnStylusSelectUpdate(float x, float y) = 0;
-  virtual void OnStylusSelectEnd() = 0;
+  virtual void OnStylusSelectEnd(float x, float y) = 0;
   virtual void OnStylusSelectTap(base::TimeTicks time, float x, float y) = 0;
 };
 

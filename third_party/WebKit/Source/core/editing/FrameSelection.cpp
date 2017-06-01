@@ -62,6 +62,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -728,6 +729,11 @@ void FrameSelection::SelectAll(EUserTriggered user_triggered) {
   SelectFrameElementInParentIfFullySelected();
   // TODO(editing-dev): Should we pass in user_triggered?
   NotifyTextControlOfSelectionChange(kUserTriggered);
+  if (IsHandleVisible()) {
+    ContextMenuAllowedScope scope;
+    frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                        kMenuSourceTouch);
+  }
 }
 
 void FrameSelection::NotifyAccessibilityForSelectionChange() {

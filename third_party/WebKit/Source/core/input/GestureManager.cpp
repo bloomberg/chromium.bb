@@ -333,7 +333,6 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
   if (inner_node && inner_node->GetLayoutObject() &&
       selection_controller_->HandleGestureLongPress(hit_test_result)) {
     mouse_event_manager_->FocusDocumentView();
-    return WebInputEventResult::kHandledSystem;
   }
 
   return SendContextMenuEventForGesture(targeted_event);

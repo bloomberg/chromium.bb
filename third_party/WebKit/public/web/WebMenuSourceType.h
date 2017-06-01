@@ -16,7 +16,8 @@ enum WebMenuSourceType {
   kMenuSourceLongPress,
   kMenuSourceLongTap,
   kMenuSourceTouchHandle,
-  kMenuSourceTypeLast = kMenuSourceTouchHandle
+  kMenuSourceStylus,
+  kMenuSourceTypeLast = kMenuSourceStylus
 };
 
 }  // namespace blink
