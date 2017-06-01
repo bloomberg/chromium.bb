@@ -152,15 +152,6 @@ bool InlineTextBoxPainter::PaintsMarkerHighlights(
              layout_object.GetNode());
 }
 
-static bool PaintsCompositionMarkers(const LayoutObject& layout_object) {
-  return layout_object.GetNode() &&
-         layout_object.GetDocument()
-                 .Markers()
-                 .MarkersFor(layout_object.GetNode(),
-                             DocumentMarker::kComposition)
-                 .size() > 0;
-}
-
 static void PrepareContextForDecoration(
     GraphicsContext& context,
     GraphicsContextStateSaver& state_saver,
@@ -400,9 +391,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       paint_info.phase != kPaintPhaseTextClip && !is_printing) {
     PaintDocumentMarkers(paint_info, box_origin, style_to_use, font,
                          DocumentMarkerPaintPhase::kBackground);
-
-    const LayoutObject& text_box_layout_object = InlineLayoutObject();
-    if (have_selection && !PaintsCompositionMarkers(text_box_layout_object)) {
+    if (have_selection) {
       if (combined_text)
         PaintSelection<InlineTextBoxPainter::PaintOptions::kCombinedText>(
             context, box_rect, style_to_use, font, selection_style.fill_color,
