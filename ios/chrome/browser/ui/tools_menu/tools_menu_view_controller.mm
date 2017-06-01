@@ -37,7 +37,6 @@
 #include "ios/web/public/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-
 using ios::material::TimingFunction;
 
 namespace {
@@ -277,7 +276,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
       break;
     case web::UserAgentType::DESKTOP:
       [self setItemEnabled:YES withTag:IDC_REQUEST_MOBILE_SITE];
-      [self setItemEnabled:NO withTag:IDC_REQUEST_DESKTOP_SITE];
+      if (!experimental_flags::IsRequestMobileSiteEnabled()) {
+        // When Request Mobile Site is disabled, the enabled state of Request
+        // Desktop Site button needs to be set to NO because it is visible even
+        // though the current UserAgentType is DESKTOP.
+        [self setItemEnabled:NO withTag:IDC_REQUEST_DESKTOP_SITE];
+      }
       break;
   }
 

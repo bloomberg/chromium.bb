@@ -20,6 +20,7 @@ extern const char kDisableOfflineAutoReload[];
 extern const char kDisablePaymentRequest[];
 extern const char kDisableTabStripAutoScrollNewTabs[];
 extern const char kDisableIOSPhysicalWeb[];
+extern const char kDisableRequestMobileSite[];
 extern const char kDisableSuggestionsUI[];
 
 extern const char kEnableContextualSearch[];
