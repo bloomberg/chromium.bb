@@ -159,13 +159,23 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // Must be called from the main thread.
   virtual bool IsHighPriorityWorkAnticipated() = 0;
 
-  // Suspends the timer queue and increments the timer queue suspension count.
+  // Suspends the timer queues and increments the timer queue suspension count.
   // May only be called from the main thread.
   virtual void SuspendTimerQueue() = 0;
 
-  // Decrements the timer queue suspension count and re-enables the timer queue
+  // Decrements the timer queue suspension count and re-enables the timer queues
   // if the suspension count is zero and the current schduler policy allows it.
   virtual void ResumeTimerQueue() = 0;
+
+  // Suspends the timer queues by inserting a fence that blocks any tasks posted
+  // after this point from running. Orthogonal to SuspendTimerQueue. Care must
+  // be taken when using this API to avoid fighting with the TaskQueueThrottler.
+  virtual void VirtualTimePaused() = 0;
+
+  // Removes the fence added by VirtualTimePaused allowing timers to execute
+  // normally. Care must be taken when using this API to avoid fighting with the
+  // TaskQueueThrottler.
+  virtual void VirtualTimeResumed() = 0;
 
   // Sets whether to allow suspension of timers after the backgrounded signal is
   // received via OnRendererBackgrounded. Defaults to disabled.

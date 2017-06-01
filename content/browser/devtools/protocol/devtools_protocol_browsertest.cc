@@ -1422,10 +1422,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
   params->SetString("expression", "console.log('done')");
   SendCommand("Runtime.evaluate", std::move(params), true);
 
-  // The second timer shold not fire.
-  EXPECT_THAT(console_messages_, ElementsAre("before", "done"));
+  // The third timer should not fire.
+  EXPECT_THAT(console_messages_, ElementsAre("before", "at", "done"));
 
-  // Let virtual time advance for another second, which should make the second
+  // Let virtual time advance for another second, which should make the third
   // timer fire.
   params.reset(new base::DictionaryValue());
   params->SetString("policy", "advance");
@@ -1434,7 +1434,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
 
   WaitForNotification("Emulation.virtualTimeBudgetExpired");
 
-  EXPECT_THAT(console_messages_, ElementsAre("before", "done", "at", "after"));
+  EXPECT_THAT(console_messages_, ElementsAre("before", "at", "done", "after"));
 }
 
 // Tests that the Security.showCertificateViewer command shows the

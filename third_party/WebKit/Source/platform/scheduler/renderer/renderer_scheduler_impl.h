@@ -117,6 +117,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void Shutdown() override;
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
+  void VirtualTimePaused() override;
+  void VirtualTimeResumed() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
@@ -492,6 +494,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool in_idle_period_for_testing;
     bool use_virtual_time;
     bool is_audio_playing;
+    bool virtual_time_paused;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.

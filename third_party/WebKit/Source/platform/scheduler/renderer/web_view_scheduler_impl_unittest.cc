@@ -614,12 +614,12 @@ TEST_F(WebViewSchedulerImplTest, SuspendTimersWhileVirtualTimeIsPaused) {
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
       web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
-  web_frame_scheduler->TimerTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&RunOrderTask, 1, WTF::Unretained(&run_order)),
-      TimeDelta());
-
   web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
   web_view_scheduler_->EnableVirtualTime();
+
+  web_frame_scheduler->TimerTaskRunner()->PostTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(&RunOrderTask, 1, WTF::Unretained(&run_order)));
 
   mock_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
@@ -681,9 +681,11 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
 
   // The timer that is scheduled for the exact point in time when virtual time
   // expires will not run.
-  EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time));
+  EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time,
+                                      initial_real_time));
   EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 1,
-                                            initial_virtual_time_ms + 2));
+                                            initial_virtual_time_ms + 2,
+                                            initial_virtual_time_ms + 5));
 }
 
 namespace {
