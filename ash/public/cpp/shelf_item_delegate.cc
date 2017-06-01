@@ -7,9 +7,13 @@
 namespace ash {
 
 ShelfItemDelegate::ShelfItemDelegate(const ash::ShelfID& shelf_id)
-    : shelf_id_(shelf_id), image_set_by_controller_(false) {}
+    : shelf_id_(shelf_id), binding_(this), image_set_by_controller_(false) {}
 
 ShelfItemDelegate::~ShelfItemDelegate() {}
+
+mojom::ShelfItemDelegatePtr ShelfItemDelegate::CreateInterfacePtrAndBind() {
+  return binding_.CreateInterfacePtrAndBind();
+}
 
 MenuItemList ShelfItemDelegate::GetAppMenuItems(int event_flags) {
   return MenuItemList();

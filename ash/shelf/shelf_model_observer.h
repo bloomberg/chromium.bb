@@ -11,7 +11,9 @@
 namespace ash {
 
 struct ShelfItem;
+class ShelfItemDelegate;
 
+// TODO(msw): Move this to ash/public/cpp and use ASH_PUBLIC_EXPORT.
 class ASH_EXPORT ShelfModelObserver {
  public:
   // Invoked after an item has been added to the model.
@@ -27,6 +29,10 @@ class ASH_EXPORT ShelfModelObserver {
 
   // Invoked after an item changes. |old_item| is the item before the change.
   virtual void ShelfItemChanged(int index, const ShelfItem& old_item) = 0;
+
+  // Invoked after a delegate changes. |delegate| is the new value.
+  virtual void ShelfItemDelegateChanged(const ShelfID& id,
+                                        ShelfItemDelegate* delegate) = 0;
 
  protected:
   virtual ~ShelfModelObserver() {}

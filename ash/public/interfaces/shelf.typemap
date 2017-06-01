@@ -19,6 +19,7 @@ type_mappings = [
   "ash.mojom.ShelfAction=ash::ShelfAction",
   "ash.mojom.ShelfAlignment=ash::ShelfAlignment",
   "ash.mojom.ShelfAutoHideBehavior=ash::ShelfAutoHideBehavior",
+  "ash.mojom.ShelfID=ash::ShelfID",
   "ash.mojom.ShelfItem=ash::ShelfItem",
   "ash.mojom.ShelfItemStatus=ash::ShelfItemStatus",
   "ash.mojom.ShelfItemType=ash::ShelfItemType",

@@ -9,15 +9,10 @@
 #include "base/macros.h"
 
 namespace ash {
-class ShelfModel;
 
 // ShelfItemDelegate for TYPE_APP_LIST.
 class AppListShelfItemDelegate : public ShelfItemDelegate {
  public:
-  // Initializes the app list item in the shelf data model and creates an
-  // AppListShelfItemDelegate which will be owned by |model|.
-  static void CreateAppListItemAndDelegate(ShelfModel* model);
-
   AppListShelfItemDelegate();
   ~AppListShelfItemDelegate() override;
 

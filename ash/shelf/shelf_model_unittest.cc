@@ -15,8 +15,6 @@ namespace ash {
 
 namespace {
 
-constexpr char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
-
 // ShelfModelObserver implementation that tracks what message are invoked.
 class TestShelfModelObserver : public ShelfModelObserver {
  public:
@@ -39,6 +37,7 @@ class TestShelfModelObserver : public ShelfModelObserver {
   void ShelfItemRemoved(int, const ShelfItem&) override { removed_count_++; }
   void ShelfItemChanged(int, const ShelfItem&) override { changed_count_++; }
   void ShelfItemMoved(int, int) override { moved_count_++; }
+  void ShelfItemDelegateChanged(const ShelfID&, ShelfItemDelegate*) override {}
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {
@@ -67,14 +66,6 @@ class ShelfModelTest : public testing::Test {
   void SetUp() override {
     model_.reset(new ShelfModel);
     observer_.reset(new TestShelfModelObserver);
-    EXPECT_EQ(0, model_->item_count());
-
-    ShelfItem item;
-    item.type = TYPE_APP_LIST;
-    item.id = ShelfID(kAppListId);
-    model_->Add(item);
-    EXPECT_EQ(1, model_->item_count());
-
     model_->AddObserver(observer_.get());
   }
 
@@ -89,6 +80,14 @@ class ShelfModelTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfModelTest);
 };
+
+TEST_F(ShelfModelTest, IntializesAppListItem) {
+  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(kAppListId, model_->items()[0].id.app_id);
+  // The ShelfModel does not initialize the AppList's ShelfItemDelegate.
+  // ShelfController does that to prevent Chrome from creating its own delegate.
+  EXPECT_FALSE(model_->GetShelfItemDelegate(ShelfID(kAppListId)));
+}
 
 TEST_F(ShelfModelTest, BasicAssertions) {
   // Add an item.

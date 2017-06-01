@@ -61,23 +61,49 @@ interface ShelfController {
   // Observers are immediately notified of the current shelf states when added.
   AddObserver(associated ShelfObserver observer);
 
+  // Note: ShelfObservers are not notified of ShelfModel changes made by the
+  // ShelfItem functions below. Chrome is the solitary ShelfObserver and client
+  // of these functions, so notifications would be cyclical and problematic.
+
+  // Add |item| at |index|, which is clamped to be greater than 0 (AppList's
+  // index) and not exceeding the item count. Use a negative |index| to append.
+  AddShelfItem(int32 index, ShelfItem item);
+  // Remove the item with |id|. Bails if |id| is unknown or for the AppList.
+  RemoveShelfItem(ShelfID id);
+  // Moves item with |id| to |index|, which is in terms of the model after the
+  // item is removed, and is clamped to be greater than 0 (AppList's index) and
+  // not exceeding the item count. Bails if |id| is unknown or for the AppList.
+  MoveShelfItem(ShelfID id, int32 target_index);
+  // Updates |item| via ShelfID. Bails if the id is unknown or for the AppList.
+  UpdateShelfItem(ShelfItem item);
+  // Sets the |delegate| for the item with |id|.
+  SetShelfItemDelegate(ShelfID id, ShelfItemDelegate delegate);
+
   // Set the shelf alignment and auto-hide behavior. See Shelf for details.
+  // TODO(jamescook): Eliminate all these methods and use the ash pref service
+  // to observe and to set prefs. http://crbug.com/723085
   SetAlignment(ShelfAlignment alignment, int64 display_id);
   SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide, int64 display_id);
-
-  // Pin and unpin items on the shelf, or update shelf item images.
-  PinItem(ShelfItem item, associated ShelfItemDelegate delegate);
-  UnpinItem(string app_id);
-  SetItemImage(string app_id, skia.mojom.Bitmap image);
 };
 
-// ShelfObserver is notified on shelf changes; used to persist profile settings.
+// A Shelf observer, used to persist profile settings and cache a ShelfModel.
 interface ShelfObserver {
   // TODO(jamescook): Eliminate all these methods and use the ash pref service
   // to observe and to set prefs. http://crbug.com/723085
   OnShelfInitialized(int64 display_id);
   OnAlignmentChanged(ShelfAlignment alignment, int64 display_id);
   OnAutoHideBehaviorChanged(ShelfAutoHideBehavior auto_hide, int64 display_id);
+
+  // Called when the |item| has been added at |index|.
+  OnShelfItemAdded(int32 index, ShelfItem item);
+  // Called when the item with |id| has been removed.
+  OnShelfItemRemoved(ShelfID id);
+  // Called when the item with |id| has been moved to |index|.
+  OnShelfItemMoved(ShelfID id, int32 index);
+  // Called when the |item| with matching ShelfID has been updated.
+  OnShelfItemUpdated(ShelfItem item);
+  // Called when |delegate| for the item with |id| has been changed.
+  OnShelfItemDelegateChanged(ShelfID id, ShelfItemDelegate delegate);
 };
 
 // ShelfItemDelegate handles shelf item selection, menu command execution, etc.
@@ -129,12 +155,12 @@ struct ShelfID {
 // ShelfItems are used to populate the shelf.
 // This structure matches ash::ShelfItem.
 struct ShelfItem {
-  ShelfItemType type;       // The type of the shelf item.
-  skia.mojom.Bitmap image;  // An icon image Bitmap, shown on the shelf.
-  ShelfItemStatus status;   // The running/closed/etc. status of the item.
-  ShelfID shelf_id;         // The id for the shelf item and its windows.
+  ShelfItemType type;        // The type of the shelf item.
+  skia.mojom.Bitmap? image;  // An icon image Bitmap, shown on the shelf.
+  ShelfItemStatus status;    // The running/closed/etc. status of the item.
+  ShelfID shelf_id;          // The id for the shelf item and its windows.
   mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
-  bool shows_tooltip;       // Whether the tooltip should be shown on hover.
-  bool pinned_by_policy;    // Whether the item is pinned by policy preferences,
-                            // the user cannot un-pin these items.
+  bool shows_tooltip;        // Whether the tooltip should be shown on hover.
+  bool pinned_by_policy;     // Whether the item is pinned by policy prefs, the
+                             // user cannot un-pin these items.
 };

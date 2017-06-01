@@ -165,6 +165,8 @@ struct ASH_PUBLIC_EXPORT ShelfID {
   std::string launch_id;
 };
 
+ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& o, const ShelfID& id);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_SHELF_TYPES_H_

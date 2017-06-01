@@ -2501,3 +2501,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
   ASSERT_FALSE(
       IsItemPresentInMenu(menu2.get(), LauncherContextMenu::MENU_CLOSE));
 }
+
+// Chrome's ShelfModel should have AppList and browser items and delegates.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ShelfModelInitialization) {
+  ash::ShelfModel* model = controller_->shelf_model();
+  EXPECT_EQ(2, model->item_count());
+  EXPECT_EQ(ash::kAppListId, model->items()[0].id.app_id);
+  EXPECT_TRUE(model->GetShelfItemDelegate(model->items()[0].id));
+  EXPECT_EQ(extension_misc::kChromeAppId, model->items()[1].id.app_id);
+  EXPECT_TRUE(model->GetShelfItemDelegate(model->items()[1].id));
+}
