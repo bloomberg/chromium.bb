@@ -216,9 +216,11 @@ double VisualViewport::Width() const {
 
   UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  float width = AdjustScrollForAbsoluteZoom(VisibleSize().Width(),
-                                            MainFrame()->PageZoomFactor());
-  return width - MainFrame()->View()->VerticalScrollbarWidth() / scale_;
+  float zoom = MainFrame()->PageZoomFactor();
+  float width_css_px = AdjustScrollForAbsoluteZoom(VisibleSize().Width(), zoom);
+  float scrollbar_thickness_css_px =
+      MainFrame()->View()->VerticalScrollbarWidth() / (zoom * scale_);
+  return width_css_px - scrollbar_thickness_css_px;
 }
 
 double VisualViewport::Height() const {
@@ -227,9 +229,12 @@ double VisualViewport::Height() const {
 
   UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  float height = AdjustScrollForAbsoluteZoom(VisibleSize().Height(),
-                                             MainFrame()->PageZoomFactor());
-  return height - MainFrame()->View()->HorizontalScrollbarHeight() / scale_;
+  float zoom = MainFrame()->PageZoomFactor();
+  float height_css_px =
+      AdjustScrollForAbsoluteZoom(VisibleSize().Height(), zoom);
+  float scrollbar_thickness_css_px =
+      MainFrame()->View()->HorizontalScrollbarHeight() / (zoom * scale_);
+  return height_css_px - scrollbar_thickness_css_px;
 }
 
 double VisualViewport::ScaleForVisualViewport() const {

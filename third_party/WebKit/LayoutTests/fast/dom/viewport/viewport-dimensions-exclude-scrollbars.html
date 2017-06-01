@@ -24,15 +24,32 @@
       internals.setPageScaleFactor(pageScaleFactor);
 
       // Verify viewport dimensions exclude scrollbar.
-      assert_equals(viewport().width, 800 / pageScaleFactor - scrollbarWidthCSSPixels);
-      assert_equals(viewport().height, 600 / pageScaleFactor - scrollbarHeightCSSPixels);
+      assert_equals(
+          viewport().width,
+          800 / pageScaleFactor - scrollbarWidthCSSPixels,
+          "Width with pinch-zoom");
+      assert_equals(
+          viewport().height,
+          600 / pageScaleFactor - scrollbarHeightCSSPixels,
+          "Height with pinch-zoom");
 
       // Apply browser zoom.
       window.internals.setZoomFactor(browserZoomFactor);
 
+      // Since the scrollbars don't change size to the user as we zoom, they're
+      // actuall smaller in CSS pixels.
+      scrollbarWidthCSSPixels /= browserZoomFactor;
+      scrollbarHeightCSSPixels /= browserZoomFactor;
+
       // Verify scrollbar exclusion with browser zoom.
-      assert_equals(viewport().width, 800 / pageScaleFactor / browserZoomFactor - scrollbarWidthCSSPixels);
-      assert_equals(viewport().height, 600 / pageScaleFactor / browserZoomFactor - scrollbarHeightCSSPixels);
+      assert_equals(
+          viewport().width, 
+          800 / pageScaleFactor / browserZoomFactor - scrollbarWidthCSSPixels,
+          "Width with pinch-zoom and browser zoom");
+      assert_equals(
+          viewport().height,
+          600 / pageScaleFactor / browserZoomFactor - scrollbarHeightCSSPixels,
+          "Height with pinch-zoom and browser zoom");
       t.done();
     });
   }, 'Verify viewport dimensions exclude scrollbars.');
