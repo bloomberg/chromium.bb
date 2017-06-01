@@ -24,7 +24,6 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
 
