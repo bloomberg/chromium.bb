@@ -4,6 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -31,6 +32,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -256,11 +258,20 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   EXPECT_FALSE(GetTray()->is_active());
 }
 
-// Test that when a hide animation is aborted via deletion, that the
-// OverviewButton is still hidden.
+// Test that a hide animation can complete.
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
-  // TODO: disabled as ScreenRotationAnimator does not work in mash,
-  // http://crbug.com/696754.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  EXPECT_TRUE(GetTray()->visible());
+  GetTray()->SetVisible(false);
+  EXPECT_FALSE(GetTray()->visible());
+}
+
+// Test that when a hide animation is aborted via deletion, the
+// OverviewButton is still hidden.
+TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
+  // TODO(wutao): disabled as GetRootWindowForDisplayId does not work in mash,
+  // http://crbug.com/706589.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
@@ -273,16 +284,14 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   GetTray()->SetVisible(false);
 
-  // ScreenRotationAnimator copies the current layers, and deletes them upon
-  // completion. Allow its animation to complete first.
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> rotate_duration(
-      new ui::ScopedAnimationDurationScaleMode(
-          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-  ash::ScreenRotationAnimator(display::Display::InternalDisplayId())
-      .Rotate(display::Display::ROTATE_270,
-              display::Display::ROTATION_SOURCE_ACTIVE);
+  aura::Window* root_window =
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  // Colone and delete the old layer tree.
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner =
+      ::wm::RecreateLayers(root_window);
+  old_layer_tree_owner.reset();
 
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(GetTray()->visible());
 }
 

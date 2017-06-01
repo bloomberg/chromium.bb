@@ -11,8 +11,12 @@
 #include "ash/rotator/test/screen_rotation_animator_test_api.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/system/overview/overview_button_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/status_area_widget_test_helper.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -40,6 +44,11 @@ void SetDisplayRotation(int64_t display_id,
   Shell::Get()->display_manager()->SetDisplayRotation(
       display_id, rotation,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
+}
+
+OverviewButtonTray* GetTray() {
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->overview_button_tray();
 }
 
 class AnimationObserver : public ScreenRotationAnimatorObserver {
@@ -392,6 +401,36 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest, ShouldCompleteAnimations) {
   EXPECT_EQ(display::Display::ROTATE_270, GetDisplayRotation(display_id()));
 }
 
+// Test that slow screen rotation animation will not interrupt hide animation.
+// The OverviewButton should be hidden.
+TEST_F(ScreenRotationAnimatorSlowAnimationTest,
+       OverviewButtonTrayHideAnimationAlwaysCompletes) {
+  // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
+  if (Shell::GetAshConfig() == Config::MASH) {
+    ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
+                display_id());
+    return;
+  }
+
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  // Long duration for hide animation, to allow it to be interrupted.
+  ui::ScopedAnimationDurationScaleMode hide_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  GetTray()->SetVisible(false);
+
+  // ScreenRotationAnimator copies the current layers, and deletes them upon
+  // completion. Allow its animation to complete first.
+  ui::ScopedAnimationDurationScaleMode rotate_duration(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  SetDisplayRotation(display_id(), display::Display::ROTATE_0);
+  animator()->Rotate(display::Display::ROTATE_90,
+                     display::Display::RotationSource::ROTATION_SOURCE_USER);
+
+  EXPECT_FALSE(GetTray()->visible());
+}
+
 // Test enable smooth screen rotation code path.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        RotatesToDifferentRotationWithCopyCallback) {
@@ -541,6 +580,42 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   WaitForCopyCallback();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(secondary_display_id, display_manager()->GetDisplayAt(0).id());
+}
+
+// Test that smooth screen rotation animation will not interrupt hide animation.
+// The OverviewButton should be hidden.
+TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
+       OverviewButtonTrayHideAnimationAlwaysCompletes) {
+  // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
+  if (Shell::GetAshConfig() == Config::MASH) {
+    ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
+                display_id());
+    return;
+  }
+
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  // Long duration for hide animation, to allow it to be interrupted.
+  ui::ScopedAnimationDurationScaleMode hide_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  GetTray()->SetVisible(false);
+
+  // Allow ScreenRotationAnimator animation to complete first.
+  ui::ScopedAnimationDurationScaleMode rotate_duration(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  SetScreenRotationAnimator(
+      display_manager()->GetDisplayAt(0).id(), run_loop_->QuitWhenIdleClosure(),
+      base::Bind(
+          &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
+          base::Unretained(this)));
+  SetDisplayRotation(display_id(), display::Display::ROTATE_0);
+  animator()->Rotate(display::Display::ROTATE_90,
+                     display::Display::RotationSource::ROTATION_SOURCE_USER);
+  WaitForCopyCallback();
+
+  GetTray()->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(GetTray()->visible());
 }
 
 }  // namespace ash
