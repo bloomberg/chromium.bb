@@ -411,6 +411,9 @@ fileOperationUtil.copyTo = function(
           break;
 
         case 'error':
+          console.error(
+              'copy failed. sourceUrl: ' + source.toURL() +
+              ' error: ' + status.error);
           chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
           errorCallback(util.createDOMError(status.error));
