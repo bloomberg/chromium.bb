@@ -19,11 +19,11 @@
   return [super initWithTaskRunner:base::ThreadTaskRunnerHandle::Get()];
 }
 
-- (void)saveSession:(SessionIOS*)session
+- (void)saveSession:(SessionIOSFactory)factory
           directory:(NSString*)directory
         immediately:(BOOL)immediately {
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
-  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:session];
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:factory()];
   if (self.performIO)
     [self performSaveSessionData:data sessionPath:sessionPath];
 }

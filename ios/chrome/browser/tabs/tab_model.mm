@@ -376,7 +376,11 @@ std::unique_ptr<web::WebState> CreateWebState(
     return;
   NSString* statePath =
       base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
-  [_sessionService saveSession:self.sessionForSaving
+  __weak TabModel* weakSelf = self;
+  SessionIOSFactory sessionFactory = ^{
+    return weakSelf.sessionForSaving;
+  };
+  [_sessionService saveSession:sessionFactory
                      directory:statePath
                    immediately:immediately];
 }

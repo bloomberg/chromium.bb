@@ -11,6 +11,8 @@
 
 @class SessionIOS;
 
+using SessionIOSFactory = SessionIOS* (^)();
+
 // A singleton service for saving the current session. Can either save on a
 // delay or immediately. Saving is always performed on a separate thread.
 @interface SessionServiceIOS : NSObject
@@ -24,12 +26,12 @@
     (const scoped_refptr<base::SequencedTaskRunner>&)taskRunner
     NS_DESIGNATED_INITIALIZER;
 
-// Saves the session represented by |session| to |directory|. If |immediately|
+// Saves the session returned by |factory| to |directory|. If |immediately|
 // is NO, the save is done after a delay. If another call is pending, this one
 // is ignored. If YES, the save is done now, cancelling any pending calls.
 // Either way, the save is done on a separate thread to avoid blocking the UI
 // thread.
-- (void)saveSession:(SessionIOS*)sessionWindow
+- (void)saveSession:(SessionIOSFactory)factory
           directory:(NSString*)directory
         immediately:(BOOL)immediately;
 

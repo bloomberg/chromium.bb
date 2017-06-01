@@ -70,21 +70,24 @@ class SessionServiceTest : public PlatformTest {
     return base::SysUTF8ToNSString(session_path.AsUTF8Unsafe());
   }
 
-  // Create a SessionIOS corresponding to |window_count| windows each with
-  // |tab_count| tabs.
-  SessionIOS* CreateSession(NSUInteger window_count, NSUInteger tab_count) {
-    NSMutableArray<SessionWindowIOS*>* windows = [NSMutableArray array];
-    while (windows.count < window_count) {
-      NSMutableArray<CRWSessionStorage*>* tabs = [NSMutableArray array];
-      while (tabs.count < tab_count) {
-        [tabs addObject:[[CRWSessionStorage alloc] init]];
+  // Create a SessionIOSFactory creating a SessionIOS with |window_count|
+  // windows each with |tab_count| tabs.
+  SessionIOSFactory CreateSessionFactory(NSUInteger window_count,
+                                         NSUInteger tab_count) {
+    return ^{
+      NSMutableArray<SessionWindowIOS*>* windows = [NSMutableArray array];
+      while (windows.count < window_count) {
+        NSMutableArray<CRWSessionStorage*>* tabs = [NSMutableArray array];
+        while (tabs.count < tab_count) {
+          [tabs addObject:[[CRWSessionStorage alloc] init]];
+        }
+        [windows addObject:[[SessionWindowIOS alloc]
+                               initWithSessions:[tabs copy]
+                                  selectedIndex:(tabs.count ? tabs.count - 1
+                                                            : NSNotFound)]];
       }
-      [windows addObject:[[SessionWindowIOS alloc]
-                             initWithSessions:[tabs copy]
-                                selectedIndex:(tabs.count ? tabs.count - 1
-                                                          : NSNotFound)]];
-    }
-    return [[SessionIOS alloc] initWithWindows:[windows copy]];
+      return [[SessionIOS alloc] initWithWindows:[windows copy]];
+    };
   }
 
   SessionServiceIOS* session_service() { return session_service_; }
@@ -106,7 +109,7 @@ TEST_F(SessionServiceTest, SessionPathForDirectory) {
 }
 
 TEST_F(SessionServiceTest, SaveSessionWindowToPath) {
-  [session_service() saveSession:CreateSession(0u, 0u)
+  [session_service() saveSession:CreateSessionFactory(0u, 0u)
                        directory:directory()
                      immediately:YES];
 
@@ -125,7 +128,7 @@ TEST_F(SessionServiceTest, SaveSessionWindowToPathDirectoryExists) {
                                                          attributes:nil
                                                               error:nullptr]);
 
-  [session_service() saveSession:CreateSession(0u, 0u)
+  [session_service() saveSession:CreateSessionFactory(0u, 0u)
                        directory:directory()
                      immediately:YES];
 
@@ -145,7 +148,7 @@ TEST_F(SessionServiceTest, LoadSessionFromDirectoryNoFile) {
 }
 
 TEST_F(SessionServiceTest, LoadSessionFromDirectory) {
-  [session_service() saveSession:CreateSession(2u, 1u)
+  [session_service() saveSession:CreateSessionFactory(2u, 1u)
                        directory:directory()
                      immediately:YES];
 
@@ -164,7 +167,7 @@ TEST_F(SessionServiceTest, LoadSessionFromDirectory) {
 }
 
 TEST_F(SessionServiceTest, LoadSessionFromPath) {
-  [session_service() saveSession:CreateSession(2u, 1u)
+  [session_service() saveSession:CreateSessionFactory(2u, 1u)
                        directory:directory()
                      immediately:YES];
 
