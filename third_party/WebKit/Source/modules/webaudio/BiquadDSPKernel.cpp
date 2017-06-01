@@ -31,13 +31,6 @@
 
 namespace blink {
 
-// FIXME: As a recursive linear filter, depending on its parameters, a biquad
-// filter can have an infinite tailTime. In practice, Biquad filters do not
-// usually (except for very high resonance values) have a tailTime of longer
-// than approx. 200ms. This value could possibly be calculated based on the
-// settings of the Biquad.
-static const double kMaxBiquadDelayTime = 0.2;
-
 void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
   if (GetBiquadProcessor()->FilterCoefficientsDirty()) {
     float cutoff_frequency[AudioUtilities::kRenderQuantumFrames];
@@ -121,6 +114,23 @@ void BiquadDSPKernel::UpdateCoefficients(int number_of_frames,
         break;
     }
   }
+
+  UpdateTailTime(number_of_frames - 1);
+}
+
+void BiquadDSPKernel::UpdateTailTime(int coef_index) {
+  // A reasonable upper limit for the tail time.  While it's easy to
+  // create biquad filters whose tail time can be much larger than
+  // this, limit the maximum to this value so that we don't keep such
+  // nodes alive "forever".
+  // TODO: What is a reasonable upper limit?
+  const double kMaxTailTime = 30;
+
+  double sample_rate = SampleRate();
+  double tail =
+      biquad_.TailFrame(coef_index, kMaxTailTime * sample_rate) / sample_rate;
+
+  tail_time_ = clampTo(tail, 0.0, kMaxTailTime);
 }
 
 void BiquadDSPKernel::Process(const float* source,
@@ -199,7 +209,7 @@ void BiquadDSPKernel::GetFrequencyResponse(int n_frequencies,
 }
 
 double BiquadDSPKernel::TailTime() const {
-  return kMaxBiquadDelayTime;
+  return tail_time_;
 }
 
 double BiquadDSPKernel::LatencyTime() const {
