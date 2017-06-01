@@ -255,6 +255,88 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_FALSE(child->current_frame_host()->IsCrossProcessSubframe());
 }
 
+// Check that a new isolated origin subframe will attempt to reuse an existing
+// process for that isolated origin, even across BrowsingInstances.  Also check
+// that main frame navigations to an isolated origin keep using the default
+// process model and do not reuse existing processes.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeReusesExistingProcess) {
+  GURL top_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), top_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Open an unrelated tab in a separate BrowsingInstance, and navigate it to
+  // to an isolated origin.  This SiteInstance should have a default process
+  // reuse policy - only subframes attempt process reuse.
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
+                                                   "/page_with_iframe.html"));
+  Shell* second_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(second_shell, isolated_url));
+  scoped_refptr<SiteInstanceImpl> second_shell_instance =
+      static_cast<SiteInstanceImpl*>(
+          second_shell->web_contents()->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(second_shell_instance->IsRelatedSiteInstance(
+      root->current_frame_host()->GetSiteInstance()));
+  RenderProcessHost* isolated_process = second_shell_instance->GetProcess();
+  EXPECT_EQ(SiteInstanceImpl::ProcessReusePolicy::DEFAULT,
+            second_shell_instance->process_reuse_policy());
+
+  // Now navigate the first tab's subframe to an isolated origin.  See that it
+  // reuses the existing |isolated_process|.
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_url);
+  EXPECT_EQ(isolated_url, child->current_url());
+  EXPECT_EQ(isolated_process, child->current_frame_host()->GetProcess());
+  EXPECT_EQ(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE,
+      child->current_frame_host()->GetSiteInstance()->process_reuse_policy());
+
+  EXPECT_TRUE(child->current_frame_host()->IsCrossProcessSubframe());
+  EXPECT_EQ(isolated_url.GetOrigin(),
+            child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+
+  // The subframe's SiteInstance should still be different from second_shell's
+  // SiteInstance, and they should be in separate BrowsingInstances.
+  EXPECT_NE(second_shell_instance,
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_FALSE(second_shell_instance->IsRelatedSiteInstance(
+      child->current_frame_host()->GetSiteInstance()));
+
+  // Navigate the second tab to a normal URL with a same-site subframe.  This
+  // leaves only the first tab's subframe in the isolated origin process.
+  EXPECT_TRUE(NavigateToURL(second_shell, top_url));
+  EXPECT_NE(isolated_process,
+            second_shell->web_contents()->GetMainFrame()->GetProcess());
+
+  // Navigate the second tab's subframe to an isolated origin, and check that
+  // this new subframe reuses the isolated process of the subframe in the first
+  // tab, even though the two are in separate BrowsingInstances.
+  NavigateIframeToURL(second_shell->web_contents(), "test_iframe",
+                      isolated_url);
+  FrameTreeNode* second_subframe =
+      static_cast<WebContentsImpl*>(second_shell->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->child_at(0);
+  EXPECT_EQ(isolated_process,
+            second_subframe->current_frame_host()->GetProcess());
+  EXPECT_NE(child->current_frame_host()->GetSiteInstance(),
+            second_subframe->current_frame_host()->GetSiteInstance());
+
+  // Open a third, unrelated tab, navigate it to an isolated origin, and check
+  // that its main frame doesn't share a process with the existing isolated
+  // subframes.
+  Shell* third_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(third_shell, isolated_url));
+  SiteInstanceImpl* third_shell_instance = static_cast<SiteInstanceImpl*>(
+      third_shell->web_contents()->GetMainFrame()->GetSiteInstance());
+  EXPECT_NE(third_shell_instance,
+            second_subframe->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(third_shell_instance,
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(third_shell_instance->GetProcess(), isolated_process);
+}
+
 // Check that isolated origins can access cookies.  This requires cookie checks
 // on the IO thread to be aware of isolated origins.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Cookies) {
