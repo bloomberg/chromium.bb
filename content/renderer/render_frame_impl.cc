@@ -71,6 +71,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
+#include "content/public/child/url_loader_throttle.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
@@ -4189,9 +4190,10 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
         transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   }
 
+  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
   GURL new_url;
   if (GetContentClient()->renderer()->WillSendRequest(
-          frame_, transition_type, request.Url(), &new_url)) {
+          frame_, transition_type, request.Url(), &throttles, &new_url)) {
     request.SetURL(WebURL(new_url));
   }
 
@@ -4288,6 +4290,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   extra_data->set_url_loader_factory_override(url_loader_factory_.get());
+  // TODO(kinuko, yzshen): We need to set up throttles for some worker cases
+  // that don't go through here.
+  extra_data->set_url_loader_throttles(std::move(throttles));
 
   request.SetExtraData(extra_data);
 

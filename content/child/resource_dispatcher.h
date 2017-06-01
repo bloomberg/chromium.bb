@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
+#include "content/public/child/url_loader_throttle.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -47,6 +48,7 @@ struct ResourceResponseHead;
 class SharedMemoryReceivedDataFactory;
 struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
+class ThrottlingURLLoader;
 class URLLoaderClientImpl;
 
 namespace mojom {
@@ -76,11 +78,13 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   //
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
-  virtual void StartSync(std::unique_ptr<ResourceRequest> request,
-                         int routing_id,
-                         SyncLoadResponse* response,
-                         blink::WebURLRequest::LoadingIPCType ipc_type,
-                         mojom::URLLoaderFactory* url_loader_factory);
+  virtual void StartSync(
+      std::unique_ptr<ResourceRequest> request,
+      int routing_id,
+      SyncLoadResponse* response,
+      blink::WebURLRequest::LoadingIPCType ipc_type,
+      mojom::URLLoaderFactory* url_loader_factory,
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.
@@ -100,6 +104,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojo::ScopedDataPipeConsumerHandle consumer_handle);
 
   // Removes a request from the |pending_requests_| list, returning true if the
@@ -190,7 +195,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     int buffer_size;
 
     // For mojo loading.
-    mojom::URLLoaderPtr url_loader;
+    std::unique_ptr<ThrottlingURLLoader> url_loader;
     std::unique_ptr<URLLoaderClientImpl> url_loader_client;
   };
   using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequestInfo>>;

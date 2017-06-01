@@ -35,6 +35,7 @@ source_set("child_sources") {
     "image_decoder_utils.h",
     "request_peer.h",
     "resource_dispatcher_delegate.h",
+    "url_loader_throttle.h",
     "v8_value_converter.h",
     "worker_thread.h",
   ]

@@ -57,6 +57,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/safe_browsing/safe_browsing_url_loader_throttle.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -106,6 +107,7 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
@@ -1197,7 +1199,20 @@ bool ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
     GURL* new_url) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    if (!safe_browsing_) {
+      RenderThread::Get()->GetConnector()->BindInterface(
+          content::mojom::kBrowserServiceName, &safe_browsing_);
+    }
+    RenderFrame* render_frame = content::RenderFrame::FromWebFrame(frame);
+    throttles->push_back(
+        base::MakeUnique<safe_browsing::SafeBrowsingURLLoaderThrottle>(
+            safe_browsing_.get(), render_frame->GetRoutingID()));
+  }
+
 // Check whether the request should be allowed. If not allowed, we reset the
 // URL to something invalid to prevent the request and cause an error.
 #if BUILDFLAG(ENABLE_EXTENSIONS)

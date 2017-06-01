@@ -1173,6 +1173,8 @@ split_static_library("browser") {
     "safe_browsing/chrome_cleaner/srt_field_trial_win.h",
     "safe_browsing/chrome_cleaner/srt_global_error_win.cc",
     "safe_browsing/chrome_cleaner/srt_global_error_win.h",
+    "safe_browsing/mojo_safe_browsing_impl.cc",
+    "safe_browsing/mojo_safe_browsing_impl.h",
     "safe_browsing/safe_browsing_tab_observer.cc",
     "safe_browsing/safe_browsing_tab_observer.h",
     "safe_search_api/safe_search_url_checker.cc",

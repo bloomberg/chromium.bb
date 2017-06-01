@@ -349,3 +349,9 @@ mojom("service_names") {
     "service_names.mojom",
   ]
 }
+
+mojom("resource_type_bindings") {
+  sources = [
+    "resource_type.mojom",
+  ]
+}

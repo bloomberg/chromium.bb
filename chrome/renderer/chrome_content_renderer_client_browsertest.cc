@@ -18,6 +18,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/child/url_loader_throttle.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -98,10 +99,12 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
       "chrome-search:/thumb/%i/1",
       render_frame->GetRenderView()->GetRoutingID()));
 
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
   GURL result;
   // Make sure the SearchBox rewrites a thumbnail request from the main frame.
   EXPECT_TRUE(client.WillSendRequest(GetMainFrame(), ui::PAGE_TRANSITION_LINK,
-                                     blink::WebURL(thumbnail_url), &result));
+                                     blink::WebURL(thumbnail_url), &throttles,
+                                     &result));
 
   // Make sure the SearchBox rewrites a thumbnail request from the iframe.
   blink::WebFrame* child_frame = GetMainFrame()->FirstChild();
@@ -110,7 +113,8 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   blink::WebLocalFrame* local_child =
       static_cast<blink::WebLocalFrame*>(child_frame);
   EXPECT_TRUE(client.WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,
-                                     blink::WebURL(thumbnail_url), &result));
+                                     blink::WebURL(thumbnail_url), &throttles,
+                                     &result));
 }
 
 // The tests below examine Youtube requests that use the Flash API and ensure

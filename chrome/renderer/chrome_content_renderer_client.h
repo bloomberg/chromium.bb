@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "chrome/common/safe_browsing.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -136,10 +137,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                   bool is_initial_navigation,
                   bool is_server_redirect,
                   bool* send_referrer) override;
-  bool WillSendRequest(blink::WebLocalFrame* frame,
-                       ui::PageTransition transition_type,
-                       const blink::WebURL& url,
-                       GURL* new_url) override;
+  bool WillSendRequest(
+      blink::WebLocalFrame* frame,
+      ui::PageTransition transition_type,
+      const blink::WebURL& url,
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
+      GURL* new_url) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
   unsigned long long VisitedLinkHash(const char* canonical_url,
@@ -241,6 +244,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       prescient_networking_dispatcher_;
 
   chrome::ChromeKeySystemsProvider key_systems_provider_;
+
+  chrome::mojom::SafeBrowsingPtr safe_browsing_;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
