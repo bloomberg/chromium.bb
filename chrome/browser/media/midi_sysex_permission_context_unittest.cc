@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,10 +26,10 @@
 
 namespace {
 
-class TestPermissionContext : public MidiPermissionContext {
+class TestPermissionContext : public MidiSysexPermissionContext {
  public:
   explicit TestPermissionContext(Profile* profile)
-      : MidiPermissionContext(profile),
+      : MidiSysexPermissionContext(profile),
         permission_set_(false),
         permission_granted_(false),
         tab_context_updated_(false) {}
@@ -62,9 +62,9 @@ class TestPermissionContext : public MidiPermissionContext {
 
 }  // anonymous namespace
 
-class MidiPermissionContextTests : public ChromeRenderViewHostTestHarness {
+class MidiSysexPermissionContextTests : public ChromeRenderViewHostTestHarness {
  protected:
-  MidiPermissionContextTests() = default;
+  MidiSysexPermissionContextTests() = default;
 
  private:
   // ChromeRenderViewHostTestHarness:
@@ -77,11 +77,11 @@ class MidiPermissionContextTests : public ChromeRenderViewHostTestHarness {
 #endif
   }
 
-  DISALLOW_COPY_AND_ASSIGN(MidiPermissionContextTests);
+  DISALLOW_COPY_AND_ASSIGN(MidiSysexPermissionContextTests);
 };
 
-// Web MIDI permission should be denied for insecure origin.
-TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
+// Web MIDI sysex permission should be denied for insecure origin.
+TEST_F(MidiSysexPermissionContextTests, TestInsecureRequestingUrl) {
   TestPermissionContext permission_context(profile());
   GURL url("http://www.example.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
@@ -105,8 +105,8 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
   EXPECT_EQ(CONTENT_SETTING_ASK, setting);
 }
 
-// Web MIDI permission status should be denied for insecure origin.
-TEST_F(MidiPermissionContextTests, TestInsecureQueryingUrl) {
+// Web MIDI sysex permission status should be denied for insecure origin.
+TEST_F(MidiSysexPermissionContextTests, TestInsecureQueryingUrl) {
   TestPermissionContext permission_context(profile());
   GURL insecure_url("http://www.example.com");
   GURL secure_url("https://www.example.com");
