@@ -149,7 +149,8 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 
   SetLayoutManager(new views::FillLayout);
 
-  tray_container_->set_background(background_);
+  tray_container_->SetBackground(
+      std::unique_ptr<views::Background>(background_));
   AddChildView(tray_container_);
 
   tray_event_filter_.reset(new TrayEventFilter);

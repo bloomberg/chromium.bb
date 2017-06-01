@@ -65,7 +65,7 @@ ToastContentsView::ToastContentsView(
   // Sets the transparent background. Then, when the message view is slid out,
   // the whole toast seems to slide although the actual bound of the widget
   // remains. This is hacky but easier to keep the consistency.
-  set_background(views::Background::CreateSolidBackground(0, 0, 0, 0));
+  SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
   fade_animation_.reset(new gfx::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kFadeInOutDuration);

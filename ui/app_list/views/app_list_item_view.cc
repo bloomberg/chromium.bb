@@ -476,13 +476,13 @@ void AppListItemView::SetTitleSubpixelAA() {
   title_->SetSubpixelRenderingEnabled(enable_aa);
   if (enable_aa) {
     title_->SetBackgroundColor(app_list::kLabelBackgroundColor);
-    title_->set_background(views::Background::CreateSolidBackground(
-        app_list::kLabelBackgroundColor));
+    title_->SetBackground(
+        views::CreateSolidBackground(app_list::kLabelBackgroundColor));
   } else {
     // In other cases, keep the background transparent to ensure correct
     // interactions with animations. This will temporarily disable subpixel AA.
     title_->SetBackgroundColor(0);
-    title_->set_background(NULL);
+    title_->SetBackground(nullptr);
   }
   title_->SchedulePaint();
 }

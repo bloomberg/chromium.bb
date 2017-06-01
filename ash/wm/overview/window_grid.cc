@@ -242,7 +242,7 @@ views::Widget* CreateBackgroundWidget(aura::Window* root_window,
   } else {
     views::View* content_view =
         new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
-    content_view->set_background(new BackgroundWith1PxBorder(
+    content_view->SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
         background_color, border_color, border_thickness, border_radius));
     widget->SetContentsView(content_view);
   }

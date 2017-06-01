@@ -114,12 +114,12 @@ void TileItemView::ImageShadowAnimationProgressed(
 }
 
 void TileItemView::UpdateBackgroundColor() {
-  views::Background* background = nullptr;
+  std::unique_ptr<views::Background> background;
   SkColor background_color = parent_background_color_;
 
   if (selected_) {
     background_color = kSelectedColor;
-    background = views::Background::CreateSolidBackground(background_color);
+    background = views::CreateSolidBackground(background_color);
   } else if (image_shadow_animator_) {
     if (state() == STATE_HOVERED || state() == STATE_PRESSED)
       image_shadow_animator_->animation()->Show();
@@ -127,7 +127,7 @@ void TileItemView::UpdateBackgroundColor() {
       image_shadow_animator_->animation()->Hide();
   } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     background_color = kHighlightedColor;
-    background = views::Background::CreateSolidBackground(background_color);
+    background = views::CreateSolidBackground(background_color);
   }
 
   // Tell the label what color it will be drawn onto. It will use whether the
@@ -135,7 +135,7 @@ void TileItemView::UpdateBackgroundColor() {
   // rendering. Does not actually set the label's background color.
   title_->SetBackgroundColor(background_color);
 
-  set_background(background);
+  SetBackground(std::move(background));
   SchedulePaint();
 }
 

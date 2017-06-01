@@ -45,31 +45,6 @@ class VIEWS_EXPORT Background {
   Background();
   virtual ~Background();
 
-  // Creates a background that fills the canvas in the specified color.
-  static Background* CreateSolidBackground(SkColor color);
-
-  // Creates a background that fills the canvas in the color specified by the
-  // view's NativeTheme and the given color identifier.
-  static Background* CreateThemedSolidBackground(
-      View* view,
-      ui::NativeTheme::ColorId color_id);
-
-  // Creates a background that fills the canvas in the specified color.
-  static Background* CreateSolidBackground(int r, int g, int b) {
-    return CreateSolidBackground(SkColorSetRGB(r, g, b));
-  }
-
-  // Creates a background that fills the canvas in the specified color.
-  static Background* CreateSolidBackground(int r, int g, int b, int a) {
-    return CreateSolidBackground(SkColorSetARGB(a, r, g, b));
-  }
-
-  // Creates Chrome's standard panel background
-  static Background* CreateStandardPanelBackground();
-
-  // Creates a Background from the specified Painter.
-  static Background* CreateBackgroundPainter(std::unique_ptr<Painter> painter);
-
   // Render the background for the provided view
   virtual void Paint(gfx::Canvas* canvas, View* view) const = 0;
 
@@ -88,6 +63,22 @@ class VIEWS_EXPORT Background {
 
   DISALLOW_COPY_AND_ASSIGN(Background);
 };
+
+// Creates a background that fills the canvas in the specified color.
+VIEWS_EXPORT std::unique_ptr<Background> CreateSolidBackground(SkColor color);
+
+// Creates a background that fills the canvas in the color specified by the
+// view's NativeTheme and the given color identifier.
+VIEWS_EXPORT std::unique_ptr<Background> CreateThemedSolidBackground(
+    View* view,
+    ui::NativeTheme::ColorId color_id);
+
+// Creates Chrome's standard panel background
+VIEWS_EXPORT std::unique_ptr<Background> CreateStandardPanelBackground();
+
+// Creates a Background from the specified Painter.
+VIEWS_EXPORT std::unique_ptr<Background> CreateBackgroundFromPainter(
+    std::unique_ptr<Painter> painter);
 
 }  // namespace views
 

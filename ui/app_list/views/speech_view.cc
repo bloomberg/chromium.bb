@@ -121,8 +121,7 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   // actually has a single child of 'container' which has white background and
   // contains all components.
   views::View* container = new views::View();
-  container->set_background(
-      views::Background::CreateSolidBackground(SK_ColorWHITE));
+  container->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   const gfx::ImageSkia& logo_image = delegate_->GetSpeechUI()->logo();
   if (!logo_image.isNull()) {

@@ -89,8 +89,7 @@ ExtensionDialog* ExtensionDialog::Show(
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
-  view->set_background(
-      views::Background::CreateSolidBackground(0xFF, 0xFF, 0xFF));
+  view->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   view->SetVisible(true);
 
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
@@ -209,7 +208,7 @@ void ExtensionDialog::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
-      GetExtensionView(host_.get())->set_background(NULL);
+      GetExtensionView(host_.get())->SetBackground(nullptr);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)

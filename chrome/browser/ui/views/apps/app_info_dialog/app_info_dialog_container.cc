@@ -134,7 +134,7 @@ class AppListDialogContainer : public BaseDialogContainer,
   AppListDialogContainer(views::View* dialog_body,
                          const base::Closure& close_callback)
       : BaseDialogContainer(dialog_body, close_callback) {
-    set_background(new AppListOverlayBackground());
+    SetBackground(base::MakeUnique<AppListOverlayBackground>());
     close_button_ = views::BubbleFrameView::CreateCloseButton(this);
     AddChildView(close_button_);
   }

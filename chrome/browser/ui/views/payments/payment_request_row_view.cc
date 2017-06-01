@@ -26,7 +26,7 @@ PaymentRequestRowView::~PaymentRequestRowView() {}
 
 void PaymentRequestRowView::SetActiveBackground() {
   ui::NativeTheme* theme = GetWidget()->GetNativeTheme();
-  set_background(views::Background::CreateSolidBackground(theme->GetSystemColor(
+  SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
       ui::NativeTheme::kColorId_ResultsTableHoveredBackground)));
 }
 
@@ -46,7 +46,7 @@ void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
     SetActiveBackground();
     HideBottomSeparator();
   } else {
-    set_background(nullptr);
+    SetBackground(nullptr);
     ShowBottomSeparator();
   }
 }

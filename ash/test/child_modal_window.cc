@@ -114,8 +114,8 @@ ChildModalParent::ChildModalParent(aura::Window* context)
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
   widget_->Init(params);
-  widget_->GetRootView()->set_background(
-      views::Background::CreateSolidBackground(kModalParentColor));
+  widget_->GetRootView()->SetBackground(
+      views::CreateSolidBackground(kModalParentColor));
   widget_->GetNativeView()->SetName("ModalParent");
   AddChildView(button_);
   AddChildView(textfield_);

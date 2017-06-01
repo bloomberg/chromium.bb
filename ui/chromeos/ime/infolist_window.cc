@@ -152,14 +152,13 @@ gfx::Size InfolistEntryView::CalculatePreferredSize() const {
 
 void InfolistEntryView::UpdateBackground() {
   if (entry_.highlighted) {
-    set_background(
-      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
+    SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
     SetBorder(views::CreateSolidBorder(
         1, GetNativeTheme()->GetSystemColor(
                ui::NativeTheme::kColorId_FocusedBorderColor)));
   } else {
-    set_background(NULL);
+    SetBackground(nullptr);
     SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
   }
   SchedulePaint();
@@ -179,9 +178,8 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   set_accept_events(false);
   set_margins(gfx::Insets());
 
-  set_background(
-      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_WindowBackground)));
+  SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_WindowBackground)));
   SetBorder(views::CreateSolidBorder(
       1, GetNativeTheme()->GetSystemColor(
              ui::NativeTheme::kColorId_MenuBorderColor)));
@@ -194,7 +192,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   caption_label->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
   caption_label->SetBorder(views::CreateEmptyBorder(2, 2, 2, 2));
-  caption_label->set_background(views::Background::CreateSolidBackground(
+  caption_label->SetBackground(views::CreateSolidBackground(
       color_utils::AlphaBlend(SK_ColorBLACK,
                               GetNativeTheme()->GetSystemColor(
                                   ui::NativeTheme::kColorId_WindowBackground),

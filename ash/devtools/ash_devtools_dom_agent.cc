@@ -359,8 +359,7 @@ void AshDevToolsDOMAgent::UpdateHighlight(
   constexpr int kBorderThickness = 1;
   views::View* root_view = widget_for_highlighting_->GetRootView();
   root_view->SetBorder(views::CreateSolidBorder(kBorderThickness, border));
-  root_view->set_background(
-      views::Background::CreateSolidBackground(background));
+  root_view->SetBackground(views::CreateSolidBackground(background));
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_and_bounds.first);

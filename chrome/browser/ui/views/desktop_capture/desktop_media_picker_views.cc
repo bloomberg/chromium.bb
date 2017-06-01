@@ -117,8 +117,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         kGenericScreenStyle.item_size.height(),
         kGenericScreenStyle.item_size.height() * 2);
     screen_scroll_view->set_hide_horizontal_scrollbar(true);
-    screen_scroll_view->set_background(
-        views::Background::CreateSolidBackground(bg_color));
+    screen_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(screen_title_text, screen_scroll_view);
     pane_->set_listener(this);
@@ -148,8 +147,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                      kWindowStyle.item_size.height() * 2);
     window_scroll_view->set_hide_horizontal_scrollbar(true);
-    window_scroll_view->set_background(
-        views::Background::CreateSolidBackground(bg_color));
+    window_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(window_title_text, window_scroll_view);
     pane_->set_listener(this);
@@ -179,8 +177,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height(),
                                   kTabStyle.item_size.height() * 10);
     tab_scroll_view->set_hide_horizontal_scrollbar(true);
-    tab_scroll_view->set_background(
-        views::Background::CreateSolidBackground(bg_color));
+    tab_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(tab_title_text, tab_scroll_view);
     pane_->set_listener(this);

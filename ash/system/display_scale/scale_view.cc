@@ -50,7 +50,7 @@ ScaleView::ScaleView(SystemTrayItem* owner, bool is_default_view)
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCALE_SLIDER));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 
-  set_background(views::Background::CreateThemedSolidBackground(
+  SetBackground(views::CreateThemedSolidBackground(
       this, ui::NativeTheme::kColorId_BubbleBackground));
 
   if (!is_default_view_) {

@@ -86,8 +86,8 @@ views::Label* CreateShortcutLabel(
         0x40);
     SkColor transparent_blakish = color_utils::AlphaBlend(
         SK_ColorTRANSPARENT, blackish, 0xE0);
-    shortcut_label->set_background(
-        views::Background::CreateSolidBackground(transparent_blakish));
+    shortcut_label->SetBackground(
+        views::CreateSolidBackground(transparent_blakish));
   }
   shortcut_label->SetElideBehavior(gfx::NO_ELIDE);
 
@@ -163,9 +163,8 @@ CandidateView::CandidateView(
 
   if (orientation == ui::CandidateWindow::VERTICAL) {
     infolist_icon_ = new views::View;
-    infolist_icon_->set_background(
-        views::Background::CreateSolidBackground(theme.GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedBorderColor)));
+    infolist_icon_->SetBackground(views::CreateSolidBackground(
+        theme.GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
     AddChildView(infolist_icon_);
   }
 }
@@ -204,9 +203,8 @@ void CandidateView::SetHighlighted(bool highlighted) {
   highlighted_ = highlighted;
   if (highlighted) {
     ui::NativeTheme* theme = GetNativeTheme();
-    set_background(
-        views::Background::CreateSolidBackground(theme->GetSystemColor(
-            ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
+    SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
     SetBorder(views::CreateSolidBorder(
         1,
         theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
@@ -219,7 +217,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
         view->SetHighlighted(false);
     }
   } else {
-    set_background(NULL);
+    SetBackground(nullptr);
     SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
   }
   SchedulePaint();

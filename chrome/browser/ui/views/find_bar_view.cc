@@ -405,7 +405,7 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   auto border = base::MakeUnique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
       bg_color);
-  set_background(new views::BubbleBackground(border.get()));
+  SetBackground(base::MakeUnique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 
   match_count_text_->SetBackgroundColor(bg_color);

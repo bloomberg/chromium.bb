@@ -220,8 +220,8 @@ void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   const DialogDelegate* dialog = GetDialogDelegate();
 
   if (dialog && !dialog->ShouldUseCustomFrame()) {
-    set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
-        GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
+    SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DialogBackground)));
   }
 }
 

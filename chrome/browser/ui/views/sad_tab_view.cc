@@ -51,7 +51,7 @@ views::Label* CreateFormattedLabel(const base::string16& message) {
 SadTabView::SadTabView(content::WebContents* web_contents,
                        chrome::SadTabKind kind)
     : SadTab(web_contents, kind) {
-  set_background(views::Background::CreateThemedSolidBackground(
+  SetBackground(views::CreateThemedSolidBackground(
       this, ui::NativeTheme::kColorId_DialogBackground));
 
   views::GridLayout* layout = new views::GridLayout(this);

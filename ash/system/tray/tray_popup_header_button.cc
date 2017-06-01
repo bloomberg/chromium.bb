@@ -62,10 +62,9 @@ gfx::Size TrayPopupHeaderButton::CalculatePreferredSize() const {
 
 void TrayPopupHeaderButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    set_background(views::Background::CreateSolidBackground(
-        kTrayPopupHoverBackgroundColor));
+    SetBackground(views::CreateSolidBackground(kTrayPopupHoverBackgroundColor));
   } else {
-    set_background(nullptr);
+    SetBackground(nullptr);
   }
   SchedulePaint();
 }

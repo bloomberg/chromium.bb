@@ -73,8 +73,8 @@ MessageView::MessageView(MessageCenterController* controller,
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
-  background_view_->set_background(
-      views::Background::CreateSolidBackground(kNotificationBackgroundColor));
+  background_view_->SetBackground(
+      views::CreateSolidBackground(kNotificationBackgroundColor));
   AddChildView(background_view_);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(

@@ -329,7 +329,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   if (show_all_view_)
     ConfigureButtonForTheme(show_all_view_);
 
-  set_background(views::Background::CreateSolidBackground(
+  SetBackground(views::CreateSolidBackground(
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 
   views::SetImageFromVectorIcon(

@@ -209,8 +209,7 @@ void ScrollView::SetContents(View* a_view) {
   DCHECK(!a_view->layer());
   if (ScrollsWithLayers()) {
     if (!a_view->background() && background_color_ != SK_ColorTRANSPARENT) {
-      a_view->set_background(
-          Background::CreateSolidBackground(background_color_));
+      a_view->SetBackground(CreateSolidBackground(background_color_));
     }
     a_view->SetPaintToLayer();
     a_view->layer()->SetScrollable(
@@ -226,12 +225,10 @@ void ScrollView::SetHeader(View* header) {
 
 void ScrollView::SetBackgroundColor(SkColor color) {
   background_color_ = color;
-  contents_viewport_->set_background(
-      Background::CreateSolidBackground(background_color_));
+  contents_viewport_->SetBackground(CreateSolidBackground(background_color_));
   if (contents_ && ScrollsWithLayers() &&
       background_color_ != SK_ColorTRANSPARENT) {
-    contents_->set_background(
-        Background::CreateSolidBackground(background_color_));
+    contents_->SetBackground(CreateSolidBackground(background_color_));
   }
 }
 
@@ -752,8 +749,7 @@ void ScrollView::EnableViewPortLayer() {
 
   if (scroll_with_layers_enabled_) {
     background_color_ = SK_ColorWHITE;
-    contents_viewport_->set_background(
-        Background::CreateSolidBackground(background_color_));
+    contents_viewport_->SetBackground(CreateSolidBackground(background_color_));
   } else {
     // We may have transparent children who want to blend into the default
     // background.

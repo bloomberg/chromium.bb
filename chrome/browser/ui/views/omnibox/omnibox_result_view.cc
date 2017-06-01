@@ -272,10 +272,11 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 void OmniboxResultView::Invalidate() {
   const ResultViewState state = GetState();
   if (state == NORMAL) {
-    set_background(nullptr);
+    SetBackground(nullptr);
   } else {
     const SkColor bg_color = GetColor(state, BACKGROUND);
-    set_background(new BackgroundWith1PxBorder(bg_color, bg_color));
+    SetBackground(
+        base::MakeUnique<BackgroundWith1PxBorder>(bg_color, bg_color));
   }
 
   // While the text in the RenderTexts may not have changed, the styling

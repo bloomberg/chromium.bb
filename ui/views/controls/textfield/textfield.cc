@@ -1910,11 +1910,11 @@ void Textfield::UpdateSelectionClipboard() {
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    set_background(Background::CreateBackgroundPainter(
-        Painter::CreateSolidRoundRectPainter(
+    SetBackground(
+        CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
             color, FocusableBorder::kCornerRadiusDp)));
   } else {
-    set_background(Background::CreateSolidBackground(color));
+    SetBackground(CreateSolidBackground(color));
   }
   // Disable subpixel rendering when the background color is transparent
   // because it draws incorrect colors around the glyphs in that case.

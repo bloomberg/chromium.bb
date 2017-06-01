@@ -62,15 +62,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
  private:
   void UpdateBackgroundColor() {
-    views::Background* background = nullptr;
+    if (selected_)
+      SetBackground(views::CreateSolidBackground(kSelectedColor));
+    else if (state() == STATE_HOVERED || state() == STATE_PRESSED)
+      SetBackground(views::CreateSolidBackground(kHighlightedColor));
 
-    if (selected_) {
-      background = views::Background::CreateSolidBackground(kSelectedColor);
-    } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-      background = views::Background::CreateSolidBackground(kHighlightedColor);
-    }
-
-    set_background(background);
     SchedulePaint();
   }
 

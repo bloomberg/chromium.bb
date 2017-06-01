@@ -178,8 +178,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       1, 0, 1, 0,
       ui::GetSigninConfirmationPromptBarColor(
           GetNativeTheme(), ui::kSigninConfirmationPromptBarBorderAlpha)));
-  prompt_bar->set_background(views::Background::CreateSolidBackground(
-      kPromptBarBackgroundColor));
+  prompt_bar->SetBackground(
+      views::CreateSolidBackground(kPromptBarBackgroundColor));
 
   // Create the explanation label.
   std::vector<size_t> offsets;

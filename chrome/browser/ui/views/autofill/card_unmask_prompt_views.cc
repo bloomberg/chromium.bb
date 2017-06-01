@@ -228,8 +228,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   storage_row_->SetLayoutManager(storage_row_layout);
   storage_row_->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
-  storage_row_->set_background(
-      views::Background::CreateSolidBackground(kLightShadingColor));
+  storage_row_->SetBackground(views::CreateSolidBackground(kLightShadingColor));
 
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
@@ -276,8 +275,7 @@ int CardUnmaskPromptViews::GetHeightForWidth(int width) const {
 void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  progress_overlay_->set_background(
-      views::Background::CreateSolidBackground(bg_color));
+  progress_overlay_->SetBackground(views::CreateSolidBackground(bg_color));
   progress_label_->SetBackgroundColor(bg_color);
   progress_label_->SetEnabledColor(theme->GetSystemColor(
       ui::NativeTheme::kColorId_ThrobberSpinningColor));
@@ -393,8 +391,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   permanent_error_label_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::BoldFont));
-  permanent_error_label_->set_background(
-      views::Background::CreateSolidBackground(kWarningColor));
+  permanent_error_label_->SetBackground(
+      views::CreateSolidBackground(kWarningColor));
   permanent_error_label_->SetBorder(
       views::CreateEmptyBorder(12, kEdgePadding, 12, kEdgePadding));
   permanent_error_label_->SetEnabledColor(SK_ColorWHITE);

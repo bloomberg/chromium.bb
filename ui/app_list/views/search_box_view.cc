@@ -136,7 +136,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                                   views::ImageButton::ALIGN_MIDDLE);
   SetBackButtonLabel(false);
   content_container_->AddChildView(back_button_);
-  content_container_->set_background(new SearchBoxBackground());
+  content_container_->SetBackground(base::MakeUnique<SearchBoxBackground>());
 
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, kPadding, 0,

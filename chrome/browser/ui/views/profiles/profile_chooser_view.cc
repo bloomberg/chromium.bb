@@ -246,11 +246,10 @@ class BackgroundColorHoverButton : public views::LabelButton {
   void UpdateColors() {
     bool is_selected = HasFocus();
 
-    set_background(
+    SetBackground(
         is_selected
-            ? views::Background::CreateSolidBackground(
-                  GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor))
+            ? views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor))
             : nullptr);
 
     SkColor text_color = GetNativeTheme()->GetSystemColor(
@@ -630,9 +629,8 @@ void ProfileChooserView::Init() {
 void ProfileChooserView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   views::BubbleDialogDelegateView::OnNativeThemeChanged(native_theme);
-  set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
+  SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground)));
   if (auth_error_email_button_) {
     auth_error_email_button_->SetTextColor(
         views::LabelButton::STATE_NORMAL,
@@ -1381,7 +1379,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
     const AvatarMenu::Item& avatar_item) {
   DCHECK(avatar_item.signed_in);
   views::View* view = new views::View();
-  view->set_background(views::Background::CreateSolidBackground(
+  view->SetBackground(views::CreateSolidBackground(
       profiles::kAvatarBubbleAccountsBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 

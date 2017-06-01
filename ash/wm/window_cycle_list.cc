@@ -89,9 +89,8 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
     AddChildView(window_title_);
 
     // Preview padding is black at 50% opacity.
-    preview_background_->set_background(
-        views::Background::CreateSolidBackground(
-            SkColorSetA(SK_ColorBLACK, 0xFF / 2)));
+    preview_background_->SetBackground(
+        views::CreateSolidBackground(SkColorSetA(SK_ColorBLACK, 0xFF / 2)));
     AddChildView(preview_background_);
 
     AddChildView(mirror_view_);
@@ -247,7 +246,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     // The background needs to be painted to fill the layer, not the View,
     // because the layer animates bounds changes but the View's bounds change
     // immediately.
-    highlight_view_->set_background(new LayerFillBackgroundPainter(
+    highlight_view_->SetBackground(base::MakeUnique<LayerFillBackgroundPainter>(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
             SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
             kBackgroundCornerRadius)));

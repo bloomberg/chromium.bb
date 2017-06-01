@@ -540,12 +540,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the hierarchy beneath it.
   void Paint(const ui::PaintContext& parent_context);
 
-  // The background object is owned by this object and may be NULL.
-  void set_background(Background* b);
+  // The background object may be null.
+  void SetBackground(std::unique_ptr<Background> b);
   const Background* background() const { return background_.get(); }
   Background* background() { return background_.get(); }
 
-  // The border object is owned by this object and may be NULL.
+  // The border object may be null.
   virtual void SetBorder(std::unique_ptr<Border> b);
   const Border* border() const { return border_.get(); }
   Border* border() { return border_.get(); }

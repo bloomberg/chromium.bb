@@ -21,7 +21,7 @@ LockContentsView::LockContentsView() {
 
   views::Label* label = new views::Label();
   label->SetBorder(views::CreateEmptyBorder(2, 3, 4, 5));
-  label->set_background(views::Background::CreateThemedSolidBackground(
+  label->SetBackground(views::CreateThemedSolidBackground(
       label, ui::NativeTheme::kColorId_BubbleBackground));
   label->SetText(base::ASCIIToUTF16("User"));
   AddChildView(label);

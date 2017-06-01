@@ -43,7 +43,7 @@ class DialogExample::Delegate : public virtual DialogType {
     Label* body = new Label(parent_->body_->text());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    body->set_background(Background::CreateSolidBackground(0, 255, 255));
+    body->SetBackground(CreateSolidBackground(SkColorSetRGB(0, 255, 255)));
     this->AddChildView(body);
 
     // Give the example code a way to change the body text.
