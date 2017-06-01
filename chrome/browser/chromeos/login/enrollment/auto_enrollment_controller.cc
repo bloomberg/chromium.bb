@@ -55,36 +55,6 @@ int GetSanitizedArg(const std::string& switch_name) {
   return int_value;
 }
 
-// Returns whether the auto-enrollment check is required. When
-// kCheckEnrollmentKey VPD entry is present, it is explicitly stating whether
-// the forced re-enrollment is required or not. Otherwise, for backward
-// compatibility with devices upgrading from an older version of Chrome OS, the
-// kActivateDateKey VPD entry is queried. If it's missing, FRE is not required.
-// This enables factories to start full guest sessions for testing, see
-// http://crbug.com/397354 for more context. The requirement for the machine
-// serial number to be present is a sanity-check to ensure that the VPD has
-// actually been read successfully. If VPD read failed, the FRE check is
-// required.
-AutoEnrollmentController::FRERequirement GetFRERequirement() {
-  std::string check_enrollment_value;
-  system::StatisticsProvider* provider =
-      system::StatisticsProvider::GetInstance();
-  bool fre_flag_found = provider->GetMachineStatistic(
-      system::kCheckEnrollmentKey, &check_enrollment_value);
-
-  if (fre_flag_found) {
-    if (check_enrollment_value == "0")
-      return AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED;
-    if (check_enrollment_value == "1")
-      return AutoEnrollmentController::EXPLICITLY_REQUIRED;
-  }
-  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
-      !provider->GetEnterpriseMachineID().empty()) {
-    return AutoEnrollmentController::NOT_REQUIRED;
-  }
-  return AutoEnrollmentController::REQUIRED;
-}
-
 std::string FRERequirementToString(
     AutoEnrollmentController::FRERequirement requirement) {
   switch (requirement) {
@@ -109,6 +79,7 @@ const char AutoEnrollmentController::kForcedReEnrollmentNever[] = "never";
 const char AutoEnrollmentController::kForcedReEnrollmentOfficialBuild[] =
     "official";
 
+// static
 AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -134,6 +105,28 @@ AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
 
   LOG(FATAL) << "Unknown auto-enrollment mode " << command_line_mode;
   return MODE_NONE;
+}
+
+// static
+AutoEnrollmentController::FRERequirement
+AutoEnrollmentController::GetFRERequirement() {
+  std::string check_enrollment_value;
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  bool fre_flag_found = provider->GetMachineStatistic(
+      system::kCheckEnrollmentKey, &check_enrollment_value);
+
+  if (fre_flag_found) {
+    if (check_enrollment_value == "0")
+      return AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED;
+    if (check_enrollment_value == "1")
+      return AutoEnrollmentController::EXPLICITLY_REQUIRED;
+  }
+  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
+      !provider->GetEnterpriseMachineID().empty()) {
+    return AutoEnrollmentController::NOT_REQUIRED;
+  }
+  return AutoEnrollmentController::REQUIRED;
 }
 
 AutoEnrollmentController::AutoEnrollmentController() {}

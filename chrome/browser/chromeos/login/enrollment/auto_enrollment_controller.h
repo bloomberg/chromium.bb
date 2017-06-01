@@ -61,6 +61,18 @@ class AutoEnrollmentController {
   // build status.
   static Mode GetMode();
 
+  // Returns whether the auto-enrollment check is required. When
+  // kCheckEnrollmentKey VPD entry is present, it is explicitly stating whether
+  // the forced re-enrollment is required or not. Otherwise, for backward
+  // compatibility with devices upgrading from an older version of Chrome OS,
+  // the kActivateDateKey VPD entry is queried. If it's missing, FRE is not
+  // required. This enables factories to start full guest sessions for testing,
+  // see http://crbug.com/397354 for more context. The requirement for the
+  // machine serial number to be present is a sanity-check to ensure that the
+  // VPD has actually been read successfully. If VPD read failed, the FRE check
+  // is required.
+  static FRERequirement GetFRERequirement();
+
   AutoEnrollmentController();
   ~AutoEnrollmentController();
 
