@@ -5570,6 +5570,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230"
     enum="XMLHttpRequestHeaderValueCategoryInRFC7230">
+  <obsolete>
+    Deprecated 06/2017 in Issues 455099 and 681769 (M61).
+  </obsolete>
   <owner>hiroshige@chromium.org</owner>
   <summary>
     The count of XMLHttpRequest.setRequestHeader() calls where header values are

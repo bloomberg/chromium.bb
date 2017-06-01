@@ -112,29 +112,6 @@ TEST(HTTPParsersTest, CommaDelimitedHeaderSet) {
   EXPECT_TRUE(set2.Contains("fo\to"));
 }
 
-TEST(HTTPParsersTest, HTTPFieldContent) {
-  const UChar kHiraganaA[2] = {0x3042, 0};
-
-  EXPECT_TRUE(blink::IsValidHTTPFieldContentRFC7230("\xd0\xa1"));
-  EXPECT_TRUE(blink::IsValidHTTPFieldContentRFC7230("t t"));
-  EXPECT_TRUE(blink::IsValidHTTPFieldContentRFC7230("t\tt"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(" "));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(""));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("\x7f"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("t\rt"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("t\nt"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("t\bt"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("t\vt"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(" t"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("t "));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(String("t\0t", 3)));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(String("\0", 1)));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(String("test \0, 6")));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(String("test ")));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230("test\r\n data"));
-  EXPECT_FALSE(blink::IsValidHTTPFieldContentRFC7230(String(kHiraganaA)));
-}
-
 TEST(HTTPParsersTest, HTTPToken) {
   const UChar kHiraganaA[2] = {0x3042, 0};
   const UChar kLatinCapitalAWithMacron[2] = {0x100, 0};

@@ -60,7 +60,6 @@
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/FileMetadata.h"
 #include "platform/HTTPNames.h"
-#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/DOMWrapperWorld.h"
@@ -133,13 +132,6 @@ void LogConsoleError(ExecutionContext* context, const String& message) {
       ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message);
   context->AddConsoleMessage(console_message);
 }
-
-enum HeaderValueCategoryByRFC7230 {
-  kHeaderValueInvalid,
-  kHeaderValueAffectedByNormalization,
-  kHeaderValueValid,
-  kHeaderValueCategoryByRFC7230End
-};
 
 bool ValidateOpenArguments(const AtomicString& method,
                            const KURL& url,
@@ -1339,38 +1331,11 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name,
 
 void XMLHttpRequest::SetRequestHeaderInternal(const AtomicString& name,
                                               const AtomicString& value) {
-  HeaderValueCategoryByRFC7230 header_value_category = kHeaderValueValid;
-
   HTTPHeaderMap::AddResult result = request_headers_.Add(name, value);
   if (!result.is_new_entry) {
     AtomicString new_value = result.stored_value->value + ", " + value;
-
-    // Without normalization at XHR level here, the actual header value
-    // sent to the network is |newValue| with leading/trailing whitespaces
-    // stripped (i.e. |normalizeHeaderValue(newValue)|).
-    // With normalization at XHR level here as the spec requires, the
-    // actual header value sent to the network is |normalizedNewValue|.
-    // If these two are different, introducing normalization here affects
-    // the header value sent to the network.
-    String normalized_new_value =
-        FetchUtils::NormalizeHeaderValue(result.stored_value->value) + ", " +
-        FetchUtils::NormalizeHeaderValue(value);
-    if (FetchUtils::NormalizeHeaderValue(new_value) != normalized_new_value)
-      header_value_category = kHeaderValueAffectedByNormalization;
-
     result.stored_value->value = new_value;
   }
-
-  String normalized_value = FetchUtils::NormalizeHeaderValue(value);
-  if (!normalized_value.IsEmpty() &&
-      !IsValidHTTPFieldContentRFC7230(normalized_value))
-    header_value_category = kHeaderValueInvalid;
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, header_value_category_histogram,
-      ("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230",
-       kHeaderValueCategoryByRFC7230End));
-  header_value_category_histogram.Count(header_value_category);
 }
 
 const AtomicString& XMLHttpRequest::GetRequestHeader(
