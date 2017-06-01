@@ -58,11 +58,15 @@ class HostScanCache : public TetherHostResponseRecorder::Observer {
   // Note: |signal_strength| should be in the range [0, 100]. This is different
   // from the |connection_strength| field received in ConnectTetheringResponse
   // and KeepAliveTickleResponse messages (the range is [0, 4] in those cases).
+  // |battery_percentage| should also be in the range [0, 100].
+  // |setup_required| indicates that the host device requires first-time setup,
+  // i.e., user interaction to allow tethering.
   virtual void SetHostScanResult(const std::string& tether_network_guid,
                                  const std::string& device_name,
                                  const std::string& carrier,
                                  int battery_percentage,
-                                 int signal_strength);
+                                 int signal_strength,
+                                 bool setup_required);
 
   // Removes the scan result with GUID |tether_network_guid| from the cache. If
   // no cache result with that GUID was present in the cache, this function is
@@ -73,6 +77,10 @@ class HostScanCache : public TetherHostResponseRecorder::Observer {
   // active host; the active host must always remain in the cache while
   // connecting/connected to ensure the UI is up to date.
   virtual void ClearCacheExceptForActiveHost();
+
+  // Returns true if the host device requires first-time setup, i.e., user
+  // interaction to allow tethering.
+  virtual bool DoesHostRequireSetup(const std::string& tether_network_guid);
 
   // TetherHostResponseRecorder::Observer:
   void OnPreviouslyConnectedHostIdsChanged() override;
@@ -99,6 +107,7 @@ class HostScanCache : public TetherHostResponseRecorder::Observer {
   // host).
   std::unordered_map<std::string, std::unique_ptr<base::Timer>>
       tether_guid_to_timer_map_;
+  std::unordered_set<std::string> setup_required_tether_guids_;
   base::WeakPtrFactory<HostScanCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanCache);

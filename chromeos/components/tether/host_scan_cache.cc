@@ -41,7 +41,8 @@ void HostScanCache::SetHostScanResult(const std::string& tether_network_guid,
                                       const std::string& device_name,
                                       const std::string& carrier,
                                       int battery_percentage,
-                                      int signal_strength) {
+                                      int signal_strength,
+                                      bool setup_required) {
   DCHECK(!tether_network_guid.empty());
 
   auto found_iter = tether_guid_to_timer_map_.find(tether_network_guid);
@@ -72,6 +73,11 @@ void HostScanCache::SetHostScanResult(const std::string& tether_network_guid,
                  << "new signal strength: " << signal_strength;
   }
 
+  if (setup_required)
+    setup_required_tether_guids_.insert(tether_network_guid);
+  else
+    setup_required_tether_guids_.erase(tether_network_guid);
+
   StartTimer(tether_network_guid);
 }
 
@@ -95,6 +101,7 @@ bool HostScanCache::RemoveHostScanResult(
   }
 
   tether_guid_to_timer_map_.erase(it);
+  setup_required_tether_guids_.erase(tether_network_guid);
   return network_state_handler_->RemoveTetherNetworkState(tether_network_guid);
 }
 
@@ -131,6 +138,12 @@ void HostScanCache::ClearCacheExceptForActiveHost() {
 
     RemoveHostScanResult(tether_network_guid);
   }
+}
+
+bool HostScanCache::DoesHostRequireSetup(
+    const std::string& tether_network_guid) {
+  return setup_required_tether_guids_.find(tether_network_guid) !=
+         setup_required_tether_guids_.end();
 }
 
 void HostScanCache::OnPreviouslyConnectedHostIdsChanged() {
