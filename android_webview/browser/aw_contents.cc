@@ -51,6 +51,7 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/autofill/android/autofill_provider_android.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -248,7 +249,8 @@ void AwContents::SetJavaPeers(
     const JavaParamRef<jobject>& web_contents_delegate,
     const JavaParamRef<jobject>& contents_client_bridge,
     const JavaParamRef<jobject>& io_thread_client,
-    const JavaParamRef<jobject>& intercept_navigation_delegate) {
+    const JavaParamRef<jobject>& intercept_navigation_delegate,
+    const JavaParamRef<jobject>& autofill_provider) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The |aw_content| param is technically spurious as it duplicates |obj| but
   // is passed over anyway to make the binding more explicit.
@@ -268,6 +270,11 @@ void AwContents::SetJavaPeers(
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), base::MakeUnique<InterceptNavigationDelegate>(
                                env, intercept_navigation_delegate));
+
+  if (!autofill_provider.is_null()) {
+    autofill_provider_ = base::MakeUnique<autofill::AutofillProviderAndroid>(
+        autofill_provider, web_contents_.get());
+  }
 
   // Finally, having setup the associations, release any deferred requests
   for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {
@@ -289,20 +296,29 @@ void AwContents::SetSaveFormData(bool enabled) {
   }
 }
 
-void AwContents::InitAutofillIfNecessary(bool enabled) {
-  // Do not initialize if the feature is not enabled.
-  if (!enabled)
-    return;
+void AwContents::InitAutofillIfNecessary(bool autocomplete_enabled) {
   // Check if the autofill driver factory already exists.
   content::WebContents* web_contents = web_contents_.get();
   if (ContentAutofillDriverFactory::FromWebContents(web_contents))
+    return;
+
+  // Check if AutofillProvider is available.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  // Just return, if the app neither runs on O sdk nor enables autocomplete.
+  if (!autofill_provider_ && !autocomplete_enabled)
     return;
 
   AwAutofillClient::CreateForWebContents(web_contents);
   ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AwAutofillClient::FromWebContents(web_contents),
       base::android::GetDefaultLocaleString(),
-      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      autofill_provider_.get());
 }
 
 void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
@@ -1352,6 +1368,12 @@ void AwContents::ResumeLoadingCreatedPopupWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   web_contents_->ResumeLoadingCreatedWebContents();
+}
+
+jlong AwContents::GetAutofillProvider(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return reinterpret_cast<jlong>(autofill_provider_.get());
 }
 
 void SetShouldDownloadFavicons(JNIEnv* env,

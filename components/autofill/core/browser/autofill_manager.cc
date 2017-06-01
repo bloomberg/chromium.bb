@@ -219,7 +219,7 @@ AutofillManager::AutofillManager(
     AutofillClient* client,
     const std::string& app_locale,
     AutofillDownloadManagerState enable_download_manager)
-    : driver_(driver),
+    : AutofillHandler(driver),
       client_(client),
       payments_client_(base::MakeUnique<payments::PaymentsClient>(
           driver->GetURLRequestContext(),
@@ -263,8 +263,8 @@ AutofillManager::AutofillManager(
   if (personal_data_ && client_)
     personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
 
-  if (personal_data_ && driver_)
-    personal_data_->SetURLRequestContextGetter(driver_->GetURLRequestContext());
+  if (personal_data_ && driver)
+    personal_data_->SetURLRequestContextGetter(driver->GetURLRequestContext());
 }
 
 AutofillManager::~AutofillManager() {}
@@ -369,11 +369,11 @@ bool AutofillManager::ShouldShowCreditCardSigninPromo(
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const TimeTicks& timestamp) {
+                                  const TimeTicks timestamp) {
   if (!IsValidFormDataVector(forms))
     return;
 
-  if (!driver_->RendererIsAvailable())
+  if (!driver()->RendererIsAvailable())
     return;
 
   bool enabled = IsAutofillEnabled();
@@ -392,11 +392,8 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   ParseForms(forms);
 }
 
-bool AutofillManager::OnWillSubmitForm(const FormData& form,
-                                       const TimeTicks& timestamp) {
-  if (!IsValidFormData(form))
-    return false;
-
+bool AutofillManager::OnWillSubmitFormImpl(const FormData& form,
+                                           const TimeTicks timestamp) {
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
@@ -516,12 +513,9 @@ void AutofillManager::ProcessPendingFormForUpload() {
   StartUploadProcess(std::move(upload_form), TimeTicks::Now(), false);
 }
 
-void AutofillManager::OnTextFieldDidChange(const FormData& form,
-                                           const FormFieldData& field,
-                                           const TimeTicks& timestamp) {
-  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
-    return;
-
+void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
+                                               const FormFieldData& field,
+                                               const TimeTicks timestamp) {
   if (test_delegate_)
     test_delegate_->OnTextFieldChanged();
 
@@ -561,16 +555,11 @@ bool AutofillManager::IsFormNonSecure(const FormData& form) const {
          (form.action.is_valid() && form.action.SchemeIs("http"));
 }
 
-void AutofillManager::OnQueryFormFieldAutofill(int query_id,
-                                               const FormData& form,
-                                               const FormFieldData& field,
-                                               const gfx::RectF& bounding_box) {
-  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
-    return;
-
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
+void AutofillManager::OnQueryFormFieldAutofillImpl(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& transformed_box) {
   external_delegate_->OnQuery(query_id, form, field, transformed_box);
 
   // Need to refresh models before using the form_event_loggers.
@@ -589,7 +578,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   if (got_autofillable_form) {
     if (autofill_field->Type().group() == CREDIT_CARD) {
       is_filling_credit_card = true;
-      driver_->DidInteractWithCreditCardForm();
+      driver()->DidInteractWithCreditCardForm();
       credit_card_form_event_logger_->OnDidInteractWithAutofillableForm();
     } else {
       address_form_event_logger_->OnDidInteractWithAutofillableForm();
@@ -601,12 +590,11 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   const bool is_http_warning_enabled =
       security_state::IsHttpWarningInFormEnabled();
 
-  // TODO(rogerm): Early exit here on !driver_->RendererIsAvailable()?
+  // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
   // We skip populating autofill data, but might generate warnings and or
   // signin promo to show over the unavailable renderer. That seems a mistake.
 
-  if (is_autofill_possible &&
-      driver_->RendererIsAvailable() &&
+  if (is_autofill_possible && driver()->RendererIsAvailable() &&
       got_autofillable_form) {
     // On desktop, don't return non credit card related suggestions for forms or
     // fields that have the "autocomplete" attribute set to off.
@@ -794,7 +782,7 @@ void AutofillManager::FillOrPreviewForm(
   // NOTE: RefreshDataModels may invalidate |data_model| because it causes the
   // PersonalDataManager to reload Mac address book entries. Thus it must come
   // before GetProfile or GetCreditCard.
-  if (!RefreshDataModels() || !driver_->RendererIsAvailable())
+  if (!RefreshDataModels() || !driver()->RendererIsAvailable())
     return;
 
   const CreditCard* credit_card = nullptr;
@@ -811,7 +799,7 @@ void AutofillManager::FillCreditCardForm(int query_id,
                                          const CreditCard& credit_card,
                                          const base::string16& cvc) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field) ||
-      !driver_->RendererIsAvailable()) {
+      !driver()->RendererIsAvailable()) {
     return;
   }
 
@@ -829,7 +817,7 @@ void AutofillManager::OnDidPreviewAutofillFormData() {
 }
 
 void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
-                                                const TimeTicks& timestamp) {
+                                                const TimeTicks timestamp) {
   if (test_delegate_)
     test_delegate_->DidFillFormData();
 
@@ -1028,10 +1016,10 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
-  driver_->PropagateAutofillPredictions(queried_forms);
+  driver()->PropagateAutofillPredictions(queried_forms);
 
   // If the corresponding flag is set, annotate forms with the predicted types.
-  driver_->SendAutofillTypePredictionsToRenderer(queried_forms);
+  driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
 }
 
 IdentityProvider* AutofillManager::GetIdentityProvider() {
@@ -1120,7 +1108,7 @@ void AutofillManager::OnFullCardRequestSucceeded(const CreditCard& card,
 }
 
 void AutofillManager::OnFullCardRequestFailed() {
-  driver_->RendererShouldClearPreviewedForm();
+  driver()->RendererShouldClearPreviewedForm();
 }
 
 void AutofillManager::ShowUnmaskPrompt(
@@ -1180,7 +1168,7 @@ bool AutofillManager::IsCreditCardUploadEnabled() {
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
-  return IsAutofillEnabled() && !driver_->IsIncognito() &&
+  return IsAutofillEnabled() && !driver()->IsIncognito() &&
          form.ShouldBeParsed() &&
          (form.active_field_count() >= kRequiredFieldsForUpload ||
           (form.all_fields_are_passwords() &&
@@ -1596,7 +1584,7 @@ void AutofillManager::Reset() {
 AutofillManager::AutofillManager(AutofillDriver* driver,
                                  AutofillClient* client,
                                  PersonalDataManager* personal_data)
-    : driver_(driver),
+    : AutofillHandler(driver),
       client_(client),
       payments_client_(base::MakeUnique<payments::PaymentsClient>(
           driver->GetURLRequestContext(),
@@ -1629,7 +1617,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       autofill_assistant_(this),
 #endif
       weak_ptr_factory_(this) {
-  DCHECK(driver_);
+  DCHECK(driver);
   DCHECK(client_);
   CountryNames::SetLocaleString(app_locale_);
 }
@@ -1766,7 +1754,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
       personal_data_->RecordUseOf(data_model);
 
-    driver_->SendFormDataToRenderer(query_id, action, result);
+    driver()->SendFormDataToRenderer(query_id, action, result);
     return;
   }
 
@@ -1837,7 +1825,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
     personal_data_->RecordUseOf(data_model);
 
-  driver_->SendFormDataToRenderer(query_id, action, result);
+  driver()->SendFormDataToRenderer(query_id, action, result);
 }
 
 std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
@@ -1960,7 +1948,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
     (*updated_form)->UpdateFromCache(*cached_form, true);
 
   // Annotate the updated form with its predicted types.
-  driver_->SendAutofillTypePredictionsToRenderer({*updated_form});
+  driver()->SendAutofillTypePredictionsToRenderer({*updated_form});
 
   return true;
 }
@@ -2074,7 +2062,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // For the |non_queryable_forms|, we have all the field type info we're ever
   // going to get about them.  For the other forms, we'll wait until we get a
   // response from the server.
-  driver_->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
+  driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
 }
 
 bool AutofillManager::ParseForm(const FormData& form,

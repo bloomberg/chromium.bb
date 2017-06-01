@@ -35,6 +35,10 @@
 class SkBitmap;
 class TabContents;
 
+namespace autofill {
+class AutofillProvider;
+}
+
 namespace content {
 class WebContents;
 }
@@ -106,8 +110,8 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& web_contents_delegate,
       const base::android::JavaParamRef<jobject>& contents_client_bridge,
       const base::android::JavaParamRef<jobject>& io_thread_client,
-      const base::android::JavaParamRef<jobject>&
-          intercept_navigation_delegate);
+      const base::android::JavaParamRef<jobject>& intercept_navigation_delegate,
+      const base::android::JavaParamRef<jobject>& autofill_provider);
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -347,6 +351,9 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jlong GetAutofillProvider(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+
   // content::WebContentsObserver overrides
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
@@ -372,7 +379,7 @@ class AwContents : public FindHelper::Listener,
   bool OnRenderProcessGoneDetail(int child_process_id, bool crashed) override;
 
  private:
-  void InitAutofillIfNecessary(bool enabled);
+  void InitAutofillIfNecessary(bool autocomplete_enabled);
 
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
@@ -400,6 +407,7 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwContents> pending_contents_;
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
+  std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result

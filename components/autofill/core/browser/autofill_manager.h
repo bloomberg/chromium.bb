@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_handler.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -72,16 +73,12 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
-class AutofillManager : public AutofillDownloadManager::Observer,
+class AutofillManager : public AutofillHandler,
+                        public AutofillDownloadManager::Observer,
                         public payments::PaymentsClientDelegate,
                         public payments::FullCardRequest::ResultDelegate,
                         public payments::FullCardRequest::UIDelegate {
  public:
-  enum AutofillDownloadManagerState {
-    ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
-    DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-  };
-
   // Registers our Enable/Disable Autofill pref.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -123,10 +120,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void DidShowSuggestions(bool is_new_popup,
                           const FormData& form,
                           const FormFieldData& field);
-  void OnFocusNoLongerOnForm();
-  void OnDidFillAutofillFormData(const FormData& form,
-                                 const base::TimeTicks& timestamp);
-  void OnDidPreviewAutofillFormData();
 
   // Returns true if the value/identifier is deletable. Fills out
   // |title| and |body| with relevant user-facing text.
@@ -167,24 +160,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Only for testing.
   void SetTestDelegate(AutofillManagerTestDelegate* delegate);
 
-  void OnFormsSeen(const std::vector<FormData>& forms,
-                   const base::TimeTicks& timestamp);
-
   void set_app_locale(std::string app_locale) { app_locale_ = app_locale; }
-
-  // IMPORTANT: On iOS, this method is called when the form is submitted,
-  // immediately before OnFormSubmitted() is called. Do not assume that
-  // OnWillSubmitForm() will run before the form submits.
-  // TODO(mathp): Revisit this and use a single method to track form submission.
-  //
-  // Processes the about-to-be-submitted |form|, uploading the possible field
-  // types for the submitted fields to the crowdsourcing server. Returns false
-  // if this form is not relevant for Autofill.
-  bool OnWillSubmitForm(const FormData& form, const base::TimeTicks& timestamp);
-
-  // Processes the submitted |form|, saving any new Autofill data to the user's
-  // personal profile. Returns false if this form is not relevant for Autofill.
-  bool OnFormSubmitted(const FormData& form);
 
   // Will send an upload based on the |form_structure| data and the local
   // Autofill profile data. |observed_submission| is specified if the upload
@@ -200,22 +176,19 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Upload the current pending form.
   void ProcessPendingFormForUpload();
 
-  void OnTextFieldDidChange(const FormData& form,
-                            const FormFieldData& field,
-                            const base::TimeTicks& timestamp);
-
-  // The |bounding_box| is a window relative value.
-  void OnQueryFormFieldAutofill(int query_id,
-                                const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box);
-  void OnDidEndTextFieldEditing();
-  void OnHidePopup();
+  // AutofillHandler:
+  void OnFocusNoLongerOnForm() override;
+  void OnDidFillAutofillFormData(const FormData& form,
+                                 const base::TimeTicks timestamp) override;
+  void OnDidPreviewAutofillFormData() override;
+  void OnFormsSeen(const std::vector<FormData>& forms,
+                   const base::TimeTicks timestamp) override;
+  bool OnFormSubmitted(const FormData& form) override;
+  void OnDidEndTextFieldEditing() override;
+  void OnHidePopup() override;
   void OnSetDataList(const std::vector<base::string16>& values,
-                     const std::vector<base::string16>& labels);
-
-  // Resets cache.
-  virtual void Reset();
+                     const std::vector<base::string16>& labels) override;
+  void Reset() override;
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
@@ -263,6 +236,17 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void SplitFrontendID(int frontend_id,
                        std::string* cc_backend_id,
                        std::string* profile_backend_id) const;
+
+  // AutofillHandler:
+  bool OnWillSubmitFormImpl(const FormData& form,
+                            const base::TimeTicks timestamp) override;
+  void OnTextFieldDidChangeImpl(const FormData& form,
+                                const FormFieldData& field,
+                                const base::TimeTicks timestamp) override;
+  void OnQueryFormFieldAutofillImpl(int query_id,
+                                    const FormData& form,
+                                    const FormFieldData& field,
+                                    const gfx::RectF& transformed_box) override;
 
   std::vector<std::unique_ptr<FormStructure>>* form_structures() {
     return &form_structures_;
@@ -496,10 +480,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // |upload_decision_metrics| is a bitmask of
   // |AutofillMetrics::CardUploadDecisionMetric|.
   void LogCardUploadDecisions(int upload_decision_metrics);
-
-  // Provides driver-level context to the shared code of the component. Must
-  // outlive this object.
-  AutofillDriver* driver_;
 
   AutofillClient* const client_;
 

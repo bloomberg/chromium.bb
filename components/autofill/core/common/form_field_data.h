@@ -56,6 +56,13 @@ struct FormFieldData {
   // Returns true if two form fields are the same, not counting the value.
   bool SameFieldAs(const FormFieldData& field) const;
 
+  // SameFieldAs() is a little restricted when field's style changed
+  // dynamically, like css.
+  // This method only compares critical attributes of field to check whether
+  // they are similar enough to be considered as same field if form's
+  // other information isn't changed.
+  bool SimilarFieldAs(const FormFieldData& field) const;
+
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFieldAs(), which ignores comparison for those "values"
   // not regarded as part of identity of the field, such as is_autofilled and

@@ -9,6 +9,7 @@ include_rules = [
   "+cc",
   "-cc/blink",
 
+  "+components/autofill/android",
   "+components/autofill/content/browser",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",

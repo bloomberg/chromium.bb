@@ -20,6 +20,7 @@ import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
@@ -62,6 +63,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -707,5 +709,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     WebViewContentsClientAdapter createWebViewContentsClientAdapter(WebView webView,
             Context context) {
         return new WebViewContentsClientAdapter(webView, context, mWebViewDelegate);
+    }
+
+    AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
+        return null;
     }
 }
