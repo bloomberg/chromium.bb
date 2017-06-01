@@ -195,8 +195,8 @@ void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
     const extensions::Extension* extension,
     const ResourceIdentifier& resource,
     ContentSetting setting) {
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
-      ContentSettingsPattern::CreateBuilder(false));
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder =
+      ContentSettingsPattern::CreateBuilder();
   pattern_builder->WithScheme(extensions::kExtensionScheme);
   pattern_builder->WithHost(extension->id());
   pattern_builder->WithPathWildcard();

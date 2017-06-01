@@ -184,8 +184,8 @@ TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
 // The static Wildcard() method goes through a fast path and avoids the Builder
 // pattern. Ensure that it yields the exact same behavior.
 TEST(ContentSettingsPatternTest, ValidWildcardFastPath) {
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder =
+      ContentSettingsPattern::CreateBuilder();
   builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
            WithPathWildcard();
   ContentSettingsPattern built_wildcard = builder->Build();

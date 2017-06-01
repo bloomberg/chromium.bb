@@ -45,8 +45,8 @@ ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
     *error = URLPattern::GetParseResultString(result);
     return ContentSettingsPattern();
   } else {
-    std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-        ContentSettingsPattern::CreateBuilder(false));
+    std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder =
+        ContentSettingsPattern::CreateBuilder();
     builder->WithHost(url_pattern.host());
     if (url_pattern.match_subdomains())
       builder->WithDomainWildcard();

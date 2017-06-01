@@ -7,6 +7,7 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_PATTERN_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_PATTERN_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -136,7 +137,7 @@ class ContentSettingsPattern {
     virtual ContentSettingsPattern Build() = 0;
   };
 
-  static BuilderInterface* CreateBuilder(bool use_legacy_validate);
+  static std::unique_ptr<BuilderInterface> CreateBuilder();
 
   // The version of the pattern format implemented.
   static const int kContentSettingsPatternVersion;
