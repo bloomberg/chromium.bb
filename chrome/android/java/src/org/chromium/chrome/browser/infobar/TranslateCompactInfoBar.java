@@ -277,7 +277,7 @@ public class TranslateCompactInfoBar extends InfoBar
 
     private void closeInfobar(boolean explicitly) {
         // Check if we should trigger the auto "never translate" if infobar is closed explicitly.
-        if (explicitly
+        if (explicitly && mNativeTranslateInfoBarPtr != 0
                 && nativeShouldAutoNeverTranslate(mNativeTranslateInfoBarPtr, mMenuExpanded)) {
             createAndShowSnackbar(getContext().getString(R.string.translate_snackbar_language_never,
                                           mOptions.sourceLanguageName()),
@@ -373,7 +373,7 @@ public class TranslateCompactInfoBar extends InfoBar
     @Override
     public void onTargetMenuItemClicked(String code) {
         // Reset target code in both UI and native.
-        if (mOptions.setTargetLanguage(code)) {
+        if (mNativeTranslateInfoBarPtr != 0 && mOptions.setTargetLanguage(code)) {
             recordInfobarLanguageData(
                     INFOBAR_HISTOGRAM_MORE_LANGUAGES_LANGUAGE, mOptions.targetLanguageCode());
             nativeApplyStringTranslateOption(
@@ -387,7 +387,7 @@ public class TranslateCompactInfoBar extends InfoBar
     @Override
     public void onSourceMenuItemClicked(String code) {
         // Reset source code in both UI and native.
-        if (mOptions.setSourceLanguage(code)) {
+        if (mNativeTranslateInfoBarPtr != 0 && mOptions.setSourceLanguage(code)) {
             recordInfobarLanguageData(
                     INFOBAR_HISTOGRAM_PAGE_NOT_IN_LANGUAGE, mOptions.sourceLanguageCode());
             nativeApplyStringTranslateOption(
@@ -463,6 +463,9 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void handleTranslateOptionPostSnackbar(int actionId) {
+        // Quit if native is destroyed.
+        if (mNativeTranslateInfoBarPtr == 0) return;
+
         switch (actionId) {
             case ACTION_OVERFLOW_ALWAYS_TRANSLATE:
                 toggleAlwaysTranslate();
