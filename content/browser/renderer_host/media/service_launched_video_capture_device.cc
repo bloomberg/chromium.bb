@@ -7,8 +7,10 @@
 namespace content {
 
 ServiceLaunchedVideoCaptureDevice::ServiceLaunchedVideoCaptureDevice(
-    video_capture::mojom::DevicePtr device)
-    : device_(std::move(device)) {
+    video_capture::mojom::DevicePtr device,
+    base::OnceClosure connection_lost_cb)
+    : device_(std::move(device)),
+      connection_lost_cb_(std::move(connection_lost_cb)) {
   // Unretained |this| is safe, because |this| owns |device_|.
   device_.set_connection_error_handler(
       base::Bind(&ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice,
@@ -71,7 +73,7 @@ void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
 
 void ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  NOTIMPLEMENTED();
+  base::ResetAndReturn(&connection_lost_cb_).Run();
 }
 
 }  // namespace content

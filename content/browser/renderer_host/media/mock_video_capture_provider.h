@@ -30,11 +30,12 @@ class MockVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
   MockVideoCaptureDeviceLauncher();
   ~MockVideoCaptureDeviceLauncher() override;
 
-  MOCK_METHOD6(DoLaunchDeviceAsync,
+  MOCK_METHOD7(DoLaunchDeviceAsync,
                void(const std::string& device_id,
                     MediaStreamType stream_type,
                     const media::VideoCaptureParams& params,
                     base::WeakPtr<media::VideoFrameReceiver>* receiver,
+                    base::OnceClosure* connection_lost_cb,
                     Callbacks* callbacks,
                     base::OnceClosure* done_cb));
 
@@ -44,10 +45,11 @@ class MockVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
                          MediaStreamType stream_type,
                          const media::VideoCaptureParams& params,
                          base::WeakPtr<media::VideoFrameReceiver> receiver,
+                         base::OnceClosure connection_lost_cb,
                          Callbacks* callbacks,
                          base::OnceClosure done_cb) override {
-    DoLaunchDeviceAsync(device_id, stream_type, params, &receiver, callbacks,
-                        &done_cb);
+    DoLaunchDeviceAsync(device_id, stream_type, params, &receiver,
+                        &connection_lost_cb, callbacks, &done_cb);
   }
 };
 

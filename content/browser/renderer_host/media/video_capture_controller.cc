@@ -498,7 +498,6 @@ void VideoCaptureController::OnDeviceLaunched(
     entry.set_consumer_feedback_observer(launched_device_.get());
   if (device_launch_observer_) {
     device_launch_observer_->OnDeviceLaunched(this);
-    device_launch_observer_ = nullptr;
   }
 }
 
@@ -518,15 +517,25 @@ void VideoCaptureController::OnDeviceLaunchAborted() {
   }
 }
 
+void VideoCaptureController::OnDeviceConnectionLost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (device_launch_observer_) {
+    device_launch_observer_->OnDeviceConnectionLost(this);
+    device_launch_observer_ = nullptr;
+  }
+}
+
 void VideoCaptureController::CreateAndStartDeviceAsync(
     const media::VideoCaptureParams& params,
     VideoCaptureDeviceLaunchObserver* observer,
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   device_launch_observer_ = observer;
-  device_launcher_->LaunchDeviceAsync(device_id_, stream_type_, params,
-                                      GetWeakPtrForIOThread(), this,
-                                      std::move(done_cb));
+  device_launcher_->LaunchDeviceAsync(
+      device_id_, stream_type_, params, GetWeakPtrForIOThread(),
+      base::Bind(&VideoCaptureController::OnDeviceConnectionLost,
+                 GetWeakPtrForIOThread()),
+      this, std::move(done_cb));
 }
 
 void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {

@@ -120,6 +120,8 @@ class CONTENT_EXPORT VideoCaptureController
   void OnDeviceLaunchFailed() override;
   void OnDeviceLaunchAborted() override;
 
+  void OnDeviceConnectionLost();
+
   void CreateAndStartDeviceAsync(const media::VideoCaptureParams& params,
                                  VideoCaptureDeviceLaunchObserver* callbacks,
                                  base::OnceClosure done_cb);
