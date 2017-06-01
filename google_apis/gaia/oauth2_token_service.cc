@@ -66,7 +66,7 @@ OAuth2TokenService::RequestImpl::RequestImpl(
 }
 
 OAuth2TokenService::RequestImpl::~RequestImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 std::string OAuth2TokenService::RequestImpl::GetAccountId() const {
@@ -81,7 +81,7 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
     const GoogleServiceAuthError& error,
     const std::string& access_token,
     const base::Time& expiration_date) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error.state() == GoogleServiceAuthError::NONE)
     consumer_->OnGetTokenSuccess(this, access_token, expiration_date);
   else
@@ -395,6 +395,7 @@ OAuth2TokenService::OAuth2TokenService(
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Release all the pending fetchers.
   pending_fetchers_.clear();
 }
@@ -480,7 +481,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
     const std::string& client_secret,
     const ScopeSet& scopes,
     Consumer* consumer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -631,7 +632,7 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveCacheEntry(
       RequestParameters(client_id,
                         account_id,
@@ -641,7 +642,7 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
 }
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update the auth error state so auth errors are appropriately communicated
   // to the user.
@@ -708,7 +709,7 @@ bool OAuth2TokenService::HasCacheEntry(
 
 const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
     const RequestParameters& request_parameters) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator == token_cache_.end())
     return NULL;
@@ -722,7 +723,7 @@ const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
 bool OAuth2TokenService::RemoveCacheEntry(
     const RequestParameters& request_parameters,
     const std::string& token_to_remove) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
@@ -746,7 +747,7 @@ void OAuth2TokenService::RegisterCacheEntry(
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token,
     const base::Time& expiration_date) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CacheEntry& token = token_cache_[RequestParameters(client_id,
                                                      account_id,
@@ -756,7 +757,7 @@ void OAuth2TokenService::RegisterCacheEntry(
 }
 
 void OAuth2TokenService::ClearCache() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (TokenCache::iterator iter = token_cache_.begin();
        iter != token_cache_.end(); ++iter) {
     for (auto& observer : diagnostics_observer_list_)
@@ -767,7 +768,7 @@ void OAuth2TokenService::ClearCache() {
 }
 
 void OAuth2TokenService::ClearCacheForAccount(const std::string& account_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (TokenCache::iterator iter = token_cache_.begin();
        iter != token_cache_.end();
        /* iter incremented in body */) {
@@ -811,7 +812,7 @@ void OAuth2TokenService::CancelFetchers(
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
     int max_retries) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   max_fetch_retry_num_ = max_retries;
 }
 

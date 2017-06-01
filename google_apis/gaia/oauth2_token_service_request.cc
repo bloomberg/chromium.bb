@@ -38,8 +38,7 @@ OAuth2TokenServiceRequest::TokenServiceProvider::~TokenServiceProvider() {
 //
 // 5. Core is destroyed on owner thread.
 class OAuth2TokenServiceRequest::Core
-    : public base::NonThreadSafe,
-      public base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core> {
+    : public base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core> {
  public:
   // Note the thread where an instance of Core is constructed is referred to as
   // the "owner thread" here.
@@ -72,6 +71,8 @@ class OAuth2TokenServiceRequest::Core
   OAuth2TokenService* token_service();
   OAuth2TokenServiceRequest* owner();
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
  private:
   friend class base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core>;
 
@@ -102,7 +103,7 @@ OAuth2TokenServiceRequest::Core::~Core() {
 }
 
 void OAuth2TokenServiceRequest::Core::Start() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_service_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&OAuth2TokenServiceRequest::Core::StartOnTokenServiceThread,
@@ -110,7 +111,7 @@ void OAuth2TokenServiceRequest::Core::Start() {
 }
 
 void OAuth2TokenServiceRequest::Core::Stop() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsStopped());
 
   // Detaches |owner_| from this instance so |owner_| will be called back only
@@ -129,7 +130,7 @@ void OAuth2TokenServiceRequest::Core::Stop() {
 }
 
 bool OAuth2TokenServiceRequest::Core::IsStopped() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return owner_ == NULL;
 }
 
@@ -144,12 +145,12 @@ OAuth2TokenService* OAuth2TokenServiceRequest::Core::token_service() {
 }
 
 OAuth2TokenServiceRequest* OAuth2TokenServiceRequest::Core::owner() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return owner_;
 }
 
 void OAuth2TokenServiceRequest::Core::DoNothing() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 namespace {
@@ -255,14 +256,14 @@ void RequestCore::OnGetTokenFailure(const OAuth2TokenService::Request* request,
 
 void RequestCore::InformOwnerOnGetTokenSuccess(std::string access_token,
                                                base::Time expiration_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsStopped()) {
     consumer_->OnGetTokenSuccess(owner(), access_token, expiration_time);
   }
 }
 
 void RequestCore::InformOwnerOnGetTokenFailure(GoogleServiceAuthError error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsStopped()) {
     consumer_->OnGetTokenFailure(owner(), error);
   }
@@ -355,6 +356,7 @@ void OAuth2TokenServiceRequest::InvalidateToken(
 }
 
 OAuth2TokenServiceRequest::~OAuth2TokenServiceRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 

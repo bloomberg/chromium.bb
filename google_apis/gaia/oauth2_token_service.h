@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -53,7 +53,7 @@ class OAuth2TokenServiceDelegate;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService : public base::NonThreadSafe {
+class OAuth2TokenService {
  public:
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
@@ -221,7 +221,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
   class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
-                      public base::NonThreadSafe,
                       public Request {
    public:
     // |consumer| is required to outlive this.
@@ -242,6 +241,8 @@ class OAuth2TokenService : public base::NonThreadSafe {
     // |consumer_| to call back when this request completes.
     const std::string account_id_;
     Consumer* const consumer_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
   };
 
   // Implement it in delegates if they want to report errors to the user.
@@ -387,6 +388,8 @@ class OAuth2TokenService : public base::NonThreadSafe {
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, UpdateClearsCache);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };
