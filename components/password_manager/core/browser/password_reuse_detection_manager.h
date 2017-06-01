@@ -44,6 +44,7 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   base::Time last_keystroke_time_;
   // Used to retrieve the current time, in base::Time units.
   std::unique_ptr<base::Clock> clock_;
+  bool reuse_on_this_page_was_found_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetectionManager);
 };

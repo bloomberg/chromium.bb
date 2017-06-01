@@ -37,9 +37,14 @@ void PasswordReuseDetectionManager::DidNavigateMainFrame(
     const GURL& main_frame_url) {
   main_frame_url_ = main_frame_url;
   input_characters_.clear();
+  reuse_on_this_page_was_found_ = false;
 }
 
 void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
+  // Do not check reuse if it was already found on this page.
+  if (reuse_on_this_page_was_found_)
+    return;
+
   // Clear the buffer if last keystoke was more than kMaxInactivityTime ago.
   Time now = clock_->Now();
   if (!last_keystroke_time_.is_null() &&
@@ -72,6 +77,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
     const std::string& legitimate_domain,
     int saved_passwords,
     int number_matches) {
+  reuse_on_this_page_was_found_ = true;
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -80,9 +86,14 @@ void PasswordReuseDetectionManager::OnReuseFound(
                       legitimate_domain);
   }
 
-  metrics_util::LogPasswordReuse(
-      password.size(), saved_passwords, number_matches,
-      client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage());
+  // PasswordManager could be nullptr in tests.
+  bool password_field_detected =
+      client_->GetPasswordManager()
+          ? client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage()
+          : false;
+
+  metrics_util::LogPasswordReuse(password.size(), saved_passwords,
+                                 number_matches, password_field_detected);
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(jialiul): After CSD whitelist being added to Android, we should gate
   // this by either SAFE_BROWSING_DB_LOCAL or SAFE_BROWSING_DB_REMOTE.
