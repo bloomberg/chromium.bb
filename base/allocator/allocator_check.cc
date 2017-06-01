@@ -23,7 +23,7 @@ namespace base {
 namespace allocator {
 
 bool IsAllocatorInitialized() {
-#if defined(OS_WIN) && defined(USE_ALLOCATOR_SHIM)
+#if defined(OS_WIN) && BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Set by allocator_shim_override_ucrt_symbols_win.h when the
   // shimmed _set_new_mode() is called.
   return g_is_win_shim_layer_initialized;
