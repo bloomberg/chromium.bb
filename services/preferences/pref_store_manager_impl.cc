@@ -36,9 +36,13 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
       base::ContainsValue(expected_pref_stores_, PrefValueStore::DEFAULT_STORE))
       << "expected_pref_stores must always include PrefValueStore::USER_STORE "
          "and PrefValueStore::DEFAULT_STORE.";
-  // The user store is not actually connected to in the implementation, but
-  // accessed directly.
+  // The user store is not actually registered or connected to in the
+  // implementation, but accessed directly.
   expected_pref_stores_.erase(PrefValueStore::USER_STORE);
+  DVLOG(1) << "Expecting " << expected_pref_stores_.size()
+           << " pref store(s) to register";
+  // This store is done in-process so it's already "registered":
+  DVLOG(1) << "Registering pref store: " << PrefValueStore::DEFAULT_STORE;
   registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
       base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorRequest,
                  base::Unretained(this)));
@@ -50,7 +54,10 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
                  base::Unretained(this)));
 }
 
-PrefStoreManagerImpl::~PrefStoreManagerImpl() = default;
+PrefStoreManagerImpl::~PrefStoreManagerImpl() {
+  // For logging consistency:
+  DVLOG(1) << "Deregistering pref store: " << PrefValueStore::DEFAULT_STORE;
+}
 
 void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
                                     mojom::PrefStorePtr pref_store_ptr) {
@@ -79,6 +86,9 @@ void PrefStoreManagerImpl::Connect(
     mojom::PrefRegistryPtr pref_registry,
     const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
     ConnectCallback callback) {
+  DVLOG(1) << "Will connect to "
+           << expected_pref_stores_.size() - already_connected_types.size()
+           << " pref store(s)";
   std::set<PrefValueStore::PrefStoreType> required_remote_types;
   for (auto type : expected_pref_stores_) {
     if (!base::ContainsValue(already_connected_types, type)) {
@@ -98,6 +108,19 @@ void PrefStoreManagerImpl::Connect(
   for (auto type : remaining_remote_types) {
     pending_connections_[type].push_back(connection);
   }
+  if (!Initialized()) {
+    pending_incognito_connections_.push_back(connection);
+  } else if (incognito_connector_) {
+    connection->ProvideIncognitoConnector(incognito_connector_);
+  }
+}
+
+void PrefStoreManagerImpl::ConnectToUserPrefStore(
+    const std::vector<std::string>& observed_prefs,
+    mojom::PrefStoreConnector::ConnectToUserPrefStoreCallback callback) {
+  std::move(callback).Run(persistent_pref_store_->CreateConnection(
+      PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
+                                             observed_prefs.end())));
 }
 
 void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
@@ -129,6 +152,14 @@ void PrefStoreManagerImpl::Init(
     mojom::PersistentPrefStoreConfigurationPtr configuration) {
   DCHECK(!persistent_pref_store_);
 
+  if (configuration->is_incognito_configuration()) {
+    incognito_connector_ =
+        std::move(configuration->get_incognito_configuration()->connector);
+    for (auto connection : pending_incognito_connections_) {
+      connection->ProvideIncognitoConnector(incognito_connector_);
+    }
+  }
+  pending_incognito_connections_.clear();
   persistent_pref_store_ = CreatePersistentPrefStore(
       std::move(configuration), worker_pool_.get(),
       base::Bind(&PrefStoreManagerImpl::OnPersistentPrefStoreReady,
@@ -160,6 +191,10 @@ void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {
   for (const auto& connection : pending_persistent_connections_)
     connection->ProvidePersistentPrefStore(persistent_pref_store_.get());
   pending_persistent_connections_.clear();
+}
+
+bool PrefStoreManagerImpl::Initialized() const {
+  return bool(persistent_pref_store_);
 }
 
 }  // namespace prefs

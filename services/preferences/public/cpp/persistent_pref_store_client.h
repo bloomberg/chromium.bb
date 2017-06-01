@@ -70,6 +70,7 @@ class PersistentPrefStoreClient
 
  private:
   void OnConnect(mojom::PersistentPrefStoreConnectionPtr connection,
+                 mojom::PersistentPrefStoreConnectionPtr incognito_connection,
                  std::unordered_map<PrefValueStore::PrefStoreType,
                                     prefs::mojom::PrefStoreConnectionPtr>
                      other_pref_stores);

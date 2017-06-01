@@ -5,6 +5,7 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 
 #include "base/callback_helpers.h"
+#include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
@@ -64,6 +65,7 @@ void OnConnect(
         local_layered_pref_stores,
     ConnectCallback callback,
     mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+    mojom::PersistentPrefStoreConnectionPtr incognito_connection,
     std::unordered_map<PrefValueStore::PrefStoreType,
                        mojom::PrefStoreConnectionPtr> connections) {
   scoped_refptr<PrefStore> managed_prefs = CreatePrefStoreClient(
@@ -86,13 +88,22 @@ void OnConnect(
   scoped_refptr<PersistentPrefStore> persistent_pref_store(
       new PersistentPrefStoreClient(
           std::move(persistent_pref_store_connection)));
+  // If in incognito mode, |persistent_pref_store| above will be a connection to
+  // an in-memory pref store and |incognito_connection| will refer to the
+  // underlying profile's user pref store.
+  scoped_refptr<PersistentPrefStore> user_pref_store =
+      incognito_connection
+          ? new OverlayUserPrefStore(
+                persistent_pref_store.get(),
+                new PersistentPrefStoreClient(std::move(incognito_connection)))
+          : persistent_pref_store;
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   auto* pref_value_store = new PrefValueStore(
       managed_prefs.get(), supervised_user_prefs.get(), extension_prefs.get(),
-      command_line_prefs.get(), persistent_pref_store.get(),
-      recommended_prefs.get(), pref_registry->defaults().get(), pref_notifier);
+      command_line_prefs.get(), user_pref_store.get(), recommended_prefs.get(),
+      pref_registry->defaults().get(), pref_notifier);
   callback.Run(base::MakeUnique<::PrefService>(
-      pref_notifier, pref_value_store, persistent_pref_store.get(),
+      pref_notifier, pref_value_store, user_pref_store.get(),
       pref_registry.get(), base::Bind(&DoNothingHandleReadError), true));
   connector_ptr->reset();
 }

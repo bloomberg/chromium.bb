@@ -29,6 +29,17 @@ void ActiveProfilePrefService::Connect(
                           std::move(callback));
 }
 
+void ActiveProfilePrefService::ConnectToUserPrefStore(
+    const std::vector<std::string>& prefs_to_observe,
+    ConnectToUserPrefStoreCallback callback) {
+  auto* connector = content::BrowserContext::GetConnectorFor(
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile());
+  connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
+  connector_ptr_.set_connection_error_handler(base::Bind(
+      &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
+  connector_ptr_->ConnectToUserPrefStore(prefs_to_observe, std::move(callback));
+}
+
 void ActiveProfilePrefService::Create(
     const service_manager::BindSourceInfo& source_info,
     prefs::mojom::PrefStoreConnectorRequest request) {
