@@ -7,9 +7,6 @@
  * WiMAX, or virtual networks.
  */
 
-/** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
-var DeviceStateProperties;
-
 Polymer({
   is: 'settings-internet-subpage',
 
@@ -29,12 +26,9 @@ Polymer({
 
     /**
      * Device state for the network type.
-     * @type {?DeviceStateProperties}
+     * @type {!CrOnc.DeviceStateProperties|undefined}
      */
-    deviceState: {
-      type: Object,
-      value: null,
-    },
+    deviceState: Object,
 
     /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
     globalPolicy: Object,
@@ -204,17 +198,16 @@ Polymer({
   },
 
   /**
-   * @param {!DeviceStateProperties|undefined} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @return {boolean} Whether or not the device state is enabled.
    * @private
    */
   deviceIsEnabled_: function(deviceState) {
-    return !!deviceState &&
-        deviceState.State == chrome.networkingPrivate.DeviceStateType.ENABLED;
+    return !!deviceState && deviceState.State == CrOnc.DeviceState.ENABLED;
   },
 
   /**
-   * @param {!DeviceStateProperties|undefined} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @param {string} onstr
    * @param {string} offstr
    * @return {string}
@@ -225,7 +218,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @return {boolean}
    * @private
    */
@@ -235,18 +228,16 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @return {boolean}
    * @private
    */
   enableToggleIsEnabled_: function(deviceState) {
-    return !!deviceState &&
-        deviceState.State !=
-        chrome.networkingPrivate.DeviceStateType.PROHIBITED;
+    return !!deviceState && deviceState.State != CrOnc.DeviceState.PROHIBITED;
   },
 
   /**
-   * @param {!DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @return {string}
    * @private
    */
@@ -286,7 +277,7 @@ Polymer({
   },
 
   /**
-   * @param {!DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
@@ -320,12 +311,12 @@ Polymer({
   },
 
   /**
-   * @param {!DeviceStateProperties} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @return {boolean}
    * @private
    */
   knownNetworksIsVisible_: function(deviceState) {
-    return deviceState && deviceState.Type == CrOnc.Type.WI_FI;
+    return !!deviceState && deviceState.Type == CrOnc.Type.WI_FI;
   },
 
   /**
