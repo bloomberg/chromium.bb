@@ -22,6 +22,10 @@
 using base::TimeDelta;
 
 namespace media {
+namespace {
+// Time in seconds between two successive measurements of audio power levels.
+constexpr int kPowerMonitorLogIntervalSeconds = 15;
+}  // namespace
 
 AudioOutputController::AudioOutputController(
     AudioManager* audio_manager,
@@ -165,6 +169,10 @@ void AudioOutputController::DoPlay() {
 
   state_ = kPlaying;
 
+  if (will_monitor_audio_levels()) {
+    last_audio_level_log_time_ = base::TimeTicks::Now();
+  }
+
   stream_->Start(this);
 
   // For UMA tracking purposes, start the wedge detection timer.  This allows us
@@ -192,6 +200,10 @@ void AudioOutputController::StopStream() {
   if (state_ == kPlaying) {
     wedge_timer_.reset();
     stream_->Stop();
+
+    if (will_monitor_audio_levels()) {
+      LogAudioPowerLevel("StopStream");
+    }
 
     // A stopped stream is silent, and power_montior_.Scan() is no longer being
     // called; so we must reset the power monitor.
@@ -288,8 +300,16 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
             std::move(copy), reference_time));
   }
 
-  if (will_monitor_audio_levels())
+  if (will_monitor_audio_levels()) {
     power_monitor_.Scan(*dest, frames);
+
+    const auto now = base::TimeTicks::Now();
+    if ((now - last_audio_level_log_time_).InSeconds() >
+        kPowerMonitorLogIntervalSeconds) {
+      LogAudioPowerLevel("OnMoreData");
+      last_audio_level_log_time_ = now;
+    }
+  }
 
   return frames;
 }
@@ -311,6 +331,13 @@ void AudioOutputController::BroadcastDataToDuplicationTargets(
   }
 
   (*duplication_targets_.begin())->OnData(std::move(audio_bus), reference_time);
+}
+
+void AudioOutputController::LogAudioPowerLevel(const std::string& call_name) {
+  std::pair<float, bool> power_and_clip =
+      power_monitor_.ReadCurrentPowerAndClip();
+  handler_->OnLog(base::StringPrintf("AOC::%s: average audio level=%.2f dBFS",
+                                     call_name.c_str(), power_and_clip.first));
 }
 
 void AudioOutputController::OnError() {
