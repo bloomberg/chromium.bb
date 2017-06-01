@@ -45,18 +45,6 @@ namespace {
 
 const struct AppModeInfo* gAppModeInfo = nullptr;
 
-scoped_refptr<base::SequencedTaskRunner>
-CreateTaskRunnerForDefaultWebClientWorker() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    // TODO(pmonette): Windows 10's implementation uses a base::Timer which
-    // currently still requires a SingleThreadTaskRunner. Change this to a
-    // SequencedTaskRunner when crbug.com/552633 is fixed.
-    return base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
-#endif  // defined(OS_WIN)
-  return base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
-}
-
 }  // namespace
 
 bool CanSetAsDefaultBrowser() {
@@ -194,7 +182,7 @@ DefaultWebClientWorker::GetTaskRunner() {
 
   if (!task_runner) {
     task_runner = new scoped_refptr<base::SequencedTaskRunner>(
-        CreateTaskRunnerForDefaultWebClientWorker());
+        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   }
 
   return *task_runner;
