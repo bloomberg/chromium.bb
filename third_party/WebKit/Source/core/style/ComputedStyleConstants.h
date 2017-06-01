@@ -171,10 +171,6 @@ enum EFlexDirection {
 };
 enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 
-// CSS3 User Modify Properties
-
-enum class EUserModify { kReadOnly, kReadWrite, kReadWritePlaintextOnly };
-
 // CSS3 User Drag Values
 
 enum EUserDrag { DRAG_AUTO, DRAG_NONE, DRAG_ELEMENT };
