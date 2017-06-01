@@ -4547,7 +4547,7 @@ class NetworkTimePolicyTest : public PolicyTest {
 IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   // Set a policy to disable network time queries.
   PolicyMap policies;
-  policies.Set(key::kNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kBrowserNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
@@ -4573,7 +4573,7 @@ IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   EXPECT_EQ(0u, num_requests());
 
   // Now enable the policy and check that a network time query is sent.
-  policies.Set(key::kNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kBrowserNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
