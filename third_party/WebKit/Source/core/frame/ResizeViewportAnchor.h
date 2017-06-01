@@ -40,7 +40,7 @@ class CORE_EXPORT ResizeViewportAnchor final
     Member<ResizeViewportAnchor> anchor_;
   };
 
-  void ResizeFrameView(IntSize);
+  void ResizeFrameView(const IntSize&);
 
   DEFINE_INLINE_TRACE() { visitor->Trace(page_); }
 

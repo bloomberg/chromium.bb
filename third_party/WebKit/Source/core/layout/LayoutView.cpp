@@ -797,7 +797,8 @@ void LayoutView::UpdateAfterLayout() {
   LocalFrame& frame = GetFrameView()->GetFrame();
   if (!GetDocument().Printing())
     GetFrameView()->AdjustViewSize();
-  frame.GetChromeClient().ResizeAfterLayout(&frame);
+  if (frame.IsMainFrame())
+    frame.GetChromeClient().ResizeAfterLayout();
   LayoutBlockFlow::UpdateAfterLayout();
 }
 

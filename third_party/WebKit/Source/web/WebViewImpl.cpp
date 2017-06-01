@@ -3613,19 +3613,20 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   EndActiveFlingAnimation();
 }
 
-void WebViewImpl::ResizeAfterLayout(WebLocalFrameBase* webframe) {
-  LocalFrame* frame = webframe->GetFrame();
-  if (!client_ || !client_->CanUpdateLayout() || !frame->IsMainFrame())
+void WebViewImpl::ResizeAfterLayout() {
+  DCHECK(MainFrameImpl());
+  if (!client_ || !client_->CanUpdateLayout())
     return;
 
   if (should_auto_resize_) {
-    WebSize frame_size = frame->View()->FrameRect().Size();
+    LocalFrameView* view = MainFrameImpl()->GetFrame()->View();
+    WebSize frame_size = view->FrameRect().Size();
     if (frame_size != size_) {
       size_ = frame_size;
 
       GetPage()->GetVisualViewport().SetSize(size_);
       GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(size_);
-      frame->View()->SetInitialViewportSize(size_);
+      view->SetInitialViewportSize(size_);
 
       client_->DidAutoResize(size_);
       SendResizeEventAndRepaint();
@@ -3638,9 +3639,9 @@ void WebViewImpl::ResizeAfterLayout(WebLocalFrameBase* webframe) {
   resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
 }
 
-void WebViewImpl::LayoutUpdated(WebLocalFrameBase* webframe) {
-  LocalFrame* frame = webframe->GetFrame();
-  if (!client_ || !frame->IsMainFrame())
+void WebViewImpl::LayoutUpdated() {
+  DCHECK(MainFrameImpl());
+  if (!client_)
     return;
 
   UpdatePageOverlays();
