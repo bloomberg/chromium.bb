@@ -58,6 +58,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
       const cryptauth::RemoteDevice& remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
+  bool ShouldWaitForResponse() override;
 
  private:
   friend class DisconnectTetheringOperationTest;

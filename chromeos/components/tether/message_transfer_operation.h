@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 
 namespace chromeos {
@@ -16,6 +17,7 @@ namespace chromeos {
 namespace tether {
 
 class MessageWrapper;
+class TimerFactory;
 
 // Abstract base class used for operations which send and/or receive messages
 // from remote devices.
@@ -70,6 +72,16 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   // Returns the type of message that this operation intends to send.
   virtual MessageType GetMessageTypeForConnection() = 0;
 
+  // Returns true if we should wait for a response from host devices. Note
+  // that if ShouldWaitForResponse() returns true and a response is not received
+  // within the amount of time returned by GetResponseTimeoutSeconds() after a
+  // host device authenticates, that host device will be unregistered.
+  virtual bool ShouldWaitForResponse();
+
+  // The number of seconds that we should wait for a response from the host. If
+  // ShouldWaitForResponse() returns false, this method is never used.
+  virtual uint32_t GetResponseTimeoutSeconds();
+
   std::vector<cryptauth::RemoteDevice>& remote_devices() {
     return remote_devices_;
   }
@@ -82,12 +94,31 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
   static uint32_t kMaxConnectionAttemptsPerDevice;
 
+  // The default number of seconds the client should generally wait for a
+  // response from the host once an authenticated connection is established.
+  // Once this amount of time passes, the connection will be closed. Subclasses
+  // of MessageTransferOperation should override GetResponseTimeoutSeconds()
+  // if they desire a different duration.
+  static uint32_t kDefaultResponseTimeoutSeconds;
+
+  void SetTimerFactoryForTest(
+      std::unique_ptr<TimerFactory> timer_factory_for_test);
+  void StartResponseTimerForDevice(
+      const cryptauth::RemoteDevice& remote_device);
+  void StopResponseTimerForDeviceIfRunning(
+      const cryptauth::RemoteDevice& remote_device);
+  void OnResponseTimeout(const cryptauth::RemoteDevice& remote_device);
+
   std::vector<cryptauth::RemoteDevice> remote_devices_;
   BleConnectionManager* connection_manager_;
+  std::unique_ptr<TimerFactory> timer_factory_;
 
   bool initialized_;
   std::map<cryptauth::RemoteDevice, uint32_t>
       remote_device_to_num_attempts_map_;
+  std::map<cryptauth::RemoteDevice, std::unique_ptr<base::Timer>>
+      remote_device_to_timer_map_;
+  base::WeakPtrFactory<MessageTransferOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageTransferOperation);
 };

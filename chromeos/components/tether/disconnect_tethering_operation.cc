@@ -86,6 +86,10 @@ MessageType DisconnectTetheringOperation::GetMessageTypeForConnection() {
   return MessageType::DISCONNECT_TETHERING_REQUEST;
 }
 
+bool DisconnectTetheringOperation::ShouldWaitForResponse() {
+  return false;
+}
+
 }  // namespace tether
 
 }  // namespace chromeos
