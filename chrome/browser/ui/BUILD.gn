@@ -3115,6 +3115,8 @@ split_static_library("ui") {
       "webui/cleanup_tool/cleanup_action_handler.h",
       "webui/cleanup_tool/cleanup_tool_ui.cc",
       "webui/cleanup_tool/cleanup_tool_ui.h",
+      "webui/conflicts_handler.cc",
+      "webui/conflicts_handler.h",
       "webui/conflicts_ui.cc",
       "webui/conflicts_ui.h",
       "webui/welcome_win10_handler.cc",
