@@ -214,10 +214,9 @@ bool PostmortemReportCollector::CollectAndSubmitOneReport(
     return false;
   }
 
-  // Report collection is successful. We may increment |unclean_system_cnt|.
+  LogCollectionStatus(SUCCESS);
   if (report_proto.system_state().session_state() == SystemState::UNCLEAN)
     *system_unclean = true;
-
   return true;
 }
 

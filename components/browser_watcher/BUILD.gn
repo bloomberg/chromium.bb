@@ -107,6 +107,8 @@ if (is_win) {
       "stability_data_names.h",
       "stability_debugging.cc",
       "stability_debugging.h",
+      "stability_metrics.cc",
+      "stability_metrics.h",
       "stability_paths.cc",
       "stability_paths.h",
     ]

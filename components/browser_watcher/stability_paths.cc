@@ -8,26 +8,51 @@
 #include <windows.h>
 #endif  // defined(OS_WIN)
 
+#include <memory>
 #include <string>
+#include <utility>
 
+#include "base/debug/activity_tracker.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/browser_watcher/features.h"
+#include "components/browser_watcher/stability_metrics.h"
 
 #if defined(OS_WIN)
 
 #include "third_party/crashpad/crashpad/util/win/time.h"
 
 namespace browser_watcher {
+
+using base::FilePersistentMemoryAllocator;
+using base::MemoryMappedFile;
+using base::PersistentMemoryAllocator;
+
 namespace {
 
 bool GetCreationTime(const base::Process& process, FILETIME* creation_time) {
   FILETIME ignore;
   return ::GetProcessTimes(process.Handle(), creation_time, &ignore, &ignore,
                            &ignore) != 0;
+}
+
+bool SetPmaFileDeleted(const base::FilePath& file_path) {
+  // Map the file read-write so it can guarantee consistency between
+  // the analyzer and any trackers that may still be active.
+  std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
+  mmfile->Initialize(file_path, MemoryMappedFile::READ_WRITE);
+  if (!mmfile->IsValid())
+    return false;
+  if (!FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true))
+    return false;
+  FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, 0,
+                                          base::StringPiece(), true);
+  allocator.SetMemoryState(PersistentMemoryAllocator::MEMORY_DELETED);
+  return true;
 }
 
 }  // namespace
@@ -72,25 +97,40 @@ base::FilePath::StringType GetStabilityFilePattern() {
          base::PersistentMemoryAllocator::kFileExtension;
 }
 
-void MarkStabilityFileForDeletion(const base::FilePath& user_data_dir) {
-  if (!base::FeatureList::IsEnabled(
-          browser_watcher::kStabilityDebuggingFeature)) {
-    return;
-  }
+void MarkOwnStabilityFileDeleted(const base::FilePath& user_data_dir) {
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
+    return;  // No stability instrumentation.
 
-  base::FilePath stability_file;
-  if (!GetStabilityFileForProcess(base::Process::Current(), user_data_dir,
-                                  &stability_file)) {
-    // TODO(manzagop): add a metric for this.
-    return;
-  }
+  global_tracker->MarkDeleted();
+  LogStabilityRecordEvent(StabilityRecordEvent::kMarkDeleted);
 
   // Open (with delete) and then immediately close the file by going out of
   // scope. This should cause the stability debugging file to be deleted prior
   // to the next execution.
-  base::File file(stability_file, base::File::FLAG_OPEN |
-                                      base::File::FLAG_READ |
-                                      base::File::FLAG_DELETE_ON_CLOSE);
+  base::FilePath stability_file;
+  if (!GetStabilityFileForProcess(base::Process::Current(), user_data_dir,
+                                  &stability_file)) {
+    return;
+  }
+  LogStabilityRecordEvent(StabilityRecordEvent::kMarkDeletedGotFile);
+
+  base::File deleter(stability_file, base::File::FLAG_OPEN |
+                                         base::File::FLAG_READ |
+                                         base::File::FLAG_DELETE_ON_CLOSE);
+  if (!deleter.IsValid())
+    LogStabilityRecordEvent(StabilityRecordEvent::kOpenForDeleteFailed);
+}
+
+void MarkStabilityFileDeletedOnCrash(const base::FilePath& file_path) {
+  if (!SetPmaFileDeleted(file_path))
+    LogCollectOnCrashEvent(CollectOnCrashEvent::kPmaSetDeletedFailed);
+
+  base::File deleter(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                    base::File::FLAG_DELETE_ON_CLOSE);
+  if (!deleter.IsValid())
+    LogCollectOnCrashEvent(CollectOnCrashEvent::kOpenForDeleteFailed);
 }
 
 }  // namespace browser_watcher

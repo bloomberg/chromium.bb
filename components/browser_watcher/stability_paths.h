@@ -35,8 +35,15 @@ bool GetStabilityFileForProcess(const base::Process& process,
 // Returns a pattern that matches file names returned by GetFileForProcess.
 base::FilePath::StringType GetStabilityFilePattern();
 
-// Marks the stability file for deletion.
-void MarkStabilityFileForDeletion(const base::FilePath& user_data_dir);
+// Sets the current process's stability file's state to deleted (via the
+// GlobalActivityTracker) and opens the file for deletion. Metrics pertaining to
+// stability recording are logged.
+void MarkOwnStabilityFileDeleted(const base::FilePath& user_data_dir);
+
+// Sets another process's stability file's state to deleted, then opens it for
+// deletion. This function is meant for use by the crashpad handler; it logs
+// metrics labelled as in the context of crash collection.
+void MarkStabilityFileDeletedOnCrash(const base::FilePath& file_path);
 
 #endif  // defined(OS_WIN)
 

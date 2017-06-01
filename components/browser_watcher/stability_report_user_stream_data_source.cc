@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/browser_watcher/minidump_user_streams.h"
+#include "components/browser_watcher/stability_metrics.h"
 #include "components/browser_watcher/stability_paths.h"
 #include "components/browser_watcher/stability_report_extractor.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_user_extension_stream_data_source.h"
@@ -73,6 +74,8 @@ bool BufferExtensionStreamDataSource::ReadStreamData(Delegate* delegate) {
       data_.size() ? data_.data() : nullptr, data_.size());
 }
 
+// TODO(manzagop): Collection should factor in whether this is a true crash or
+// dump without crashing.
 std::unique_ptr<BufferExtensionStreamDataSource> CollectReport(
     const base::FilePath& path) {
   StabilityReport report;
@@ -81,20 +84,17 @@ std::unique_ptr<BufferExtensionStreamDataSource> CollectReport(
                             COLLECTION_STATUS_MAX);
   if (status != SUCCESS)
     return nullptr;
+  LogCollectOnCrashEvent(CollectOnCrashEvent::kReportExtractionSuccess);
 
-  // Open (with delete) and then immediately close the file by going out of
-  // scope. This should cause the stability debugging file to be deleted prior
-  // to the next execution.
-  // TODO(manzagop): set the persistent allocator file's state to deleted in
-  //     case the file can't be deleted.
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                            base::File::FLAG_DELETE_ON_CLOSE);
-  UMA_HISTOGRAM_BOOLEAN("ActivityTracker.CollectCrash.OpenForDeleteSuccess",
-                        file.IsValid());
+  MarkStabilityFileDeletedOnCrash(path);
 
   std::unique_ptr<BufferExtensionStreamDataSource> source(
       new BufferExtensionStreamDataSource(kStabilityReportStreamType));
-  return source->Init(report) ? std::move(source) : nullptr;
+  if (!source->Init(report))
+    return nullptr;
+
+  LogCollectOnCrashEvent(CollectOnCrashEvent::kSuccess);
+  return source;
 }
 
 }  // namespace
@@ -107,9 +107,11 @@ std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 StabilityReportUserStreamDataSource::ProduceStreamData(
     crashpad::ProcessSnapshot* process_snapshot) {
   DCHECK(process_snapshot);
+  LogCollectOnCrashEvent(CollectOnCrashEvent::kCollectAttempt);
 
   if (user_data_dir_.empty())
     return nullptr;
+  LogCollectOnCrashEvent(CollectOnCrashEvent::kUserDataDirNotEmpty);
 
   base::FilePath stability_file =
       GetStabilityFileName(user_data_dir_, process_snapshot);
@@ -118,6 +120,7 @@ StabilityReportUserStreamDataSource::ProduceStreamData(
     // processes can be instrumented), or the stability file cannot be found.
     return nullptr;
   }
+  LogCollectOnCrashEvent(CollectOnCrashEvent::kPathExists);
 
   return CollectReport(stability_file);
 }
