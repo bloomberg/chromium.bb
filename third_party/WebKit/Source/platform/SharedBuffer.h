@@ -128,6 +128,17 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   void OnMemoryDump(const String& dump_prefix, WebProcessMemoryDump*) const;
 
+  template <typename Func>
+  void ForEachSegment(Func&& func) const {
+    const char* segment;
+    size_t pos = 0;
+
+    while (size_t length = GetSomeData(segment, pos)) {
+      func(segment, length);
+      pos += length;
+    }
+  }
+
  private:
   SharedBuffer();
   explicit SharedBuffer(size_t);
