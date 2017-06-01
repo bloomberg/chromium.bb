@@ -6,12 +6,12 @@
 #define CustomElementDefinitionBuilder_h
 
 #include "core/CoreExport.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
-class CustomElementDefinition;
 class CustomElementDescriptor;
 class CustomElementRegistry;
 
@@ -46,7 +46,8 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
   virtual bool RememberOriginalProperties() = 0;
 
   // Produce the definition. This must produce a definition.
-  virtual CustomElementDefinition* Build(const CustomElementDescriptor&) = 0;
+  virtual CustomElementDefinition* Build(const CustomElementDescriptor&,
+                                         CustomElementDefinition::Id) = 0;
 };
 
 }  // namespace blink

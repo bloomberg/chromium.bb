@@ -49,14 +49,14 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
     const v8::Local<v8::Value>& constructor) {
   v8::Local<v8::Map> map =
       EnsureCustomElementRegistryMap(script_state, registry);
-  v8::Local<v8::Value> name_value =
+  v8::Local<v8::Value> id_value =
       map->Get(script_state->GetContext(), constructor).ToLocalChecked();
-  if (!name_value->IsString())
+  if (!id_value->IsUint32())
     return nullptr;
-  AtomicString name = ToCoreAtomicString(name_value.As<v8::String>());
+  uint32_t id = id_value.As<v8::Uint32>()->Value();
 
   // This downcast is safe because only
-  // ScriptCustomElementDefinitions have a name associated with a V8
+  // ScriptCustomElementDefinitions have an ID associated with a V8
   // constructor in the map; see
   // ScriptCustomElementDefinition::create. This relies on three
   // things:
@@ -65,10 +65,8 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
   //    Audit the use of private properties in general and how the
   //    map is handled--it should never be leaked to script.
   //
-  // 2. CustomElementRegistry does not overwrite definitions with a
-  //    given name--see the CHECK in CustomElementRegistry::define
-  //    --and adds ScriptCustomElementDefinitions to the map without
-  //    fail.
+  // 2. CustomElementRegistry adds ScriptCustomElementDefinitions
+  //    assigned an ID to the lis tof definitions without fail.
   //
   // 3. The relationship between the CustomElementRegistry and its
   //    map is never mixed up; this is guaranteed by the bindings
@@ -79,7 +77,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
   // currently only one implementation of CustomElementDefinition in
   // product code and that is ScriptCustomElementDefinition. But
   // that may change in the future.
-  CustomElementDefinition* definition = registry->DefinitionForName(name);
+  CustomElementDefinition* definition = registry->DefinitionForId(id);
   CHECK(definition);
   return static_cast<ScriptCustomElementDefinition*>(definition);
 }
@@ -88,6 +86,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     ScriptState* script_state,
     CustomElementRegistry* registry,
     const CustomElementDescriptor& descriptor,
+    CustomElementDefinition::Id id,
     const v8::Local<v8::Object>& constructor,
     const v8::Local<v8::Function>& connected_callback,
     const v8::Local<v8::Function>& disconnected_callback,
@@ -99,13 +98,12 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
       disconnected_callback, adopted_callback, attribute_changed_callback,
       std::move(observed_attributes));
 
-  // Add a constructor -> name mapping to the registry.
-  v8::Local<v8::Value> name_value =
-      V8String(script_state->GetIsolate(), descriptor.GetName());
+  // Add a constructor -> ID mapping to the registry.
+  v8::Local<v8::Value> id_value =
+      v8::Integer::New(script_state->GetIsolate(), id);
   v8::Local<v8::Map> map =
       EnsureCustomElementRegistryMap(script_state, registry);
-  map->Set(script_state->GetContext(), constructor, name_value)
-      .ToLocalChecked();
+  map->Set(script_state->GetContext(), constructor, id_value).ToLocalChecked();
 
   return definition;
 }

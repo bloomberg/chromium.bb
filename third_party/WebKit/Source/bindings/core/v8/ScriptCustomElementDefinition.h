@@ -32,6 +32,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       ScriptState*,
       CustomElementRegistry*,
       const CustomElementDescriptor&,
+      CustomElementDefinition::Id,
       const v8::Local<v8::Object>& constructor,
       const v8::Local<v8::Function>& connected_callback,
       const v8::Local<v8::Function>& disconnected_callback,

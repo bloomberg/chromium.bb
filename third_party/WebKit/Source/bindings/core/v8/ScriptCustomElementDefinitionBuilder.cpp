@@ -90,7 +90,7 @@ bool ScriptCustomElementDefinitionBuilder::CallableForName(
   v8::Local<v8::Value> value;
   if (!ValueForName(prototype_, name, value))
     return false;
-  // "undefined" means "omitted", so return true.
+  // "undefined" means "omitted", which is valid.
   if (value->IsUndefined())
     return true;
   if (!value->IsFunction()) {
@@ -134,9 +134,10 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
 }
 
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
-    const CustomElementDescriptor& descriptor) {
+    const CustomElementDescriptor& descriptor,
+    CustomElementDefinition::Id id) {
   return ScriptCustomElementDefinition::Create(
-      script_state_.Get(), registry_, descriptor, constructor_,
+      script_state_.Get(), registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
       attribute_changed_callback_, std::move(observed_attributes_));
 }

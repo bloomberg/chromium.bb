@@ -35,7 +35,8 @@ class TestCustomElementDefinitionBuilder
   bool CheckConstructorNotRegistered() override { return true; }
   bool CheckPrototype() override { return true; }
   bool RememberOriginalProperties() override { return true; }
-  CustomElementDefinition* Build(const CustomElementDescriptor&) override;
+  CustomElementDefinition* Build(const CustomElementDescriptor&,
+                                 CustomElementDefinition::Id) override;
 };
 
 class TestCustomElementDefinition : public CustomElementDefinition {
