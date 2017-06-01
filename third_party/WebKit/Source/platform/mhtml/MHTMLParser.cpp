@@ -281,7 +281,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   if (content_transfer_encoding == MIMEHeader::kUnknown)
     content_transfer_encoding = MIMEHeader::kBinary;
 
-  RefPtr<SharedBuffer> content = SharedBuffer::Create();
+  Vector<char> content;
   const bool check_boundary = !end_of_part_boundary.IsEmpty();
   bool end_of_part_reached = false;
   if (content_transfer_encoding == MIMEHeader::kBinary) {
@@ -290,12 +290,10 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       return nullptr;
     }
     line_reader_.SetSeparator(end_of_part_boundary.Utf8().data());
-    Vector<char> part;
-    if (!line_reader_.NextChunk(part)) {
+    if (!line_reader_.NextChunk(content)) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
     }
-    content->Append(part);
     line_reader_.SetSeparator("\r\n");
     Vector<char> next_chars;
     if (line_reader_.Peek(next_chars, 2) != 2) {
@@ -324,12 +322,12 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       }
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
-      content->Append(line.Utf8().data(), line.length());
+      content.Append(line.Utf8().data(), line.length());
       if (content_transfer_encoding == MIMEHeader::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated
         // lines.
-        content->Append("\r\n", 2u);
+        content.Append("\r\n", 2u);
       }
     }
   }
@@ -341,18 +339,18 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   Vector<char> data;
   switch (content_transfer_encoding) {
     case MIMEHeader::kBase64:
-      if (!Base64Decode(content->Data(), content->size(), data)) {
+      if (!Base64Decode(content.data(), content.size(), data)) {
         DVLOG(1) << "Invalid base64 content for MHTML part.";
         return nullptr;
       }
       break;
     case MIMEHeader::kQuotedPrintable:
-      QuotedPrintableDecode(content->Data(), content->size(), data);
+      QuotedPrintableDecode(content.data(), content.size(), data);
       break;
     case MIMEHeader::kEightBit:
     case MIMEHeader::kSevenBit:
     case MIMEHeader::kBinary:
-      data.Append(content->Data(), content->size());
+      data.Append(content.data(), content.size());
       break;
     default:
       DVLOG(1) << "Invalid encoding for MHTML part.";
