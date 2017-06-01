@@ -130,7 +130,7 @@ sk_sp<SkImage> DeferredImageDecoder::CreateFrameAtIndex(size_t index) {
 PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
   if (!rw_buffer_)
     return nullptr;
-  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->newRBufferSnapshot());
+  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
   RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
   SkROBuffer::Iter it(ro_buffer.get());
   do {
@@ -316,7 +316,7 @@ sk_sp<SkImage> DeferredImageDecoder::CreateFrameImageAtIndex(
   DCHECK_GT(decoded_size.width(), 0);
   DCHECK_GT(decoded_size.height(), 0);
 
-  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->newRBufferSnapshot());
+  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
   RefPtr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
