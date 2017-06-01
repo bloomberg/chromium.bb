@@ -636,7 +636,7 @@ using translate::LanguageDetectionController;
 }
 
 // Tests that the Translate infobar is displayed after translation.
-- (void)testTranslateInfobar {
+- (void)DISABLED_testTranslateInfobar {
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioTranslateInfobar");
   std::map<GURL, std::string> responses;
