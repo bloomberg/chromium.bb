@@ -515,3 +515,24 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(
             updater.create_line_list(results),
             ['crbug.com/test external/wpt/x-manual.html [ Skip ]'])
+
+    def test_one_platform_has_no_results(self):
+        # In this example, there is a failure that has been observed on
+        # Linux and one Mac port, but the other Mac port has no results at all.
+        # The specifiers are "filled in" and the failure is assumed to apply
+        # to all Mac platforms.
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        results = {
+            'external/wpt/x.html': {
+                (
+                    'test-linux-precise',
+                    'test-linux-trusty',
+                    'test-mac-mac10.11',
+                ): {'expected': 'PASS', 'actual': 'TEXT', 'bug': 'crbug.com/test'}
+            }
+        }
+        updater.ports_with_no_results = {'test-mac-mac10.10'}
+        self.assertEqual(
+            updater.create_line_list(results),
+            ['crbug.com/test [ Linux Mac ] external/wpt/x.html [ Failure ]'])
