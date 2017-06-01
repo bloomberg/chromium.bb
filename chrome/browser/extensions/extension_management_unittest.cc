@@ -62,7 +62,7 @@ const char kExampleDictPreference[] =
     "  },"
     "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
     "    \"installation_mode\": \"blocked\","
-    "    \"runtime_blocked_hosts\": [\"*://*.foo.com/*\", "
+    "    \"runtime_blocked_hosts\": [\"*://*.foo.com\", "
     "\"https://bar.org/test\"],"
     "    \"blocked_install_message\": \"Custom Error Extension4\","
     "  },"
@@ -78,7 +78,7 @@ const char kExampleDictPreference[] =
     "    \"install_sources\": [\"*://foo.com/*\"],"
     "    \"allowed_types\": [\"theme\", \"user_script\"],"
     "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
-    "    \"runtime_blocked_hosts\": [\"*://*.example.com/default*\"],"
+    "    \"runtime_blocked_hosts\": [\"*://*.example.com\"],"
     "    \"blocked_install_message\": \"Custom Error Default\","
     "  },"
     "}";

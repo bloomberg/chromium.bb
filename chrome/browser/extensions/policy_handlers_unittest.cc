@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -34,6 +35,18 @@ const char kTestManagementPolicy2[] =
     "  \"*\": {"
     "    \"installation_mode\": \"blocked\","
     "  },"
+    "}";
+const char kTestManagementPolicy3[] =
+    "{"
+    "  \"*\": {"
+    "    \"runtime_blocked_hosts\": [\"%s\"]"
+    "  }"
+    "}";
+const char kTestManagementPolicy4[] =
+    "{"
+    "  \"*\": {"
+    "    \"runtime_allowed_hosts\": [\"%s\"]"
+    "  }"
     "}";
 
 TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
@@ -75,6 +88,54 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_FALSE(errors.empty());
   EXPECT_FALSE(
       errors.GetErrors(policy::key::kExtensionInstallBlacklist).empty());
+}
+
+TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettingsURL) {
+  std::vector<std::string> good_urls = {
+      "*://*.example.com", "*://example.com", "http://cat.example.com",
+      "https://example.*", "*://*.example.*", "<all_urls>"};
+
+  // Invalid URLPattern or with a non-standard path
+  std::vector<std::string> bad_urls = {
+      "://*.example.com",       "*://example.com/cat*",  "*://example.com/",
+      "*://*.example.com/*cat", "*://example.com/cat/*", "bad",
+      "*://example.com/*"};
+
+  // Crafts and parses a ExtensionSettings policy to test URL parsing.
+  auto url_parses_successfully = [](const char* policy_template,
+                                    const std::string& url) {
+    std::string policy = base::StringPrintf(policy_template, url.c_str());
+    std::string error;
+    std::unique_ptr<base::Value> policy_value =
+        base::JSONReader::ReadAndReturnError(
+            policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
+            nullptr, &error);
+    if (!policy_value)
+      return false;
+
+    policy::Schema chrome_schema =
+        policy::Schema::Wrap(policy::GetChromeSchemaData());
+    policy::PolicyMap policy_map;
+    ExtensionSettingsPolicyHandler handler(chrome_schema);
+
+    policy_map.Set(policy::key::kExtensionSettings,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, std::move(policy_value),
+                   nullptr);
+
+    policy::PolicyErrorMap errors;
+    return handler.CheckPolicySettings(policy_map, &errors) && errors.empty();
+  };
+
+  for (const std::string& url : good_urls) {
+    EXPECT_TRUE(url_parses_successfully(kTestManagementPolicy3, url)) << url;
+    EXPECT_TRUE(url_parses_successfully(kTestManagementPolicy4, url)) << url;
+  }
+
+  for (const std::string& url : bad_urls) {
+    EXPECT_FALSE(url_parses_successfully(kTestManagementPolicy3, url)) << url;
+    EXPECT_FALSE(url_parses_successfully(kTestManagementPolicy4, url)) << url;
+  }
 }
 
 TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
