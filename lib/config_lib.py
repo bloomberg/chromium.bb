@@ -448,8 +448,8 @@ class HWTestConfig(object):
                pool=constants.HWTEST_MACH_POOL, timeout=SHARED_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
                file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0,
-               offload_failures_only=False):
+               retry=True, max_retries=constants.HWTEST_MAX_RETRIES,
+               minimum_duts=0, suite_min_duts=0, offload_failures_only=False):
     """Constructor -- see members above."""
     assert not async or not blocking
     assert not warn_only or not critical

@@ -693,6 +693,8 @@ HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
 HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
 HWTEST_CONTINUOUS_POOL = 'continuous'
 
+# How many total test retries should be done for a suite.
+HWTEST_MAX_RETRIES = 5
 
 # Defines for the various hardware test suites:
 #   AU: Blocking suite run against all canaries; tests basic AU
