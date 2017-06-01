@@ -17,6 +17,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/event_targeter.h"
+#include "services/ui/ws/event_targeter_delegate.h"
 #include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -41,7 +42,9 @@ class EventDispatcherTestApi;
 }
 
 // Handles dispatching events to the right location as well as updating focus.
-class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
+class EventDispatcher : public ServerWindowObserver,
+                        public DragCursorUpdater,
+                        public EventTargeterDelegate {
  public:
   enum class AcceleratorMatchPhase {
     // Both pre and post should be considered.
@@ -147,6 +150,10 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   void ProcessEvent(const ui::Event& event,
                     const int64_t display_id,
                     AcceleratorMatchPhase match_phase);
+
+  // EventTargeterDelegate:
+  ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
+                                        int64_t* display_id) override;
 
  private:
   friend class test::EventDispatcherTestApi;

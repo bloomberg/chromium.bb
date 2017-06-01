@@ -18,7 +18,7 @@ class LocatedEvent;
 
 namespace ws {
 struct DeepestWindow;
-class EventDispatcherDelegate;
+class EventTargeterDelegate;
 class ModalWindowController;
 class ServerWindow;
 
@@ -46,7 +46,7 @@ struct PointerTarget {
 // Finds the PointerTarget for an event or the DeepestWindow for a location.
 class EventTargeter {
  public:
-  EventTargeter(EventDispatcherDelegate* event_dispatcher_delegate,
+  EventTargeter(EventTargeterDelegate* event_targeter_delegate,
                 ModalWindowController* modal_window_controller);
   ~EventTargeter();
 
@@ -62,7 +62,7 @@ class EventTargeter {
                                                   int64_t* display_id);
 
  private:
-  EventDispatcherDelegate* event_dispatcher_delegate_;
+  EventTargeterDelegate* event_targeter_delegate_;
   ModalWindowController* modal_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargeter);

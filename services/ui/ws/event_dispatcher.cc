@@ -47,8 +47,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       capture_window_client_id_(kInvalidClientId),
       modal_window_controller_(this),
       event_targeter_(
-          base::MakeUnique<EventTargeter>(delegate_,
-                                          &modal_window_controller_)),
+          base::MakeUnique<EventTargeter>(this, &modal_window_controller_)),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
       mouse_cursor_in_non_client_area_(false) {}
@@ -315,6 +314,12 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
   DCHECK(event.IsPointerEvent());
   ProcessPointerEvent(*event.AsPointerEvent());
   return;
+}
+
+ServerWindow* EventDispatcher::GetRootWindowContaining(
+    gfx::Point* location_in_display,
+    int64_t* display_id) {
+  return delegate_->GetRootWindowContaining(location_in_display, display_id);
 }
 
 void EventDispatcher::SetMouseCursorSourceWindow(ServerWindow* window) {
