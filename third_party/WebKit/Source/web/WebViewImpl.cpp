@@ -54,6 +54,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/exported/WebFactory.h"
 #include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebSettingsImpl.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
@@ -173,7 +174,6 @@
 #include "web/StorageQuotaClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebRemoteFrameImpl.h"
-#include "web/WebSettingsImpl.h"
 
 #if USE(DEFAULT_RENDER_THEME)
 #include "core/layout/LayoutThemeDefault.h"

@@ -33,6 +33,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/WebInputEventConversion.h"
+#include "core/exported/WebSettingsImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -66,7 +67,6 @@
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebSettingsImpl.h"
 
 namespace blink {
 

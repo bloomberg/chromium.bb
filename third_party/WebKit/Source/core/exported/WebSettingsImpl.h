@@ -31,17 +31,18 @@
 #ifndef WebSettingsImpl_h
 #define WebSettingsImpl_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
 #include "public/web/WebSettings.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
 class DevToolsEmulator;
 class Settings;
 
-class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
+class CORE_EXPORT WebSettingsImpl final
+    : NON_EXPORTED_BASE(public WebSettings) {
  public:
   WebSettingsImpl(Settings*, DevToolsEmulator*);
   virtual ~WebSettingsImpl() {}
