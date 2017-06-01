@@ -36,6 +36,46 @@ using ntp_tiles::NTPTilesVector;
 using ntp_tiles::TileVisualType;
 using ntp_tiles::metrics::TileImpression;
 
+namespace {
+
+class JavaHomePageClient : public MostVisitedSites::HomePageClient {
+ public:
+  JavaHomePageClient(JNIEnv* env, const JavaParamRef<jobject>& obj);
+
+  bool IsHomePageEnabled() const override;
+  bool IsNewTabPageUsedAsHomePage() const override;
+  GURL GetHomepageUrl() const override;
+
+ private:
+  ScopedJavaGlobalRef<jobject> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(JavaHomePageClient);
+};
+
+JavaHomePageClient::JavaHomePageClient(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj)
+    : client_(env, obj) {}
+
+bool JavaHomePageClient::IsHomePageEnabled() const {
+  return Java_HomePageClient_isHomePageEnabled(AttachCurrentThread(), client_);
+}
+
+bool JavaHomePageClient::IsNewTabPageUsedAsHomePage() const {
+  return Java_HomePageClient_isNewTabPageUsedAsHomePage(AttachCurrentThread(),
+                                                        client_);
+}
+
+GURL JavaHomePageClient::GetHomepageUrl() const {
+  base::android::ScopedJavaLocalRef<jstring> url =
+      Java_HomePageClient_getHomePageUrl(AttachCurrentThread(), client_);
+  if (url.is_null()) {
+    return GURL();
+  }
+  return GURL(ConvertJavaStringToUTF8(url));
+}
+
+}  // namespace
+
 class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
  public:
   JavaObserver(JNIEnv* env, const JavaParamRef<jobject>& obj);
@@ -109,6 +149,14 @@ void MostVisitedSitesBridge::SetObserver(
     jint num_sites) {
   java_observer_.reset(new JavaObserver(env, j_observer));
   most_visited_->SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
+}
+
+void MostVisitedSitesBridge::SetHomePageClient(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_client) {
+  most_visited_->SetHomePageClient(
+      base::MakeUnique<JavaHomePageClient>(env, j_client));
 }
 
 void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(

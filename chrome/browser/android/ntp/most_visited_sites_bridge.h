@@ -30,6 +30,10 @@ class MostVisitedSitesBridge {
                    const base::android::JavaParamRef<jobject>& j_observer,
                    jint num_sites);
 
+  void SetHomePageClient(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jobject>& j_client);
+
   void AddOrRemoveBlacklistedUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
 
+import javax.annotation.Nullable;
+
 /**
  * Methods to provide most recent urls, titles and thumbnails.
  */
@@ -38,6 +40,30 @@ interface MostVisitedSites {
          */
         @CalledByNative("Observer")
         void onIconMadeAvailable(String siteUrl);
+    }
+
+    /**
+     * An interface to provide {@link MostVisitedSites} with platform-specific home page data.
+     */
+    interface HomePageClient {
+        /**
+         * @return True if a home page is active and set.
+         */
+        @CalledByNative("HomePageClient")
+        boolean isHomePageEnabled();
+
+        /**
+         * @return True if the new tab page was set as home page.
+         */
+        @CalledByNative("HomePageClient")
+        boolean isNewTabPageUsedAsHomePage();
+
+        /**
+         * @return The raw URL of the currently set home page.
+         */
+        @CalledByNative("HomePageClient")
+        @Nullable
+        String getHomePageUrl();
     }
 
     /**

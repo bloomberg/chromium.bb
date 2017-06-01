@@ -111,16 +111,6 @@ class MostVisitedSites : public history::TopSitesObserver,
                    suggestions::SuggestionsService* suggestions,
                    std::unique_ptr<PopularSites> popular_sites,
                    std::unique_ptr<IconCacher> icon_cacher,
-                   std::unique_ptr<MostVisitedSitesSupervisor> supervisor,
-                   std::unique_ptr<HomePageClient> home_page_client);
-
-  // TODO(fhorschig): Adjust all factories and delete this.
-  // Constructs a MostVisitedSites instance without HomePageClient.
-  MostVisitedSites(PrefService* prefs,
-                   scoped_refptr<history::TopSites> top_sites,
-                   suggestions::SuggestionsService* suggestions,
-                   std::unique_ptr<PopularSites> popular_sites,
-                   std::unique_ptr<IconCacher> icon_cacher,
                    std::unique_ptr<MostVisitedSitesSupervisor> supervisor);
 
   ~MostVisitedSites() override;
@@ -142,6 +132,11 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Does not take ownership of |observer|, which must outlive this object and
   // must not be null.
   void SetMostVisitedURLsObserver(Observer* observer, size_t num_sites);
+
+  // Sets the client that provides platform-specific home page preferences.
+  // When used to replace an existing client, the new client will first be used
+  // during the construction of a new tile set.
+  void SetHomePageClient(std::unique_ptr<HomePageClient> client);
 
   // Requests an asynchronous refresh of the suggestions. Notifies the observer
   // if the request resulted in the set of tiles changing.
@@ -229,7 +224,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   std::unique_ptr<PopularSites> const popular_sites_;
   std::unique_ptr<IconCacher> const icon_cacher_;
   std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
-  std::unique_ptr<HomePageClient> const home_page_client_;
+  std::unique_ptr<HomePageClient> home_page_client_;
 
   Observer* observer_;
 
