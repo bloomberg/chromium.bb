@@ -73,7 +73,7 @@ AutocompleteSyncableService::AutocompleteSyncableService(
 }
 
 AutocompleteSyncableService::~AutocompleteSyncableService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
@@ -106,7 +106,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
     std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!sync_processor_);
   DCHECK(sync_processor);
   DCHECK(error_handler);
@@ -167,7 +167,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
 }
 
 void AutocompleteSyncableService::StopSyncing(syncer::ModelType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(syncer::AUTOFILL, type);
 
   sync_processor_.reset();
@@ -176,7 +176,7 @@ void AutocompleteSyncableService::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList AutocompleteSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_processor_);
   DCHECK_EQ(type, syncer::AUTOFILL);
 
@@ -195,7 +195,7 @@ syncer::SyncDataList AutocompleteSyncableService::GetAllSyncData(
 syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_processor_);
 
   if (!sync_processor_) {
@@ -290,7 +290,7 @@ bool AutocompleteSyncableService::LoadAutofillData(
 
 bool AutocompleteSyncableService::SaveChangesToWebData(
     const std::vector<AutofillEntry>& new_entries) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!GetAutofillTable()->UpdateAutofillEntries(new_entries))
     return false;
 

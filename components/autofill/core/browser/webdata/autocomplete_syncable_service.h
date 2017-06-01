@@ -13,8 +13,8 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
-#include "base/threading/non_thread_safe.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
@@ -49,8 +49,7 @@ class AutofillTable;
 class AutocompleteSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread,
-      public base::NonThreadSafe {
+      public AutofillWebDataServiceObserverOnDBThread {
  public:
   ~AutocompleteSyncableService() override;
 
@@ -161,6 +160,8 @@ class AutocompleteSyncableService
   std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   syncer::SyncableService::StartSyncFlare flare_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncableService);
 };

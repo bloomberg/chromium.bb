@@ -63,7 +63,7 @@ AutofillProfileSyncableService::AutofillProfileSyncableService(
 }
 
 AutofillProfileSyncableService::~AutofillProfileSyncableService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
@@ -95,7 +95,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
@@ -205,7 +205,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
 }
 
 void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
   sync_processor_.reset();
@@ -216,7 +216,7 @@ void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_processor_.get());
   DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
@@ -229,7 +229,7 @@ syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
 syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!sync_processor_.get()) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
@@ -295,7 +295,7 @@ bool AutofillProfileSyncableService::LoadAutofillData(
 
 bool AutofillProfileSyncableService::SaveChangesToWebData(
     const DataBundle& bundle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AutofillTable* autofill_table = GetAutofillTable();
 
