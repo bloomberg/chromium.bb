@@ -5,7 +5,6 @@
 #include "ash/system/ime_menu/ime_list_view.h"
 
 #include "ash/ime/ime_switch_type.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
