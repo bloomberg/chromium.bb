@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -32,8 +32,7 @@ class PrefRegistrySyncable;
 }
 
 class AccountFetcherService : public KeyedService,
-                              public OAuth2TokenService::Observer,
-                              public base::NonThreadSafe {
+                              public OAuth2TokenService::Observer {
  public:
   // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
@@ -138,6 +137,8 @@ class AccountFetcherService : public KeyedService,
   std::unordered_map<std::string,
                      std::unique_ptr<RefreshTokenAnnotationRequest>>
       refresh_token_annotation_requests_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AccountFetcherService);
 };

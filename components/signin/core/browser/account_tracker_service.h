@@ -13,12 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-
 
 class PrefService;
 class SigninClient;
@@ -33,8 +32,7 @@ class PrefRegistrySyncable;
 
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.
-class AccountTrackerService : public KeyedService,
-                              public base::NonThreadSafe {
+class AccountTrackerService : public KeyedService {
  public:
   // Name of the preference property that persists the account information
   // tracked by this service.
@@ -156,6 +154,8 @@ class AccountTrackerService : public KeyedService,
   SigninClient* signin_client_;  // Not owned.
   std::map<std::string, AccountState> accounts_;
   base::ObserverList<Observer> observer_list_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);
 };
