@@ -502,6 +502,21 @@ TEST(HashSetTest, InitializerList) {
   EXPECT_TRUE(IsOneTwoThree(ReturnOneTwoThree()));
 }
 
+enum TestEnum {
+  kItem0,
+};
+
+enum class TestEnumClass : unsigned char {
+  kItem0,
+};
+
+TEST(HashSetTest, HasTraitsForEnum) {
+  // Ensure that enum hash keys are buildable.
+  HashSet<TestEnum> set1;
+  HashSet<TestEnumClass> set2;
+  HashSet<std::pair<TestEnum, TestEnumClass>> set3;
+}
+
 }  // anonymous namespace
 
 }  // namespace WTF

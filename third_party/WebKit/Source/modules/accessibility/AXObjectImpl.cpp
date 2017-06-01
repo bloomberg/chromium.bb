@@ -56,7 +56,19 @@ namespace blink {
 using namespace HTMLNames;
 
 namespace {
-typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
+
+struct AccessibilityRoleHashTraits : HashTraits<AccessibilityRole> {
+  static const bool kEmptyValueIsZero = true;
+  static AccessibilityRole EmptyValue() {
+    return AccessibilityRole::kUnknownRole;
+  }
+};
+
+using ARIARoleMap = HashMap<String,
+                            AccessibilityRole,
+                            CaseFoldingHash,
+                            HashTraits<String>,
+                            AccessibilityRoleHashTraits>;
 
 struct RoleEntry {
   const char* aria_role;
