@@ -129,7 +129,7 @@ class TestingBrowserProcess : public BrowserProcess {
   network_time::NetworkTimeTracker* network_time_tracker() override;
 
   gcm::GCMDriver* gcm_driver() override;
-  memory::TabManager* GetTabManager() override;
+  resource_coordinator::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
@@ -188,7 +188,7 @@ class TestingBrowserProcess : public BrowserProcess {
   // |tab_manager_| is null by default and will be created when
   // GetTabManager() is invoked on supported platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  std::unique_ptr<memory::TabManager> tab_manager_;
+  std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
 #endif
 
   // The following objects are not owned by TestingBrowserProcess:

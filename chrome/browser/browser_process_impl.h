@@ -154,7 +154,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
   network_time::NetworkTimeTracker* network_time_tracker() override;
   gcm::GCMDriver* gcm_driver() override;
-  memory::TabManager* GetTabManager() override;
+  resource_coordinator::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
@@ -344,8 +344,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   // Any change to this #ifdef must be reflected as well in
-  // chrome/browser/memory/tab_manager_browsertest.cc
-  std::unique_ptr<memory::TabManager> tab_manager_;
+  // chrome/browser/resource_coordinator/tab_manager_browsertest.cc
+  std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
 #endif
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_;

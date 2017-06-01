@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 
 #include <algorithm>
 #include <map>
@@ -17,9 +17,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
-#include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -37,7 +37,7 @@
 using content::WebContents;
 using content::WebContentsTester;
 
-namespace memory {
+namespace resource_coordinator {
 namespace {
 
 class TabStripDummyDelegate : public TestTabStripModelDelegate {
@@ -374,9 +374,8 @@ TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
   // Setting the variation parameter to true.
   {
     std::unique_ptr<base::FieldTrialList> field_trial_list_;
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<base::MockEntropyProvider>()));
+    field_trial_list_.reset(new base::FieldTrialList(
+        base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;
@@ -391,9 +390,8 @@ TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
   // Setting the variation parameter to something else.
   {
     std::unique_ptr<base::FieldTrialList> field_trial_list_;
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<base::MockEntropyProvider>()));
+    field_trial_list_.reset(new base::FieldTrialList(
+        base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;
@@ -494,4 +492,4 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
   EXPECT_FALSE(tab_manager.GetWebContentsData(tab2)->is_purged());
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator

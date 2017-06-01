@@ -12,11 +12,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/features.h"
@@ -391,10 +391,10 @@ gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
   return nullptr;
 }
 
-memory::TabManager* TestingBrowserProcess::GetTabManager() {
+resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (!tab_manager_.get())
-    tab_manager_.reset(new memory::TabManager());
+    tab_manager_.reset(new resource_coordinator::TabManager());
   return tab_manager_.get();
 #else
   return nullptr;

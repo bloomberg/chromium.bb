@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
-#define CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_H_
 
 #include <stdint.h>
 
@@ -22,8 +22,8 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/memory/tab_manager_observer.h"
-#include "chrome/browser/memory/tab_stats.h"
+#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
@@ -39,7 +39,7 @@ namespace content {
 class WebContents;
 }
 
-namespace memory {
+namespace resource_coordinator {
 
 #if defined(OS_CHROMEOS)
 class TabManagerDelegate;
@@ -371,6 +371,6 @@ class TabManager : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TabManager);
 };
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_H_

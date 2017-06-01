@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
+#include "chrome/browser/resource_coordinator/tab_manager_delegate_chromeos.h"
 
 #include <map>
 #include <string>
@@ -13,7 +13,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace memory {
+namespace resource_coordinator {
 
 class TabManagerDelegateTest : public testing::Test {
  public:
@@ -56,14 +56,11 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 
   tab5.tab_contents_id = 500;
   tab5.is_app = true;
-  TabStatsList tab_list = {
-    tab1, tab2, tab3, tab4, tab5
-  };
+  TabStatsList tab_list = {tab1, tab2, tab3, tab4, tab5};
 
   std::vector<TabManagerDelegate::Candidate> candidates;
 
-  candidates = TabManagerDelegate::GetSortedCandidates(
-          tab_list, arc_processes);
+  candidates = TabManagerDelegate::GetSortedCandidates(tab_list, arc_processes);
   ASSERT_EQ(9U, candidates.size());
 
   // focused app.
@@ -128,14 +125,10 @@ class MockTabManagerDelegate : public TabManagerDelegate {
         always_return_true_from_is_recently_killed_(false) {}
 
   // unit test.
-  std::vector<int> GetKilledArcProcesses() {
-    return killed_arc_processes_;
-  }
+  std::vector<int> GetKilledArcProcesses() { return killed_arc_processes_; }
 
   // unit test.
-  std::vector<int64_t> GetKilledTabs() {
-    return killed_tabs_;
-  }
+  std::vector<int64_t> GetKilledTabs() { return killed_tabs_; }
 
   // unit test.
   void Clear() {
@@ -184,9 +177,7 @@ class MockMemoryStat : public TabManagerDelegate::MemoryStat {
   MockMemoryStat() {}
   ~MockMemoryStat() override {}
 
-  int TargetMemoryToFreeKB() override {
-    return target_memory_to_free_kb_;
-  }
+  int TargetMemoryToFreeKB() override { return target_memory_to_free_kb_; }
 
   int EstimatedMemoryFreedKB(base::ProcessHandle pid) override {
     return process_pss_[pid];
@@ -445,4 +436,4 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   EXPECT_EQ(1U, processes_map.count("not-visible"));
 }
 
-}  // namespace memory
+}  // namespace resource_coordinator

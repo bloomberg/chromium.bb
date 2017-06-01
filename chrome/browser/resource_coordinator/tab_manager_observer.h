@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_OBSERVER_H_
-#define CHROME_BROWSER_MEMORY_TAB_MANAGER_OBSERVER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_OBSERVER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_OBSERVER_H_
 
 namespace content {
 class WebContents;
 }
 
-namespace memory {
+namespace resource_coordinator {
 
 // Interface for objects that wish to be notified of changes in TabManager.
 class TabManagerObserver {
@@ -28,6 +28,6 @@ class TabManagerObserver {
   virtual ~TabManagerObserver();
 };
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_OBSERVER_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_OBSERVER_H_

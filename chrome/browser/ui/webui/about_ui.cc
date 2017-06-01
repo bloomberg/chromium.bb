@@ -38,11 +38,11 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/memory/tab_manager.h"
-#include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -465,12 +465,13 @@ std::string BuildAboutDiscardsRunPage() {
 }
 
 std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
-  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
-  memory::TabStatsList stats = tab_manager->GetTabStats();
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
+  resource_coordinator::TabStatsList stats = tab_manager->GetTabStats();
   std::vector<std::string> titles;
   titles.reserve(stats.size());
-  for (memory::TabStatsList::iterator it = stats.begin(); it != stats.end();
-       ++it) {
+  for (resource_coordinator::TabStatsList::iterator it = stats.begin();
+       it != stats.end(); ++it) {
     std::string str;
     str.reserve(4096);
     str += "<b>";
@@ -499,7 +500,8 @@ std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
 std::string AboutDiscards(const std::string& path) {
   std::string output;
   int64_t web_content_id;
-  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  resource_coordinator::TabManager* tab_manager =
+      g_browser_process->GetTabManager();
 
   std::vector<std::string> path_split = base::SplitString(
       path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);

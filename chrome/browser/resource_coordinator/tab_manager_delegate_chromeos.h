@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
-#define CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_DELEGATE_CHROMEOS_H_
 
 #include <memory>
 #include <string>
@@ -18,8 +18,8 @@
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
-#include "chrome/browser/memory/tab_manager.h"
-#include "chrome/browser/memory/tab_stats.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "components/arc/common/process.mojom.h"
@@ -28,7 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace memory {
+namespace resource_coordinator {
 
 // Possible types of Apps/Tabs processes. From most important to least
 // important.
@@ -272,6 +272,6 @@ class TabManagerDelegate::MemoryStat {
   static int ReadIntFromFile(const char* file_name, int default_val);
 };
 
-}  // namespace memory
+}  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_DELEGATE_CHROMEOS_H_
