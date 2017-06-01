@@ -4200,18 +4200,7 @@ static void staticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallb
     }
   }
 
-  TestInterfaceImplementation* cppValue(WTF::GetPtr(TestObject::staticSaveSameObjectAttribute()));
-
-  // Keep the wrapper object for the return value alive as long as |this|
-  // object is alive in order to save creation time of the wrapper object.
-  if (cppValue && DOMDataStore::SetReturnValue(info.GetReturnValue(), cppValue))
-    return;
-  v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#staticSaveSameObjectAttribute")
-      .Set(holder, v8Value);
-
-  V8SetReturnValue(info, v8Value);
+  V8SetReturnValue(info, WTF::GetPtr(TestObject::staticSaveSameObjectAttribute()), info.GetIsolate()->GetCurrentContext()->Global());
 
   // [SaveSameObject]
   privateSameObject.Set(holder, info.GetReturnValue().Get());
