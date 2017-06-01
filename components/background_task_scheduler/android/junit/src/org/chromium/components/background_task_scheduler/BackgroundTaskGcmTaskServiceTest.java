@@ -6,6 +6,9 @@ package org.chromium.components.background_task_scheduler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.os.Build;
@@ -38,6 +41,8 @@ public class BackgroundTaskGcmTaskServiceTest {
     static boolean sNeedsRescheduling;
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
+    @Mock
+    private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
 
     @Before
     public void setUp() {
@@ -45,6 +50,7 @@ public class BackgroundTaskGcmTaskServiceTest {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
                 new BackgroundTaskScheduler(mDelegate));
+        BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         sReturnThroughCallback = false;
         sNeedsRescheduling = false;
         sLastTask = null;
@@ -87,6 +93,8 @@ public class BackgroundTaskGcmTaskServiceTest {
 
         assertEquals(parameters.getTaskId(), TaskIds.TEST);
         assertEquals(parameters.getExtras().getString("foo"), "bar");
+
+        verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
     }
 
     @Test

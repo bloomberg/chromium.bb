@@ -49,6 +49,8 @@ public class BackgroundTaskSchedulerTest {
 
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
+    @Mock
+    private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
     private ShadowGcmNetworkManager mGcmNetworkManager;
 
     @Before
@@ -57,6 +59,7 @@ public class BackgroundTaskSchedulerTest {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
                 new BackgroundTaskScheduler(mDelegate));
+        BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         TestBackgroundTask.reset();
 
         // Initialize Google Play Services and GCM Network Manager for upgrade testing.
@@ -75,6 +78,8 @@ public class BackgroundTaskSchedulerTest {
         assertTrue(BackgroundTaskSchedulerPrefs.getScheduledTasks().contains(
                 TASK.getBackgroundTaskClass().getName()));
         verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(TASK));
+        verify(mBackgroundTaskSchedulerUma, times(1))
+                .reportTaskScheduled(eq(TaskIds.TEST), eq(true));
     }
 
     @Test

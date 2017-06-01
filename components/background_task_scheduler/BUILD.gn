@@ -31,6 +31,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManager.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerJobService.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefs.java",
+      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUma.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BundleToPersistableBundleConverter.java",
       "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java",
       "android/java/src/org/chromium/components/background_task_scheduler/TaskInfo.java",
@@ -68,6 +69,7 @@ if (is_android) {
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerTest.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUmaTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/ShadowGcmNetworkManager.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/TestBackgroundTask.java",
     ]

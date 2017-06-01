@@ -558,6 +558,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.BackgroundTaskScheduler.TaskCanceled"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>Records that a specific background task has been canceled.</summary>
+</histogram>
+
+<histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Failure"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    Records that a specific background task has failed to be scheduled.
+  </summary>
+</histogram>
+
+<histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Success"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    Records that a specific background task has been successfully scheduled.
+  </summary>
+</histogram>
+
+<histogram name="Android.BackgroundTaskScheduler.TaskStarted"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>Records that a specific background task has been started.</summary>
+</histogram>
+
+<histogram name="Android.BackgroundTaskScheduler.TaskStopped"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    Records that a specific background task has been stopped by Background Task
+    Scheduler before it was able to complete itself.
+  </summary>
+</histogram>
+
 <histogram name="Android.ChromeHome.DurationOpen" units="ms">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
