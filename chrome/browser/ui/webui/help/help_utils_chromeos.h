@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_HELP_HELP_UTILS_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_HELP_HELP_UTILS_CHROMEOS_H_
 
-#include <string>
-
 #include "base/strings/string16.h"
+
+namespace chromeos {
+class NetworkState;
+}
 
 namespace help_utils_chromeos {
 
@@ -19,7 +21,7 @@ namespace help_utils_chromeos {
 bool IsUpdateOverCellularAllowed(bool interactive);
 
 // Returns localized name for the connection |type|.
-base::string16 GetConnectionTypeAsUTF16(const std::string& type);
+base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network);
 
 }  // namespace help_utils_chromeos
 

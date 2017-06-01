@@ -201,6 +201,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
 
     vpn_provider_type_ = vpn_provider_type;
     return true;
+  } else if (key == shill::kTetheringProperty) {
+    return GetStringValue(key, value, &tethering_state_);
   }
   return false;
 }
@@ -362,6 +364,11 @@ std::string NetworkState::connection_state() const {
 void NetworkState::set_connection_state(const std::string connection_state) {
   last_connection_state_ = connection_state_;
   connection_state_ = connection_state;
+}
+
+bool NetworkState::IsUsingMobileData() const {
+  return type() == shill::kTypeCellular || type() == chromeos::kTypeTether ||
+         tethering_state() == shill::kTetheringConfirmedState;
 }
 
 bool NetworkState::IsDynamicWep() const {
