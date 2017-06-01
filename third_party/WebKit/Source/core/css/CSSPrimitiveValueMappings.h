@@ -1182,39 +1182,6 @@ inline EUserDrag CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EUserModify e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EUserModify::kReadOnly:
-      value_id_ = CSSValueReadOnly;
-      break;
-    case EUserModify::kReadWrite:
-      value_id_ = CSSValueReadWrite;
-      break;
-    case EUserModify::kReadWritePlaintextOnly:
-      value_id_ = CSSValueReadWritePlaintextOnly;
-      break;
-  }
-}
-
-template <>
-inline EUserModify CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueReadOnly:
-      return EUserModify::kReadOnly;
-    case CSSValueReadWrite:
-      return EUserModify::kReadWrite;
-    case CSSValueReadWritePlaintextOnly:
-      return EUserModify::kReadWritePlaintextOnly;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EUserModify::kReadOnly;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EVerticalAlign a)
     : CSSValue(kIdentifierClass) {
   switch (a) {

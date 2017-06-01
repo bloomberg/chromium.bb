@@ -2690,10 +2690,9 @@
     {
       name: "-webkit-user-modify",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "EUserModify",
-      default_value: "EUserModify::kReadOnly",
-      field_size: 2,
+      field_template: "keyword",
+      keywords: ["read-only", "read-write", "read-write-plaintext-only"],
+      default_value: "read-only",
       field_group: "rare-inherited",
     },
     {
