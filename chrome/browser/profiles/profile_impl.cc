@@ -130,6 +130,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -472,6 +473,7 @@ ProfileImpl::ProfileImpl(
   configuration_policy_provider_ =
       policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, sequenced_task_runner);
+  AuthPolicyCredentialsManagerFactory::BuildForProfileIfActiveDirectory(this);
 #else
   configuration_policy_provider_ =
       policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
