@@ -34,6 +34,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/GrammarMarkerListImpl.h"
@@ -162,8 +163,8 @@ void DocumentMarkerController::AddCompositionMarker(const EphemeralRange& range,
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [underline_color, thick, background_color](
                                int start_offset, int end_offset) {
-    return new DocumentMarker(start_offset, end_offset, underline_color, thick,
-                              background_color);
+    return new CompositionMarker(start_offset, end_offset, underline_color,
+                                 thick, background_color);
   });
 }
 
