@@ -7,6 +7,7 @@
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -84,6 +85,11 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       offscreen_(false),
       group_(group),
       feature_info_(new FeatureInfo),
+      gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+          TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
+      gpu_trace_level_(2),
+      gpu_trace_commands_(false),
+      gpu_debug_commands_(false),
       weak_ptr_factory_(this) {
   DCHECK(client);
   DCHECK(group);
@@ -92,6 +98,21 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
 GLES2DecoderPassthroughImpl::~GLES2DecoderPassthroughImpl() {}
 
 GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommands(
+    unsigned int num_commands,
+    const volatile void* buffer,
+    int num_entries,
+    int* entries_processed) {
+  if (gpu_debug_commands_) {
+    return DoCommandsImpl<true>(num_commands, buffer, num_entries,
+                                entries_processed);
+  } else {
+    return DoCommandsImpl<false>(num_commands, buffer, num_entries,
+                                 entries_processed);
+  }
+}
+
+template <bool DebugImpl>
+GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
     unsigned int num_commands,
     const volatile void* buffer,
     int num_entries,
@@ -119,6 +140,11 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommands(
       break;
     }
 
+    if (DebugImpl && log_commands()) {
+      LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
+                 << "cmd: " << GetCommandName(command);
+    }
+
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstGLES2Command;
     if (command_index < arraysize(command_info)) {
@@ -126,12 +152,25 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommands(
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
+        bool doing_gpu_trace = false;
+        if (DebugImpl && gpu_trace_commands_) {
+          if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
+            doing_gpu_trace = true;
+            gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"),
+                               GetCommandName(command), kTraceDecoder);
+          }
+        }
+
         uint32_t immediate_data_size = (arg_count - info_arg_count) *
                                        sizeof(CommandBufferEntry);  // NOLINT
         if (info.cmd_handler) {
           result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
         } else {
           result = error::kUnknownCommand;
+        }
+
+        if (DebugImpl && doing_gpu_trace) {
+          gpu_tracer_->End(kTraceDecoder);
         }
       } else {
         result = error::kInvalidArguments;
@@ -167,6 +206,9 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   context_ = context;
   surface_ = surface;
   offscreen_ = offscreen;
+
+  // Create GPU Tracer for timing values.
+  gpu_tracer_.reset(new GPUTracer(this));
 
   if (!group_->Initialize(this, attrib_helper.context_type,
                           disallowed_features)) {
@@ -249,6 +291,12 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
       &vertex_array_id_map_, have_context,
       [](GLuint vertex_array) { glDeleteVertexArraysOES(1, &vertex_array); });
 
+  // Destroy the GPU Tracer which may own some in process GPU Timings.
+  if (gpu_tracer_) {
+    gpu_tracer_->Destroy(have_context);
+    gpu_tracer_.reset();
+  }
+
   // Destroy the surface before the context, some surface destructors make GL
   // calls.
   surface_ = nullptr;
@@ -311,7 +359,7 @@ gpu::gles2::GLES2Util* GLES2DecoderPassthroughImpl::GetGLES2Util() {
 }
 
 gl::GLContext* GLES2DecoderPassthroughImpl::GetGLContext() {
-  return nullptr;
+  return context_.get();
 }
 
 gpu::gles2::ContextGroup* GLES2DecoderPassthroughImpl::GetContextGroup() {
@@ -474,10 +522,12 @@ void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
-  return false;
+  return gpu_tracer_->HasTracesToProcess();
 }
 
-void GLES2DecoderPassthroughImpl::PerformIdleWork() {}
+void GLES2DecoderPassthroughImpl::PerformIdleWork() {
+  gpu_tracer_->ProcessTraces();
+}
 
 bool GLES2DecoderPassthroughImpl::HasPollingWork() const {
   return false;
@@ -549,6 +599,16 @@ gpu::gles2::Logger* GLES2DecoderPassthroughImpl::GetLogger() {
   return &logger_;
 }
 
+void GLES2DecoderPassthroughImpl::BeginDecoding() {
+  gpu_tracer_->BeginDecoding();
+  gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
+  gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
+}
+
+void GLES2DecoderPassthroughImpl::EndDecoding() {
+  gpu_tracer_->EndDecoding();
+}
+
 const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
   return nullptr;
 }
@@ -556,6 +616,14 @@ const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
 scoped_refptr<ShaderTranslatorInterface>
 GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
+}
+
+const char* GLES2DecoderPassthroughImpl::GetCommandName(
+    unsigned int command_id) const {
+  if (command_id >= kFirstGLES2Command && command_id < kNumCommands) {
+    return gles2::GetCommandName(static_cast<CommandId>(command_id));
+  }
+  return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
 }
 
 void* GLES2DecoderPassthroughImpl::GetScratchMemory(size_t size) {

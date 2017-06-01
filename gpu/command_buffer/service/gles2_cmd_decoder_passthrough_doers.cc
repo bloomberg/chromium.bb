@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -3593,12 +3594,18 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoTraceBeginCHROMIUM(
     const char* category_name,
     const char* trace_name) {
-  NOTIMPLEMENTED();
+  if (!gpu_tracer_->Begin(category_name, trace_name, kTraceCHROMIUM)) {
+    InsertError(GL_INVALID_OPERATION, "Failed to create begin trace");
+    return error::kNoError;
+  }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoTraceEndCHROMIUM() {
-  NOTIMPLEMENTED();
+  if (!gpu_tracer_->End(kTraceCHROMIUM)) {
+    InsertError(GL_INVALID_OPERATION, "No trace to end");
+    return error::kNoError;
+  }
   return error::kNoError;
 }
 
