@@ -17,6 +17,7 @@
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/js/js_test_util.h"
+#include "components/sync/user_events/fake_user_event_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,6 +27,7 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
+using syncer::FakeUserEventService;
 using syncer::SyncService;
 using syncer::SyncServiceObserver;
 using syncer::TypeDebugInfoObserver;
@@ -97,6 +99,11 @@ static std::unique_ptr<KeyedService> BuildTestSyncService(
   return base::MakeUnique<TestSyncService>();
 }
 
+static std::unique_ptr<KeyedService> BuildFakeUserEventService(
+    content::BrowserContext* context) {
+  return base::MakeUnique<FakeUserEventService>();
+}
+
 class SyncInternalsMessageHandlerTest : public ::testing::Test {
  protected:
   SyncInternalsMessageHandlerTest() {
@@ -107,6 +114,9 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
     test_sync_service_ = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, &BuildTestSyncService));
+    fake_user_event_service_ = static_cast<FakeUserEventService*>(
+        browser_sync::UserEventServiceFactory::GetInstance()
+            ->SetTestingFactoryAndUse(&profile_, &BuildFakeUserEventService));
     handler_.reset(new TestableSyncInternalsMessageHandler(
         &web_ui_,
         base::BindRepeating(
@@ -158,6 +168,10 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
 
   TestSyncService* test_sync_service() { return test_sync_service_; }
 
+  FakeUserEventService* fake_user_event_service() {
+    return fake_user_event_service_;
+  }
+
   TestableSyncInternalsMessageHandler* handler() { return handler_.get(); }
 
   int CallCountWithName(const std::string& function_name) {
@@ -187,6 +201,7 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
   std::unique_ptr<content::WebContents> web_contents_;
   content::TestWebUI web_ui_;
   TestSyncService* test_sync_service_;
+  FakeUserEventService* fake_user_event_service_;
   std::unique_ptr<TestableSyncInternalsMessageHandler> handler_;
   int about_sync_data_delegate_call_count_ = 0;
   SyncService* last_delegate_sync_service_ = nullptr;
@@ -313,6 +328,32 @@ TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoSyncDisabled) {
   EXPECT_EQ(1, about_sync_data_delegate_call_count());
   EXPECT_EQ(nullptr, last_delegate_sync_service());
   ValidateAboutInfoCall();
+}
+
+TEST_F(SyncInternalsMessageHandlerTest, WriteUserEvent) {
+  ListValue args;
+  args.AppendString("1000000000000000000");
+  args.AppendString("-1");
+  handler()->HandleWriteUserEvent(&args);
+
+  ASSERT_EQ(1u, fake_user_event_service()->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& event =
+      *fake_user_event_service()->GetRecordedUserEvents().begin();
+  EXPECT_EQ(1000000000000000000, event.event_time_usec());
+  EXPECT_EQ(-1, event.navigation_id());
+}
+
+TEST_F(SyncInternalsMessageHandlerTest, WriteUserEventBadParse) {
+  ListValue args;
+  args.AppendString("123abc");
+  args.AppendString("");
+  handler()->HandleWriteUserEvent(&args);
+
+  ASSERT_EQ(1u, fake_user_event_service()->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& event =
+      *fake_user_event_service()->GetRecordedUserEvents().begin();
+  EXPECT_EQ(0, event.event_time_usec());
+  EXPECT_EQ(0, event.navigation_id());
 }
 
 }  // namespace

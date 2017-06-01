@@ -215,8 +215,7 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   syncer::UserEventService* user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(
-          profile->GetOriginalProfile());
+      browser_sync::UserEventServiceFactory::GetForProfile(profile);
 
   sync_pb::UserEventSpecifics event_specifics;
   event_specifics.set_event_time_usec(StringAtIndexToInt64(args, 0));
