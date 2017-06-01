@@ -11,7 +11,6 @@
 
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_set.h"
@@ -30,9 +29,7 @@ class ExtensionRegistry;
 // conflicting modifications of network requests by extensions, slow extensions,
 // etc.) trigger a warning badge in the UI and and provide means to resolve
 // them. This class must be used on the UI thread only.
-class WarningService : public KeyedService,
-                       public ExtensionRegistryObserver,
-                       public base::NonThreadSafe {
+class WarningService : public KeyedService, public ExtensionRegistryObserver {
  public:
   class Observer {
    public:

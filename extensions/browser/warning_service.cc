@@ -16,14 +16,16 @@ namespace extensions {
 
 WarningService::WarningService(content::BrowserContext* browser_context)
     : browser_context_(browser_context), extension_registry_observer_(this) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (browser_context_) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(
         ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context_)));
   }
 }
 
-WarningService::~WarningService() {}
+WarningService::~WarningService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 // static
 WarningService* WarningService::Get(content::BrowserContext* browser_context) {
@@ -32,7 +34,7 @@ WarningService* WarningService::Get(content::BrowserContext* browser_context) {
 
 void WarningService::ClearWarnings(
     const std::set<Warning::WarningType>& types) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ExtensionIdSet affected_extensions;
   for (WarningSet::iterator i = warnings_.begin();
        i != warnings_.end();) {
@@ -50,7 +52,7 @@ void WarningService::ClearWarnings(
 
 std::set<Warning::WarningType> WarningService::
     GetWarningTypesAffectingExtension(const std::string& extension_id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::set<Warning::WarningType> result;
   for (WarningSet::const_iterator i = warnings_.begin();
        i != warnings_.end(); ++i) {
@@ -62,7 +64,7 @@ std::set<Warning::WarningType> WarningService::
 
 std::vector<std::string> WarningService::GetWarningMessagesForExtension(
     const std::string& extension_id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<std::string> result;
 
   const ExtensionSet& extension_set =
@@ -77,7 +79,7 @@ std::vector<std::string> WarningService::GetWarningMessagesForExtension(
 }
 
 void WarningService::AddWarnings(const WarningSet& warnings) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionIdSet affected_extensions;
   for (const Warning& warning : warnings) {
