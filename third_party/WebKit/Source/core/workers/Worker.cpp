@@ -20,7 +20,7 @@ Worker* Worker::Create(ExecutionContext* context,
                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   Document* document = ToDocument(context);
-  UseCounter::Count(context, UseCounter::kWorkerStart);
+  UseCounter::Count(context, WebFeature::kWorkerStart);
   if (!document->GetPage()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "The context provided is invalid.");

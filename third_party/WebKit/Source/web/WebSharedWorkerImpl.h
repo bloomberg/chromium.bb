@@ -110,7 +110,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   }
 
   // Callback methods for WebSharedWorkerReportingProxyImpl.
-  void CountFeature(UseCounter::Feature);
+  void CountFeature(WebFeature);
   void PostMessageToPageInspector(const String& message);
   void DidCloseWorkerGlobalScope();
   void DidTerminateWorkerThread();

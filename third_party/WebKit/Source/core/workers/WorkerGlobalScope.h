@@ -81,8 +81,8 @@ class CORE_EXPORT WorkerGlobalScope
   // WorkerOrWorkletGlobalScope
   bool IsClosing() const final { return closing_; }
   virtual void Dispose();
-  void ReportFeature(UseCounter::Feature) final;
-  void ReportDeprecation(UseCounter::Feature) final;
+  void ReportFeature(WebFeature) final;
+  void ReportDeprecation(WebFeature) final;
   WorkerThread* GetThread() const final { return thread_; }
 
   void ExceptionUnhandled(int exception_id);

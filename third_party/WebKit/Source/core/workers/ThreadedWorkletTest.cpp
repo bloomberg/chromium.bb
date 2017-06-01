@@ -28,20 +28,20 @@ class ThreadedWorkletObjectProxyForTest final
       ParentFrameTaskRunners* parent_frame_task_runners)
       : ThreadedWorkletObjectProxy(messaging_proxy_weak_ptr,
                                    parent_frame_task_runners),
-        reported_features_(UseCounter::kNumberOfFeatures) {}
+        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
  protected:
-  void CountFeature(UseCounter::Feature feature) override {
+  void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     ThreadedWorkletObjectProxy::CountFeature(feature);
   }
 
-  void CountDeprecation(UseCounter::Feature feature) final {
+  void CountDeprecation(WebFeature feature) final {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     ThreadedWorkletObjectProxy::CountDeprecation(feature);
   }
 
@@ -89,7 +89,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   }
 
   // Emulates API use on ThreadedWorkletGlobalScope.
-  void CountFeature(UseCounter::Feature feature) {
+  void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
     GetParentFrameTaskRunners()
@@ -98,7 +98,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   }
 
   // Emulates deprecated API use on ThreadedWorkletGlobalScope.
-  void CountDeprecation(UseCounter::Feature feature) {
+  void CountDeprecation(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountDeprecation(feature);
 
@@ -193,7 +193,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   MessagingProxy()->Start();
 
   // This feature is randomly selected.
-  const UseCounter::Feature kFeature1 = UseCounter::Feature::kRequestFileSystem;
+  const WebFeature kFeature1 = WebFeature::kRequestFileSystem;
 
   // API use on the ThreadedWorkletGlobalScope should be recorded in UseCounter
   // on the Document.
@@ -216,8 +216,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   testing::EnterRunLoop();
 
   // This feature is randomly selected from Deprecation::deprecationMessage().
-  const UseCounter::Feature kFeature2 =
-      UseCounter::Feature::kPrefixedStorageInfo;
+  const WebFeature kFeature2 = WebFeature::kPrefixedStorageInfo;
 
   // Deprecated API use on the ThreadedWorkletGlobalScope should be recorded in
   // UseCounter on the Document.

@@ -1163,8 +1163,8 @@ void ChromeClientImpl::DidChangeValueInTextField(
         WebFormControlElement(&element));
 
   UseCounter::Count(doc, doc.IsSecureContext()
-                             ? UseCounter::kFieldEditInSecureContext
-                             : UseCounter::kFieldEditInNonSecureContext);
+                             ? WebFeature::kFieldEditInSecureContext
+                             : WebFeature::kFieldEditInNonSecureContext);
   web_view_->PageImportanceSignals()->SetHadFormInteraction();
 }
 

@@ -1196,7 +1196,7 @@ void UseCounter::Count(const Document& document, WebFeature feature) {
   Count(document.GetFrame(), feature);
 }
 
-bool UseCounter::IsCounted(Document& document, Feature feature) {
+bool UseCounter::IsCounted(Document& document, WebFeature feature) {
   Page* page = document.GetPage();
   if (!page)
     return false;
@@ -1231,13 +1231,12 @@ void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
     return;
   }
   if (context->IsWorkerOrWorkletGlobalScope()) {
-    ToWorkerOrWorkletGlobalScope(context)->CountFeature(
-        static_cast<Feature>(feature));
+    ToWorkerOrWorkletGlobalScope(context)->CountFeature(feature);
   }
 }
 
 void UseCounter::CountCrossOriginIframe(const Document& document,
-                                        Feature feature) {
+                                        WebFeature feature) {
   LocalFrame* frame = document.GetFrame();
   if (frame && frame->IsCrossOriginSubframe())
     Count(frame, feature);

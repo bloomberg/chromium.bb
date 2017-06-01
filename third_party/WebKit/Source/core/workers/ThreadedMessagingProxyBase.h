@@ -31,8 +31,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
   // initially created it. This object could either be a Worker or a Worklet.
   virtual void ParentObjectDestroyed();
 
-  void CountFeature(UseCounter::Feature);
-  void CountDeprecation(UseCounter::Feature);
+  void CountFeature(WebFeature);
+  void CountDeprecation(WebFeature);
 
   void ReportConsoleMessage(MessageSource,
                             MessageLevel,

@@ -135,8 +135,8 @@ class ServiceWorkerGlobalScopeProxy final
                                    int64_t decoded_body_length) override;
 
   // WorkerReportingProxy overrides:
-  void CountFeature(UseCounter::Feature) override;
-  void CountDeprecation(UseCounter::Feature) override;
+  void CountFeature(WebFeature) override;
+  void CountDeprecation(WebFeature) override;
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;

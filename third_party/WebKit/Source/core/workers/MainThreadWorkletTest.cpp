@@ -24,19 +24,19 @@ class MainThreadWorkletGlobalScopeForTest
                                      user_agent,
                                      std::move(security_origin),
                                      isolate),
-        reported_features_(UseCounter::kNumberOfFeatures) {}
+        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
-  void ReportFeature(UseCounter::Feature feature) override {
+  void ReportFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     MainThreadWorkletGlobalScope::ReportFeature(feature);
   }
 
-  void ReportDeprecation(UseCounter::Feature feature) final {
+  void ReportDeprecation(WebFeature feature) final {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(feature));
-    reported_features_.QuickSet(feature);
+    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
+    reported_features_.QuickSet(static_cast<int>(feature));
     MainThreadWorkletGlobalScope::ReportDeprecation(feature);
   }
 
@@ -67,7 +67,7 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
   Document& document = *page_->GetFrame().GetDocument();
 
   // This feature is randomly selected.
-  const UseCounter::Feature kFeature1 = UseCounter::Feature::kRequestFileSystem;
+  const WebFeature kFeature1 = WebFeature::kRequestFileSystem;
 
   // API use on the MainThreadWorkletGlobalScope should be recorded in
   // UseCounter on the Document.
@@ -80,8 +80,7 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
   UseCounter::Count(global_scope_, kFeature1);
 
   // This feature is randomly selected from Deprecation::deprecationMessage().
-  const UseCounter::Feature kFeature2 =
-      UseCounter::Feature::kPrefixedStorageInfo;
+  const WebFeature kFeature2 = WebFeature::kPrefixedStorageInfo;
 
   // Deprecated API use on the MainThreadWorkletGlobalScope should be recorded
   // in UseCounter on the Document.

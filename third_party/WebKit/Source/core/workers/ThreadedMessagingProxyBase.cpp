@@ -92,12 +92,12 @@ ThreadedMessagingProxyBase::GetThreadableLoadingContext() {
   return ThreadableLoadingContext::Create(*ToDocument(execution_context_));
 }
 
-void ThreadedMessagingProxyBase::CountFeature(UseCounter::Feature feature) {
+void ThreadedMessagingProxyBase::CountFeature(WebFeature feature) {
   DCHECK(IsParentContextThread());
   UseCounter::Count(execution_context_, feature);
 }
 
-void ThreadedMessagingProxyBase::CountDeprecation(UseCounter::Feature feature) {
+void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
   DCHECK(IsParentContextThread());
   Deprecation::CountDeprecation(execution_context_, feature);
 }
