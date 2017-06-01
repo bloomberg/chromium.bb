@@ -191,26 +191,22 @@ _BANNED_CPP_FUNCTIONS = (
     (
       'ScopedAllowIO',
       (
-       'New code should not use ScopedAllowIO. Post a task to the blocking',
-       'pool or the FILE thread instead.',
+       'New production code should not use ScopedAllowIO (using it in',
+       'browser tests is fine). Post a task to the blocking pool or the',
+       'FILE thread instead.',
       ),
       True,
       (
+        r"^.*browser(|_)test[a-z_]*\.cc$",
         r"^base[\\\/]memory[\\\/]shared_memory_posix\.cc$",
         r"^base[\\\/]process[\\\/]internal_aix\.cc$",
         r"^base[\\\/]process[\\\/]process_linux\.cc$",
         r"^base[\\\/]process[\\\/]process_metrics_linux\.cc$",
         r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]boot_times_recorder\.cc$",
         r"^chrome[\\\/]browser[\\\/]lifetime[\\\/]application_lifetime\.cc$",
-        r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]"
-            "customization_document_browsertest\.cc$",
-        r"^chrome[\\\/]test[\\\/]media_router[\\\/]" +
-            r"media_router_integration_browsertest\.cc$",
-        r"^chrome[\\\/]test[\\\/]ppapi[\\\/]ppapi_filechooser_browsertest\.cc$",
         r"^components[\\\/]crash[\\\/]app[\\\/]breakpad_mac\.mm$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]layout_test[\\\/]" +
             r"test_info_extractor\.cc$",
-        r"^content[\\\/].*browser(|_)test[a-zA-Z_]*\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
         r"^content[\\\/]test[\\\/]ppapi[\\\/]ppapi_test\.cc$",
