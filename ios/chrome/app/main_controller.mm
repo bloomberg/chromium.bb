@@ -2243,13 +2243,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                   transition:(ui::PageTransition)transition {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
-  GURL currentURL;
 
   Tab* currentTabInTargetBVC = [[targetBVC tabModel] currentTab];
-  if (currentTabInTargetBVC)
-    currentURL = [currentTabInTargetBVC url];
-
-  if (!(currentTabInTargetBVC && IsURLNtp(currentURL))) {
+  if (!(currentTabInTargetBVC && IsURLNtp(currentTabInTargetBVC.visibleURL))) {
     return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:NSNotFound
                                  transition:transition];
