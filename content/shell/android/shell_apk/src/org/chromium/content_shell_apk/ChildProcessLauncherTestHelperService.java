@@ -72,9 +72,9 @@ public class ChildProcessLauncherTestHelperService extends Service {
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
         final ChildProcessLauncherHelper processLauncher =
-                ChildProcessLauncherTestUtils.startForTesting(this, true /* sandboxed */,
-                        false /* alwaysInForeground */, commandLine, new FileDescriptorInfo[0],
-                        params);
+                ChildProcessLauncherTestUtils.startForTesting(true /* sandboxed */,
+                        false /* useStrongBinding */, commandLine, new FileDescriptorInfo[0],
+                        params, true /* doSetupConnection */);
 
         // Poll the launcher until the connection is set up. The main test in
         // ChildProcessLauncherTest, which has bound the connection to this service, manages the
@@ -85,18 +85,21 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
             @Override
             public void run() {
+                int pid = 0;
                 ChildProcessConnection conn = processLauncher.getChildProcessConnection();
                 if (conn != null) {
-                    int pid = ChildProcessLauncherTestUtils.getConnectionPid(conn);
-                    assert pid != 0;
-                    try {
-                        mReplyTo.send(Message.obtain(null, MSG_BIND_SERVICE_REPLY, pid,
-                                ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn)));
-                    } catch (RemoteException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                } else {
+                    pid = ChildProcessLauncherTestUtils.getConnectionPid(conn);
+                }
+                if (pid == 0) {
                     handler.postDelayed(this, 10 /* milliseconds */);
+                    return;
+                }
+
+                try {
+                    mReplyTo.send(Message.obtain(null, MSG_BIND_SERVICE_REPLY, pid,
+                            ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn)));
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         };

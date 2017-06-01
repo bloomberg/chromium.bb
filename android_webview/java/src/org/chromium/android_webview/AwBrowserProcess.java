@@ -32,7 +32,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.policy.CombinedPolicyProvider;
 
 import java.io.File;
@@ -101,7 +101,7 @@ public abstract class AwBrowserProcess {
                 boolean multiProcess = CommandLine.getInstance().hasSwitch(
                         AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
                 if (multiProcess) {
-                    ChildProcessLauncher.warmUp(appContext);
+                    ChildProcessLauncherHelper.warmUp(appContext);
                 }
                 // The policies are used by browser startup, so we need to register the policy
                 // providers before starting the browser process. This only registers java objects

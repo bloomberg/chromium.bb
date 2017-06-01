@@ -9,17 +9,20 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ChildProcessLauncher;
 
 /**
- * This is the base class for child services; the [Non]SandboxedProcessService0, 1.. etc
+ * This is the base class for child services; the [Sandboxed|Privileged]ProcessService0, 1.. etc
  * subclasses provide the concrete service entry points, to enable the browser to connect
  * to more than one distinct process (i.e. one process per service number, up to limit of N).
  * The embedding application must declare these service instances in the application section
- * of its AndroidManifest.xml, for example with N entries of the form:-
- *     <service android:name="org.chromium.content.app.[Non]SandboxedProcessServiceX"
- *              android:process=":[non]sandboxed_processX" />
- * for X in 0...N-1 (where N is {@link ChildProcessLauncher#MAX_REGISTERED_SERVICES})
+ * of its AndroidManifest.xml, first with some meta-data describing the services:
+ *     <meta-data android:name="org.chromium.content.browser.NUM_[SANDBOXED|PRIVILEGED]_SERVICES"
+ *           android:value="N"/>
+ *     <meta-data android:name="org.chromium.content.browser.[SANDBOXED|PRIVILEGED]_SERVICES_NAME"
+ *           android:value="org.chromium.content.app.[Sandboxed|Privileged]ProcessService"/>
+ * and then N entries of the form:
+ *     <service android:name="org.chromium.content.app.[Sandboxed|Privileged]ProcessServiceX"
+ *              android:process=":[sandboxed|privileged]_processX" />
  */
 @JNINamespace("content")
 public class ChildProcessService extends Service {

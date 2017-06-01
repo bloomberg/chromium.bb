@@ -52,7 +52,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -232,7 +232,7 @@ public class CustomTabsConnection {
             System.exit(-1);
         }
         final Context context = app.getApplicationContext();
-        ChildProcessLauncher.warmUp(context);
+        ChildProcessLauncherHelper.warmUp(context);
         ChromeBrowserInitializer.initNetworkChangeNotifier(context);
         WarmupManager.getInstance().initializeViewHierarchy(
                 context, R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);

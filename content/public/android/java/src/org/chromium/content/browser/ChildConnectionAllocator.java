@@ -234,7 +234,7 @@ public class ChildConnectionAllocator {
     }
 
     @VisibleForTesting
-    ChildProcessConnection[] connectionArrayForTesting() {
-        return mChildProcessConnections;
+    ChildProcessConnection getChildProcessConnectionAtSlotForTesting(int slotNumber) {
+        return mChildProcessConnections[slotNumber];
     }
 }

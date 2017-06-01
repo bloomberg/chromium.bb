@@ -7,7 +7,7 @@ package org.chromium.android_webview;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
 
 /**
  * Exposes an interface via which native code can manage the priority
@@ -18,7 +18,7 @@ public class AwRendererPriorityManager {
     @CalledByNative
     private static void setRendererPriority(int pid, @RendererPriority int rendererPriority) {
         // TODO(tobiasjs): handle RendererPriority.LOW separately from WAIVED.
-        ChildProcessLauncher.getBindingManager().setPriority(
+        ChildProcessLauncherHelper.getBindingManager().setPriority(
                 pid, rendererPriority == RendererPriority.HIGH, false /* boostForPendingViews */);
     }
 }
