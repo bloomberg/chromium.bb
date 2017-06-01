@@ -475,6 +475,21 @@
             ]
         }
     ],
+    "ContextualSearch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Default",
+                    "params": {
+                        "enable_ranker_logging": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [
