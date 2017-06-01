@@ -733,6 +733,23 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     }
   }
 
+  // TODO(mcnee): Allow the root RWHV to consume the child's
+  // GestureScrollUpdates. This is needed to prevent the child from consuming
+  // them after the root has started an overscroll.
+  // See crbug.com/713368
+
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
+InputEventAckState RenderWidgetHostViewChildFrame::FilterChildGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  // We may be the owner of a RenderWidgetHostViewGuest,
+  // so we talk to the root RWHV on its behalf.
+  // TODO(mcnee): Remove once MimeHandlerViewGuest is based on OOPIF.
+  // See crbug.com/659750
+  if (frame_connector_)
+    return frame_connector_->GetRootRenderWidgetHostView()
+        ->FilterChildGestureEvent(gesture_event);
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 

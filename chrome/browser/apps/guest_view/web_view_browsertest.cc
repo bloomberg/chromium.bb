@@ -3990,6 +3990,55 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest, ScrollGuestContent) {
 }
 
 #if defined(USE_AURA)
+// This verifies the fix for crbug.com/694393 .
+IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
+                       OverscrollControllerSeesConsumedScrollsInGuest) {
+  // This test is only relevant for non-OOPIF WebView as OOPIF-based WebView
+  // uses different scroll bubbling logic.
+  DCHECK(
+      !base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
+
+  LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+
+  std::vector<content::WebContents*> guest_web_contents_list;
+  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
+  ASSERT_EQ(1u, guest_web_contents_list.size());
+
+  content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderWidgetHostView* guest_host_view =
+      guest_contents->GetRenderWidgetHostView();
+
+  gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
+  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
+  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
+
+  content::RenderWidgetHostView* embedder_host_view =
+      embedder_contents->GetRenderWidgetHostView();
+  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+
+  // If we scroll the guest, the OverscrollController for the
+  // RenderWidgetHostViewAura should see that the scroll was consumed.
+  // If it doesn't, this test will time out indicating failure.
+  content::MockOverscrollController* mock_overscroll_controller =
+      content::MockOverscrollController::Create(embedder_host_view);
+
+  gfx::Point guest_scroll_location(guest_rect.width() / 2, 0);
+  float gesture_distance = 15.f;
+  // It's sufficient to scroll vertically, since all we need to test is that
+  // the OverscrollController sees consumed scrolls.
+  content::SimulateGestureScrollSequence(guest_contents, guest_scroll_location,
+                                         gfx::Vector2dF(0, -gesture_distance));
+
+  mock_overscroll_controller->WaitForConsumedScroll();
+}
+#endif
+
+#if defined(USE_AURA)
 // TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
 // bots, then re-enable this test class as well.
 // https://crbug.com/503751

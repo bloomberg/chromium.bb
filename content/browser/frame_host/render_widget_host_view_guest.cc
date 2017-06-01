@@ -554,9 +554,38 @@ void RenderWidgetHostViewGuest::GestureEventAck(
                       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   // GestureScrollBegin/End are always consumed by the guest, so we only
   // forward GestureScrollUpdate.
+  // Consumed GestureScrollUpdates and GestureScrollBegins must still be
+  // forwarded to the owner RWHV so it may update its state.
   if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-      not_consumed)
+      not_consumed) {
     guest_->ResendEventToEmbedder(event);
+  } else if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+             event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+    GetOwnerRenderWidgetHostView()->GestureEventAck(event, ack_result);
+  }
+}
+
+InputEventAckState RenderWidgetHostViewGuest::FilterInputEvent(
+    const blink::WebInputEvent& input_event) {
+  InputEventAckState ack_state =
+      RenderWidgetHostViewChildFrame::FilterInputEvent(input_event);
+  if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
+    return ack_state;
+
+  // The owner RWHV may want to consume the guest's GestureScrollUpdates.
+  // Also, we don't resend GestureFlingStarts, GestureScrollBegins, or
+  // GestureScrollEnds, so we let the owner RWHV know about them here.
+  if (input_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+      input_event.GetType() == blink::WebInputEvent::kGestureFlingStart ||
+      input_event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
+      input_event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+    const blink::WebGestureEvent& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(input_event);
+    return GetOwnerRenderWidgetHostView()->FilterChildGestureEvent(
+        gesture_event);
+  }
+
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
 bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {

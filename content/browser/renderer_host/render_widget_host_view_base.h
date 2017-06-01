@@ -193,6 +193,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event);
 
+  // Allows a root RWHV to filter gesture events in a child.
+  virtual InputEventAckState FilterChildGestureEvent(
+      const blink::WebGestureEvent& gesture_event);
+
   // Called by the host when it requires an input flush; the flush call should
   // by synchronized with BeginFrame.
   virtual void OnSetNeedsFlushInput() = 0;

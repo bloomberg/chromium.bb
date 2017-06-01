@@ -51,6 +51,16 @@ bool OverscrollController::ShouldProcessEvent(
     case blink::WebInputEvent::kGestureScrollEnd: {
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
+
+      // GestureScrollBegin and GestureScrollEnd events are created to wrap
+      // individual resent GestureScrollUpdates from a plugin. Hence these
+      // should not be used to indicate the beginning/end of the overscroll.
+      // TODO(mcnee): When we remove BrowserPlugin, delete this code.
+      // See crbug.com/533069
+      if (gesture.resending_plugin_id != -1 &&
+          event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+        return false;
+
       blink::WebGestureEvent::ScrollUnits scrollUnits;
       switch (event.GetType()) {
         case blink::WebInputEvent::kGestureScrollBegin:
