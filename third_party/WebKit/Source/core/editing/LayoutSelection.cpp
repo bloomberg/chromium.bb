@@ -79,15 +79,16 @@ LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
       has_pending_selection_(false),
       paint_range_(SelectionPaintRange()) {}
 
-SelectionInFlatTree LayoutSelection::CalcVisibleSelection(
-    const VisibleSelectionInFlatTree& original_selection) const {
+static SelectionInFlatTree CalcSelection(
+    const VisibleSelectionInFlatTree& original_selection,
+    bool should_show_blok_cursor) {
   const PositionInFlatTree& start = original_selection.Start();
   const PositionInFlatTree& end = original_selection.end();
   SelectionType selection_type = original_selection.GetSelectionType();
   const TextAffinity affinity = original_selection.Affinity();
 
   bool paint_block_cursor =
-      frame_selection_->ShouldShowBlockCursor() &&
+      should_show_blok_cursor &&
       selection_type == SelectionType::kCaretSelection &&
       !IsLogicalEndOfLine(CreateVisiblePosition(end, affinity));
   if (EnclosingTextControl(start.ComputeContainerNode())) {
@@ -315,25 +316,22 @@ void LayoutSelection::ClearSelection() {
   paint_range_ = SelectionPaintRange();
 }
 
-void LayoutSelection::Commit() {
-  if (!HasPendingSelection())
-    return;
-  has_pending_selection_ = false;
-
+static SelectionPaintRange CalcSelectionPaintRange(
+    const FrameSelection& frame_selection) {
   const VisibleSelectionInFlatTree& original_selection =
-      frame_selection_->ComputeVisibleSelectionInFlatTree();
-
+      frame_selection.ComputeVisibleSelectionInFlatTree();
   // Construct a new VisibleSolution, since visibleSelection() is not
   // necessarily valid, and the following steps assume a valid selection. See
   // <https://bugs.webkit.org/show_bug.cgi?id=69563> and
   // <rdar://problem/10232866>.
+  const SelectionInFlatTree& new_selection = CalcSelection(
+      original_selection, frame_selection.ShouldShowBlockCursor());
   const VisibleSelectionInFlatTree& selection =
-      CreateVisibleSelection(CalcVisibleSelection(original_selection));
+      CreateVisibleSelection(new_selection);
 
-  if (!selection.IsRange() || frame_selection_->IsHidden()) {
-    ClearSelection();
-    return;
-  }
+  if (!selection.IsRange() || frame_selection.IsHidden())
+    return SelectionPaintRange();
+
   DCHECK(!selection.IsNone());
   // Use the rightmost candidate for the start of the selection, and the
   // leftmost candidate for the end of the selection. Example: foo <a>bar</a>.
@@ -360,9 +358,22 @@ void LayoutSelection::Commit() {
   DCHECK(end_layout_object);
   DCHECK(start_layout_object->View() == end_layout_object->View());
 
-  const SelectionPaintRange new_range(
-      start_layout_object, start_pos.ComputeEditingOffset(), end_layout_object,
-      end_pos.ComputeEditingOffset());
+  return SelectionPaintRange(start_layout_object,
+                             start_pos.ComputeEditingOffset(),
+                             end_layout_object, end_pos.ComputeEditingOffset());
+}
+
+void LayoutSelection::Commit() {
+  if (!HasPendingSelection())
+    return;
+  has_pending_selection_ = false;
+
+  const SelectionPaintRange& new_range =
+      CalcSelectionPaintRange(*frame_selection_);
+  if (new_range.IsNull()) {
+    ClearSelection();
+    return;
+  }
   // Just return if the selection hasn't changed.
   if (paint_range_ == new_range)
     return;

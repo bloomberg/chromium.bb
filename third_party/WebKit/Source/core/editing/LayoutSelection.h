@@ -88,9 +88,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  private:
   LayoutSelection(FrameSelection&);
 
-  SelectionInFlatTree CalcVisibleSelection(
-      const VisibleSelectionInFlatTree&) const;
-
   Member<FrameSelection> frame_selection_;
   bool has_pending_selection_ : 1;
 
