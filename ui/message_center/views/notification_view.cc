@@ -31,7 +31,6 @@
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"

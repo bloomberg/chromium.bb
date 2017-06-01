@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "ui/events/event_utils.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/test/views_test_base.h"

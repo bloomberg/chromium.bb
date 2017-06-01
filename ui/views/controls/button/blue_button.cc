@@ -9,7 +9,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/resources/grit/views_resources.h"
 

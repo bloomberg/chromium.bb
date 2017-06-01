@@ -21,8 +21,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/ui_resources.h"
-#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

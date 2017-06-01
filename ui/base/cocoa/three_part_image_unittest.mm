@@ -14,7 +14,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
-#include "ui/resources/grit/ui_resources.h"
 
 namespace ui {
 namespace test {
