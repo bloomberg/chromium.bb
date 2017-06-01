@@ -1629,6 +1629,51 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
             delegate->GetTotalReceivedBytes());
 }
 
+TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeStartConfirmed) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  ConfirmHandshake();
+  session()->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<TestDelegateBase> delegate(
+      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  delegate->WaitUntilNextCallback();  // OnFailed
+  EXPECT_TRUE(delegate->on_failed_called());
+  EXPECT_THAT(delegate->error(), IsError(ERR_CONNECTION_CLOSED));
+}
+
+TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeStartNotConfirmed) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  session()->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<TestDelegateBase> delegate(
+      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  delegate->WaitUntilNextCallback();  // OnFailed
+  EXPECT_TRUE(delegate->on_failed_called());
+  EXPECT_THAT(delegate->error(), IsError(ERR_QUIC_HANDSHAKE_FAILED));
+}
+
 TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   QuicStreamOffset header_stream_offset = 0;
