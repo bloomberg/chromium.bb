@@ -227,6 +227,16 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   // Simulate that the merchant has validated the shipping address change.
   spec()->UpdateWith(CreateDefaultDetails());
   EXPECT_EQ(2, num_on_selected_information_changed_called());
+
+  // Not ready to pay since there's no selected shipping option.
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Simulate that the website validates the shipping option.
+  state()->SetSelectedShippingOption("option:1");
+  auto details = CreateDefaultDetails();
+  details->shipping_options[0]->selected = true;
+  spec()->UpdateWith(std::move(details));
+  EXPECT_EQ(3, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
 }
 
@@ -296,7 +306,8 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
   // Simulate that the merchant has validated the shipping address change.
   spec()->UpdateWith(CreateDefaultDetails());
   EXPECT_EQ(2, num_on_selected_information_changed_called());
-  EXPECT_TRUE(state()->is_ready_to_pay());
+  // Not ready to pay because there's no selected shipping option.
+  EXPECT_FALSE(state()->is_ready_to_pay());
 
   // Check that all the expected values were set for the shipping address.
   EXPECT_EQ("US", selected_shipping_address()->country);
