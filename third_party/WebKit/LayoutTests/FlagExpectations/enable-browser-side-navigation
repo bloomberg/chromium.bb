@@ -25,10 +25,6 @@ Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/f
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
 Bug(718942) virtual/off-main-thread-fetch/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
 
-# PlzNavigate: A few line are missing in InspectorTest.dumpServiceWorkersView()
-Bug(725818) http/tests/inspector/service-workers/service-workers-redundant.html [ Failure ]
-Bug(725818) virtual/off-main-thread-fetch/http/tests/inspector/service-workers/service-workers-redundant.html [ Failure ]
-
 # PlzNavigate: Navigation requests upgraded via upgrade-insecure-requests will not get reported	
 # See https://crbug.com/713388
 Bug(713388) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Timeout ]

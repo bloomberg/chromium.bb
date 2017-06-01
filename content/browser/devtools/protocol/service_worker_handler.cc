@@ -371,10 +371,13 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
         protocol::Array<std::string>::create();
     for (const auto& client : version.clients) {
       if (client.second.type == SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
-        RenderFrameHostImpl* render_frame_host = RenderFrameHostImpl::FromID(
-            client.second.process_id, client.second.route_id);
+        // PlzNavigate: a navigation may not yet be associated with a
+        // RenderFrameHost. Use the |web_contents_getter| instead.
         WebContents* web_contents =
-            WebContents::FromRenderFrameHost(render_frame_host);
+            client.second.web_contents_getter
+                ? client.second.web_contents_getter.Run()
+                : WebContents::FromRenderFrameHost(RenderFrameHostImpl::FromID(
+                      client.second.process_id, client.second.route_id));
         // There is a possibility that the frame is already deleted
         // because of the thread hopping.
         if (!web_contents)

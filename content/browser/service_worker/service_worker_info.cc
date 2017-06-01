@@ -6,6 +6,7 @@
 
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 
@@ -14,13 +15,21 @@ namespace content {
 ServiceWorkerVersionInfo::ClientInfo::ClientInfo()
     : ClientInfo(ChildProcessHost::kInvalidUniqueID,
                  MSG_ROUTING_NONE,
+                 base::Callback<WebContents*(void)>(),
                  SERVICE_WORKER_PROVIDER_UNKNOWN) {}
 
-ServiceWorkerVersionInfo::ClientInfo::ClientInfo(int process_id,
-                                                 int route_id,
-                                                 ServiceWorkerProviderType type)
-    : process_id(process_id), route_id(route_id), type(type) {
-}
+ServiceWorkerVersionInfo::ClientInfo::ClientInfo(
+    int process_id,
+    int route_id,
+    const base::Callback<WebContents*(void)>& web_contents_getter,
+    ServiceWorkerProviderType type)
+    : process_id(process_id),
+      route_id(route_id),
+      web_contents_getter(web_contents_getter),
+      type(type) {}
+
+ServiceWorkerVersionInfo::ClientInfo::ClientInfo(
+    const ServiceWorkerVersionInfo::ClientInfo& other) = default;
 
 ServiceWorkerVersionInfo::ClientInfo::~ClientInfo() {
 }

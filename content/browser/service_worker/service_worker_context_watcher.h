@@ -90,11 +90,13 @@ class ServiceWorkerContextWatcher
                               int process_id,
                               int thread_id,
                               const ConsoleMessage& message) override;
-  void OnControlleeAdded(int64_t version_id,
-                         const std::string& uuid,
-                         int process_id,
-                         int route_id,
-                         ServiceWorkerProviderType type) override;
+  void OnControlleeAdded(
+      int64_t version_id,
+      const std::string& uuid,
+      int process_id,
+      int route_id,
+      const base::Callback<WebContents*(void)>& web_contents_getter,
+      ServiceWorkerProviderType type) override;
   void OnControlleeRemoved(int64_t version_id,
                            const std::string& uuid) override;
   void OnRegistrationStored(int64_t registration_id,
