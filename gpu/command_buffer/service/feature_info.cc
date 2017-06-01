@@ -1410,22 +1410,23 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     // formats as GL_OES_texture_float(i.e.LUMINANCE_ALPHA,LUMINANCE and Alpha)
     if (extensions.Contains("GL_OES_texture_float")) {
       enable_texture_float = true;
-      if (extensions.Contains("GL_OES_texture_float_linear")) {
-        enable_texture_float_linear = true;
-      }
-
       if (enable_ext_color_buffer_float) {
         may_enable_chromium_color_buffer_float = true;
       }
+    }
+
+    if (extensions.Contains("GL_OES_texture_float_linear")) {
+      enable_texture_float_linear = true;
     }
 
     // TODO(dshwang): GLES3 supports half float by default but GL_HALF_FLOAT_OES
     // isn't equal to GL_HALF_FLOAT.
     if (extensions.Contains("GL_OES_texture_half_float")) {
       enable_texture_half_float = true;
-      if (extensions.Contains("GL_OES_texture_half_float_linear")) {
-        enable_texture_half_float_linear = true;
-      }
+    }
+
+    if (extensions.Contains("GL_OES_texture_half_float_linear")) {
+      enable_texture_half_float_linear = true;
     }
   }
 
@@ -1433,22 +1434,24 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     validators_.pixel_type.AddValue(GL_FLOAT);
     validators_.read_pixel_type.AddValue(GL_FLOAT);
     AddExtensionString("GL_OES_texture_float");
-    if (enable_texture_float_linear) {
-      oes_texture_float_linear_available_ = true;
-      if (!disallowed_features_.oes_texture_float_linear)
-        EnableOESTextureFloatLinear();
-    }
+  }
+
+  if (enable_texture_float_linear) {
+    oes_texture_float_linear_available_ = true;
+    if (!disallowed_features_.oes_texture_float_linear)
+      EnableOESTextureFloatLinear();
   }
 
   if (enable_texture_half_float) {
     validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
     validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
     AddExtensionString("GL_OES_texture_half_float");
-    if (enable_texture_half_float_linear) {
-      oes_texture_half_float_linear_available_ = true;
-      if (!disallowed_features_.oes_texture_half_float_linear)
-        EnableOESTextureHalfFloatLinear();
-    }
+  }
+
+  if (enable_texture_half_float_linear) {
+    oes_texture_half_float_linear_available_ = true;
+    if (!disallowed_features_.oes_texture_half_float_linear)
+      EnableOESTextureHalfFloatLinear();
   }
 
   bool had_native_chromium_color_buffer_float_ext = false;

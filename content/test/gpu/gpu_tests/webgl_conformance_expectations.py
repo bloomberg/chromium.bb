@@ -111,8 +111,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Passthrough command decoder
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['passthrough'], bug=679696)
-    self.Fail('conformance/extensions/get-extension.html',
-        ['passthrough'], bug=682745)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
