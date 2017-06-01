@@ -1234,6 +1234,7 @@ component("base") {
       "process/launch_posix.cc",
       "process/process_handle_posix.cc",
       "process/process_posix.cc",
+      "rand_util_posix.cc",
     ]
 
     sources += [
@@ -1248,6 +1249,7 @@ component("base") {
       "process/process_fuchsia.cc",
       "process/process_handle_fuchsia.cc",
       "process/process_metrics_fuchsia.cc",
+      "rand_util_fuchsia.cc",
       "sys_info_fuchsia.cc",
       "threading/platform_thread_fuchsia.cc",
       "time/time_conversion_posix.cc",
