@@ -8,24 +8,20 @@
 }
 
 #bubble {
+  margin-top: 16px;
   z-index: 1;
 }
 
 #signin-banner-container1 {
-  bottom: 100%;
-  margin-bottom: 10px;
+  height: 64px;
   position: absolute;
-  width: 100%;
-}
-
-html[screen=login] #signin-banner-container1 {
-  margin-bottom: 6px;
+  width: 520px;
+  z-index: 3;
 }
 
 #signin-banner-container2 {
   display: inline-block;
   position: relative;
-  right: -50%;
 }
 
 html[dir=rtl] #signin-banner-container2 {
@@ -36,14 +32,12 @@ html[dir=rtl] #signin-banner-container2 {
 #signin-banner {
   background-color: rgba(0, 0, 0, 0.75);
   border-radius: 4px;
-  color: whitesmoke;
+  color: #FFF;
   display: none;
-  left: -50%;
-  max-width: 722px;
-  padding: 20px;
+  font-family: "Roboto";
+  font-size: 13px;
   position: relative;
   text-align: center;
-  width: max-content;
 }
 
 html[dir=rtl] #signin-banner {
@@ -68,7 +62,7 @@ html[screen=lock] #signin-banner {
 
 html[screen=login] #signin-banner.message-set,
 html[screen=lock] #signin-banner.message-set {
-  opacity: 1;
+  opacity: 0.8;
   transition: opacity 1s;
   visibility: visible;
 }
@@ -76,4 +70,33 @@ html[screen=lock] #signin-banner.message-set {
 .small-pod-container {
   overflow: scroll;
   position: absolute;
+}
+
+.small-pod-container::-webkit-scrollbar {
+   width: 0;
+}
+
+.small-pod-container.scroll {
+  background-color: rgba(20, 29, 40, .2);
+}
+
+.small-pod-container.scroll::-webkit-scrollbar {
+   width: 9px;
+}
+
+.small-pod-container.scroll::-webkit-scrollbar-thumb {
+   background-color: rgba(255, 255, 255, .17);
+   border-radius: 8px;
+}
+
+.small-pod-container-mask {
+  background: linear-gradient(#4FC3F7, transparent);
+  height: 112px;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+
+.small-pod-container-mask.rotate {
+  transform: rotate(180deg);
 }

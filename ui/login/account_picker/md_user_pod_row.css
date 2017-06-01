@@ -32,7 +32,7 @@ pin-keyboard {
 }
 
 .account-picker.flying-pods .pod {
-  transition: all 180ms;
+  transition: all 300ms;
 }
 
 .pod.pin-enabled {
@@ -95,8 +95,13 @@ html[dir=rtl] .user-image-pane {
 
 .user-image {
   border-radius: 50%;
+  box-shadow: 0 0 2px rgba(255, 255, 255, .34);
   height: 100%;
   width: 100%;
+}
+
+.user-image.switch-image-animation {
+  animation: switch-image 300ms;
 }
 
 .pod .user-image {
@@ -139,7 +144,6 @@ html[dir=rtl] .main-pane {
   display: flex;
   height: 40px;
   left: 51px;
-  padding-bottom: 16px;
   position: absolute;
   top: 244px;
 /* On chromeos we extend the width to cover the padding on the user pods. This
@@ -201,7 +205,7 @@ html[dir=rtl] .main-pane {
   opacity: 0.34;
   position: absolute;
   stroke: #FFFFFF;
-  stroke-width: 1;
+  stroke-width: 1px;
   top: 40px;
 }
 
@@ -489,6 +493,25 @@ html[dir=rtl] .action-box-area {
   width: 24px;
 }
 
+.action-box-button.ripple-circle {
+  background: #FFF;
+  border-radius: 50%;
+  opacity: .08;
+  position: absolute;
+  transform: scale(0);
+}
+
+.action-box-area.active .action-box-button.ripple-circle {
+  animation: ripple 360ms;
+  transform: scale(1);
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); }
+  30% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
 .action-box-area .action-box-icon {
   /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
   display: none;
@@ -572,11 +595,12 @@ html[dir=rtl] .user-type-icon-area {
 
 .action-box-menu {
   display: none;
+  position: absolute;
   z-index: 6;
 }
 
 .action-box-area.active ~ .action-box-menu {
-  background-color: rgba(0, 0, 0, .34);
+  background-color: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
   display: flex;
   flex-direction: column;
@@ -1048,12 +1072,6 @@ html[dir=rtl] .expanded-pane-contents {
   width: 60px;
 }
 
-.small-pod-image {
-  border-radius: 50%;
-  height: 100%;
-  width: 100%;
-}
-
 .small-pod-name {
   color: #FFFFFF;
   flex: auto;
@@ -1077,19 +1095,7 @@ html[dir=rtl] .expanded-pane-contents {
   width: 190px;
 }
 
-.small-pod-container.scroll {
-  background-color: rgba(20, 29, 40, .2);
-}
-
-.small-pod-container-mask {
-  background: linear-gradient(#00B0FF, transparent);
-  height: 112px;
-  opacity: 0.6;
-  position: absolute;
-  width: 100%;
-  z-index: 2;
-}
-
-.small-pod-container-mask.rotate {
-  transform: rotate(180deg);
+@keyframes switch-image {
+  from { transform: rotate3d(0, 1, 0, 90deg); }
+  to { transform: none; }
 }
