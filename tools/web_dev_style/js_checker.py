@@ -95,13 +95,6 @@ class JSChecker(object):
 
     return [self.output_api.PresubmitError(output)] if output else []
 
-  def WrapperTypeCheck(self, i, line):
-    """Check for wrappers (new String()) instead of builtins (string)."""
-    return self.RegexCheck(i, line,
-        r"(?:/\*)?\*.*?@(?:param|return|type) ?"     # /** @param/@return/@type
-        r"{[^}]*\b(String|Boolean|Number)\b[^}]*}",  # {(Boolean|Number|String)}
-        "Don't use wrapper types (i.e. new String() or @type {String})")
-
   def VarNameCheck(self, i, line):
     """See the style guide. http://goo.gl/eQiXVW"""
     return self.RegexCheck(i, line,
@@ -140,7 +133,6 @@ class JSChecker(object):
             self.ExtraDotInGenericCheck(i, line),
             self.InheritDocCheck(i, line),
             self.PolymerLocalIdCheck(i, line),
-            self.WrapperTypeCheck(i, line),
             self.VarNameCheck(i, line),
         ])
 
