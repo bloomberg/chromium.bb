@@ -32,6 +32,7 @@ public class WebApkInfo extends WebappInfo {
     private static final String TAG = "WebApkInfo";
 
     private boolean mForceNavigation;
+    private Icon mBadgeIcon;
     private String mWebApkPackageName;
     private int mShellApkVersion;
     private String mManifestUrl;
@@ -108,13 +109,16 @@ public class WebApkInfo extends WebappInfo {
         String manifestStartUrl = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.START_URL);
         Map<String, String> iconUrlToMurmur2HashMap = getIconUrlAndIconMurmur2HashMap(bundle);
 
-        int iconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
-        Bitmap icon = decodeImageResource(webApkPackageName, iconId);
+        int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
+        Bitmap primaryIcon = decodeImageResource(webApkPackageName, primaryIconId);
+
+        int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
+        Bitmap badgeIcon = decodeImageResource(webApkPackageName, badgeIconId);
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, forceNavigation,
-                scope, new Icon(icon), name, shortName, displayMode, orientation, source,
-                themeColor, backgroundColor, webApkPackageName, shellApkVersion, manifestUrl,
-                manifestStartUrl, iconUrlToMurmur2HashMap);
+                scope, new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
+                orientation, source, themeColor, backgroundColor, webApkPackageName,
+                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap);
     }
 
     /**
@@ -125,7 +129,8 @@ public class WebApkInfo extends WebappInfo {
      * @param forceNavigation         Whether the WebAPK should navigate to {@link url} if the
      *                                WebAPK is already open.
      * @param scope                   Scope for the WebAPK.
-     * @param icon                    Icon to show for the WebAPK.
+     * @param primaryIcon             Primary icon to show for the WebAPK.
+     * @param badgeIcon               Badge icon to use for notifications.
      * @param name                    Name of the WebAPK.
      * @param shortName               The short name of the WebAPK.
      * @param displayMode             Display mode of the WebAPK.
@@ -143,10 +148,10 @@ public class WebApkInfo extends WebappInfo {
      *                                icon untransformed bytes.
      */
     public static WebApkInfo create(String id, String url, boolean forceNavigation, String scope,
-            Icon icon, String name, String shortName, int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, String webApkPackageName, int shellApkVersion,
-            String manifestUrl, String manifestStartUrl,
-            Map<String, String> iconUrlToMurmur2HashMap) {
+            Icon primaryIcon, Icon badgeIcon, String name, String shortName, int displayMode,
+            int orientation, int source, long themeColor, long backgroundColor,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap) {
         if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG,
                     "Incomplete data provided: " + id + ", " + url + ", " + manifestStartUrl + ", "
@@ -161,19 +166,22 @@ public class WebApkInfo extends WebappInfo {
             scope = ShortcutHelper.getScopeFromUrl(manifestStartUrl);
         }
 
-        return new WebApkInfo(id, url, forceNavigation, scope, icon, name, shortName, displayMode,
-                orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap);
+        return new WebApkInfo(id, url, forceNavigation, scope, primaryIcon, badgeIcon, name,
+                shortName, displayMode, orientation, source, themeColor, backgroundColor,
+                webApkPackageName, shellApkVersion, manifestUrl, manifestStartUrl,
+                iconUrlToMurmur2HashMap);
     }
 
-    protected WebApkInfo(String id, String url, boolean forceNavigation, String scope, Icon icon,
-            String name, String shortName, int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, String webApkPackageName, int shellApkVersion,
-            String manifestUrl, String manifestStartUrl,
-            Map<String, String> iconUrlToMurmur2HashMap) {
-        super(id, url, scope, icon, name, shortName, displayMode, orientation, source, themeColor,
+    protected WebApkInfo(String id, String url, boolean forceNavigation, String scope,
+            Icon primaryIcon, Icon badgeIcon, String name, String shortName, int displayMode,
+            int orientation, int source, long themeColor, long backgroundColor,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap) {
+        super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
+                themeColor,
                 backgroundColor, false);
         mForceNavigation = forceNavigation;
+        mBadgeIcon = badgeIcon;
         mWebApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;
         mManifestUrl = manifestUrl;
@@ -186,6 +194,13 @@ public class WebApkInfo extends WebappInfo {
     @Override
     public boolean shouldForceNavigation() {
         return mForceNavigation;
+    }
+
+    /**
+     * Returns the badge icon in Bitmap form.
+     */
+    public Bitmap badgeIcon() {
+        return (mBadgeIcon == null) ? null : mBadgeIcon.decoded();
     }
 
     @Override
@@ -234,7 +249,9 @@ public class WebApkInfo extends WebappInfo {
         }
     }
 
-    /** Decodes bitmap from WebAPK's resources. */
+    /**
+     * Decodes bitmap from WebAPK's resources. Returns null when resource is not found.
+     */
     private static Bitmap decodeImageResource(String webApkPackageName, int resourceId) {
         PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
         try {

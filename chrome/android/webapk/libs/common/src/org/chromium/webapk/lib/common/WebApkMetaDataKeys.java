@@ -26,4 +26,7 @@ public final class WebApkMetaDataKeys {
     public static final String ICON_URLS_AND_ICON_MURMUR2_HASHES =
             "org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes";
     public static final String WEB_MANIFEST_URL = "org.chromium.webapk.shell_apk.webManifestUrl";
+    // TODO(zpeng): crbug.com/715166. Assign value to {@link BADGE_ICON_ID} and sync it with
+    // WebAPK Android Manifest.
+    public static final String BADGE_ICON_ID = "";
 }

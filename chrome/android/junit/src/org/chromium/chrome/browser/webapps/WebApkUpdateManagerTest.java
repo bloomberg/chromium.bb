@@ -184,6 +184,7 @@ public class WebApkUpdateManagerTest {
         public Map<String, String> iconUrlToMurmur2HashMap;
         public String bestIconUrl;
         public Bitmap bestIcon;
+        public Bitmap badgeIcon;
         public int displayMode;
         public int orientation;
         public long themeColor;
@@ -246,6 +247,7 @@ public class WebApkUpdateManagerTest {
 
         manifestData.bestIconUrl = ICON_URL;
         manifestData.bestIcon = createBitmap(Color.GREEN);
+        manifestData.badgeIcon = null;
         manifestData.displayMode = DISPLAY_MODE;
         manifestData.orientation = ORIENTATION;
         manifestData.themeColor = THEME_COLOR;
@@ -259,10 +261,10 @@ public class WebApkUpdateManagerTest {
         final String kPackageName = "org.random.webapk";
         return WebApkInfo.create(getWebApkId(kPackageName), "", false /* forceNavigation */,
                 manifestData.scopeUrl, new WebApkInfo.Icon(manifestData.bestIcon),
-                manifestData.name, manifestData.shortName, manifestData.displayMode,
-                manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
-                kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
-                manifestData.iconUrlToMurmur2HashMap);
+                new WebApkInfo.Icon(manifestData.badgeIcon), manifestData.name,
+                manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
+                manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
+                WEB_MANIFEST_URL, manifestData.startUrl, manifestData.iconUrlToMurmur2HashMap);
     }
 
     /**

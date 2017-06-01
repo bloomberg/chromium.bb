@@ -122,7 +122,7 @@ public class WebApkUpdateDataFetcherTest {
             @Override
             public void run() {
                 WebApkInfo oldInfo = WebApkInfo.create("", "", false /* forceNavigation */,
-                        scopeUrl, null, null, null, -1, -1, -1, -1, -1, "random.package", -1,
+                        scopeUrl, null, null, null, null, -1, -1, -1, -1, -1, "random.package", -1,
                         manifestUrl, "", new HashMap<String, String>());
                 fetcher.start(mTab, oldInfo, observer);
             }
