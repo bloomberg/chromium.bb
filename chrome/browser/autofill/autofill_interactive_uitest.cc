@@ -647,7 +647,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
 }
 
 // crbug.com/516052
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_AutofillViaClick DISABLED_AutofillViaClick
 #else
 #define MAYBE_AutofillViaClick AutofillViaClick
@@ -678,7 +679,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
 }
 
 // Makes sure that the first click does *not* activate the popup.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForFirstClick) {
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_WIN)
+#define MAYBE_DontAutofillForFirstClick DISABLED_DontAutofillForFirstClick
+#else
+#define MAYBE_DontAutofillForFirstClick DontAutofillForFirstClick
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       MAYBE_DontAutofillForFirstClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -700,7 +708,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForFirstClick) {
 
 // Makes sure that clicking outside the focused field doesn't activate
 // the popup.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_WIN)
+#define MAYBE_DontAutofillForOutsideClick DISABLED_DontAutofillForOutsideClick
+#else
+#define MAYBE_DontAutofillForOutsideClick DontAutofillForOutsideClick
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       MAYBE_DontAutofillForOutsideClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -725,7 +740,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
 // Test that a field is still autofillable after the previously autofilled
 // value is deleted.
 // TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_OnDeleteValueAfterAutofill DISABLED_OnDeleteValueAfterAutofill
 #else
 #define MAYBE_OnDeleteValueAfterAutofill OnDeleteValueAfterAutofill
@@ -961,7 +977,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
 }
 
 // Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_InputFiresBeforeChange DISABLED_InputFiresBeforeChange
 #else
 #define MAYBE_InputFiresBeforeChange InputFiresBeforeChange
@@ -1134,7 +1151,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_AutofillFormWithNonAutofillableField \
   DISABLED_AutofillFormWithNonAutofillableField
 #else
@@ -1306,7 +1324,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
 // Test that filling a form sends all the expected events to the different
 // fields being filled.
 // Flakily fails on ChromeOS (crbug.com/646576).
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_AutofillEvents DISABLED_AutofillEvents
 #else
 #define MAYBE_AutofillEvents AutofillEvents
@@ -1712,7 +1731,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // is interacting with the form.  This is a regression test for
 // http://crbug.com/160476
 // Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_DisableAutocompleteWhileFilling \
   DISABLED_DisableAutocompleteWhileFilling
 #else
@@ -1840,8 +1860,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
 
 // This test verifies that credit card (payment card list) popup works when the
 // form is inside an OOPIF.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
-
+// Flaky on Windows http://crbug.com/728488
+#if defined(OS_WIN)
+#define MAYBE_CrossSitePaymentForms DISABLED_MAYBE_CrossSitePaymentForms
+#else
+#define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
