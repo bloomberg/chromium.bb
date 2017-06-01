@@ -37,6 +37,14 @@ CcLayersRasterInvalidationTrackingMap() {
 }
 
 template <typename T>
+static std::unique_ptr<JSONArray> PointAsJSONArray(const T& point) {
+  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  array->PushDouble(point.X());
+  array->PushDouble(point.Y());
+  return array;
+}
+
+template <typename T>
 static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
   std::unique_ptr<JSONArray> array = JSONArray::Create();
   array->PushDouble(size.Width());
@@ -104,34 +112,28 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     return false;
   }
 
-  void SetNeedsDisplayRect(const gfx::Rect& rect) {
-    cc_picture_layer_->SetNeedsDisplayRect(rect);
+  RasterInvalidationTracking& EnsureRasterInvalidationTracking() {
+    return CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
   }
 
-  void AddTrackedRasterInvalidations(
-      const RasterInvalidationTracking& tracking) {
-    auto& cc_tracking =
-        CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
-    cc_tracking.invalidations.AppendVector(tracking.invalidations);
-
-    if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-      return;
-    for (const auto& info : tracking.invalidations) {
-      // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
-      // invalidation rect.
-      IntRect r = info.rect;
-      r.Inflate(1);
-      cc_tracking.invalidation_region_since_last_paint.Unite(r);
-    }
+  void SetNeedsDisplayRect(const gfx::Rect& rect) {
+    cc_picture_layer_->SetNeedsDisplayRect(rect);
   }
 
   std::unique_ptr<JSONObject> LayerAsJSON(LayerTreeFlags flags) {
     std::unique_ptr<JSONObject> json = JSONObject::Create();
     json->SetString("name", debug_name_);
+
+    FloatPoint position(cc_picture_layer_->offset_to_transform_parent().x(),
+                        cc_picture_layer_->offset_to_transform_parent().y());
+    if (position != FloatPoint())
+      json->SetArray("position", PointAsJSONArray(position));
+
     IntSize bounds(cc_picture_layer_->bounds().width(),
                    cc_picture_layer_->bounds().height());
     if (!bounds.IsEmpty())
       json->SetArray("bounds", SizeAsJSONArray(bounds));
+
     json->SetBoolean("contentsOpaque", cc_picture_layer_->contents_opaque());
     json->SetBoolean("drawsContent", cc_picture_layer_->DrawsContent());
 
@@ -240,6 +242,24 @@ PaintArtifactCompositor::ClientForPaintChunk(
                 .GetId()));
 }
 
+IntRect PaintArtifactCompositor::MapRasterInvalidationRectFromChunkToLayer(
+    const FloatRect& r,
+    const PaintChunk& paint_chunk,
+    const PendingLayer& pending_layer,
+    const gfx::Vector2dF& layer_offset) {
+  FloatClipRect rect(
+      r == FloatRect(LayoutRect::InfiniteIntRect()) ? paint_chunk.bounds : r);
+  GeometryMapper::LocalToAncestorVisualRect(
+      paint_chunk.properties.property_tree_state,
+      pending_layer.property_tree_state, rect);
+  if (rect.Rect().IsEmpty())
+    return IntRect();
+  // Now rect is in the space of the containing transform node of pending_layer,
+  // so need to subtract off the layer offset.
+  rect.Rect().Move(-layer_offset.x(), -layer_offset.y());
+  return EnclosingIntRect(rect.Rect());
+}
+
 scoped_refptr<cc::Layer>
 PaintArtifactCompositor::CompositedLayerForPendingLayer(
     const PaintArtifact& paint_artifact,
@@ -290,22 +310,31 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
                   DisplayItemList::kShownOnlyDisplayItemTypes));
     }
 
-    for (const auto& r : paint_chunk->raster_invalidation_rects) {
-      IntRect rect(EnclosingIntRect(r));
-      gfx::Rect cc_invalidation_rect(rect.X(), rect.Y(),
-                                     std::max(0, rect.Width()),
-                                     std::max(0, rect.Height()));
-      if (cc_invalidation_rect.IsEmpty())
-        continue;
-      // Raster paintChunk.rasterInvalidationRects is in the space of the
-      // containing transform node, so need to subtract off the layer offset.
-      cc_invalidation_rect.Offset(-cc_combined_bounds.OffsetFromOrigin());
-      content_layer_client->SetNeedsDisplayRect(cc_invalidation_rect);
-    }
+    auto* raster_tracking =
+        tracking_map ? tracking_map->Find(paint_chunk) : nullptr;
+    DCHECK(!raster_tracking || paint_chunk->raster_invalidation_rects.size() ==
+                                   raster_tracking->invalidations.size());
 
-    if (auto* raster_tracking =
-            tracking_map ? tracking_map->Find(paint_chunk) : nullptr)
-      content_layer_client->AddTrackedRasterInvalidations(*raster_tracking);
+    for (size_t i = 0; i < paint_chunk->raster_invalidation_rects.size(); ++i) {
+      auto rect = MapRasterInvalidationRectFromChunkToLayer(
+          paint_chunk->raster_invalidation_rects[i], *paint_chunk,
+          pending_layer, layer_offset);
+      if (rect.IsEmpty())
+        continue;
+      content_layer_client->SetNeedsDisplayRect(rect);
+
+      if (!raster_tracking)
+        continue;
+      auto& cc_tracking =
+          content_layer_client->EnsureRasterInvalidationTracking();
+      auto info = raster_tracking->invalidations[i];
+      info.rect = rect;
+      cc_tracking.invalidations.push_back(info);
+      // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
+      // invalidation rect.
+      rect.Inflate(1);
+      cc_tracking.invalidation_region_since_last_paint.Unite(rect);
+    }
   }
 
   new_content_layer_clients.push_back(std::move(content_layer_client));

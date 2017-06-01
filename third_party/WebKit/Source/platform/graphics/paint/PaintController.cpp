@@ -746,17 +746,15 @@ void PaintController::AddRasterInvalidation(const DisplayItemClient& client,
                                             PaintInvalidationReason reason) {
   chunk.raster_invalidation_rects.push_back(rect);
   if (raster_invalidation_tracking_info_)
-    TrackRasterInvalidation(client, chunk, rect, reason);
+    TrackRasterInvalidation(client, chunk, reason);
 }
 
 void PaintController::TrackRasterInvalidation(const DisplayItemClient& client,
                                               PaintChunk& chunk,
-                                              const FloatRect& rect,
                                               PaintInvalidationReason reason) {
   DCHECK(raster_invalidation_tracking_info_);
 
   RasterInvalidationInfo info;
-  info.rect = EnclosingIntRect(rect);
   info.client = &client;
   if (reason == PaintInvalidationReason::kNone) {
     // The client was validated by another PaintController, but not valid in

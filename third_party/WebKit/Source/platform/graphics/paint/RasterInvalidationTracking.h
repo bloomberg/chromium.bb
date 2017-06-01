@@ -25,6 +25,8 @@ struct RasterInvalidationInfo {
   // died.
   const DisplayItemClient* client = nullptr;
   String client_debug_name;
+  // For SPv2, this is set in PaintArtifactCompositor when converting chunk
+  // raster invalidations to cc raster invalidations.
   IntRect rect;
   PaintInvalidationReason reason = PaintInvalidationReason::kFull;
 };
