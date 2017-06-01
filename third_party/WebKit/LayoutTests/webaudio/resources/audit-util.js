@@ -8,6 +8,8 @@
  *                test.
  */
 
+// How many frames in a WebAudio render quantum.
+let RENDER_QUANTUM_FRAMES = 128;
 
 function writeString(s, a, offset) {
   for (let i = 0; i < s.length; ++i) {

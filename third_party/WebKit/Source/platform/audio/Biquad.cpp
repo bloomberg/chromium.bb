@@ -591,4 +591,298 @@ void Biquad::GetFrequencyResponse(int n_frequencies,
   }
 }
 
+static double RepeatedRootResponse(double n,
+                                   double c1,
+                                   double c2,
+                                   double r,
+                                   double log_eps) {
+  // The response is h(n) = r^(n-2)*[c1*(n+1)*r^2+c2]. We're looking
+  // for n such that |h(n)| = eps.  Equivalently, we want a root
+  // of the equation log(|h(n)|) - log(eps) = 0 or
+  //
+  //   (n-2)*log(r) + log(|c1*(n+1)*r^2+c2|) - log(eps)
+  //
+  // This helps with finding a nuemrical solution because this
+  // approximately linearizes the response for large n.
+
+  return (n - 2) * log(r) + log(fabs(c1 * (n + 1) * r * r + c2)) - log_eps;
+}
+
+// Regula Falsi root finder, Illinois variant
+// (https://en.wikipedia.org/wiki/False_position_method#The_Illinois_algorithm).
+//
+// This finds a root of the repeated root response where the root is
+// assumed to lie between |low| and |high|.  The response is given by
+// |c1|, |c2|, and |r| as determined by |RepeatedRootResponse|.
+// |log_eps| is the log the the maximum allowed amplitude in the
+// response.
+static double RootFinder(double low,
+                         double high,
+                         double log_eps,
+                         double c1,
+                         double c2,
+                         double r) {
+  // Desired accuray of the root (in frames).  This doesn't need to be
+  // super-accurate, so half frame is good enough, and should be less
+  // than 1 because the algorithm may prematurely terminate.
+  const double kAccuracyThreshold = 0.5;
+  // Max number of iterations to do.  If we haven't converged by now,
+  // just return whatever we've found.
+  const int kMaxIterations = 10;
+
+  int side = 0;
+  double root = 0;
+  double f_low = RepeatedRootResponse(low, c1, c2, r, log_eps);
+  double f_high = RepeatedRootResponse(high, c1, c2, r, log_eps);
+
+  // The function values must be finite and have opposite signs!
+  DCHECK(std::isfinite(f_low));
+  DCHECK(std::isfinite(f_high));
+  DCHECK_LE(f_low * f_high, 0);
+
+  int iteration;
+  for (iteration = 0; iteration < kMaxIterations; ++iteration) {
+    root = (f_low * high - f_high * low) / (f_low - f_high);
+    if (fabs(high - low) < kAccuracyThreshold * fabs(high + low))
+      break;
+    double fr = RepeatedRootResponse(root, c1, c2, r, log_eps);
+
+    DCHECK(std::isfinite(fr));
+
+    if (fr * f_high > 0) {
+      // fr and f_high have same sign.  Copy root to f_high
+      high = root;
+      f_high = fr;
+      side = -1;
+    } else if (f_low * fr > 0) {
+      // fr and f_low have same sign. Copy root to f_low
+      low = root;
+      f_low = fr;
+      if (side == 1)
+        f_high /= 2;
+      side = 1;
+    } else {
+      // f_low * fr looks like zero, so assume we've converged.
+      break;
+    }
+  }
+
+  // Want to know if the max number of iterations is ever exceeded so
+  // we can understand why that happened.
+  DCHECK_LT(iteration, kMaxIterations);
+
+  return root;
+}
+
+double Biquad::TailFrame(int coef_index, double max_frame) {
+  // The Biquad filter is given by
+  //
+  //   H(z) = (b0 + b1/z + b2/z^2)/(1 + a1/z + a2/z^2).
+  //
+  // To compute the tail time, compute the impulse response, h(n), of
+  // H(z), which we can do analytically.  From this impulse response,
+  // find the value n0 where |h(n)| <= eps for n >= n0.
+  //
+  // Assume first that the two poles of H(z) are not repeated, say r1
+  // and r2.  Then, we can compute a partial fraction expansion of
+  // H(z):
+  //
+  //   H(z) = (b0+b1/z+b2/z^2)/[(1-r1/z)*(1-r2/z)]
+  //        = b0 + C2/(z-r2) - C1/(z-r1)
+  //
+  //  where
+  //    C2 = (b0*r2^2+b1*r2+b2)/(r2-r1)
+  //    C1 = (b0*r1^2+b1*r1+b2)/(r2-r1)
+  //
+  // Expand H(z) then this in powers of 1/z gives:
+  //
+  //   H(z) = b0 -(C2/r2+C1/r1) + sum(C2*r2^(i-1)/z^i + C1*r1^(i-1)/z^i)
+  //
+  // Thus, for n > 1 (we don't care about small n),
+  //
+  //   h(n) = C2*r2^(n-1) + C1*r1^(n-1)
+  //
+  // We need to find n0 such that |h(n)| < eps for n > n0.
+  //
+  // Case 1: r1 and r2 are real and distinct, with |r1|>=|r2|.
+  //
+  // Then
+  //
+  //   h(n) = C1*r1^(n-1)*(1 + C2/C1*(r2/r1)^(n-1))
+  //
+  // so
+  //
+  //   |h(n)| = |C1|*|r|^(n-1)*|1+C2/C1*(r2/r1)^(n-1)|
+  //          <= |C1|*|r|^(n-1)*[1 + |C2/C1|*|r2/r1|^(n-1)]
+  //          <= |C1|*|r|^(n-1)*[1 + |C2/C1|]
+  //
+  // by using the triangle inequality and the fact that |r2|<=|r1|.
+  // And we want |h(n)|<=eps which is true if
+  //
+  //   |C1|*|r|^(n-1)*[1 + |C2/C1|] <= eps
+  //
+  // or
+  //
+  //   n >= 1 + log(eps/C)/log(|r1|)
+  //
+  // where C = |C1|*[1+|C2/C1|] = |C1| + |C2|.
+  //
+  // Case 2: r1 and r2 are complex
+  //
+  // Thne we can write r1=r*exp(i*p) and r2=r*exp(-i*p).  So,
+  //
+  //   |h(n)| = |C2*r^(n-1)*exp(-i*p*(n-1)) + C1*r^(n-1)*exp(i*p*(n-1))|
+  //          = |C1|*r^(n-1)*|1 + C2/C1*exp(-i*p*(n-1))/exp(i*n*(n-1))|
+  //          <= |C1|*r^(n-1)*[1 + |C2/C1|]
+  //
+  // Again, this is easily solved to give
+  //
+  //   n >= 1 + log(eps/C)/log(r)
+  //
+  // where C = |C1|*[1+|C2/C1|] = |C1| + |C2|.
+  //
+  // Case 3: Repeated roots, r1=r2=r.
+  //
+  // In this case,
+  //
+  //   H(z) = (b0+b1/z+b2/z^2)/[(1-r/z)^2
+  //
+  // Expanding this in powers of 1/z gives:
+  //
+  //   H(z) = C1*sum((i+1)*r^i/z^i) - C2 * sum(r^(i-2)/z^i) + b2/r^2
+  //        = b2/r^2 + sum([C1*(i+1)*r^i + C2*r^(i-2)]/z^i)
+  // where
+  //   C1 = (b0*r^2+b1*r+b2)/r^2
+  //   C2 = b1*r+2*b2
+  //
+  // Thus, the impulse response is
+  //
+  //   h(n) = C1*(n+1)*r^n + C2*r^(n-2)
+  //        = r^(n-2)*[C1*(n+1)*r^2+C2]
+  //
+  // So
+  //
+  //   |h(n)| = |r|^(n-2)*|C1*(n+1)*r^2+C2|
+  //
+  // To find n such that |h(n)| < eps, we need a numerical method in
+  // general, so there's no real reason to simplify this or use other
+  // approximations.  Just solve |h(n)|=eps directly.
+  //
+  // Thus, for an set of filter coefficients, we can compute the tail
+  // time.
+  //
+
+  // If the maximum amplitude of the impulse response is less than
+  // this, we assume that we've reached the tail of the response.
+  // Currently, this means that the impulse is less than 1 bit of a
+  // 16-bit PCM value.
+  const double kMaxTailAmplitude = 1 / 32768.0;
+
+  // Find the roots of 1+a1/z+a2/z^2 = 0.  Or equivalently,
+  // z^2+a1*z+a2 = 0.  From the quadratic formula the roots are
+  // (-a1+/-sqrt(a1^2-4*a2))/2.
+
+  double a1 = a1_[coef_index];
+  double a2 = a2_[coef_index];
+  double b0 = b0_[coef_index];
+  double b1 = b1_[coef_index];
+  double b2 = b2_[coef_index];
+
+  double tail_frame = 0;
+  double discrim = a1 * a1 - 4 * a2;
+
+  if (discrim > 0) {
+    // Compute the real roots so that r1 has the largest magnitude.
+    double r1;
+    double r2;
+    if (a1 < 0) {
+      r1 = (-a1 + sqrt(discrim)) / 2;
+    } else {
+      r1 = (-a1 - sqrt(discrim)) / 2;
+    }
+    r2 = a2 / r1;
+
+    double c1 = (b0 * r1 * r1 + b1 * r1 + b2) / (r2 - r1);
+    double c2 = (b0 * r2 * r2 + b1 * r2 + b2) / (r2 - r1);
+
+    DCHECK(std::isfinite(r1));
+    DCHECK(std::isfinite(r2));
+    DCHECK(std::isfinite(c1));
+    DCHECK(std::isfinite(c2));
+
+    // It's possible for kMaxTailAmplitude to be greater than c1 + c2.
+    // This may produce a negative tail frame.  Just clamp the tail
+    // frame to 0.
+    tail_frame = clampTo(
+        1 + log(kMaxTailAmplitude / (fabs(c1) + fabs(c2))) / log(r1), 0);
+
+    DCHECK(std::isfinite(tail_frame));
+  } else if (discrim < 0) {
+    // Two complex roots.
+    // One root is -a1/2 + i*sqrt(-discrim)/2.
+    double x = -a1 / 2;
+    double y = sqrt(-discrim) / 2;
+    std::complex<double> r1(x, y);
+    std::complex<double> r2(x, -y);
+    double r = hypot(x, y);
+
+    DCHECK(std::isfinite(r));
+
+    // It's possible for r to be 1. (LPF with Q very large can cause this.)
+    if (r == 1) {
+      tail_frame = max_frame;
+    } else {
+      double c1 = abs((b0 * r1 * r1 + b1 * r1 + b2) / (r2 - r1));
+      double c2 = abs((b0 * r2 * r2 + b1 * r2 + b2) / (r2 - r1));
+
+      DCHECK(std::isfinite(c1));
+      DCHECK(std::isfinite(c2));
+
+      tail_frame = 1 + log(kMaxTailAmplitude / (c1 + c2)) / log(r);
+      DCHECK(std::isfinite(tail_frame));
+    }
+  } else {
+    // Repeated roots.  This should be pretty rare because all the
+    // coefficients need to be just the right values to get a
+    // discriminant of exactly zero.
+    double r = -a1 / 2;
+
+    if (r == 0) {
+      // Double pole at 0.  This just delays the signal by 2 frames,
+      // so set the tail frame to 2.
+      tail_frame = 2;
+    } else {
+      double c1 = (b0 * r * r + b1 * r + b2) / (r * r);
+      double c2 = b1 * r + 2 * b2;
+
+      DCHECK(std::isfinite(c1));
+      DCHECK(std::isfinite(c2));
+
+      // It can happen that c1=c2=0.  This basically means that H(z) =
+      // constant, which is the limiting case for several of the
+      // biquad filters.
+      if (c1 == 0 && c2 == 0) {
+        tail_frame = 0;
+      } else {
+        // The function c*(n+1)*r^n is not monotonic, but it's easy to
+        // find the max point since the derivative is
+        // c*r^n*(1+(n+1)*log(r)).  This has a root at
+        // -(1+log(r))/log(r). so we can start our search from that
+        // point to max_frames.
+
+        double low = clampTo(-(1 + log(r)) / log(r), 1.0,
+                             static_cast<double>(max_frame - 1));
+        double high = max_frame;
+
+        DCHECK(std::isfinite(low));
+        DCHECK(std::isfinite(high));
+
+        tail_frame = RootFinder(low, high, log(kMaxTailAmplitude), c1, c2, r);
+      }
+    }
+  }
+
+  return tail_frame;
+}
+
 }  // namespace blink
