@@ -18,10 +18,12 @@ namespace blink {
 
 class NGConstraintSpace;
 class NGLayoutResult;
+struct NGInflowChildData;
+struct NGPreviousInflowPosition;
 
 // Updates the fragment's BFC offset if it's not already set.
 void MaybeUpdateFragmentBfcOffset(const NGConstraintSpace&,
-                                  const NGLogicalOffset&,
+                                  LayoutUnit bfc_block_offset,
                                   NGFragmentBuilder* builder);
 
 // Positions pending floats starting from {@origin_block_offset} and relative
@@ -52,15 +54,19 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // Creates a new constraint space for the current child.
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
-      const NGLogicalOffset& child_bfc_offset,
-      const NGLayoutInputNode&);
+      const NGLayoutInputNode& child,
+      const NGInflowChildData& child_data);
 
   // @return Estimated BFC offset for the "to be layout" child.
-  NGLogicalOffset PrepareChildLayout(NGLayoutInputNode*);
+  NGInflowChildData PrepareChildLayout(const NGPreviousInflowPosition&,
+                                       NGLayoutInputNode*);
 
-  void FinishChildLayout(const NGConstraintSpace&,
-                         const NGLayoutInputNode* child,
-                         NGLayoutResult*);
+  NGPreviousInflowPosition FinishChildLayout(
+      const NGConstraintSpace&,
+      const NGPreviousInflowPosition& prev_data,
+      const NGInflowChildData& child_data,
+      const NGLayoutInputNode* child,
+      NGLayoutResult*);
 
   // Positions the fragment that establishes a new formatting context.
   //
@@ -81,7 +87,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //    then it will be placed there and we collapse its margin.
   // 2) If #new-fc is too big then we need to clear its position and place it
   //    below #float ignoring its vertical margin.
-  NGLogicalOffset PositionNewFc(const NGBoxFragment&,
+  NGLogicalOffset PositionNewFc(const NGLayoutInputNode& child,
+                                const NGPreviousInflowPosition&,
+                                const NGBoxFragment&,
+                                const NGInflowChildData& child_data,
                                 const NGConstraintSpace& child_space);
 
   // Positions the fragment that knows its BFC offset.
@@ -95,12 +104,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margins: 1px"></div>
   NGLogicalOffset PositionWithParentBfc(const NGConstraintSpace&,
+                                        const NGInflowChildData& child_data,
                                         const NGBoxFragment&);
 
-  NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space);
+  NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space,
+                                 const NGInflowChildData& child_data);
 
-  void HandleOutOfFlowPositioned(NGBlockNode*);
-  void HandleFloating(NGBlockNode*, NGBlockBreakToken*);
+  void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode*);
+  void HandleFloating(const NGPreviousInflowPosition&,
+                      NGBlockNode*,
+                      NGBlockBreakToken*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
@@ -112,6 +125,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // or {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
+      const NGBoxStrut& child_margins,
       const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
 
   NGLogicalSize child_available_size_;
@@ -120,10 +134,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
-  // MarginStrut for the previous child.
-  NGMarginStrut curr_margin_strut_;
-  NGLogicalOffset curr_bfc_offset_;
-  NGBoxStrut curr_child_margins_;
 };
 
 }  // namespace blink

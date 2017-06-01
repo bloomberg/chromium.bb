@@ -55,11 +55,11 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   // Only resolve our BFC offset if we know that we are non-empty as we may
   // need to pass through our margin strut.
   if (!inline_node->Items().IsEmpty()) {
-    NGLogicalOffset bfc_offset = ConstraintSpace().BfcOffset();
-    bfc_offset.block_offset += ConstraintSpace().MarginStrut().Sum();
-    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_offset,
+    LayoutUnit bfc_block_offset = ConstraintSpace().BfcOffset().block_offset;
+    bfc_block_offset += ConstraintSpace().MarginStrut().Sum();
+    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_block_offset,
                                  &container_builder_);
-    PositionPendingFloats(bfc_offset.block_offset, &container_builder_,
+    PositionPendingFloats(bfc_block_offset, &container_builder_,
                           MutableConstraintSpace());
   }
 
