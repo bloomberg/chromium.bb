@@ -53,15 +53,10 @@ void BidirectionalStreamQuicImpl::Start(
     std::unique_ptr<base::Timer> /* timer */) {
   DCHECK(!stream_);
   CHECK(delegate);
+  DLOG_IF(WARNING, !session_->IsConnected())
+      << "Trying to start request headers after session has been closed.";
 
   send_request_headers_automatically_ = send_request_headers_automatically;
-  if (!session_->IsConnected()) {
-    NotifyError(session_->IsCryptoHandshakeConfirmed()
-                    ? ERR_QUIC_PROTOCOL_ERROR
-                    : ERR_QUIC_HANDSHAKE_FAILED);
-    return;
-  }
-
   delegate_ = delegate;
   request_info_ = request_info;
 
@@ -72,11 +67,17 @@ void BidirectionalStreamQuicImpl::Start(
   if (rv == ERR_IO_PENDING)
     return;
 
-  if (rv == OK) {
-    OnStreamReady(rv);
-  } else if (!session_->IsCryptoHandshakeConfirmed()) {
-    NotifyError(ERR_QUIC_HANDSHAKE_FAILED);
+  if (rv != OK) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::NotifyError,
+                              weak_factory_.GetWeakPtr(),
+                              session_->IsCryptoHandshakeConfirmed()
+                                  ? rv
+                                  : ERR_QUIC_HANDSHAKE_FAILED));
+    return;
   }
+
+  OnStreamReady(rv);
 }
 
 void BidirectionalStreamQuicImpl::SendRequestHeaders() {
