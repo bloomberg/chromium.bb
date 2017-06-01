@@ -121,7 +121,6 @@ public class JourneyLogger {
      */
     public void setAborted(int reason) {
         assert reason < AbortReason.MAX;
-        assert mWasShowCalled;
 
         // The abort reasons on Android cascade into each other, so only the first one should be
         // recorded.
