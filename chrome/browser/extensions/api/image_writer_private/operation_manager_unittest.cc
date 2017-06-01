@@ -18,12 +18,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
-
 namespace extensions {
 namespace image_writer {
 
@@ -85,12 +79,6 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
 
   TestingProfile test_profile_;
   FakeEventRouter* event_router_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {

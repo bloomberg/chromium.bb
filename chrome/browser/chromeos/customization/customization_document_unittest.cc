@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -293,6 +294,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
 
  private:
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ScopedCrosSettingsTestHelper scoped_cros_settings_test_helper_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple local_state_;
   TestURLFetcherCallback url_callback_;

@@ -10,6 +10,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#endif
+
 class Profile;
 class TestingValueStore;
 
@@ -91,6 +95,10 @@ class TestExtensionSystem : public ExtensionSystem {
   std::unique_ptr<QuotaService> quota_service_;
   std::unique_ptr<AppSorting> app_sorting_;
   OneShotEvent ready_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+#endif
 };
 
 }  // namespace extensions
