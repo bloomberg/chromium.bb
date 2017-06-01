@@ -28,20 +28,13 @@ function test()
     }
 
 
-    function platformFontsForElementWithSelector(selector, callback)
+    async function platformFontsForElementWithSelector(selector, callback)
     {
-        InspectorTest.requestNodeId(documentNodeId, selector, onNodeId);
-
-        function onNodeId(nodeId)
-        {
-            InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId }, onGotComputedFonts);
-        }
-
-        function onGotComputedFonts(response)
-        {
-            dumpComputedFonts(response);
-            callback();
-        }
+        var nodeId = await InspectorTest.requestNodeId(documentNodeId, selector);
+        await InspectorTest.sendCommandOrDie("CSS.enable", {  });
+        var response = await InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId });
+        dumpComputedFonts(response);
+        callback();
     }
 
     function dumpComputedFonts(response)
