@@ -33,7 +33,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 #include "ash/wm_display_observer.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/chromeos/default_touch_transform_setter.h"
@@ -150,13 +149,8 @@ bool ShellPortClassic::IsMouseEventsEnabled() {
   return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
-std::vector<WmWindow*> ShellPortClassic::GetAllRootWindows() {
-  aura::Window::Windows root_windows =
-      Shell::Get()->window_tree_host_manager()->GetAllRootWindows();
-  std::vector<WmWindow*> wm_windows(root_windows.size());
-  for (size_t i = 0; i < root_windows.size(); ++i)
-    wm_windows[i] = WmWindow::Get(root_windows[i]);
-  return wm_windows;
+std::vector<aura::Window*> ShellPortClassic::GetAllRootWindows() {
+  return Shell::Get()->window_tree_host_manager()->GetAllRootWindows();
 }
 
 void ShellPortClassic::RecordUserMetricsAction(UserMetricsAction action) {

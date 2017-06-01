@@ -15,10 +15,11 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 
 namespace ash {
@@ -79,13 +80,15 @@ bool ShellPort::IsSystemModalWindowOpen() {
 
   // Traverse all system modal containers, and find its direct child window
   // with "SystemModal" setting, and visible.
-  for (WmWindow* root : GetAllRootWindows()) {
-    WmWindow* system_modal =
-        root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
+  for (aura::Window* root : GetAllRootWindows()) {
+    aura::Window* system_modal =
+        root->GetChildById(kShellWindowId_SystemModalContainer);
     if (!system_modal)
       continue;
-    for (const WmWindow* child : system_modal->GetChildren()) {
-      if (child->IsSystemModal() && child->GetTargetVisibility()) {
+    for (const aura::Window* child : system_modal->children()) {
+      if (child->GetProperty(aura::client::kModalKey) ==
+              ui::MODAL_TYPE_SYSTEM &&
+          child->layer()->GetTargetVisibility()) {
         return true;
       }
     }

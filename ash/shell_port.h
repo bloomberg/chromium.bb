@@ -52,7 +52,6 @@ struct ShellInitParams;
 class WindowCycleEventFilter;
 class WindowResizer;
 class WmDisplayObserver;
-class WmWindow;
 class WorkspaceEventHandler;
 
 enum class Config;
@@ -146,7 +145,7 @@ class ASH_EXPORT ShellPort {
       base::Optional<ui::CursorData> cursor) = 0;
   virtual bool IsMouseEventsEnabled() = 0;
 
-  virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
+  virtual std::vector<aura::Window*> GetAllRootWindows() = 0;
 
   virtual void RecordGestureAction(GestureActionType action) = 0;
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;

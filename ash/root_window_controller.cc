@@ -55,7 +55,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -344,10 +343,6 @@ const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
 }
 
-const WmWindow* RootWindowController::GetWindow() const {
-  return WmWindow::Get(GetRootWindow());
-}
-
 wm::WorkspaceWindowState RootWindowController::GetWorkspaceWindowState() {
   return workspace_controller_ ? workspace_controller()->GetWindowState()
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
@@ -480,11 +475,6 @@ aura::Window* RootWindowController::GetContainer(int container_id) {
 
 const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return window_tree_host_->window()->GetChildById(container_id);
-}
-
-const WmWindow* RootWindowController::GetWmContainer(int container_id) const {
-  const aura::Window* window = GetContainer(container_id);
-  return WmWindow::Get(window);
 }
 
 void RootWindowController::SetWallpaperWidgetController(

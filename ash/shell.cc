@@ -117,7 +117,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -258,8 +257,11 @@ RootWindowController* Shell::GetPrimaryRootWindowController() {
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
   RootWindowControllerList root_window_controllers;
-  for (WmWindow* root_window : instance_->shell_port_->GetAllRootWindows())
-    root_window_controllers.push_back(root_window->GetRootWindowController());
+  for (aura::Window* root_window :
+       instance_->shell_port_->GetAllRootWindows()) {
+    root_window_controllers.push_back(
+        RootWindowController::ForWindow(root_window));
+  }
   return root_window_controllers;
 }
 
@@ -290,10 +292,7 @@ aura::Window* Shell::GetRootWindowForNewWindows() {
 // static
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
-  aura::Window::Windows windows;
-  for (WmWindow* window : instance_->shell_port_->GetAllRootWindows())
-    windows.push_back(window->aura_window());
-  return windows;
+  return instance_->shell_port_->GetAllRootWindows();
 }
 
 // static
@@ -386,8 +385,8 @@ ShelfModel* Shell::shelf_model() {
 }
 
 void Shell::UpdateShelfVisibility() {
-  for (WmWindow* root : shell_port_->GetAllRootWindows())
-    root->GetRootWindowController()->shelf()->UpdateVisibilityState();
+  for (auto* root_window_controller : GetAllRootWindowControllers())
+    root_window_controller->shelf()->UpdateVisibilityState();
 }
 
 PrefService* Shell::GetActiveUserPrefService() const {
@@ -480,10 +479,8 @@ bool Shell::GetAppListTargetVisibility() const {
 }
 
 void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
-  for (WmWindow* root_window : shell_port_->GetAllRootWindows()) {
-    root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
-        status);
-  }
+  for (auto* root_window_controller : GetAllRootWindowControllers())
+    root_window_controller->UpdateAfterLoginStatusChange(status);
 }
 
 void Shell::NotifyMaximizeModeStarted() {
@@ -663,8 +660,8 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
-  for (WmWindow* root : shell_port_->GetAllRootWindows())
-    root->GetRootWindowController()->shelf()->ShutdownShelfWidget();
+  for (auto* root_window_controller : GetAllRootWindowControllers())
+    root_window_controller->shelf()->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
   DeleteSystemTrayDelegate();
 
@@ -1167,8 +1164,7 @@ void Shell::DeleteSystemTrayDelegate() {
 }
 
 void Shell::CloseAllRootWindowChildWindows() {
-  for (WmWindow* wm_root_window : shell_port_->GetAllRootWindows()) {
-    aura::Window* root_window = wm_root_window->aura_window();
+  for (aura::Window* root_window : shell_port_->GetAllRootWindows()) {
     RootWindowController* controller = GetRootWindowController(root_window);
     if (controller) {
       controller->CloseChildWindows();

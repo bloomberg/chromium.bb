@@ -63,7 +63,6 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
-class WmWindow;
 class WorkspaceController;
 
 namespace mus {
@@ -124,13 +123,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   const aura::WindowTreeHost* GetHost() const;
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
-
-  // TODO(sky): remove these. http://crbug.com/671246.
-  WmWindow* GetWindow() {
-    return const_cast<WmWindow*>(
-        const_cast<const RootWindowController*>(this)->GetWindow());
-  }
-  const WmWindow* GetWindow() const;
 
   WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
@@ -206,14 +198,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
-
-  // TODO(sky): remove these. http://crbug.com/671246.
-  WmWindow* GetWmContainer(int container_id) {
-    return const_cast<WmWindow*>(
-        const_cast<const RootWindowController*>(this)->GetWmContainer(
-            container_id));
-  }
-  const WmWindow* GetWmContainer(int container_id) const;
 
   WallpaperWidgetController* wallpaper_widget_controller() {
     return wallpaper_widget_controller_.get();
