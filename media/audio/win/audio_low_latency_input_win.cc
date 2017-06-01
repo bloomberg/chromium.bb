@@ -103,11 +103,11 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
 }
 
 WASAPIAudioInputStream::~WASAPIAudioInputStream() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool WASAPIAudioInputStream::Open() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(OPEN_RESULT_OK, open_result_);
 
   // Verify that we are not already opened.
@@ -160,7 +160,7 @@ bool WASAPIAudioInputStream::Open() {
 }
 
 void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
   DLOG_IF(ERROR, !opened_) << "Open() has not been called successfully";
   if (!opened_)
@@ -209,7 +209,7 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
 }
 
 void WASAPIAudioInputStream::Stop() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "WASAPIAudioInputStream::Stop()";
   if (!started_)
     return;
@@ -278,7 +278,7 @@ double WASAPIAudioInputStream::GetMaxVolume() {
 
 void WASAPIAudioInputStream::SetVolume(double volume) {
   DVLOG(1) << "SetVolume(volume=" << volume << ")";
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(volume, 0.0);
   DCHECK_LE(volume, 1.0);
 
@@ -317,7 +317,7 @@ double WASAPIAudioInputStream::GetVolume() {
 
 bool WASAPIAudioInputStream::IsMuted() {
   DCHECK(opened_) << "Open() has not been called successfully";
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!opened_)
     return false;
 

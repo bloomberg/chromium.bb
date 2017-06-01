@@ -67,7 +67,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/win/scoped_co_mem.h"
@@ -89,8 +89,7 @@ class AudioManagerWin;
 class MEDIA_EXPORT WASAPIAudioInputStream
     : public AgcAudioStream<AudioInputStream>,
       public base::DelegateSimpleThread::Delegate,
-      public AudioConverter::InputCallback,
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+      public AudioConverter::InputCallback {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
@@ -254,6 +253,8 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   std::unique_ptr<AudioConverter> converter_;
   std::unique_ptr<AudioBus> convert_bus_;
   bool imperfect_buffer_size_conversion_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);
 };

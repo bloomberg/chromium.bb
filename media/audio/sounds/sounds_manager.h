@@ -7,8 +7,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 
@@ -16,7 +16,7 @@ namespace media {
 
 // This class is used for reproduction of system sounds. All methods
 // should be accessed from the Audio thread.
-class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
+class MEDIA_EXPORT SoundsManager {
  public:
   typedef int SoundKey;
 
@@ -54,6 +54,8 @@ class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
  protected:
   SoundsManager();
   virtual ~SoundsManager();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SoundsManager);

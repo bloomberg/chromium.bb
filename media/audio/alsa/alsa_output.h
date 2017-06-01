@@ -32,8 +32,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
@@ -46,8 +46,7 @@ class AudioManagerBase;
 class ChannelMixer;
 class SeekableBuffer;
 
-class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream,
-                                         public base::NonThreadSafe {
+class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
  public:
   // String for the generic "default" ALSA device that has the highest
   // compatibility and chance of working.
@@ -213,6 +212,8 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream,
   std::unique_ptr<AudioBus> mixed_audio_bus_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Allows us to run tasks on the AlsaPcmOutputStream instance which are
   // bound by its lifetime.
