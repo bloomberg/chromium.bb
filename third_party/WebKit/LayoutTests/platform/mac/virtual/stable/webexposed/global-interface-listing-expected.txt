@@ -754,6 +754,7 @@ interface DOMTokenList
     method item
     method keys
     method remove
+    method replace
     method supports
     method toString
     method toggle
