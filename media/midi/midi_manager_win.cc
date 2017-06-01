@@ -148,6 +148,38 @@ void RunTask(int instance_id, const base::Closure& task) {
 // TODO(toyoshim): Factor out TaskRunner related functionaliries above, and
 // deprecate MidiScheduler. It should be available via MidiManager::scheduler().
 
+// Obtains base::Lock instance pointer to protect
+// |g_midi_in_get_num_devs_thread_id|.
+base::Lock* GetMidiInGetNumDevsThreadIdLock() {
+  static base::Lock* lock = new base::Lock;
+  return lock;
+}
+
+// Holds a thread id that calls midiInGetNumDevs() now. We use a platform
+// primitive to identify the thread because the following functions can be
+// called on a thread that Windows allocates internally, and Chrome or //base
+// library does not know.
+base::PlatformThreadId g_midi_in_get_num_devs_thread_id;
+
+// Prepares to call midiInGetNumDevs().
+void EnterMidiInGetNumDevs() {
+  base::AutoLock lock(*GetMidiInGetNumDevsThreadIdLock());
+  g_midi_in_get_num_devs_thread_id = base::PlatformThread::CurrentId();
+}
+
+// Finalizes to call midiInGetNumDevs().
+void LeaveMidiInGetNumDevs() {
+  base::AutoLock lock(*GetMidiInGetNumDevsThreadIdLock());
+  g_midi_in_get_num_devs_thread_id = base::PlatformThreadId();
+}
+
+// Checks if the current thread is running midiInGetNumDevs(), that means
+// current code is invoked inside midiInGetNumDevs().
+bool IsRunningInsideMidiInGetNumDevs() {
+  base::AutoLock lock(*GetMidiInGetNumDevsThreadIdLock());
+  return base::PlatformThread::CurrentId() == g_midi_in_get_num_devs_thread_id;
+}
+
 // Utility class to handle MIDIHDR struct safely.
 class MIDIHDRDeleter {
  public:
@@ -319,7 +351,12 @@ class MidiManagerWin::InPort final : public Port {
       MidiManagerWin* manager,
       int instance_id) {
     std::vector<std::unique_ptr<InPort>> ports;
+
+    // Allow callback invocations indie midiInGetNumDevs().
+    EnterMidiInGetNumDevs();
     const UINT num_devices = midiInGetNumDevs();
+    LeaveMidiInGetNumDevs();
+
     for (UINT device_id = 0; device_id < num_devices; ++device_id) {
       MIDIINCAPS2W caps;
       MMRESULT result = midiInGetDevCaps(
@@ -579,7 +616,14 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
 
   // Use |g_task_lock| so to ensure the instance can keep alive while running,
   // and to access member variables that are used on TaskRunner.
-  base::AutoLock task_lock(*GetTaskLock());
+  // Exceptionally, we do not take the lock when this callback is invoked inside
+  // midiInGetNumDevs() on the caller thread because the lock is already
+  // obtained by the current caller thread.
+  std::unique_ptr<base::AutoLock> task_lock;
+  if (IsRunningInsideMidiInGetNumDevs())
+    GetTaskLock()->AssertAcquired();
+  else
+    task_lock.reset(new base::AutoLock(*GetTaskLock()));
   {
     base::AutoLock lock(*GetInstanceIdLock());
     if (instance_id != g_active_instance_id)
