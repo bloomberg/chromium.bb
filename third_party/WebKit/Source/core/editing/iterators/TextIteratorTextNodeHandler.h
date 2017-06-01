@@ -45,9 +45,7 @@ class TextIteratorTextNodeHandler final {
 
   void ResetCollapsedWhiteSpaceFixup();
 
-  // TODO(xiaochengh): Make the return type |void|. The current return value is
-  // not very meaningful.
-  bool HandleTextNode(Text*);
+  void HandleTextNode(Text*);
 
  private:
   void HandlePreFormattedTextNode();

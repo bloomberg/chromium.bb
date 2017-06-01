@@ -269,12 +269,6 @@ bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
     return true;
   }
 
-  // TODO(xiaochengh): When multiple text runs should be emitted from a replaced
-  // element or non-text node, we should handle it directly from here, instead
-  // of going into the main iteration of Advance() for multiple times. In this
-  // way, we can also remove the return values of HandleReplaceElement() and
-  // HandleNonTextNode(), and make the control flow cleaner.
-
   if (needs_handle_replaced_element_) {
     HandleReplacedElement();
     if (text_state_.PositionNode())
@@ -361,12 +355,11 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
       // Handle the current node according to its type.
       if (iteration_progress_ < kHandledNode) {
-        bool handled_node = false;
         if (layout_object->IsText() &&
             node_->getNodeType() ==
                 Node::kTextNode) {  // FIXME: What about kCdataSectionNode?
           if (!fully_clipped_stack_.Top() || IgnoresStyleVisibility())
-            handled_node = HandleTextNode();
+            HandleTextNode();
         } else if (layout_object &&
                    (layout_object->IsImage() || layout_object->IsLayoutPart() ||
                     (node_ && node_->IsHTMLElement() &&
@@ -375,12 +368,11 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                       isHTMLImageElement(ToHTMLElement(*node_)) ||
                       isHTMLMeterElement(ToHTMLElement(*node_)) ||
                       isHTMLProgressElement(ToHTMLElement(*node_)))))) {
-          handled_node = HandleReplacedElement();
+          HandleReplacedElement();
         } else {
-          handled_node = HandleNonTextNode();
+          HandleNonTextNode();
         }
-        if (handled_node)
-          iteration_progress_ = kHandledNode;
+        iteration_progress_ = kHandledNode;
         if (text_state_.PositionNode())
           return;
       }
@@ -481,19 +473,19 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
+void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   if (ExcludesAutofilledValue()) {
     TextControlElement* control = EnclosingTextControl(node_);
     // For security reason, we don't expose suggested value if it is
     // auto-filled.
     if (control && control->IsAutofilled())
-      return true;
+      return;
   }
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
   last_text_node_ = ToText(node_);
-  return text_node_handler_.HandleTextNode(ToText(node_));
+  text_node_handler_.HandleTextNode(ToText(node_));
 }
 
 template <typename Strategy>
@@ -512,21 +504,22 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
+void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   needs_handle_replaced_element_ = false;
 
   if (fully_clipped_stack_.Top())
-    return false;
+    return;
 
   LayoutObject* layout_object = node_->GetLayoutObject();
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
-      !IgnoresStyleVisibility())
-    return false;
+      !IgnoresStyleVisibility()) {
+    return;
+  }
 
   if (EmitsObjectReplacementCharacter()) {
     SpliceBuffer(kObjectReplacementCharacter, Strategy::Parent(*node_), node_,
                  0, 1);
-    return true;
+    return;
   }
 
   DCHECK_EQ(last_text_node_, text_node_handler_.GetNode());
@@ -534,13 +527,13 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     if (text_node_handler_.FixLeadingWhiteSpaceForReplacedElement(
             Strategy::Parent(*last_text_node_))) {
       needs_handle_replaced_element_ = true;
-      return true;
+      return;
     }
   }
 
   if (EntersTextControls() && layout_object->IsTextControl()) {
     // The shadow tree should be already visited.
-    return true;
+    return;
   }
 
   if (EmitsCharactersBetweenAllVisiblePositions()) {
@@ -548,7 +541,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     // finding, and to simply take up space for the selection preservation
     // code in moveParagraphs, so we use a comma.
     SpliceBuffer(',', Strategy::Parent(*node_), node_, 0, 1);
-    return true;
+    return;
   }
 
   text_state_.UpdateForReplacedElement(node_);
@@ -556,10 +549,8 @@ bool TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   if (EmitsImageAltText() && TextIterator::SupportsAltText(node_)) {
     text_state_.EmitAltText(node_);
     if (text_state_.length())
-      return true;
+      return;
   }
-
-  return true;
 }
 
 template <typename Strategy>
@@ -777,7 +768,7 @@ void TextIteratorAlgorithm<Strategy>::RepresentNodeOffsetZero() {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
+void TextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
   if (ShouldEmitNewlineForNode(node_, EmitsOriginalText()))
     SpliceBuffer('\n', Strategy::Parent(*node_), node_, 0, 1);
   else if (EmitsCharactersBetweenAllVisiblePositions() &&
@@ -785,8 +776,6 @@ bool TextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
     SpliceBuffer(kSpaceCharacter, Strategy::Parent(*node_), node_, 0, 1);
   else
     RepresentNodeOffsetZero();
-
-  return true;
 }
 
 template <typename Strategy>
