@@ -59,7 +59,7 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
                GetUrlCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdWhitelist.store",
-               GetUrlCsdWhitelistId(), SB_THREAT_TYPE_UNUSED),
+               GetUrlCsdWhitelistId(), SB_THREAT_TYPE_CSD_WHITELIST),
       ListInfo(kSyncAlways, "UrlSoceng.store", GetUrlSocEngId(),
                SB_THREAT_TYPE_URL_PHISHING),
       ListInfo(kSyncAlways, "UrlMalware.store", GetUrlMalwareId(),
@@ -96,6 +96,8 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
     case CLIENT_INCIDENT:
     case SUBRESOURCE_FILTER:
       return 2;
+    case CSD_WHITELIST:
+      return 3;
     default:
       NOTREACHED() << "Unexpected ThreatType encountered: "
                    << list_id.threat_type();
@@ -289,15 +291,34 @@ bool V4LocalDatabaseManager::CheckUrlForSubresourceFilter(const GURL& url,
   return HandleCheck(std::move(check));
 }
 
+AsyncMatch V4LocalDatabaseManager::CheckCsdWhitelistUrl(const GURL& url,
+                                                        Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  StoresToCheck stores_to_check({GetUrlCsdWhitelistId()});
+  if (!AreAllStoresAvailableNow(stores_to_check) || !CanCheckUrl(url)) {
+    // Fail open: Whitelist everything. Otherwise we may run the
+    // CSD phishing/malware detector on popular domains and generate
+    // undue load on the client and server, or send Password Reputation
+    // requests on popular sites. This has the effect of disabling
+    // CSD phishing/malware detection and password reputation service
+    // until the store is first synced and/or loaded from disk.
+    return AsyncMatch::MATCH;
+  }
+
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      client, ClientCallbackType::CHECK_CSD_WHITELIST, stores_to_check,
+      std::vector<GURL>(1, url));
+
+  return HandleWhitelistCheck(std::move(check));
+}
+
 bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetUrlCsdWhitelistId()});
   if (!AreAllStoresAvailableNow(stores_to_check)) {
-    // Fail open: Whitelist everything. Otherwise we may run the
-    // CSD phishing/malware detector on popular domains and generate
-    // undue load on the client and server. This has the effect of disabling
-    // CSD phishing/malware detection until the store is first synced.
+    // Fail open: Whitelist everything. See CheckCsdWhitelistUrl.
     return true;
   }
 
@@ -554,6 +575,34 @@ SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
   return it->sb_threat_type();
 }
 
+AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
+    std::unique_ptr<PendingCheck> check) {
+  // We don't bother queuing whitelist checks since the DB will
+  // normally be available already -- whitelists are used after page load,
+  // and navigations are blocked until the DB is ready and dequeues checks.
+  // The caller should have already checked that the DB is ready.
+  DCHECK(v4_database_);
+
+  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+  if (!GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes)) {
+    return AsyncMatch::NO_MATCH;
+  }
+
+  // Look for any full-length hash in the matches. If there is one,
+  // there's no need for a full-hash check. This saves bandwidth for
+  // very popular sites since they'll have full-length hashes locally.
+  // These loops will have exactly 1 entry most of the time.
+  for (const auto& entry : full_hash_to_store_and_hash_prefixes) {
+    for (const auto& store_and_prefix : entry.second) {
+      if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength)
+        return AsyncMatch::MATCH;
+    }
+  }
+
+  ScheduleFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  return AsyncMatch::ASYNC;
+}
+
 bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
   if (!v4_database_) {
     queued_checks_.push_back(std::move(check));
@@ -565,6 +614,14 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
     return true;
   }
 
+  ScheduleFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  return false;
+}
+
+void V4LocalDatabaseManager::ScheduleFullHashCheck(
+    std::unique_ptr<PendingCheck> check,
+    const FullHashToStoreAndHashPrefixesMap&
+        full_hash_to_store_and_hash_prefixes) {
   // Add check to pending_checks_ before scheduling PerformFullHashCheck so that
   // even if the client calls CancelCheck before PerformFullHashCheck gets
   // called, the check can be found in pending_checks_.
@@ -576,8 +633,6 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
       base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(check)),
                  full_hash_to_store_and_hash_prefixes));
-
-  return false;
 }
 
 bool V4LocalDatabaseManager::HandleHashSynchronously(
@@ -699,6 +754,16 @@ void V4LocalDatabaseManager::RespondToClient(
                                               check->most_severe_threat_type,
                                               check->matching_full_hash);
       break;
+
+    case ClientCallbackType::CHECK_CSD_WHITELIST: {
+      DCHECK_EQ(1u, check->urls.size());
+      bool did_match_whitelist =
+          check->most_severe_threat_type == SB_THREAT_TYPE_CSD_WHITELIST;
+      DCHECK(did_match_whitelist ||
+             check->most_severe_threat_type == SB_THREAT_TYPE_SAFE);
+      check->client->OnCheckWhitelistUrlResult(did_match_whitelist);
+      break;
+    }
 
     case ClientCallbackType::CHECK_EXTENSION_IDS: {
       DCHECK_EQ(check->full_hash_threat_types.size(),

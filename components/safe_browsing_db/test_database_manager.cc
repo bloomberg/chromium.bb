@@ -66,6 +66,13 @@ bool TestSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   return true;
 }
 
+AsyncMatch TestSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
+    const GURL& url,
+    Client* client) {
+  NOTIMPLEMENTED();
+  return AsyncMatch::MATCH;
+}
+
 bool TestSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   NOTIMPLEMENTED();
   return true;

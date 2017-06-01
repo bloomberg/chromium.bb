@@ -115,6 +115,9 @@ enum SBThreatType {
 
   // Activation patterns for the Subresource Filter.
   SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+
+  // CSD Phishing whitelist.  This "threat" means a URL matched the whitelist.
+  SB_THREAT_TYPE_CSD_WHITELIST,
 };
 
 // The information required to uniquely identify each list the client is
