@@ -263,6 +263,8 @@ class CORE_EXPORT HTMLCanvasElement final
     return DispatchEvent(event);
   }
 
+  bool IsWebGLAllowed() const override;
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 

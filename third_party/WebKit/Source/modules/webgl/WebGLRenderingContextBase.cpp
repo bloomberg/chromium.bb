@@ -637,25 +637,20 @@ bool WebGLRenderingContextBase::SupportOwnOffscreenSurface(
 
 std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateContextProviderInternal(
-    HTMLCanvasElement* canvas,
-    ScriptState* script_state,
+    CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attributes,
     unsigned web_gl_version) {
-  // Exactly one of these must be provided.
-  DCHECK_EQ(!canvas, !!script_state);
-  // The canvas is only given on the main thread.
-  DCHECK(!canvas || IsMainThread());
+  DCHECK(host);
+  ExecutionContext* execution_context = host->GetTopExecutionContext();
+  DCHECK(execution_context);
 
-  auto execution_context = canvas ? canvas->GetDocument().GetExecutionContext()
-                                  : ExecutionContext::From(script_state);
   Platform::ContextAttributes context_attributes = ToPlatformContextAttributes(
       attributes, web_gl_version,
       SupportOwnOffscreenSurface(execution_context));
 
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
-  const auto& url = canvas ? canvas->GetDocument().TopDocument().Url()
-                           : ExecutionContext::From(script_state)->Url();
+  const auto& url = execution_context->Url();
   if (IsMainThread()) {
     context_provider =
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
@@ -671,19 +666,17 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   }
   if (!context_provider || g_should_fail_context_creation_for_testing) {
     g_should_fail_context_creation_for_testing = false;
-    if (canvas)
-      canvas->DispatchEvent(WebGLContextEvent::Create(
-          EventTypeNames::webglcontextcreationerror, false, true,
-          ExtractWebGLContextCreationError(gl_info)));
+    host->HostDispatchEvent(WebGLContextEvent::Create(
+        EventTypeNames::webglcontextcreationerror, false, true,
+        ExtractWebGLContextCreationError(gl_info)));
     return nullptr;
   }
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   if (!String(gl->GetString(GL_EXTENSIONS))
            .Contains("GL_OES_packed_depth_stencil")) {
-    if (canvas)
-      canvas->DispatchEvent(WebGLContextEvent::Create(
-          EventTypeNames::webglcontextcreationerror, false, true,
-          "OES_packed_depth_stencil support is required."));
+    host->HostDispatchEvent(WebGLContextEvent::Create(
+        EventTypeNames::webglcontextcreationerror, false, true,
+        "OES_packed_depth_stencil support is required."));
     return nullptr;
   }
   return context_provider;
@@ -691,41 +684,17 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
 
 std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
-    HTMLCanvasElement* canvas,
+    CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attributes,
     unsigned web_gl_version) {
-  Document& document = canvas->GetDocument();
-  LocalFrame* frame = document.GetFrame();
-  if (!frame) {
-    canvas->DispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        "Web page was not allowed to create a WebGL context."));
-    return nullptr;
-  }
-  Settings* settings = frame->GetSettings();
-
-  // The LocalFrameClient might block creation of a new WebGL context despite
-  // the page settings; in particular, if WebGL contexts were lost one or more
-  // times via the GL_ARB_robustness extension.
-  if (!frame->Loader().Client()->AllowWebGL(settings &&
-                                            settings->GetWebGLEnabled())) {
-    canvas->DispatchEvent(WebGLContextEvent::Create(
+  if (!host->IsWebGLAllowed()) {
+    host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror, false, true,
         "Web page was not allowed to create a WebGL context."));
     return nullptr;
   }
 
-  return CreateContextProviderInternal(canvas, nullptr, attributes,
-                                       web_gl_version);
-}
-
-std::unique_ptr<WebGraphicsContext3DProvider>
-WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
-    ScriptState* script_state,
-    const CanvasContextCreationAttributes& attributes,
-    unsigned web_gl_version) {
-  return CreateContextProviderInternal(nullptr, script_state, attributes,
-                                       web_gl_version);
+  return CreateContextProviderInternal(host, attributes, web_gl_version);
 }
 
 void WebGLRenderingContextBase::ForceNextWebGLContextCreationToFail() {

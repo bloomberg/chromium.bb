@@ -26,10 +26,11 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     ~Factory() override {}
 
     CanvasRenderingContext* Create(
-        ScriptState* script_state,
-        OffscreenCanvas* canvas,
+        CanvasRenderingContextHost* host,
         const CanvasContextCreationAttributes& attrs) override {
-      return new OffscreenCanvasRenderingContext2D(script_state, canvas, attrs);
+      DCHECK(host->IsOffscreenCanvas());
+      return new OffscreenCanvasRenderingContext2D(
+          static_cast<OffscreenCanvas*>(host), attrs);
     }
 
     CanvasRenderingContext::ContextType GetContextType() const override {
@@ -98,7 +99,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
  protected:
   OffscreenCanvasRenderingContext2D(
-      ScriptState*,
       OffscreenCanvas*,
       const CanvasContextCreationAttributes& attrs);
   DECLARE_VIRTUAL_TRACE();

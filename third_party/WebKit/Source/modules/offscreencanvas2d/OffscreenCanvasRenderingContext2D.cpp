@@ -21,11 +21,10 @@ namespace blink {
 OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() {}
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
-    ScriptState* script_state,
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributes& attrs)
     : CanvasRenderingContext(canvas, attrs) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (execution_context->IsDocument()) {
     if (ToDocument(execution_context)
             ->GetSettings()
