@@ -93,6 +93,8 @@ DEFINE_TRACE(CustomElementRegistry) {
 
 DEFINE_TRACE_WRAPPERS(CustomElementRegistry) {
   visitor->TraceWrappers(&CustomElementReactionStack::Current());
+  for (auto definition : definitions_.Values())
+    visitor->TraceWrappers(definition);
 }
 
 CustomElementDefinition* CustomElementRegistry::define(
@@ -186,8 +188,9 @@ CustomElementDefinition* CustomElementRegistry::define(
   CustomElementDefinition* definition = builder.Build(descriptor);
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
-  DefinitionMap::AddResult result =
-      definitions_.insert(descriptor.GetName(), definition);
+  DefinitionMap::AddResult result = definitions_.insert(
+      descriptor.GetName(),
+      TraceWrapperMember<CustomElementDefinition>(this, definition));
   CHECK(result.is_new_entry);
 
   HeapVector<Member<Element>> candidates;

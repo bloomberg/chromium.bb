@@ -24,10 +24,6 @@ class ScriptWrappable;
 // FetchEvent.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)               \
-  X(CustomElement, AdoptedCallback)                   \
-  X(CustomElement, AttributeChangedCallback)          \
-  X(CustomElement, ConnectedCallback)                 \
-  X(CustomElement, DisconnectedCallback)              \
   X(CustomElement, Document)                          \
   X(CustomElement, IsInterfacePrototypeObject)        \
   X(CustomElement, NamespaceURI)                      \

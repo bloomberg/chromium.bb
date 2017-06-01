@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
+#include "platform/bindings/ScriptWrappable.h"  // For TraceWrapperBase
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
@@ -23,7 +24,8 @@ class HTMLElement;
 class QualifiedName;
 
 class CORE_EXPORT CustomElementDefinition
-    : public GarbageCollectedFinalized<CustomElementDefinition> {
+    : public GarbageCollectedFinalized<CustomElementDefinition>,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
 
  public:
@@ -33,6 +35,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual ~CustomElementDefinition();
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS() {}
 
   const CustomElementDescriptor& Descriptor() { return descriptor_; }
 
