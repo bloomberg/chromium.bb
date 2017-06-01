@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/jpeg_decode_accelerator.h"
@@ -43,7 +43,6 @@ class GpuJpegDecodeAcceleratorFactoryProvider {
 
 class GpuJpegDecodeAccelerator
     : public IPC::Sender,
-      public base::NonThreadSafe,
       public base::SupportsWeakPtr<GpuJpegDecodeAccelerator> {
  public:
   // |channel| must outlive this object.
@@ -93,6 +92,8 @@ class GpuJpegDecodeAccelerator
 
   // Number of clients added to |filter_|.
   int client_number_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuJpegDecodeAccelerator);
 };

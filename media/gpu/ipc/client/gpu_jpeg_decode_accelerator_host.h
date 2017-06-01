@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
@@ -31,8 +31,7 @@ namespace media {
 
 // This class is used to talk to JpegDecodeAccelerator in the GPU process
 // through IPC messages.
-class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator,
-                                     public base::NonThreadSafe {
+class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
  public:
   GpuJpegDecodeAcceleratorHost(
       scoped_refptr<gpu::GpuChannelHost> channel,
@@ -64,6 +63,8 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   std::unique_ptr<Receiver> receiver_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAcceleratorHost);
 };

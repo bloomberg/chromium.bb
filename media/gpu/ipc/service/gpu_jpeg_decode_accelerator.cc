@@ -380,7 +380,7 @@ GpuJpegDecodeAccelerator::GpuJpegDecodeAccelerator(
       client_number_(0) {}
 
 GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (filter_) {
     channel_->RemoveFilter(filter_.get());
   }
@@ -388,7 +388,7 @@ GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
 
 void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
                                          base::Callback<void(bool)> response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
   // needs to be updated.
@@ -435,12 +435,12 @@ void GpuJpegDecodeAccelerator::NotifyDecodeStatus(
     int32_t route_id,
     int32_t buffer_id,
     JpegDecodeAccelerator::Error error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Send(new AcceleratedJpegDecoderHostMsg_DecodeAck(route_id, buffer_id, error));
 }
 
 void GpuJpegDecodeAccelerator::ClientRemoved() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(client_number_, 0);
   client_number_--;
   if (client_number_ == 0) {
@@ -450,7 +450,7 @@ void GpuJpegDecodeAccelerator::ClientRemoved() {
 }
 
 bool GpuJpegDecodeAccelerator::Send(IPC::Message* message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return channel_->Send(message);
 }
 
