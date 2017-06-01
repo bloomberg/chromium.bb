@@ -189,6 +189,7 @@ BatchRequestConfigurator::BatchRequestConfigurator(
 }
 
 BatchRequestConfigurator::~BatchRequestConfigurator() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The batch requst has not been committed.
   if (batch_request_)
     cancel_callback_.Run();
@@ -203,7 +204,7 @@ google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
     const UploadNewFileOptions& options,
     const google_apis::FileResourceCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
   std::unique_ptr<google_apis::BatchableDelegate> delegate(
@@ -230,7 +231,7 @@ BatchRequestConfigurator::MultipartUploadExistingFile(
     const UploadExistingFileOptions& options,
     const google_apis::FileResourceCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
   std::unique_ptr<google_apis::BatchableDelegate> delegate(
@@ -250,7 +251,7 @@ BatchRequestConfigurator::MultipartUploadExistingFile(
 }
 
 void BatchRequestConfigurator::Commit() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!batch_request_)
     return;
   batch_request_->Commit();
