@@ -1344,9 +1344,6 @@ extern const char kQuickUnlockFingerprintDescription[];
 extern const char kOfficeEditingComponentAppName[];
 extern const char kOfficeEditingComponentAppDescription[];
 
-extern const char kShowArcFilesAppName[];
-extern const char kShowArcFilesAppDescription[];
-
 extern const char kSmartVirtualKeyboardName[];
 extern const char kSmartVirtualKeyboardDescription[];
 

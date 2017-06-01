@@ -9,7 +9,6 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -172,15 +170,10 @@ const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kLegacyPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
-const char kFilesAppId[] = "clippbnfpgifdekheldlleoeiiababjg";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
-  if (app_id == kFilesAppId) {
-    return base::FeatureList::IsEnabled(kShowArcFilesAppFeature);
-  } else {
-    return (app_id != kSettingsAppId);
-  }
+  return (app_id != kSettingsAppId);
 }
 
 bool LaunchAppWithRect(content::BrowserContext* context,
