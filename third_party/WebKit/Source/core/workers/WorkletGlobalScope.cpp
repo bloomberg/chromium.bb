@@ -16,8 +16,11 @@ WorkletGlobalScope::WorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate)
-    : WorkerOrWorkletGlobalScope(isolate), url_(url), user_agent_(user_agent) {
+    v8::Isolate* isolate,
+    WorkerClients* worker_clients)
+    : WorkerOrWorkletGlobalScope(isolate, worker_clients),
+      url_(url),
+      user_agent_(user_agent) {
   SetSecurityOrigin(std::move(security_origin));
 }
 

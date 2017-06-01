@@ -10,8 +10,9 @@
 namespace blink {
 
 AudioWorkletMessagingProxy::AudioWorkletMessagingProxy(
-    ExecutionContext* execution_context)
-    : ThreadedWorkletMessagingProxy(execution_context) {}
+    ExecutionContext* execution_context,
+    WorkerClients* worker_clients)
+    : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {}
 
 AudioWorkletMessagingProxy::~AudioWorkletMessagingProxy() {}
 

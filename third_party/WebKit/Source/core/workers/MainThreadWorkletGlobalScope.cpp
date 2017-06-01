@@ -25,7 +25,11 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate)
-    : WorkletGlobalScope(url, user_agent, std::move(security_origin), isolate),
+    : WorkletGlobalScope(url,
+                         user_agent,
+                         std::move(security_origin),
+                         isolate,
+                         nullptr /* worker_clients */),
       ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}

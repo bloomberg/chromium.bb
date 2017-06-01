@@ -22,7 +22,8 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
                                              const String& user_agent,
                                              PassRefPtr<SecurityOrigin>,
                                              v8::Isolate*,
-                                             WorkerThread*);
+                                             WorkerThread*,
+                                             WorkerClients*);
   ~AnimationWorkletGlobalScope() override;
   DECLARE_TRACE();
 
@@ -39,7 +40,8 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
                               const String& user_agent,
                               PassRefPtr<SecurityOrigin>,
                               v8::Isolate*,
-                              WorkerThread*);
+                              WorkerThread*,
+                              WorkerClients*);
 
   typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
   DefinitionMap m_animatorDefinitions;

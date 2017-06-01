@@ -68,9 +68,8 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     ExecutionContext* execution_context,
     InProcessWorkerBase* worker_object,
     WorkerClients* worker_clients)
-    : ThreadedMessagingProxyBase(execution_context),
+    : ThreadedMessagingProxyBase(execution_context, worker_clients),
       worker_object_(worker_object),
-      worker_clients_(worker_clients),
       weak_ptr_factory_(this) {
   worker_object_proxy_ = InProcessWorkerObjectProxy::Create(
       weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
@@ -114,7 +113,7 @@ void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
       WorkerThreadStartupData::Create(
           script_url, user_agent, source_code, nullptr, start_mode,
           csp->Headers().get(), referrer_policy, starter_origin,
-          worker_clients_.Release(), document->AddressSpace(),
+          ReleaseWorkerClients(), document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           std::move(worker_settings), worker_v8_settings);
 

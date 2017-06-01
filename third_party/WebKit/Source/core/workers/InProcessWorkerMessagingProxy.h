@@ -97,7 +97,6 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
 
   std::unique_ptr<InProcessWorkerObjectProxy> worker_object_proxy_;
   WeakPersistent<InProcessWorkerBase> worker_object_;
-  Persistent<WorkerClients> worker_clients_;
 
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;

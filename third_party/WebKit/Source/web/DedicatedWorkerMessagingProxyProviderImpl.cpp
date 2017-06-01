@@ -38,12 +38,10 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebWorkerFetchContext.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "web/IndexedDBClientImpl.h"
@@ -71,17 +69,7 @@ DedicatedWorkerMessagingProxyProviderImpl::CreateWorkerMessagingProxy(
         worker_clients,
         WTF::WrapUnique(
             web_frame->Client()->CreateWorkerContentSettingsClientProxy()));
-    if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
-      std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
-          web_frame->Client()->CreateWorkerFetchContext();
-      DCHECK(web_worker_fetch_context);
-      // TODO(horo): Set more information about the context (ex:
-      // AppCacheHostID) to |web_worker_fetch_context|.
-      web_worker_fetch_context->SetDataSaverEnabled(
-          document->GetFrame()->GetSettings()->GetDataSaverEnabled());
-      ProvideWorkerFetchContextToWorker(worker_clients,
-                                        std::move(web_worker_fetch_context));
-    }
+
     // FIXME: call provideServiceWorkerContainerClientToWorker here when we
     // support ServiceWorker in dedicated workers (http://crbug.com/371690)
     return new DedicatedWorkerMessagingProxy(worker, worker_clients);
