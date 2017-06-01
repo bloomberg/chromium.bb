@@ -47,6 +47,12 @@ std::unique_ptr<google::protobuf::MessageLite> DecodedMessageToProto(
       keep_alive_tickle->ParseFromString(decoded_message);
       return std::move(keep_alive_tickle);
     }
+    case MessageType::KEEP_ALIVE_TICKLE_RESPONSE: {
+      std::unique_ptr<KeepAliveTickleResponse> keep_alive_tickle_response =
+          base::MakeUnique<KeepAliveTickleResponse>();
+      keep_alive_tickle_response->ParseFromString(decoded_message);
+      return std::move(keep_alive_tickle_response);
+    }
     case MessageType::TETHER_AVAILABILITY_REQUEST: {
       std::unique_ptr<TetherAvailabilityRequest> tether_request =
           base::MakeUnique<TetherAvailabilityRequest>();
@@ -122,6 +128,10 @@ MessageWrapper::MessageWrapper(const DisconnectTetheringRequest& request)
 MessageWrapper::MessageWrapper(const KeepAliveTickle& tickle)
     : type_(MessageType::KEEP_ALIVE_TICKLE),
       proto_(new KeepAliveTickle(tickle)) {}
+
+MessageWrapper::MessageWrapper(const KeepAliveTickleResponse& response)
+    : type_(MessageType::KEEP_ALIVE_TICKLE_RESPONSE),
+      proto_(new KeepAliveTickleResponse(response)) {}
 
 MessageWrapper::MessageWrapper(const TetherAvailabilityRequest& request)
     : type_(MessageType::TETHER_AVAILABILITY_REQUEST),

@@ -103,6 +103,14 @@ TEST_F(MessageWrapperTest, TestToAndFromRawMessage_KeepAliveTickle) {
   VerifyProtoConversion(&tickle, wrapper, MessageType::KEEP_ALIVE_TICKLE);
 }
 
+TEST_F(MessageWrapperTest, TestToAndFromRawMessage_KeepAliveTickleResponse) {
+  KeepAliveTickleResponse response;
+
+  MessageWrapper wrapper(response);
+  VerifyProtoConversion(&response, wrapper,
+                        MessageType::KEEP_ALIVE_TICKLE_RESPONSE);
+}
+
 TEST_F(MessageWrapperTest, TestToAndFromRawMessage_TetherAvailabilityRequest) {
   TetherAvailabilityRequest request;
 
