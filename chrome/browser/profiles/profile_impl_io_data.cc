@@ -131,7 +131,7 @@ ProfileImplIOData::Handle::~Handle() {
   }
 
   if (io_data_->http_server_properties_manager_)
-    io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
+    io_data_->http_server_properties_manager_->ShutdownOnPrefSequence();
 
   // io_data_->data_reduction_proxy_io_data() might be NULL if Init() was
   // never called.
@@ -472,7 +472,7 @@ void ProfileImplIOData::InitializeInternal(
   ApplyProfileParamsToContext(main_context);
 
   if (lazy_params_->http_server_properties_manager) {
-    lazy_params_->http_server_properties_manager->InitializeOnNetworkThread();
+    lazy_params_->http_server_properties_manager->InitializeOnNetworkSequence();
     main_context_storage->set_http_server_properties(
         std::move(lazy_params_->http_server_properties_manager));
   }

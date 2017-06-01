@@ -112,7 +112,7 @@ class ChannelIDServiceWorker {
 
   // Starts the worker asynchronously.
   void Start(const scoped_refptr<base::TaskRunner>& task_runner) {
-    DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
     auto callback = base::Bind(&ChannelIDServiceWorker::Run, base::Owned(this));
 
