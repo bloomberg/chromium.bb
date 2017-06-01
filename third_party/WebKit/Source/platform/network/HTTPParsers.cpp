@@ -231,32 +231,6 @@ bool IsValidHTTPHeaderValue(const String& name) {
          !name.Contains('\n') && !name.Contains('\0');
 }
 
-// See RFC 7230, Section 3.2.
-// Checks whether |value| matches field-content in RFC 7230.
-// link: http://tools.ietf.org/html/rfc7230#section-3.2
-bool IsValidHTTPFieldContentRFC7230(const String& value) {
-  if (value.IsEmpty())
-    return false;
-
-  UChar first_character = value[0];
-  if (first_character == ' ' || first_character == '\t')
-    return false;
-
-  UChar last_character = value[value.length() - 1];
-  if (last_character == ' ' || last_character == '\t')
-    return false;
-
-  for (unsigned i = 0; i < value.length(); ++i) {
-    UChar c = value[i];
-    // TODO(mkwst): Extract this character class to a central location,
-    // https://crbug.com/527324.
-    if (c == 0x7F || c > 0xFF || (c < 0x20 && c != '\t'))
-      return false;
-  }
-
-  return true;
-}
-
 // See RFC 7230, Section 3.2.6.
 bool IsValidHTTPToken(const String& characters) {
   if (characters.IsEmpty())
