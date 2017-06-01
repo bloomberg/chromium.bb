@@ -16,8 +16,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_controller.h"
-#include "ui/resources/grit/ui_resources.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"

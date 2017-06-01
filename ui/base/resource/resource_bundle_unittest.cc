@@ -26,8 +26,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/resources/grit/ui_resources.h"
-#include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_WIN)
 #include "ui/display/win/dpi.h"

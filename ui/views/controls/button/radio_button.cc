@@ -10,7 +10,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"

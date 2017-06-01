@@ -10,7 +10,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
