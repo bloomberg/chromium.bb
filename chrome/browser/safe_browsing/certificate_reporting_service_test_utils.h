@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -100,8 +100,7 @@ class RequestObserver {
 // empty response. If Resume() is called before a request is made, then the
 // request will not be delayed. If not delayed, it can return a failed or a
 // successful URL request job.
-class DelayableCertReportURLRequestJob : public net::URLRequestJob,
-                                         public base::NonThreadSafe {
+class DelayableCertReportURLRequestJob : public net::URLRequestJob {
  public:
   DelayableCertReportURLRequestJob(
       bool delayed,
@@ -128,6 +127,9 @@ class DelayableCertReportURLRequestJob : public net::URLRequestJob,
   bool should_fail_;
   bool started_;
   base::Callback<void()> destruction_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<DelayableCertReportURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayableCertReportURLRequestJob);

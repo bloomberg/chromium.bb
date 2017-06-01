@@ -163,6 +163,7 @@ DelayableCertReportURLRequestJob::DelayableCertReportURLRequestJob(
       weak_factory_(this) {}
 
 DelayableCertReportURLRequestJob::~DelayableCertReportURLRequestJob() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    destruction_callback_);
 }
