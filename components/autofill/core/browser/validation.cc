@@ -46,11 +46,11 @@ bool IsValidCreditCardExpirationDate(int year,
 bool IsValidCreditCardNumber(const base::string16& text) {
   base::string16 number = CreditCard::StripSeparators(text);
 
-  // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
-  // be a fairly safe lower-bound [2].  Specific card issuers have more rigidly
-  // defined sizes.
-  // [1] http://www.merriampark.com/anatomycc.htm
-  // [2] http://en.wikipedia.org/wiki/Bank_card_number
+  // Credit card numbers are at most 19 digits in length, 12 digits seems to
+  // be a fairly safe lower-bound [1].  Specific card issuers have more rigidly
+  // defined sizes. 
+  // (Last updated: May 29, 2017)
+  // [1] https://en.wikipedia.org/wiki/Payment_card_number.
   // CardEditor.isCardNumberLengthMaxium() needs to be kept in sync.
   const char* const type = CreditCard::GetCardNetwork(text);
   if (type == kAmericanExpressCard && number.size() != 15)
@@ -58,6 +58,8 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   if (type == kDinersCard && number.size() != 14)
     return false;
   if (type == kDiscoverCard && number.size() != 16)
+    return false;
+  if (type == kEloCard && number.size() != 16)
     return false;
   if (type == kJCBCard && number.size() != 16)
     return false;
@@ -67,7 +69,8 @@ bool IsValidCreditCardNumber(const base::string16& text) {
     return false;
   if (type == kUnionPay && (number.size() < 16 || number.size() > 19))
     return false;
-  if (type == kVisaCard && number.size() != 13 && number.size() != 16)
+  if (type == kVisaCard && number.size() != 13 && number.size() != 16 &&
+      number.size() != 19)
     return false;
   if (type == kGenericCard && (number.size() < 12 || number.size() > 19))
     return false;
