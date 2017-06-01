@@ -23,6 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "core/editing/SelectionModifier.h"
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/RenderedPosition.h"
@@ -387,10 +388,9 @@ VisiblePosition VisualWordPosition(const VisiblePosition& visible_position,
 
 }  // namespace
 
-// TODO(yosin): Once we move |SelectionModifier::ModifyMovingLeft()| in this
-// file, we can make |LeftWordPosition()| as file local function.
-VisiblePosition LeftWordPosition(const VisiblePosition& visible_position,
-                                 bool skips_space_when_moving_right) {
+VisiblePosition SelectionModifier::LeftWordPosition(
+    const VisiblePosition& visible_position,
+    bool skips_space_when_moving_right) {
   DCHECK(visible_position.IsValid()) << visible_position;
   VisiblePosition left_word_break = VisualWordPosition(
       visible_position, kMoveLeft, skips_space_when_moving_right);
@@ -409,10 +409,9 @@ VisiblePosition LeftWordPosition(const VisiblePosition& visible_position,
   return left_word_break;
 }
 
-// TODO(yosin): Once we move |SelectionModifier::ModifyMovingRight()| in this
-// file, we can make |RightWordPosition()| as file local function.
-VisiblePosition RightWordPosition(const VisiblePosition& visible_position,
-                                  bool skips_space_when_moving_right) {
+VisiblePosition SelectionModifier::RightWordPosition(
+    const VisiblePosition& visible_position,
+    bool skips_space_when_moving_right) {
   DCHECK(visible_position.IsValid()) << visible_position;
   VisiblePosition right_word_break = VisualWordPosition(
       visible_position, kMoveRight, skips_space_when_moving_right);
@@ -423,7 +422,7 @@ VisiblePosition RightWordPosition(const VisiblePosition& visible_position,
   if (right_word_break.IsNull() &&
       IsEditablePosition(visible_position.DeepEquivalent())) {
     TextDirection block_direction =
-        DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
+        blink::DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
     right_word_break = block_direction == TextDirection::kLtr
                            ? EndOfEditableContent(visible_position)
                            : StartOfEditableContent(visible_position);

@@ -183,14 +183,6 @@ CORE_EXPORT VisiblePositionInFlatTree
 EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kRightWordIfOnBoundary);
 VisiblePosition PreviousWordPosition(const VisiblePosition&);
 VisiblePosition NextWordPosition(const VisiblePosition&);
-// TODO(yosin): We'll move |RightPositionOf()| as file location function
-// for |SelectionModifier| class.
-VisiblePosition RightWordPosition(const VisiblePosition&,
-                                  bool skips_space_when_moving_right);
-// TODO(yosin): We'll move |LeftPositionOf()| as file location function
-// for |SelectionModifier| class.
-VisiblePosition LeftWordPosition(const VisiblePosition&,
-                                 bool skips_space_when_moving_right);
 
 // sentences
 CORE_EXPORT VisiblePosition StartOfSentence(const VisiblePosition&);
