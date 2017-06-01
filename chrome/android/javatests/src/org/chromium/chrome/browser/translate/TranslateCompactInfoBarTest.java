@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.translate;
 
+import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -15,18 +16,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.TranslateCompactInfoBar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
-import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TranslateUtil;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -35,23 +35,17 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the translate infobar, assumes it runs on a system with language
  * preferences set to English.
- *
- * Note: these tests all currently fail because they depend on a newer version of Google Play
- * Services than is installed on the test devices. See http://crbug.com/514449
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class TranslateInfoBarTest {
+public class TranslateCompactInfoBarTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final String TRANSLATE_PAGE = "/chrome/test/data/translate/fr_test.html";
-    private static final String DISABLE_COMPACT_UI_FEATURE = "disable-features=TranslateCompactUI";
-    private static final String NEVER_TRANSLATE_MESSAGE =
-            "Would you like Google Chrome to offer to translate French pages from this"
-                    + " site next time?";
+    private static final String ENABLE_COMPACT_UI_FEATURE = "enable-features=TranslateCompactUI";
 
     private InfoBarContainer mInfoBarContainer;
     private InfoBarTestAnimationListener mListener;
@@ -61,7 +55,7 @@ public class TranslateInfoBarTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mInfoBarContainer = mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
-        mListener =  new InfoBarTestAnimationListener();
+        mListener = new InfoBarTestAnimationListener();
         mInfoBarContainer.addAnimationListener(mListener);
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
@@ -73,65 +67,72 @@ public class TranslateInfoBarTest {
     }
 
     /**
-     * Test the translate language panel.
+     * Test that the new translate compact UI appears and has at least 2 tabs.
      */
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
-    @CommandLineFlags.Add(DISABLE_COMPACT_UI_FEATURE)
-    public void testTranslateLanguagePanel() throws InterruptedException, TimeoutException {
+    @CommandLineFlags.Add(ENABLE_COMPACT_UI_FEATURE)
+    public void testTranslateCompactInfoBarAppears() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not opened.");
         InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
-        Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBar));
-        Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBar));
-        TranslateUtil.openLanguagePanel(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), infoBar);
+        TranslateUtil.assertCompactTranslateInfoBar(infoBar);
+        TranslateUtil.assertHasAtLeastTwoLanguageTabs((TranslateCompactInfoBar) infoBar);
     }
 
     /**
-     * Test the "never translate" panel.
+     * Test the overflow menus of new translate compact UI.
      */
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
-    @CommandLineFlags.Add(DISABLE_COMPACT_UI_FEATURE)
-    public void testTranslateNeverPanel() throws InterruptedException, TimeoutException {
+    @CommandLineFlags.Add(ENABLE_COMPACT_UI_FEATURE)
+    public void testTranslateCompactInfoBarOverflowMenus()
+            throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not opened.");
-        InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
+        TranslateCompactInfoBar infoBar =
+                (TranslateCompactInfoBar) mInfoBarContainer.getInfoBarsForTesting().get(0);
+        TranslateUtil.hasMenuButton(infoBar);
 
-        Assert.assertTrue(InfoBarUtil.clickCloseButton(infoBar));
-        mListener.removeInfoBarAnimationFinished("Infobar not removed.");
+        // 1. Click on menu button and make sure overflow menu appears
+        TranslateUtil.clickMenuButtonAndAssertMenuShown(infoBar);
 
-        // Reload the page so the infobar shows again
-        mActivityTestRule.loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
-        mListener.addInfoBarAnimationFinished("InfoBar not opened");
-        infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
-        Assert.assertTrue(InfoBarUtil.clickCloseButton(infoBar));
-        mListener.swapInfoBarAnimationFinished("InfoBar not swapped");
-
-        TranslateUtil.assertInfoBarText(infoBar, NEVER_TRANSLATE_MESSAGE);
+        // 2. Click on "More language" in the overflow menu and make sure language menu appears
+        TranslateUtil.clickMoreLanguageButtonAndAssertLanguageMenuShown(
+                InstrumentationRegistry.getInstrumentation(), infoBar);
     }
 
     /**
-     * Test infobar transitions.
-     *
-     * @MediumTest
-     * @Feature({"Browser", "Main"})
+     * Tests that the overflow menu is dismissed when the orientation changes.
      */
     @Test
-    @DisabledTest(message = "crbug.com/514449")
-    public void testTranslateTransitions() throws InterruptedException, TimeoutException {
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+    @CommandLineFlags.Add(ENABLE_COMPACT_UI_FEATURE)
+    public void testTabMenuDismissedOnOrientationChange() throws Exception {
         mActivityTestRule.loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
-        mListener.addInfoBarAnimationFinished("InfoBar not Added");
-        InfoBar infoBar = mActivityTestRule.getInfoBars().get(0);
-        Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBar));
-        Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBar));
-        Assert.assertTrue(InfoBarUtil.clickPrimaryButton(infoBar));
-        mListener.swapInfoBarAnimationFinished("BEFORE -> TRANSLATING transition not Swapped.");
-        mListener.swapInfoBarAnimationFinished("TRANSLATING -> ERROR transition not Swapped.");
+        mListener.addInfoBarAnimationFinished("InfoBar not opened.");
+        TranslateCompactInfoBar infoBar =
+                (TranslateCompactInfoBar) mInfoBarContainer.getInfoBarsForTesting().get(0);
+        TranslateUtil.hasMenuButton(infoBar);
+        TranslateUtil.clickMenuButtonAndAssertMenuShown(infoBar);
+
+        // 1. Set orientation to portrait
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // 2. Check if overflow menu is dismissed
+        Assert.assertFalse(infoBar.isShowingLanguageMenuForTesting());
+
+        // 3. Reset orientation
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 }

@@ -22,7 +22,7 @@ public class InfoBarUtil {
      * Finds, and optionally clicks, the button with the specified ID in the given InfoBar.
      * @return True if the View was found.
      */
-    private static boolean findButton(InfoBar infoBar, int buttonId, boolean click) {
+    public static boolean findButton(InfoBar infoBar, int buttonId, boolean click) {
         final View button = infoBar.getView().findViewById(buttonId);
         if (button == null) return false;
         if (click) {
