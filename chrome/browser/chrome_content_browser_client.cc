@@ -93,8 +93,10 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -542,20 +544,30 @@ class ChromeServiceChromeOS : public service_manager::Service,
 
   // mash::mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
-    if (how != mash::mojom::LaunchMode::MAKE_NEW) {
-      LOG(ERROR) << "Unable to handle Launch request with how = " << how;
-      return;
-    }
+    bool is_incognito;
     switch (what) {
       case mash::mojom::kWindow:
-        CreateNewWindowImpl(false /* is_incognito */);
+        is_incognito = false;
         break;
       case mash::mojom::kIncognitoWindow:
-        CreateNewWindowImpl(true /* is_incognito */);
+        is_incognito = true;
         break;
       default:
         NOTREACHED();
     }
+
+    bool reuse = how != mash::mojom::LaunchMode::MAKE_NEW;
+    if (reuse) {
+      Profile* profile = ProfileManager::GetActiveUserProfile();
+      Browser* browser = chrome::FindTabbedBrowser(
+          is_incognito ? profile->GetOffTheRecordProfile() : profile, false);
+      if (browser) {
+        browser->window()->Show();
+        return;
+      }
+    }
+
+    CreateNewWindowImpl(is_incognito);
   }
 
   void Create(const service_manager::BindSourceInfo& source_info,
