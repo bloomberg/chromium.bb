@@ -4,6 +4,9 @@
 
 function measurePaint(test) {
   test.tracingCategories = 'blink';
-  test.traceEventsToMeasure = ['FrameView::prePaint', 'FrameView::paintTree'];
+  test.traceEventsToMeasure = [
+    'LocalFrameView::prePaint',
+    'LocalFrameView::paintTree'
+  ];
   PerfTestRunner.measureFrameTime(test);
 }
