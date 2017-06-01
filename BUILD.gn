@@ -450,7 +450,7 @@ component("icui18n") {
   ]
   # ls source/i18n/unicode/*h | sort | sed 's/^\(.*\)$/    "\1",/'
   public = [
-    // crbug.com/726654: Make astro.h public until the upstream adds an API.
+    # crbug.com/726654: Make astro.h public until the upstream adds an API.
     "source/i18n/astro.h",
     "source/i18n/unicode/alphaindex.h",
     "source/i18n/unicode/basictz.h",
