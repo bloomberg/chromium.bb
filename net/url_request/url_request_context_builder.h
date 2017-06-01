@@ -49,7 +49,6 @@ class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class CTVerifier;
-class HostMappingRules;
 class HttpAuthHandlerFactory;
 class HttpServerProperties;
 class NetworkQualityEstimator;
@@ -82,33 +81,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
     // The cache path (when type is DISK).
     base::FilePath path;
-  };
-
-  struct NET_EXPORT HttpNetworkSessionParams {
-    HttpNetworkSessionParams();
-    ~HttpNetworkSessionParams();
-
-    // Configutes |params| to match the settings in |this|.
-    // TODO(mmenke):  Temporary utility function. Once everything is using a
-    // URLRequestContextBuilder, can make this no longer publicly accessible.
-    void ConfigureSessionParams(HttpNetworkSession::Params* params) const;
-
-    // These fields mirror those in HttpNetworkSession::Params;
-    HostMappingRules host_mapping_rules;
-    bool ignore_certificate_errors;
-    uint16_t testing_fixed_http_port;
-    uint16_t testing_fixed_https_port;
-    bool enable_http2;
-    bool enable_quic;
-    std::string quic_user_agent_id;
-    int quic_max_server_configs_stored_in_properties;
-    QuicTagVector quic_connection_options;
-    bool quic_close_sessions_on_ip_change;
-    int quic_idle_connection_timeout_seconds;
-    bool quic_migrate_sessions_on_network_change;
-    bool quic_migrate_sessions_early;
-    bool quic_disable_bidirectional_streams;
-    bool quic_race_cert_verification;
   };
 
   URLRequestContextBuilder();
@@ -226,7 +198,7 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // Override default HttpNetworkSession::Params settings.
   void set_http_network_session_params(
-      const HttpNetworkSessionParams& http_network_session_params) {
+      const HttpNetworkSession::Params& http_network_session_params) {
     http_network_session_params_ = http_network_session_params;
   }
 
@@ -371,7 +343,7 @@ class NET_EXPORT URLRequestContextBuilder {
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   HttpCacheParams http_cache_params_;
-  HttpNetworkSessionParams http_network_session_params_;
+  HttpNetworkSession::Params http_network_session_params_;
   base::FilePath transport_security_persister_path_;
   NetLog* net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
