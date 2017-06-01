@@ -131,6 +131,7 @@ class MockTransferBuffer : public TransferBufferInterface {
 
   ~MockTransferBuffer() override {}
 
+  base::SharedMemoryHandle shared_memory_handle() const override;
   bool Initialize(unsigned int starting_buffer_size,
                   unsigned int result_size,
                   unsigned int /* min_buffer_size */,
@@ -242,6 +243,10 @@ class MockTransferBuffer : public TransferBufferInterface {
 
   DISALLOW_COPY_AND_ASSIGN(MockTransferBuffer);
 };
+
+base::SharedMemoryHandle MockTransferBuffer::shared_memory_handle() const {
+  return base::SharedMemoryHandle();
+}
 
 bool MockTransferBuffer::Initialize(
     unsigned int starting_buffer_size,
