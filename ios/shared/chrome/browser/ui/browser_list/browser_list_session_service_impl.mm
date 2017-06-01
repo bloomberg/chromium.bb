@@ -197,7 +197,8 @@ BrowserListSessionServiceImpl::BrowserListSessionServiceImpl(
     : browser_list_(browser_list),
       session_directory_([session_directory copy]),
       session_service_(session_service),
-      create_web_state_(create_web_state) {
+      create_web_state_(create_web_state),
+      weak_factory_(this) {
   DCHECK(browser_list_);
   DCHECK(session_directory_);
   DCHECK(session_service_);
@@ -269,15 +270,25 @@ void BrowserListSessionServiceImpl::ScheduleLastSessionDeletion() {
 void BrowserListSessionServiceImpl::ScheduleSaveSession(bool immediately) {
   DCHECK(browser_list_) << "ScheduleSaveSession called after Shutdown.";
   DCHECK_GE(browser_list_->count(), 0);
-  const int count = browser_list_->count();
-  NSMutableArray<SessionWindowIOS*>* windows =
-      [NSMutableArray arrayWithCapacity:static_cast<NSUInteger>(count)];
-  for (int index = 0; index < count; ++index) {
-    Browser* browser = browser_list_->GetBrowserAtIndex(index);
-    [windows addObject:SerializeWebStateList(&browser->web_state_list())];
-  }
 
-  [session_service_ saveSession:[[SessionIOS alloc] initWithWindows:windows]
+  base::WeakPtr<BrowserListSessionServiceImpl> weak_ptr =
+      weak_factory_.GetWeakPtr();
+  SessionIOSFactory session_factory = ^SessionIOS*() {
+    BrowserListSessionServiceImpl* service = weak_ptr.get();
+    if (!weak_ptr)
+      return nil;
+
+    const int count = service->browser_list_->count();
+    NSMutableArray<SessionWindowIOS*>* windows =
+        [NSMutableArray arrayWithCapacity:static_cast<NSUInteger>(count)];
+    for (int index = 0; index < count; ++index) {
+      Browser* browser = service->browser_list_->GetBrowserAtIndex(index);
+      [windows addObject:SerializeWebStateList(&browser->web_state_list())];
+    }
+    return [[SessionIOS alloc] initWithWindows:windows];
+  };
+
+  [session_service_ saveSession:session_factory
                       directory:session_directory_
                     immediately:immediately];
 }

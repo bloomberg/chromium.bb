@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -53,6 +54,10 @@ class BrowserListSessionServiceImpl : public BrowserListSessionService {
   __strong SessionServiceIOS* session_service_;
   CreateWebStateCallback create_web_state_;
   std::unique_ptr<BrowserListObserver> observer_;
+
+  // Used to ensure that the block passed to SessionServiceIOS does not access
+  // this object once it has been destroyed.
+  base::WeakPtrFactory<BrowserListSessionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserListSessionServiceImpl);
 };
