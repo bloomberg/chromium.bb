@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 class AccountId;
 
