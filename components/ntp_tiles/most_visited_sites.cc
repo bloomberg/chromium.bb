@@ -479,8 +479,7 @@ void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
 }
 
 bool MostVisitedSites::ShouldAddHomeTile() const {
-  return base::FeatureList::IsEnabled(kPinHomePageAsTileFeature) &&
-         num_sites_ > 0u &&
+  return num_sites_ > 0u &&
          home_page_client_ &&  // No platform-specific implementation - no tile.
          home_page_client_->IsHomePageEnabled() &&
          !home_page_client_->IsNewTabPageUsedAsHomePage() &&

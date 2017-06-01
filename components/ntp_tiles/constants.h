@@ -23,9 +23,6 @@ extern const base::Feature kPopularSitesBakedInContentFeature;
 // Likely tiles on the New Tab Page.
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 
-// Feature to pin any set home page as first tile.
-extern const base::Feature kPinHomePageAsTileFeature;
-
 // Use this to find out whether the kNtpMostLikelyFaviconsFromServerFeature is
 // enabled. This helper function abstracts iOS special way to override the
 // feature (via command-line params).
