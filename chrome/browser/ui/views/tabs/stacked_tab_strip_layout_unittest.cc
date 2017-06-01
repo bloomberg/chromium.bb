@@ -257,6 +257,28 @@ TEST_F(StackedTabStripLayoutTest, DragActiveTabExisting) {
     // Drags one past as far to the left as the tab goes. Should keep pulling
     // in the rightmost tab.
     { { 0, 240, 100, 10, 2, 0, 1, "0 90 140", "0 2 91" }, -89 },
+
+    //
+    // The following set of tests create six tabs with the third selected.
+    //
+    // The x-position of the third tab is at its maximum, and the second tab is
+    // stacked underneath. Dragging to the left moves the second tab to the
+    // stack at the left-hand side of the tab strip.
+    { { 0, 150, 100, 10, 2, 0, 2, "0 42 44 46 48 50", "0 2 43 46 48 50" }, -1 },
+    { { 0, 150, 100, 10, 2, 0, 2, "0 20 44 46 48 50", "0 2 41 46 48 50" }, -3 },
+    // The x-position of the third tab is not at its maximum. Dragging to the
+    // left moves the second and third tabs by the same delta.
+    { { 0, 150, 100, 10, 2, 0, 2, "0 25 35 46 48 50", "0 20 30 46 48 50" },
+      -5 },
+    // min x, fourth is flush against right side
+    // The x-position of the third tab is at its minimum, and the fourth tab is
+    // stacked underneath. Dragging to the right moves the fourth and fifth tabs
+    // to the stack at the right-hand side of the tab strip.
+    { { 0, 150, 100, 10, 2, 0, 2, "0 2 4 6 25 50", "0 2 11 46 48 50" }, 7 },
+    { { 0, 150, 100, 10, 2, 0, 2, "0 2 4 9 25 50", "0 2 7 46 48 50" }, 3 },
+    // The x-position of the third tab is not at its minimum. Dragging to the
+    // right moves the third, fourth, and fifth tabs by the same delta.
+    { { 0, 150, 100, 10, 2, 0, 2, "0 2 10 16 25 50", "0 2 11 17 26 50" }, 1 },
   };
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {

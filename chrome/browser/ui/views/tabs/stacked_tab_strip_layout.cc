@@ -87,7 +87,7 @@ void StackedTabStripLayout::DragActiveTab(int delta) {
     AdjustStackedTabs();
   } else if (delta < 0 && initial_x == GetMaxX(active_index())) {
     LayoutByTabOffsetBefore(active_index());
-    ResetToIdealState();
+    AdjustStackedTabs();
   }
   int x = delta > 0 ?
       std::min(initial_x + delta, GetMaxDragX(active_index())) :
