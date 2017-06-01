@@ -127,6 +127,8 @@ if test x$ac_cv_lib_yaml_yaml_parser_initialize != xyes; then
   esac
 fi
 
+AM_CONDITIONAL([WITH_YAML], [test "x$ac_cv_lib_yaml_yaml_parser_initialize" == xyes -a "x$with_yaml" != xno])
+
 AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 AC_ARG_ENABLE(ucs4,
