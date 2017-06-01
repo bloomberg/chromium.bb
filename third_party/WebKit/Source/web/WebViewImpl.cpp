@@ -698,8 +698,8 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                             event.data.fling_start.velocity_y),
               WebSize());
       DCHECK(fling_curve);
-      gesture_animation_ = WebActiveGestureAnimation::CreateWithTimeOffset(
-          std::move(fling_curve), this, event.TimeStampSeconds());
+      gesture_animation_ = WebActiveGestureAnimation::CreateAtAnimationStart(
+          std::move(fling_curve), this);
       MainFrameImpl()->FrameWidget()->ScheduleAnimation();
       event_result = WebInputEventResult::kHandledSystem;
 
