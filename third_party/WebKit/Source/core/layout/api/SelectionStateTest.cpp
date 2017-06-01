@@ -19,7 +19,7 @@ TEST(SelectionStateTest, StreamOutput) {
   {
     std::stringstream string_stream;
     string_stream << SelectionState::kStartAndEnd;
-    EXPECT_EQ("Both", string_stream.str());
+    EXPECT_EQ("StartAndEnd", string_stream.str());
   }
 }
 

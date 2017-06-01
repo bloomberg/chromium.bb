@@ -19,7 +19,7 @@ std::ostream& operator<<(std::ostream& out, const SelectionState state) {
     case SelectionState::kEnd:
       return out << "End";
     case SelectionState::kStartAndEnd:
-      return out << "Both";
+      return out << "StartAndEnd";
   }
   NOTREACHED();
   return out;
