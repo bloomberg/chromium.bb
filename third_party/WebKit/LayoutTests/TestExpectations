@@ -122,6 +122,8 @@ crbug.com/719533 compositing/overflow/absolute-element-in-isolated-composited-an
 #### external/wpt/css/css-position-3
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-top.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-bottom.html [ Failure ]
+crbug.com/728527 external/wpt/css/css-position-3/position-sticky-table-tfoot-bottom.html [ Failure ]
+crbug.com/728527 external/wpt/css/css-position-3/position-sticky-table-thead-top.html [ Failure ]
 
 # ====== Layout team owned tests from here ======
 
@@ -1333,8 +1335,8 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-001.
 crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-003.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
-# Test sometimes flakes on most platforms
-crbug.com/571531 external/wpt/css/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Pass Failure ]
+# An animated manual test that should not be run
+crbug.com/728522 external/wpt/css/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Skip ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -2127,7 +2129,6 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/scroll-into-view/check-scroll-position.html [ Timeout ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_canvas_11.html [ Failure ]

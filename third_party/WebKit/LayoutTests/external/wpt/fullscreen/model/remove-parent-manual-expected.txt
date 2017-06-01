@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Remove the parent of the fullscreen element assert_equals: expected Element node <div id="child"></div> but got Document node with 2 children
+Harness: the test ran to completion.
+
