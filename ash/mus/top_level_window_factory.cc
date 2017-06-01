@@ -226,6 +226,16 @@ aura::Window* CreateAndParentTopLevelWindow(
     // No need to persist this value.
     properties->erase(focusable_iter);
   }
+
+  auto translucent_iter =
+      properties->find(ui::mojom::WindowManager::kTranslucent_InitProperty);
+  if (translucent_iter != properties->end()) {
+    bool translucent = mojo::ConvertTo<bool>(translucent_iter->second);
+    window->SetTransparent(translucent);
+    // No need to persist this value.
+    properties->erase(translucent_iter);
+  }
+
   return window;
 }
 
