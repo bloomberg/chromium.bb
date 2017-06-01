@@ -140,10 +140,9 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
-  settings.buffer_to_texture_target_map =
-      context_factory_->GetRendererSettings().buffer_to_texture_target_map;
   if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
     settings.preferred_tile_format = cc::RGBA_4444;
+  settings.resource_settings = context_factory_->GetResourceSettings();
 
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
@@ -151,9 +150,6 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
-
-  // TODO(staraz): LayerTreeSettings shouldn't have a RendererSettings.
-  settings.renderer_settings = context_factory_->GetRendererSettings();
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 

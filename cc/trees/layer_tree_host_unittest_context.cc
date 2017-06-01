@@ -1133,7 +1133,7 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
  public:
   UIResourceLostTest() : time_step_(0) {}
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
+    settings->resource_settings.texture_id_allocation_chunk_size = 1;
   }
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
   void AfterTest() override {}
