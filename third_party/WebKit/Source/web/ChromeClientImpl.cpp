@@ -976,6 +976,15 @@ WebRemoteFrameBase* ChromeClientImpl::GetWebRemoteFrameBase(
   return WebRemoteFrameImpl::FromFrame(frame);
 }
 
+void ChromeClientImpl::RequestDecode(
+    LocalFrame* frame,
+    sk_sp<SkImage> image,
+    std::unique_ptr<WTF::Function<void(bool)>> callback) {
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  web_frame->LocalRoot()->FrameWidget()->RequestDecode(std::move(image),
+                                                       std::move(callback));
+}
+
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     WebEventListenerClass event_class,

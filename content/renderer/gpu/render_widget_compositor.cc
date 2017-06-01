@@ -66,6 +66,7 @@
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSelection.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -1094,6 +1095,23 @@ void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
 
 void RenderWidgetCompositor::setBottomControlsHeight(float height) {
   layer_tree_host_->SetBottomControlsHeight(height);
+}
+
+void RenderWidgetCompositor::RequestDecode(
+    sk_sp<SkImage> image,
+    const base::Callback<void(bool)>& callback) {
+  layer_tree_host_->QueueImageDecode(std::move(image), callback);
+
+  // If we're compositing synchronously, the SetNeedsCommit call which will be
+  // issued by |layer_tree_host_| is not going to cause a commit, due to the
+  // fact that this would make layout tests slow and cause flakiness. However,
+  // in this case we actually need a commit to transfer the decode requests to
+  // the impl side. So, force a commit to happen.
+  if (CompositeIsSynchronous()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronouslyComposite,
+                              weak_factory_.GetWeakPtr()));
+  }
 }
 
 void RenderWidgetCompositor::WillBeginMainFrame() {

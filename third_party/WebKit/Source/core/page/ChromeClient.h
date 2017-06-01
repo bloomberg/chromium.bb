@@ -372,6 +372,13 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
     return nullptr;
   }
 
+  virtual void RequestDecode(
+      LocalFrame*,
+      sk_sp<SkImage> image,
+      std::unique_ptr<WTF::Function<void(bool)>> callback) {
+    (*callback)(false);
+  }
+
   DECLARE_TRACE();
 
  protected:

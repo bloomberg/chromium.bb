@@ -507,6 +507,10 @@ class WEB_EXPORT WebViewImpl final
     last_hidden_page_popup_ = page_popup;
   }
 
+  void RequestDecode(
+      sk_sp<SkImage>,
+      std::unique_ptr<WTF::Function<void(bool)>> callback) override;
+
  private:
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);

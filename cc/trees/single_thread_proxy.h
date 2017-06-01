@@ -100,6 +100,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override;
   void NeedsImplSideInvalidation() override;
+  void NotifyImageDecodeRequestFinished() override;
 
   void RequestNewCompositorFrameSink();
 
@@ -124,6 +125,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   bool ShouldComposite() const;
   void ScheduleRequestNewCompositorFrameSink();
+  void IssueImageDecodeFinishedCallbacks();
 
   void DidReceiveCompositorFrameAck();
 

@@ -36,6 +36,9 @@
 #include "base/callback.h"
 #include "cc/surfaces/frame_sink_id.h"
 
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+
 namespace cc {
 class AnimationHost;
 }
@@ -190,6 +193,9 @@ class WebLayerTreeView {
   // ReportTimeCallback is a callback that should be fired when the
   // corresponding Swap completes (either with DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
+
+  virtual void RequestDecode(sk_sp<SkImage> image,
+                             const base::Callback<void(bool)>& callback) {}
 };
 
 }  // namespace blink

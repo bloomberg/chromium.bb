@@ -240,6 +240,11 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebRemoteFrameBase* GetWebRemoteFrameBase(RemoteFrame&) override;
 
+  void RequestDecode(
+      LocalFrame*,
+      sk_sp<SkImage>,
+      std::unique_ptr<WTF::Function<void(bool)>> callback) override;
+
  private:
   explicit ChromeClientImpl(WebViewBase*);
 

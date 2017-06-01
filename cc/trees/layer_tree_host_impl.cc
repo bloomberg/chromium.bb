@@ -2380,7 +2380,7 @@ void LayerTreeHostImpl::ImageDecodeFinished(
     bool decode_succeeded) {
   completed_image_decode_callbacks_.emplace_back(
       base::Bind(embedder_callback, decode_succeeded));
-  client_->SetNeedsCommitOnImplThread();
+  client_->NotifyImageDecodeRequestFinished();
 }
 
 std::vector<base::Closure>

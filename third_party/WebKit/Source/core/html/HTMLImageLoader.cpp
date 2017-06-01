@@ -75,6 +75,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
 
   bool load_error = cached_image->ErrorOccurred();
   if (isHTMLImageElement(*element)) {
+    toHTMLImageElement(element)->ImageNotifyFinished(!load_error);
     if (load_error)
       toHTMLImageElement(element)->EnsureCollapsedOrFallbackContent();
     else
