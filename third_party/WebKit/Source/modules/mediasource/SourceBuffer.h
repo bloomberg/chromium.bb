@@ -126,9 +126,12 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool IsRemoved() const;
   void ScheduleEvent(const AtomicString& event_name);
 
-  bool PrepareAppend(size_t new_data_size, ExceptionState&);
-  bool EvictCodedFrames(size_t new_data_size);
-  void AppendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
+  bool PrepareAppend(double media_time, size_t new_data_size, ExceptionState&);
+  bool EvictCodedFrames(double media_time, size_t new_data_size);
+  void AppendBufferInternal(double media_time,
+                            const unsigned char*,
+                            unsigned,
+                            ExceptionState&);
   void AppendBufferAsyncPart();
   void AppendError();
 
@@ -138,6 +141,10 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void AbortIfUpdating();
 
   void RemoveMediaTracks();
+
+  // Returns MediaElement playback position (i.e. MediaElement.currentTime() )
+  // in seconds, or NaN if media element is not available.
+  double GetMediaTime();
 
   const TrackDefault* GetTrackDefault(
       const AtomicString& track_type,
