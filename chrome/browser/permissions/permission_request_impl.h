@@ -38,6 +38,9 @@ class PermissionRequestImpl : public PermissionRequest {
  private:
   // PermissionRequest:
   IconId GetIconId() const override;
+#if defined(OS_ANDROID)
+  base::string16 GetMessageText() const override;
+#endif
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   // Remember to call RegisterActionTaken for these methods if you are

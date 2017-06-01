@@ -159,9 +159,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
       base::android::ToJavaIntArray(env, content_settings_types).obj(),
       ResourceMapper::MapFromChromiumId(
           permission_prompt_->GetIconIdForPermission(0)),
-      // TODO(timloh): This is the wrong string.
-      ConvertUTF16ToJavaString(env,
-                               permission_prompt_->GetMessageTextFragment(0)),
+      ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText(0)),
       // TODO(timloh): Pass the actual link text for EME.
       ConvertUTF16ToJavaString(env, base::string16()), primaryButtonText,
       secondaryButtonText,
