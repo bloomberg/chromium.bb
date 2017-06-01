@@ -53,7 +53,7 @@ uint32_t CalculatePrivateFootprintKb(
     return (internal_bytes + compressed_bytes) / 1024;
   }
 #elif defined(OS_WIN)
-  return os_dump.platform_private_footprint.private_bytes;
+  return os_dump.platform_private_footprint.private_bytes / 1024;
 #else
   return 0;
 #endif
