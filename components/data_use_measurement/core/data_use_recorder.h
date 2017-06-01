@@ -61,10 +61,6 @@ class DataUseRecorder {
   // recorder.
   void RemoveAllPendingURLRequests();
 
-  // Returns whether there are any pending URLRequests whose data use is tracked
-  // by this DataUseRecorder.
-  bool HasPendingURLRequest(net::URLRequest* request);
-
   // Merge another DataUseRecorder to this instance.
   void MergeFrom(DataUseRecorder* other);
 

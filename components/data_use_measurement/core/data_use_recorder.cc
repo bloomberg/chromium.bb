@@ -53,10 +53,6 @@ void DataUseRecorder::RemovePendingDataSource(void* source) {
   pending_data_sources_.erase(source);
 }
 
-bool DataUseRecorder::HasPendingURLRequest(net::URLRequest* request) {
-  return pending_url_requests_.find(request) != pending_url_requests_.end();
-}
-
 void DataUseRecorder::MergeFrom(DataUseRecorder* other) {
   data_use_.MergeFrom(other->data_use());
 }

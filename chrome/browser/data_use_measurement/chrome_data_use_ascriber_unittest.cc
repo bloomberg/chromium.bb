@@ -75,8 +75,10 @@ class ChromeDataUseAscriberTest : public testing::Test {
         GURL(url), net::IDLE, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
     // TODO(kundaji): Allow request_id to be specified in AllocateForTesting.
     content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), content::RESOURCE_TYPE_MAIN_FRAME, resource_context(),
-        render_process_id,
+        request.get(),
+        is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
+                      : content::RESOURCE_TYPE_SCRIPT,
+        resource_context(), render_process_id,
         /*render_view_id=*/-1, render_frame_id, is_main_frame,
         /*parent_is_main_frame=*/false,
         /*allow_download=*/false,
@@ -224,6 +226,76 @@ TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   ascriber()->OnUrlRequestDestroyed(request.get());
 
+  EXPECT_EQ(0u, recorders().size());
+}
+
+TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
+  // A regression test that verifies that subframe requests in the second page
+  // load in the same frame get attributed to the entry correctly.
+  std::unique_ptr<net::URLRequest> page_load_a_main_frame_request =
+      CreateNewRequest("http://test.com", true, kRequestId, kRenderProcessId,
+                       kRenderFrameId);
+
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+
+  // Start the main frame reuqest.
+  ascriber()->OnBeforeUrlRequest(page_load_a_main_frame_request.get());
+
+  // Commit the page load.
+  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
+                                          kRenderProcessId, kRenderFrameId,
+                                          kNavigationHandle);
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+  ascriber()->DidFinishNavigation(kRenderProcessId, kRenderFrameId,
+                                  GURL("http://mobile.test.com"), false,
+                                  kPageTransition);
+
+  std::unique_ptr<net::URLRequest> page_load_b_main_frame_request =
+      CreateNewRequest("http://test_2.com", true, kRequestId + 1,
+                       kRenderProcessId, kRenderFrameId);
+  std::unique_ptr<net::URLRequest> page_load_b_sub_request =
+      CreateNewRequest("http://test_2.com/s", false, kRequestId + 2,
+                       kRenderProcessId, kRenderFrameId);
+
+  // Start the second main frame request.
+  ascriber()->OnBeforeUrlRequest(page_load_b_main_frame_request.get());
+
+  // Commit the second page load.
+  ascriber()->DidStartMainFrameNavigation(GURL("http://test_2.com"),
+                                          kRenderProcessId, kRenderFrameId,
+                                          kNavigationHandle);
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+  ascriber()->DidFinishNavigation(kRenderProcessId, kRenderFrameId,
+                                  GURL("http://mobile.test_2.com"), false,
+                                  kPageTransition);
+
+  // Delete the first main frame request.
+  ascriber()->OnUrlRequestDestroyed(page_load_a_main_frame_request.get());
+
+  // Start the sub resource request for the second page load.
+  ascriber()->OnBeforeUrlRequest(page_load_b_sub_request.get());
+  ascriber()->OnNetworkBytesReceived(page_load_b_sub_request.get(), 100);
+
+  EXPECT_EQ(1u, recorders().size());
+  auto& recorder_entry = recorders().front();
+  EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
+            recorder_entry.main_frame_id());
+  EXPECT_EQ(content::GlobalRequestID(kRenderProcessId, 0),
+            recorder_entry.main_frame_request_id());
+  EXPECT_EQ(GURL("http://mobile.test_2.com"), recorder_entry.data_use().url());
+  EXPECT_EQ(DataUse::TrafficType::USER_TRAFFIC,
+            recorder_entry.data_use().traffic_type());
+  // Verify that the data usage for the sub-resource was counted towards the
+  // entry.
+  EXPECT_EQ(100, recorder_entry.data_use().total_bytes_received());
+
+  ascriber()->OnUrlRequestDestroyed(page_load_b_sub_request.get());
+  ascriber()->OnUrlRequestDestroyed(page_load_b_main_frame_request.get());
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   EXPECT_EQ(0u, recorders().size());
 }
 
