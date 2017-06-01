@@ -8,43 +8,6 @@
 
 cr.define('login', function() {
   /**
-   * Number of displayed columns depending on user pod count.
-   * @type {Array<number>}
-   * @const
-   */
-  var COLUMNS = [0, 1, 2, 3, 4, 5, 4, 4, 4, 5, 5, 6, 6, 5, 5, 6, 6, 6, 6];
-
-  /**
-   * Mapping between number of columns in pod-row and margin between user pods
-   * for such layout.
-   * @type {Array<number>}
-   * @const
-   */
-  var MARGIN_BY_COLUMNS = [undefined, 40, 40, 40, 40, 40, 12];
-
-  /**
-   * Mapping between number of columns in the desktop pod-row and margin
-   * between user pods for such layout.
-   * @type {Array<number>}
-   * @const
-   */
-  var DESKTOP_MARGIN_BY_COLUMNS = [undefined, 32, 32, 32, 32, 32, 32];
-
-  /**
-   * Maximal number of columns currently supported by pod-row.
-   * @type {number}
-   * @const
-   */
-  var MAX_NUMBER_OF_COLUMNS = 6;
-
-  /**
-   * Maximal number of rows if sign-in banner is displayed alonside.
-   * @type {number}
-   * @const
-   */
-  var MAX_NUMBER_OF_ROWS_UNDER_SIGNIN_BANNER = 2;
-
-  /**
    * Variables used for pod placement processing. Width and height should be
    * synced with computed CSS sizes of pods.
    */
@@ -65,6 +28,7 @@ cr.define('login', function() {
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
   var CROS_PIN_POD_HEIGHT = 417;
   var SCROLL_MASK_HEIGHT = 112;
+  var BANNER_MESSAGE_WIDTH = 520;
 
   /**
    * The maximum number of users that each pod placement method can handle.
@@ -984,7 +948,7 @@ cr.define('login', function() {
      * @type {!HTMLImageElement}
      */
     get smallPodImageElement() {
-      return this.querySelector('.small-pod-image');
+      return this.querySelector('.user-image.small-pod-image');
     },
 
     /**
@@ -1221,7 +1185,7 @@ cr.define('login', function() {
         return UserPod.Style.LARGE;
       if (this.querySelector('.small-pod').classList.contains('extra-small'))
         return UserPod.Style.EXTRA_SMALL;
-      return UserPod.Style.SMALL; 
+      return UserPod.Style.SMALL;
     },
 
     /**
@@ -1416,19 +1380,6 @@ cr.define('login', function() {
         // Invisible focus causes ChromeVox to read user name and email.
         this.actionBoxMenuTitleElement.tabIndex = UserPodTabOrder.POD_MENU_ITEM;
         this.actionBoxMenuTitleElement.focus();
-
-        // If the user pod is on either edge of the screen, then the menu
-        // could be displayed partially ofscreen.
-        this.actionBoxMenu.classList.remove('left-edge-offset');
-        this.actionBoxMenu.classList.remove('right-edge-offset');
-
-        var offsetLeft =
-            cr.ui.login.DisplayManager.getOffset(this.actionBoxMenu).left;
-        var menuWidth = this.actionBoxMenu.offsetWidth;
-        if (offsetLeft < 0)
-          this.actionBoxMenu.classList.add('left-edge-offset');
-        else if (offsetLeft + menuWidth > window.innerWidth)
-          this.actionBoxMenu.classList.add('right-edge-offset');
       } else {
         this.actionBoxAreaElement.classList.remove('active');
         this.actionBoxAreaElement.classList.remove('menu-moved-up');
@@ -2135,6 +2086,7 @@ cr.define('login', function() {
         $('pod-row').switchMainPod(this);
         return;
       }
+      Oobe.clearErrors();
 
       if (!this.isActionBoxMenuActive) {
         if (this.isAuthTypeOnlineSignIn) {
@@ -2407,6 +2359,7 @@ cr.define('login', function() {
         $('pod-row').switchMainPod(this);
         return;
       }
+      Oobe.clearErrors();
 
       this.parentNode.focusPod(this);
       this.parentNode.setActivatedPod(this, e);
@@ -2867,6 +2820,9 @@ cr.define('login', function() {
 
     // If we're in Touch View mode.
     touchViewEnabled_: false,
+
+    // If testing mode is enabled.
+    testingModeEnabled_: false,
 
     /** @override */
     decorate: function() {
@@ -3503,85 +3459,7 @@ cr.define('login', function() {
      * screen orientation and showing the virtual keyboard.
      */
     onWindowResize: function() {
-      var screen = document.querySelector('#scroll-container');
-      var clientArea = document.querySelector('#inner-container');
-      if (Oobe.getInstance().virtualKeyboardShown) {
-        // Edge case: when virtual keyboard is shown, although the screen size
-        // is reduced properly, the size of the outer container remains the
-        // same because its min-height is applied. Users can scroll the screen
-        // upward and see empty areas beyond the pod row and the scroll bar,
-        // which should be avoided.
-        // This is a hacky solution: we can make the scroll container hide
-        // the overflow area and manully position the client area. 
-        screen.style.overflowY = "hidden";
-        clientArea.style.position = "absolute";
-        clientArea.style.left = cr.ui.toCssPx(0);
-        clientArea.style.top = cr.ui.toCssPx(0);
-      } else {
-        // Sets the values to default when virtual keyboard is not shown. 
-        screen.style.overflowY = "auto";
-        clientArea.style.position = "relative";
-      }
       this.placePods_();
-    },
-
-    /**
-     * Returns width of podrow having |columns| number of columns.
-     * @private
-     */
-    columnsToWidth_: function(columns) {
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-      var margin = isDesktopUserManager ? DESKTOP_MARGIN_BY_COLUMNS[columns] :
-                                          MARGIN_BY_COLUMNS[columns];
-      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
-                                              POD_ROW_PADDING;
-      return 2 * rowPadding + columns * this.userPodWidth_ +
-          (columns - 1) * margin;
-    },
-
-    /**
-     * Returns height of podrow having |rows| number of rows.
-     * @private
-     */
-    rowsToHeight_: function(rows) {
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
-                                              POD_ROW_PADDING;
-      return 2 * rowPadding + rows * this.userPodHeight_;
-    },
-
-    /**
-     * Calculates number of columns and rows that podrow should have in order to
-     * hold as much its pods as possible for current screen size. Also it tries
-     * to choose layout that looks good.
-     * @return {{columns: number, rows: number}}
-     */
-    calculateLayout_: function() {
-      var preferredColumns = this.pods.length < COLUMNS.length ?
-          COLUMNS[this.pods.length] : COLUMNS[COLUMNS.length - 1];
-      var maxWidth = Oobe.getInstance().clientAreaSize.width;
-      var columns = preferredColumns;
-      while (maxWidth < this.columnsToWidth_(columns) && columns > 1)
-        --columns;
-      var rows = Math.floor((this.pods.length - 1) / columns) + 1;
-      if (getComputedStyle(
-          $('signin-banner'), null).getPropertyValue('display') != 'none') {
-        rows = Math.min(rows, MAX_NUMBER_OF_ROWS_UNDER_SIGNIN_BANNER);
-      }
-      if (!Oobe.getInstance().newDesktopUserManager) {
-        var maxHeigth = Oobe.getInstance().clientAreaSize.height;
-        while (maxHeigth < this.rowsToHeight_(rows) && rows > 1)
-          --rows;
-      }
-      // One more iteration if it's not enough cells to place all pods.
-      while (maxWidth >= this.columnsToWidth_(columns + 1) &&
-             columns * rows < this.pods.length &&
-             columns < MAX_NUMBER_OF_COLUMNS) {
-        ++columns;
-      }
-      return {columns: columns, rows: rows};
     },
 
     /**
@@ -3594,7 +3472,7 @@ cr.define('login', function() {
         console.error('Attempt to place pods for an empty pod list.');
         return;
       }
-      // Append all pods to their proper parents. Small pods have parent other
+      // Appends all pods to their proper parents. Small pods have parent other
       // than the pod row. The pods were all initialized with the pow row as a
       // temporary parent, which is intended to ensure that all event listeners
       // work properly. If the main pod already exists, it means we are in the
@@ -3602,16 +3480,21 @@ cr.define('login', function() {
       // of any pod.
       if (!this.mainPod_) {
         this.mainPod_ = this.preselectedPod;
-        this.appendPodsToParents();
+        this.appendPodsToParents_();
       }
       this.restoreInitialStates_();
-      if (Oobe.getInstance().virtualKeyboardShown) {
+      this.hideEmptyArea_();
+      // Clear error bubbles whenever pod placement is happening, i.e., after
+      // orientation change, showing or hiding virtual keyboard, and user
+      // removal.
+      Oobe.clearErrors();
+
+      if (this.isScreenShrinked_()) {
         // When virtual keyboard is shown, the account picker should occupy
         // all the remaining screen. Screen size was already updated to exclude
         // the virtual keyboard.
         this.parentNode.setPreferredSize(
-          this.screenSize.width,
-          this.screenSize.height);
+            this.screenSize.width, this.screenSize.height);
       } else {
         // Make sure not to block the header bar when virtual keyboard is absent.
         this.parentNode.setPreferredSize(
@@ -3627,14 +3510,14 @@ cr.define('login', function() {
         this.placePodsOnContainer_();
       }
       Oobe.getInstance().updateScreenSize(this.parentNode);
-      this.updatePodNameArea();
+      this.updatePodNameArea_();
     },
 
     /**
-     * Append pods to proper parents. Called each time before pod placement.
+     * Appends pods to proper parents. Called each time before pod placement.
      * @private
      */
-    appendPodsToParents: function() {
+    appendPodsToParents_: function() {
       var pods = this.pods;
       // Pod count may have changed, so the placement method may change
       // accordingly. Therefore, always remove all pods from their current
@@ -3651,12 +3534,38 @@ cr.define('login', function() {
         // main pod still has pow row as parent, all other pods should be
         // appended to the container with scroll bar. 
         for (var pod of pods) {
-          if (pod == this.mainPod_) {
+          if (pod == this.mainPod_)
             this.appendChild(pod);
-          } else {
+          else
             this.smallPodsContainer.appendChild(pod);
-          }
         }
+      }
+    },
+
+    /**
+     * Makes inner container unscrollable and hides the bottom empty area
+     * when virtual keyboard is shown.
+     * @private
+     */
+    hideEmptyArea_: function() {
+      var screen = document.querySelector('#scroll-container');
+      var clientArea = document.querySelector('#inner-container');
+      if (this.isScreenShrinked_()) {
+        // When virtual keyboard is shown, although the screen size
+        // is reduced properly, the size of the outer container remains the
+        // same because its min-height is applied. Users can scroll the screen
+        // upward and see empty areas beyond the pod row and the scroll bar,
+        // which should be avoided.
+        // This is a hacky solution: we can make the scroll container hide
+        // the overflow area and manully position the client area.
+        screen.style.overflowY = 'hidden';
+        clientArea.style.position = 'absolute';
+        clientArea.style.left = cr.ui.toCssPx(0);
+        clientArea.style.top = cr.ui.toCssPx(0);
+      } else {
+        // Sets the values to default when virtual keyboard is not shown.
+        screen.style.overflowY = 'auto';
+        clientArea.style.position = 'relative';
       }
     },
 
@@ -3681,8 +3590,10 @@ cr.define('login', function() {
       this.mainPod_.setPodStyle(UserPod.Style.LARGE);
       secondPod.setPodStyle(UserPod.Style.LARGE);
 
-      var DOUBLE_PODS_PADDING = this.isPortraitMode() ? 32 : 118;
-      var leftPadding = (this.screenSize.width - (CROS_POD_WIDTH * 2 + DOUBLE_PODS_PADDING)) / 2;  
+      var DOUBLE_PODS_PADDING = this.isPortraitMode_() ? 32 : 118;
+      var leftPadding =
+          (this.screenSize.width - (CROS_POD_WIDTH * 2 + DOUBLE_PODS_PADDING)) /
+          2;
       // Start actual positioning.
       this.mainPod_.left = leftPadding;
       this.mainPod_.top = (this.screenSize.height - CROS_POD_HEIGHT) / 2;
@@ -3697,8 +3608,8 @@ cr.define('login', function() {
     placePodsOnContainer_: function() {
       this.smallPodsContainer.hidden = false;
       var pods = this.pods;
-      if ((pods.length > LANDSCAPE_MODE_LIMIT && !this.isPortraitMode()) ||
-          (pods.length > PORTRAIT_MODE_LIMIT && this.isPortraitMode())) {
+      if ((pods.length > LANDSCAPE_MODE_LIMIT && !this.isPortraitMode_()) ||
+          (pods.length > PORTRAIT_MODE_LIMIT && this.isPortraitMode_())) {
         // If the pod count exceeds limits, they should be in extra small size
         // and the container will become scrollable.
         this.placePodsOnScrollableContainer_();
@@ -3711,31 +3622,46 @@ cr.define('login', function() {
           pod.setPodStyle(UserPod.Style.SMALL);
         }
       }
-      // The size of the smallPodsContainer must be updated to avoid overflow,
-      // otherwise unnecessary scroll bar will show up.
+      // The size of the smallPodsContainer must be updated to avoid overflow.
       this.smallPodsContainer.style.height =
           cr.ui.toCssPx(this.screenSize.height);
       this.smallPodsContainer.style.width = cr.ui.toCssPx(CROS_SMALL_POD_WIDTH);
 
-      var LEFT_PADDING = this.isPortraitMode() ? 0 : 98;
-      var MIDDLE_PADDING = this.isPortraitMode() ? 84 : 220;
+      var LEFT_PADDING = this.isPortraitMode_() ? 0 : 98;
+      var MIDDLE_PADDING = this.isPortraitMode_() ? 84 : 220;
       var contentsWidth = LEFT_PADDING +
           CROS_POD_WIDTH + MIDDLE_PADDING + CROS_SMALL_POD_WIDTH;
       var blankWidth = this.screenSize.width - contentsWidth;   
       var actualLeftPadding = LEFT_PADDING;
-      actualLeftPadding += this.isPortraitMode() ? blankWidth * 2 / 3:
-                                                   blankWidth / 2;
+      actualLeftPadding +=
+          this.isPortraitMode_() ? blankWidth * 2 / 3 : blankWidth / 2;
       var SMALL_POD_PADDING = 54;
       var actualSmallPodPadding = SMALL_POD_PADDING;
       var smallPodsTotalHeight = (pods.length - 1) * CROS_SMALL_POD_HEIGHT +
           (pods.length - 2) * actualSmallPodPadding;
-      if (smallPodsTotalHeight > this.screenSize.height) {
-        // Edge case: when the virtual keyboard is present, the total height of
-        // the smallPodsContainer may exceed the screen height. Decrease the
-        // padding among small pods according to the design spec.
-        actualSmallPodPadding = 32;
-        smallPodsTotalHeight = (pods.length - 1) * CROS_SMALL_POD_HEIGHT +
-          (pods.length - 2) * actualSmallPodPadding;
+
+      var SCROLL_TOP_PADDING = this.isPortraitMode_() ? 66 : 72;
+      if (smallPodsTotalHeight + SCROLL_TOP_PADDING * 2 >
+          this.screenSize.height) {
+        // Edge case: the design spec assumes that the screen height is large
+        // enough if the pod count limits set above are not exceeded, but for
+        // smaller screens the contents may still overflow.
+        // SCROLL_TOP_PADDING denotes the smallest top padding we can tolerate
+        // before allowing the container to overflow and show the scroll bar.
+        // If virtual keyboard is shown, we will first try a smaller padding
+        // and recalculate the total height.
+        if (this.isScreenShrinked_()) {
+          actualSmallPodPadding = 32;
+          smallPodsTotalHeight = (pods.length - 1) * CROS_SMALL_POD_HEIGHT +
+              (pods.length - 2) * actualSmallPodPadding;
+        }
+        // If virtual keyboard is not shown, or the updated total height still
+        // exceeds screen height, fall to the scrollable container case.
+        if (smallPodsTotalHeight + SCROLL_TOP_PADDING * 2 >
+            this.screenSize.height) {
+          this.placePodsOnScrollableContainer_();
+          return;
+        }
       }
       
       // Start positioning of the main pod and the smallPodsContainer.
@@ -3745,7 +3671,8 @@ cr.define('login', function() {
           cr.ui.toCssPx(actualLeftPadding + CROS_POD_WIDTH + MIDDLE_PADDING);
       this.smallPodsContainer.style.top = cr.ui.toCssPx(0);
       // Start positioning of the small pods inside the smallPodsContainer.
-      var smallPodsTopPadding = (this.screenSize.height - smallPodsTotalHeight) / 2;
+      var smallPodsTopPadding =
+          (this.screenSize.height - smallPodsTotalHeight) / 2;
       for (var pod of pods) {
         if (pod == this.mainPod_) {
           continue;
@@ -3774,14 +3701,14 @@ cr.define('login', function() {
         }
       }
 
-      var SCROLL_LEFT_PADDING = this.isPortraitMode() ? 46 : 72;
-      var SCROLL_RIGHT_PADDING = this.isPortraitMode() ? 12 : 72;
+      var SCROLL_LEFT_PADDING = this.isPortraitMode_() ? 46 : 72;
+      var SCROLL_RIGHT_PADDING = this.isPortraitMode_() ? 12 : 72;
       // The offsetWidth of the smallPodsContainer.
       var scrollAreaWidth = SCROLL_LEFT_PADDING + CROS_EXTRA_SMALL_POD_WIDTH +
           SCROLL_RIGHT_PADDING;
       var mainPodPadding = (this.screenSize.width -
                             scrollAreaWidth - CROS_POD_WIDTH) / 2;
-      var SCROLL_TOP_PADDING = this.isPortraitMode() ? 66 : 72;
+      var SCROLL_TOP_PADDING = this.isPortraitMode_() ? 66 : 72;
       var EXTRA_SMALL_POD_PADDING = 32;
       // Start positioning of the main pod and the smallPodsContainer.
       this.mainPod_.left = mainPodPadding;
@@ -3801,7 +3728,8 @@ cr.define('login', function() {
       }
       scrollHeight -= EXTRA_SMALL_POD_PADDING;
       // The smallPodsContainer should occupy the full screen vertically.
-      this.smallPodsContainer.style.height = cr.ui.toCssPx(this.screenSize.height);
+      this.smallPodsContainer.style.height =
+          cr.ui.toCssPx(this.screenSize.height);
       this.smallPodsContainer.style.width = cr.ui.toCssPx(
           SCROLL_LEFT_PADDING + CROS_EXTRA_SMALL_POD_WIDTH +
           SCROLL_RIGHT_PADDING);
@@ -3817,13 +3745,13 @@ cr.define('login', function() {
         // the overlay, but the top and bottom padding should be adjusted
         // to ensure a symmetric layout.
         actualTopPadding = (this.screenSize.height - scrollHeight) / 2;
-      } else if (!Oobe.getInstance().virtualKeyboardShown) {
+      } else if (!this.isScreenShrinked_()) {
         // The scroll bar will definitely be shown if we reach here. A gradient
         // mask is applied to avoid blocking the header bar if the virtual
         // keyboard is not shown. When the keyboard is shown, there's no need
         // to add the mask and the original top padding value should be kept. 
         actualTopPadding = SCROLL_MASK_HEIGHT;
-        this.showScrollMask();
+        this.showScrollMask_();
       } 
 
       // Start positioning of the small pods inside the smallPodsContainer.
@@ -3862,23 +3790,36 @@ cr.define('login', function() {
         // the last position in the scrollable container, a bottom padding
         // was added to ensure a symmetric layout.
         pod.style.paddingBottom = cr.ui.toCssPx(0);
+        // Remove the switch animation that might be added earlier.
+        pod.imageElement.classList.remove('switch-image-animation');
+        pod.smallPodImageElement.classList.remove('switch-image-animation');
       }
     },
 
     /**
-     * Check if the screen is in portrait mode.
+     * Checks if the screen is in portrait mode.
      * @return {boolean} True if in portrait mode.
      */
-    isPortraitMode: function() {
-      return this.screenSize.width <
-          this.screenSize.height;
+    isPortraitMode_: function() {
+      return this.screenSize.width < this.screenSize.height;
+    },
+
+    /**
+     * Checks if the screen is shrinked, i.e., when showing virtual keyboard.
+     * We used to check Oobe.getInstance().virtualKeyboardShown directly
+     * but there were occasional bugs because that value may not be updated yet
+     * during pod placement.
+     * @return {boolean} True if the screen is shrinked.
+     */
+    isScreenShrinked_: function() {
+      return this.screenSize.height <= Oobe.getInstance().clientAreaSize.height;
     },
 
     /**
      * Called when scroll bar is shown and we need a mask for the header bar.
      * @private
      */
-    showScrollMask: function() {
+    showScrollMask_: function() {
       var topMask = document.querySelector('.small-pod-container-mask');
       topMask.hidden = false;
       topMask.style.left = this.smallPodsContainer.style.left;
@@ -3891,26 +3832,55 @@ cr.define('login', function() {
       bottomMask.style.width = this.smallPodsContainer.style.width;
       // The bottom mask should overlap with the header bar, and its z-index
       // is chosen to ensure it does not block users from using the header bar.
-      bottomMask.style.top = cr.ui.toCssPx(
-          this.screenSize.height -
-          SCROLL_MASK_HEIGHT);
+      bottomMask.style.top =
+          cr.ui.toCssPx(this.screenSize.height - SCROLL_MASK_HEIGHT);
     },
 
     /**
-     * Makes sure that user name on each large pod is centered and extra long
-     * name does not exceed max width. Names on small pods do not need to be
-     * dynamically updated.
+     * Makes sure that:
+     * 1) User name on each large pod is centered.
+     * 2) Extra long names don't exceed maximum pod width.
+     * 3) Action box menus are either left-aligned or right-aligned with
+     * the drop down button.
      * @private
      */
-    updatePodNameArea: function() {
-      this.querySelectorAll('.name-container').forEach(function(nameArea) {
-        var nameElement = nameArea.querySelector('.name');
-        var leftMargin = (CROS_POD_WIDTH - nameElement.offsetWidth) / 2;
+    updatePodNameArea_: function() {
+      var pods = this.pods;
+      for (var pod of pods) {
+        if (pods.length > POD_ROW_LIMIT && pod != this.mainPod_)
+          continue;
+        var nameArea = pod.querySelector('.name-container');
+        var leftMargin = (CROS_POD_WIDTH - pod.nameElement.offsetWidth) / 2;
         if (leftMargin > 0)
           nameArea.style.left = cr.ui.toCssPx(leftMargin);
-        else
-          nameElement.style.width = cr.ui.toCssPx(CROS_POD_WIDTH);
-      });
+        else {
+          pod.nameElement.style.width = cr.ui.toCssPx(CROS_POD_WIDTH);
+          nameArea.style.left = cr.ui.toCssPx(0);
+        }
+        // Update action box menu position to ensure it doesn't overlap with
+        // elements outside the pod.
+        var actionBoxMenu = pod.querySelector('.action-box-menu');
+        var actionBoxButton = pod.querySelector('.action-box-button');
+        var MENU_TOP_PADDING = 7;
+        actionBoxMenu.style.top =
+            cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
+        if (this.isPortraitMode_() && pods.length > 1) {
+          // Confine the menu inside the pod when it may overlap with outside
+          // elements.
+          actionBoxMenu.style.left = 'auto';
+          actionBoxMenu.style.right = cr.ui.toCssPx(0);
+        } else {
+          actionBoxMenu.style.left = cr.ui.toCssPx(
+              pod.nameElement.offsetWidth + actionBoxButton.style.marginLeft);
+          actionBoxMenu.style.right = 'auto';
+        }
+        // Add ripple animation.
+        var actionBoxRippleEffect =
+            pod.querySelector('.action-box-button.ripple-circle');
+        actionBoxRippleEffect.style.left = actionBoxMenu.style.left;
+        actionBoxRippleEffect.style.top =
+            cr.ui.toCssPx(actionBoxButton.style.marginTop);
+      }
     },
 
     /**
@@ -3938,6 +3908,10 @@ cr.define('login', function() {
       // Switch style of the two pods.
       this.mainPod_.setPodStyle(pod.getPodStyle());
       pod.setPodStyle(UserPod.Style.LARGE);
+      // Add switch animation.
+      this.mainPod_.smallPodImageElement.classList.add(
+          'switch-image-animation');
+      pod.imageElement.classList.add('switch-image-animation');
 
       // Switch parent and position of the two pods.
       var left = pod.left;
@@ -3962,9 +3936,10 @@ cr.define('login', function() {
       this.mainPod_.top = top;
       this.mainPod_.style.paddingBottom = paddingBottom;
       this.mainPod_ = pod;
-      // Focus the new main pod.
-      this.focusPod(this.mainPod_);
-      this.updatePodNameArea();
+      // The new main pod should already be focused but we need a focus update
+      // in order to focus on the input box.
+      this.focusPod(this.mainPod_, true /* force */);
+      this.updatePodNameArea_();
     },
 
     /**
@@ -3977,27 +3952,26 @@ cr.define('login', function() {
     },
 
     /**
-     * Number of columns.
-     * @type {?number}
+     * Displays a banner containing |message|. If the banner is already present
+     * this function updates the message in the banner.
+     * @param {string} message Text to be displayed or empty to hide the banner.
      */
-    set columns(columns) {
-      // Cannot use 'columns' here.
-      this.setAttribute('ncolumns', columns);
-    },
-    get columns() {
-      return parseInt(this.getAttribute('ncolumns'));
-    },
-
-    /**
-     * Number of rows.
-     * @type {?number}
-     */
-    set rows(rows) {
-      // Cannot use 'rows' here.
-      this.setAttribute('nrows', rows);
-    },
-    get rows() {
-      return parseInt(this.getAttribute('nrows'));
+    showBannerMessage: function(message) {
+      var banner = $('signin-banner');
+      banner.textContent = message;
+      banner.classList.toggle('message-set', !!message);
+      var bannerContainer = $('signin-banner-container1');
+      var BANNER_TOP_PADDING = this.isScreenShrinked_() ? 0 : 38;
+      bannerContainer.style.top = cr.ui.toCssPx(
+          this.mainPod_.top + CROS_POD_HEIGHT + BANNER_TOP_PADDING);
+      if (this.pods.length <= POD_ROW_LIMIT)
+        bannerContainer.style.left =
+            cr.ui.toCssPx((this.screenSize.width - BANNER_MESSAGE_WIDTH) / 2);
+      else {
+        var leftPadding =
+            this.mainPod_.left - (BANNER_MESSAGE_WIDTH - CROS_POD_WIDTH) / 2;
+        bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
+      }
     },
 
     /**
@@ -4079,7 +4053,6 @@ cr.define('login', function() {
           chrome.send('focusPod', [podToFocus.user.username]);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
-        this.scrollFocusedPodIntoView();
         this.setUserPodFingerprintIcon(
             podToFocus.user.username, FINGERPRINT_STATES.DEFAULT);
       } else {
@@ -4114,8 +4087,39 @@ cr.define('login', function() {
         console.error('Cannot activate pod while sign-in UI is disabled.');
         return;
       }
+      // If testing mode is enabled and a positive integer was entered, abort
+      // the activation process and start testing mode.
+      if (pod && this.testingModeEnabled_) {
+        var userCount = pod.passwordElement.value;
+        if (parseInt(userCount) == userCount && userCount > 0) {
+          this.showDummyUsersForTesting(userCount);
+          return;
+        }
+      }
       if (pod && pod.activate(e))
         this.activatedPod_ = pod;
+    },
+
+    /**
+     * Used for testing only. Create the specified number of dummy users and
+     * conveniently test the behaviors under different number of pods.
+     * @param {number} count The number of users we want to test for.
+     */
+    showDummyUsersForTesting: function(count) {
+      if (!this.testingModeEnabled_) {
+        console.error(
+            'Attempt to create dummy users when testing mode is disabled.');
+        return;
+      }
+      var pods = this.pods;
+      for (var pod of pods)
+        pod.parentNode.removeChild(pod);
+      var sampleUser = this.users_[0];
+      var users = [];
+      for (var i = 0; i < count; i++)
+        users.push(sampleUser);
+
+      this.loadPods(users);
     },
 
     /**
@@ -4235,14 +4239,18 @@ cr.define('login', function() {
         this.focusPod();
       }
 
-      if (pod)
+      if (pod && pod.getPodStyle() == UserPod.Style.LARGE)
         pod.isActionBoxMenuHovered = true;
 
       // Return focus back to single pod.
       if (this.alwaysFocusSinglePod && !pod) {
         if ($('login-header-bar').contains(e.target))
           return;
-        this.focusPod(this.focusedPod_, true /* force */);
+        // If the click is outside the single pod, still focus on that pod
+        // but do not focus on input box any more. This makes virtual keyboard
+        // (if present) disappear.
+        this.focusPod(
+            this.focusedPod_, true /* force */, true /* opt_skipInputFocus */);
         this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
         this.focusedPod_.isActionBoxMenuHovered = false;
       }
@@ -4286,8 +4294,12 @@ cr.define('login', function() {
       if (this.disabled)
         return;
       if (e.target.parentNode == this) {
-        // Focus on a pod
+        // Handles focus event on a large pod.
         if (e.target.classList.contains('focused')) {
+          // Edge case: prevent input box from receiving unncessary focus
+          // (thus hiding virtual keyboard) when remove user is clicked.
+          if (e.target.isActionBoxMenuActive)
+            return;
           if (!e.target.multiProfilesPolicyApplied)
             e.target.focusInput();
           else
@@ -4433,7 +4445,7 @@ cr.define('login', function() {
         this.maybePreselectPod();
       }
 
-      this.updatePodNameArea();
+      this.updatePodNameArea_();
     },
 
     /**

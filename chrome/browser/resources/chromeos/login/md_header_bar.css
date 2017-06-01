@@ -80,6 +80,7 @@ html[screen=oobe] .login-header-bar-animate-slow {
   position: absolute;
   text-align: center;
   white-space: nowrap;
+  z-index: 3;
 }
 
 #more-settings-header-bar-item.active button.add-supervised-user-menu:focus {
@@ -121,9 +122,12 @@ html[dir=rtl] #login-header-bar #unlock-user-button-text {
 #login-header-bar #restart-button,
 #login-header-bar #add-user-button,
 #login-header-bar #guest-user-button,
-#login-header-bar #more-settings-button,
 #login-header-bar #cancel-multiple-sign-in-button {
   padding: 0 14px;
+}
+
+#login-header-bar #more-settings-button {
+  padding: 0 10px 0 18px;
 }
 
 #login-header-bar #more-settings-header-bar-item {

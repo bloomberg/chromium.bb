@@ -71,12 +71,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     /** @override */
     onWindowResize: function() {
       $('pod-row').onWindowResize();
-
-      // Reposition the error bubble, if it is showing. Since we are just
-      // moving the bubble, the number of login attempts tried doesn't matter.
-      var errorBubble = $('bubble');
-      if (errorBubble && !errorBubble.hidden)
-        this.showErrorBubble(0, undefined  /* Reuses the existing message. */);
     },
 
     /**
@@ -362,9 +356,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {string} message Text to be displayed or empty to hide the banner.
      */
     showBannerMessage: function(message) {
-      var banner = $('signin-banner');
-      banner.textContent = message;
-      banner.classList.toggle('message-set', !!message);
+      $('pod-row').showBannerMessage(message);
     },
 
     /**
