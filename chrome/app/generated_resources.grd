@@ -9439,6 +9439,15 @@ Tell us what happened exactly before you got the profile error message:
           <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
             Sign out
           </message>
+          <message name="IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED" desc="The text to display on the hyperlink when the user needs to sign out and sign in again to change their password.">
+            Your password has expired. Please sign out then sign in again to change it.
+          </message>
+          <message name="IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED" desc="The text to display on the hyperlink when the user needs to sign out and sign in again to update local password to cryptohome.">
+            Your password has been changed on the server. Please sign out then sign in again.
+          </message>
+          <message name="IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN" desc="The text to display on the hyperlink when the user needs to sign out and sign in again to get authentication token.">
+            Failed to get authentication token. Please sign out then sign in again to try again.
+          </message>
         </if>
         <message name="IDS_OPTIONS_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
           Advanced sync settings...
