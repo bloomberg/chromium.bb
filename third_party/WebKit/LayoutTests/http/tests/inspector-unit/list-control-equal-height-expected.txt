@@ -642,4 +642,34 @@ ArrowDown
 *[0] 29
 *[15] bottom
 
+Replacing model with [5-7]
+Creating element for 5
+Creating element for 6
+Creating element for 7
+----list[length=1][height=84]----
+ [0] top
+*[0] 5
+*[15] 6
+*[30] 7
+*[45] bottom
+
+Pushing 8
+Creating element for 8
+----list[length=1][height=84]----
+ [0] top
+*[0] 5
+*[15] 6
+*[30] 7
+*[45] 8
+*[60] bottom
+
+Pushing 9 to old model
+----list[length=2][height=84]----
+ [0] top
+*[0] 5
+*[15] 6
+*[30] 7
+*[45] 8
+*[60] bottom
+
 

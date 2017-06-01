@@ -42,18 +42,18 @@ function test() {
   }
 
   function dump() {
-    var list = filteredListWidget._list;
     if (filteredListWidget._bottomElementsContainer.classList.contains('hidden')) {
       TestRunner.addResult('Output: <hidden>');
       return;
     }
-    if (list.element.classList.contains('hidden')) {
+    if (filteredListWidget._list.element.classList.contains('hidden')) {
       TestRunner.addResult('Output: ' + filteredListWidget._notFoundElement.textContent);
       return;
     }
+    var items = filteredListWidget._items;
     var output = [];
-    for (var i = 0; i < list.length(); ++i)
-      output.push(filteredListWidget._provider.itemKeyAt(list.itemAtIndex(i)));
+    for (var i = 0; i < items.length(); ++i)
+      output.push(filteredListWidget._provider.itemKeyAt(items.itemAtIndex(i)));
     TestRunner.addResult('Output:' + JSON.stringify(output));
   }
 }
