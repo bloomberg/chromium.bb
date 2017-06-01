@@ -9,6 +9,8 @@
 Polymer({
   is: 'oobe-welcome-md',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * Currently selected system language (display name).
@@ -32,7 +34,7 @@ Polymer({
      */
     languages: {
       type: Array,
-      observer: "onLanguagesChanged_",
+      observer: 'onLanguagesChanged_',
     },
 
     /**
@@ -41,7 +43,7 @@ Polymer({
      */
     keyboards: {
       type: Array,
-      observer: "onKeyboardsChanged_",
+      observer: 'onKeyboardsChanged_',
     },
 
     /**
@@ -89,7 +91,7 @@ Polymer({
     /**
      * Controls displaying of "Enable debugging features" link.
      */
-     debuggingLinkVisible: Boolean,
+    debuggingLinkVisible: Boolean,
   },
 
   /**
@@ -130,6 +132,8 @@ Polymer({
       addWiFiNetworkMenuName: loadTimeData.getString('addWiFiNetworkMenuName'),
       proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
     };
+
+    this.i18nUpdateLocale();
   },
 
   /**
@@ -207,21 +211,27 @@ Polymer({
         customItemName: 'proxySettingsMenuName',
         polymerIcon: 'oobe-welcome-20:add-proxy',
         customData: {
-          onTap: function() { self.OpenProxySettingsDialog_(); },
+          onTap: function() {
+            self.OpenProxySettingsDialog_();
+          },
         },
       },
       {
         customItemName: 'addWiFiNetworkMenuName',
         polymerIcon: 'oobe-welcome-20:add-wifi',
         customData: {
-          onTap: function() { self.OpenAddWiFiNetworkDialog_(); },
+          onTap: function() {
+            self.OpenAddWiFiNetworkDialog_();
+          },
         },
       },
       {
         customItemName: 'addMobileNetworkMenuName',
         polymerIcon: 'oobe-welcome-20:add-cellular',
         customData: {
-          onTap: function() { self.OpenAddWiFiNetworkDialog_(); },
+          onTap: function() {
+            self.OpenAddWiFiNetworkDialog_();
+          },
         },
       },
     ];
@@ -275,7 +285,7 @@ Polymer({
   },
 
   /**
-   * Handle Networwork Setup screen "Proxy settings" button.
+   * Handle Network Setup screen "Proxy settings" button.
    *
    * @private
    */
@@ -284,7 +294,7 @@ Polymer({
   },
 
   /**
-   * Handle Networwork Setup screen "Add WiFi network" button.
+   * Handle Network Setup screen "Add WiFi network" button.
    *
    * @private
    */
@@ -293,7 +303,7 @@ Polymer({
   },
 
   /**
-   * Handle Networwork Setup screen "Add cellular network" button.
+   * Handle Network Setup screen "Add cellular network" button.
    *
    * @private
    */
