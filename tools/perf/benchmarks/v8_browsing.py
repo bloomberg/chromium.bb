@@ -74,6 +74,14 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
 
+  def GetExpectations(self):
+    if self.PLATFORM is 'desktop':
+      return page_sets.V8BrowsingDesktopExpecations()
+    if self.PLATFORM is 'mobile':
+      return page_sets.V8BrowsingMobileExpecations()
+    raise NotImplementedError, ('Only have expectations for mobile and desktop '
+                                'platforms for v8_browsing tests.')
+
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     # TODO(crbug.com/610962): Remove this stopgap when the perf dashboard

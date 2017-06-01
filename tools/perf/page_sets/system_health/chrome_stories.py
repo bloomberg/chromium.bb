@@ -6,8 +6,6 @@ from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
-from telemetry import decorators
-
 from devil.android.sdk import keyevent # pylint: disable=import-error
 
 
@@ -30,7 +28,6 @@ class BlankAboutBlankStory(system_health_story.SystemHealthStory):
     action_runner.WaitForJavaScriptCondition("window.__hasRunRAF")
 
 
-@decorators.Disabled('android-webview')  # Webview does not have omnibox
 class SearchOmniboxStory(system_health_story.SystemHealthStory):
   """Story that peforms search by using omnibox search provider
 
@@ -57,7 +54,6 @@ class SearchOmniboxStory(system_health_story.SystemHealthStory):
     action_runner.ScrollPage(use_touch=True, distance=500)
 
 
-@decorators.Disabled('android-webview')  # Webview does not have new tab page.
 class MobileNewTabPageStory(system_health_story.SystemHealthStory):
   """Story that loads new tab page and performs searches.
 
