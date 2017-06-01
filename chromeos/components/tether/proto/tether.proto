@@ -19,6 +19,7 @@ enum MessageType {
   CONNECT_TETHERING_RESPONSE = 4;
   DISCONNECT_TETHERING_REQUEST = 5;
   KEEP_ALIVE_TICKLE = 6;
+  KEEP_ALIVE_TICKLE_RESPONSE = 7;
 }
 
 // Meant to communicate the host's current Wifi status. This is intended to
@@ -102,6 +103,11 @@ message ConnectTetheringResponse {
 
 // Next id: 1
 message KeepAliveTickle {}
+
+// Next id: 2
+message KeepAliveTickleResponse {
+  optional DeviceStatus device_status = 1;
+}
 
 // Next id: 1
 message DisconnectTetheringRequest {}

@@ -31,6 +31,7 @@ class MessageWrapper {
   MessageWrapper(const ConnectTetheringResponse& response);
   MessageWrapper(const DisconnectTetheringRequest& request);
   MessageWrapper(const KeepAliveTickle& tickle);
+  MessageWrapper(const KeepAliveTickleResponse& response);
   MessageWrapper(const TetherAvailabilityRequest& request);
   MessageWrapper(const TetherAvailabilityResponse& response);
 
