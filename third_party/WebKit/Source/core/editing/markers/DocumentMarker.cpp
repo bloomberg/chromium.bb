@@ -35,51 +35,14 @@
 
 namespace blink {
 
-DocumentMarkerDetails::~DocumentMarkerDetails() {}
-
-class DocumentMarkerDescription final : public DocumentMarkerDetails {
- public:
-  static DocumentMarkerDescription* Create(const String&);
-
-  const String& Description() const { return description_; }
-  bool IsDescription() const override { return true; }
-
- private:
-  explicit DocumentMarkerDescription(const String& description)
-      : description_(description) {}
-
-  String description_;
-};
-
-DocumentMarkerDescription* DocumentMarkerDescription::Create(
-    const String& description) {
-  return new DocumentMarkerDescription(description);
-}
-
-inline DocumentMarkerDescription* ToDocumentMarkerDescription(
-    DocumentMarkerDetails* details) {
-  if (details && details->IsDescription())
-    return static_cast<DocumentMarkerDescription*>(details);
-  return 0;
-}
+DocumentMarker::~DocumentMarker() = default;
 
 DocumentMarker::DocumentMarker(MarkerType type,
                                unsigned start_offset,
                                unsigned end_offset)
     : type_(type), start_offset_(start_offset), end_offset_(end_offset) {
-  DCHECK_LT(start_offset, end_offset);
+  DCHECK_LT(start_offset_, end_offset_);
 }
-
-DocumentMarker::DocumentMarker(MarkerType type,
-                               unsigned start_offset,
-                               unsigned end_offset,
-                               const String& description)
-    : type_(type),
-      start_offset_(start_offset),
-      end_offset_(end_offset),
-      details_(description.IsEmpty()
-                   ? nullptr
-                   : DocumentMarkerDescription::Create(description)) {}
 
 Optional<DocumentMarker::MarkerOffsets>
 DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
@@ -130,17 +93,6 @@ DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
 void DocumentMarker::ShiftOffsets(int delta) {
   start_offset_ += delta;
   end_offset_ += delta;
-}
-
-const String& DocumentMarker::Description() const {
-  if (DocumentMarkerDescription* details =
-          ToDocumentMarkerDescription(details_.Get()))
-    return details->Description();
-  return g_empty_string;
-}
-
-DEFINE_TRACE(DocumentMarker) {
-  visitor->Trace(details_);
 }
 
 }  // namespace blink

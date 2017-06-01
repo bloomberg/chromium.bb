@@ -1,0 +1,23 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/editing/markers/SpellCheckMarker.h"
+
+namespace blink {
+
+SpellCheckMarker::SpellCheckMarker(DocumentMarker::MarkerType type,
+                                   unsigned start_offset,
+                                   unsigned end_offset,
+                                   const String& description)
+    : DocumentMarker(type, start_offset, end_offset),
+      description_(description) {
+  DCHECK_LT(start_offset, end_offset);
+}
+
+bool IsSpellCheckMarker(const DocumentMarker& marker) {
+  DocumentMarker::MarkerType type = marker.GetType();
+  return type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar;
+}
+
+}  // namespace blink

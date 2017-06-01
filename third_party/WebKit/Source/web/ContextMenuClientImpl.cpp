@@ -39,6 +39,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
@@ -144,7 +145,7 @@ static String SelectMisspellingAsync(LocalFrame* selected_frame,
   if (marker_it == markers_in_node.end())
     return String();
 
-  const DocumentMarker* const found_marker = *marker_it;
+  const SpellCheckMarker* const found_marker = ToSpellCheckMarker(*marker_it);
   description = found_marker->Description();
 
   Range* const marker_range =

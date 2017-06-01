@@ -37,7 +37,9 @@
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
+#include "core/editing/markers/GrammarMarker.h"
 #include "core/editing/markers/GrammarMarkerListImpl.h"
+#include "core/editing/markers/SpellingMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
@@ -125,24 +127,16 @@ void DocumentMarkerController::Clear() {
 
 void DocumentMarkerController::AddSpellingMarker(const EphemeralRange& range,
                                                  const String& description) {
-  AddSpellCheckMarker(range, DocumentMarker::kSpelling, description);
+  AddMarkerInternal(range, [&description](int start_offset, int end_offset) {
+    return new SpellingMarker(start_offset, end_offset, description);
+  });
 }
 
 void DocumentMarkerController::AddGrammarMarker(const EphemeralRange& range,
                                                 const String& description) {
-  AddSpellCheckMarker(range, DocumentMarker::kGrammar, description);
-}
-
-void DocumentMarkerController::AddSpellCheckMarker(
-    const EphemeralRange& range,
-    DocumentMarker::MarkerType type,
-    const String& description) {
-  DCHECK(type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar)
-      << type;
-  AddMarkerInternal(
-      range, [type, &description](int start_offset, int end_offset) {
-        return new DocumentMarker(type, start_offset, end_offset, description);
-      });
+  AddMarkerInternal(range, [&description](int start_offset, int end_offset) {
+    return new GrammarMarker(start_offset, end_offset, description);
+  });
 }
 
 void DocumentMarkerController::AddTextMatchMarker(
