@@ -673,7 +673,9 @@ void DocumentMarkerController::ShowMarkers() const {
         builder.Append(":");
         builder.AppendNumber(marker->EndOffset());
         builder.Append("](");
-        builder.AppendNumber(marker->IsActiveMatch());
+        builder.AppendNumber(type == DocumentMarker::kTextMatch
+                                 ? ToTextMatchMarker(marker)->IsActiveMatch()
+                                 : 0);
         builder.Append(")");
       }
     }

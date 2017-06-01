@@ -553,7 +553,7 @@ void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
 void InlineTextBox::PaintTextMatchMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   InlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
@@ -563,7 +563,7 @@ void InlineTextBox::PaintTextMatchMarkerForeground(
 void InlineTextBox::PaintTextMatchMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const DocumentMarker& marker,
+    const TextMatchMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   InlineTextBoxPainter(*this).PaintTextMatchMarkerBackground(

@@ -36,9 +36,7 @@ class DocumentMarkerDetails;
 
 // A range of a node within a document that is "marked", such as the range of a
 // misspelled word. It optionally includes a description that could be displayed
-// in the user interface. It also optionally includes a flag specifying whether
-// the match is active, which is ignored for all types other than type
-// TextMatch.
+// in the user interface.
 class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
@@ -147,13 +145,11 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   unsigned EndOffset() const { return end_offset_; }
 
   const String& Description() const;
-  bool IsActiveMatch() const;
   Color UnderlineColor() const;
   bool Thick() const;
   Color BackgroundColor() const;
   DocumentMarkerDetails* Details() const;
 
-  void SetIsActiveMatch(bool);
   void ClearDetails() { details_.Clear(); }
 
   struct MarkerOffsets {

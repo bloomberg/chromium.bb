@@ -23,6 +23,7 @@ class InlineTextBox;
 class LayoutObject;
 class LayoutPoint;
 class LayoutTextCombine;
+class TextMatchMarker;
 
 enum class DocumentMarkerPaintPhase { kForeground, kBackground };
 
@@ -47,12 +48,12 @@ class InlineTextBoxPainter {
                            bool grammar);
   void PaintTextMatchMarkerForeground(const PaintInfo&,
                                       const LayoutPoint& box_origin,
-                                      const DocumentMarker&,
+                                      const TextMatchMarker&,
                                       const ComputedStyle&,
                                       const Font&);
   void PaintTextMatchMarkerBackground(const PaintInfo&,
                                       const LayoutPoint& box_origin,
-                                      const DocumentMarker&,
+                                      const TextMatchMarker&,
                                       const ComputedStyle&,
                                       const Font&);
 

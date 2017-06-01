@@ -65,6 +65,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
@@ -964,7 +965,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
-    if (marker->IsActiveMatch())
+    if (ToTextMatchMarker(marker)->IsActiveMatch())
       active_marker_count++;
   }
 
