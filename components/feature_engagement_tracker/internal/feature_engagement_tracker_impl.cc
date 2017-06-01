@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/availability_model_impl.h"
@@ -40,6 +41,11 @@ const char kAvailabilityDBStorageDir[] = "AvailabilityDB";
 // Creates a FeatureEngagementTrackerImpl that is usable for a demo mode.
 std::unique_ptr<FeatureEngagementTracker>
 CreateDemoModeFeatureEngagementTracker() {
+  // GetFieldTrialParamValueByFeature returns an empty string if the param is
+  // not set.
+  std::string chosen_feature_name = base::GetFieldTrialParamValueByFeature(
+      kIPHDemoMode, kIPHDemoModeFeatureChoiceParam);
+
   std::unique_ptr<EditableConfiguration> configuration =
       base::MakeUnique<EditableConfiguration>();
 
@@ -47,8 +53,14 @@ CreateDemoModeFeatureEngagementTracker() {
   // OnceConditionValidator acknowledges that thet meet conditions once.
   std::vector<const base::Feature*> features = GetAllFeatures();
   for (auto* feature : features) {
+    // If a particular feature has been chosen to use with demo mode, only
+    // mark that feature with a valid configuration.
+    bool valid_config = chosen_feature_name.empty()
+                            ? true
+                            : chosen_feature_name == feature->name;
+
     FeatureConfig feature_config;
-    feature_config.valid = true;
+    feature_config.valid = valid_config;
     feature_config.trigger.name = feature->name + std::string("_trigger");
     configuration->SetConfiguration(feature, feature_config);
   }
