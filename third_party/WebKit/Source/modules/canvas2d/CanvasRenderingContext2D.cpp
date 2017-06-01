@@ -113,8 +113,7 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(
     HTMLCanvasElement* canvas,
-    const CanvasContextCreationAttributes& attrs,
-    Document& document)
+    const CanvasContextCreationAttributes& attrs)
     : CanvasRenderingContext(canvas, attrs),
       context_lost_mode_(kNotLostContext),
       context_restorable_(true),
@@ -135,8 +134,8 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
           this,
           &CanvasRenderingContext2D::TryRestoreContextEvent),
       should_prune_local_font_cache_(false) {
-  if (document.GetSettings() &&
-      document.GetSettings()->GetAntialiasedClips2dCanvasEnabled())
+  if (canvas->GetDocument().GetSettings() &&
+      canvas->GetDocument().GetSettings()->GetAntialiasedClips2dCanvasEnabled())
     clip_antialiasing_ = kAntiAliased;
   SetShouldAntialias(true);
   ValidateStateStack();

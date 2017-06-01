@@ -60,13 +60,10 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
     Factory() {}
     ~Factory() override {}
 
-    CanvasRenderingContext* Create(HTMLCanvasElement*,
-                                   const CanvasContextCreationAttributes&,
-                                   Document&) override;
     CanvasRenderingContext* Create(
-        ScriptState*,
-        OffscreenCanvas*,
+        CanvasRenderingContextHost*,
         const CanvasContextCreationAttributes&) override;
+
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContextWebgl;
     }
@@ -87,10 +84,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  WebGLRenderingContext(HTMLCanvasElement*,
-                        std::unique_ptr<WebGraphicsContext3DProvider>,
-                        const CanvasContextCreationAttributes&);
-  WebGLRenderingContext(OffscreenCanvas*,
+  WebGLRenderingContext(CanvasRenderingContextHost*,
                         std::unique_ptr<WebGraphicsContext3DProvider>,
                         const CanvasContextCreationAttributes&);
 

@@ -163,9 +163,11 @@ bool OffscreenCanvas::IsOpaque() const {
 }
 
 CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
-    ScriptState* script_state,
+    ExecutionContext* execution_context,
     const String& id,
     const CanvasContextCreationAttributes& attributes) {
+  execution_context_ = execution_context;
+
   CanvasRenderingContext::ContextType context_type =
       CanvasRenderingContext::ContextTypeFromId(id);
 
@@ -185,7 +187,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       return nullptr;
     }
   } else {
-    context_ = factory->Create(script_state, this, attributes);
+    context_ = factory->Create(this, attributes);
   }
 
   return context_.Get();

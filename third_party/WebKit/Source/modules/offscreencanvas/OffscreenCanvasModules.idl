@@ -10,5 +10,5 @@ typedef (OffscreenCanvasRenderingContext2D or
 enum OffscreenRenderingContextType { "2d", "webgl", "webgl2" };
 
 partial interface OffscreenCanvas {
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(OffscreenRenderingContextType contextType, optional CanvasContextCreationAttributes attributes);
+    [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(OffscreenRenderingContextType contextType, optional CanvasContextCreationAttributes attributes);
 };

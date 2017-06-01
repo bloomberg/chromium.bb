@@ -44,6 +44,7 @@
 #include "core/fileapi/File.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
@@ -269,7 +270,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     return nullptr;
   }
 
-  context_ = factory->Create(this, attributes, GetDocument());
+  context_ = factory->Create(this, attributes);
   if (!context_)
     return nullptr;
 
@@ -304,6 +305,21 @@ bool HTMLCanvasElement::IsPaintable() const {
 
 bool HTMLCanvasElement::IsAccelerated() const {
   return context_ && context_->IsAccelerated();
+}
+
+bool HTMLCanvasElement::IsWebGLAllowed() const {
+  Document& document = GetDocument();
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return false;
+  Settings* settings = frame->GetSettings();
+  // The LocalFrameClient might block creation of a new WebGL context despite
+  // the page settings; in particular, if WebGL contexts were lost one or more
+  // times via the GL_ARB_robustness extension.
+  if (!frame->Loader().Client()->AllowWebGL(settings &&
+                                            settings->GetWebGLEnabled()))
+    return false;
+  return true;
 }
 
 void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
