@@ -5,6 +5,7 @@
 #include "extensions/browser/warning_service.h"
 
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extensions_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +46,7 @@ const Warning::WarningType warning_2 = Warning::kNetworkConflict;
 // Check that inserting a warning triggers notifications, whereas inserting
 // the same warning again is silent.
 TEST_F(WarningServiceTest, SetWarning) {
+  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context;
   TestWarningService warning_service(&browser_context);
   MockObserver observer;
@@ -68,6 +70,7 @@ TEST_F(WarningServiceTest, SetWarning) {
 // Check that ClearWarnings deletes exactly the specified warnings and
 // triggers notifications where appropriate.
 TEST_F(WarningServiceTest, ClearWarnings) {
+  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context;
   TestWarningService warning_service(&browser_context);
   MockObserver observer;

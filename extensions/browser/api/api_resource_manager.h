@@ -14,7 +14,6 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,7 +88,6 @@ struct NamedThreadTraits {
 // }
 template <class T, typename ThreadingTraits = NamedThreadTraits<T>>
 class ApiResourceManager : public BrowserContextKeyedAPI,
-                           public base::NonThreadSafe,
                            public ExtensionRegistryObserver,
                            public ProcessManagerObserver {
  public:
@@ -102,7 +100,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   }
 
   virtual ~ApiResourceManager() {
-    DCHECK(CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(ThreadingTraits::IsMessageLoopValid())
         << "A unit test is using an ApiResourceManager but didn't provide "
            "the thread message loop needed for that kind of resource. "
@@ -365,6 +363,8 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
       extension_registry_observer_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
       process_manager_observer_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 template <class T>

@@ -24,7 +24,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -44,7 +44,7 @@ using QuotaLimitHeuristics = std::list<std::unique_ptr<QuotaLimitHeuristic>>;
 // called and destroyed on the same thread, due to its use of a RepeatingTimer.
 // It is not a KeyedService because instances exist on both the UI
 // and IO threads.
-class QuotaService : public base::NonThreadSafe {
+class QuotaService {
  public:
   // Some concrete heuristics (declared below) that ExtensionFunctions can
   // use to help the service make decisions about quota violations.
@@ -90,6 +90,8 @@ class QuotaService : public base::NonThreadSafe {
   // track of which functions it has invoked and the heuristics for each one.
   // Each heuristic will be evaluated and ANDed together to get a final answer.
   std::map<ExtensionId, FunctionHeuristicsMap> function_heuristics_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(QuotaService);
 };

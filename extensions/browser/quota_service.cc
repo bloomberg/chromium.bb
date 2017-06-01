@@ -33,7 +33,7 @@ QuotaService::QuotaService() {
 }
 
 QuotaService::~QuotaService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   purge_timer_.Stop();
   Purge();
 }
@@ -42,7 +42,7 @@ std::string QuotaService::Assess(const std::string& extension_id,
                                  ExtensionFunction* function,
                                  const base::ListValue* args,
                                  const base::TimeTicks& event_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (function->ShouldSkipQuotaLimiting())
     return std::string();
@@ -86,7 +86,7 @@ QuotaService::ScopedDisablePurgeForTesting::~ScopedDisablePurgeForTesting() {
 }
 
 void QuotaService::Purge() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto it = function_heuristics_.begin(); it != function_heuristics_.end();
        function_heuristics_.erase(it++)) {
     it->second.clear();

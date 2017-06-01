@@ -109,15 +109,17 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 ValueStoreFrontend::ValueStoreFrontend(
     const scoped_refptr<ValueStoreFactory>& store_factory,
     BackendType backend_type)
-    : backend_(new Backend(store_factory, backend_type)) {}
+    : backend_(new Backend(store_factory, backend_type)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 ValueStoreFrontend::~ValueStoreFrontend() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void ValueStoreFrontend::Get(const std::string& key,
                              const ReadCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Get,
@@ -126,7 +128,7 @@ void ValueStoreFrontend::Get(const std::string& key,
 
 void ValueStoreFrontend::Set(const std::string& key,
                              std::unique_ptr<base::Value> value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Set,
@@ -134,7 +136,7 @@ void ValueStoreFrontend::Set(const std::string& key,
 }
 
 void ValueStoreFrontend::Remove(const std::string& key) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Remove,

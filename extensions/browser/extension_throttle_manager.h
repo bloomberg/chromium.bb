@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "extensions/browser/extension_throttle_entry.h"
 #include "net/base/backoff_entry.h"
@@ -40,8 +40,7 @@ namespace extensions {
 // clean out outdated entries. URL ID consists of lowercased scheme, host, port
 // and path. All URLs converted to the same ID will share the same entry.
 class ExtensionThrottleManager
-    : NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public net::NetworkChangeNotifier::IPAddressObserver,
+    : public net::NetworkChangeNotifier::IPAddressObserver,
       public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   ExtensionThrottleManager();
@@ -177,6 +176,8 @@ class ExtensionThrottleManager
 
   // This is NULL when it is not set for tests.
   std::unique_ptr<net::BackoffEntry::Policy> backoff_policy_for_tests_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionThrottleManager);
 };

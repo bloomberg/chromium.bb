@@ -40,6 +40,7 @@ ExtensionThrottleManager::ExtensionThrottleManager()
 }
 
 ExtensionThrottleManager::~ExtensionThrottleManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 
@@ -69,7 +70,9 @@ ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
 
 scoped_refptr<ExtensionThrottleEntryInterface>
 ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
-  DCHECK(!enable_thread_checks_ || CalledOnValidThread());
+#if DCHECK_IS_ON()
+  DCHECK(!enable_thread_checks_ || sequence_checker_.CalledOnValidSequence());
+#endif  // DCHECK_IS_ON()
 
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
