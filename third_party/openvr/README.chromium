@@ -1,0 +1,21 @@
+Name: OpenVR SDK
+Short Name: OpenVR
+URL: https://github.com/ValveSoftware/openvr
+Version: 1.0.4
+Date: 2 Feb 2017
+Revision: 7fa6470f2972970859f2395f1390f6d87d4b0fc3
+License: MIT
+License File: src\LICENSE
+Security Critical: yes
+
+Description:
+The OpenVR API supports HTC Vive and other headsets for VR.
+
+Local Modifications:
+Only contains a subset of the git repo necessary to build Chromium.
+
+Copy the correct files with these commands:
+copy %openvrsdk%\README.md %chromium%\src\third_party\openvr\src
+copy %openvrsdk%\LICENSE %chromium%\src\third_party\openvr\src
+xcopy /S %openvrsdk%\src %chromium%\src\third_party\openvr\src\src
+xcopy /S %openvrsdk%\headers %chromium%\src\third_party\openvr\src\headers
