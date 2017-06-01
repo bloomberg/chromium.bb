@@ -73,7 +73,7 @@ Shelf::~Shelf() {}
 
 // static
 Shelf* Shelf::ForWindow(aura::Window* window) {
-  return GetRootWindowController(window->GetRootWindow())->shelf();
+  return RootWindowController::ForWindow(window)->shelf();
 }
 
 // static

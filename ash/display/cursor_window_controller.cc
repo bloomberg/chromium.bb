@@ -162,7 +162,7 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
   if (!root_window)
     return;
 
-  SetContainer(GetRootWindowController(root_window)
+  SetContainer(RootWindowController::ForWindow(root_window)
                    ->GetContainer(kShellWindowId_MouseCursorContainer));
   SetBoundsInScreen(display.bounds());
   // Updates the hot point based on the current display.

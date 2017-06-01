@@ -311,13 +311,13 @@ RootWindowController* RootWindowController::ForWindow(
     const aura::Window* window) {
   DCHECK(window);
   CHECK(Shell::HasInstance());
-  return GetRootWindowController(window->GetRootWindow());
+  return GetRootWindowSettings(window->GetRootWindow())->controller;
 }
 
 // static
 RootWindowController* RootWindowController::ForTargetRootWindow() {
   CHECK(Shell::HasInstance());
-  return GetRootWindowController(Shell::GetRootWindowForNewWindows());
+  return ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
 void RootWindowController::ConfigureWidgetInitParamsForContainer(
@@ -1071,10 +1071,6 @@ void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
     EnableTouchHudProjection();
   else
     DisableTouchHudProjection();
-}
-
-RootWindowController* GetRootWindowController(const aura::Window* root_window) {
-  return root_window ? GetRootWindowSettings(root_window)->controller : nullptr;
 }
 
 }  // namespace ash

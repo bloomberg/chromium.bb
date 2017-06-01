@@ -534,7 +534,7 @@ void WindowCycleList::InitWindowCycleView() {
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
-  GetRootWindowController(root_window)
+  RootWindowController::ForWindow(root_window)
       ->ConfigureWidgetInitParamsForContainer(
           widget, kShellWindowId_OverlayContainer, &params);
   gfx::Rect widget_rect = display::Screen::GetScreen()

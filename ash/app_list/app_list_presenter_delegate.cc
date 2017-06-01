@@ -89,13 +89,13 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                                     int current_apps_page) {
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  ash::Shell::GetPrimaryRootWindowController()
+  Shell::GetPrimaryRootWindowController()
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
   view_ = view;
   aura::Window* root_window =
       ShellPort::Get()->GetRootWindowForDisplayId(display_id);
-  aura::Window* container = GetRootWindowController(root_window)
+  aura::Window* container = RootWindowController::ForWindow(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
 
   view->Initialize(container, current_apps_page);
@@ -185,7 +185,7 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (target) {
     RootWindowController* root_controller =
-        GetRootWindowController(target->GetRootWindow());
+        RootWindowController::ForWindow(target);
     if (root_controller) {
       aura::Window* menu_container =
           root_controller->GetContainer(kShellWindowId_MenuContainer);

@@ -9,7 +9,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -1076,8 +1075,8 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(root_windows.size(), 2U);
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  Shelf* shelf_1 = GetRootWindowController(root_windows[0])->shelf();
-  Shelf* shelf_2 = GetRootWindowController(root_windows[1])->shelf();
+  Shelf* shelf_1 = Shelf::ForWindow(root_windows[0]);
+  Shelf* shelf_2 = Shelf::ForWindow(root_windows[1]);
   EXPECT_NE(shelf_1, shelf_2);
   EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
             shelf_2->GetWindow()->GetRootWindow());
@@ -1199,8 +1198,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_EQ(2U, root_windows.size());
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  Shelf* shelf_1 = GetRootWindowController(root_windows[0])->shelf();
-  Shelf* shelf_2 = GetRootWindowController(root_windows[1])->shelf();
+  Shelf* shelf_1 = Shelf::ForWindow(root_windows[0]);
+  Shelf* shelf_2 = Shelf::ForWindow(root_windows[1]);
   EXPECT_NE(shelf_1, shelf_2);
   EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
             shelf_2->GetWindow()->GetRootWindow());
@@ -1266,8 +1265,6 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  Shell::RootWindowControllerList root_window_controllers =
-      Shell::GetAllRootWindowControllers();
 
   // Create windows on either display.
   aura::Window* window1 = CreateTestWindow();
@@ -1287,10 +1284,10 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
   wm::GetWindowState(window2)->Activate();
   EXPECT_EQ(
       SHELF_HIDDEN,
-      root_window_controllers[0]->GetShelfLayoutManager()->visibility_state());
+      Shelf::ForWindow(window1)->shelf_layout_manager()->visibility_state());
   EXPECT_EQ(
       SHELF_VISIBLE,
-      root_window_controllers[1]->GetShelfLayoutManager()->visibility_state());
+      Shelf::ForWindow(window2)->shelf_layout_manager()->visibility_state());
 }
 
 // Test for Pinned mode.
