@@ -578,9 +578,7 @@ _brillo_boards = frozenset([
     'whirlwind',
 ])
 
-_cheets_boards = frozenset([])
-
-_cheets_x86_boards = _cheets_boards | frozenset([
+_cheets_x86_boards = frozenset([
     'amd64-generic-cheets',
     'auron_paine',
     'auron_yuna',
@@ -2758,18 +2756,12 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
   informational_boards = (
-      (boards_dict['all_release_boards'] & _chrome_boards) - _cheets_boards)
+      (boards_dict['all_release_boards'] & _chrome_boards))
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
       informational_boards-_chrome_informational_hwtest_boards,
       internal_board_configs,
       site_config.templates.chrome_pfq_informational,
-      important=False)
-  site_config.AddForBoards(
-      'tot-chrome-pfq-cheets-informational',
-      _cheets_boards,
-      internal_board_configs,
-      site_config.templates.chrome_pfq_cheets_informational,
       important=False)
 
   site_config.Add(
@@ -3233,14 +3225,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
             ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS]))
     _AdjustUngroupedReleaseConfigs(builder_ungrouped_dict)
     _AdjustGroupedReleaseConfigs(builder_group_dict)
-
-    for board in _cheets_boards:
-      config_name = GetReleaseConfigName(board)
-      # For boards in _cheets_boards, use cheets_release template
-      site_config[config_name].apply(
-          site_config.templates.cheets_release,
-          board_configs[board],
-      )
 
     for board in _moblab_boards:
       config_name = GetReleaseConfigName(board)
