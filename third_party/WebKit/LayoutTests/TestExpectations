@@ -1660,6 +1660,10 @@ crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-textarea-vert-001.xhtml [ Failure ]
 crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-video-vert-001.xhtml [ Failure ]
 
+# Skia change to spriteblitters
+crbug.com/728566 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsManualRebaseline ]
+crbug.com/728566 images/cross-fade-background-size.html [ NeedsManualRebaseline ]
+
 # We don't support requesting flex line breaks and it is not clear that we should.
 # See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
 crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
