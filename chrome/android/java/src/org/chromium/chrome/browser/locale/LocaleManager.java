@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.locale;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -208,22 +209,22 @@ public class LocaleManager {
      * Shows a promotion dialog about search engines depending on Locale and other conditions.
      * See {@link LocaleManager#getSearchEnginePromoShowType()} for possible types and logic.
      *
-     * @param context     Context showing the dialog.
+     * @param activity    Activity showing the dialog.
      * @param onDismissed Notified when the dialog is dismissed and whether the user acted on it.
      * @return Whether such dialog is needed.
      */
     public boolean showSearchEnginePromoIfNeeded(
-            Context context, @Nullable Callback<Boolean> onDismissed) {
+            Activity activity, @Nullable Callback<Boolean> onDismissed) {
         int shouldShow = getSearchEnginePromoShowType();
         switch (shouldShow) {
             case SEARCH_ENGINE_PROMO_DONT_SHOW:
                 return false;
             case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
-                new SogouPromoDialog(context, this, onDismissed).show();
+                new SogouPromoDialog(activity, this, onDismissed).show();
                 return true;
             case SEARCH_ENGINE_PROMO_SHOW_EXISTING:
             case SEARCH_ENGINE_PROMO_SHOW_NEW:
-                DefaultSearchEnginePromoDialog.show(context, shouldShow, onDismissed);
+                DefaultSearchEnginePromoDialog.show(activity, shouldShow, onDismissed);
                 return true;
             default:
                 assert false;

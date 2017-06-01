@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.locale;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -68,9 +68,9 @@ public class SogouPromoDialog extends PromoDialog {
     /**
      * Creates an instance of the dialog.
      */
-    public SogouPromoDialog(
-            Context context, LocaleManager localeManager, @Nullable Callback<Boolean> onDismissed) {
-        super(context);
+    public SogouPromoDialog(Activity activity, LocaleManager localeManager,
+            @Nullable Callback<Boolean> onDismissed) {
+        super(activity);
         mLocaleManager = localeManager;
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
