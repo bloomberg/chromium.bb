@@ -26,15 +26,6 @@ class TextIteratorTextNodeHandler final {
   TextIteratorTextNodeHandler(const TextIteratorBehavior&,
                               TextIteratorTextState*);
 
-  // Initializes the full iteration range of the TextIterator. This function
-  // should be called only once from TextIterator::Initialize.
-  // TODO(xiaochengh): TextNodeHandler doesn't need to know the full iteration
-  // range; The offset range in the current node suffices. Remove this function.
-  void Initialize(Node* start_container,
-                  int start_offset,
-                  Node* end_container,
-                  int end_offset);
-
   Text* GetNode() const { return text_node_; }
 
   // Returns true if more text is emitted without traversing to the next node.
@@ -45,7 +36,13 @@ class TextIteratorTextNodeHandler final {
 
   void ResetCollapsedWhiteSpaceFixup();
 
-  void HandleTextNode(Text*);
+  // Emit plain text from the given text node.
+  void HandleTextNodeWhole(Text*);
+
+  // Variants that emit plain text within the given DOM offset range.
+  void HandleTextNodeStartFrom(Text*, int start_offset);
+  void HandleTextNodeEndAt(Text*, int end_offset);
+  void HandleTextNodeInRange(Text*, int start_offset, int end_offset);
 
  private:
   void HandlePreFormattedTextNode();
@@ -72,15 +69,10 @@ class TextIteratorTextNodeHandler final {
                 int text_start_offset,
                 int text_end_offset);
 
-  // The range.
-  Member<Node> start_container_;
-  int start_offset_ = 0;
-  Member<Node> end_container_;
-  int end_offset_ = 0;
-
-  // The current text node and offset, from which text is being emitted.
+  // The current text node and offset range, from which text should be emitted.
   Member<Text> text_node_;
   int offset_ = 0;
+  int end_offset_ = 0;
 
   InlineTextBox* text_box_ = nullptr;
 

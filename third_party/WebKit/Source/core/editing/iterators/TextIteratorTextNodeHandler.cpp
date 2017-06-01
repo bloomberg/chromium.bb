@@ -18,22 +18,6 @@ TextIteratorTextNodeHandler::TextIteratorTextNodeHandler(
     TextIteratorTextState* text_state)
     : behavior_(behavior), text_state_(*text_state) {}
 
-void TextIteratorTextNodeHandler::Initialize(Node* start_container,
-                                             int start_offset,
-                                             Node* end_container,
-                                             int end_offset) {
-  // This function should be called only once.
-  DCHECK(!start_container_);
-  DCHECK_EQ(start_offset_, 0);
-  DCHECK(!end_container_);
-  DCHECK_EQ(end_offset_, 0);
-
-  start_container_ = start_container;
-  start_offset_ = start_offset;
-  end_container_ = end_container;
-  end_offset_ = end_offset;
-}
-
 bool TextIteratorTextNodeHandler::HandleRemainingTextRuns() {
   if (ShouldProceedToRemainingText())
     ProceedToRemainingText();
@@ -100,7 +84,6 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
       const String first_letter = first_letter_text_->GetText();
       const unsigned run_start = offset_;
       const bool stops_in_first_letter =
-          text_node_ == end_container_ &&
           end_offset_ <= static_cast<int>(first_letter.length());
       const unsigned run_end =
           stops_in_first_letter ? end_offset_ : first_letter.length();
@@ -123,9 +106,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   DCHECK_GE(static_cast<unsigned>(offset_), layout_object->TextStartOffset());
   const unsigned run_start = offset_ - layout_object->TextStartOffset();
   const unsigned str_length = str.length();
-  const unsigned end = (text_node_ == end_container_)
-                           ? end_offset_ - layout_object->TextStartOffset()
-                           : str_length;
+  const unsigned end = end_offset_ - layout_object->TextStartOffset();
   const unsigned run_end = std::min(str_length, end);
 
   if (run_start >= run_end)
@@ -134,9 +115,25 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   EmitText(text_node_, text_node_->GetLayoutObject(), run_start, run_end);
 }
 
-void TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
+void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
+                                                        int start_offset,
+                                                        int end_offset) {
+  DCHECK(node);
+  DCHECK_GE(start_offset, 0);
+
+  // TODO(editing-dev): Add the following DCHECK once we stop assuming equal
+  // number of code units in DOM string and LayoutText::GetText(). Currently
+  // violated by
+  // - external/wpt/innerText/getter.html
+  // - fast/css/case-transform.html
+  // DCHECK_LE(end_offset, static_cast<int>(node->data().length()));
+
+  // TODO(editing-dev): Stop passing in |start_offset == end_offset|.
+  DCHECK_LE(start_offset, end_offset);
+
   text_node_ = node;
-  offset_ = text_node_ == start_container_ ? start_offset_ : 0;
+  offset_ = start_offset;
+  end_offset_ = end_offset;
   handled_first_letter_ = false;
   first_letter_text_ = nullptr;
 
@@ -186,6 +183,22 @@ void TextIteratorTextNodeHandler::HandleTextNode(Text* node) {
   HandleTextBox();
 }
 
+void TextIteratorTextNodeHandler::HandleTextNodeStartFrom(Text* node,
+                                                          int start_offset) {
+  HandleTextNodeInRange(node, start_offset,
+                        node->GetLayoutObject()->TextStartOffset() +
+                            node->GetLayoutObject()->GetText().length());
+}
+
+void TextIteratorTextNodeHandler::HandleTextNodeEndAt(Text* node,
+                                                      int end_offset) {
+  HandleTextNodeInRange(node, 0, end_offset);
+}
+
+void TextIteratorTextNodeHandler::HandleTextNodeWhole(Text* node) {
+  HandleTextNodeStartFrom(node, 0);
+}
+
 // Restore the collapsed space for copy & paste. See http://crbug.com/318925
 size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
     InlineTextBox* next_text_box,
@@ -228,10 +241,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
     // Start and end offsets in |str|, i.e., str[start..end - 1] should be
     // emitted (after handling whitespace collapsing).
     const unsigned start = offset_ - layout_object->TextStartOffset();
-    const unsigned end =
-        (text_node_ == end_container_)
-            ? static_cast<unsigned>(end_offset_) - text_start_offset
-            : INT_MAX;
+    const unsigned end = static_cast<unsigned>(end_offset_) - text_start_offset;
     while (text_box_) {
       const unsigned text_box_start = text_box_->Start();
       const unsigned run_start = std::max(text_box_start, start);
@@ -357,8 +367,6 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
 bool TextIteratorTextNodeHandler::ShouldProceedToRemainingText() const {
   if (text_box_ || !remaining_text_box_)
     return false;
-  if (text_node_ != end_container_)
-    return true;
   return offset_ < end_offset_;
 }
 
