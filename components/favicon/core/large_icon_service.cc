@@ -46,7 +46,7 @@ const char kGoogleServerV2RequestFormatParam[] = "request_format";
 
 const char kCheckSeenParam[] = "check_seen=true&";
 
-const int kGoogleServerV2EnforcedMinSizeInPixel = 32;
+const int kGoogleServerV2EnforcedMinSizeInPixel = 16;
 const char kGoogleServerV2EnforcedMinSizeInPixelParam[] =
     "enforced_min_size_in_pixel";
 

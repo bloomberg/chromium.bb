@@ -207,12 +207,14 @@ void ContentSuggestionsService::GetFaviconFromCache(
   // TODO(jkrcal): Create a general wrapper function in LargeIconService that
   // does handle the get-from-cache-and-fallback-to-google-server functionality
   // in one shot (for all clients that do not need to react in between).
+
+  // Use desired_size = 0 for getting the icon from the cache (so that the icon
+  // is not poorly rescaled by LargeIconService).
   large_icon_service_->GetLargeIconImageOrFallbackStyle(
-      publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
+      publisher_url, minimum_size_in_pixel, /*desired_size_in_pixel=*/0,
       base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), publisher_url, minimum_size_in_pixel,
-                 /*desired_size_in_pixel=*/0, callback,
-                 continue_to_google_server),
+                 desired_size_in_pixel, callback, continue_to_google_server),
       &favicons_task_tracker_);
 }
 

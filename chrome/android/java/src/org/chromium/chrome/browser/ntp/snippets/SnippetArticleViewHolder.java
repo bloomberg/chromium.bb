@@ -74,7 +74,11 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
+
+    /** Min size for site attribution: only 16px as many sites do not have any other small icon. */
     private static final int PUBLISHER_FAVICON_MINIMUM_SIZE_PX = 16;
+    /** Desired size for site attribution: only 32px as larger icons are often too complex */
+    private static final int PUBLISHER_FAVICON_DESIRED_SIZE_PX = 32;
 
     private static final int THUMBNAIL_SOURCE_ARTICLE = 0;
     private static final int THUMBNAIL_SOURCE_DOWNLOAD = 1;
@@ -457,9 +461,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     }
 
     private void fetchFaviconFromLocalCacheOrGoogleServer(final long faviconFetchStartTimeMs) {
-        // Set the desired size to 0 to specify we do not want to resize in c++, we'll resize here.
+        // The bitmap will not be resized to desired size in c++, this only expresses preference.
         mUiDelegate.getSuggestionsSource().fetchSuggestionFavicon(mArticle,
-                PUBLISHER_FAVICON_MINIMUM_SIZE_PX, /* desiredSizePx */ 0, new Callback<Bitmap>() {
+                PUBLISHER_FAVICON_MINIMUM_SIZE_PX, PUBLISHER_FAVICON_DESIRED_SIZE_PX,
+                new Callback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap image) {
                         recordFaviconFetchTime(faviconFetchStartTimeMs);
