@@ -65,6 +65,7 @@ AccountFetcherService::AccountFetcherService()
       child_info_request_(nullptr) {}
 
 AccountFetcherService::~AccountFetcherService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(shutdown_called_);
 }
 
@@ -142,7 +143,7 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
 // account. This is possible since we only support a single account to be a
 // child anyway.
 void AccountFetcherService::UpdateChildInfo() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> accounts = token_service_->GetAccounts();
   if (accounts.size() == 1) {
     const std::string& candidate = accounts[0];
@@ -160,7 +161,7 @@ void AccountFetcherService::UpdateChildInfo() {
 }
 
 void AccountFetcherService::MaybeEnableNetworkFetches() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!profile_loaded_ || !refresh_tokens_loaded_)
     return;
   if (!network_fetches_enabled_) {
@@ -199,7 +200,7 @@ void AccountFetcherService::ScheduleNextRefresh() {
 // Starts fetching user information. This is called periodically to refresh.
 void AccountFetcherService::StartFetchingUserInfo(
     const std::string& account_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_fetches_enabled_);
 
   std::unique_ptr<AccountInfoFetcher>& request =
@@ -341,7 +342,7 @@ void AccountFetcherService::OnRefreshTokenRevoked(
 }
 
 void AccountFetcherService::OnRefreshTokensLoaded() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   refresh_tokens_loaded_ = true;
   MaybeEnableNetworkFetches();
 }

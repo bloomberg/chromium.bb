@@ -41,7 +41,7 @@ RefreshTokenAnnotationRequest::RefreshTokenAnnotationRequest(
 }
 
 RefreshTokenAnnotationRequest::~RefreshTokenAnnotationRequest() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
@@ -102,7 +102,7 @@ bool RefreshTokenAnnotationRequest::ShouldSendNow(PrefService* pref_service) {
 void RefreshTokenAnnotationRequest::RequestAccessToken(
     OAuth2TokenService* token_service,
     const std::string& account_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
   access_token_request_ = token_service->StartRequest(account_id, scopes, this);
@@ -112,7 +112,7 @@ void RefreshTokenAnnotationRequest::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Got access token";
   Start(request_context_getter_.get(), access_token);
 }
@@ -120,7 +120,7 @@ void RefreshTokenAnnotationRequest::OnGetTokenSuccess(
 void RefreshTokenAnnotationRequest::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Failed to get access token";
   RecordRequestStatusHistogram(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
@@ -156,7 +156,7 @@ std::string RefreshTokenAnnotationRequest::CreateApiCallBody() {
 
 void RefreshTokenAnnotationRequest::ProcessApiCallSuccess(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Request succeeded";
   RecordRequestStatusHistogram(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
@@ -165,7 +165,7 @@ void RefreshTokenAnnotationRequest::ProcessApiCallSuccess(
 
 void RefreshTokenAnnotationRequest::ProcessApiCallFailure(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Request failed";
   RecordRequestStatusHistogram(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);

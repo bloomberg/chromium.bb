@@ -60,6 +60,7 @@ const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 AccountTrackerService::AccountTrackerService() : signin_client_(nullptr) {}
 
 AccountTrackerService::~AccountTrackerService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
