@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/activity_tracker.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -423,17 +422,9 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
 
 void ChromeMetricsServiceClient::OnLogCleanShutdown() {
 #if defined(OS_WIN)
-  base::debug::GlobalActivityTracker* global_tracker =
-      base::debug::GlobalActivityTracker::Get();
-  if (global_tracker)
-    global_tracker->MarkDeleted();
-
   base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    // TODO(manzagop): add a metric.
-    return;
-  }
-  browser_watcher::MarkStabilityFileForDeletion(user_data_dir);
+  if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    browser_watcher::MarkOwnStabilityFileDeleted(user_data_dir);
 #endif  // OS_WIN
 }
 

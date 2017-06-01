@@ -359,6 +359,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Crashpad database init failed"/>
 </enum>
 
+<enum name="ActivityTrackerCollectOnCrashEvent" type="int">
+  <int value="0" label="Collection attempt"/>
+  <int value="1" label="User data directory not empty"/>
+  <int value="2" label="Path exists"/>
+  <int value="3" label="Report extraction success"/>
+  <int value="4" label="PMA set deleted failed"/>
+  <int value="5" label="Open for delete failed"/>
+  <int value="6" label="Success"/>
+</enum>
+
 <enum name="ActivityTrackerCollectStatus" type="int">
   <int value="0" label="None"/>
   <int value="1" label="Sucess"/>
@@ -370,7 +380,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="Finished writing crash report failed"/>
 </enum>
 
+<enum name="ActivityTrackerRecordEvent" type="int">
+  <int value="0" label="Recording attempt"/>
+  <int value="1" label="Stability directory exists"/>
+  <int value="2" label="Got stability file path"/>
+  <int value="3" label="Got tracker"/>
+  <int value="4" label="Mark deleted"/>
+  <int value="5" label="Mark deleted got file"/>
+  <int value="6" label="Open for delete failed"/>
+</enum>
+
 <enum name="ActivityTrackerRecordInitStatus" type="int">
+  <obsolete>
+    Removed from code May 2017.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Create stability dir failed"/>
   <int value="2" label="Get stability file path failed"/>

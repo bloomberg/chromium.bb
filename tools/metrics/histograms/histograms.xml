@@ -449,8 +449,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ActivityTracker.CollectCrash.Event"
+    enum="ActivityTrackerCollectOnCrashEvent">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Events that occur during crash collection of the debug file. Logged each
+    time an event of interest occurs during crash debug file collection.
+  </summary>
+</histogram>
+
 <histogram name="ActivityTracker.CollectCrash.OpenForDeleteSuccess"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 05/2017 in favor of ActivityTracker.CollectCrash.Event.
+  </obsolete>
   <owner>manzagop@chromium.org</owner>
   <summary>
     Success of the attempt to open the debug file for deletion. Logged each time
@@ -468,8 +480,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ActivityTracker.Record.Event"
+    enum="ActivityTrackerRecordEvent">
+  <owner>manzagop@chromium.org</owner>
+  <summary>
+    Events pertaining to recording to the debug file. Logged each time an event
+    of interest occurs wrt debug file recording.
+  </summary>
+</histogram>
+
 <histogram name="ActivityTracker.Record.InitStatus"
     enum="ActivityTrackerRecordInitStatus">
+  <obsolete>
+    Deprecated 05/2017 in favor of ActivityTracker.Record.Event.
+  </obsolete>
   <owner>manzagop@chromium.org</owner>
   <summary>
     Status of internal activity tracking initialization. Logged once, during the
