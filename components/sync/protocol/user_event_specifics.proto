@@ -39,6 +39,35 @@ message LanguageDetection {
   optional string adopted_language_code = 2;
 }
 
+// User translated a page or interacted with translate suggestion.
+message Translation {
+  // Source language of the translation.
+  optional string from_language_code = 1;
+  // Target language of the translation.
+  optional string to_language_code = 2;
+  enum Interaction {
+    UNKNOWN = 0;
+    ACCEPT = 1;
+    DECLINE = 2;
+    // This happens when user scroll or click outside the UI without
+    // translation.
+    IGNORED = 3;
+    // This happens when user choose to close the translation window without
+    // translation.
+    DISMISSED = 4;
+    // User manually entered either language.
+    // In this case, from_language_code and to_language_code will be user chosen
+    // values.
+    MANUAL = 5;
+    // User choose to revert the translation, in this case, from_language_code
+    // and to_language_code will be previous chosen values.
+    TRANSLATION_REVERTED = 6;
+    // Automatically triggered translation.
+    AUTOMATIC_TRANSLATION = 7;
+  }
+  optional Interaction interaction = 3;
+}
+
 message UserEventSpecifics {
   // Time of event, as measured on the client (unix epoch).
   optional int64 event_time_usec = 1;
@@ -53,5 +82,6 @@ message UserEventSpecifics {
   oneof event {
     FieldTrialEvent field_trial_event = 4;
     LanguageDetection language_detection = 5;
+    Translation translation = 6;
   }
 }

@@ -847,6 +847,12 @@ VISIT_PROTO_FIELDS(const sync_pb::TimeRangeDirective& proto) {
   VISIT(end_time_usec);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::Translation& proto) {
+  VISIT(from_language_code);
+  VISIT(to_language_code);
+  VISIT_ENUM(interaction);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
   VISIT(data_type_id);
   VISIT(has_valid_hint);
@@ -873,6 +879,7 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(session_id);
   VISIT(field_trial_event);
   VISIT(language_detection);
+  VISIT(translation);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {

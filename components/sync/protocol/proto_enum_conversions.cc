@@ -294,6 +294,23 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
   return "";
 }
 
+const char* ProtoEnumToString(sync_pb::Translation::Interaction interaction) {
+  ASSERT_ENUM_BOUNDS(sync_pb::Translation, Interaction, UNKNOWN,
+                     AUTOMATIC_TRANSLATION);
+  switch (interaction) {
+    ENUM_CASE(sync_pb::Translation, UNKNOWN);
+    ENUM_CASE(sync_pb::Translation, ACCEPT);
+    ENUM_CASE(sync_pb::Translation, DECLINE);
+    ENUM_CASE(sync_pb::Translation, IGNORED);
+    ENUM_CASE(sync_pb::Translation, DISMISSED);
+    ENUM_CASE(sync_pb::Translation, MANUAL);
+    ENUM_CASE(sync_pb::Translation, TRANSLATION_REVERTED);
+    ENUM_CASE(sync_pb::Translation, AUTOMATIC_TRANSLATION);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class) {
   switch (wallet_card_class) {
