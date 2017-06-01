@@ -18,6 +18,8 @@ blink_modules_sources("sensor") {
     "Magnetometer.h",
     "OrientationSensor.cpp",
     "OrientationSensor.h",
+    "RelativeOrientationSensor.cpp",
+    "RelativeOrientationSensor.h",
     "Sensor.cpp",
     "Sensor.h",
     "SensorErrorEvent.cpp",
