@@ -4,10 +4,14 @@
 
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
+#include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator_private.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
+#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -20,84 +24,152 @@
 namespace {
 
 class ToolsMediatorTest : public PlatformTest {
+ public:
+  ToolsMediatorTest()
+      : consumer_(OCMProtocolMock(@protocol(ToolsConsumer))),
+        configuration_(
+            [[ToolsMenuConfiguration alloc] initWithDisplayView:nil]),
+        navigation_manager(base::MakeUnique<ToolbarTestNavigationManager>()) {
+    navigation_manager_ = navigation_manager.get();
+    test_web_state_.SetNavigationManager(std::move(navigation_manager));
+  }
+
  protected:
   ToolsMediator* mediator_;
+  id consumer_;
+  ToolsMenuConfiguration* configuration_;
+  ToolbarTestWebState test_web_state_;
+  ToolbarTestNavigationManager* navigation_manager_;
+
+ private:
+  std::unique_ptr<ToolbarTestNavigationManager> navigation_manager;
 };
 
 TEST_F(ToolsMediatorTest, TestShowOverFlowControls) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(YES);
+  configuration_.inTabSwitcher = YES;
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
-
-  [[consumer verify] setToolsMenuItems:[OCMArg any]];
-  [[consumer verify] setDisplayOverflowControls:NO];
+  [[consumer_ verify] setToolsMenuItems:[OCMArg any]];
+  [[consumer_ verify] setDisplayOverflowControls:NO];
 }
 
 TEST_F(ToolsMediatorTest, TestHideOverFlowControls) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(NO);
+  configuration_.inTabSwitcher = NO;
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
-  [[consumer verify] setToolsMenuItems:[OCMArg any]];
-  [[consumer verify] setDisplayOverflowControls:YES];
+  [[consumer_ verify] setToolsMenuItems:[OCMArg any]];
+  [[consumer_ verify] setDisplayOverflowControls:YES];
 }
 
 TEST_F(ToolsMediatorTest, TestMenuItemsForNonTabSwitcherNonIncognito) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(NO);
-  OCMStub([configuration isInIncognito]).andReturn(NO);
+  configuration_.inTabSwitcher = NO;
+  configuration_.inIncognito = NO;
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
   EXPECT_EQ(7ul, [mediator_.menuItemsArray count]);
 }
 
 TEST_F(ToolsMediatorTest, TestMenuItemsForNonTabSwitcherIncognito) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(NO);
-  OCMStub([configuration isInIncognito]).andReturn(YES);
+  configuration_.inTabSwitcher = NO;
+  configuration_.inIncognito = YES;
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
   EXPECT_EQ(7ul, [mediator_.menuItemsArray count]);
 }
 
-TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherNonIncognito) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(YES);
-  OCMStub([configuration isInIncognito]).andReturn(YES);
+TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherIncognito) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = YES;
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
   ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
   EXPECT_NSEQ(@"Close All Incognito Tabs", closeAllTabsItem.title);
   EXPECT_EQ(5ul, [mediator_.menuItemsArray count]);
 }
 
-TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherIncognito) {
-  id consumer = OCMProtocolMock(@protocol(ToolsConsumer));
-  id configuration = OCMClassMock([ToolsMenuConfiguration class]);
-  OCMStub([configuration isInTabSwitcher]).andReturn(YES);
-  OCMStub([configuration isInIncognito]).andReturn(NO);
+TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherNonIncognito) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = NO;
 
-  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer
-                                     andConfiguration:configuration];
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
 
   ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
   EXPECT_NSEQ(@"Close All Tabs", closeAllTabsItem.title);
   EXPECT_EQ(5ul, [mediator_.menuItemsArray count]);
+}
+
+TEST_F(ToolsMediatorTest, TestDontUpdateConsumerLoadingState) {
+  configuration_.inTabSwitcher = NO;
+  [[consumer_ reject] setIsLoading:YES];
+  [[consumer_ reject] setIsLoading:NO];
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+}
+
+TEST_F(ToolsMediatorTest, TestDontUpdateConsumerLoadingStateInTabSwitcher) {
+  configuration_.inTabSwitcher = YES;
+  [[consumer_ reject] setIsLoading:YES];
+  [[consumer_ reject] setIsLoading:NO];
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+}
+
+TEST_F(ToolsMediatorTest, TestUpdateConsumerLoadingState) {
+  configuration_.inTabSwitcher = NO;
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+  test_web_state_.SetLoading(false);
+  mediator_.webState = &test_web_state_;
+  [[consumer_ verify] setIsLoading:NO];
+  test_web_state_.SetLoading(true);
+  [[consumer_ verify] setIsLoading:YES];
+}
+
+TEST_F(ToolsMediatorTest, TestUpdateConsumerLoadingStateInverse) {
+  configuration_.inTabSwitcher = NO;
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+  test_web_state_.SetLoading(true);
+  mediator_.webState = &test_web_state_;
+  [[consumer_ verify] setIsLoading:YES];
+  test_web_state_.SetLoading(false);
+  [[consumer_ verify] setIsLoading:NO];
+}
+
+TEST_F(ToolsMediatorTest, TestUpdateConsumerLoadingStateInTabSwitcher) {
+  configuration_.inTabSwitcher = YES;
+  [[consumer_ reject] setIsLoading:NO];
+  [[consumer_ reject] setIsLoading:YES];
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+  test_web_state_.SetLoading(false);
+  mediator_.webState = &test_web_state_;
+  test_web_state_.SetLoading(true);
+}
+
+TEST_F(ToolsMediatorTest, TestUpdateConsumerLoadingStateInverseInTabSwitcher) {
+  configuration_.inTabSwitcher = YES;
+  [[consumer_ reject] setIsLoading:NO];
+  [[consumer_ reject] setIsLoading:YES];
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+  test_web_state_.SetLoading(true);
+  mediator_.webState = &test_web_state_;
+  test_web_state_.SetLoading(false);
 }
 
 }  // namespace

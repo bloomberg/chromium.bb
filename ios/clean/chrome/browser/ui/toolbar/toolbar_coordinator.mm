@@ -113,6 +113,7 @@
       [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
   menuConfiguration.inTabSwitcher = NO;
   toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
+  toolsCoordinator.webState = self.webState;
   [toolsCoordinator start];
   self.toolsMenuCoordinator = toolsCoordinator;
 }

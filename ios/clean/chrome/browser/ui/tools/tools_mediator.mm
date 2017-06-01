@@ -5,17 +5,20 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_model.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ToolsMediator ()
+@interface ToolsMediator ()<CRWWebStateObserver>
 @property(nonatomic, strong) id<ToolsConsumer> consumer;
 @property(nonatomic, strong) ToolsMenuConfiguration* toolsMenuConfiguration;
 @property(nonatomic, strong) NSMutableArray* menuItems;
@@ -25,17 +28,19 @@
 // Checks if a specific Menu Item should be visible for the current
 // configuration.
 - (BOOL)itemIsVisibleForCurrentConfiguration:(const MenuModelItem)modelItem;
-
 @end
 
-@implementation ToolsMediator
+@implementation ToolsMediator {
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+}
 
 @synthesize consumer = _consumer;
 @synthesize toolsMenuConfiguration = _toolsMenuConfiguration;
 @synthesize menuItems = _menuItems;
+@synthesize webState = _webState;
 
 - (instancetype)initWithConsumer:(id<ToolsConsumer>)consumer
-                andConfiguration:(ToolsMenuConfiguration*)menuConfiguration {
+                   configuration:(ToolsMenuConfiguration*)menuConfiguration {
   self = [super init];
   if (self) {
     self.toolsMenuConfiguration = menuConfiguration;
@@ -44,14 +49,35 @@
   return self;
 }
 
+#pragma mark - Setters
+
 - (void)setConsumer:(id<ToolsConsumer>)consumer {
   _consumer = consumer;
-
   [self populateMenuItems];
-
   [_consumer setToolsMenuItems:self.menuItems];
   [_consumer
       setDisplayOverflowControls:!self.toolsMenuConfiguration.isInTabSwitcher];
+}
+
+- (void)setWebState:(web::WebState*)webState {
+  _webState = webState;
+  // In the tab switcher, there's no overflow controls to update, so the
+  // WebState isn't observed.
+  if (!self.toolsMenuConfiguration.isInTabSwitcher) {
+    _webStateObserver =
+        base::MakeUnique<web::WebStateObserverBridge>(_webState, self);
+    [self.consumer setIsLoading:self.webState->IsLoading()];
+  }
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webStateDidStartLoading:(web::WebState*)webState {
+  [self.consumer setIsLoading:self.webState->IsLoading()];
+}
+
+- (void)webStateDidStopLoading:(web::WebState*)webState {
+  [self.consumer setIsLoading:self.webState->IsLoading()];
 }
 
 #pragma mark - Private Methods

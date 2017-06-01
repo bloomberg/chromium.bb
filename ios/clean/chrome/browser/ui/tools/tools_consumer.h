@@ -17,6 +17,8 @@
 // Sets a flag so the consumer knows if it should display the Menu overflow
 // controls.
 - (void)setDisplayOverflowControls:(BOOL)displayOverflowControls;
+// Updates the tools menu overflow controls with the current loading state.
+- (void)setIsLoading:(BOOL)isLoading;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_TOOLS_CONSUMER_H_

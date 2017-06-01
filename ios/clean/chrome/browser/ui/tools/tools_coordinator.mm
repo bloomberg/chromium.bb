@@ -23,6 +23,7 @@
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 @synthesize toolsMenuConfiguration = _toolsMenuConfiguration;
+@synthesize webState = _webState;
 
 #pragma mark - BrowserCoordinator
 
@@ -33,8 +34,20 @@
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator =
       [[ToolsMediator alloc] initWithConsumer:self.viewController
-                             andConfiguration:self.toolsMenuConfiguration];
+                                configuration:self.toolsMenuConfiguration];
+  if (self.webState) {
+    self.mediator.webState = self.webState;
+  }
   [super start];
+}
+
+#pragma mark - Setters
+
+- (void)setWebState:(web::WebState*)webState {
+  _webState = webState;
+  if (self.mediator) {
+    self.mediator.webState = self.webState;
+  }
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
