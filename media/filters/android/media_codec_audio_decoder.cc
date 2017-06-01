@@ -140,7 +140,8 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
 
   codec_loop_.reset(
       new MediaCodecLoop(base::android::BuildInfo::GetInstance()->sdk_int(),
-                         this, std::move(audio_codec_bridge)));
+                         this, std::move(audio_codec_bridge),
+                         scoped_refptr<base::SingleThreadTaskRunner>()));
 
   return true;
 }
