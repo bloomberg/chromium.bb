@@ -113,7 +113,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
     private boolean mCanSelectAllForPastePopup;
-    private boolean mCanEditRichlyForPastePopup;
+    private boolean mCanEditRichly;
 
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
@@ -228,7 +228,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mLastSelectedText = selectionText;
         mIsPasswordType = isPasswordType;
         mCanSelectAllForPastePopup = canSelectAll;
-        mCanEditRichlyForPastePopup = canRichlyEdit;
+        mCanEditRichly = canRichlyEdit;
         mUnselectAllOnDismiss = true;
         if (hasSelection()) {
             if (mSelectionClient != null
@@ -494,6 +494,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mActionMenuDescriptor = createActionMenuDescriptor();
         mActionMenuDescriptor.apply(menu);
 
+        // TODO(ctzsm): Remove runtime title set after O SDK rolls.
+        MenuItem item = menu.findItem(R.id.select_action_menu_paste_as_plain_text);
+        if (item != null) {
+            item.setTitle(mContext.getResources().getIdentifier(
+                    "paste_as_plain_text", "string", "android"));
+        }
+
         if (isInsertion() || isSelectionPassword()) return;
 
         initializeTextProcessingMenu(menu);
@@ -504,12 +511,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         updateAssistMenuItem(descriptor);
 
-        // TODO(ctzsm): Remove "paste as plain text" for now, need to add it back when
-        // crrev.com/2785853002 landed.
-        descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
-
         if (!isSelectionEditable() || !canPaste()) {
             descriptor.removeItem(R.id.select_action_menu_paste);
+            descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
+        }
+
+        if (!canPasteAsPlainText()) {
+            descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
         }
 
         if (!hasSelection()) {
@@ -574,7 +582,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         // String resource "paste_as_plain_text" only exist in O.
         // Also this is an O feature, we need to make it consistant with TextView.
         if (!BuildInfo.isAtLeastO()) return false;
-        if (!mCanEditRichlyForPastePopup) return false;
+        if (!mCanEditRichly) return false;
         ClipboardManager clipMgr =
                 (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
         if (!clipMgr.hasPrimaryClip()) return false;
@@ -664,6 +672,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             mode.finish();
         } else if (id == R.id.select_action_menu_paste) {
             paste();
+            mode.finish();
+        } else if (BuildInfo.isAtLeastO() && id == R.id.select_action_menu_paste_as_plain_text) {
+            pasteAsPlainText();
             mode.finish();
         } else if (id == R.id.select_action_menu_share) {
             share();
