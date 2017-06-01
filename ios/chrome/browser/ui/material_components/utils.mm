@@ -11,6 +11,10 @@
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 void ConfigureAppBarWithCardStyle(MDCAppBar* appBar) {
   appBar.headerViewController.headerView.canOverExtend = NO;
   appBar.headerViewController.headerView.shiftBehavior =

@@ -15,7 +15,7 @@
 @protocol AppBarPresenting<NSObject>
 
 // The installed app bar, if any.
-@property(nonatomic, readonly) MDCAppBar* appBar;
+@property(nonatomic, readonly, strong) MDCAppBar* appBar;
 
 @end
 
