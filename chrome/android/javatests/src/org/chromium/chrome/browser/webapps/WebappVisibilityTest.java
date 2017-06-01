@@ -129,7 +129,7 @@ public class WebappVisibilityTest {
         } else {
             delegate = new WebApkBrowserControlsDelegate(null, new Tab(0, false, null));
             info = WebApkInfo.create("", "", false /* forceNavigation */, webappStartUrlOrScopeUrl,
-                    null, null, null, 0, 0, 0, 0, 0, "", 0, null, "", null);
+                    null, null, null, null, 0, 0, 0, 0, 0, "", 0, null, "", null);
         }
         return delegate.shouldShowBrowserControls(info, url, securityLevel);
     }

@@ -101,6 +101,9 @@ public class WebApkInfoTest {
         Assert.assertEquals(ICON_MURMUR2_HASH, info.iconUrlToMurmur2HashMap().get(ICON_URL));
 
         Assert.assertEquals(SOURCE, info.source());
+
+        Assert.assertEquals(null, info.icon());
+        Assert.assertEquals(null, info.badgeIcon());
     }
 
     /**
