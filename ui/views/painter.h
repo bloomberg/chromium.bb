@@ -60,10 +60,6 @@ class VIEWS_EXPORT Painter {
       SkColor stroke_color,
       float radius);
 
-  // TODO(estade): remove. The last client (table_header.cc) is going away soon.
-  static std::unique_ptr<Painter> CreateVerticalGradient(SkColor c1,
-                                                         SkColor c2);
-
   // Creates a painter that divides |image| into nine regions. The four corners
   // are rendered at the size specified in insets (eg. the upper-left corner is
   // rendered at 0 x 0 with a size of insets.left() x insets.top()). The center
@@ -102,35 +98,6 @@ class VIEWS_EXPORT Painter {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Painter);
-};
-
-// HorizontalPainter paints 3 images into a box: left, center and right. The
-// left and right images are drawn to size at the left/right edges of the
-// region. The center is tiled in the remaining space. All images must have the
-// same height.
-class VIEWS_EXPORT HorizontalPainter : public Painter {
- public:
-  // Constructs a new HorizontalPainter loading the specified image names.
-  // The images must be in the order left, right and center.
-  explicit HorizontalPainter(const int image_resource_names[]);
-  ~HorizontalPainter() override;
-
-  // Painter:
-  gfx::Size GetMinimumSize() const override;
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
-
- private:
-  // The image chunks.
-  enum BorderElements {
-    LEFT,
-    CENTER,
-    RIGHT
-  };
-
-  // NOTE: the images are owned by ResourceBundle. Don't free them.
-  const gfx::ImageSkia* images_[3];
-
-  DISALLOW_COPY_AND_ASSIGN(HorizontalPainter);
 };
 
 }  // namespace views

@@ -75,6 +75,7 @@ component("views_examples_lib") {
 
   deps = [
     "//base",
+    "//cc/paint",
     "//skia",
     "//third_party/icu",
     "//ui/base",
