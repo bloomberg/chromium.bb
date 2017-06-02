@@ -20,11 +20,16 @@ void DispatchContextMenuCommands(const std::vector<SEL>& commands,
                                  ContextMenuContext* context) {
   DCHECK(dispatcher);
   DCHECK(context);
+// |-performSelector:withObject:| throws a warning in ARC because the compiler
+// doesn't know how to handle the memory management of the returned values.
+// Since all ContextMenuCommands return void, these warning can be ignored
+// here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   for (SEL command : commands) {
-    IMP command_imp = [dispatcher methodForSelector:command];
-    DCHECK(command_imp);
-    command_imp(dispatcher, command, context);
+    [dispatcher performSelector:command withObject:context];
   }
+#pragma clang diagnostic pop
 }
 }
 
