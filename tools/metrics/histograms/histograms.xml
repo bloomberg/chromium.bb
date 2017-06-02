@@ -81222,9 +81222,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.Autoplay" enum="WebAudioAutoplayStatus">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The autoplay status of an AudioContext when destroyed. This include all
+    types of frames. In order to know the value only for main frames, the
+    .CrossOrigin values can be substracted.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.Autoplay.CrossOrigin" enum="WebAudioAutoplayStatus">
   <owner>mlamouri@chromium.org</owner>
-  <summary>The autoplay status of an AudioContext when destroyed.</summary>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The autoplay status of an AudioContext when destroyed in a cross-origin
+    frame.
+  </summary>
 </histogram>
 
 <histogram name="WebAudio.BiquadFilter.Q.Highpass">

@@ -32,6 +32,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
@@ -55,7 +56,6 @@ class AudioBufferCallback;
 class AudioBufferSourceNode;
 class AudioContextOptions;
 class AudioListener;
-class BaseAudioContextTest;
 class BiquadFilterNode;
 class ChannelMergerNode;
 class ChannelSplitterNode;
@@ -376,7 +376,7 @@ class MODULES_EXPORT BaseAudioContext
   AudioIOPosition OutputPosition();
 
  private:
-  friend class BaseAudioContextTest;
+  friend class BaseAudioContextAutoplayTest;
 
   // Do not change the order of this enum, it is used for metrics.
   enum AutoplayStatus {
@@ -404,6 +404,15 @@ class MODULES_EXPORT BaseAudioContext
   // releaseFinishedSourceNodes.  Must be run from the main thread,
   // and must not be run with the context lock.
   void RemoveFinishedSourceNodesOnMainThread();
+
+  // Returns the Document wich wich the instance is associated.
+  Document* GetDocument() const;
+
+  // Returns the AutoplayPolicy currently applying to this instance.
+  AutoplayPolicy::Type GetAutoplayPolicy() const;
+
+  // Returns whether the autoplay requirements are fulfilled.
+  bool AreAutoplayRequirementsFulfilled() const;
 
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
