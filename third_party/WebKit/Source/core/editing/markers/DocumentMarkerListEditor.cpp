@@ -52,32 +52,24 @@ bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
   return didMoveMarker;
 }
 
-// TODO(rlanday): this method was created by cutting and pasting code from
-// DocumentMarkerController::RemoveMarkers(), it should be refactored in a
-// future CL
 bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
                                              unsigned start_offset,
                                              int length) {
-  bool doc_dirty = false;
   const unsigned end_offset = start_offset + length;
   MarkerList::iterator start_pos = std::upper_bound(
       list->begin(), list->end(), start_offset,
       [](size_t start_offset, const Member<DocumentMarker>& marker) {
         return start_offset < marker->EndOffset();
       });
-  for (MarkerList::iterator i = start_pos; i != list->end();) {
-    const DocumentMarker& marker = *i->Get();
 
-    // markers are returned in order, so stop if we are now past the specified
-    // range
-    if (marker.StartOffset() >= end_offset)
-      break;
+  MarkerList::iterator end_pos = std::lower_bound(
+      list->begin(), list->end(), end_offset,
+      [](const Member<DocumentMarker>& marker, size_t end_offset) {
+        return marker->StartOffset() < end_offset;
+      });
 
-    list->erase(i - list->begin());
-    doc_dirty = true;
-  }
-
-  return doc_dirty;
+  list->erase(start_pos - list->begin(), end_pos - start_pos);
+  return start_pos != end_pos;
 }
 
 // TODO(rlanday): make this not take O(n^2) time when all the markers are

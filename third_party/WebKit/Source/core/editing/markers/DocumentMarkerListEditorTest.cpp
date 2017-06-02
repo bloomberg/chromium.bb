@@ -17,6 +17,40 @@ class DocumentMarkerListEditorTest : public ::testing::Test {
   }
 };
 
+TEST_F(DocumentMarkerListEditorTest, RemoveMarkersEmptyList) {
+  DocumentMarkerListEditor::MarkerList markers;
+  DocumentMarkerListEditor::RemoveMarkers(&markers, 0, 10);
+  EXPECT_EQ(0u, markers.size());
+}
+
+TEST_F(DocumentMarkerListEditorTest, RemoveMarkersTouchingEndpoints) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+  markers.push_back(CreateMarker(10, 20));
+  markers.push_back(CreateMarker(20, 30));
+
+  DocumentMarkerListEditor::RemoveMarkers(&markers, 10, 10);
+
+  EXPECT_EQ(2u, markers.size());
+
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+
+  EXPECT_EQ(20u, markers[1]->StartOffset());
+  EXPECT_EQ(30u, markers[1]->EndOffset());
+}
+
+TEST_F(DocumentMarkerListEditorTest, RemoveMarkersOneCharacterIntoInterior) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+  markers.push_back(CreateMarker(10, 20));
+  markers.push_back(CreateMarker(20, 30));
+
+  DocumentMarkerListEditor::RemoveMarkers(&markers, 9, 12);
+
+  EXPECT_EQ(0u, markers.size());
+}
+
 TEST_F(DocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceStartOfMarker) {
   DocumentMarkerListEditor::MarkerList markers;
