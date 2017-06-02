@@ -56,6 +56,21 @@
 
 namespace blink {
 
+WebNode::WebNode() {}
+
+WebNode::WebNode(const WebNode& n) {
+  Assign(n);
+}
+
+WebNode& WebNode::operator=(const WebNode& n) {
+  Assign(n);
+  return *this;
+}
+
+WebNode::~WebNode() {
+  Reset();
+}
+
 void WebNode::Reset() {
   private_.Reset();
 }
@@ -98,6 +113,10 @@ WebNode WebNode::PreviousSibling() const {
 
 WebNode WebNode::NextSibling() const {
   return WebNode(private_->nextSibling());
+}
+
+bool WebNode::IsNull() const {
+  return private_.IsNull();
 }
 
 bool WebNode::IsLink() const {
@@ -153,10 +172,11 @@ void WebNode::SimulateClick() {
 
 WebElementCollection WebNode::GetElementsByHTMLTagName(
     const WebString& tag) const {
-  if (private_->IsContainerNode())
+  if (private_->IsContainerNode()) {
     return WebElementCollection(
         ToContainerNode(private_.Get())
             ->getElementsByTagNameNS(HTMLNames::xhtmlNamespaceURI, tag));
+  }
   return WebElementCollection();
 }
 

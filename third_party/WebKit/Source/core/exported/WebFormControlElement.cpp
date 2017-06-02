@@ -81,38 +81,43 @@ bool WebFormControlElement::AutoComplete() const {
 }
 
 void WebFormControlElement::SetValue(const WebString& value, bool send_events) {
-  if (isHTMLInputElement(*private_))
+  if (isHTMLInputElement(*private_)) {
     Unwrap<HTMLInputElement>()->setValue(
         value, send_events ? kDispatchInputAndChangeEvent : kDispatchNoEvent);
-  else if (isHTMLTextAreaElement(*private_))
+  } else if (isHTMLTextAreaElement(*private_)) {
     Unwrap<HTMLTextAreaElement>()->setValue(
         value, send_events ? kDispatchInputAndChangeEvent : kDispatchNoEvent);
-  else if (isHTMLSelectElement(*private_))
+  } else if (isHTMLSelectElement(*private_)) {
     Unwrap<HTMLSelectElement>()->setValue(value, send_events);
+  }
 }
 
 void WebFormControlElement::SetAutofillValue(const WebString& value) {
   // The input and change events will be sent in setValue.
   if (isHTMLInputElement(*private_) || isHTMLTextAreaElement(*private_)) {
-    if (!Focused())
+    if (!Focused()) {
       Unwrap<Element>()->DispatchFocusEvent(nullptr, kWebFocusTypeForward,
                                             nullptr);
+    }
     Unwrap<Element>()->DispatchScopedEvent(
         Event::CreateBubble(EventTypeNames::keydown));
     Unwrap<TextControlElement>()->setValue(value, kDispatchInputAndChangeEvent);
     Unwrap<Element>()->DispatchScopedEvent(
         Event::CreateBubble(EventTypeNames::keyup));
-    if (!Focused())
+    if (!Focused()) {
       Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
                                            nullptr);
+    }
   } else if (isHTMLSelectElement(*private_)) {
-    if (!Focused())
+    if (!Focused()) {
       Unwrap<Element>()->DispatchFocusEvent(nullptr, kWebFocusTypeForward,
                                             nullptr);
+    }
     Unwrap<HTMLSelectElement>()->setValue(value, true);
-    if (!Focused())
+    if (!Focused()) {
       Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
                                            nullptr);
+    }
   }
 }
 

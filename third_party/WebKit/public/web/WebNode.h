@@ -50,58 +50,54 @@ class WebPluginContainer;
 // is possible to safely static_cast an instance of one class to the appropriate
 // subclass based on the actual type of the wrapped blink::Node. For the same
 // reason, subclasses must not add any additional data members.
-class WebNode {
+class BLINK_EXPORT WebNode {
  public:
-  virtual ~WebNode() { Reset(); }
+  virtual ~WebNode();
 
-  WebNode() {}
-  WebNode(const WebNode& n) { Assign(n); }
-  WebNode& operator=(const WebNode& n) {
-    Assign(n);
-    return *this;
-  }
+  WebNode();
+  WebNode(const WebNode&);
+  WebNode& operator=(const WebNode&);
 
-  BLINK_EXPORT void Reset();
-  BLINK_EXPORT void Assign(const WebNode&);
+  void Reset();
+  void Assign(const WebNode&);
 
-  BLINK_EXPORT bool Equals(const WebNode&) const;
+  bool Equals(const WebNode&) const;
   // Required for using WebNodes in std maps.  Note the order used is
   // arbitrary and should not be expected to have any specific meaning.
-  BLINK_EXPORT bool LessThan(const WebNode&) const;
+  bool LessThan(const WebNode&) const;
 
-  bool IsNull() const { return private_.IsNull(); }
+  bool IsNull() const;
 
-  BLINK_EXPORT WebNode ParentNode() const;
-  BLINK_EXPORT WebString NodeValue() const;
-  BLINK_EXPORT WebDocument GetDocument() const;
-  BLINK_EXPORT WebNode FirstChild() const;
-  BLINK_EXPORT WebNode LastChild() const;
-  BLINK_EXPORT WebNode PreviousSibling() const;
-  BLINK_EXPORT WebNode NextSibling() const;
+  WebNode ParentNode() const;
+  WebString NodeValue() const;
+  WebDocument GetDocument() const;
+  WebNode FirstChild() const;
+  WebNode LastChild() const;
+  WebNode PreviousSibling() const;
+  WebNode NextSibling() const;
 
-  BLINK_EXPORT bool IsLink() const;
-  BLINK_EXPORT bool IsDocumentNode() const;
-  BLINK_EXPORT bool IsDocumentTypeNode() const;
-  BLINK_EXPORT bool IsCommentNode() const;
-  BLINK_EXPORT bool IsTextNode() const;
-  BLINK_EXPORT bool IsFocusable() const;
-  BLINK_EXPORT bool IsContentEditable() const;
-  BLINK_EXPORT bool IsElementNode() const;
-  BLINK_EXPORT void SimulateClick();
+  bool IsLink() const;
+  bool IsDocumentNode() const;
+  bool IsDocumentTypeNode() const;
+  bool IsCommentNode() const;
+  bool IsTextNode() const;
+  bool IsFocusable() const;
+  bool IsContentEditable() const;
+  bool IsElementNode() const;
+  void SimulateClick();
 
   // The argument should be lower-cased.
-  BLINK_EXPORT WebElementCollection
-  GetElementsByHTMLTagName(const WebString&) const;
+  WebElementCollection GetElementsByHTMLTagName(const WebString&) const;
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
   // If the JS API would have thrown this returns null instead.
-  BLINK_EXPORT WebElement QuerySelector(const WebString& selector) const;
+  WebElement QuerySelector(const WebString& selector) const;
 
-  BLINK_EXPORT bool Focused() const;
+  bool Focused() const;
 
-  BLINK_EXPORT WebPluginContainer* PluginContainer() const;
+  WebPluginContainer* PluginContainer() const;
 
-  BLINK_EXPORT bool IsInsideFocusableElementOrARIAWidget() const;
+  bool IsInsideFocusableElementOrARIAWidget() const;
 
   template <typename T>
   T To();
@@ -109,9 +105,9 @@ class WebNode {
   const T ToConst() const;
 
 #if BLINK_IMPLEMENTATION
-  BLINK_EXPORT WebNode(Node*);
-  BLINK_EXPORT WebNode& operator=(Node*);
-  BLINK_EXPORT operator Node*() const;
+  WebNode(Node*);
+  WebNode& operator=(Node*);
+  operator Node*() const;
 
   template <typename T>
   T* Unwrap() {
@@ -135,20 +131,20 @@ class WebNode {
   BLINK_EXPORT const type WebNode::ToConst<type>() const;
 
 #if BLINK_IMPLEMENTATION
-#define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate) \
-  template <>                                       \
-  type WebNode::To<type>() {                        \
-    SECURITY_DCHECK(IsNull() || (predicate));       \
-    type result;                                    \
-    result.WebNode::Assign(*this);                  \
-    return result;                                  \
-  }                                                 \
-  template <>                                       \
-  const type WebNode::ToConst<type>() const {       \
-    SECURITY_DCHECK(IsNull() || (predicate));       \
-    type result;                                    \
-    result.WebNode::Assign(*this);                  \
-    return result;                                  \
+#define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate)        \
+  template <>                                              \
+  BLINK_EXPORT type WebNode::To<type>() {                  \
+    SECURITY_DCHECK(IsNull() || (predicate));              \
+    type result;                                           \
+    result.WebNode::Assign(*this);                         \
+    return result;                                         \
+  }                                                        \
+  template <>                                              \
+  BLINK_EXPORT const type WebNode::ToConst<type>() const { \
+    SECURITY_DCHECK(IsNull() || (predicate));              \
+    type result;                                           \
+    result.WebNode::Assign(*this);                         \
+    return result;                                         \
   }
 #endif
 
