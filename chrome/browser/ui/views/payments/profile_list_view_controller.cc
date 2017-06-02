@@ -388,6 +388,7 @@ ProfileListViewController::CreateExtraFooterView() {
       this, l10n_util::GetStringUTF16(GetSecondaryButtonTextId()));
   button->set_tag(GetSecondaryButtonTag());
   button->set_id(GetSecondaryButtonViewId());
+  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   extra_view->AddChildView(button);
 
   return extra_view;
