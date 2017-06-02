@@ -54,19 +54,12 @@ bool CheckTokenWithWhitespace(const String& token,
   return false;
 }
 
-}  // anonymous namespace
-
-DEFINE_TRACE(DOMTokenList) {
-  visitor->Trace(element_);
-}
-
 // This implements the common part of the following operations:
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
 // https://dom.spec.whatwg.org/#dom-domtokenlist-remove
 // https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
 // https://dom.spec.whatwg.org/#dom-domtokenlist-replace
-bool DOMTokenList::ValidateToken(const String& token,
-                                 ExceptionState& exception_state) const {
+bool CheckTokenSyntax(const String& token, ExceptionState& exception_state) {
   // 1. If token is the empty string, then throw a SyntaxError.
   if (!CheckEmptyToken(token, exception_state))
     return false;
@@ -76,14 +69,19 @@ bool DOMTokenList::ValidateToken(const String& token,
   return CheckTokenWithWhitespace(token, exception_state);
 }
 
-bool DOMTokenList::ValidateTokens(const Vector<String>& tokens,
-                                  ExceptionState& exception_state) const {
+bool CheckTokensSyntax(const Vector<String>& tokens,
+                       ExceptionState& exception_state) {
   for (const auto& token : tokens) {
-    if (!ValidateToken(token, exception_state))
+    if (!CheckTokenSyntax(token, exception_state))
       return false;
   }
-
   return true;
+}
+
+}  // anonymous namespace
+
+DEFINE_TRACE(DOMTokenList) {
+  visitor->Trace(element_);
 }
 
 // https://dom.spec.whatwg.org/#concept-domtokenlist-validation
@@ -107,9 +105,8 @@ void DOMTokenList::Add(const AtomicString& token) {
 // the bindings generator does not handle that.
 void DOMTokenList::add(const Vector<String>& tokens,
                        ExceptionState& exception_state) {
-  if (!ValidateTokens(tokens, exception_state))
+  if (!CheckTokensSyntax(tokens, exception_state))
     return;
-
   AddTokens(tokens);
 }
 
@@ -122,7 +119,7 @@ void DOMTokenList::Remove(const AtomicString& token) {
 // the bindings generator does not handle that.
 void DOMTokenList::remove(const Vector<String>& tokens,
                           ExceptionState& exception_state) {
-  if (!ValidateTokens(tokens, exception_state))
+  if (!CheckTokensSyntax(tokens, exception_state))
     return;
 
   // TODO(tkent): This null check doesn't conform to the DOM specification.
@@ -135,7 +132,7 @@ void DOMTokenList::remove(const Vector<String>& tokens,
 // https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
 bool DOMTokenList::toggle(const AtomicString& token,
                           ExceptionState& exception_state) {
-  if (!ValidateToken(token, exception_state))
+  if (!CheckTokenSyntax(token, exception_state))
     return false;
 
   // 4. If context object’s token set[token] exists, then:
@@ -155,7 +152,7 @@ bool DOMTokenList::toggle(const AtomicString& token,
 bool DOMTokenList::toggle(const AtomicString& token,
                           bool force,
                           ExceptionState& exception_state) {
-  if (!ValidateToken(token, exception_state))
+  if (!CheckTokenSyntax(token, exception_state))
     return false;
 
   // 4. If context object’s token set[token] exists, then:
