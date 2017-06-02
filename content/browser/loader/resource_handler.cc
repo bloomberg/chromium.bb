@@ -16,7 +16,9 @@ void ResourceHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-ResourceHandler::~ResourceHandler() {}
+ResourceHandler::~ResourceHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 ResourceHandler::ResourceHandler(net::URLRequest* request)
     : request_(request) {}

@@ -18,7 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/common/content_export.h"
 
@@ -43,8 +43,7 @@ struct ResourceResponse;
 // No ResourceHandler method other than OnWillRead will ever be called
 // synchronously when it calls into the ResourceController passed in to it,
 // either to resume or cancel the request.
-class CONTENT_EXPORT ResourceHandler
-    : public NON_EXPORTED_BASE(base::NonThreadSafe) {
+class CONTENT_EXPORT ResourceHandler {
  public:
   virtual ~ResourceHandler();
 
@@ -175,6 +174,8 @@ class CONTENT_EXPORT ResourceHandler
   net::URLRequest* request_;
   Delegate* delegate_;
   std::unique_ptr<ResourceController> controller_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ResourceHandler);
 };
