@@ -51,7 +51,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return 1
 
         jobs = self.latest_try_jobs()
-        self._log_scheduled_jobs(jobs)
+        self._log_jobs(jobs)
         builders_with_no_jobs = self.builders_with_no_jobs(jobs)
 
         if options.trigger_jobs and builders_with_no_jobs:
@@ -63,8 +63,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         builders_without_results = set(self._try_bots()) - builders_with_results
         if builders_without_results:
             _log.info('There are some builders with no results:')
-            for builder in sorted(builders_without_results):
-                _log.info('  %s', builder)
+            self._log_builder_list(builders_without_results)
 
         if not options.fill_missing and builders_without_results:
             options.fill_missing = self._tool.user.confirm(
@@ -139,24 +138,25 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """Returns the set of builders that don't have triggered builds."""
         return set(self._try_bots()) - {b.builder_name for b in builds}
 
-    def _log_scheduled_jobs(self, builds):
-        builders = self._builders_with_scheduled_jobs(builds)
-        if not builders:
-            return
-        _log.info('There are scheduled (but not yet started) builds for:')
+    def _log_jobs(self, jobs):
+        scheduled = {b.builder_name for b, s in jobs.items() if s.status == 'SCHEDULED'}
+        if scheduled:
+            _log.info('Builders with scheduled builds:')
+            self._log_builder_list(scheduled)
+        started = {b.builder_name for b, s in jobs.items() if s.status == 'STARTED'}
+        if started:
+            _log.info('Builders with started builds:')
+            self._log_builder_list(started)
+
+    def _log_builder_list(self, builders):
         for builder in sorted(builders):
             _log.info('  %s', builder)
-
-    def _builders_with_scheduled_jobs(self, builds):
-        """Returns the set of builders that have scheduled builds
-        that have not yet started."""
-        return {b.builder_name for b in builds if b.build_number is None}
 
     def _try_bots(self):
         """Returns a collection of try bot builders to fetch results for."""
         return self._tool.builders.all_try_builder_names()
 
-    def _fetch_results(self, builds):
+    def _fetch_results(self, jobs):
         """Fetches results for all of the given builds.
 
         There should be a one-to-one correspondence between Builds, supported
@@ -166,7 +166,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         that's missing results.
 
         Args:
-            builds: A list of Build objects.
+            jobs: A dict mapping Build objects to TryJobStatus objects.
 
         Returns:
             A dict mapping Build to LayoutTestResults, or None if any results
@@ -174,7 +174,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """
         buildbot = self._tool.buildbot
         results = {}
-        for build in builds:
+        for build, _ in jobs.iteritems():
             results_url = buildbot.results_url(build.builder_name, build.build_number)
             layout_test_results = buildbot.fetch_results(build)
             if layout_test_results is None:
