@@ -14,7 +14,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -37,6 +36,7 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -295,7 +295,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     EXPECT_EQ(version, component->version.GetString());
   }
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
   base::ScopedPathOverride user_data_dir_override_;
   safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;

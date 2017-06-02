@@ -383,6 +383,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
 }
 
 ProfileManager::~ProfileManager() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
