@@ -72,24 +72,24 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   // visible app 2, last_activity_time less than visible app 1.
   ASSERT_TRUE(candidates[2].app());
   EXPECT_EQ("visible2", candidates[2].app()->process_name());
-  // pinned and media.
-  ASSERT_TRUE(candidates[3].tab());
-  EXPECT_EQ(300, candidates[3].tab()->tab_contents_id);
-  // media.
-  ASSERT_TRUE(candidates[4].tab());
-  EXPECT_EQ(400, candidates[4].tab()->tab_contents_id);
-  // pinned.
-  ASSERT_TRUE(candidates[5].tab());
-  EXPECT_EQ(100, candidates[5].tab()->tab_contents_id);
-  // chrome app.
-  ASSERT_TRUE(candidates[6].tab());
-  EXPECT_EQ(500, candidates[6].tab()->tab_contents_id);
-  // internal page.
-  ASSERT_TRUE(candidates[7].tab());
-  EXPECT_EQ(200, candidates[7].tab()->tab_contents_id);
   // background service.
-  ASSERT_TRUE(candidates[8].app());
-  EXPECT_EQ("service", candidates[8].app()->process_name());
+  ASSERT_TRUE(candidates[3].app());
+  EXPECT_EQ("service", candidates[3].app()->process_name());
+  // pinned and media.
+  ASSERT_TRUE(candidates[4].tab());
+  EXPECT_EQ(300, candidates[4].tab()->tab_contents_id);
+  // media.
+  ASSERT_TRUE(candidates[5].tab());
+  EXPECT_EQ(400, candidates[5].tab()->tab_contents_id);
+  // pinned.
+  ASSERT_TRUE(candidates[6].tab());
+  EXPECT_EQ(100, candidates[6].tab()->tab_contents_id);
+  // chrome app.
+  ASSERT_TRUE(candidates[7].tab());
+  EXPECT_EQ(500, candidates[7].tab()->tab_contents_id);
+  // internal page.
+  ASSERT_TRUE(candidates[8].tab());
+  EXPECT_EQ(200, candidates[8].tab()->tab_contents_id);
 }
 
 // Occasionally, Chrome sees both FOCUSED_TAB and FOCUSED_APP at the same time.
@@ -241,12 +241,12 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   // app "persistent_ui" pid: 60
   // app "visible1"      pid: 20
   // app "visible2"      pid: 40
+  // app "service"       pid: 30
   // tab3                pid: 12
   // tab4                pid: 12
   // tab1                pid: 11
   // tab5                pid: 12
   // tab2                pid: 11
-  // app "service"       pid: 30
   tab_manager_delegate.AdjustOomPrioritiesImpl(tab_list, arc_processes);
   auto& oom_score_map = tab_manager_delegate.oom_score_map_;
 
@@ -261,13 +261,13 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
 
   // Higher priority part.
   EXPECT_EQ(300, oom_score_map[10]);
-  EXPECT_EQ(344, oom_score_map[20]);
-  EXPECT_EQ(388, oom_score_map[40]);
-  EXPECT_EQ(431, oom_score_map[12]);
-  EXPECT_EQ(475, oom_score_map[11]);
+  EXPECT_EQ(388, oom_score_map[20]);
+  EXPECT_EQ(475, oom_score_map[40]);
+  EXPECT_EQ(563, oom_score_map[30]);
 
   // Lower priority part.
-  EXPECT_EQ(650, oom_score_map[30]);
+  EXPECT_EQ(650, oom_score_map[12]);
+  EXPECT_EQ(720, oom_score_map[11]);
 }
 
 TEST_F(TabManagerDelegateTest, IsRecentlyKilledArcProcess) {
@@ -392,19 +392,19 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // app "persistent"  pid: 60  nspid 6
   // app "visible1"    pid: 20  nspid 2
   // app "visible2"    pid: 40  nspid 4
+  // app "not-visible" pid: 50  nspid 5
+  // app "service"     pid: 30  nspid 3
   // tab3              pid: 12  tab_contents_id 3
   // tab4              pid: 12  tab_contents_id 4
   // tab1              pid: 11  tab_contents_id 1
   // tab5              pid: 12  tab_contents_id 5
   // tab2              pid: 11  tab_contents_id 2
-  // app "not-visible" pid: 50  nspid 5
-  // app "service"     pid: 30  nspid 3
   memory_stat->SetTargetMemoryToFreeKB(250000);
   // Entities to be killed.
-  memory_stat->SetProcessPss(30, 10000);
-  memory_stat->SetProcessPss(50, 5000);
-  memory_stat->SetProcessPss(11, 200000);
+  memory_stat->SetProcessPss(11, 50000);
   memory_stat->SetProcessPss(12, 30000);
+  memory_stat->SetProcessPss(30, 10000);
+  memory_stat->SetProcessPss(50, 60000);
   // Should not be used.
   memory_stat->SetProcessPss(60, 500000);
   memory_stat->SetProcessPss(40, 50000);
@@ -421,12 +421,15 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   EXPECT_EQ(3, killed_arc_processes[0]);
   EXPECT_EQ(5, killed_arc_processes[1]);
   // Killed tabs and their content id.
-  // Note that process with pid 11 is counted twice. But so far I don't have a
-  // good way to estimate the memory freed if multiple tabs share one process.
-  ASSERT_EQ(3U, killed_tabs.size());
+  // Note that process with pid 11 is counted twice and pid 12 is counted 3
+  // times. But so far I don't have a good way to estimate the memory freed
+  // if multiple tabs share one process.
+  ASSERT_EQ(5U, killed_tabs.size());
   EXPECT_EQ(2, killed_tabs[0]);
   EXPECT_EQ(5, killed_tabs[1]);
   EXPECT_EQ(1, killed_tabs[2]);
+  EXPECT_EQ(4, killed_tabs[3]);
+  EXPECT_EQ(3, killed_tabs[4]);
 
   // Check that killed apps are in the map.
   const TabManagerDelegate::KilledArcProcessesMap& processes_map =

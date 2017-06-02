@@ -675,12 +675,11 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   int range_middle =
       (chrome::kLowestRendererOomScore + chrome::kHighestRendererOomScore) / 2;
 
-  // Find some pivot point. For now processes with priority >= CHROME_INTERNAL
-  // are prone to be affected by LRU change. Taking them as "high priority"
-  // processes.
+  // Find some pivot point. For now (roughly) apps are in the first half and
+  // tabs are in the second half.
   auto lower_priority_part = candidates.end();
   for (auto it = candidates.begin(); it != candidates.end(); ++it) {
-    if (it->process_type() >= ProcessType::BACKGROUND_APP) {
+    if (it->process_type() >= ProcessType::BACKGROUND_TAB) {
       lower_priority_part = it;
       break;
     }
