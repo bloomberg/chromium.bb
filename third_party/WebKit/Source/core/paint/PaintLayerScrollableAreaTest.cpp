@@ -228,7 +228,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
-  EXPECT_TRUE(paint_layer->GraphicsLayerBacking());
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 }
@@ -260,7 +259,6 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
-  EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
 TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
@@ -282,7 +280,6 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
-  EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
@@ -313,7 +310,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
-  EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
