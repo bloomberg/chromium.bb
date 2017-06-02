@@ -4,7 +4,7 @@
 <link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <style>
 .grid { font: 20px/1 Ahem; }
-.item { margin: 10px 5px 5px 15px; }
+.item { margin: 10px 5px 20px 15px; }
 </style>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -15,18 +15,18 @@
 <p>This test checks that grid items' margin is computed correctly for content-sized tracks when using different writing modes.</p>
 
 <div style="position: relative">
-    <div class="grid fit-content itemsStart" data-expected-width="40" data-expected-height="140">
+    <div class="grid fit-content itemsStart" data-expected-width="40" data-expected-height="200">
         <div class="item verticalLR" data-offset-x="15" data-offset-y="10"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item verticalLR" data-offset-x="15" data-offset-y="45"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item verticalLR" data-offset-x="15" data-offset-y="80"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item verticalLR" data-offset-x="15" data-offset-y="115" data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item verticalLR" data-offset-x="15" data-offset-y="60"  data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item verticalLR" data-offset-x="15" data-offset-y="110" data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item verticalLR" data-offset-x="15" data-offset-y="160" data-expected-width="20" data-expected-height="20">X</div>
     </div>
 </div>
 
 <br>
 
 <div style="position: relative">
-    <div class="grid gridAutoFlowColumnSparse fit-content itemsStart" data-expected-width="160" data-expected-height="35">
+    <div class="grid gridAutoFlowColumnSparse fit-content itemsStart" data-expected-width="160" data-expected-height="50">
         <div class="item verticalLR" data-offset-x="15"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
         <div class="item verticalLR" data-offset-x="55"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
         <div class="item verticalLR" data-offset-x="95"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
@@ -37,7 +37,7 @@
 <br>
 
 <div style="position: relative">
-    <div class="grid fit-content verticalLR itemsStart" data-expected-width="160" data-expected-height="35">
+    <div class="grid fit-content verticalLR itemsStart" data-expected-width="160" data-expected-height="50">
         <div class="item horizontalTB" data-offset-x="15"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
         <div class="item horizontalTB" data-offset-x="55"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
         <div class="item horizontalTB" data-offset-x="95"  data-offset-y="10" data-expected-width="20" data-expected-height="20">X</div>
@@ -48,11 +48,11 @@
 <br>
 
 <div style="position: relative">
-    <div class="grid gridAutoFlowColumnSparse fit-content verticalLR itemsStart" data-expected-width="40" data-expected-height="140">
+    <div class="grid gridAutoFlowColumnSparse fit-content verticalLR itemsStart" data-expected-width="40" data-expected-height="200">
         <div class="item horizontalTB" data-offset-x="15" data-offset-y="10"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item horizontalTB" data-offset-x="15" data-offset-y="45"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item horizontalTB" data-offset-x="15" data-offset-y="80"  data-expected-width="20" data-expected-height="20">X</div>
-        <div class="item horizontalTB" data-offset-x="15" data-offset-y="115" data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item horizontalTB" data-offset-x="15" data-offset-y="60"  data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item horizontalTB" data-offset-x="15" data-offset-y="110" data-expected-width="20" data-expected-height="20">X</div>
+        <div class="item horizontalTB" data-offset-x="15" data-offset-y="160" data-expected-width="20" data-expected-height="20">X</div>
     </div>
 </div>
 
