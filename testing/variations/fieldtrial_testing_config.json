@@ -475,6 +475,22 @@
             ]
         }
     ],
+    "ClientSidePreviews": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2G_2",
+                    "params": {
+                        "max_allowed_effective_connection_type": "2G",
+                        "show_offline_pages": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "ContextualSearch": [
         {
             "platforms": [
