@@ -124,6 +124,10 @@ class Initializer : public OAuth2TokenService::Observer {
       active_host_network_state_updater_;
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
+  std::unique_ptr<HostScanCache> host_scan_cache_;
+  std::unique_ptr<base::DefaultClock> clock_;
+  std::unique_ptr<HostScanner> host_scanner_;
+  std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
   std::unique_ptr<TetherConnector> tether_connector_;
   std::unique_ptr<TetherDisconnector> tether_disconnector_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;
@@ -131,10 +135,6 @@ class Initializer : public OAuth2TokenService::Observer {
       network_connection_handler_tether_delegate_;
   std::unique_ptr<TetherNetworkDisconnectionHandler>
       tether_network_disconnection_handler_;
-  std::unique_ptr<HostScanCache> host_scan_cache_;
-  std::unique_ptr<base::DefaultClock> clock_;
-  std::unique_ptr<HostScanner> host_scanner_;
-  std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
 
   base::WeakPtrFactory<Initializer> weak_ptr_factory_;
 

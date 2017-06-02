@@ -193,11 +193,24 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
                                                       network_state_handler_);
   device_id_tether_network_guid_map_ =
       base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+  host_scan_cache_ = base::MakeUnique<HostScanCache>(
+      network_state_handler_, active_host_.get(),
+      tether_host_response_recorder_.get(),
+      device_id_tether_network_guid_map_.get());
+  clock_ = base::MakeUnique<base::DefaultClock>();
+  host_scanner_ = base::MakeUnique<HostScanner>(
+      tether_host_fetcher_.get(), ble_connection_manager_.get(),
+      host_scan_device_prioritizer_.get(), tether_host_response_recorder_.get(),
+      notification_presenter_.get(), device_id_tether_network_guid_map_.get(),
+      host_scan_cache_.get(), clock_.get());
+  host_scan_scheduler_ = base::MakeUnique<HostScanScheduler>(
+      network_state_handler_, host_scanner_.get());
   tether_connector_ = base::MakeUnique<TetherConnector>(
       network_state_handler_, wifi_hotspot_connector_.get(), active_host_.get(),
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       tether_host_response_recorder_.get(),
-      device_id_tether_network_guid_map_.get());
+      device_id_tether_network_guid_map_.get(), host_scan_cache_.get(),
+      notification_presenter_.get());
   network_configuration_remover_ =
       base::MakeUnique<NetworkConfigurationRemover>(
           network_state_handler_, managed_network_configuration_handler_);
@@ -214,18 +227,6 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
           network_connection_handler_, tether_connector_.get(),
           tether_disconnector_.get());
-  host_scan_cache_ = base::MakeUnique<HostScanCache>(
-      network_state_handler_, active_host_.get(),
-      tether_host_response_recorder_.get(),
-      device_id_tether_network_guid_map_.get());
-  clock_ = base::MakeUnique<base::DefaultClock>();
-  host_scanner_ = base::MakeUnique<HostScanner>(
-      tether_host_fetcher_.get(), ble_connection_manager_.get(),
-      host_scan_device_prioritizer_.get(), tether_host_response_recorder_.get(),
-      notification_presenter_.get(), device_id_tether_network_guid_map_.get(),
-      host_scan_cache_.get(), clock_.get());
-  host_scan_scheduler_ = base::MakeUnique<HostScanScheduler>(
-      network_state_handler_, host_scanner_.get());
 
   // Because Initializer is created on each user log in, it's appropriate to
   // call this method now.

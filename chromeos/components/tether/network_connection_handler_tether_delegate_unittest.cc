@@ -73,7 +73,9 @@ class MockTetherConnector : public TetherConnector {
                         nullptr /* tether_host_fetcher */,
                         nullptr /* connection_manager */,
                         nullptr /* tether_host_response_recorder */,
-                        nullptr /* device_id_tether_network_guid_map */) {}
+                        nullptr /* device_id_tether_network_guid_map */,
+                        nullptr /* host_scan_cache */,
+                        nullptr /* notification_presenter */) {}
   ~MockTetherConnector() override {}
 
   MOCK_METHOD3(
@@ -149,4 +151,4 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest, TestDisconnect) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos
