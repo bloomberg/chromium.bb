@@ -1127,8 +1127,8 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
           form_element_observer_ = blink::WebFormElementObserver::Create(
               provisionally_saved_form_.input_element(), std::move(callback));
         }
-        return;
       }
+      return;
     }
   }
 
