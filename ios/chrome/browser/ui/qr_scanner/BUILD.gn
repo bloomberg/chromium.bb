@@ -52,6 +52,7 @@ source_set("qr_scanner") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "qr_scanner_view_controller_egtest.mm",
