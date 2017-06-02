@@ -7,6 +7,7 @@ import optparse
 
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.git_cl import TryJobStatus
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.log_testing import LoggingTestCase
@@ -23,11 +24,11 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         BaseTestCase.setUp(self)
         LoggingTestCase.setUp(self)
 
-        builds = [
-            Build('MOCK Try Win', 5000),
-            Build('MOCK Try Mac', 4000),
-            Build('MOCK Try Linux', 6000),
-        ]
+        builds = {
+            Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'FAILURE'),
+        }
 
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
@@ -148,11 +149,11 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_flaky_test_that_fails_on_retry(self):
         # In this example, one test failed both with and without the patch
         # in the try job, so it is not rebaselined.
-        builds = [
-            Build('MOCK Try Win', 5000),
-            Build('MOCK Try Mac', 4000),
-            Build('MOCK Try Linux', 6000),
-        ]
+        builds = {
+            Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'FAILURE'),
+        }
         for build in builds:
             self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
                 'failures': ['one/text-fail.html'],
@@ -183,10 +184,10 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_trigger_jobs_option(self):
-        builds = [
-            Build('MOCK Try Win', 5000),
-            Build('MOCK Try Mac', 4000),
-        ]
+        builds = {
+            Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
+        }
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
         git_cl.latest_try_jobs = lambda _: builds
@@ -201,10 +202,10 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_with_no_trigger_jobs_option(self):
-        builds = [
-            Build('MOCK Try Win', 5000),
-            Build('MOCK Try Mac', 4000),
-        ]
+        builds = {
+            Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
+        }
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
         git_cl.latest_try_jobs = lambda _: builds
@@ -273,19 +274,15 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'webkit-patch rebaseline-cl to fetch new baselines.\n',
         ])
 
-    def test_builders_with_scheduled_jobs(self):
-        # Test for protected method - pylint: disable=protected-access
-        builds = [Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]
-        self.assertEqual(
-            self.command._builders_with_scheduled_jobs(builds),
-            {'MOCK Try Linux'})
-
     def test_builders_with_no_jobs(self):
-        # In this example, Linux has a scheduled but not started build, Win has
-        # a started or finished build, and Mac has no triggered build.
-        # MOCK Try Mac is listed because it's listed in the BuilderList in setUp.
+        # In this example, Linux has a scheduled but not started build,
+        # and Mac has no triggered build.
         # Test for protected method - pylint: disable=protected-access
-        builds = [Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]
+        builds = {
+            Build('MOCK Try Linux', None): TryJobStatus('SCHEDULED'),
+            Build('MOCK Try Win', 123): TryJobStatus('STARTED'),
+        }
+        # MOCK Try Mac is here because it's listed in the BuilderList in setUp.
         self.assertEqual(self.command.builders_with_no_jobs(builds), {'MOCK Try Mac'})
 
     def test_bails_when_one_build_is_missing_results(self):
