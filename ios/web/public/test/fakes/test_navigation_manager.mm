@@ -75,6 +75,15 @@ web::NavigationItem* TestNavigationManager::GetItemAtIndex(size_t index) const {
   return items_[index].get();
 }
 
+int TestNavigationManager::GetIndexOfItem(
+    const web::NavigationItem* item) const {
+  for (size_t index = 0; index < items_.size(); ++index) {
+    if (items_[index].get() == item)
+      return index;
+  }
+  return -1;
+}
+
 void TestNavigationManager::SetLastCommittedItemIndex(const int index) {
   DCHECK(index == -1 || index >= 0 && index < GetItemCount());
   items_index_ = index;

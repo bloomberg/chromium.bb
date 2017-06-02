@@ -130,6 +130,9 @@ class NavigationManager {
   // Returns the committed NavigationItem at |index|.
   virtual NavigationItem* GetItemAtIndex(size_t index) const = 0;
 
+  // Returns the index of |item| in the committed session history.
+  virtual int GetIndexOfItem(const NavigationItem* item) const = 0;
+
   // Returns the index of the last committed item or -1 if the last
   // committed item correspond to a new navigation.
   // TODO(crbug.com/533848): Update to return size_t.

@@ -147,8 +147,8 @@ struct Referrer;
 - (BOOL)isSameDocumentNavigationBetweenItem:(web::NavigationItem*)firstItem
                                     andItem:(web::NavigationItem*)secondItem;
 
-// Returns the index of |item| in |items|.
-- (NSInteger)indexOfItem:(const web::NavigationItem*)item;
+// Returns the index of |item| in |items|, or -1 if it is not present.
+- (int)indexOfItem:(const web::NavigationItem*)item;
 
 // Returns the item at |index| in |items|.
 - (web::NavigationItemImpl*)itemAtIndex:(NSInteger)index;

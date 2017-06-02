@@ -1363,4 +1363,28 @@ TEST_F(NavigationManagerTest, RewritingAppSpecificUrls) {
   EXPECT_EQ(rewritten_url4, navigation_manager()->GetPendingItem()->GetURL());
 }
 
+// Tests that GetIndexOfItem() returns the correct values.
+TEST_F(NavigationManagerTest, GetIndexOfItem) {
+  // Create two items and add them to the NavigationManagerImpl.
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->CommitPendingItem();
+  web::NavigationItem* item0 = navigation_manager()->GetLastCommittedItem();
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->CommitPendingItem();
+  web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
+  // Create an item that does not exist in the NavigationManagerImpl.
+  std::unique_ptr<web::NavigationItem> item_not_found =
+      web::NavigationItem::Create();
+  // Verify GetIndexOfItem() results.
+  EXPECT_EQ(0, navigation_manager()->GetIndexOfItem(item0));
+  EXPECT_EQ(1, navigation_manager()->GetIndexOfItem(item1));
+  EXPECT_EQ(-1, navigation_manager()->GetIndexOfItem(item_not_found.get()));
+}
+
 }  // namespace web

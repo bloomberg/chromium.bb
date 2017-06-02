@@ -10,7 +10,6 @@ specific_include_rules = {
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],
   "^browser_view_controller_unittest\.mm$": [
-    "+ios/web/navigation/crw_session_controller.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
     "+ios/web/web_state/web_state_impl.h",
   ],

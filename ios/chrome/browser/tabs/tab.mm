@@ -108,7 +108,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/favicon_status.h"
@@ -1076,14 +1075,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)goToItem:(const web::NavigationItem*)item {
   DCHECK(item);
-
-  if (self.navigationManager) {
-    CRWSessionController* sessionController =
-        [self navigationManagerImpl]->GetSessionController();
-    NSInteger itemIndex = [sessionController indexOfItem:item];
-    DCHECK_NE(itemIndex, NSNotFound);
-    self.navigationManager->GoToIndex(itemIndex);
-  }
+  int index = self.navigationManager->GetIndexOfItem(item);
+  DCHECK_NE(index, -1);
+  self.navigationManager->GoToIndex(index);
 }
 
 - (BOOL)openExternalURL:(const GURL&)url
