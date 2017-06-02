@@ -364,11 +364,18 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       if (!view_for_activation) {
         view_for_activation = GetWidget()->GetRootView();
       } else if (view_for_activation == focus_manager->GetStoredFocusView()) {
-        focus_manager->RestoreFocusedView();
-        // Set to false if desktop native widget has activated activation
-        // change, so that aura window activation change focus restore operation
-        // can be ignored.
-        restore_focus_on_activate_ = false;
+        // When desktop native widget has modal transient child, we don't
+        // restore focused view here, as the modal transient child window will
+        // get activated and focused. Thus, we are not left with multiple
+        // focuses. For aura child widgets, since their views are managed by
+        // |focus_manager|, we then allow restoring focused view.
+        if (!wm::GetModalTransient(GetWidget()->GetNativeView())) {
+          focus_manager->RestoreFocusedView();
+          // Set to false if desktop native widget has activated activation
+          // change, so that aura window activation change focus restore
+          // operation can be ignored.
+          restore_focus_on_activate_ = false;
+        }
       }
       activation_client->ActivateWindow(
           view_for_activation->GetWidget()->GetNativeView());

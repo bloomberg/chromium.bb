@@ -1271,6 +1271,52 @@ TEST_F(WidgetTestInteractive, RestoreAfterMinimize) {
   widget->CloseNow();
 }
 
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// Tests that when a desktop native widget has modal transient child, it should
+// avoid restore focused view itself as the modal transient child window will do
+// that, thus avoids having multiple focused view visually (crbug.com/727641).
+TEST_F(WidgetTestInteractive, DesktopNativeWidgetWithModalTransientChild) {
+  // Create a top level desktop native widget.
+  Widget* top_level = CreateWidget();
+
+  Textfield* textfield = new Textfield;
+  textfield->SetBounds(0, 0, 200, 20);
+  top_level->GetRootView()->AddChildView(textfield);
+  ShowSync(top_level);
+  textfield->RequestFocus();
+  EXPECT_TRUE(textfield->HasFocus());
+
+  // Create a modal dialog.
+  // This instance will be destroyed when the dialog is destroyed.
+  ModalDialogDelegate* dialog_delegate =
+      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+  Widget* modal_dialog_widget = DialogDelegate::CreateDialogWidget(
+      dialog_delegate, nullptr, top_level->GetNativeView());
+  modal_dialog_widget->SetBounds(gfx::Rect(0, 0, 100, 10));
+  Textfield* dialog_textfield = new Textfield;
+  dialog_textfield->SetBounds(0, 0, 50, 5);
+  modal_dialog_widget->GetRootView()->AddChildView(dialog_textfield);
+  // Dialog widget doesn't need a ShowSync as it gains active status
+  // synchronously.
+  modal_dialog_widget->Show();
+  dialog_textfield->RequestFocus();
+  EXPECT_TRUE(dialog_textfield->HasFocus());
+  EXPECT_FALSE(textfield->HasFocus());
+
+  DeactivateSync(top_level);
+  EXPECT_FALSE(dialog_textfield->HasFocus());
+  EXPECT_FALSE(textfield->HasFocus());
+
+  // After deactivation and activation of top level widget, only modal dialog
+  // should restore focused view.
+  ActivateSync(top_level);
+  EXPECT_TRUE(dialog_textfield->HasFocus());
+  EXPECT_FALSE(textfield->HasFocus());
+
+  top_level->CloseNow();
+}
+#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
+
 namespace {
 
 // Helper class for CaptureLostTrackingWidget to store whether
