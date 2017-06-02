@@ -15,6 +15,8 @@ static_library("ntp_snippets") {
     "bookmarks/bookmark_last_visit_utils.h",
     "bookmarks/bookmark_suggestions_provider.cc",
     "bookmarks/bookmark_suggestions_provider.h",
+    "breaking_news/subscription_json_request.cc",
+    "breaking_news/subscription_json_request.h",
     "callbacks.h",
     "category.cc",
     "category.h",
@@ -141,6 +143,7 @@ source_set("unit_tests") {
   sources = [
     "bookmarks/bookmark_last_visit_utils_unittest.cc",
     "bookmarks/bookmark_suggestions_provider_unittest.cc",
+    "breaking_news/subscription_json_request_unittest.cc",
     "category_rankers/click_based_category_ranker_unittest.cc",
     "category_rankers/constant_category_ranker_unittest.cc",
     "category_unittest.cc",
