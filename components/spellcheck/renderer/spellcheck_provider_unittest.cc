@@ -29,8 +29,9 @@ TEST_F(SpellCheckProviderCacheTest, SubstringWithMisspellings) {
 
   blink::WebVector<blink::WebTextCheckingResult> last_results;
   std::vector<blink::WebTextCheckingResult> results;
-  results.push_back(blink::WebTextCheckingResult(
-      blink::kWebTextDecorationTypeSpelling, 5, 3, blink::WebString("isq")));
+  results.push_back(
+      blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 5, 3,
+                                   std::vector<blink::WebString>({"isq"})));
   last_results.Assign(results);
   provider_.SetLastResults(base::ASCIIToUTF16("This isq a test"), last_results);
   EXPECT_TRUE(provider_.SatisfyRequestFromCache(

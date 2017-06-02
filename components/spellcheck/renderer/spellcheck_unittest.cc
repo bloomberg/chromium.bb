@@ -1201,9 +1201,10 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
       SpellCheckResult::SPELLING, 6, 6,
       base::WideToUTF16(L"haven" TYPOGRAPHICAL_APOSTROPHE L"t")));
   spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 13, 10, base::WideToUTF16(
-            L"in" TYPOGRAPHICAL_APOSTROPHE L"n" TYPOGRAPHICAL_APOSTROPHE L"out"
-            TYPOGRAPHICAL_APOSTROPHE L"s")));
+      SpellCheckResult::SPELLING, 13, 10,
+      base::WideToUTF16(
+          L"in" TYPOGRAPHICAL_APOSTROPHE L"n" TYPOGRAPHICAL_APOSTROPHE L"ou"
+          L"t" TYPOGRAPHICAL_APOSTROPHE L"s")));
 
   // Replacements that differ only by apostrophe type should be ignored.
   spellcheck_results.push_back(
@@ -1213,26 +1214,71 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
       SpellCheckResult(SpellCheckResult::SPELLING, 29, 4,
                        base::WideToUTF16(L"I" TYPOGRAPHICAL_APOSTROPHE L"ve")));
 
+  // If we have no suggested replacements, we should keep this misspelling.
+  spellcheck_results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 0, 5, std::vector<base::string16>()));
+
+  // If we have multiple replacements that all differ only by apostrophe type,
+  // we should ignore this misspelling.
+  spellcheck_results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 0, 11,
+      std::vector<base::string16>(
+          {base::UTF8ToUTF16("Ik've havn'"),
+           base::WideToUTF16(L"Ik" TYPOGRAPHICAL_APOSTROPHE
+                             "ve havn" TYPOGRAPHICAL_APOSTROPHE)})));
+
+  // If we have multiple replacements where some only differ by apostrophe type
+  // and some don't, we should keep this misspelling, but remove the
+  // replacements that only differ by apostrophe type.
+  spellcheck_results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 0, 5,
+      std::vector<base::string16>(
+          {base::UTF8ToUTF16("I've"), base::UTF8ToUTF16("Ive"),
+           base::WideToUTF16(L"Ik" TYPOGRAPHICAL_APOSTROPHE "ve")})));
+
+  // Similar to the previous case except with the apostrophe changing from
+  // typographical to straight instead of the other direction
+  spellcheck_results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 6, 6,
+      std::vector<base::string16>({base::UTF8ToUTF16("havn't"),
+                                   base::UTF8ToUTF16("havnt"),
+                                   base::UTF8ToUTF16("haven't")})));
+
+  // If we have multiple replacements, none of which differ only by apostrophe
+  // type, we should keep this misspelling.
+  spellcheck_results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 6, 6,
+      std::vector<base::string16>(
+          {base::UTF8ToUTF16("have"), base::UTF8ToUTF16("haven't")})));
+
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
                                            text, spellcheck_results,
                                            &textcheck_results);
 
-  static const wchar_t* kExpectedReplacements[] = {
-      L"I've",
-      L"haven" TYPOGRAPHICAL_APOSTROPHE L"t",
-      L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out's",
-      L"I've",
-      L"haven" TYPOGRAPHICAL_APOSTROPHE L"t",
-      L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out" TYPOGRAPHICAL_APOSTROPHE L"s",
+  static std::vector<std::vector<const wchar_t*>> kExpectedReplacements = {
+      {L"I've"},
+      {L"haven" TYPOGRAPHICAL_APOSTROPHE L"t"},
+      {L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out's"},
+      {L"I've"},
+      {L"haven" TYPOGRAPHICAL_APOSTROPHE L"t"},
+      {L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out" TYPOGRAPHICAL_APOSTROPHE L"s"},
+      std::vector<const wchar_t*>(),
+      {L"I've", L"Ive"},
+      {L"havnt", L"haven" TYPOGRAPHICAL_APOSTROPHE "t"},
+      {L"have", L"haven" TYPOGRAPHICAL_APOSTROPHE "t"},
   };
 
-  ASSERT_EQ(arraysize(kExpectedReplacements), textcheck_results.size());
-  for (size_t i = 0; i < arraysize(kExpectedReplacements); ++i) {
-    EXPECT_EQ(base::WideToUTF16(kExpectedReplacements[i]),
-              textcheck_results[i].replacement.Utf16())
-        << "i=" << i << "\nactual: \""
-        << textcheck_results[i].replacement.Utf16() << "\"";
+  ASSERT_EQ(kExpectedReplacements.size(), textcheck_results.size());
+  for (size_t i = 0; i < kExpectedReplacements.size(); ++i) {
+    EXPECT_EQ(kExpectedReplacements[i].size(),
+              textcheck_results[i].replacements.size());
+    for (size_t j = 0; j < kExpectedReplacements[i].size(); ++j) {
+      EXPECT_EQ(base::WideToUTF16(kExpectedReplacements[i][j]),
+                textcheck_results[i].replacements[j].Utf16())
+          << "i=" << i << "\nj=" << j << "\nactual: \""
+          << textcheck_results[i].replacements[j].Utf16() << "\"";
+    }
   }
 }
 

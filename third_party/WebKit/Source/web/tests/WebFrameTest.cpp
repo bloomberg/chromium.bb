@@ -6605,9 +6605,9 @@ class TextCheckClient : public WebTextCheckClient {
     Vector<WebTextCheckingResult> results;
     const int kMisspellingStartOffset = 1;
     const int kMisspellingLength = 8;
-    results.push_back(WebTextCheckingResult(kWebTextDecorationTypeSpelling,
-                                            kMisspellingStartOffset,
-                                            kMisspellingLength, WebString()));
+    results.push_back(WebTextCheckingResult(
+        kWebTextDecorationTypeSpelling, kMisspellingStartOffset,
+        kMisspellingLength, WebVector<WebString>()));
     completion->DidFinishCheckingText(results);
   }
   int NumberOfTimesChecked() const { return number_of_times_checked_; }
