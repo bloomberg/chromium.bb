@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -86,10 +87,8 @@ void TransformerHelper::SetRootWindowTransformer(
   window->SetTransform(transformer_->GetTransform());
   // If the layer is not animating with a transform animation, then we need to
   // update the root window size immediately.
-  ui::Layer* layer = window->layer();
-  ui::LayerAnimator* animator = layer->GetAnimator();
-  if (!animator->is_animating() ||
-      layer->transform() == animator->GetTargetTransform()) {
+  if (!window->layer()->GetAnimator()->IsAnimatingProperty(
+          ui::LayerAnimationElement::TRANSFORM)) {
     host->UpdateRootWindowSizeInPixels(host->GetBoundsInPixels().size());
   }
 }
