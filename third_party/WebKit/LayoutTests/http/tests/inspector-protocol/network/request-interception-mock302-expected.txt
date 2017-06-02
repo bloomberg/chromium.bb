@@ -1,0 +1,16 @@
+CONSOLE MESSAGE: line 1: Hello from final.js!
+Tests a mock 302 resource.
+
+Test started
+Network agent enabled
+Request interception enabled
+Page agent enabled
+Runtime agent enabled
+Network.requestIntercepted ID 1 GET redirect-iframe.html
+allowRequest ID 1
+Network.responseReceived redirect-iframe.html 200 text/html
+Network.requestIntercepted ID 2 GET redirect1.pl
+mockResponse ID 2
+Network.responseReceived final.js 200 application/x-javascript
+Page.frameStoppedLoading
+

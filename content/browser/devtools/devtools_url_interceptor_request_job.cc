@@ -1,0 +1,561 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/devtools/devtools_url_interceptor_request_job.h"
+
+#include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
+#include "content/browser/devtools/protocol/network_handler.h"
+#include "net/base/elements_upload_data_stream.h"
+#include "net/base/io_buffer.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_element_reader.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
+#include "net/url_request/url_request_context.h"
+
+namespace content {
+
+namespace {
+void SendRequestInterceptedEventOnUiThread(
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    std::string interception_id,
+    std::unique_ptr<protocol::Network::Request> network_request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!network_handler)
+    return;
+  network_handler->frontend()->RequestIntercepted(interception_id,
+                                                  std::move(network_request));
+}
+
+void SendRedirectInterceptedEventOnUiThread(
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    std::string interception_id,
+    std::unique_ptr<protocol::Network::Request> network_request,
+    std::unique_ptr<protocol::Object> headers_object,
+    int http_status_code,
+    std::string redirect_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!network_handler)
+    return;
+  return network_handler->frontend()->RequestIntercepted(
+      interception_id, std::move(network_request), std::move(headers_object),
+      http_status_code, redirect_url);
+}
+
+class ProxyUploadElementReader : public net::UploadElementReader {
+ public:
+  explicit ProxyUploadElementReader(net::UploadElementReader* reader)
+      : reader_(reader) {}
+
+  ~ProxyUploadElementReader() override {}
+
+  // net::UploadElementReader overrides:
+  int Init(const net::CompletionCallback& callback) override {
+    return reader_->Init(callback);
+  }
+
+  uint64_t GetContentLength() const override {
+    return reader_->GetContentLength();
+  }
+
+  uint64_t BytesRemaining() const override { return reader_->BytesRemaining(); }
+
+  bool IsInMemory() const override { return reader_->IsInMemory(); }
+
+  int Read(net::IOBuffer* buf,
+           int buf_length,
+           const net::CompletionCallback& callback) override {
+    return reader_->Read(buf, buf_length, callback);
+  }
+
+ private:
+  net::UploadElementReader* reader_;  // NOT OWNED
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyUploadElementReader);
+};
+
+std::unique_ptr<net::UploadDataStream> GetUploadData(net::URLRequest* request) {
+  if (!request->has_upload())
+    return nullptr;
+
+  const net::UploadDataStream* stream = request->get_upload();
+  auto* readers = stream->GetElementReaders();
+  if (!readers || readers->empty())
+    return nullptr;
+
+  std::vector<std::unique_ptr<net::UploadElementReader>> proxy_readers;
+  proxy_readers.reserve(readers->size());
+  for (auto& reader : *readers) {
+    proxy_readers.push_back(
+        base::MakeUnique<ProxyUploadElementReader>(reader.get()));
+  }
+
+  return base::MakeUnique<net::ElementsUploadDataStream>(
+      std::move(proxy_readers), 0);
+}
+}  // namespace
+
+DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
+    scoped_refptr<DevToolsURLRequestInterceptor::State>
+        devtools_url_request_interceptor_state,
+    const std::string& interception_id,
+    net::URLRequest* original_request,
+    net::NetworkDelegate* original_network_delegate,
+    WebContents* web_contents,
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    bool is_redirect)
+    : net::URLRequestJob(original_request, original_network_delegate),
+      devtools_url_request_interceptor_state_(
+          devtools_url_request_interceptor_state),
+      request_details_(original_request->url(),
+                       original_request->method(),
+                       GetUploadData(original_request),
+                       original_request->extra_request_headers(),
+                       original_request->priority(),
+                       original_request->context()),
+      waiting_for_user_response_(false),
+      intercepting_requests_(true),
+      killed_(false),
+      interception_id_(interception_id),
+      web_contents_(web_contents),
+      network_handler_(network_handler),
+      is_redirect_(is_redirect),
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+DevToolsURLInterceptorRequestJob::~DevToolsURLInterceptorRequestJob() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  devtools_url_request_interceptor_state_->JobFinished(interception_id_);
+}
+
+// net::URLRequestJob implementation:
+void DevToolsURLInterceptorRequestJob::SetExtraRequestHeaders(
+    const net::HttpRequestHeaders& headers) {
+  request_details_.extra_request_headers = headers;
+}
+
+void DevToolsURLInterceptorRequestJob::Start() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (is_redirect_ || !intercepting_requests_) {
+    // If this is a fetch in response to a redirect, we have already sent the
+    // Network.requestIntercepted event and the user opted to allow it so
+    // there's no need to send another. We can just start the SubRequest.
+    // If we're not intercepting results we can also just start the SubRequest.
+    sub_request_.reset(new SubRequest(request_details_, this,
+                                      devtools_url_request_interceptor_state_));
+  } else {
+    waiting_for_user_response_ = true;
+    std::unique_ptr<protocol::Network::Request> network_request =
+        protocol::NetworkHandler::CreateRequestFromURLRequest(request());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(SendRequestInterceptedEventOnUiThread, network_handler_,
+                   interception_id_, base::Passed(&network_request)));
+  }
+}
+
+void DevToolsURLInterceptorRequestJob::Kill() {
+  killed_ = true;
+  if (sub_request_)
+    sub_request_->Cancel();
+
+  URLRequestJob::Kill();
+}
+
+int DevToolsURLInterceptorRequestJob::ReadRawData(net::IOBuffer* buf,
+                                                  int buf_size) {
+  if (sub_request_) {
+    int size = sub_request_->request()->Read(buf, buf_size);
+    return size;
+  } else {
+    CHECK(mock_response_details_);
+    return mock_response_details_->ReadRawData(buf, buf_size);
+  }
+}
+
+int DevToolsURLInterceptorRequestJob::GetResponseCode() const {
+  if (sub_request_) {
+    return sub_request_->request()->GetResponseCode();
+  } else {
+    CHECK(mock_response_details_);
+    return mock_response_details_->response_headers()->response_code();
+  }
+}
+
+void DevToolsURLInterceptorRequestJob::GetResponseInfo(
+    net::HttpResponseInfo* info) {
+  // NOTE this can get called during URLRequestJob::NotifyStartError in which
+  // case we might not have either a sub request or a mock response.
+  if (sub_request_) {
+    *info = sub_request_->request()->response_info();
+  } else if (mock_response_details_) {
+    info->headers = mock_response_details_->response_headers();
+  }
+}
+
+const net::HttpResponseHeaders*
+DevToolsURLInterceptorRequestJob::GetHttpResponseHeaders() const {
+  if (sub_request_) {
+    net::URLRequest* request = sub_request_->request();
+    return request->response_info().headers.get();
+  }
+  CHECK(mock_response_details_);
+  return mock_response_details_->response_headers().get();
+}
+
+bool DevToolsURLInterceptorRequestJob::GetMimeType(
+    std::string* mime_type) const {
+  const net::HttpResponseHeaders* response_headers = GetHttpResponseHeaders();
+  if (!response_headers)
+    return false;
+  return response_headers->GetMimeType(mime_type);
+}
+
+bool DevToolsURLInterceptorRequestJob::GetCharset(std::string* charset) {
+  const net::HttpResponseHeaders* response_headers = GetHttpResponseHeaders();
+  if (!response_headers)
+    return false;
+  return response_headers->GetCharset(charset);
+}
+
+void DevToolsURLInterceptorRequestJob::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  if (sub_request_) {
+    sub_request_->request()->GetLoadTimingInfo(load_timing_info);
+  } else {
+    CHECK(mock_response_details_);
+    // Since this request is mocked most of the fields are irrelevant.
+    load_timing_info->receive_headers_end =
+        mock_response_details_->response_time();
+  }
+}
+
+bool DevToolsURLInterceptorRequestJob::NeedsAuth() {
+  return !!auth_info_;
+}
+
+void DevToolsURLInterceptorRequestJob::GetAuthChallengeInfo(
+    scoped_refptr<net::AuthChallengeInfo>* auth_info) {
+  *auth_info = auth_info_.get();
+}
+
+void DevToolsURLInterceptorRequestJob::SetAuth(
+    const net::AuthCredentials& credentials) {
+  sub_request_->request()->SetAuth(credentials);
+  auth_info_ = nullptr;
+}
+
+void DevToolsURLInterceptorRequestJob::CancelAuth() {
+  sub_request_->request()->CancelAuth();
+  auth_info_ = nullptr;
+}
+
+void DevToolsURLInterceptorRequestJob::OnAuthRequired(
+    net::URLRequest* request,
+    net::AuthChallengeInfo* auth_info) {
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+  auth_info_ = auth_info;
+
+  // This notification came from the sub requests URLRequest::Delegate and we
+  // must proxy it the origional URLRequest::Delegate.  We can't do that
+  // directly but by implementing NeedsAuth and calling NotifyHeadersComplete
+  // triggers it. To close the loop we also need to implement
+  // GetAuthChallengeInfo, SetAuth and CancelAuth.
+  NotifyHeadersComplete();
+}
+
+void DevToolsURLInterceptorRequestJob::OnCertificateRequested(
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+  NotifyCertificateRequested(cert_request_info);
+}
+
+void DevToolsURLInterceptorRequestJob::OnSSLCertificateError(
+    net::URLRequest* request,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+  NotifySSLCertificateError(ssl_info, fatal);
+}
+
+void DevToolsURLInterceptorRequestJob::OnResponseStarted(
+    net::URLRequest* request,
+    int net_error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
+  if (net_error != net::OK) {
+    sub_request_->Cancel();
+
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           static_cast<net::Error>(net_error)));
+    return;
+  }
+
+  NotifyHeadersComplete();
+}
+
+void DevToolsURLInterceptorRequestJob::OnReadCompleted(net::URLRequest* request,
+                                                       int num_bytes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+
+  // OnReadCompleted may get called while canceling the subrequest, in that
+  // event theres no need to call ReadRawDataComplete.
+  if (!killed_)
+    ReadRawDataComplete(num_bytes);
+}
+
+void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirectinfo,
+    bool* defer_redirect) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(sub_request_);
+  DCHECK_EQ(request, sub_request_->request());
+  // If we're not intercepting results then just exit.
+  if (!intercepting_requests_) {
+    *defer_redirect = false;
+    return;
+  }
+
+  // Otherwise we will need to ask what to do via DevTools protocol.
+  *defer_redirect = true;
+
+  size_t iter = 0;
+  std::string header_name;
+  std::string header_value;
+  std::unique_ptr<protocol::DictionaryValue> headers_dict(
+      protocol::DictionaryValue::create());
+  while (request->response_headers()->EnumerateHeaderLines(&iter, &header_name,
+                                                           &header_value)) {
+    headers_dict->setString(header_name, header_value);
+  }
+
+  redirect_.reset(new net::RedirectInfo(redirectinfo));
+  sub_request_->Cancel();
+  sub_request_.reset();
+
+  waiting_for_user_response_ = true;
+
+  std::unique_ptr<protocol::Network::Request> network_request =
+      protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
+  std::unique_ptr<protocol::Object> headers_object =
+      protocol::Object::fromValue(headers_dict.get(), nullptr);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(SendRedirectInterceptedEventOnUiThread, network_handler_,
+                 interception_id_, base::Passed(&network_request),
+                 base::Passed(&headers_object), redirectinfo.status_code,
+                 redirectinfo.new_url.spec()));
+}
+
+void DevToolsURLInterceptorRequestJob::StopIntercepting() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  intercepting_requests_ = false;
+
+  // Allow the request to continue if we're waiting for user input.
+  ContinueInterceptedRequest(
+      base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+          base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
+          protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
+          protocol::Maybe<protocol::Network::Headers>()));
+}
+
+bool DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
+    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
+        modifications) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!waiting_for_user_response_)
+    return false;
+  waiting_for_user_response_ = false;
+
+  if (modifications->error_reason) {
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           *modifications->error_reason));
+    return true;
+  }
+
+  if (modifications->raw_response) {
+    mock_response_details_.reset(new MockResponseDetails(
+        std::move(*modifications->raw_response), base::TimeTicks::Now()));
+
+    std::string value;
+    if (mock_response_details_->response_headers()->IsRedirect(&value)) {
+      devtools_url_request_interceptor_state_->ExpectRequestAfterRedirect(
+          request(), interception_id_);
+    }
+    NotifyHeadersComplete();
+    return true;
+  }
+
+  if (redirect_) {
+    // NOTE we don't append the text form of the status code because
+    // net::HttpResponseHeaders doesn't need that.
+    std::string raw_headers =
+        base::StringPrintf("HTTP/1.1 %d", redirect_->status_code);
+    raw_headers.append(1, '\0');
+    raw_headers.append("Location: ");
+    raw_headers.append(
+        modifications->modified_url.fromMaybe(redirect_->new_url.spec()));
+    raw_headers.append(2, '\0');
+    mock_response_details_.reset(new MockResponseDetails(
+        make_scoped_refptr(new net::HttpResponseHeaders(raw_headers)), "", 0,
+        base::TimeTicks::Now()));
+    redirect_.reset();
+
+    devtools_url_request_interceptor_state_->ExpectRequestAfterRedirect(
+        request(), interception_id_);
+    NotifyHeadersComplete();
+  } else {
+    // Note this redirect is not visible to the caller by design. If they want a
+    // visible redirect they can mock a response with a 302.
+    if (modifications->modified_url.isJust())
+      request_details_.url = GURL(modifications->modified_url.fromJust());
+
+    if (modifications->modified_method.isJust())
+      request_details_.method = modifications->modified_method.fromJust();
+
+    if (modifications->modified_post_data.isJust()) {
+      const std::string& post_data =
+          modifications->modified_post_data.fromJust();
+      std::vector<char> data(post_data.begin(), post_data.end());
+      request_details_.post_data =
+          net::ElementsUploadDataStream::CreateWithReader(
+              base::MakeUnique<net::UploadOwnedBytesElementReader>(&data), 0);
+    }
+
+    if (modifications->modified_headers.isJust()) {
+      request_details_.extra_request_headers.Clear();
+      std::unique_ptr<protocol::DictionaryValue> headers =
+          modifications->modified_headers.fromJust()->toValue();
+      for (size_t i = 0; i < headers->size(); i++) {
+        std::string value;
+        if (headers->at(i).second->asString(&value)) {
+          request_details_.extra_request_headers.SetHeader(headers->at(i).first,
+                                                           value);
+        }
+      }
+    }
+
+    // The reason we start a sub request is because we are in full control of it
+    // and can choose to ignore it if, for example, the fetch encounters a
+    // redirect that the user chooses to replace with a mock response.
+    sub_request_.reset(new SubRequest(request_details_, this,
+                                      devtools_url_request_interceptor_state_));
+  }
+  return true;
+}
+
+DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
+    const GURL& url,
+    const std::string& method,
+    std::unique_ptr<net::UploadDataStream> post_data,
+    const net::HttpRequestHeaders& extra_request_headers,
+    const net::RequestPriority& priority,
+    const net::URLRequestContext* url_request_context)
+    : url(url),
+      method(method),
+      post_data(std::move(post_data)),
+      extra_request_headers(extra_request_headers),
+      priority(priority),
+      url_request_context(url_request_context) {}
+
+DevToolsURLInterceptorRequestJob::RequestDetails::~RequestDetails() {}
+
+DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
+    DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
+    DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
+    scoped_refptr<DevToolsURLRequestInterceptor::State>
+        devtools_url_request_interceptor_state)
+    : devtools_interceptor_request_job_(devtools_interceptor_request_job),
+      devtools_url_request_interceptor_state_(
+          devtools_url_request_interceptor_state),
+      fetch_in_progress_(true) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  request_ = request_details.url_request_context->CreateRequest(
+      request_details.url, request_details.priority,
+      devtools_interceptor_request_job_),
+  request_->set_method(request_details.method);
+  request_->SetExtraRequestHeaders(request_details.extra_request_headers);
+
+  if (request_details.post_data)
+    request_->set_upload(std::move(request_details.post_data));
+
+  devtools_url_request_interceptor_state_->RegisterSubRequest(request_.get());
+  request_->Start();
+}
+
+DevToolsURLInterceptorRequestJob::SubRequest::~SubRequest() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  devtools_url_request_interceptor_state_->UnregisterSubRequest(request_.get());
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!fetch_in_progress_)
+    return;
+
+  fetch_in_progress_ = false;
+  request_->Cancel();
+}
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
+    std::string response_bytes,
+    base::TimeTicks response_time)
+    : response_bytes_(std::move(response_bytes)),
+      read_offset_(0),
+      response_time_(response_time) {
+  int header_size = net::HttpUtil::LocateEndOfHeaders(response_bytes_.c_str(),
+                                                      response_bytes_.size());
+  if (header_size == -1) {
+    LOG(WARNING) << "Can't find headers in result";
+    response_headers_ = new net::HttpResponseHeaders("");
+  } else {
+    response_headers_ =
+        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+            response_bytes_.c_str(), header_size));
+    read_offset_ = header_size;
+  }
+
+  CHECK_LE(read_offset_, response_bytes_.size());
+}
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
+    const scoped_refptr<net::HttpResponseHeaders>& response_headers,
+    std::string response_bytes,
+    size_t read_offset,
+    base::TimeTicks response_time)
+    : response_headers_(response_headers),
+      response_bytes_(std::move(response_bytes)),
+      read_offset_(read_offset),
+      response_time_(response_time) {}
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::~MockResponseDetails() {}
+
+int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
+    net::IOBuffer* buf,
+    int buf_size) {
+  size_t bytes_available = response_bytes_.size() - read_offset_;
+  size_t bytes_to_copy =
+      std::min(static_cast<size_t>(buf_size), bytes_available);
+  if (bytes_to_copy > 0) {
+    std::memcpy(buf->data(), &response_bytes_.data()[read_offset_],
+                bytes_to_copy);
+    read_offset_ += bytes_to_copy;
+  }
+  return bytes_to_copy;
+}
+
+}  // namespace content

@@ -1,0 +1,16 @@
+CONSOLE MESSAGE: line 7: xhr.status = 401
+Tests interception of an XHR request that fails due to lack of credentials.
+
+Test started
+Network agent enabled
+Request interception enabled
+Page agent enabled
+Runtime agent enabled
+Network.requestIntercepted ID 1 GET xhr-iframe-auth-fail.html
+allowRequest ID 1
+Network.responseReceived xhr-iframe-auth-fail.html 200 text/html
+Network.requestIntercepted ID 2 GET unauthorised.pl
+allowRequest ID 2
+Network.responseReceived unauthorised.pl 401 text/plain
+Page.frameStoppedLoading
+

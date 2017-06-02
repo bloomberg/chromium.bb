@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+var xhr = new XMLHttpRequest();
+xhr.onload = function() {
+  console.log('xhr.status = ' + xhr.status);
+};
+xhr.open("GET", "unauthorised.pl");
+xhr.send();
+</script>
+</head>
+</html>
