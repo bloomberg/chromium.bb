@@ -47,7 +47,7 @@ UChar TextIteratorTextState::CharacterAt(unsigned index) const {
     return single_character_buffer_;
   }
 
-  return GetString()[PositionStartOffset() + index];
+  return text_[PositionStartOffset() + index];
 }
 
 String TextIteratorTextState::Substring(unsigned position,
@@ -61,7 +61,7 @@ String TextIteratorTextState::Substring(unsigned position,
     DCHECK_EQ(length, 1u);
     return String(&single_character_buffer_, 1);
   }
-  return GetString().Substring(PositionStartOffset() + position, length);
+  return text_.Substring(PositionStartOffset() + position, length);
 }
 
 void TextIteratorTextState::AppendTextToStringBuilder(
@@ -76,8 +76,7 @@ void TextIteratorTextState::AppendTextToStringBuilder(
     DCHECK_EQ(position, 0u);
     builder.Append(single_character_buffer_);
   } else {
-    builder.Append(GetString(), PositionStartOffset() + position,
-                   length_to_append);
+    builder.Append(text_, PositionStartOffset() + position, length_to_append);
   }
 }
 
@@ -185,10 +184,10 @@ void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
   if (PositionNode()) {
     FlushPositionOffsets();
     unsigned offset = PositionStartOffset() + position;
-    if (GetString().Is8Bit())
-      output->PushRange(GetString().Characters8() + offset, length_to_append);
+    if (text_.Is8Bit())
+      output->PushRange(text_.Characters8() + offset, length_to_append);
     else
-      output->PushRange(GetString().Characters16() + offset, length_to_append);
+      output->PushRange(text_.Characters16() + offset, length_to_append);
     return;
   }
   // We shouldn't be attempting to append text that doesn't exist.

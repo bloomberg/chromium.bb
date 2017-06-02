@@ -45,8 +45,6 @@ class CORE_EXPORT TextIteratorTextState {
   explicit TextIteratorTextState(const TextIteratorBehavior&);
   ~TextIteratorTextState() {}
 
-  const String& GetString() const { return text_; }
-
   int length() const { return text_length_; }
   UChar CharacterAt(unsigned index) const;
   String Substring(unsigned position, unsigned length) const;
