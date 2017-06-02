@@ -48,6 +48,7 @@ class UrlBar : public TexturedElement {
   std::unique_ptr<UrlBarTexture> texture_;
   base::Callback<void()> back_button_callback_;
   bool enabled_ = false;
+  bool can_go_back_ = false;
   bool down_ = false;
   base::TimeTicks last_begin_frame_time_;
   base::TimeTicks last_update_time_;
