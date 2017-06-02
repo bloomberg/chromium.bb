@@ -68,7 +68,9 @@ wrapping and unwrapping helpers, common handle operations, and utilities for
 more easily watching handle state changes.
 
 ### JavaScript
-The [**JavaScript APIs**](/mojo/public/js) are WIP. :)
+The [**JavaScript System API**](/third_party/WebKit/Source/core/mojo) exposes
+the Mojo primitives to JavaScript, covering all basic functionality of the
+low-level C API.
 
 ### Java
 The [**Java System API**](/mojo/public/java/system) provides helper classes for
@@ -98,7 +100,8 @@ nested sync IPC, versioning, bad-message reporting, arbitrary message filter
 injection, and convenient test facilities.
 
 ### JavaScript Bindings
-The [**JavaScript APIs**](/mojo/public/js) are WIP. :)
+The [**JavaScript Bindings API**](/mojo/public/js) provides helper classes
+for working with JavaScript code emitted by the bindings generator.
 
 ### Java Bindings
 The [**Java Bindings API**](/mojo/public/java/bindings) provides helper classes
