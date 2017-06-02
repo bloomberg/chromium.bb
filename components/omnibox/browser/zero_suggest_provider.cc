@@ -85,6 +85,32 @@ const int kDefaultZeroSuggestRelevance = 100;
 // Used for testing whether zero suggest is ever available.
 constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 
+// Returns true if the folowing conditions are valid:
+// * The |default_provider| is Google.
+// * The user is in the ZeroSuggestRedirectToChrome field trial.
+// * The field trial provides a valid server address where the suggest request
+//   is redirected.
+// * The suggest request is over HTTPS. This avoids leaking the current page URL
+//   or personal data in unencrypted network traffic.
+// Note: these checks are in addition to CanSendUrl() on the default contextual
+// suggestion URL.
+bool UseExperimentalSuggestService(const TemplateURLService& default_provider) {
+  const TemplateURL& default_provider_url =
+      *default_provider.GetDefaultSearchProvider();
+  const SearchTermsData& search_terms_data =
+      default_provider.search_terms_data();
+  if ((default_provider_url.GetEngineType(search_terms_data) !=
+       SEARCH_ENGINE_GOOGLE) ||
+      !OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial())
+    return false;
+  // Check that the suggest URL for redirect to chrome field trial is valid.
+  const GURL suggest_url(
+      OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress());
+  if (!suggest_url.is_valid())
+    return false;
+  return suggest_url.SchemeIsCryptographic();
+}
+
 }  // namespace
 
 // static
@@ -120,8 +146,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
 
-  std::string url_string = GetContextualSuggestionsUrl();
-  GURL suggest_url(url_string);
+  GURL suggest_url(GetContextualSuggestionsUrl());
   if (!suggest_url.is_valid())
     return;
 
@@ -153,11 +178,11 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() &&
       !OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
-    if (OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial()) {
-      url_string +=
+    if (UseExperimentalSuggestService(*template_url_service)) {
+      suggest_url = GURL(
+          OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress() +
           "/url=" + net::EscapePath(current_query_) +
-          OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields();
-      suggest_url = GURL(url_string);
+          OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields());
     } else {
       base::string16 prefix;
       TemplateURLRef::SearchTermsArgs search_term_args(prefix);
@@ -553,8 +578,6 @@ bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
 }
 
 std::string ZeroSuggestProvider::GetContextualSuggestionsUrl() const {
-  // Without a default search provider, refuse to do anything (even if the user
-  // is in the redirect-to-chrome field trial).
   const TemplateURLService* template_url_service =
       client()->GetTemplateURLService();
   const TemplateURL* default_provider =
@@ -562,8 +585,6 @@ std::string ZeroSuggestProvider::GetContextualSuggestionsUrl() const {
   if (default_provider == nullptr)
     return std::string();
 
-  if (OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial())
-    return OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress();
   base::string16 prefix;
   TemplateURLRef::SearchTermsArgs search_term_args(prefix);
   return default_provider->suggestions_url_ref().ReplaceSearchTerms(
