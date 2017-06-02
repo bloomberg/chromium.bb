@@ -112,16 +112,16 @@ class GFX_EXPORT ImageSkia {
   // Make the ImageSkia instance read-only. Note that this only prevent
   // modification from client code, and the storage may still be
   // modified by the source if any (thus, it's not thread safe).  This
-  // detaches the storage from currently accessing thread, so its safe
-  // to pass it to other thread as long as it is accessed only by that
-  // thread. If this ImageSkia's storage will be accessed by multiple
-  // threads, use |MakeThreadSafe()| method.
+  // detaches the storage from currently accessing sequence, so its safe
+  // to pass it to another sequence as long as it is accessed only by that
+  // sequence. If this ImageSkia's storage will be accessed by multiple
+  // sequences, use |MakeThreadSafe()| method.
   void SetReadOnly();
 
   // Make the image thread safe by making the storage read only and remove
   // its source if any. All ImageSkia that shares the same storage will also
   // become thread safe. Note that in order to make it 100% thread safe,
-  // this must be called before it's been passed to anther thread.
+  // this must be called before it's been passed to another sequence.
   void MakeThreadSafe();
   bool IsThreadSafe() const;
 
@@ -166,13 +166,13 @@ class GFX_EXPORT ImageSkia {
 
   const SkBitmap& GetBitmap() const;
 
-  // Checks if the current thread can read/modify the ImageSkia.
+  // Checks if the current sequence can read/modify the ImageSkia.
   bool CanRead() const;
   bool CanModify() const;
 
-  // Detach the storage from the currently assinged thread
-  // so that other thread can access the storage.
-  void DetachStorageFromThread();
+  // Detach the storage from the currently assigned sequence
+  // so that other sequence can access the storage.
+  void DetachStorageFromSequence();
 
   // A refptr so that ImageRepSkia can be copied cheaply.
   scoped_refptr<internal::ImageSkiaStorage> storage_;

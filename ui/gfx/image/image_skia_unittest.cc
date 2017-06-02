@@ -378,7 +378,7 @@ TEST_F(ImageSkiaTest, StaticOnThreadTest) {
   EXPECT_FALSE(image.CanRead());
   EXPECT_FALSE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   // An image is accessed by this thread,
   // so other thread cannot read/modify it.
   image.image_reps();
@@ -389,7 +389,7 @@ TEST_F(ImageSkiaTest, StaticOnThreadTest) {
   EXPECT_TRUE(image.CanRead());
   EXPECT_TRUE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   std::unique_ptr<ImageSkia> deep_copy(image.DeepCopy());
   EXPECT_FALSE(deep_copy->IsThreadSafe());
   test::TestOnThread deepcopy_on_thread(deep_copy.get());
@@ -412,7 +412,7 @@ TEST_F(ImageSkiaTest, StaticOnThreadTest) {
   EXPECT_TRUE(deep_copy2->CanRead());
   EXPECT_TRUE(deep_copy2->CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   image.SetReadOnly();
   // A read-only ImageSkia with no source is thread safe.
   EXPECT_TRUE(image.IsThreadSafe());
@@ -423,7 +423,7 @@ TEST_F(ImageSkiaTest, StaticOnThreadTest) {
   EXPECT_TRUE(image.CanRead());
   EXPECT_FALSE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   image.MakeThreadSafe();
   EXPECT_TRUE(image.IsThreadSafe());
   test::TestOnThread threadsafe_on_thread(&image);
@@ -447,7 +447,7 @@ TEST_F(ImageSkiaTest, SourceOnThreadTest) {
   EXPECT_FALSE(image.CanRead());
   EXPECT_FALSE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   // An image is accessed by this thread,
   // so other thread cannot read/modify it.
   image.image_reps();
@@ -458,7 +458,7 @@ TEST_F(ImageSkiaTest, SourceOnThreadTest) {
   EXPECT_TRUE(image.CanRead());
   EXPECT_TRUE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   image.SetReadOnly();
   EXPECT_FALSE(image.IsThreadSafe());
   test::TestOnThread readonly_on_thread(&image);
@@ -468,7 +468,7 @@ TEST_F(ImageSkiaTest, SourceOnThreadTest) {
   EXPECT_FALSE(image.CanRead());
   EXPECT_FALSE(image.CanModify());
 
-  image.DetachStorageFromThread();
+  image.DetachStorageFromSequence();
   image.MakeThreadSafe();
   EXPECT_TRUE(image.IsThreadSafe());
   // Check if image reps are generated for supported scale factors.
