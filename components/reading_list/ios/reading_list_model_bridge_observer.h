@@ -75,6 +75,8 @@ class ReadingListModelBridge : public ReadingListModelObserver {
                                   const GURL& url) override;
 
   __unsafe_unretained id<ReadingListModelBridgeObserver> observer_;
+
+  // TODO(crbug.com/729015): Refactor to remove the naked pointer.
   ReadingListModel* model_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelBridge);

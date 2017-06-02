@@ -7,6 +7,10 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ReadingListModelBridge::ReadingListModelBridge(
     id<ReadingListModelBridgeObserver> observer,
     ReadingListModel* model)
