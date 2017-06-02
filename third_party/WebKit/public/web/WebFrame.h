@@ -65,7 +65,6 @@ class WebLocalFrame;
 class WebPerformance;
 class WebRemoteFrame;
 class WebSecurityOrigin;
-class WebSharedWorkerRepositoryClient;
 class WebString;
 class WebURL;
 class WebURLRequest;
@@ -134,10 +133,6 @@ class WebFrame {
   // WebIconURL::Type values, used to select from the available set of icon
   // URLs
   virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
-
-  // Initializes the various client interfaces.
-  virtual void SetSharedWorkerRepositoryClient(
-      WebSharedWorkerRepositoryClient*) = 0;
 
   // The security origin of this frame.
   BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
