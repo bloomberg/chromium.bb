@@ -127,7 +127,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
       webgl_compressed_texture_pvrtc_);
   RegisterExtension<WebGLCompressedTextureS3TC>(webgl_compressed_texture_s3tc_);
   RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3tc_srgb_, kDraftExtension);
+      webgl_compressed_texture_s3tc_srgb_);
   RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
   RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
   RegisterExtension<WebGLGetBufferSubDataAsync>(

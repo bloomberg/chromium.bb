@@ -170,7 +170,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLCompressedTextureS3TC>(
       webgl_compressed_texture_s3tc_, kApprovedExtension, kBothPrefixes);
   RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3tc_srgb_, kDraftExtension, kBothPrefixes);
+      webgl_compressed_texture_s3tc_srgb_);
   RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
   RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
   RegisterExtension<WebGLDepthTexture>(webgl_depth_texture_, kApprovedExtension,
