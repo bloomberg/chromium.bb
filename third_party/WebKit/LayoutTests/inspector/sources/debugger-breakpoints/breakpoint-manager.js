@@ -126,6 +126,12 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
         return new SDK.DebuggerModel.Location(this, script.scriptId, line, column);
     }
 
+    createRawLocationByURL(url, line, column)
+    {
+        var script = this._scriptForURL(url);
+        return new SDK.DebuggerModel.Location(this, script.scriptId, line, column);
+    }
+
     setBreakpointByURL(url, lineNumber, columnNumber, condition, callback)
     {
         InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
