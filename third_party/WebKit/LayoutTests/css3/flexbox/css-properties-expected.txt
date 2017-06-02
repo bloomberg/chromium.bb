@@ -64,19 +64,19 @@ PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is "flex-start"
 PASS flexitem.style.alignSelf is ""
 PASS window.getComputedStyle(flexbox, null).alignItems is "flex-start"
-FAIL window.getComputedStyle(flexitem, null).alignSelf should be flex-start. Was auto.
+PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is "flex-end"
 PASS window.getComputedStyle(flexbox, null).alignItems is "flex-end"
-FAIL window.getComputedStyle(flexitem, null).alignSelf should be flex-end. Was auto.
+PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is "center"
 PASS window.getComputedStyle(flexbox, null).alignItems is "center"
-FAIL window.getComputedStyle(flexitem, null).alignSelf should be center. Was auto.
+PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is "stretch"
 PASS window.getComputedStyle(flexbox, null).alignItems is "stretch"
-FAIL window.getComputedStyle(flexitem, null).alignSelf should be stretch. Was auto.
+PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is "baseline"
 PASS window.getComputedStyle(flexbox, null).alignItems is "baseline"
-FAIL window.getComputedStyle(flexitem, null).alignSelf should be baseline. Was auto.
+PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"
 PASS flexbox.style.alignItems is ""
 PASS window.getComputedStyle(flexbox, null).alignItems is "normal"
 PASS window.getComputedStyle(flexitem, null).alignSelf is "auto"

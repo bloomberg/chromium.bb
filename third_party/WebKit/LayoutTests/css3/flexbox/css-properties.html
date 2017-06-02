@@ -143,27 +143,27 @@ flexbox.style.alignItems = 'flex-start';
 shouldBeEqualToString('flexbox.style.alignItems', 'flex-start');
 shouldBeEqualToString('flexitem.style.alignSelf', '');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'flex-start');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'flex-start');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'auto');
 
 flexbox.style.alignItems = 'flex-end';
 shouldBeEqualToString('flexbox.style.alignItems', 'flex-end');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'flex-end');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'flex-end');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'auto');
 
 flexbox.style.alignItems = 'center';
 shouldBeEqualToString('flexbox.style.alignItems', 'center');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'center');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'center');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'auto');
 
 flexbox.style.alignItems = 'stretch';
 shouldBeEqualToString('flexbox.style.alignItems', 'stretch');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'auto');
 
 flexbox.style.alignItems = 'baseline';
 shouldBeEqualToString('flexbox.style.alignItems', 'baseline');
 shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'baseline');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'baseline');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'auto');
 
 flexbox.style.alignItems = '';
 shouldBeEqualToString('flexbox.style.alignItems', '');
