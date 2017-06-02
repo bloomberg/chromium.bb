@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -53,6 +54,12 @@ class AppInfoPermissionsPanelTest : public testing::Test {
                                  .Build())
                         .Build())
         .Build();
+  }
+
+  void SetUp() override {
+    // Set the ChromeLayoutProvider as the default layout provider.
+    views_delegate_.set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
   }
 
   // We need the UI thread in order to construct UI elements in the view.
