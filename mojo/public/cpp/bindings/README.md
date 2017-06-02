@@ -57,8 +57,8 @@ This will produce several generated source files, some of which are relevant to
 C++ bindings. Two of these files are:
 
 ```
-out/gen/services/business/public/interfaces/factory.mojom.cc
-out/gen/services/business/public/interfaces/factory.mojom.h
+out/gen/services/db/public/interfaces/db.mojom.cc
+out/gen/services/db/public/interfaces/db.mojom.h
 ```
 
 You can include the above generated header in your sources in order to use the
