@@ -177,11 +177,6 @@ void IndexedDBTransaction::RunTasksIfStarted() {
                             ptr_factory_.GetWeakPtr()));
 }
 
-void IndexedDBTransaction::Abort() {
-  Abort(IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
-                               "Internal error (unknown cause)"));
-}
-
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   IDB_TRACE1("IndexedDBTransaction::Abort", "txn.id", id());
   DCHECK(!processing_event_queue_);

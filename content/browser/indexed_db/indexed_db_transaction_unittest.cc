@@ -14,12 +14,14 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 namespace content {
 const int kFakeProcessId = 10;
@@ -161,7 +163,9 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 
   // Clean up to avoid leaks.
-  transaction->Abort();
+  transaction->Abort(IndexedDBDatabaseError(
+      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                             "Transaction aborted by user.")));
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 }
@@ -411,7 +415,9 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
 
   RunPostedTasks();
 
-  transaction->Abort();
+  transaction->Abort(
+      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                             "Transaction aborted by user."));
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
   EXPECT_EQ(0, transaction->pending_preemptive_events_);
