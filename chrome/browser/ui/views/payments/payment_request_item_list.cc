@@ -41,44 +41,6 @@ PaymentRequestItemList::Item::Item(PaymentRequestSpec* spec,
 
 PaymentRequestItemList::Item::~Item() {}
 
-views::View* PaymentRequestItemList::Item::GetItemView() {
-  if (!item_view_) {
-    item_view_ = CreateItemView();
-    item_view_->set_owned_by_client();
-  }
-
-  return item_view_.get();
-}
-
-void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
-  selected_ = selected;
-
-  // This could be called before CreateItemView, so before |checkmark_| is
-  // instantiated.
-  if (checkmark_)
-    checkmark_->SetVisible(selected_);
-
-  if (notify)
-    SelectedStateChanged();
-}
-
-std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
-    bool selected) {
-  std::unique_ptr<views::ImageView> checkmark =
-      base::MakeUnique<views::ImageView>();
-  checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
-  checkmark->set_can_process_events_within_subtree(false);
-  checkmark->set_owned_by_client();
-  checkmark->SetImage(
-      gfx::CreateVectorIcon(views::kMenuCheckIcon, kCheckmarkColor));
-  checkmark->SetVisible(selected);
-  return checkmark;
-}
-
-std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateExtraView() {
-  return nullptr;
-}
-
 std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   std::unique_ptr<views::View> content = CreateContentView();
 
@@ -125,7 +87,7 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   content->set_can_process_events_within_subtree(false);
   layout->AddView(content.release());
 
-  checkmark_ = CreateCheckmark(selected());
+  checkmark_ = CreateCheckmark(selected() && IsEnabled());
   layout->AddView(checkmark_.get());
 
   if (extra_view)
@@ -145,6 +107,35 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   }
 
   return std::move(row);
+}
+
+void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
+  selected_ = selected;
+
+  // This could be called before CreateItemView, so before |checkmark_| is
+  // instantiated.
+  if (checkmark_)
+    checkmark_->SetVisible(selected_);
+
+  if (notify)
+    SelectedStateChanged();
+}
+
+std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
+    bool selected) {
+  std::unique_ptr<views::ImageView> checkmark =
+      base::MakeUnique<views::ImageView>();
+  checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
+  checkmark->set_can_process_events_within_subtree(false);
+  checkmark->set_owned_by_client();
+  checkmark->SetImage(
+      gfx::CreateVectorIcon(views::kMenuCheckIcon, kCheckmarkColor));
+  checkmark->SetVisible(selected);
+  return checkmark;
+}
+
+std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateExtraView() {
+  return nullptr;
 }
 
 void PaymentRequestItemList::Item::ButtonPressed(views::Button* sender,
@@ -180,9 +171,8 @@ std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
       views::BoxLayout::kVertical, 0, kPaymentRequestRowVerticalInsets, 0);
   content_view->SetLayoutManager(layout);
 
-  for (auto& item : items_) {
-    content_view->AddChildView(item->GetItemView());
-  }
+  for (auto& item : items_)
+    content_view->AddChildView(item->CreateItemView().release());
 
   return content_view;
 }

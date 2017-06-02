@@ -621,19 +621,9 @@ PaymentSheetViewController::CreateShippingSectionContent() {
   if (!profile)
     return base::MakeUnique<views::Label>(base::string16());
 
-  // If there is a shipping option error related to the selected address,
-  // display it (without disabling the row because the user should feel like
-  // they can click on it to correct the problem). Otherwise, display the
-  // address possibly with the missing information to make it complete.
-  if (!spec()->selected_shipping_option_error().empty()) {
-    return GetShippingAddressLabelWithError(
-        AddressStyleType::SUMMARY, state()->GetApplicationLocale(), *profile,
-        spec()->selected_shipping_option_error(), /*disabled_state=*/false);
-  } else {
-    return GetShippingAddressLabelWithMissingInfo(
-        AddressStyleType::SUMMARY, state()->GetApplicationLocale(), *profile,
-        *(state()->profile_comparator()));
-  }
+  return GetShippingAddressLabelWithMissingInfo(
+      AddressStyleType::SUMMARY, state()->GetApplicationLocale(), *profile,
+      *(state()->profile_comparator()));
 }
 
 // Creates the Shipping row, which contains a "Shipping address" label, the

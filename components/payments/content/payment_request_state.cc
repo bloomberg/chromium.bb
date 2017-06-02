@@ -35,6 +35,7 @@ PaymentRequestState::PaymentRequestState(
       delegate_(delegate),
       personal_data_manager_(personal_data_manager),
       selected_shipping_profile_(nullptr),
+      selected_shipping_option_error_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_instrument_(nullptr),
       payment_request_delegate_(payment_request_delegate),
@@ -65,6 +66,12 @@ void PaymentRequestState::OnCouldNotNormalize(
 }
 
 void PaymentRequestState::OnSpecUpdated() {
+  if (spec_->selected_shipping_option_error().empty()) {
+    selected_shipping_option_error_profile_ = nullptr;
+  } else {
+    selected_shipping_option_error_profile_ = selected_shipping_profile_;
+    selected_shipping_profile_ = nullptr;
+  }
   is_waiting_for_merchant_validation_ = false;
   UpdateIsReadyToPayAndNotifyObservers();
 }

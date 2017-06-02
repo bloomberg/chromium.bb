@@ -40,15 +40,13 @@ class PaymentRequestItemList {
          bool show_edit_button);
     ~Item() override;
 
-    // Gets the view associated with this item. It's owned by this object so
-    // that it can listen to any changes to the underlying model and update the
-    // view.
-    views::View* GetItemView();
-
     bool selected() const { return selected_; }
     // Changes the selected state of this item to |selected|.
     // SelectedStateChanged is called if |notify| is true.
     void SetSelected(bool selected, bool notify);
+
+    // Creates and returns the view associated with this list item.
+    std::unique_ptr<views::View> CreateItemView();
 
     // Returns a pointer to the PaymentRequestItemList that owns this object.
     PaymentRequestItemList* list() { return list_; }
@@ -95,13 +93,9 @@ class PaymentRequestItemList {
     virtual void EditButtonPressed() = 0;
 
    private:
-    // Creates and returns the view associated with this list item.
-    std::unique_ptr<views::View> CreateItemView();
-
     // views::ButtonListener:
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-    std::unique_ptr<views::View> item_view_;
     PaymentRequestSpec* spec_;
     PaymentRequestState* state_;
     PaymentRequestItemList* list_;

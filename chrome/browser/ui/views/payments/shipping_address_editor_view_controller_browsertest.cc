@@ -547,10 +547,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ExpectExistingRequiredFields(/*unset_types=*/nullptr,
                                /*accept_empty_phone_number=*/false);
 
-  // Still have one shipping address, but now it's selected.
+  // Still have one shipping address, but the merchant doesn't ship to
+  // kCountryWithoutStates.
   EXPECT_EQ(1U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
   EXPECT_EQ(request->state()->shipping_profiles().back(),
-            request->state()->selected_shipping_profile());
+            request->state()->selected_shipping_option_error_profile());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,

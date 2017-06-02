@@ -68,7 +68,7 @@ class ProfileListViewController : public PaymentRequestSheetController {
   virtual bool IsValidProfile(const autofill::AutofillProfile& profile) = 0;
 
   // Whether |profile| should be displayed in an enabled state and selectable.
-  bool IsEnabled(autofill::AutofillProfile* profile);
+  virtual bool IsEnabled(autofill::AutofillProfile* profile);
 
  protected:
   // Does not take ownership of the arguments, which should outlive this object.
