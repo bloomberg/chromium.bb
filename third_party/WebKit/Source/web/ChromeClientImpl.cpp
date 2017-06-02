@@ -38,7 +38,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
-#include "core/events/UIEventWithKeyState.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebFileChooserCompletionImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
@@ -75,7 +74,6 @@
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/Histogram.h"
-#include "platform/KeyboardCodes.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -93,7 +91,6 @@
 #include "platform/wtf/text/StringConcatenate.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFloatRect.h"
-#include "public/platform/WebInputEvent.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAXObject.h"
@@ -276,116 +273,15 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
   return !web_view_->Client() || web_view_->Client()->AcceptsLoadDrops();
 }
 
-namespace {
-
-void UpdatePolicyForEvent(const WebInputEvent* input_event,
-                          NavigationPolicy* policy) {
-  if (!input_event)
-    return;
-
-  unsigned short button_number = 0;
-  if (input_event->GetType() == WebInputEvent::kMouseUp) {
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(input_event);
-
-    switch (mouse_event->button) {
-      case WebMouseEvent::Button::kLeft:
-        button_number = 0;
-        break;
-      case WebMouseEvent::Button::kMiddle:
-        button_number = 1;
-        break;
-      case WebMouseEvent::Button::kRight:
-        button_number = 2;
-        break;
-      default:
-        return;
-    }
-  } else if ((WebInputEvent::IsKeyboardEventType(input_event->GetType()) &&
-              static_cast<const WebKeyboardEvent*>(input_event)
-                      ->windows_key_code == VKEY_RETURN) ||
-             WebInputEvent::IsGestureEventType(input_event->GetType())) {
-    // Keyboard and gesture events can simulate mouse events.
-    button_number = 0;
-  } else {
-    return;
-  }
-
-  bool ctrl = input_event->GetModifiers() & WebInputEvent::kControlKey;
-  bool shift = input_event->GetModifiers() & WebInputEvent::kShiftKey;
-  bool alt = input_event->GetModifiers() & WebInputEvent::kAltKey;
-  bool meta = input_event->GetModifiers() & WebInputEvent::kMetaKey;
-
-  NavigationPolicy user_policy = *policy;
-  NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta,
-                                 &user_policy);
-
-  // When the input event suggests a download, but the navigation was initiated
-  // by script, we should not override it.
-  if (user_policy == kNavigationPolicyDownload &&
-      *policy != kNavigationPolicyIgnore)
-    return;
-
-  // User and app agree that we want a new window; let the app override the
-  // decorations.
-  if (user_policy == kNavigationPolicyNewWindow &&
-      *policy == kNavigationPolicyNewPopup)
-    return;
-  *policy = user_policy;
-}
-
-WebNavigationPolicy GetNavigationPolicy(const WindowFeatures& features) {
-  // If the window features didn't enable the toolbar, or this window wasn't
-  // created by a user gesture, show as a popup instead of a new tab.
-  //
-  // Note: this previously also checked that menubar, resizable, scrollbar, and
-  // statusbar are enabled too. When no feature string is specified, these
-  // features default to enabled (and the window opens as a new tab). However,
-  // when a feature string is specified, any *unspecified* features default to
-  // disabled, often causing the window to open as a popup instead.
-  //
-  // As specifying menubar, resizable, scrollbar, and statusbar have no effect
-  // on the UI, just ignore them and only consider whether or not the toolbar is
-  // enabled, which matches Firefox's behavior.
-  bool as_popup = !features.tool_bar_visible;
-
-  NavigationPolicy policy = kNavigationPolicyNewForegroundTab;
-  if (as_popup)
-    policy = kNavigationPolicyNewPopup;
-  UpdatePolicyForEvent(WebViewBase::CurrentInputEvent(), &policy);
-
-  return static_cast<WebNavigationPolicy>(policy);
-}
-
-WebNavigationPolicy EffectiveNavigationPolicy(
-    NavigationPolicy navigation_policy,
-    const WindowFeatures& features) {
-  WebNavigationPolicy policy =
-      static_cast<WebNavigationPolicy>(navigation_policy);
-  if (policy == kWebNavigationPolicyIgnore)
-    return GetNavigationPolicy(features);
-  if (policy == kWebNavigationPolicyNewBackgroundTab &&
-      GetNavigationPolicy(features) != kWebNavigationPolicyNewBackgroundTab &&
-      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld())
-    return kWebNavigationPolicyNewForegroundTab;
-
-  return policy;
-}
-
-}  // namespace
-
 Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
                                      const FrameLoadRequest& r,
-                                     const WindowFeatures& features,
+                                     const WebWindowFeatures& features,
                                      NavigationPolicy navigation_policy) {
   if (!web_view_->Client())
     return nullptr;
 
   if (!frame->GetPage() || frame->GetPage()->Suspended())
     return nullptr;
-
-  WebNavigationPolicy policy =
-      EffectiveNavigationPolicy(navigation_policy, features);
   DCHECK(frame->GetDocument());
   Fullscreen::FullyExitFullscreen(*frame->GetDocument());
 
@@ -393,8 +289,8 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
       static_cast<WebViewBase*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features,
-          r.FrameName(), policy,
-          r.GetShouldSetOpener() == kNeverSetOpener || features.noopener));
+          r.FrameName(), static_cast<WebNavigationPolicy>(navigation_policy),
+          r.GetShouldSetOpener() == kNeverSetOpener));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();
@@ -413,48 +309,10 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
-  if (web_view_->Client())
+  if (web_view_->Client()) {
     web_view_->Client()->Show(
-        EffectiveNavigationPolicy(navigation_policy, window_features_));
-}
-
-void ChromeClientImpl::SetToolbarsVisible(bool value) {
-  window_features_.tool_bar_visible = value;
-}
-
-bool ChromeClientImpl::ToolbarsVisible() {
-  return window_features_.tool_bar_visible;
-}
-
-void ChromeClientImpl::SetStatusbarVisible(bool value) {
-  window_features_.status_bar_visible = value;
-}
-
-bool ChromeClientImpl::StatusbarVisible() {
-  return window_features_.status_bar_visible;
-}
-
-void ChromeClientImpl::SetScrollbarsVisible(bool value) {
-  window_features_.scrollbars_visible = value;
-  if (WebLocalFrameImpl* web_frame =
-          ToWebLocalFrameImpl(web_view_->MainFrame()))
-    web_frame->SetCanHaveScrollbars(value);
-}
-
-bool ChromeClientImpl::ScrollbarsVisible() {
-  return window_features_.scrollbars_visible;
-}
-
-void ChromeClientImpl::SetMenubarVisible(bool value) {
-  window_features_.menu_bar_visible = value;
-}
-
-bool ChromeClientImpl::MenubarVisible() {
-  return window_features_.menu_bar_visible;
-}
-
-void ChromeClientImpl::SetResizable(bool value) {
-  window_features_.resizable = value;
+        static_cast<WebNavigationPolicy>(navigation_policy));
+  }
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
@@ -1089,6 +947,10 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
 
   if (WebWidgetClient* client = widget->Client())
     client->SetTouchAction(static_cast<TouchAction>(touch_action));
+}
+
+const WebInputEvent* ChromeClientImpl::GetCurrentInputEvent() const {
+  return WebViewBase::CurrentInputEvent();
 }
 
 bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {

@@ -20,11 +20,7 @@ blink::mojom::WindowFeaturesPtr ConvertWebWindowFeaturesToMojoWindowFeatures(
   result->menu_bar_visible = web_window_features.menu_bar_visible;
   result->status_bar_visible = web_window_features.status_bar_visible;
   result->tool_bar_visible = web_window_features.tool_bar_visible;
-  result->location_bar_visible = web_window_features.location_bar_visible;
   result->scrollbars_visible = web_window_features.scrollbars_visible;
-  result->resizable = web_window_features.resizable;
-  result->fullscreen = web_window_features.fullscreen;
-  result->dialog = web_window_features.dialog;
   return result;
 }
 
@@ -42,11 +38,7 @@ blink::WebWindowFeatures ConvertMojoWindowFeaturesToWebWindowFeatures(
   result.menu_bar_visible = window_features.menu_bar_visible;
   result.status_bar_visible = window_features.status_bar_visible;
   result.tool_bar_visible = window_features.tool_bar_visible;
-  result.location_bar_visible = window_features.location_bar_visible;
   result.scrollbars_visible = window_features.scrollbars_visible;
-  result.resizable = window_features.resizable;
-  result.fullscreen = window_features.fullscreen;
-  result.dialog = window_features.dialog;
   return result;
 }
 

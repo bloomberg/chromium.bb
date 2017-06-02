@@ -34,9 +34,9 @@
 
 #include <memory>
 #include "core/page/ChromeClient.h"
-#include "core/page/WindowFeatures.h"
 #include "platform/graphics/TouchAction.h"
 #include "public/web/WebNavigationPolicy.h"
+#include "public/web/WebWindowFeatures.h"
 #include "web/WebExport.h"
 
 namespace blink {
@@ -73,22 +73,13 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   bool AcceptsLoadDrops() const override;
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
-                     const WindowFeatures&,
+                     const WebWindowFeatures&,
                      NavigationPolicy) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
                      const FloatPoint& position_in_viewport,
                      const FloatSize& velocity_in_viewport) override;
-  void SetToolbarsVisible(bool) override;
-  bool ToolbarsVisible() override;
-  void SetStatusbarVisible(bool) override;
-  bool StatusbarVisible() override;
-  void SetScrollbarsVisible(bool) override;
-  bool ScrollbarsVisible() override;
-  void SetMenubarVisible(bool) override;
-  bool MenubarVisible() override;
-  void SetResizable(bool) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
@@ -154,6 +145,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   // appropriate scroll optimizations can be chosen.
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;
   void SetTouchAction(LocalFrame*, TouchAction) override;
+  const WebInputEvent* GetCurrentInputEvent() const override;
 
   void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
 
@@ -253,7 +245,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetCursor(const WebCursorInfo&, LocalFrame*);
 
   WebViewBase* web_view_;  // Weak pointer.
-  WindowFeatures window_features_;
   Vector<PopupOpeningObserver*> popup_opening_observers_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;

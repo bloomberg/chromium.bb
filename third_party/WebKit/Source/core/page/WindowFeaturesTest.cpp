@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#include "core/page/WindowFeatures.h"
+#include "core/page/CreateWindow.h"
 
 #include <gtest/gtest.h>
 #include "platform/wtf/text/WTFString.h"
+#include "public/web/WebWindowFeatures.h"
 
 namespace blink {
 
@@ -27,8 +28,8 @@ TEST_F(WindowFeaturesTest, NoOpener) {
   };
 
   for (const auto& test : kCases) {
-    WindowFeatures features(test.feature_string);
-    EXPECT_EQ(test.noopener, features.noopener)
+    EXPECT_EQ(test.noopener,
+              GetWindowFeaturesFromString(test.feature_string).noopener)
         << "Testing '" << test.feature_string << "'";
   }
 }

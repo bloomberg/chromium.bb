@@ -43,6 +43,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/web/WebWindowFeatures.h"
 
 namespace blink {
 
@@ -184,6 +185,13 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   UseCounter& GetUseCounter() { return use_counter_; }
   Deprecation& GetDeprecation() { return deprecation_; }
   HostsUsingFeatures& GetHostsUsingFeatures() { return hosts_using_features_; }
+
+  void SetWindowFeatures(const WebWindowFeatures& features) {
+    window_features_ = features;
+  }
+  const WebWindowFeatures& GetWindowFeatures() const {
+    return window_features_;
+  }
 
   PageScaleConstraintsSet& GetPageScaleConstraintsSet();
   const PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
@@ -333,6 +341,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   UseCounter use_counter_;
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
+  WebWindowFeatures window_features_;
 
   bool opened_by_dom_;
   // Set to true when window.close() has been called and the Page will be

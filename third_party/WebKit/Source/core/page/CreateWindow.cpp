@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/events/UIEventWithKeyState.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -37,15 +38,224 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/page/WindowFeatures.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebInputEvent.h"
+#include "public/platform/WebKeyboardEvent.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebWindowFeatures.h"
 
 namespace blink {
+
+namespace {
+
+void UpdatePolicyForEvent(const WebInputEvent* input_event,
+                          NavigationPolicy* policy) {
+  if (!input_event)
+    return;
+
+  unsigned short button_number = 0;
+  if (input_event->GetType() == WebInputEvent::kMouseUp) {
+    const WebMouseEvent* mouse_event =
+        static_cast<const WebMouseEvent*>(input_event);
+
+    switch (mouse_event->button) {
+      case WebMouseEvent::Button::kLeft:
+        button_number = 0;
+        break;
+      case WebMouseEvent::Button::kMiddle:
+        button_number = 1;
+        break;
+      case WebMouseEvent::Button::kRight:
+        button_number = 2;
+        break;
+      default:
+        return;
+    }
+  } else if ((WebInputEvent::IsKeyboardEventType(input_event->GetType()) &&
+              static_cast<const WebKeyboardEvent*>(input_event)
+                      ->windows_key_code == VKEY_RETURN) ||
+             WebInputEvent::IsGestureEventType(input_event->GetType())) {
+    // Keyboard and gesture events can simulate mouse events.
+    button_number = 0;
+  } else {
+    return;
+  }
+
+  bool ctrl = input_event->GetModifiers() & WebInputEvent::kControlKey;
+  bool shift = input_event->GetModifiers() & WebInputEvent::kShiftKey;
+  bool alt = input_event->GetModifiers() & WebInputEvent::kAltKey;
+  bool meta = input_event->GetModifiers() & WebInputEvent::kMetaKey;
+
+  NavigationPolicy user_policy = *policy;
+  NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta,
+                                 &user_policy);
+
+  // When the input event suggests a download, but the navigation was initiated
+  // by script, we should not override it.
+  if (user_policy == kNavigationPolicyDownload &&
+      *policy != kNavigationPolicyIgnore)
+    return;
+
+  // User and app agree that we want a new window; let the app override the
+  // decorations.
+  if (user_policy == kNavigationPolicyNewWindow &&
+      *policy == kNavigationPolicyNewPopup)
+    return;
+  *policy = user_policy;
+}
+
+NavigationPolicy GetNavigationPolicy(const WebInputEvent* current_event,
+                                     bool toolbar_visible) {
+  // If the window features didn't enable the toolbar, or this window wasn't
+  // created by a user gesture, show as a popup instead of a new tab.
+  //
+  // Note: this previously also checked that menubar, resizable, scrollbar, and
+  // statusbar are enabled too. When no feature string is specified, these
+  // features default to enabled (and the window opens as a new tab). However,
+  // when a feature string is specified, any *unspecified* features default to
+  // disabled, often causing the window to open as a popup instead.
+  //
+  // As specifying menubar, resizable, scrollbar, and statusbar have no effect
+  // on the UI, just ignore them and only consider whether or not the toolbar is
+  // enabled, which matches Firefox's behavior.
+  NavigationPolicy policy = toolbar_visible ? kNavigationPolicyNewForegroundTab
+                                            : kNavigationPolicyNewPopup;
+  UpdatePolicyForEvent(current_event, &policy);
+  return policy;
+}
+
+}  // anonymous namespace
+
+NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
+                                           const WebInputEvent* current_event,
+                                           bool toolbar_visible) {
+  if (policy == kNavigationPolicyIgnore)
+    return GetNavigationPolicy(current_event, toolbar_visible);
+  if (policy == kNavigationPolicyNewBackgroundTab &&
+      GetNavigationPolicy(current_event, toolbar_visible) !=
+          kNavigationPolicyNewBackgroundTab &&
+      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
+    return kNavigationPolicyNewForegroundTab;
+  }
+  return policy;
+}
+
+// Though isspace() considers \t and \v to be whitespace, Win IE doesn't when
+// parsing window features.
+static bool IsWindowFeaturesSeparator(UChar c) {
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' ||
+         c == ',' || c == '\0';
+}
+
+WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
+  WebWindowFeatures window_features;
+
+  // The IE rule is: all features except for channelmode default
+  // to YES, but if the user specifies a feature string, all features default to
+  // NO. (There is no public standard that applies to this method.)
+  // <http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/open_0.asp>
+  if (feature_string.IsEmpty())
+    return window_features;
+
+  window_features.menu_bar_visible = false;
+  window_features.status_bar_visible = false;
+  window_features.tool_bar_visible = false;
+  window_features.scrollbars_visible = false;
+
+  // Tread lightly in this code -- it was specifically designed to mimic Win
+  // IE's parsing behavior.
+  unsigned key_begin, key_end;
+  unsigned value_begin, value_end;
+
+  String buffer = feature_string.DeprecatedLower();
+  unsigned length = buffer.length();
+  for (unsigned i = 0; i < length;) {
+    // skip to first non-separator, but don't skip past the end of the string
+    while (i < length && IsWindowFeaturesSeparator(buffer[i]))
+      i++;
+    key_begin = i;
+
+    // skip to first separator
+    while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
+      i++;
+    key_end = i;
+
+    SECURITY_DCHECK(i <= length);
+
+    // skip to first '=', but don't skip past a ',' or the end of the string
+    while (i < length && buffer[i] != '=') {
+      if (buffer[i] == ',')
+        break;
+      i++;
+    }
+
+    SECURITY_DCHECK(i <= length);
+
+    // Skip to first non-separator, but don't skip past a ',' or the end of the
+    // string.
+    while (i < length && IsWindowFeaturesSeparator(buffer[i])) {
+      if (buffer[i] == ',')
+        break;
+      i++;
+    }
+    value_begin = i;
+
+    SECURITY_DCHECK(i <= length);
+
+    // skip to first separator
+    while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
+      i++;
+    value_end = i;
+
+    SECURITY_DCHECK(i <= length);
+
+    String key_string(buffer.Substring(key_begin, key_end - key_begin));
+    String value_string(buffer.Substring(value_begin, value_end - value_begin));
+
+    // Listing a key with no value is shorthand for key=yes
+    int value;
+    if (value_string.IsEmpty() || value_string == "yes")
+      value = 1;
+    else
+      value = value_string.ToInt();
+
+    if (key_string == "left" || key_string == "screenx") {
+      window_features.x_set = true;
+      window_features.x = value;
+    } else if (key_string == "top" || key_string == "screeny") {
+      window_features.y_set = true;
+      window_features.y = value;
+    } else if (key_string == "width" || key_string == "innerwidth") {
+      window_features.width_set = true;
+      window_features.width = value;
+    } else if (key_string == "height" || key_string == "innerheight") {
+      window_features.height_set = true;
+      window_features.height = value;
+    } else if (key_string == "menubar") {
+      window_features.menu_bar_visible = value;
+    } else if (key_string == "toolbar" || key_string == "location") {
+      window_features.tool_bar_visible |= static_cast<bool>(value);
+    } else if (key_string == "status") {
+      window_features.status_bar_visible = value;
+    } else if (key_string == "scrollbars") {
+      window_features.scrollbars_visible = value;
+    } else if (key_string == "noopener") {
+      window_features.noopener = true;
+    } else if (key_string == "background") {
+      window_features.background = true;
+    } else if (key_string == "persistent") {
+      window_features.persistent = true;
+    }
+  }
+
+  return window_features;
+}
 
 static Frame* ReuseExistingWindow(LocalFrame& active_frame,
                                   LocalFrame& lookup_frame,
@@ -71,12 +281,16 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
 
 static Frame* CreateNewWindow(LocalFrame& opener_frame,
                               const FrameLoadRequest& request,
-                              const WindowFeatures& features,
+                              const WebWindowFeatures& features,
                               NavigationPolicy policy,
                               bool& created) {
   Page* old_page = opener_frame.GetPage();
   if (!old_page)
     return nullptr;
+
+  policy = EffectiveNavigationPolicy(
+      policy, old_page->GetChromeClient().GetCurrentInputEvent(),
+      features.tool_bar_visible);
 
   Page* page = old_page->GetChromeClient().CreateWindow(&opener_frame, request,
                                                         features, policy);
@@ -92,7 +306,9 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!EqualIgnoringASCIICase(request.FrameName(), "_blank"))
     frame.Tree().SetName(request.FrameName());
 
-  page->GetChromeClient().SetWindowFeatures(features);
+  page->SetWindowFeatures(features);
+
+  frame.View()->SetCanHaveScrollbars(features.scrollbars_visible);
 
   // 'x' and 'y' specify the location of the window, while 'width' and 'height'
   // specify the size of the viewport. We can only resize the window, so adjust
@@ -130,10 +346,9 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
                                  LocalFrame& active_frame,
                                  LocalFrame& lookup_frame,
                                  const FrameLoadRequest& request,
-                                 const WindowFeatures& features,
+                                 const WebWindowFeatures& features,
                                  NavigationPolicy policy,
                                  bool& created) {
-  DCHECK(!features.dialog || request.FrameName().IsEmpty());
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
@@ -176,7 +391,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
 
 DOMWindow* CreateWindow(const String& url_string,
                         const AtomicString& frame_name,
-                        const WindowFeatures& window_features,
+                        const String& window_features_string,
                         LocalDOMWindow& calling_window,
                         LocalFrame& first_frame,
                         LocalFrame& opener_frame,
@@ -194,6 +409,9 @@ DOMWindow* CreateWindow(const String& url_string,
                           completed_url.GetString() + "'.\n");
     return nullptr;
   }
+
+  WebWindowFeatures window_features =
+      GetWindowFeaturesFromString(window_features_string);
 
   FrameLoadRequest frame_request(calling_window.document(),
                                  ResourceRequest(completed_url), frame_name);
@@ -231,7 +449,7 @@ DOMWindow* CreateWindow(const String& url_string,
     return nullptr;
   if (new_frame->DomWindow()->IsInsecureScriptAccess(calling_window,
                                                      completed_url))
-    return new_frame->DomWindow();
+    return window_features.noopener ? nullptr : new_frame->DomWindow();
 
   // TODO(dcheng): Special case for window.open("about:blank") to ensure it
   // loads synchronously into a new window. This is our historical behavior, and
@@ -252,7 +470,7 @@ DOMWindow* CreateWindow(const String& url_string,
                         has_user_gesture ? UserGestureStatus::kActive
                                          : UserGestureStatus::kNone);
   }
-  return new_frame->DomWindow();
+  return window_features.noopener ? nullptr : new_frame->DomWindow();
 }
 
 void CreateWindowForRequest(const FrameLoadRequest& request,
@@ -273,7 +491,7 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   if (policy == kNavigationPolicyCurrentTab)
     policy = kNavigationPolicyNewForegroundTab;
 
-  WindowFeatures features;
+  WebWindowFeatures features;
   features.noopener = request.GetShouldSetOpener() == kNeverSetOpener;
   bool created;
   Frame* new_frame =

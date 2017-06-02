@@ -31,7 +31,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/ScopedPageSuspender.h"
-#include "core/page/WindowFeatures.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
@@ -84,15 +83,6 @@ bool ChromeClient::CanOpenModalIfDuringPageDismissal(
     }
   }
   return true;
-}
-
-void ChromeClient::SetWindowFeatures(const WindowFeatures& features) {
-  SetToolbarsVisible(features.tool_bar_visible ||
-                     features.location_bar_visible);
-  SetStatusbarVisible(features.status_bar_visible);
-  SetScrollbarsVisible(features.scrollbars_visible);
-  SetMenubarVisible(features.menu_bar_visible);
-  SetResizable(features.resizable);
 }
 
 template <typename Delegate>
