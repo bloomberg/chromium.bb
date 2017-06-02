@@ -8,8 +8,7 @@ import "content/common/service_worker/service_worker_provider_interfaces.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
 
 // A container object carried from the renderer to the browser process.
-// This contains the params for the constructor of
-// content::ServiceWorkerProviderHost.
+// This contains the parameters to specify the provider on the browser side.
 // See also comments in
 // content/common/service_worker/service_worker_provider_host_info.h.
 struct ServiceWorkerProviderHostInfo {

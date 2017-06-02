@@ -57,15 +57,17 @@ class WebContents;
 // For providers hosting a running service worker, this class will observe
 // resource loads made directly by the service worker.
 //
-// This instance is created when navigation is started and
-// ServiceWorkerNetworkProvider is create on the renderer process. Mojo's
-// connection from ServiceWorkerNetworkProvider is established on the creation
-// time, and the instance is destroyed on disconnection from the renderer side.
-// If PlzNavigate is turned on, this instance is pre-created on the browser
+// A ServiceWorkerProviderHost instance is created when a
+// ServiceWorkerNetworkProvider is created on the renderer process, which
+// happens 1) when a document or worker (i.e., a service worker client) is
+// created, or 2) during service worker startup. Mojo's connection from
+// ServiceWorkerNetworkProvider is established on the creation time, and the
+// instance is destroyed on disconnection from the renderer side.
+// If PlzNavigate is turned on, an instance is pre-created on the browser
 // before ServiceWorkerNetworkProvider is created on the renderer because
-// navigation is possible to be initiated on the browser side. In that case,
-// establishment of Mojo's connection will be deferred until
-// ServiceWorkerNetworkProvider is created on the renderer.
+// navigation is initiated on the browser side. In that case, establishment of
+// Mojo's connection will be deferred until ServiceWorkerNetworkProvider is
+// created on the renderer.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,

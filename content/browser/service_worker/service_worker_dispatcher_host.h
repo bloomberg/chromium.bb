@@ -42,6 +42,9 @@ struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
+// This class is bound with mojom::ServiceWorkerDispatcherHost. All
+// InterfacePtrs on the same render process are bound to the same
+// content::ServiceWorkerDispatcherHost.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
     : public mojom::ServiceWorkerDispatcherHost,
       public BrowserMessageFilter {
