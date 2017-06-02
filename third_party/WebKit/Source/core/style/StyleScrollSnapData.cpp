@@ -29,14 +29,6 @@
 
 namespace blink {
 
-ScrollSnapPoints::ScrollSnapPoints()
-    : repeat_offset(100, kPercent), has_repeat(false), uses_elements(false) {}
-
-bool operator==(const ScrollSnapPoints& a, const ScrollSnapPoints& b) {
-  return a.repeat_offset == b.repeat_offset && a.has_repeat == b.has_repeat &&
-         a.uses_elements == b.uses_elements;
-}
-
 StyleScrollSnapData::StyleScrollSnapData()
     : x_points_(ComputedStyle::InitialScrollSnapPointsX()),
       y_points_(ComputedStyle::InitialScrollSnapPointsY()),
