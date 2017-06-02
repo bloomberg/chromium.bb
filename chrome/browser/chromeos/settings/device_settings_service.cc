@@ -29,19 +29,6 @@ namespace em = enterprise_management;
 using ownership::OwnerKeyUtil;
 using ownership::PublicKey;
 
-namespace {
-
-// Delay between load retries when there was a validation error.
-// NOTE: This code is here to mitigate clock loss on some devices where policy
-// loads will fail with a validation error caused by RTC clock being reset when
-// the battery is drained.
-int kLoadRetryDelayMs = 1000 * 5;
-// Maximal number of retries before we give up. Calculated to allow for 10 min
-// of retry time.
-int kMaxLoadRetries = (1000 * 60 * 10) / kLoadRetryDelayMs;
-
-}  // namespace
-
 namespace chromeos {
 
 DeviceSettingsService::Observer::~Observer() {}
@@ -78,8 +65,7 @@ DeviceSettingsService* DeviceSettingsService::Get() {
   return g_device_settings_service;
 }
 
-DeviceSettingsService::DeviceSettingsService()
-    : load_retries_left_(kMaxLoadRetries), weak_factory_(this) {}
+DeviceSettingsService::DeviceSettingsService() {}
 
 DeviceSettingsService::~DeviceSettingsService() {
   DCHECK(pending_operations_.empty());
@@ -303,26 +289,8 @@ void DeviceSettingsService::HandleCompletedOperation(
   if (status == STORE_SUCCESS) {
     policy_data_ = std::move(operation->policy_data());
     device_settings_ = std::move(operation->device_settings());
-    load_retries_left_ = kMaxLoadRetries;
   } else if (status != STORE_KEY_UNAVAILABLE) {
     LOG(ERROR) << "Session manager operation failed: " << status;
-    // Validation errors can be temporary if the rtc has gone on holiday for a
-    // short while. So we will retry such loads for up to 10 minutes.
-    if (status == STORE_TEMP_VALIDATION_ERROR) {
-      if (load_retries_left_ > 0) {
-        load_retries_left_--;
-        LOG(ERROR) << "A re-load has been scheduled due to a validation error.";
-        content::BrowserThread::PostDelayedTask(
-            content::BrowserThread::UI,
-            FROM_HERE,
-            base::Bind(&DeviceSettingsService::Load, base::Unretained(this)),
-            base::TimeDelta::FromMilliseconds(kLoadRetryDelayMs));
-      } else {
-        // Once we've given up retrying, the validation error is not temporary
-        // anymore.
-        store_status_ = STORE_VALIDATION_ERROR;
-      }
-    }
   }
 
   public_key_ = scoped_refptr<PublicKey>(operation->public_key());

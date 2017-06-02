@@ -151,13 +151,13 @@ void SessionManagerOperation::BlockingRetrieveDeviceSettings() {
 void SessionManagerOperation::ValidateDeviceSettings(
     const std::string& policy_blob,
     RetrievePolicyResponseType response_type) {
-  std::unique_ptr<em::PolicyFetchResponse> policy(
-      new em::PolicyFetchResponse());
   if (policy_blob.empty()) {
     ReportResult(DeviceSettingsService::STORE_NO_POLICY);
     return;
   }
 
+  std::unique_ptr<em::PolicyFetchResponse> policy =
+      base::MakeUnique<em::PolicyFetchResponse>();
   if (!policy->ParseFromString(policy_blob) || !policy->IsInitialized()) {
     ReportResult(DeviceSettingsService::STORE_INVALID_POLICY);
     return;
@@ -210,23 +210,14 @@ void SessionManagerOperation::ValidateDeviceSettings(
 
 void SessionManagerOperation::ReportValidatorStatus(
     policy::DeviceCloudPolicyValidator* validator) {
-  DeviceSettingsService::Status status =
-      DeviceSettingsService::STORE_VALIDATION_ERROR;
   if (validator->success()) {
-    status = DeviceSettingsService::STORE_SUCCESS;
     policy_data_ = std::move(validator->policy_data());
     device_settings_ = std::move(validator->payload());
+    ReportResult(DeviceSettingsService::STORE_SUCCESS);
   } else {
     LOG(ERROR) << "Policy validation failed: " << validator->status();
-
-    // Those are mostly caused by RTC loss and are recoverable.
-    if (validator->status() ==
-        policy::DeviceCloudPolicyValidator::VALIDATION_BAD_TIMESTAMP) {
-      status = DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR;
-    }
+    ReportResult(DeviceSettingsService::STORE_VALIDATION_ERROR);
   }
-
-  ReportResult(status);
 }
 
 LoadSettingsOperation::LoadSettingsOperation(bool force_key_load,
