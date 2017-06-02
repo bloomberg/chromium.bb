@@ -51,6 +51,7 @@ blink_core_sources("rendering") {
     "NinePieceImage.cpp",
     "NinePieceImage.h",
     "OutlineValue.h",
+    "PaintImages.h",
     "QuotesData.cpp",
     "QuotesData.h",
     "ScrollSnapPoints.h",
