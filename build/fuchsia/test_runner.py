@@ -124,6 +124,9 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
   if gtest_filter:
     autorun_file.write(' --gtest_filter=' + gtest_filter)
   autorun_file.write('\n')
+  # If shutdown happens too soon after the test completion, log statements from
+  # the end of the run will be lost, so sleep for a bit before shutting down.
+  autorun_file.write('sleep 3\n')
   autorun_file.write('dm poweroff\n')
   autorun_file.flush()
   os.chmod(autorun_file.name, 0750)
@@ -188,12 +191,17 @@ def main():
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
 
+  if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
+    args_for_kvm_and_cpu = ['-enable-kvm', '-cpu', 'host,migratable=no']
+  else:
+    args_for_kvm_and_cpu = ['-cpu', 'Haswell,+smap,-check']
   RunAndCheck(args.dry_run,
       [qemu_path, '-m', '2048', '-nographic', '-net', 'none', '-smp', '4',
-       '-machine', 'q35', '-kernel',
-       os.path.join(SDK_ROOT, 'kernel', 'magenta.bin'),
-       '-cpu', 'Haswell,+smap,-check', '-initrd', bootfs,
-       '-append', 'TERM=xterm-256color'])
+       '-machine', 'q35',
+       '-kernel', os.path.join(SDK_ROOT, 'kernel', 'magenta.bin'),
+       '-initrd', bootfs,
+       '-append', 'TERM=xterm-256color kernel.halt_on_panic=true'] +
+       args_for_kvm_and_cpu)
 
   return 0
 
