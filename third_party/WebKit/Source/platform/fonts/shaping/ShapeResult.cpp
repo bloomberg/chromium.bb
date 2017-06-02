@@ -170,7 +170,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
       has_vertical_offsets_(other.has_vertical_offsets_) {
   runs_.ReserveCapacity(other.runs_.size());
   for (const auto& run : other.runs_)
-    runs_.push_back(WTF::WrapUnique(new ShapeResult::RunInfo(*run)));
+    runs_.push_back(base::MakeUnique<RunInfo>(*run));
 }
 
 ShapeResult::~ShapeResult() {}
@@ -447,11 +447,11 @@ void ShapeResult::CopyRange(unsigned start_offset,
       unsigned end = std::min(end_offset - run_start, run_end);
       DCHECK(end > start);
 
-      ShapeResult::RunInfo* sub_run = (*run).CreateSubRun(start, end);
+      auto sub_run = (*run).CreateSubRun(start, end);
       sub_run->start_index_ = index;
-      target->runs_.push_back(WTF::WrapUnique(sub_run));
       target->width_ += sub_run->width_;
       index += sub_run->num_characters_;
+      target->runs_.push_back(std::move(sub_run));
     }
   }
 
@@ -466,10 +466,9 @@ PassRefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   const SimpleFontData* font_data = font->PrimaryFont();
   // Tab characters are always LTR or RTL, not TTB, even when
   // isVerticalAnyUpright().
-  std::unique_ptr<ShapeResult::RunInfo> run =
-      WTF::WrapUnique(new ShapeResult::RunInfo(
-          font_data, text_run.Rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
-          HB_SCRIPT_COMMON, 0, count, count));
+  std::unique_ptr<ShapeResult::RunInfo> run = base::MakeUnique<RunInfo>(
+      font_data, text_run.Rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
+      HB_SCRIPT_COMMON, 0, count, count);
   float position = text_run.XPos() + position_offset;
   float start_position = position;
   for (unsigned i = 0; i < count; i++) {
