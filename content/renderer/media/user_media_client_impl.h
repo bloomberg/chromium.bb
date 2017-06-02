@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
 #include "content/common/media/media_devices.mojom.h"
@@ -51,8 +51,7 @@ class VideoCaptureSettings;
 class CONTENT_EXPORT UserMediaClientImpl
     : public RenderFrameObserver,
       NON_EXPORTED_BASE(public blink::WebUserMediaClient),
-      public MediaStreamDispatcherEventHandler,
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+      public MediaStreamDispatcherEventHandler {
  public:
   // |render_frame| and |dependency_factory| must outlive this instance.
   UserMediaClientImpl(
@@ -279,6 +278,8 @@ class CONTENT_EXPORT UserMediaClientImpl
   blink::WebMediaDeviceChangeObserver media_device_change_observer_;
 
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.

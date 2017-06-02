@@ -14,9 +14,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -45,33 +45,37 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // It is used by both WebRtcAudioRenderer and SharedAudioRenderer (see cc
   // file) so a part of why it exists is to avoid code duplication and track
   // the state in the same way in WebRtcAudioRenderer and SharedAudioRenderer.
-  class PlayingState : public base::NonThreadSafe {
+  class PlayingState {
    public:
     PlayingState() : playing_(false), volume_(1.0f) {}
 
+    ~PlayingState() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+
     bool playing() const {
-      DCHECK(CalledOnValidThread());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
       return playing_;
     }
 
     void set_playing(bool playing) {
-      DCHECK(CalledOnValidThread());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
       playing_ = playing;
     }
 
     float volume() const {
-      DCHECK(CalledOnValidThread());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
       return volume_;
     }
 
     void set_volume(float volume) {
-      DCHECK(CalledOnValidThread());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
       volume_ = volume;
     }
 
    private:
     bool playing_;
     float volume_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
   };
 
   WebRtcAudioRenderer(

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -66,7 +66,7 @@ void UpdateWebRTCMethodCount(JavaScriptAPIName api_name);
 //
 // The UpdateWebRTCMethodCount function above uses this class to log a
 // metric at most once per session.
-class CONTENT_EXPORT PerSessionWebRTCAPIMetrics : public base::NonThreadSafe {
+class CONTENT_EXPORT PerSessionWebRTCAPIMetrics {
  public:
   virtual ~PerSessionWebRTCAPIMetrics();
 
@@ -97,6 +97,8 @@ class CONTENT_EXPORT PerSessionWebRTCAPIMetrics : public base::NonThreadSafe {
 
   int num_streams_;
   bool has_used_api_[INVALID_NAME];
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerSessionWebRTCAPIMetrics);
 };
