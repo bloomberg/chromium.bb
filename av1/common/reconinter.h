@@ -547,20 +547,21 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    BLOCK_SIZE bsize);
 
 #if CONFIG_SUPERTX
-void av1_build_inter_predictors_sb_sub8x8_extend(const AV1_COMMON *cm,
-                                                 MACROBLOCKD *xd,
+void av1_build_inter_predictor_sb_sub8x8_extend(const AV1_COMMON *cm,
+                                                MACROBLOCKD *xd,
 #if CONFIG_EXT_INTER
-                                                 int mi_row_ori, int mi_col_ori,
+                                                int mi_row_ori, int mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                                 int mi_row, int mi_col,
-                                                 BLOCK_SIZE bsize, int block);
+                                                int mi_row, int mi_col,
+                                                int plane, BLOCK_SIZE bsize,
+                                                int block);
 
-void av1_build_inter_predictors_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_inter_predictor_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_EXT_INTER
-                                          int mi_row_ori, int mi_col_ori,
+                                         int mi_row_ori, int mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                          int mi_row, int mi_col,
-                                          BLOCK_SIZE bsize);
+                                         int mi_row, int mi_col, int plane,
+                                         BLOCK_SIZE bsize);
 struct macroblockd_plane;
 void av1_build_masked_inter_predictor_complex(
     MACROBLOCKD *xd, uint8_t *dst, int dst_stride, const uint8_t *pre,

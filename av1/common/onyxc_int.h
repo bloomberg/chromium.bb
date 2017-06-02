@@ -758,6 +758,20 @@ static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
 #endif
 }
 
+#if CONFIG_SUPERTX
+static INLINE int need_handle_chroma_sub8x8(BLOCK_SIZE bsize, int subsampling_x,
+                                            int subsampling_y) {
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+
+  if (bsize >= BLOCK_8X8 ||
+      ((!(bh & 0x01) || !subsampling_y) && (!(bw & 0x01) || !subsampling_x)))
+    return 0;
+  else
+    return 1;
+}
+#endif
+
 static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
                                             int subsampling_y) {
   BLOCK_SIZE bs = bsize;

@@ -972,7 +972,7 @@ static void set_ref(AV1_COMMON *const cm, MACROBLOCKD *const xd, int idx,
 static void dec_predict_b_extend(
     AV1Decoder *const pbi, MACROBLOCKD *const xd, const TileInfo *const tile,
     int block, int mi_row_ori, int mi_col_ori, int mi_row_pred, int mi_col_pred,
-    int mi_row_top, int mi_col_top, uint8_t *dst_buf[3], int dst_stride[3],
+    int mi_row_top, int mi_col_top, int plane, uint8_t *dst_buf, int dst_stride,
     BLOCK_SIZE bsize_top, BLOCK_SIZE bsize_pred, int b_sub8x8, int bextend) {
   // Used in supertx
   // (mi_row_ori, mi_col_ori): location for mv
@@ -1002,39 +1002,34 @@ static void dec_predict_b_extend(
 
   if (!bextend) mbmi->tx_size = max_txsize_lookup[bsize_top];
 
-  xd->plane[0].dst.stride = dst_stride[0];
-  xd->plane[1].dst.stride = dst_stride[1];
-  xd->plane[2].dst.stride = dst_stride[2];
-  xd->plane[0].dst.buf = dst_buf[0] +
-                         (r >> xd->plane[0].subsampling_y) * dst_stride[0] +
-                         (c >> xd->plane[0].subsampling_x);
-  xd->plane[1].dst.buf = dst_buf[1] +
-                         (r >> xd->plane[1].subsampling_y) * dst_stride[1] +
-                         (c >> xd->plane[1].subsampling_x);
-  xd->plane[2].dst.buf = dst_buf[2] +
-                         (r >> xd->plane[2].subsampling_y) * dst_stride[2] +
-                         (c >> xd->plane[2].subsampling_x);
+  xd->plane[plane].dst.stride = dst_stride;
+  xd->plane[plane].dst.buf =
+      dst_buf + (r >> xd->plane[plane].subsampling_y) * dst_stride +
+      (c >> xd->plane[plane].subsampling_x);
 
   if (!b_sub8x8)
-    av1_build_inter_predictors_sb_extend(&pbi->common, xd,
+    av1_build_inter_predictor_sb_extend(&pbi->common, xd,
 #if CONFIG_EXT_INTER
-                                         mi_row_ori, mi_col_ori,
+                                        mi_row_ori, mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                         mi_row_pred, mi_col_pred, bsize_pred);
+                                        mi_row_pred, mi_col_pred, plane,
+                                        bsize_pred);
   else
-    av1_build_inter_predictors_sb_sub8x8_extend(&pbi->common, xd,
+    av1_build_inter_predictor_sb_sub8x8_extend(&pbi->common, xd,
 #if CONFIG_EXT_INTER
-                                                mi_row_ori, mi_col_ori,
+                                               mi_row_ori, mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                                mi_row_pred, mi_col_pred,
-                                                bsize_pred, block);
+                                               mi_row_pred, mi_col_pred, plane,
+                                               bsize_pred, block);
 }
 
 static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                            const TileInfo *const tile, int block,
-                           BLOCK_SIZE bsize, BLOCK_SIZE top_bsize, int mi_row,
+                           BLOCK_SIZE bsize, BLOCK_SIZE top_bsize,
+                           int mi_row_ori, int mi_col_ori, int mi_row,
                            int mi_col, int mi_row_top, int mi_col_top,
-                           uint8_t *dst_buf[3], int dst_stride[3], int dir) {
+                           int plane, uint8_t *dst_buf, int dst_stride,
+                           int dir) {
   // dir: 0-lower, 1-upper, 2-left, 3-right
   //      4-lowerleft, 5-upperleft, 6-lowerright, 7-upperright
   const int mi_width = mi_size_wide[bsize];
@@ -1074,9 +1069,9 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     for (j = 0; j < mi_height + ext_offset; j += high_unit)
       for (i = 0; i < mi_width + ext_offset; i += wide_unit)
-        dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col,
+        dec_predict_b_extend(pbi, xd, tile, block, mi_row_ori, mi_col_ori,
                              mi_row_pred + j, mi_col_pred + i, mi_row_top,
-                             mi_col_top, dst_buf, dst_stride, top_bsize,
+                             mi_col_top, plane, dst_buf, dst_stride, top_bsize,
                              extend_bsize, b_sub8x8, 1);
   } else if (dir == 2 || dir == 3) {
     extend_bsize =
@@ -1098,9 +1093,9 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     for (j = 0; j < mi_height + ext_offset; j += high_unit)
       for (i = 0; i < mi_width + ext_offset; i += wide_unit)
-        dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col,
+        dec_predict_b_extend(pbi, xd, tile, block, mi_row_ori, mi_col_ori,
                              mi_row_pred + j, mi_col_pred + i, mi_row_top,
-                             mi_col_top, dst_buf, dst_stride, top_bsize,
+                             mi_col_top, plane, dst_buf, dst_stride, top_bsize,
                              extend_bsize, b_sub8x8, 1);
   } else {
     extend_bsize = BLOCK_8X8;
@@ -1120,21 +1115,23 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     for (j = 0; j < mi_height + ext_offset; j += high_unit)
       for (i = 0; i < mi_width + ext_offset; i += wide_unit)
-        dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col,
+        dec_predict_b_extend(pbi, xd, tile, block, mi_row_ori, mi_col_ori,
                              mi_row_pred + j, mi_col_pred + i, mi_row_top,
-                             mi_col_top, dst_buf, dst_stride, top_bsize,
+                             mi_col_top, plane, dst_buf, dst_stride, top_bsize,
                              extend_bsize, b_sub8x8, 1);
   }
 }
 
 static void dec_extend_all(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                            const TileInfo *const tile, int block,
-                           BLOCK_SIZE bsize, BLOCK_SIZE top_bsize, int mi_row,
+                           BLOCK_SIZE bsize, BLOCK_SIZE top_bsize,
+                           int mi_row_ori, int mi_col_ori, int mi_row,
                            int mi_col, int mi_row_top, int mi_col_top,
-                           uint8_t *dst_buf[3], int dst_stride[3]) {
+                           int plane, uint8_t *dst_buf, int dst_stride) {
   for (int i = 0; i < 8; ++i) {
-    dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row, mi_col,
-                   mi_row_top, mi_col_top, dst_buf, dst_stride, i);
+    dec_extend_dir(pbi, xd, tile, block, bsize, top_bsize, mi_row_ori,
+                   mi_col_ori, mi_row, mi_col, mi_row_top, mi_col_top, plane,
+                   dst_buf, dst_stride, i);
   }
 }
 
@@ -1206,30 +1203,37 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   switch (partition) {
     case PARTITION_NONE:
       assert(bsize < top_bsize);
-      dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                           mi_row_top, mi_col_top, dst_buf, dst_stride,
-                           top_bsize, bsize, 0, 0);
-      dec_extend_all(pbi, xd, tile, 0, bsize, top_bsize, mi_row, mi_col,
-                     mi_row_top, mi_col_top, dst_buf, dst_stride);
+      for (i = 0; i < MAX_MB_PLANE; i++) {
+        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
+                             mi_row_top, mi_col_top, i, dst_buf[i],
+                             dst_stride[i], top_bsize, bsize, 0, 0);
+        dec_extend_all(pbi, xd, tile, 0, bsize, top_bsize, mi_row, mi_col,
+                       mi_row, mi_col, mi_row_top, mi_col_top, i, dst_buf[i],
+                       dst_stride[i]);
+      }
       break;
     case PARTITION_HORZ:
       if (bsize == BLOCK_8X8 && !unify_bsize) {
-        // For sub8x8, predict in 8x8 unit
-        // First half
-        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf, dst_stride,
-                             top_bsize, BLOCK_8X8, 1, 0);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride);
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+          // For sub8x8, predict in 8x8 unit
+          // First half
+          dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf[i],
+                               dst_stride[i], top_bsize, BLOCK_8X8, 1, 0);
+          if (bsize < top_bsize)
+            dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf[i], dst_stride[i]);
 
-        // Second half
-        dec_predict_b_extend(pbi, xd, tile, 2, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf1, dst_stride1,
-                             top_bsize, BLOCK_8X8, 1, 1);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 2, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf1, dst_stride1);
+          // Second half
+          dec_predict_b_extend(pbi, xd, tile, 2, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf1[i],
+                               dst_stride1[i], top_bsize, BLOCK_8X8, 1, 1);
+          if (bsize < top_bsize)
+            dec_extend_all(pbi, xd, tile, 2, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf1[i], dst_stride1[i]);
+        }
 
         // weighted average to smooth the boundary
         xd->plane[0].dst.buf = dst_buf[0];
@@ -1239,60 +1243,91 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
             mi_col, mi_row_top, mi_col_top, bsize, top_bsize, PARTITION_HORZ,
             0);
       } else {
-        // First half
-        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf, dst_stride,
-                             top_bsize, subsize, 0, 0);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride);
-        else
-          dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride, 0);
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+#if CONFIG_CB4X4
+          const struct macroblockd_plane *pd = &xd->plane[i];
+          int handle_chroma_sub8x8 = need_handle_chroma_sub8x8(
+              subsize, pd->subsampling_x, pd->subsampling_y);
 
-        if (mi_row + hbs < cm->mi_rows) {
-          // Second half
-          dec_predict_b_extend(pbi, xd, tile, 0, mi_row + hbs, mi_col,
-                               mi_row + hbs, mi_col, mi_row_top, mi_col_top,
-                               dst_buf1, dst_stride1, top_bsize, subsize, 0, 0);
-          if (bsize < top_bsize)
-            dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row + hbs,
-                           mi_col, mi_row_top, mi_col_top, dst_buf1,
-                           dst_stride1);
-          else
-            dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row + hbs,
-                           mi_col, mi_row_top, mi_col_top, dst_buf1,
-                           dst_stride1, 1);
+          if (handle_chroma_sub8x8) {
+            int mode_offset_row = CONFIG_CHROMA_SUB8X8 ? hbs : 0;
 
-          // weighted average to smooth the boundary
-          for (i = 0; i < MAX_MB_PLANE; i++) {
-            xd->plane[i].dst.buf = dst_buf[i];
-            xd->plane[i].dst.stride = dst_stride[i];
-            av1_build_masked_inter_predictor_complex(
-                xd, dst_buf[i], dst_stride[i], dst_buf1[i], dst_stride1[i],
-                mi_row, mi_col, mi_row_top, mi_col_top, bsize, top_bsize,
-                PARTITION_HORZ, i);
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row + mode_offset_row,
+                                 mi_col, mi_row, mi_col, mi_row_top, mi_col_top,
+                                 i, dst_buf[i], dst_stride[i], top_bsize, bsize,
+                                 0, 0);
+            if (bsize < top_bsize)
+              dec_extend_all(pbi, xd, tile, 0, bsize, top_bsize,
+                             mi_row + mode_offset_row, mi_col, mi_row, mi_col,
+                             mi_row_top, mi_col_top, i, dst_buf[i],
+                             dst_stride[i]);
+          } else {
+#endif
+            // First half
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row,
+                                 mi_col, mi_row_top, mi_col_top, i, dst_buf[i],
+                                 dst_stride[i], top_bsize, subsize, 0, 0);
+            if (bsize < top_bsize)
+              dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                             mi_col, mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i]);
+            else
+              dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                             mi_col, mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i], 0);
+
+            if (mi_row + hbs < cm->mi_rows) {
+              // Second half
+              dec_predict_b_extend(pbi, xd, tile, 0, mi_row + hbs, mi_col,
+                                   mi_row + hbs, mi_col, mi_row_top, mi_col_top,
+                                   i, dst_buf1[i], dst_stride1[i], top_bsize,
+                                   subsize, 0, 0);
+              if (bsize < top_bsize)
+                dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize,
+                               mi_row + hbs, mi_col, mi_row + hbs, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf1[i],
+                               dst_stride1[i]);
+              else
+                dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize,
+                               mi_row + hbs, mi_col, mi_row + hbs, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf1[i],
+                               dst_stride1[i], 1);
+
+              // weighted average to smooth the boundary
+              xd->plane[i].dst.buf = dst_buf[i];
+              xd->plane[i].dst.stride = dst_stride[i];
+              av1_build_masked_inter_predictor_complex(
+                  xd, dst_buf[i], dst_stride[i], dst_buf1[i], dst_stride1[i],
+                  mi_row, mi_col, mi_row_top, mi_col_top, bsize, top_bsize,
+                  PARTITION_HORZ, i);
+            }
+#if CONFIG_CB4X4
           }
+#endif
         }
       }
       break;
     case PARTITION_VERT:
       if (bsize == BLOCK_8X8 && !unify_bsize) {
-        // First half
-        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf, dst_stride,
-                             top_bsize, BLOCK_8X8, 1, 0);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride);
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+          // First half
+          dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf[i],
+                               dst_stride[i], top_bsize, BLOCK_8X8, 1, 0);
+          if (bsize < top_bsize)
+            dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf[i], dst_stride[i]);
 
-        // Second half
-        dec_predict_b_extend(pbi, xd, tile, 1, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf1, dst_stride1,
-                             top_bsize, BLOCK_8X8, 1, 1);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 1, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf1, dst_stride1);
+          // Second half
+          dec_predict_b_extend(pbi, xd, tile, 1, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf1[i],
+                               dst_stride1[i], top_bsize, BLOCK_8X8, 1, 1);
+          if (bsize < top_bsize)
+            dec_extend_all(pbi, xd, tile, 1, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf1[i], dst_stride1[i]);
+        }
 
         // Smooth
         xd->plane[0].dst.buf = dst_buf[0];
@@ -1302,67 +1337,163 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
             mi_col, mi_row_top, mi_col_top, bsize, top_bsize, PARTITION_VERT,
             0);
       } else {
-        // First half
-        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf, dst_stride,
-                             top_bsize, subsize, 0, 0);
-        if (bsize < top_bsize)
-          dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride);
-        else
-          dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride, 3);
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+#if CONFIG_CB4X4
+          const struct macroblockd_plane *pd = &xd->plane[i];
+          int handle_chroma_sub8x8 = need_handle_chroma_sub8x8(
+              subsize, pd->subsampling_x, pd->subsampling_y);
 
-        // Second half
-        if (mi_col + hbs < cm->mi_cols) {
-          dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col + hbs, mi_row,
-                               mi_col + hbs, mi_row_top, mi_col_top, dst_buf1,
-                               dst_stride1, top_bsize, subsize, 0, 0);
-          if (bsize < top_bsize)
-            dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
-                           mi_col + hbs, mi_row_top, mi_col_top, dst_buf1,
-                           dst_stride1);
-          else
-            dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
-                           mi_col + hbs, mi_row_top, mi_col_top, dst_buf1,
-                           dst_stride1, 2);
+          if (handle_chroma_sub8x8) {
+            int mode_offset_col = CONFIG_CHROMA_SUB8X8 ? hbs : 0;
+            assert(i > 0 && bsize == BLOCK_8X8);
 
-          // Smooth
-          for (i = 0; i < MAX_MB_PLANE; i++) {
-            xd->plane[i].dst.buf = dst_buf[i];
-            xd->plane[i].dst.stride = dst_stride[i];
-            av1_build_masked_inter_predictor_complex(
-                xd, dst_buf[i], dst_stride[i], dst_buf1[i], dst_stride1[i],
-                mi_row, mi_col, mi_row_top, mi_col_top, bsize, top_bsize,
-                PARTITION_VERT, i);
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row,
+                                 mi_col + mode_offset_col, mi_row, mi_col,
+                                 mi_row_top, mi_col_top, i, dst_buf[i],
+                                 dst_stride[i], top_bsize, bsize, 0, 0);
+            if (bsize < top_bsize)
+              dec_extend_all(pbi, xd, tile, 0, bsize, top_bsize, mi_row,
+                             mi_col + mode_offset_col, mi_row, mi_col,
+                             mi_row_top, mi_col_top, i, dst_buf[i],
+                             dst_stride[i]);
+          } else {
+#endif
+            // First half
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row,
+                                 mi_col, mi_row_top, mi_col_top, i, dst_buf[i],
+                                 dst_stride[i], top_bsize, subsize, 0, 0);
+            if (bsize < top_bsize)
+              dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                             mi_col, mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i]);
+            else
+              dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                             mi_col, mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i], 3);
+
+            // Second half
+            if (mi_col + hbs < cm->mi_cols) {
+              dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col + hbs,
+                                   mi_row, mi_col + hbs, mi_row_top, mi_col_top,
+                                   i, dst_buf1[i], dst_stride1[i], top_bsize,
+                                   subsize, 0, 0);
+              if (bsize < top_bsize)
+                dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                               mi_col + hbs, mi_row, mi_col + hbs, mi_row_top,
+                               mi_col_top, i, dst_buf1[i], dst_stride1[i]);
+              else
+                dec_extend_dir(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                               mi_col + hbs, mi_row, mi_col + hbs, mi_row_top,
+                               mi_col_top, i, dst_buf1[i], dst_stride1[i], 2);
+
+              // Smooth
+              xd->plane[i].dst.buf = dst_buf[i];
+              xd->plane[i].dst.stride = dst_stride[i];
+              av1_build_masked_inter_predictor_complex(
+                  xd, dst_buf[i], dst_stride[i], dst_buf1[i], dst_stride1[i],
+                  mi_row, mi_col, mi_row_top, mi_col_top, bsize, top_bsize,
+                  PARTITION_VERT, i);
+            }
+#if CONFIG_CB4X4
           }
+#endif
         }
       }
       break;
     case PARTITION_SPLIT:
       if (bsize == BLOCK_8X8 && !unify_bsize) {
-        dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf, dst_stride,
-                             top_bsize, BLOCK_8X8, 1, 0);
-        dec_predict_b_extend(pbi, xd, tile, 1, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf1, dst_stride1,
-                             top_bsize, BLOCK_8X8, 1, 1);
-        dec_predict_b_extend(pbi, xd, tile, 2, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf2, dst_stride2,
-                             top_bsize, BLOCK_8X8, 1, 1);
-        dec_predict_b_extend(pbi, xd, tile, 3, mi_row, mi_col, mi_row, mi_col,
-                             mi_row_top, mi_col_top, dst_buf3, dst_stride3,
-                             top_bsize, BLOCK_8X8, 1, 1);
-        if (bsize < top_bsize) {
-          dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf, dst_stride);
-          dec_extend_all(pbi, xd, tile, 1, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf1, dst_stride1);
-          dec_extend_all(pbi, xd, tile, 2, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf2, dst_stride2);
-          dec_extend_all(pbi, xd, tile, 3, subsize, top_bsize, mi_row, mi_col,
-                         mi_row_top, mi_col_top, dst_buf3, dst_stride3);
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+          dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf[i],
+                               dst_stride[i], top_bsize, BLOCK_8X8, 1, 0);
+          dec_predict_b_extend(pbi, xd, tile, 1, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf1[i],
+                               dst_stride1[i], top_bsize, BLOCK_8X8, 1, 1);
+          dec_predict_b_extend(pbi, xd, tile, 2, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf2[i],
+                               dst_stride2[i], top_bsize, BLOCK_8X8, 1, 1);
+          dec_predict_b_extend(pbi, xd, tile, 3, mi_row, mi_col, mi_row, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf3[i],
+                               dst_stride3[i], top_bsize, BLOCK_8X8, 1, 1);
+          if (bsize < top_bsize) {
+            dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf[i], dst_stride[i]);
+            dec_extend_all(pbi, xd, tile, 1, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf1[i], dst_stride1[i]);
+            dec_extend_all(pbi, xd, tile, 2, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf2[i], dst_stride2[i]);
+            dec_extend_all(pbi, xd, tile, 3, subsize, top_bsize, mi_row, mi_col,
+                           mi_row, mi_col, mi_row_top, mi_col_top, i,
+                           dst_buf3[i], dst_stride3[i]);
+          }
         }
+#if CONFIG_CB4X4
+      } else if (bsize == BLOCK_8X8) {
+        for (i = 0; i < MAX_MB_PLANE; i++) {
+          const struct macroblockd_plane *pd = &xd->plane[i];
+          int handle_chroma_sub8x8 = need_handle_chroma_sub8x8(
+              subsize, pd->subsampling_x, pd->subsampling_y);
+
+          if (handle_chroma_sub8x8) {
+            int mode_offset_row =
+                CONFIG_CHROMA_SUB8X8 && mi_row + hbs < cm->mi_rows ? hbs : 0;
+            int mode_offset_col =
+                CONFIG_CHROMA_SUB8X8 && mi_col + hbs < cm->mi_cols ? hbs : 0;
+
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row + mode_offset_row,
+                                 mi_col + mode_offset_col, mi_row, mi_col,
+                                 mi_row_top, mi_col_top, i, dst_buf[i],
+                                 dst_stride[i], top_bsize, BLOCK_8X8, 0, 0);
+            if (bsize < top_bsize)
+              dec_extend_all(pbi, xd, tile, 0, BLOCK_8X8, top_bsize,
+                             mi_row + mode_offset_row, mi_col + mode_offset_col,
+                             mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i]);
+          } else {
+            dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row,
+                                 mi_col, mi_row_top, mi_col_top, i, dst_buf[i],
+                                 dst_stride[i], top_bsize, subsize, 0, 0);
+            if (mi_row < cm->mi_rows && mi_col + hbs < cm->mi_cols)
+              dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col + hbs,
+                                   mi_row, mi_col + hbs, mi_row_top, mi_col_top,
+                                   i, dst_buf1[i], dst_stride1[i], top_bsize,
+                                   subsize, 0, 0);
+            if (mi_row + hbs < cm->mi_rows && mi_col < cm->mi_cols)
+              dec_predict_b_extend(pbi, xd, tile, 0, mi_row + hbs, mi_col,
+                                   mi_row + hbs, mi_col, mi_row_top, mi_col_top,
+                                   i, dst_buf2[i], dst_stride2[i], top_bsize,
+                                   subsize, 0, 0);
+            if (mi_row + hbs < cm->mi_rows && mi_col + hbs < cm->mi_cols)
+              dec_predict_b_extend(pbi, xd, tile, 0, mi_row + hbs, mi_col + hbs,
+                                   mi_row + hbs, mi_col + hbs, mi_row_top,
+                                   mi_col_top, i, dst_buf3[i], dst_stride3[i],
+                                   top_bsize, subsize, 0, 0);
+
+            if (bsize < top_bsize) {
+              dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                             mi_col, mi_row, mi_col, mi_row_top, mi_col_top, i,
+                             dst_buf[i], dst_stride[i]);
+              if (mi_row < cm->mi_rows && mi_col + hbs < cm->mi_cols)
+                dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize, mi_row,
+                               mi_col + hbs, mi_row, mi_col + hbs, mi_row_top,
+                               mi_col_top, i, dst_buf1[i], dst_stride1[i]);
+              if (mi_row + hbs < cm->mi_rows && mi_col < cm->mi_cols)
+                dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize,
+                               mi_row + hbs, mi_col, mi_row + hbs, mi_col,
+                               mi_row_top, mi_col_top, i, dst_buf2[i],
+                               dst_stride2[i]);
+              if (mi_row + hbs < cm->mi_rows && mi_col + hbs < cm->mi_cols)
+                dec_extend_all(pbi, xd, tile, 0, subsize, top_bsize,
+                               mi_row + hbs, mi_col + hbs, mi_row + hbs,
+                               mi_col + hbs, mi_row_top, mi_col_top, i,
+                               dst_buf3[i], dst_stride3[i]);
+            }
+          }
+        }
+#endif
       } else {
         dec_predict_sb_complex(pbi, xd, tile, mi_row, mi_col, mi_row_top,
                                mi_col_top, subsize, top_bsize, dst_buf,
@@ -1381,7 +1512,12 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  dst_buf3, dst_stride3);
       }
       for (i = 0; i < MAX_MB_PLANE; i++) {
-#if !CONFIG_CB4X4
+#if CONFIG_CB4X4
+        const struct macroblockd_plane *pd = &xd->plane[i];
+        int handle_chroma_sub8x8 = need_handle_chroma_sub8x8(
+            subsize, pd->subsampling_x, pd->subsampling_y);
+        if (handle_chroma_sub8x8) continue;  // Skip <4x4 chroma smoothing
+#else
         if (bsize == BLOCK_8X8 && i != 0)
           continue;  // Skip <4x4 chroma smoothing
 #endif

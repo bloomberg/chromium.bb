@@ -1580,19 +1580,19 @@ void av1_build_masked_inter_predictor_complex(
   } while (--h_remain);
 }
 
-void av1_build_inter_predictors_sb_sub8x8_extend(const AV1_COMMON *cm,
-                                                 MACROBLOCKD *xd,
+void av1_build_inter_predictor_sb_sub8x8_extend(const AV1_COMMON *cm,
+                                                MACROBLOCKD *xd,
 #if CONFIG_EXT_INTER
-                                                 int mi_row_ori, int mi_col_ori,
+                                                int mi_row_ori, int mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                                 int mi_row, int mi_col,
-                                                 BLOCK_SIZE bsize, int block) {
+                                                int mi_row, int mi_col,
+                                                int plane, BLOCK_SIZE bsize,
+                                                int block) {
   // Prediction function used in supertx:
   // Use the mv at current block (which is less than 8x8)
   // to get prediction of a block located at (mi_row, mi_col) at size of bsize
   // bsize can be larger than 8x8.
   // block (0-3): the sub8x8 location of current block
-  int plane;
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
 #if CONFIG_EXT_INTER
@@ -1603,68 +1603,50 @@ void av1_build_inter_predictors_sb_sub8x8_extend(const AV1_COMMON *cm,
   // For sub8x8 uv:
   // Skip uv prediction in supertx except the first block (block = 0)
   int max_plane = block ? 1 : MAX_MB_PLANE;
+  if (plane >= max_plane) return;
 
-  for (plane = 0; plane < max_plane; plane++) {
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, &xd->plane[plane]);
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-    const int bw = 4 * num_4x4_w;
-    const int bh = 4 * num_4x4_h;
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
+  const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
+  const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
+  const int bw = 4 * num_4x4_w;
+  const int bh = 4 * num_4x4_h;
 
-    build_inter_predictors(cm, xd, plane,
+  build_inter_predictors(cm, xd, plane,
 #if CONFIG_MOTION_VAR
-                           0, 0,
+                         0, 0,
 #endif  // CONFIG_MOTION_VAR
-                           block, bw, bh, 0, 0, bw, bh,
+                         block, bw, bh, 0, 0, bw, bh,
 #if CONFIG_EXT_INTER
-                           wedge_offset_x, wedge_offset_y,
+                         wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_EXT_INTER
-                           mi_x, mi_y);
-  }
-#if CONFIG_EXT_INTER
-  if (is_interintra_pred(&xd->mi[0]->mbmi)) {
-    BUFFER_SET ctx = { { xd->plane[0].dst.buf, xd->plane[1].dst.buf,
-                         xd->plane[2].dst.buf },
-                       { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-                         xd->plane[2].dst.stride } };
-    av1_build_interintra_predictors(
-        xd, xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
-        xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-        xd->plane[2].dst.stride, &ctx, bsize);
-  }
-#endif  // CONFIG_EXT_INTER
+                         mi_x, mi_y);
 }
 
-void av1_build_inter_predictors_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_inter_predictor_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_EXT_INTER
-                                          int mi_row_ori, int mi_col_ori,
+                                         int mi_row_ori, int mi_col_ori,
 #endif  // CONFIG_EXT_INTER
-                                          int mi_row, int mi_col,
-                                          BLOCK_SIZE bsize) {
-  int plane;
+                                         int mi_row, int mi_col, int plane,
+                                         BLOCK_SIZE bsize) {
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
 #if CONFIG_EXT_INTER
   const int wedge_offset_x = (mi_col_ori - mi_col) * MI_SIZE;
   const int wedge_offset_y = (mi_row_ori - mi_row) * MI_SIZE;
 #endif  // CONFIG_EXT_INTER
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, &xd->plane[plane]);
-    const int bw = block_size_wide[plane_bsize];
-    const int bh = block_size_high[plane_bsize];
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
 
-    build_inter_predictors(cm, xd, plane,
+  build_inter_predictors(cm, xd, plane,
 #if CONFIG_MOTION_VAR
-                           0, 0,
+                         0, 0,
 #endif  // CONFIG_MOTION_VAR
-                           0, bw, bh, 0, 0, bw, bh,
+                         0, bw, bh, 0, 0, bw, bh,
 #if CONFIG_EXT_INTER
-                           wedge_offset_x, wedge_offset_y,
+                         wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_EXT_INTER
-                           mi_x, mi_y);
-  }
+                         mi_x, mi_y);
 }
 #endif  // CONFIG_SUPERTX
 
