@@ -80695,6 +80695,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VRRuntimeVersion" units="normalized version">
+  <owner>tiborg@chromium.org</owner>
+  <summary>The version of the runtime being used for VR.</summary>
+</histogram>
+
 <histogram name="VRSessionNavigationCount">
   <owner>billorr@chromium.org</owner>
   <summary>
@@ -94675,6 +94680,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Vp9.S2"
       label="Video codec: VP9. QP range: 0-255. Spatial layer 2."/>
   <affected-histogram name="WebRTC.Video.Encoded.Qp"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VRRuntimeVersionGVRHeadset" separator=".">
+  <suffix name="Cardboard" label="GVR version used with Carboard."/>
+  <suffix name="Daydream" label="GVR version used with Daydream."/>
+  <suffix name="Unknown" label="GVR version used with an unknown headset."/>
+  <affected-histogram name="VRRuntimeVersion.GVR"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VRRuntimeVersionPlatform" separator=".">
+  <suffix name="GVR"
+      label="The GVR version being used for VR. Special values: (-4) Could
+             not encode GVR version; (-3) Device does not support VR; (-2)
+             GVR is not installed; (-1) GVR is installed but version is too
+             old to be logged."/>
+  <affected-histogram name="VRRuntimeVersion"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VRSessionType" separator=".">

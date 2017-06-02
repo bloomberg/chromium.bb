@@ -181,26 +181,26 @@ public class WebVrTest {
      * Helper function to run the tests checking for the upgrade/install InfoBar being present since
      * all that differs is the value returned by VrCoreVersionChecker and a couple asserts.
      *
-     * @param checkerReturnValue The value to have the VrCoreVersionChecker return
+     * @param checkerReturnCompatibility The compatibility to have the VrCoreVersionChecker return
      */
-    private void infoBarTestHelper(int checkerReturnValue) throws InterruptedException {
+    private void infoBarTestHelper(int checkerReturnCompatibility) throws InterruptedException {
         MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
-        mockChecker.setMockReturnValue(checkerReturnValue);
+        mockChecker.setMockReturnValue(new VrCoreInfo(null, checkerReturnCompatibility));
         VrUtils.getVrShellDelegateInstance().overrideVrCoreVersionCheckerForTesting(mockChecker);
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
         String displayFound = "VRDisplay Found";
         String barPresent = "InfoBar present";
-        if (checkerReturnValue == VrCoreVersionChecker.VR_READY) {
+        if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
             Assert.assertTrue(
                     displayFound, mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
             Assert.assertFalse(barPresent,
                     VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
-        } else if (checkerReturnValue == VrCoreVersionChecker.VR_OUT_OF_DATE
-                || checkerReturnValue == VrCoreVersionChecker.VR_NOT_AVAILABLE) {
+        } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
+                || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
             String expectedMessage, expectedButton;
-            if (checkerReturnValue == VrCoreVersionChecker.VR_OUT_OF_DATE) {
+            if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
                 expectedMessage = mVrTestRule.getActivity().getString(
                         R.string.vr_services_check_infobar_update_text);
                 expectedButton = mVrTestRule.getActivity().getString(
@@ -222,16 +222,17 @@ public class WebVrTest {
             tempView = (TextView) mVrTestRule.getActivity().getWindow().getDecorView().findViewById(
                     R.id.button_primary);
             Assert.assertEquals(expectedButton, tempView.getText().toString());
-        } else if (checkerReturnValue == VrCoreVersionChecker.VR_NOT_SUPPORTED) {
+        } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
             Assert.assertFalse(
                     displayFound, mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
             Assert.assertFalse(barPresent,
                     VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
         } else {
-            Assert.fail(
-                    "Invalid VrCoreVersionChecker value: " + String.valueOf(checkerReturnValue));
+            Assert.fail("Invalid VrCoreVersionChecker compatibility: "
+                    + String.valueOf(checkerReturnCompatibility));
         }
-        Assert.assertEquals(checkerReturnValue, mockChecker.getLastReturnValue());
+        Assert.assertEquals(
+                checkerReturnCompatibility, mockChecker.getLastReturnValue().compatibility);
     }
 
     /**
@@ -241,7 +242,7 @@ public class WebVrTest {
     @Test
     @MediumTest
     public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
-        infoBarTestHelper(VrCoreVersionChecker.VR_READY);
+        infoBarTestHelper(VrCoreCompatibility.VR_READY);
     }
 
     /**
@@ -250,7 +251,7 @@ public class WebVrTest {
     @Test
     @MediumTest
     public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
-        infoBarTestHelper(VrCoreVersionChecker.VR_OUT_OF_DATE);
+        infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
     }
 
     /**
@@ -259,7 +260,7 @@ public class WebVrTest {
     @Test
     @MediumTest
     public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
-        infoBarTestHelper(VrCoreVersionChecker.VR_NOT_AVAILABLE);
+        infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
 
     /**
@@ -269,7 +270,7 @@ public class WebVrTest {
     @Test
     @MediumTest
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
-        infoBarTestHelper(VrCoreVersionChecker.VR_NOT_SUPPORTED);
+        infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
     }
 
     /**
