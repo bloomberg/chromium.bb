@@ -1139,15 +1139,15 @@ std::pair<String, int> SpellChecker::FindFirstMisspelling(const Position& start,
   // needs that much context. Determine the character offset from the start of
   // the paragraph to the start of the original search range, since we will want
   // to ignore results in this area.
-  Position paragraph_start =
-      StartOfParagraph(CreateVisiblePosition(start)).ToParentAnchoredPosition();
-  Position paragraph_end = end;
-  int total_range_length =
-      TextIterator::RangeLength(paragraph_start, paragraph_end);
-  paragraph_end =
-      EndOfParagraph(CreateVisiblePosition(start)).ToParentAnchoredPosition();
+  EphemeralRange paragraph_range =
+      ExpandToParagraphBoundary(EphemeralRange(start, start));
+  Position paragraph_start = paragraph_range.StartPosition();
+  Position paragraph_end = paragraph_range.EndPosition();
 
-  int range_start_offset = TextIterator::RangeLength(paragraph_start, start);
+  const int total_range_length =
+      TextIterator::RangeLength(paragraph_start, end);
+  const int range_start_offset =
+      TextIterator::RangeLength(paragraph_start, start);
   int total_length_processed = 0;
 
   bool first_iteration = true;
@@ -1168,8 +1168,7 @@ std::pair<String, int> SpellChecker::FindFirstMisspelling(const Position& start,
       last_iteration = true;
     }
     if (current_start_offset < current_end_offset) {
-      String paragraph_string =
-          PlainText(EphemeralRange(paragraph_start, paragraph_end));
+      String paragraph_string = PlainText(paragraph_range);
       if (paragraph_string.length() > 0) {
         int spelling_location = 0;
 
@@ -1203,14 +1202,16 @@ std::pair<String, int> SpellChecker::FindFirstMisspelling(const Position& start,
     if (last_iteration ||
         total_length_processed + current_length >= total_range_length)
       break;
-    VisiblePosition new_paragraph_start =
-        StartOfNextParagraph(CreateVisiblePosition(paragraph_end));
+    Position new_paragraph_start =
+        StartOfNextParagraph(CreateVisiblePosition(paragraph_end))
+            .DeepEquivalent();
     if (new_paragraph_start.IsNull())
       break;
 
-    paragraph_start = new_paragraph_start.ToParentAnchoredPosition();
-    paragraph_end =
-        EndOfParagraph(new_paragraph_start).ToParentAnchoredPosition();
+    paragraph_range = ExpandToParagraphBoundary(
+        EphemeralRange(new_paragraph_start, new_paragraph_start));
+    paragraph_start = paragraph_range.StartPosition();
+    paragraph_end = paragraph_range.EndPosition();
     first_iteration = false;
     total_length_processed += current_length;
   }
