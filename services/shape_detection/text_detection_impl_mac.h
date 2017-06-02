@@ -17,9 +17,7 @@ class TextDetectionImplMac : public mojom::TextDetection {
   TextDetectionImplMac();
   ~TextDetectionImplMac() override;
 
-  void Detect(mojo::ScopedSharedBufferHandle frame_data,
-              uint32_t width,
-              uint32_t height,
+  void Detect(const SkBitmap& bitmap,
               const mojom::TextDetection::DetectCallback& callback) override;
 
  private:

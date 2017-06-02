@@ -98,7 +98,7 @@ if (is_android) {
     java_files = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
       "device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
-      "shape_detection/android/junit/src/org/chromium/shape_detection/SharedBufferUtilsTest.java",
+      "shape_detection/android/junit/src/org/chromium/shape_detection/BitmapUtilsTest.java",
     ]
     deps = [
       "$google_play_services_package:google_play_services_base_java",
@@ -115,6 +115,7 @@ if (is_android) {
       "//services/device/public/interfaces:interfaces_java",
       "//services/device/public/java:nfc_java",
       "//services/shape_detection:shape_detection_java",
+      "//skia/public/interfaces:interfaces_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
   }

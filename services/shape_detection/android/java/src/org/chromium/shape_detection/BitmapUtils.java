@@ -8,38 +8,45 @@ import android.graphics.Bitmap;
 
 import com.google.android.gms.vision.Frame;
 
-import org.chromium.mojo.system.MojoException;
-import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.skia.mojom.ColorType;
 
 import java.nio.ByteBuffer;
 
 /**
- * Utility class to convert a SharedBufferHandle to a GMS core YUV Frame.
+ * Utility class to convert a Bitmap to a GMS core YUV Frame.
  */
-public class SharedBufferUtils {
-    public static Frame convertToFrame(
-            SharedBufferHandle frameData, final int width, final int height) {
+public class BitmapUtils {
+    public static Bitmap convertToBitmap(org.chromium.skia.mojom.Bitmap bitmapData) {
+        int width = bitmapData.width;
+        int height = bitmapData.height;
         final long numPixels = (long) width * height;
         // TODO(mcasas): https://crbug.com/670028 homogeneize overflow checking.
-        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
+        if (bitmapData.pixelData == null || width <= 0 || height <= 0
+                || numPixels > (Long.MAX_VALUE / 4)) {
             return null;
         }
 
-        // Mapping |frameData| will fail if the intended mapped size is larger
-        // than its actual capacity, which is limited by the appropriate
-        // mojo::edk::Configuration entry.
-        ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
+        // TODO(junwei.fu): https://crbug.com/684921 support other bitmap pixel formats.
+        if (bitmapData.colorType != ColorType.RGBA_8888
+                && bitmapData.colorType != ColorType.BGRA_8888) {
+            return null;
+        }
+
+        ByteBuffer imageBuffer = ByteBuffer.wrap(bitmapData.pixelData);
         if (imageBuffer.capacity() <= 0) {
             return null;
         }
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(imageBuffer);
-        try {
-            frameData.unmap(imageBuffer);
-            frameData.close();
-        } catch (MojoException e) {
+
+        return bitmap;
+    }
+
+    public static Frame convertToFrame(org.chromium.skia.mojom.Bitmap bitmapData) {
+        Bitmap bitmap = convertToBitmap(bitmapData);
+        if (bitmap == null) {
+            return null;
         }
 
         try {

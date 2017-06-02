@@ -10,17 +10,12 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.os.AsyncTask;
 
-import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
 import org.chromium.shape_detection.mojom.FaceDetectorOptions;
 import org.chromium.shape_detection.mojom.Landmark;
-
-import java.nio.ByteBuffer;
 
 /**
  * Android implementation of the FaceDetection service defined in
@@ -38,32 +33,11 @@ public class FaceDetectionImpl implements FaceDetection {
     }
 
     @Override
-    public void detect(SharedBufferHandle frameData, final int width, final int height,
-            final DetectResponse callback) {
-        final long numPixels = (long) width * height;
-        // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
-        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
-            Log.d(TAG, "Invalid argument(s).");
-            callback.call(new FaceDetectionResult[0]);
-            return;
-        }
-
-        ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
-        if (imageBuffer.capacity() <= 0) {
-            Log.d(TAG, "Failed to map from SharedBufferHandle.");
-            callback.call(new FaceDetectionResult[0]);
-            return;
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        // An int array is needed to construct a Bitmap. However the Bytebuffer
-        // we get from |sharedBufferHandle| is directly allocated and does not
-        // have a supporting array. Therefore we need to copy from |imageBuffer|
-        // to create this intermediate Bitmap.
-        // TODO(xianglu): Consider worker pool as appropriate threads.
-        // http://crbug.com/655814
-        bitmap.copyPixelsFromBuffer(imageBuffer);
+    public void detect(org.chromium.skia.mojom.Bitmap bitmapData, final DetectResponse callback) {
+        // TODO(junwei.fu): Use |bitmapData| directly for |unPremultipliedBitmap| to spare a copy
+        // if the bitmap pixel format is RGB_565, the ARGB_8888 Bitmap doesn't need to be created
+        // in this case, https://crbug.com/684930.
+        Bitmap bitmap = BitmapUtils.convertToBitmap(bitmapData);
 
         // A Bitmap must be in 565 format for findFaces() to work. See
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/media/java/android/media/FaceDetector.java#124
@@ -74,6 +48,8 @@ public class FaceDetectionImpl implements FaceDetection {
         // original image is premultiplied. We can use getPixels() which does
         // the unmultiplication while copying to a new array. See
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/graphics/java/android/graphics/Bitmap.java#538
+        final int width = bitmapData.width;
+        final int height = bitmapData.height;
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         final Bitmap unPremultipliedBitmap =

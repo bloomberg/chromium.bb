@@ -23,28 +23,22 @@ namespace blink {
 
 namespace {
 
-mojo::ScopedSharedBufferHandle GetSharedBufferOnData(
-    ScriptPromiseResolver* resolver,
-    uint8_t* data,
-    int size) {
-  DCHECK(data);
-  DCHECK(size);
-  ScriptPromise promise = resolver->Promise();
+skia::mojom::blink::BitmapPtr createBitmapFromData(int width,
+                                                   int height,
+                                                   Vector<uint8_t> bitmapData) {
+  skia::mojom::blink::BitmapPtr bitmap = skia::mojom::blink::Bitmap::New();
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle =
-      mojo::SharedBufferHandle::Create(size);
-  if (!shared_buffer_handle->is_valid()) {
-    resolver->Reject(
-        DOMException::Create(kInvalidStateError, "Internal allocation error"));
-    return shared_buffer_handle;
-  }
+  bitmap->color_type = (kN32_SkColorType == kRGBA_8888_SkColorType)
+                           ? skia::mojom::blink::ColorType::RGBA_8888
+                           : skia::mojom::blink::ColorType::BGRA_8888;
+  bitmap->alpha_type = skia::mojom::blink::AlphaType::ALPHA_TYPE_OPAQUE;
+  bitmap->profile_type = skia::mojom::blink::ColorProfileType::LINEAR;
+  bitmap->width = width;
+  bitmap->height = height;
+  bitmap->row_bytes = width * 4 /* bytes per pixel */;
+  bitmap->pixel_data = std::move(bitmapData);
 
-  const mojo::ScopedSharedBufferMapping mapped_buffer =
-      shared_buffer_handle->Map(size);
-  DCHECK(mapped_buffer.get());
-  memcpy(mapped_buffer.get(), data, size);
-
-  return shared_buffer_handle;
+  return bitmap;
 }
 
 }  // anonymous namespace
@@ -131,13 +125,13 @@ ScriptPromise ShapeDetector::detect(
     return promise;
   }
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle = GetSharedBufferOnData(
-      resolver, pixel_data_ptr, allocation_size.ValueOrDefault(0));
-  if (!shared_buffer_handle->is_valid())
-    return promise;
+  WTF::Vector<uint8_t> bitmap_data;
+  bitmap_data.Append(pixel_data_ptr,
+                     static_cast<int>(allocation_size.ValueOrDefault(0)));
 
-  return DoDetect(resolver, std::move(shared_buffer_handle), image->width(),
-                  image->height());
+  return DoDetect(resolver,
+                  createBitmapFromData(image->width(), image->height(),
+                                       std::move(bitmap_data)));
 }
 
 ScriptPromise ShapeDetector::DetectShapesOnImageData(
@@ -153,13 +147,12 @@ ScriptPromise ShapeDetector::DetectShapesOnImageData(
   uint8_t* const data = image_data->data()->Data();
   WTF::CheckedNumeric<int> allocation_size = image_data->Size().Area() * 4;
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle =
-      GetSharedBufferOnData(resolver, data, allocation_size.ValueOrDefault(0));
-  if (!shared_buffer_handle->is_valid())
-    return promise;
+  WTF::Vector<uint8_t> bitmap_data;
+  bitmap_data.Append(data, static_cast<int>(allocation_size.ValueOrDefault(0)));
 
-  return DoDetect(resolver, std::move(shared_buffer_handle),
-                  image_data->width(), image_data->height());
+  return DoDetect(
+      resolver, createBitmapFromData(image_data->width(), image_data->height(),
+                                     std::move(bitmap_data)));
 }
 
 ScriptPromise ShapeDetector::DetectShapesOnImageElement(
@@ -198,28 +191,11 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
 
   const SkImageInfo skia_info =
       SkImageInfo::MakeN32(image->width(), image->height(), image->alphaType());
+  size_t rowBytes = skia_info.minRowBytes();
 
-  const uint32_t allocation_size =
-      skia_info.getSafeSize(skia_info.minRowBytes());
+  Vector<uint8_t> bitmap_data(skia_info.getSafeSize(rowBytes));
+  const SkPixmap pixmap(skia_info, bitmap_data.data(), rowBytes);
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle =
-      mojo::SharedBufferHandle::Create(allocation_size);
-  if (!shared_buffer_handle.is_valid()) {
-    DLOG(ERROR) << "Requested allocation : " << allocation_size
-                << "B, larger than |mojo::edk::kMaxSharedBufferSize| == 16MB ";
-    // TODO(xianglu): For now we reject the promise if the image is too large.
-    // But consider resizing the image to remove restriction on the user side.
-    // Also, add LayoutTests for this case later.
-    resolver->Reject(
-        DOMException::Create(kInvalidStateError, "Image exceeds size limit."));
-    return promise;
-  }
-
-  const mojo::ScopedSharedBufferMapping mapped_buffer =
-      shared_buffer_handle->Map(allocation_size);
-
-  const SkPixmap pixmap(skia_info, mapped_buffer.get(),
-                        skia_info.minRowBytes());
   if (!image->readPixels(pixmap, 0, 0)) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError,
@@ -227,8 +203,9 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
     return promise;
   }
 
-  return DoDetect(resolver, std::move(shared_buffer_handle),
-                  img->naturalWidth(), img->naturalHeight());
+  return DoDetect(
+      resolver, createBitmapFromData(img->naturalWidth(), img->naturalHeight(),
+                                     std::move(bitmap_data)));
 }
 
 }  // namespace blink
