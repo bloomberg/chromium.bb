@@ -281,7 +281,6 @@ android_library("chrome_java") {
   if (enable_vr) {
     java_files += chrome_vr_java_sources
     deps += [ "//third_party/gvr-android-sdk:gvr_common_java" ]
-    srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   }
 
   # Add the actual implementation where necessary so that downstream targets
@@ -317,14 +316,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/translate/android/translate_utils.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
   ]
-}
-
-if (enable_vr) {
-  java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
-    sources = [
-      "//chrome/browser/android/vr_shell/vr_core_info.h",
-    ]
-  }
 }
 
 proto_java_library("document_tab_model_info_proto_java") {

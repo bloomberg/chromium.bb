@@ -118,16 +118,12 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "vr_controller.h",
       "vr_controller_model.cc",
       "vr_controller_model.h",
-      "vr_core_info.cc",
-      "vr_core_info.h",
       "vr_gl_thread.cc",
       "vr_gl_thread.h",
       "vr_gl_util.cc",
       "vr_gl_util.h",
       "vr_input_manager.cc",
       "vr_input_manager.h",
-      "vr_metrics_util.cc",
-      "vr_metrics_util.h",
       "vr_shell.cc",
       "vr_shell.h",
       "vr_shell_delegate.cc",
@@ -176,7 +172,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
 
   generate_jni("vr_shell_jni_headers") {
     sources = [
-      "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",
       "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
       "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
     ]

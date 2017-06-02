@@ -10,20 +10,21 @@ package org.chromium.chrome.browser.vr_shell;
  */
 public class MockVrCoreVersionCheckerImpl extends VrCoreVersionCheckerImpl {
     private boolean mUseActualImplementation;
-    private VrCoreInfo mMockReturnValue = new VrCoreInfo(null, VrCoreCompatibility.VR_READY);
-    private VrCoreInfo mLastReturnValue = null;
+    private int mMockReturnValue = VrCoreVersionChecker.VR_READY;
+    private int mLastReturnValue = -1;
 
     @Override
-    public VrCoreInfo getVrCoreInfo() {
-        mLastReturnValue = mUseActualImplementation ? super.getVrCoreInfo() : mMockReturnValue;
+    public int getVrCoreCompatibility() {
+        mLastReturnValue =
+                mUseActualImplementation ? super.getVrCoreCompatibility() : mMockReturnValue;
         return mLastReturnValue;
     }
 
-    public VrCoreInfo getLastReturnValue() {
+    public int getLastReturnValue() {
         return mLastReturnValue;
     }
 
-    public void setMockReturnValue(VrCoreInfo value) {
+    public void setMockReturnValue(int value) {
         mMockReturnValue = value;
     }
 
