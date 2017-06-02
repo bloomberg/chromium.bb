@@ -16,7 +16,7 @@ using State = IdleSpellCheckCallback::State;
 class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
  protected:
   IdleSpellCheckCallback& IdleChecker() {
-    return GetFrame().GetSpellChecker().GetIdleSpellCheckCallback();
+    return GetSpellChecker().GetIdleSpellCheckCallback();
   }
 
   void TransitTo(State state) {
