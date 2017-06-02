@@ -11,15 +11,20 @@
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_item.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+@interface TabCollectionMediator ()<CRWWebStateObserver>
+@end
+
 @implementation TabCollectionMediator {
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserverBridge>>
       _scopedWebStateListObserver;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
 
 @synthesize webStateList = _webStateList;
@@ -43,22 +48,24 @@
 #pragma mark - Public
 
 - (void)disconnect {
-  self.webStateList = nullptr;
+  _webStateList = nullptr;
+  _webStateObserver.reset();
 }
 
 #pragma mark - Properties
 
 - (void)setWebStateList:(WebStateList*)webStateList {
-  // TODO(crbug.com/727427):Add support for DCHECK(webStateList).
+  DCHECK(webStateList);
   _scopedWebStateListObserver->RemoveAll();
   _webStateList = webStateList;
+  _scopedWebStateListObserver->Add(_webStateList);
+  _webStateObserver = base::MakeUnique<web::WebStateObserverBridge>(
+      self.webStateList->GetActiveWebState(), self);
   [self populateConsumerItems];
-  if (_webStateList) {
-    _scopedWebStateListObserver->Add(_webStateList);
-  }
 }
 
 - (void)setConsumer:(id<TabCollectionConsumer>)consumer {
+  DCHECK(consumer);
   _consumer = consumer;
   [self populateConsumerItems];
 }
@@ -70,7 +77,8 @@
               atIndex:(int)index {
   DCHECK(self.consumer);
   [self.consumer insertItem:[self tabCollectionItemFromWebState:webState]
-                    atIndex:index];
+                    atIndex:index
+              selectedIndex:webStateList->active_index()];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -78,7 +86,9 @@
            fromIndex:(int)fromIndex
              toIndex:(int)toIndex {
   DCHECK(self.consumer);
-  [self.consumer moveItemFromIndex:fromIndex toIndex:toIndex];
+  [self.consumer moveItemFromIndex:fromIndex
+                           toIndex:toIndex
+                     selectedIndex:webStateList->active_index()];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -95,7 +105,8 @@
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
   DCHECK(self.consumer);
-  [self.consumer deleteItemAtIndex:index];
+  [self.consumer deleteItemAtIndex:index
+                     selectedIndex:webStateList->active_index()];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -104,11 +115,27 @@
                     atIndex:(int)atIndex
                  userAction:(BOOL)userAction {
   DCHECK(self.consumer);
-  [self.consumer selectItemAtIndex:atIndex];
+  [self.consumer setSelectedIndex:atIndex];
+  _webStateObserver =
+      base::MakeUnique<web::WebStateObserverBridge>(newWebState, self);
+}
+
+#pragma mark - CRWWebStateObserver
+
+// Navigational changes to the web state update the tab collection, such as
+// the title and snapshot.
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK(self.webStateList);
+  DCHECK(self.consumer);
+  int index = self.webStateList->GetIndexOfWebState(webState);
+  [self.consumer
+      replaceItemAtIndex:index
+                withItem:[self tabCollectionItemFromWebState:webState]];
 }
 
 #pragma mark - Private
 
+// Constructs a TabCollectionItem from a |webState|.
 - (TabCollectionItem*)tabCollectionItemFromWebState:
     (const web::WebState*)webState {
   // PLACEHOLDER: Use real webstate title in the future.
@@ -123,24 +150,26 @@
   return item;
 }
 
+// Constructs an array of TabCollectionItems from a |webStateList|.
 - (NSArray<TabCollectionItem*>*)tabCollectionItemsFromWebStateList:
     (const WebStateList*)webStateList {
   DCHECK(webStateList);
   NSMutableArray<TabCollectionItem*>* items = [[NSMutableArray alloc] init];
   for (int i = 0; i < webStateList->count(); i++) {
-    [items
-        addObject:[self
-                      tabCollectionItemFromWebState:webStateList->GetWebStateAt(
-                                                        i)]];
+    web::WebState* webState = webStateList->GetWebStateAt(i);
+    [items addObject:[self tabCollectionItemFromWebState:webState]];
   }
   return [items copy];
 }
 
+// Constructs an array of TabCollectionItems from the current webStateList
+// and pushes them to the consumer.
 - (void)populateConsumerItems {
   if (self.consumer && self.webStateList) {
-    [self.consumer populateItems:[self tabCollectionItemsFromWebStateList:
-                                           self.webStateList]];
-    [self.consumer selectItemAtIndex:self.webStateList->active_index()];
+    [self.consumer
+        populateItems:[self
+                          tabCollectionItemsFromWebStateList:self.webStateList]
+        selectedIndex:self.webStateList->active_index()];
   }
 }
 

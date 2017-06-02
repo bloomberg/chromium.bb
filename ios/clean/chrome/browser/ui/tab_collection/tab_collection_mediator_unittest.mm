@@ -63,14 +63,14 @@ class TabCollectionMediatorTest : public PlatformTest {
 // Tests that the consumer is notified of an insert into webStateList.
 TEST_F(TabCollectionMediatorTest, TestInsertWebState) {
   InsertWebState(2);
-  [[consumer_ verify] insertItem:[OCMArg any] atIndex:2];
+  [[consumer_ verify] insertItem:[OCMArg any] atIndex:2 selectedIndex:0];
 }
 
 // Tests that the consumer is notified that a web state has been moved in
 // webStateList.
 TEST_F(TabCollectionMediatorTest, TestMoveWebState) {
   web_state_list_->MoveWebStateAt(0, 2);
-  [[consumer_ verify] moveItemFromIndex:0 toIndex:2];
+  [[consumer_ verify] moveItemFromIndex:0 toIndex:2 selectedIndex:2];
 }
 
 // Tests that the consumer is notified that a web state has been replaced in
@@ -85,12 +85,12 @@ TEST_F(TabCollectionMediatorTest, TestReplaceWebState) {
 // webStateList.
 TEST_F(TabCollectionMediatorTest, TestDetachWebState) {
   web_state_list_->CloseWebStateAt(1);
-  [[consumer_ verify] deleteItemAtIndex:1];
+  [[consumer_ verify] deleteItemAtIndex:1 selectedIndex:0];
 }
 
 // Tests that the consumer is notified that the active web state has changed in
 // webStateList.
 TEST_F(TabCollectionMediatorTest, TestChangeActiveWebState) {
   web_state_list_->ActivateWebStateAt(2);
-  [[consumer_ verify] selectItemAtIndex:2];
+  [[consumer_ verify] setSelectedIndex:2];
 }
