@@ -44,7 +44,7 @@ class PnaclComponentInstaller : public update_client::CrxInstaller {
   // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
   update_client::CrxInstaller::Result Install(
-      const base::DictionaryValue& manifest,
+      std::unique_ptr<base::DictionaryValue> manifest,
       const base::FilePath& unpack_path) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;

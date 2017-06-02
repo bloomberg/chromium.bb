@@ -30,7 +30,7 @@ void TestInstaller::OnUpdateError(int error) {
 }
 
 CrxInstaller::Result TestInstaller::Install(
-    const base::DictionaryValue& manifest,
+    std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path) {
   ++install_count_;
 
@@ -70,10 +70,10 @@ VersionedTestInstaller::~VersionedTestInstaller() {
 }
 
 CrxInstaller::Result VersionedTestInstaller::Install(
-    const base::DictionaryValue& manifest,
+    std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path) {
   std::string version_string;
-  manifest.GetStringASCII("version", &version_string);
+  manifest->GetStringASCII("version", &version_string);
   base::Version version(version_string.c_str());
 
   base::FilePath path;
