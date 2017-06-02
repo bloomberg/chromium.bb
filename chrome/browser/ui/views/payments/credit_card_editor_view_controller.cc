@@ -329,6 +329,7 @@ CreditCardEditorViewController::CreateExtraViewForField(
   add_button->set_id(
       static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
   add_button->set_tag(add_billing_address_button_tag_);
+  add_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button_view->AddChildView(add_button.release());
   return button_view;
 }

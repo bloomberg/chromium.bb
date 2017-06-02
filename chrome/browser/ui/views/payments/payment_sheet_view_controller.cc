@@ -337,6 +337,7 @@ class PaymentSheetRowBuilder {
                                                          button_string));
     button->set_tag(tag_);
     button->set_id(id_);
+    button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     button->SetEnabled(button_enabled);
     return CreatePaymentSheetRow(listener_, section_name_,
                                  std::move(content_view), nullptr,

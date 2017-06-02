@@ -384,6 +384,7 @@ void PaymentRequestSheetController::AddPrimaryButton(views::View* container) {
   primary_button_ = CreatePrimaryButton();
   if (primary_button_) {
     primary_button_->set_owned_by_client();
+    primary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     container->AddChildView(primary_button_.get());
   }
 }
@@ -396,6 +397,7 @@ void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
   secondary_button_->set_tag(
       static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
   secondary_button_->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
+  secondary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   container->AddChildView(secondary_button_.get());
 }
 

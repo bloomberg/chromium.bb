@@ -204,6 +204,7 @@ PaymentMethodViewController::CreateExtraFooterView() {
       PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON));
   button->set_id(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON));
+  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   extra_view->AddChildView(button);
 
   return extra_view;
