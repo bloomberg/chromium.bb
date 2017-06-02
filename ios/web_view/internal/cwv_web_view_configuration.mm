@@ -9,11 +9,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web/public/app/web_main.h"
+#include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,15 +68,6 @@
   self = [super init];
   if (self) {
     _browserState = std::move(browserState);
-
-    // Initialize translate.
-    translate::TranslateDownloadManager* downloadManager =
-        translate::TranslateDownloadManager::GetInstance();
-    // TODO(crbug.com/710948): Use global request context here.
-    downloadManager->set_request_context(_browserState->GetRequestContext());
-    // TODO(crbug.com/679895): Bring up application locale correctly.
-    downloadManager->set_application_locale(l10n_util::GetLocaleOverride());
-    downloadManager->language_list()->SetResourceRequestsAllowed(true);
 
     _userContentController =
         [[CWVUserContentController alloc] initWithConfiguration:self];
