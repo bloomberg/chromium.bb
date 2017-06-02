@@ -31,6 +31,11 @@ class WebState;
 // within the web content area. The native view will contain an error page
 // with information appropriate for the problem described in |error|.
 // |isPost| indicates whether the error was for a post request.
+//
+// DEPRECATED! Clients must use WebStateObserver::DidFinishNavigation and check
+// for NavigationContext::GetError() and NavigationContext::IsPost().
+// TODO(crbug.com/725241): Remove this method once clients are switched to use
+// DidFinishNavigaiton.
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost;
