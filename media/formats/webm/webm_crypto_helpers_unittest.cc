@@ -233,4 +233,34 @@ TEST(WebMCryptoHelpersTest, EncryptedPartitionedOddNumberOfPartitions) {
   EXPECT_EQ(14, data_offset);
 }
 
+TEST(WebMCryptoHelpersTest, EncryptedPartitionedZeroNumberOfPartitions) {
+  const uint8_t kData[] = {
+      // Encrypted and Partitioned
+      0x03,
+      // IV
+      0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a,
+      // Num partitions = 0
+      0x00,
+      // Some random data.
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
+  };
+  // Extracted from kData and zero extended to 16 bytes.
+  const uint8_t kExpectedIv[] = {
+      0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  std::unique_ptr<DecryptConfig> decrypt_config;
+  int data_offset;
+  ASSERT_TRUE(WebMCreateDecryptConfig(kData, sizeof(kData), kKeyId,
+                                      sizeof(kKeyId), &decrypt_config,
+                                      &data_offset));
+  EXPECT_TRUE(decrypt_config->is_encrypted());
+  EXPECT_EQ(std::string(kKeyId, kKeyId + sizeof(kKeyId)),
+            decrypt_config->key_id());
+  EXPECT_EQ(std::string(kExpectedIv, kExpectedIv + sizeof(kExpectedIv)),
+            decrypt_config->iv());
+  EXPECT_THAT(decrypt_config->subsamples(), ElementsAre(SubsampleEntry(6, 0)));
+  EXPECT_EQ(10, data_offset);
+}
+
 }  // namespace media

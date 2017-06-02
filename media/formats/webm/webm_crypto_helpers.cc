@@ -129,10 +129,6 @@ bool WebMCreateDecryptConfig(const uint8_t* data,
       }
 
       const size_t num_partitions = data[frame_offset];
-      if (num_partitions == 0) {
-        DVLOG(1) << "Got a partitioned encrypted block with 0 partitions.";
-        return false;
-      }
       frame_offset += kWebMEncryptedFrameNumPartitionsSize;
       const uint8_t* partition_data_start = data + frame_offset;
       frame_offset += kWebMEncryptedFramePartitionOffsetSize * num_partitions;
