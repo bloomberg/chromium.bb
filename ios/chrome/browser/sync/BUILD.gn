@@ -78,8 +78,6 @@ source_set("sync") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "fake_sync_service_factory.cc",
-    "fake_sync_service_factory.h",
     "ios_chrome_profile_sync_test_util.cc",
     "ios_chrome_profile_sync_test_util.h",
     "sync_setup_service_mock.cc",
