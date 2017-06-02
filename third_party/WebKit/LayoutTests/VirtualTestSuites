@@ -372,6 +372,11 @@
     "args": ["--enable-features=WebAssembly"]
   },
   {
+    "prefix": "enable_wasm",
+    "base": "external/wpt/wasm",
+    "args": ["--enable-features=WebAssembly"]
+  },
+  {
     "prefix": "enable_wasm_streaming",
     "base": "http/tests/wasm_streaming",
     "args": ["--enable-features=WebAssemblyStreaming"]
