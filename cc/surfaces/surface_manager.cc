@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <queue>
 #include <utility>
 
@@ -22,6 +23,10 @@
 #endif
 
 namespace cc {
+
+SurfaceManager::SurfaceReferenceInfo::SurfaceReferenceInfo() {}
+
+SurfaceManager::SurfaceReferenceInfo::~SurfaceReferenceInfo() {}
 
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
     : lifetime_type_(lifetime_type),
@@ -209,6 +214,22 @@ void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
   RemoveTemporaryReference(surface_id, false);
 }
 
+const base::flat_set<SurfaceId>& SurfaceManager::GetSurfacesReferencedByParent(
+    const SurfaceId& surface_id) const {
+  auto iter = references_.find(surface_id);
+  if (iter == references_.end())
+    return empty_surface_id_set_;
+  return iter->second.children;
+}
+
+const base::flat_set<SurfaceId>& SurfaceManager::GetSurfacesThatReferenceChild(
+    const SurfaceId& surface_id) const {
+  auto iter = references_.find(surface_id);
+  if (iter == references_.end())
+    return empty_surface_id_set_;
+  return iter->second.parents;
+}
+
 void SurfaceManager::GarbageCollectSurfaces() {
   if (surfaces_to_destroy_.empty())
     return;
@@ -252,14 +273,11 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
   }
 
   while (!surface_queue.empty()) {
-    const SurfaceId& surface_id = surface_queue.front();
-    auto iter = parent_to_child_refs_.find(surface_id);
-    if (iter != parent_to_child_refs_.end()) {
-      for (const SurfaceId& child_id : iter->second) {
-        // Check for cycles when inserting into |reachable_surfaces|.
-        if (reachable_surfaces.insert(child_id).second)
-          surface_queue.push(child_id);
-      }
+    const auto& children = GetSurfacesReferencedByParent(surface_queue.front());
+    for (const SurfaceId& child_id : children) {
+      // Check for cycles when inserting into |reachable_surfaces|.
+      if (reachable_surfaces.insert(child_id).second)
+        surface_queue.push(child_id);
     }
     surface_queue.pop();
   }
@@ -331,8 +349,8 @@ void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
     return;
   }
 
-  parent_to_child_refs_[parent_id].insert(child_id);
-  child_to_parent_refs_[child_id].insert(parent_id);
+  references_[parent_id].children.insert(child_id);
+  references_[child_id].parents.insert(parent_id);
 
   if (HasTemporaryReference(child_id))
     RemoveTemporaryReference(child_id, true);
@@ -340,31 +358,29 @@ void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
 
 void SurfaceManager::RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                                 const SurfaceId& child_id) {
-  if (parent_to_child_refs_.count(parent_id) == 0 ||
-      parent_to_child_refs_[parent_id].count(child_id) == 0) {
-    DLOG(ERROR) << "No reference from " << parent_id << " to " << child_id;
+  auto iter_parent = references_.find(parent_id);
+  auto iter_child = references_.find(child_id);
+  if (iter_parent == references_.end() || iter_child == references_.end())
     return;
-  }
 
-  parent_to_child_refs_[parent_id].erase(child_id);
-  child_to_parent_refs_[child_id].erase(parent_id);
+  iter_parent->second.children.erase(child_id);
+  iter_child->second.parents.erase(parent_id);
 }
 
 void SurfaceManager::RemoveAllSurfaceReferences(const SurfaceId& surface_id) {
-  // Remove all references from |surface_id| to a child surface.
-  auto iter = parent_to_child_refs_.find(surface_id);
-  if (iter != parent_to_child_refs_.end()) {
-    for (const SurfaceId& child_id : iter->second)
-      child_to_parent_refs_[child_id].erase(surface_id);
-    parent_to_child_refs_.erase(iter);
-  }
+  DCHECK(!HasTemporaryReference(surface_id));
 
-  // Remove all reference from parent surface to |surface_id|.
-  iter = child_to_parent_refs_.find(surface_id);
-  if (iter != child_to_parent_refs_.end()) {
-    for (const SurfaceId& parent_id : iter->second)
-      parent_to_child_refs_[parent_id].erase(surface_id);
-    child_to_parent_refs_.erase(iter);
+  auto iter = references_.find(surface_id);
+  if (iter != references_.end()) {
+    // Remove all references from |surface_id| to a child surface.
+    for (const SurfaceId& child_id : iter->second.children)
+      references_[child_id].parents.erase(surface_id);
+
+    // Remove all reference from parent surface to |surface_id|.
+    for (const SurfaceId& parent_id : iter->second.parents)
+      references_[parent_id].children.erase(surface_id);
+
+    references_.erase(iter);
   }
 }
 
@@ -554,14 +570,8 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
 
   // If the current surface has references to children, sort children and print
   // references for each child.
-  auto iter = parent_to_child_refs_.find(surface_id);
-  if (iter != parent_to_child_refs_.end()) {
-    std::vector<SurfaceId> children(iter->second.begin(), iter->second.end());
-    std::sort(children.begin(), children.end());
-
-    for (const SurfaceId& child_id : children)
-      SurfaceReferencesToStringImpl(child_id, indent + "  ", str);
-  }
+  for (const SurfaceId& child_id : GetSurfacesReferencedByParent(surface_id))
+    SurfaceReferencesToStringImpl(child_id, indent + "  ", str);
 }
 #endif  // DCHECK_IS_ON()
 
