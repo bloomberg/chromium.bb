@@ -73,6 +73,9 @@ GIT_TRANSIENT_ERRORS = (
 
     # crbug.com/675262
     r'Connection refused',
+
+    # crbug.com/725233
+    r'Operation too slow',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
