@@ -132,6 +132,13 @@ class BaseSearchProvider : public AutocompleteProvider {
   // are met. The requirements are
   // * The user is enrolled in a zero suggest experiment.
   // * The user is not on the NTP.
+  // * The user is not in incognito mode. (Incognito disables suggest entirely.)
+  static bool ZeroSuggestEnabled(
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      const AutocompleteProviderClient* client);
+
+  // Returns whether we can send the URL of the current page in any suggest
+  // requests.  Doing this requires that all the following hold:
   // * The suggest request is sent over HTTPS.  This avoids leaking the current
   //   page URL or personal data in unencrypted network traffic.
   // * The user has suggest enabled in their settings and is not in incognito
@@ -139,16 +146,7 @@ class BaseSearchProvider : public AutocompleteProvider {
   // * The user's suggest provider is Google.  We might want to allow other
   //   providers to see this data someday, but for now this has only been
   //   implemented for Google.
-  static bool ZeroSuggestEnabled(
-      const GURL& suggest_url,
-      const TemplateURL* template_url,
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      const SearchTermsData& search_terms_data,
-      const AutocompleteProviderClient* client);
-
-  // Returns whether we can send the URL of the current page in any suggest
-  // requests.  Doing this requires that all the following hold:
-  // * ZeroSuggestEnabled() is true, so we meet the requirements above.
+  // * The user is not on the NTP.
   // * The current URL is HTTP, or HTTPS with the same domain as the suggest
   //   server.  Non-HTTP[S] URLs (e.g. FTP/file URLs) may contain sensitive
   //   information.  HTTPS URLs may also contain sensitive information, but if

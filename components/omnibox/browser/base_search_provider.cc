@@ -330,10 +330,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 
 // static
 bool BaseSearchProvider::ZeroSuggestEnabled(
-    const GURL& suggest_url,
-    const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
-    const SearchTermsData& search_terms_data,
     const AutocompleteProviderClient* client) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;

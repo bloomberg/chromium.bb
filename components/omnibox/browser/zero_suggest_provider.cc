@@ -166,8 +166,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
           GURL(default_provider->suggestions_url_ref().ReplaceSearchTerms(
               search_term_args, template_url_service->search_terms_data()));
     }
-  } else if (!ShouldShowNonContextualZeroSuggest(suggest_url,
-                                                 input.current_url())) {
+  } else if (!ShouldShowNonContextualZeroSuggest(input.current_url())) {
     return;
   }
 
@@ -525,14 +524,8 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
 }
 
 bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
-    const GURL& suggest_url,
     const GURL& current_page_url) const {
-  const TemplateURLService* template_url_service =
-      client()->GetTemplateURLService();
-  if (!ZeroSuggestEnabled(suggest_url,
-                          template_url_service->GetDefaultSearchProvider(),
-                          current_page_classification_,
-                          template_url_service->search_terms_data(), client()))
+  if (!ZeroSuggestEnabled(current_page_classification_, client()))
     return false;
 
   // If we cannot send URLs, then only the MostVisited and Personalized
