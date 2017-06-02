@@ -1117,9 +1117,6 @@ void Predictor::InitialObserver::Append(const GURL& url,
                                         Predictor* predictor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(rlp): Do we really need the predictor check here?
-  if (nullptr == predictor)
-    return;
   if (kStartupResolutionCount <= first_navigations_.size())
     return;
 
