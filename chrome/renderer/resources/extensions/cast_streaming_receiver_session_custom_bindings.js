@@ -4,17 +4,20 @@
 
 // Custom binding for the Cast Streaming Session API.
 
-var binding = require('binding').Binding.create(
-    'cast.streaming.receiverSession');
+var binding =
+    apiBridge ||
+    require('binding').Binding.create('cast.streaming.receiverSession');
 var natives = requireNative('cast_streaming_natives');
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setHandleRequest('createAndBind',
+  apiFunctions.setHandleRequest(
+      'createAndBind',
       function(ap, vp, local, weidgth, height, fr, url, cb, op) {
         natives.StartCastRtpReceiver(
             ap, vp, local, weidgth, height, fr, url, cb, op);
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

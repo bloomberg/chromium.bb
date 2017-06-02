@@ -5,7 +5,9 @@
 // This module implements chrome-specific <webview> API.
 // See web_view_api_methods.js for details.
 
-var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
+var ChromeWebView = getInternalApi ?
+    getInternalApi('chromeWebViewInternal') :
+    require('chromeWebViewInternal').ChromeWebView;
 var ChromeWebViewSchema =
     requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var CreateEvent = require('guestViewEvents').CreateEvent;

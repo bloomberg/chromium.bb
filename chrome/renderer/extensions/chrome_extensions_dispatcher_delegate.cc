@@ -253,11 +253,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 
-  // Custom types sources.
-  source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
-  source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
-  source_map->RegisterSource("ChromeDirectSetting",
-                             IDR_CHROME_DIRECT_SETTING_JS);
 
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("chromeWebViewInternal",
@@ -283,8 +278,15 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS);
 
   // These bindings are unnecessary with native bindings enabled.
-  if (!extensions::FeatureSwitch::native_crx_bindings()->IsEnabled())
+  if (!extensions::FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
+
+    // Custom types sources.
+    source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
+    source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
+    source_map->RegisterSource("ChromeDirectSetting",
+                               IDR_CHROME_DIRECT_SETTING_JS);
+  }
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(

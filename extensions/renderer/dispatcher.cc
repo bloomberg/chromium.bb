@@ -787,14 +787,17 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"printerProvider", IDR_PRINTER_PROVIDER_CUSTOM_BINDINGS_JS},
       {"runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS},
       {"webViewRequest", IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS},
-      {"binding", IDR_BINDING_JS},
-
-      // Custom types sources.
-      {"StorageArea", IDR_STORAGE_AREA_JS},
 
       // Platform app sources that are not API-specific..
       {"platformApp", IDR_PLATFORM_APP_JS},
   };
+
+  if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+    resources.emplace_back("binding", IDR_BINDING_JS);
+
+    // Custom types sources.
+    resources.emplace_back("StorageArea", IDR_STORAGE_AREA_JS);
+  }
 
   if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     resources.emplace_back("guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS);
