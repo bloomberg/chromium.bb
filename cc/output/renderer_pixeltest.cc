@@ -915,13 +915,12 @@ class IntersectingQuadGLPixelTest
  public:
   void SetUp() override {
     IntersectingQuadPixelTest<TypeParam>::SetUp();
-    bool use_stream_video_draw_quad = false;
-    video_resource_updater_.reset(new VideoResourceUpdater(
-        this->output_surface_->context_provider(),
-        this->resource_provider_.get(), use_stream_video_draw_quad));
-    video_resource_updater2_.reset(new VideoResourceUpdater(
-        this->output_surface_->context_provider(),
-        this->resource_provider_.get(), use_stream_video_draw_quad));
+    video_resource_updater_.reset(
+        new VideoResourceUpdater(this->output_surface_->context_provider(),
+                                 this->resource_provider_.get()));
+    video_resource_updater2_.reset(
+        new VideoResourceUpdater(this->output_surface_->context_provider(),
+                                 this->resource_provider_.get()));
   }
 
  protected:
@@ -1242,10 +1241,8 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
 
   void SetUp() override {
     GLRendererPixelTest::SetUp();
-    bool use_stream_video_draw_quad = false;
     video_resource_updater_.reset(new VideoResourceUpdater(
-        output_surface_->context_provider(), resource_provider_.get(),
-        use_stream_video_draw_quad));
+        output_surface_->context_provider(), resource_provider_.get()));
   }
 
   std::unique_ptr<VideoResourceUpdater> video_resource_updater_;

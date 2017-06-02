@@ -73,8 +73,7 @@ class CC_EXPORT VideoFrameExternalResources {
 class CC_EXPORT VideoResourceUpdater {
  public:
   VideoResourceUpdater(ContextProvider* context_provider,
-                       ResourceProvider* resource_provider,
-                       bool use_stream_video_draw_quad);
+                       ResourceProvider* resource_provider);
   ~VideoResourceUpdater();
 
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
@@ -176,7 +175,6 @@ class CC_EXPORT VideoResourceUpdater {
 
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
-  const bool use_stream_video_draw_quad_;
   std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
   std::vector<uint8_t> upload_pixels_;
 
