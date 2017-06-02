@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -77,8 +78,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     installer->Load(temp_dir);
     std::string extension_id = observer.WaitForExtensionLoaded()->id();
 
-    // Let the ThemeService finish creating the theme pack.
-    base::RunLoop().RunUntilIdle();
+    WaitForThemeInstall();
 
     return extension_id;
   }
@@ -109,6 +109,14 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
   const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
     return theme_service->get_theme_supplier();
+  }
+
+  void WaitForThemeInstall() {
+    content::WindowedNotificationObserver theme_change_observer(
+        chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+        content::Source<ThemeService>(
+            ThemeServiceFactory::GetForProfile(profile())));
+    theme_change_observer.Wait();
   }
 
   // Alpha blends a non-opaque foreground color against an opaque background.
@@ -163,8 +171,6 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());
   theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
 
   base::ScopedTempDir temp_dir1;
   ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
@@ -188,19 +194,19 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
 
   // 2) Enabling a disabled theme extension should swap the current theme.
   service_->EnableExtension(extension1_id);
-  base::RunLoop().RunUntilIdle();
+  WaitForThemeInstall();
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
   EXPECT_TRUE(registry_->GetExtensionById(extension2_id,
                                           ExtensionRegistry::DISABLED));
 
-  // 3) Using SetTheme() with a disabled theme should enable and set the
+  // 3) Using RevertToTheme() with a disabled theme should enable and set the
   // theme. This is the case when the user reverts to the previous theme
   // via an infobar.
   const extensions::Extension* extension2 =
       service_->GetInstalledExtension(extension2_id);
-  theme_service->SetTheme(extension2);
-  base::RunLoop().RunUntilIdle();
+  theme_service->RevertToTheme(extension2);
+  WaitForThemeInstall();
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
   EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
@@ -340,18 +346,21 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
   // Show an infobar.
   theme_service->OnInfobarDisplayed();
 
-  // Install another theme. Emulate the infobar destroying itself (and
-  // causing unused themes to be uninstalled) as a result of the
-  // NOTIFICATION_BROWSER_THEME_CHANGED notification.
+  // Install another theme. The first extension shouldn't be uninstalled yet as
+  // it should be possible to revert to it. Emulate the infobar destroying
+  // itself as a result of the NOTIFICATION_BROWSER_THEME_CHANGED notification.
   {
     InfobarDestroyerOnThemeChange destroyer(profile_.get());
     const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.GetPath());
-    ASSERT_EQ(extension2_id, theme_service->GetThemeID());
-    ASSERT_FALSE(service_->GetInstalledExtension(extension1_id));
+    EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   }
 
+  auto* extension1 = service_->GetInstalledExtension(extension1_id);
+  ASSERT_TRUE(extension1);
+
   // Check that it is possible to reinstall extension1.
-  ASSERT_EQ(extension1_id, LoadUnpackedThemeAt(temp_dir1.GetPath()));
+  ThemeServiceFactory::GetForProfile(profile_.get())->RevertToTheme(extension1);
+  WaitForThemeInstall();
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
 }
 

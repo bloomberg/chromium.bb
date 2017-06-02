@@ -291,8 +291,7 @@ class InstantPolicyTest : public ExtensionBrowserTest,
   void InstallThemeAndVerify(const std::string& theme_dir,
                              const std::string& theme_name) {
     const extensions::Extension* theme =
-        ThemeServiceFactory::GetThemeForProfile(
-            ExtensionBrowserTest::browser()->profile());
+        ThemeServiceFactory::GetThemeForProfile(profile());
     // If there is already a theme installed, the current theme should be
     // disabled and the new one installed + enabled.
     int expected_change = theme ? 0 : 1;
@@ -300,9 +299,13 @@ class InstantPolicyTest : public ExtensionBrowserTest,
     const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_dir);
     ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
         theme_path, expected_change, ExtensionBrowserTest::browser()));
+    content::WindowedNotificationObserver theme_change_observer(
+        chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+        content::Source<ThemeService>(
+            ThemeServiceFactory::GetForProfile(profile())));
+    theme_change_observer.Wait();
     const extensions::Extension* new_theme =
-        ThemeServiceFactory::GetThemeForProfile(
-            ExtensionBrowserTest::browser()->profile());
+        ThemeServiceFactory::GetThemeForProfile(profile());
     ASSERT_NE(static_cast<extensions::Extension*>(NULL), new_theme);
     ASSERT_EQ(new_theme->name(), theme_name);
   }
