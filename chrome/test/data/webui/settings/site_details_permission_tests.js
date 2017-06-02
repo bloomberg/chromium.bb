@@ -48,6 +48,11 @@ suite('SiteDetailsPermission', function() {
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('site-details-permission');
+
+    // Set the camera icon on <site-details-permission> manually to avoid
+    // failures on undefined icons during teardown in PolymerTest.testIronIcons.
+    // In practice, this is done from the parent.
+    testElement.icon = 'settings:videocam';
     document.body.appendChild(testElement);
   });
 
@@ -76,19 +81,6 @@ suite('SiteDetailsPermission', function() {
           assertEquals(expectedPermissionValue, args[3]);
         });
   };
-
-  test('empty state', function() {
-    browserProxy.setPrefs(prefsEmpty);
-    testElement.category = settings.ContentSettingsTypes.CAMERA;
-    testElement.site = {
-      origin: 'http://www.google.com',
-      embeddingOrigin: '',
-    };
-
-    return browserProxy.whenCalled('getExceptionList').then(function() {
-      assertTrue(testElement.$.details.hidden);
-    });
-  });
 
   test('camera category', function() {
     var origin = 'https://www.example.com';
@@ -153,27 +145,6 @@ suite('SiteDetailsPermission', function() {
         .then(function() {
           return validatePermissionFlipWorks(
               origin, settings.PermissionValues.BLOCK);
-        });
-  });
-
-  test('disappear on empty', function() {
-    var origin = 'https://www.example.com';
-    browserProxy.setPrefs(prefs);
-    testElement.category = settings.ContentSettingsTypes.CAMERA;
-    testElement.site = {
-      origin: origin,
-      embeddingOrigin: '',
-    };
-
-    return browserProxy.whenCalled('getExceptionList')
-        .then(function() {
-          assertFalse(testElement.$.details.hidden);
-
-          browserProxy.setPrefs(prefsEmpty);
-          return browserProxy.whenCalled('getExceptionList');
-        })
-        .then(function() {
-          assertTrue(testElement.$.details.hidden);
         });
   });
 });
