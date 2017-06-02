@@ -512,7 +512,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
 TEST(ParseCapabilities, MobileEmulationDeviceName) {
   Capabilities capabilities;
   base::DictionaryValue mobile_emulation;
-  mobile_emulation.SetString("deviceName", "Google Nexus 5");
+  mobile_emulation.SetString("deviceName", "Nexus 5");
   base::DictionaryValue caps;
   caps.Set("chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
@@ -522,8 +522,8 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
   ASSERT_EQ(
-      "Mozilla/5.0 (Linux; Android 4.4.4; Nexus 5 Build/KTU84P) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.114 Mobile "
+      "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) "
+      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile "
       "Safari/537.36",
       capabilities.switches.GetSwitchValue("user-agent"));
 
