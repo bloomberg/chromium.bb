@@ -24,58 +24,6 @@ enum UseMultisampling {
   kEnableMultisampling,
 };
 
-class DrawingBufferForTests : public DrawingBuffer {
- public:
-  static PassRefPtr<DrawingBufferForTests> Create(
-      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-      DrawingBuffer::Client* client,
-      const IntSize& size,
-      PreserveDrawingBuffer preserve,
-      UseMultisampling use_multisampling) {
-    std::unique_ptr<Extensions3DUtil> extensions_util =
-        Extensions3DUtil::Create(context_provider->ContextGL());
-    RefPtr<DrawingBufferForTests> drawing_buffer =
-        AdoptRef(new DrawingBufferForTests(std::move(context_provider),
-                                           std::move(extensions_util), client,
-                                           preserve));
-    if (!drawing_buffer->Initialize(
-            size, use_multisampling != kDisableMultisampling)) {
-      drawing_buffer->BeginDestruction();
-      return nullptr;
-    }
-    return drawing_buffer.Release();
-  }
-
-  DrawingBufferForTests(
-      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-      std::unique_ptr<Extensions3DUtil> extensions_util,
-      DrawingBuffer::Client* client,
-      PreserveDrawingBuffer preserve)
-      : DrawingBuffer(
-            std::move(context_provider),
-            std::move(extensions_util),
-            client,
-            false /* discardFramebufferSupported */,
-            true /* wantAlphaChannel */,
-            false /* premultipliedAlpha */,
-            preserve,
-            kWebGL1,
-            false /* wantDepth */,
-            false /* wantStencil */,
-            DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
-            CanvasColorParams()),
-        live_(0) {}
-
-  ~DrawingBufferForTests() override {
-    if (live_)
-      *live_ = false;
-  }
-
-  bool* live_;
-
-  int RecycledBitmapCount() { return recycled_bitmaps_.size(); }
-};
-
 class WebGraphicsContext3DProviderForTests
     : public WebGraphicsContext3DProvider {
  public:
@@ -214,8 +162,18 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   void GetIntegerv(GLenum pname, GLint* value) override {
-    if (pname == GL_MAX_TEXTURE_SIZE)
-      *value = 1024;
+    switch (pname) {
+      case GL_DRAW_FRAMEBUFFER_BINDING:
+        *value = state_.draw_framebuffer_binding;
+        break;
+      case GL_READ_FRAMEBUFFER_BINDING:
+        *value = state_.read_framebuffer_binding;
+        break;
+      case GL_MAX_TEXTURE_SIZE:
+        *value = 1024;
+      default:
+        break;
+    }
   }
 
   void GenMailboxCHROMIUM(GLbyte* mailbox) override {
@@ -406,6 +364,62 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   HashMap<GLuint, IntSize> texture_sizes_;
   HashMap<GLuint, IntSize> image_sizes_;
   HashMap<GLuint, GLuint> image_to_texture_map_;
+};
+
+class DrawingBufferForTests : public DrawingBuffer {
+ public:
+  static PassRefPtr<DrawingBufferForTests> Create(
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      DrawingBuffer::Client* client,
+      const IntSize& size,
+      PreserveDrawingBuffer preserve,
+      UseMultisampling use_multisampling) {
+    std::unique_ptr<Extensions3DUtil> extensions_util =
+        Extensions3DUtil::Create(context_provider->ContextGL());
+    RefPtr<DrawingBufferForTests> drawing_buffer =
+        AdoptRef(new DrawingBufferForTests(std::move(context_provider),
+                                           std::move(extensions_util), client,
+                                           preserve));
+    if (!drawing_buffer->Initialize(
+            size, use_multisampling != kDisableMultisampling)) {
+      drawing_buffer->BeginDestruction();
+      return nullptr;
+    }
+    return drawing_buffer.Release();
+  }
+
+  DrawingBufferForTests(
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      std::unique_ptr<Extensions3DUtil> extensions_util,
+      DrawingBuffer::Client* client,
+      PreserveDrawingBuffer preserve)
+      : DrawingBuffer(
+            std::move(context_provider),
+            std::move(extensions_util),
+            client,
+            false /* discardFramebufferSupported */,
+            true /* wantAlphaChannel */,
+            false /* premultipliedAlpha */,
+            preserve,
+            kWebGL1,
+            false /* wantDepth */,
+            false /* wantStencil */,
+            DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
+            CanvasColorParams()),
+        live_(0) {}
+
+  ~DrawingBufferForTests() override {
+    if (live_)
+      *live_ = false;
+  }
+
+  GLES2InterfaceForTests* ContextGLForTests() {
+    return static_cast<GLES2InterfaceForTests*>(ContextGL());
+  }
+
+  bool* live_;
+
+  int RecycledBitmapCount() { return recycled_bitmaps_.size(); }
 };
 
 }  // blink

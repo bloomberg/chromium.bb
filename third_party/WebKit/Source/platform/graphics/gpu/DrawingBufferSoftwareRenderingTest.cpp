@@ -53,8 +53,10 @@ class DrawingBufferSoftwareRenderingTest : public Test {
         provider = WTF::WrapUnique(
             new WebGraphicsContext3DProviderSoftwareRenderingForTests(
                 std::move(gl)));
+    GLES2InterfaceForTests* gl_ =
+        static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), nullptr, initial_size, DrawingBuffer::kPreserve,
+        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
         kDisableMultisampling);
     CHECK(drawing_buffer_);
   }
@@ -63,7 +65,7 @@ class DrawingBufferSoftwareRenderingTest : public Test {
   bool is_software_rendering_ = false;
 };
 
-TEST_F(DrawingBufferSoftwareRenderingTest, bitmapRecycling) {
+TEST_F(DrawingBufferSoftwareRenderingTest, BitmapRecycling) {
   cc::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
@@ -97,6 +99,30 @@ TEST_F(DrawingBufferSoftwareRenderingTest, bitmapRecycling) {
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
+
+  drawing_buffer_->BeginDestruction();
+}
+
+TEST_F(DrawingBufferSoftwareRenderingTest, FramebufferBinding) {
+  GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  IntSize initial_size(kInitialWidth, kInitialHeight);
+  GLint drawBinding = 0, readBinding = 0;
+
+  GLuint draw_framebuffer_binding = 0xbeef3;
+  GLuint read_framebuffer_binding = 0xbeef4;
+  gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER, draw_framebuffer_binding);
+  gl_->BindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer_binding);
+  gl_->SaveState();
+  drawing_buffer_->Resize(initial_size);
+  drawing_buffer_->MarkContentsChanged();
+  drawing_buffer_->PrepareTextureMailbox(&texture_mailbox, &release_callback);
+  gl_->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawBinding);
+  gl_->GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readBinding);
+  EXPECT_EQ(static_cast<GLint>(draw_framebuffer_binding), drawBinding);
+  EXPECT_EQ(static_cast<GLint>(read_framebuffer_binding), readBinding);
+  release_callback->Run(gpu::SyncToken(), false /* lostResource */);
 
   drawing_buffer_->BeginDestruction();
 }
