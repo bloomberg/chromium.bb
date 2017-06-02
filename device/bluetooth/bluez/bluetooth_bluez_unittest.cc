@@ -4576,4 +4576,54 @@ TEST_F(BluetoothBlueZTest, AdvertisingDataFlagsChanged) {
   EXPECT_EQ(0x23u, device->GetAdvertisingDataFlags().value());
 }
 
+TEST_F(BluetoothBlueZTest, SetConnectionLatency) {
+  GetAdapter();
+  DiscoverDevices();
+
+  // SetConnectionLatency is supported on LE devices.
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kConnectUnpairablePath));
+  properties->type.ReplaceValue(BluetoothDeviceClient::kTypeLe);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConnectUnpairableAddress);
+  ASSERT_TRUE(device);
+
+  device->SetConnectionLatency(
+      BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_LOW, GetCallback(),
+      GetErrorCallback());
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  device->SetConnectionLatency(
+      BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_HIGH,
+      GetCallback(), GetErrorCallback());
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // Dual mode devices should be supported as well.
+  properties->type.ReplaceValue(BluetoothDeviceClient::kTypeDual);
+  device->SetConnectionLatency(
+      BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_MEDIUM,
+      GetCallback(), GetErrorCallback());
+  EXPECT_EQ(3, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // This API is not supported for BR/EDR devices.
+  properties->type.ReplaceValue(BluetoothDeviceClient::kTypeBredr);
+  device->SetConnectionLatency(
+      BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_MEDIUM,
+      GetCallback(), GetErrorCallback());
+  EXPECT_EQ(3, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+
+  // Return an error if the type is not valid.
+  properties->type.set_valid(false);
+  device->SetConnectionLatency(
+      BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_MEDIUM,
+      GetCallback(), GetErrorCallback());
+  EXPECT_EQ(3, callback_count_);
+  EXPECT_EQ(2, error_callback_count_);
+}
+
 }  // namespace bluez
