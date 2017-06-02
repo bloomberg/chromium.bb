@@ -198,6 +198,12 @@ bool MediaCodecUtil::SupportsSetParameters() {
 }
 
 // static
+bool MediaCodecUtil::PlatformSupportsCbcsEncryption(int sdk) {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecUtil_platformSupportsCbcsEncryption(env, sdk);
+}
+
+// static
 std::set<int> MediaCodecUtil::GetEncoderColorFormats(
     const std::string& mime_type) {
   std::set<int> color_formats;

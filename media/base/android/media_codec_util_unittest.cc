@@ -18,6 +18,7 @@ using base::android::SDK_VERSION_LOLLIPOP;
 using base::android::SDK_VERSION_LOLLIPOP_MR1;
 using base::android::SDK_VERSION_MARSHMALLOW;
 using base::android::SDK_VERSION_NOUGAT;
+using base::android::SDK_VERSION_NOUGAT_MR1;
 
 class MediaCodecUtilTest : public testing::Test {
  public:
@@ -71,6 +72,15 @@ TEST_F(MediaCodecUtilTest, TestCodecAvailableIfNewerVersion) {
           << " model: " << devices[i].model << " sdk: " << sdk;
     }
   }
+}
+
+TEST_F(MediaCodecUtilTest, TestCbcsAvailableIfNewerVersion) {
+  EXPECT_FALSE(
+      MediaCodecUtil::PlatformSupportsCbcsEncryption(SDK_VERSION_MARSHMALLOW));
+  EXPECT_FALSE(
+      MediaCodecUtil::PlatformSupportsCbcsEncryption(SDK_VERSION_NOUGAT));
+  EXPECT_TRUE(
+      MediaCodecUtil::PlatformSupportsCbcsEncryption(SDK_VERSION_NOUGAT_MR1));
 }
 
 }  // namespace media
