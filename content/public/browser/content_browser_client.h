@@ -87,10 +87,6 @@ namespace rappor {
 class RapporService;
 }
 
-namespace ukm {
-class UkmRecorder;
-}
-
 namespace sandbox {
 class TargetPolicy;
 }
@@ -803,9 +799,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();
-
-  // Returns the UkmRecorder from the browser process.
-  virtual ::ukm::UkmRecorder* GetUkmRecorder();
 
   // Provides parameters for initializing the global task scheduler. Default
   // params are used if this returns nullptr.

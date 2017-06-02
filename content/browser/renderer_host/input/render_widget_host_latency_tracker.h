@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/ukm/public/ukm_recorder.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -71,12 +72,22 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   void SetDelegate(RenderWidgetHostDelegate*);
 
  private:
+  ukm::SourceId GetUkmSourceId();
+
   // ui::LatencyTracker:
   void ReportRapporScrollLatency(
       const std::string& name,
       const ui::LatencyInfo::LatencyComponent& start_component,
       const ui::LatencyInfo::LatencyComponent& end_component) override;
 
+  // ui::LatencyTracker:
+  void ReportUkmScrollLatency(
+      const std::string& event_name,
+      const std::string& metric_name,
+      const ui::LatencyInfo::LatencyComponent& start_component,
+      const ui::LatencyInfo::LatencyComponent& end_component) override;
+
+  ukm::SourceId ukm_source_id_;
   int64_t last_event_id_;
   int64_t latency_component_id_;
   float device_scale_factor_;
