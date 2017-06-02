@@ -561,6 +561,7 @@ split_static_library("ui") {
     "//components/sync_preferences",
     "//components/sync_sessions",
     "//components/toolbar",
+    "//components/toolbar:vector_icons",
     "//components/tracing:startup_tracing",
     "//components/ui_devtools",
     "//components/undo",

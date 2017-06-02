@@ -24,6 +24,16 @@ aggregate_vector_icons("toolbar_vector_icons") {
   ]
 }
 
+static_library("vector_icons") {
+  sources = get_target_outputs(":toolbar_vector_icons")
+  deps = [
+    ":toolbar_vector_icons",
+    "//skia",
+    "//ui/gfx",
+    "//ui/vector_icons",
+  ]
+}
+
 static_library("toolbar") {
   sources = [
     "toolbar_model.h",
@@ -50,11 +60,7 @@ static_library("toolbar") {
   ]
 
   if (!is_android && !is_ios) {
-    sources += get_target_outputs(":toolbar_vector_icons")
-    deps += [
-      ":toolbar_vector_icons",
-      "//ui/vector_icons",
-    ]
+    deps += [ ":vector_icons" ]
   }
 }
 
