@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/events/PointerEventFactory.h"
+#include "core/input/EventHandlingUtil.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
@@ -27,39 +28,16 @@ class CORE_EXPORT TouchEventManager
   WTF_MAKE_NONCOPYABLE(TouchEventManager);
 
  public:
-  class TouchInfo {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-   public:
-    DEFINE_INLINE_TRACE() {
-      visitor->Trace(touch_node);
-      visitor->Trace(target_frame);
-    }
-
-    WebTouchPoint point;
-    Member<Node> touch_node;
-    Member<LocalFrame> target_frame;
-    FloatPoint content_point;
-    FloatSize adjusted_radius;
-    bool known_target;
-    String region;
-  };
 
   explicit TouchEventManager(LocalFrame&);
   DECLARE_TRACE();
 
-  // Does the hit-testing again if the original hit test result was not inside
-  // capturing frame for touch events. Returns true if touch events could be
-  // dispatched and otherwise returns false.
-  bool ReHitTestTouchPointsIfNeeded(const WebTouchEvent&,
-                                    HeapVector<TouchInfo>&);
-
-  // The TouchInfo array is reference just to prevent the copy. However, it
-  // cannot be const as this function might change some of the properties in
-  // TouchInfo objects.
-  WebInputEventResult HandleTouchEvent(const WebTouchEvent&,
-                                       const Vector<WebTouchEvent>&,
-                                       HeapVector<TouchInfo>&);
+  // The entries in touch point array of WebTouchEvent (i.e. first parameter)
+  // correspond to the entries of the PointerEventTargets (i.e. last parameter).
+  WebInputEventResult HandleTouchEvent(
+      const WebTouchEvent&,
+      const Vector<WebTouchEvent>&,
+      const HeapVector<EventHandlingUtil::PointerEventTarget>&);
 
   // Resets the internal state of this object.
   void Clear();
@@ -68,12 +46,21 @@ class CORE_EXPORT TouchEventManager
   bool IsAnyTouchActive() const;
 
  private:
-  void UpdateTargetAndRegionMapsForTouchStarts(HeapVector<TouchInfo>&);
-  void SetAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
+  Touch* CreateDomTouch(const WebTouchPoint&, bool* known_target);
+
+  void UpdateTargetAndRegionMapsForTouchStart(
+      const WebTouchPoint&,
+      const EventHandlingUtil::PointerEventTarget&);
+
+  // Does the hit-testing if the original hit test result was not inside
+  // capturing frame for touch events. Returns true if touch events could be
+  // dispatched and otherwise returns false.
+  bool HitTestTouchPointsIfNeeded(
+      const WebTouchEvent&,
+      const HeapVector<EventHandlingUtil::PointerEventTarget>&);
 
   WebInputEventResult DispatchTouchEvents(const WebTouchEvent&,
                                           const Vector<WebTouchEvent>&,
-                                          const HeapVector<TouchInfo>&,
                                           bool all_touches_released);
 
   // NOTE: If adding a new field to this class please ensure that it is
@@ -107,7 +94,5 @@ class CORE_EXPORT TouchEventManager
 };
 
 }  // namespace blink
-
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::TouchEventManager::TouchInfo);
 
 #endif  // TouchEventManager_h
