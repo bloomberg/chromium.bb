@@ -19,6 +19,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
@@ -416,6 +418,95 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   // The aspect ratio is flipped, so X margin is now 125.
   transformer = CreateCurrentRootWindowTransformerForMirroring();
   EXPECT_EQ("125,0,125,0", transformer->GetHostInsets().ToString());
+}
+
+TEST_F(RootWindowTransformersTest, ShouldSetWindowSize) {
+  UpdateDisplay("800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* root_window = root_windows[0];
+
+  // Rotate screen 90 degrees to "right".
+  // Will triger window_tree_host->SetRootWindowTransformer().
+  // The window size will be updated because there is no ongoing transform
+  // animation.
+  UpdateDisplay("800x600/r");
+  EXPECT_EQ(root_window->GetTargetBounds(), gfx::Rect(0, 0, 600, 800));
+}
+
+TEST_F(RootWindowTransformersTest,
+       ShouldNotSetWindowSizeWithEnqueuedTransformAnimation) {
+  UpdateDisplay("800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* root_window = root_windows[0];
+
+  ui::ScopedAnimationDurationScaleMode test_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  ui::Layer* layer = root_window->layer();
+  {
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+    gfx::Transform transform;
+    transform.Translate(100, 200);
+    layer->SetTransform(transform);
+  }
+  layer->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+
+  // Rotate screen 90 degrees to "right".
+  // Will triger window_tree_host->SetRootWindowTransformer().
+  // The window size will not be updated because there is ongoing transform
+  // animation.
+  UpdateDisplay("800x600/r");
+  EXPECT_NE(root_window->GetTargetBounds(), gfx::Rect(0, 0, 600, 800));
+}
+
+TEST_F(RootWindowTransformersTest,
+       ShouldSetWindowSizeWithStoppedTransformAnimation) {
+  UpdateDisplay("800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* root_window = root_windows[0];
+
+  ui::ScopedAnimationDurationScaleMode test_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  ui::Layer* layer = root_window->layer();
+  {
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+    gfx::Transform transform;
+    transform.Translate(100, 200);
+    layer->SetTransform(transform);
+  }
+  layer->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+
+  // Rotate screen 90 degrees to "right".
+  // Will triger window_tree_host->SetRootWindowTransformer().
+  // The window size will be updated because there is no ongoing transform
+  // animation.
+  UpdateDisplay("800x600/r");
+  EXPECT_EQ(root_window->GetTargetBounds(), gfx::Rect(0, 0, 600, 800));
+}
+
+TEST_F(RootWindowTransformersTest, ShouldSetWindowSizeDuringOpacityAnimation) {
+  UpdateDisplay("800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* root_window = root_windows[0];
+
+  ui::ScopedAnimationDurationScaleMode test_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  {
+    ui::Layer* layer = root_window->layer();
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+    layer->SetOpacity(0.1f);
+  }
+
+  // Rotate screen 90 degrees to "right".
+  // Will triger window_tree_host->SetRootWindowTransformer().
+  // The window size will be updated because there is no ongoing transform
+  // animation, even there is an opacity animation.
+  UpdateDisplay("800x600/r");
+  EXPECT_EQ(root_window->GetTargetBounds(), gfx::Rect(0, 0, 600, 800));
 }
 
 }  // namespace ash
