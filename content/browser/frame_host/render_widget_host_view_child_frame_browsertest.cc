@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -15,6 +17,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
@@ -71,6 +74,44 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
   shell()->web_contents()->ForEachFrame(
       base::Bind(&RenderWidgetHostViewChildFrameTest::CheckScreenWidth,
                  base::Unretained(this)));
+}
+
+// Test that auto-resize sizes in the top frame are propagated to OOPIF
+// RenderWidgetHostViews. See https://crbug.com/726743.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
+                       ChildFrameAutoResizeUpdate) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b)")));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  root->current_frame_host()->render_view_host()->EnableAutoResize(
+      gfx::Size(0, 0), gfx::Size(100, 100));
+
+  RenderWidgetHostView* rwhv =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost()->GetView();
+
+  // Fake an auto-resize update from the parent renderer.
+  int routing_id =
+      root->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
+  ViewHostMsg_UpdateRect_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.flags = 0;
+  root->current_frame_host()->GetRenderWidgetHost()->OnMessageReceived(
+      ViewHostMsg_UpdateRect(routing_id, params));
+
+  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
+  // let it complete.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+
+  // The child frame's RenderWidgetHostView should now use the auto-resize value
+  // for its visible viewport.
+  EXPECT_EQ(gfx::Size(75, 75), rwhv->GetVisibleViewportSize());
 }
 
 }  // namespace content

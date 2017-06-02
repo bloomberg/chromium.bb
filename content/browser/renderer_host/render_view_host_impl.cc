@@ -933,6 +933,10 @@ void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
   Send(new ViewMsg_DisableAutoResize(GetRoutingID(), new_size));
   if (!new_size.IsEmpty())
     GetWidget()->GetView()->SetSize(new_size);
+  // This clears the cached value in the WebContents, so that OOPIFs will
+  // stop using it.
+  if (GetWidget()->delegate())
+    GetWidget()->delegate()->ResetAutoResizeSize();
 }
 
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(

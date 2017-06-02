@@ -266,6 +266,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notifies that a CompositorFrame was received from the renderer.
   virtual void DidReceiveCompositorFrame() {}
 
+  // Gets the size set by a top-level frame with auto-resize enabled.
+  virtual gfx::Size GetAutoResizeSize();
+
+  // Reset the auto-size value, to indicate that auto-size is no longer active.
+  virtual void ResetAutoResizeSize() {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };
