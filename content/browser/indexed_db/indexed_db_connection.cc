@@ -116,11 +116,6 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
   return transaction_ptr;
 }
 
-void IndexedDBConnection::AbortTransaction(IndexedDBTransaction* transaction) {
-  IDB_TRACE1("IndexedDBDatabase::Abort", "txn.id", transaction->id());
-  transaction->Abort();
-}
-
 void IndexedDBConnection::AbortTransaction(
     IndexedDBTransaction* transaction,
     const IndexedDBDatabaseError& error) {
