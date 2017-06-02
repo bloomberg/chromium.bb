@@ -29,7 +29,6 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
-import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
@@ -287,8 +286,7 @@ public class CustomTabsConnection {
                     if (!initialized) initializeBrowser(mApplication);
 
                     // (2)
-                    if (mayCreateSpareWebContents && mSpeculation == null
-                            && !SysUtils.isLowEndDevice()) {
+                    if (mayCreateSpareWebContents && mSpeculation == null) {
                         WarmupManager.getInstance().createSpareWebContents();
                     }
 
@@ -626,9 +624,12 @@ public class CustomTabsConnection {
                     "CustomTabs.NonDefaultSessionPrerenderMatched", result != null);
         }
 
+        // Since the prerender is used, discard the spare webcontents.
+        if (result != null) WarmupManager.getInstance().destroySpareWebContents();
         return result;
     }
 
+    @VisibleForTesting
     String getSpeculatedUrl(CustomTabsSessionToken session) {
         if (mSpeculation == null || session == null || !session.equals(mSpeculation.session)) {
             return null;
@@ -1040,9 +1041,6 @@ public class CustomTabsConnection {
         boolean throttle = !shouldPrerenderOnCellularForSession(session);
         if (throttle && !mClientManager.isPrerenderingAllowed(uid)) return false;
 
-        // A prerender will be requested. Time to destroy the spare WebContents.
-        WarmupManager.getInstance().destroySpareWebContents();
-
         Intent extrasIntent = new Intent();
         if (extras != null) extrasIntent.putExtras(extras);
         if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return false;
@@ -1052,9 +1050,9 @@ public class CustomTabsConnection {
         Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
         String referrer = getReferrer(session, extrasIntent);
 
-        Pair<WebContents, WebContents> webContentsPair =
-                mExternalPrerenderHandler.addPrerender(Profile.getLastUsedProfile(), url, referrer,
-                        contentBounds, shouldPrerenderOnCellularForSession(session));
+        boolean forced = shouldPrerenderOnCellularForSession(session);
+        Pair<WebContents, WebContents> webContentsPair = mExternalPrerenderHandler.addPrerender(
+                Profile.getLastUsedProfile(), url, referrer, contentBounds, forced);
         if (webContentsPair == null) return false;
         WebContents dummyWebContents = webContentsPair.first;
         if (webContentsPair.second != null) {
@@ -1067,6 +1065,9 @@ public class CustomTabsConnection {
         RecordHistogram.recordBooleanHistogram("CustomTabs.PrerenderSessionUsesDefaultParameters",
                 mClientManager.usesDefaultSessionParameters(session));
 
+        // Forced prerenders are often discarded, and take a small amount of memory. In this case,
+        // don't kill the spare renderer as it's highly likely to be used later.
+        if (!forced) WarmupManager.getInstance().destroySpareWebContents();
         return true;
     }
 
