@@ -38,9 +38,8 @@ namespace blink {
 class LayoutText;
 class TextIteratorBehavior;
 
-class CORE_EXPORT TextIteratorTextState {
-  STACK_ALLOCATED();
-
+class CORE_EXPORT TextIteratorTextState
+    : public GarbageCollectedFinalized<TextIteratorTextState> {
  public:
   explicit TextIteratorTextState(const TextIteratorBehavior&);
   ~TextIteratorTextState() {}
@@ -78,6 +77,8 @@ class CORE_EXPORT TextIteratorTextState {
   void AppendTextTo(ForwardsTextBuffer* output,
                     unsigned position,
                     unsigned length_to_append) const;
+
+  DECLARE_TRACE();
 
  private:
   int text_length_ = 0;

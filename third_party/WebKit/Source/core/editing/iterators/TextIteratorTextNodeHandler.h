@@ -19,12 +19,12 @@ class TextIteratorTextState;
 
 // TextIteratorTextNodeHandler extracts plain text from a text node by calling
 // HandleTextNode() function. It should be used only by TextIterator.
-class TextIteratorTextNodeHandler final {
-  STACK_ALLOCATED();
-
+class TextIteratorTextNodeHandler final
+    : public GarbageCollectedFinalized<TextIteratorTextNodeHandler> {
  public:
   TextIteratorTextNodeHandler(const TextIteratorBehavior&,
                               TextIteratorTextState*);
+  ~TextIteratorTextNodeHandler() {}
 
   Text* GetNode() const { return text_node_; }
 
@@ -43,6 +43,8 @@ class TextIteratorTextNodeHandler final {
   void HandleTextNodeStartFrom(Text*, int start_offset);
   void HandleTextNodeEndAt(Text*, int end_offset);
   void HandleTextNodeInRange(Text*, int start_offset, int end_offset);
+
+  DECLARE_TRACE();
 
  private:
   void HandlePreFormattedTextNode();
@@ -97,7 +99,7 @@ class TextIteratorTextNodeHandler final {
   const TextIteratorBehavior behavior_;
 
   // Contains state of emitted text.
-  TextIteratorTextState& text_state_;
+  const Member<TextIteratorTextState> text_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TextIteratorTextNodeHandler);
 };
