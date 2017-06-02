@@ -21,6 +21,7 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/search_result.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -52,7 +53,7 @@ class SearchAnswerWebView : public views::WebView {
   void VisibilityChanged(View* starting_from, bool is_visible) override {
     WebView::VisibilityChanged(starting_from, is_visible);
 
-    if (GetWidget()->IsVisible() && IsDrawn()) {
+    if (GetWidget() && GetWidget()->IsVisible() && IsDrawn()) {
       if (shown_time_.is_null())
         shown_time_ = base::TimeTicks::Now();
     } else {
@@ -71,6 +72,34 @@ class SearchAnswerWebView : public views::WebView {
   base::TimeTicks shown_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
+};
+
+class SearchAnswerResult : public SearchResult {
+ public:
+  SearchAnswerResult(Profile* profile,
+                     const std::string& result_url,
+                     views::View* web_view)
+      : profile_(profile) {
+    set_display_type(DISPLAY_CARD);
+    set_id(result_url);
+    set_relevance(1);
+    set_view(web_view);
+  }
+
+  // SearchResult overrides:
+  std::unique_ptr<SearchResult> Duplicate() const override {
+    return base::MakeUnique<SearchAnswerResult>(profile_, id(), view());
+  }
+
+  void Open(int event_flags) override {
+    chrome::NavigateParams params(profile_, GURL(id()),
+                                  ui::PAGE_TRANSITION_GENERATED);
+    params.disposition = ui::DispositionFromEventFlags(event_flags);
+    chrome::Navigate(&params);
+  }
+
+ private:
+  Profile* const profile_;
 };
 
 }  // namespace
@@ -97,10 +126,6 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
   web_contents_->SetDelegate(this);
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
-  if (features::IsAnswerCardDarkRunEnabled())
-    web_view_->SetFocusBehavior(views::View::FocusBehavior::NEVER);
-
-  model->AddObserver(this);
 
   // Make the webview transparent since it's going to be shown on top of a
   // highlightable button.
@@ -110,25 +135,22 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
 
 SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {
   RecordReceivedAnswerFinalResult();
-  model_->RemoveObserver(this);
 }
 
 views::View* SearchAnswerWebContentsDelegate::web_view() {
   return web_view_.get();
 }
 
-void SearchAnswerWebContentsDelegate::Update() {
-  if (!answer_server_url_.is_valid())
-    return;
-
+void SearchAnswerWebContentsDelegate::Start(bool is_voice_query,
+                                            const base::string16& query) {
   RecordReceivedAnswerFinalResult();
   // Reset the state.
   received_answer_ = false;
-  model_->SetSearchAnswerAvailable(false);
+  OnResultAvailable(false);
   current_request_url_ = GURL();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
-  if (model_->search_box()->is_voice_query()) {
+  if (is_voice_query) {
     // No need to send a server request and show a card because launcher
     // automatically closes upon voice queries.
     return;
@@ -137,11 +159,10 @@ void SearchAnswerWebContentsDelegate::Update() {
   if (!model_->search_engine_is_google())
     return;
 
-  // Start a request to the answer server.
-  base::string16 query;
-  base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
   if (query.empty())
     return;
+
+  // Start a request to the answer server.
 
   // Lifetime of |prefixed_query| should be longer than the one of
   // |replacements|.
@@ -164,8 +185,8 @@ void SearchAnswerWebContentsDelegate::Update() {
 void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
-  model_->SetSearchAnswerAvailable(received_answer_ && IsCardSizeOk() &&
-                                   !web_contents_->IsLoading());
+  OnResultAvailable(received_answer_ && IsCardSizeOk() &&
+                    !web_contents_->IsLoading());
   web_view_->SetPreferredSize(pref_size);
   if (!answer_loaded_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("SearchAnswer.ResizeAfterLoadTime",
@@ -223,10 +244,7 @@ void SearchAnswerWebContentsDelegate::DidFinishNavigation(
   }
 
   if (!features::IsAnswerCardDarkRunEnabled()) {
-    const net::HttpResponseHeaders* headers =
-        navigation_handle->GetResponseHeaders();
-    if (!headers || headers->response_code() != net::HTTP_OK ||
-        !headers->HasHeaderValue("has_answer", "true")) {
+    if (!ParseResponseHeaders(navigation_handle->GetResponseHeaders())) {
       RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
       return;
     }
@@ -235,6 +253,8 @@ void SearchAnswerWebContentsDelegate::DidFinishNavigation(
     dark_run_received_answer_ = !dark_run_received_answer_;
     if (!dark_run_received_answer_)
       return;
+    // SearchResult requires a non-empty id. This "url" will never be opened.
+    result_url_ = "some string";
   }
 
   received_answer_ = true;
@@ -247,7 +267,7 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
     return;
 
   if (IsCardSizeOk())
-    model_->SetSearchAnswerAvailable(true);
+    OnResultAvailable(true);
   answer_loaded_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
                       answer_loaded_time_ - server_request_start_time_);
@@ -257,11 +277,6 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
 void SearchAnswerWebContentsDelegate::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
   base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
-}
-
-void SearchAnswerWebContentsDelegate::OnSearchEngineIsGoogleChanged(
-    bool is_google) {
-  Update();
 }
 
 bool SearchAnswerWebContentsDelegate::IsCardSizeOk() const {
@@ -285,6 +300,27 @@ void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
       IsCardSizeOk() ? SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER
                      : SearchAnswerRequestResult::
                            REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
+}
+
+void SearchAnswerWebContentsDelegate::OnResultAvailable(bool is_available) {
+  SearchProvider::Results results;
+  if (is_available) {
+    results.reserve(1);
+    results.emplace_back(base::MakeUnique<SearchAnswerResult>(
+        profile_, result_url_, web_view_.get()));
+  }
+  SwapResults(&results);
+}
+
+bool SearchAnswerWebContentsDelegate::ParseResponseHeaders(
+    const net::HttpResponseHeaders* headers) {
+  if (!headers || headers->response_code() != net::HTTP_OK)
+    return false;
+  if (!headers->HasHeaderValue("SearchAnswer-HasResult", "true"))
+    return false;
+  if (!headers->GetNormalizedHeader("SearchAnswer-OpenResultUrl", &result_url_))
+    return false;
+  return true;
 }
 
 }  // namespace app_list

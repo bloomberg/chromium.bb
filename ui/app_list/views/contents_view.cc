@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -70,15 +71,13 @@ void ContentsView::Init(AppListModel* model) {
   search_results_page_view_ = new SearchResultPageView();
 
   // Search result containers.
-  views::View* const search_answer_view =
-      view_delegate->GetSearchAnswerWebView();
-  if (search_answer_view) {
+  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
+
+  if (features::IsAnswerCardEnabled()) {
     search_results_page_view_->AddSearchResultContainerView(
-        nullptr, new SearchResultAnswerCardView(
-                     model_, search_results_page_view_, search_answer_view));
+        results, new SearchResultAnswerCardView(view_delegate));
   }
 
-  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
   search_results_page_view_->AddSearchResultContainerView(
       results, new SearchResultListView(app_list_main_view_, view_delegate));
 

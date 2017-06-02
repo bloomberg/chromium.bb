@@ -11,13 +11,17 @@
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/app_list/app_list_model_observer.h"
+#include "ui/app_list/search_provider.h"
 #include "url/gurl.h"
 
 class Profile;
 
 namespace app_list {
 class AppListModel;
+}
+
+namespace net {
+class HttpResponseHeaders;
 }
 
 namespace views {
@@ -27,24 +31,24 @@ class WebView;
 
 namespace app_list {
 
-// Manages the web contents for the search answer web view.
-class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
-                                        public content::WebContentsObserver,
-                                        public AppListModelObserver {
+// Search provider for the answer card.
+class SearchAnswerWebContentsDelegate : public SearchProvider,
+                                        public content::WebContentsDelegate,
+                                        public content::WebContentsObserver {
  public:
   SearchAnswerWebContentsDelegate(Profile* profile,
                                   app_list::AppListModel* model);
 
   ~SearchAnswerWebContentsDelegate() override;
 
-  // Updates the state after the query string or any other relevant condition
-  // changes.
-  void Update();
-
   // Returns a pointer to the web view for the web contents managed by this
   // class. The object is owned by this class and has property
   // 'set_owned_by_client()' set.
   views::View* web_view();
+
+  // SearchProvider overrides:
+  void Start(bool is_voice_query, const base::string16& query) override;
+  void Stop() override {}
 
   // content::WebContentsDelegate overrides:
   void UpdatePreferredSize(content::WebContents* web_contents,
@@ -62,12 +66,11 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   void DidStopLoading() override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
-  // AppListModelObserver overrides:
-  void OnSearchEngineIsGoogleChanged(bool is_google) override;
-
  private:
   bool IsCardSizeOk() const;
   void RecordReceivedAnswerFinalResult();
+  void OnResultAvailable(bool is_available);
+  bool ParseResponseHeaders(const net::HttpResponseHeaders* headers);
 
   // Unowned pointer to the associated profile.
   Profile* const profile_;
@@ -100,6 +103,9 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   // When in the dark run mode, indicates whether we mimic that the server
   // response contains an answer.
   bool dark_run_received_answer_ = false;
+
+  // Url to open when the user clicks at the result.
+  std::string result_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebContentsDelegate);
 };
