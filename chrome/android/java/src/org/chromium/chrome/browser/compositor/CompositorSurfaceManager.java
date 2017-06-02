@@ -187,8 +187,8 @@ class CompositorSurfaceManager implements SurfaceHolder.Callback2 {
 
         // See if we're expecting a surfaceChanged.  If not, then send a synthetic one.
         if (mOwnedByClient.format != PixelFormat.UNKNOWN) {
-            mClient.surfaceChanged(mOwnedByClient.surfaceHolder(), mOwnedByClient.width,
-                    mOwnedByClient.height, mOwnedByClient.format);
+            mClient.surfaceChanged(mOwnedByClient.surfaceHolder(), mOwnedByClient.format,
+                    mOwnedByClient.width, mOwnedByClient.height);
         }
     }
 
