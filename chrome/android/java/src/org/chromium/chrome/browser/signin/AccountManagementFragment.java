@@ -343,7 +343,6 @@ public class AccountManagementFragment extends PreferenceFragment
             }
             parentAccounts.setSummary(parentText);
             parentAccounts.setSelectable(false);
-            ((ChromeBasePreference) parentAccounts).setUseReducedPadding(true);
 
             final int childContentSummary;
             int defaultBehavior = prefService.getDefaultSupervisedUserFilteringBehavior();
@@ -385,7 +384,6 @@ public class AccountManagementFragment extends PreferenceFragment
             ChromeBasePreference pref = new ChromeBasePreference(getActivity());
             pref.setTitle(account.name);
 
-            pref.setUseReducedPadding(isChildAccount);
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
                         getUserPicture(account.name, getResources())));
