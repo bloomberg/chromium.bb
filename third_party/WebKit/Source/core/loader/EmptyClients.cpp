@@ -169,7 +169,7 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const FrameLoadRequest&,
   return nullptr;
 }
 
-PluginView* EmptyLocalFrameClient::CreatePlugin(HTMLPlugInElement*,
+PluginView* EmptyLocalFrameClient::CreatePlugin(HTMLPlugInElement&,
                                                 const KURL&,
                                                 const Vector<String>&,
                                                 const Vector<String>&,

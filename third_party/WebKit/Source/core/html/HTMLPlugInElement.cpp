@@ -557,7 +557,8 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
         require_layout_object ? LocalFrameClient::kFailOnDetachedPlugin
                               : LocalFrameClient::kAllowDetachedPlugin;
     PluginView* plugin = frame->Loader().Client()->CreatePlugin(
-        this, url, param_names, param_values, mime_type, load_manually, policy);
+        *this, url, param_names, param_values, mime_type, load_manually,
+        policy);
     if (!plugin) {
       if (!layout_item.IsNull() &&
           !layout_item.ShowsUnavailablePluginIndicator()) {
