@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
 
+#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 #include "components/component_updater/component_updater_service.h"

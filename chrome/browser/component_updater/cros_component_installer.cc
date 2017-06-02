@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/cros_component_installer.h"
+
+#include <utility>
+
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"

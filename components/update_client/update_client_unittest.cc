@@ -1362,15 +1362,22 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 TEST_F(UpdateClientTest, OneCrxInstallError) {
   class MockInstaller : public CrxInstaller {
    public:
+    // gMock does not support mocking functions with parameters which have
+    // move semantics. This function is a shim to work around it.
+    Result Install(std::unique_ptr<base::DictionaryValue> manifest,
+                   const base::FilePath& unpack_path) {
+      return Install_(manifest, unpack_path);
+    }
+
     MOCK_METHOD1(OnUpdateError, void(int error));
-    MOCK_METHOD2(Install,
-                 Result(const base::DictionaryValue& manifest,
+    MOCK_METHOD2(Install_,
+                 Result(const std::unique_ptr<base::DictionaryValue>& manifest,
                         const base::FilePath& unpack_path));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));
     MOCK_METHOD0(Uninstall, bool());
 
-    void OnInstall(const base::DictionaryValue& manifest,
+    void OnInstall(const std::unique_ptr<base::DictionaryValue>& manifest,
                    const base::FilePath& unpack_path) {
       unpack_path_ = unpack_path;
       EXPECT_TRUE(base::DirectoryExists(unpack_path_));
@@ -1398,7 +1405,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
           base::MakeRefCounted<MockInstaller>();
 
       EXPECT_CALL(*installer, OnUpdateError(_)).Times(0);
-      EXPECT_CALL(*installer, Install(_, _))
+      EXPECT_CALL(*installer, Install_(_, _))
           .WillOnce(
               DoAll(Invoke(installer.get(), &MockInstaller::OnInstall),
                     Return(CrxInstaller::Result(InstallError::GENERIC_ERROR))));

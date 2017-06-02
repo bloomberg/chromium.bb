@@ -83,7 +83,7 @@ CrxInstaller::Result DoInstallOnBlockingTaskRunner(
   if (!manifest)
     return CrxInstaller::Result(InstallError::BAD_MANIFEST);
 
-  return installer->Install(*manifest, unpack_path);
+  return installer->Install(std::move(manifest), unpack_path);
 }
 
 void InstallOnBlockingTaskRunner(

@@ -185,7 +185,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   // as a json dictionary.|unpack_path| contains the temporary directory
   // with all the unpacked CRX files.
   // This method may be called from a thread other than the main thread.
-  virtual Result Install(const base::DictionaryValue& manifest,
+  virtual Result Install(std::unique_ptr<base::DictionaryValue> manifest,
                          const base::FilePath& unpack_path) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is

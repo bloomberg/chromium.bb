@@ -231,11 +231,11 @@ base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
 }
 
 update_client::CrxInstaller::Result PnaclComponentInstaller::Install(
-    const base::DictionaryValue& manifest,
+    std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path) {
   return update_client::InstallFunctionWrapper(
       base::Bind(&PnaclComponentInstaller::DoInstall, base::Unretained(this),
-                 base::ConstRef(manifest), base::ConstRef(unpack_path)));
+                 base::ConstRef(*manifest), base::ConstRef(unpack_path)));
 }
 
 bool PnaclComponentInstaller::DoInstall(const base::DictionaryValue& manifest,

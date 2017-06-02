@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_UPDATE_INSTALL_SHIM_H_
 #define EXTENSIONS_BROWSER_UPDATER_UPDATE_INSTALL_SHIM_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -44,7 +45,7 @@ class UpdateInstallShim : public update_client::CrxInstaller {
 
   // This is called when a new version of an extension is unpacked at
   // |unpack_path| and is ready for install.
-  CrxInstaller::Result Install(const base::DictionaryValue& manifest,
+  CrxInstaller::Result Install(std::unique_ptr<base::DictionaryValue> manifest,
                                const base::FilePath& unpack_path) override;
 
   // This is called by the generic differential update code in the

@@ -85,7 +85,7 @@ bool IsValidInstallerAttribute(const InstallerAttribute& attr);
 void RemoveUnsecureUrls(std::vector<GURL>* urls);
 
 // Adapter function for the old definitions of CrxInstaller::Install until the
-// component installer code is migrated to use a REsult instead of bool.
+// component installer code is migrated to use a Result instead of bool.
 CrxInstaller::Result InstallFunctionWrapper(base::Callback<bool()> callback);
 
 }  // namespace update_client

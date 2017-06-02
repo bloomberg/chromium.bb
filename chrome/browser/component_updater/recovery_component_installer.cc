@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -259,7 +260,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
   void OnUpdateError(int error) override;
 
   update_client::CrxInstaller::Result Install(
-      const base::DictionaryValue& manifest,
+      std::unique_ptr<base::DictionaryValue> manifest,
       const base::FilePath& unpack_path) override;
 
   bool GetInstalledFile(const std::string& file,
@@ -396,11 +397,11 @@ bool SetPosixExecutablePermission(const base::FilePath& path) {
 #endif  // defined(OS_POSIX)
 
 update_client::CrxInstaller::Result RecoveryComponentInstaller::Install(
-    const base::DictionaryValue& manifest,
+    std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path) {
-  return update_client::InstallFunctionWrapper(
-      base::Bind(&RecoveryComponentInstaller::DoInstall, base::Unretained(this),
-                 base::ConstRef(manifest), base::ConstRef(unpack_path)));
+  return update_client::InstallFunctionWrapper(base::Bind(
+      &RecoveryComponentInstaller::DoInstall, base::Unretained(this),
+      base::ConstRef(*manifest), base::ConstRef(unpack_path)));
 }
 
 bool RecoveryComponentInstaller::DoInstall(
