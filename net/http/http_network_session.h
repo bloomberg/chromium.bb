@@ -20,7 +20,7 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
@@ -74,9 +74,7 @@ const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
 const uint32_t kSpdyMaxConcurrentPushedStreams = 1000;
 
 // This class holds session objects used by HttpNetworkTransaction objects.
-class NET_EXPORT HttpNetworkSession
-    : NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public base::MemoryCoordinatorClient {
+class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
  public:
   // Self-contained structure with all the simple configuration options
   // supported by the HttpNetworkSession.
@@ -338,6 +336,8 @@ class NET_EXPORT HttpNetworkSession
   Context context_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace net

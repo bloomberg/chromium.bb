@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -31,12 +31,14 @@ namespace net {
 
 // Changes URLFetcher's Factory for the lifetime of the object.
 // Note that this scoper cannot be nested (to make it even harder to misuse).
-class ScopedURLFetcherFactory : public base::NonThreadSafe {
+class ScopedURLFetcherFactory {
  public:
   explicit ScopedURLFetcherFactory(URLFetcherFactory* factory);
   virtual ~ScopedURLFetcherFactory();
 
  private:
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(ScopedURLFetcherFactory);
 };
 

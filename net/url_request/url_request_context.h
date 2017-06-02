@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
@@ -60,8 +60,7 @@ class URLRequestThrottlerManager;
 // URLRequestContext rather than creating a new one, as guaranteeing that the
 // URLRequestContext is destroyed before its members can be difficult.
 class NET_EXPORT URLRequestContext
-    : NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public base::trace_event::MemoryDumpProvider {
+    : public base::trace_event::MemoryDumpProvider {
  public:
   URLRequestContext();
   ~URLRequestContext() override;
@@ -285,6 +284,10 @@ class NET_EXPORT URLRequestContext
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  void AssertCalledOnValidThread() {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  }
+
  private:
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
@@ -336,6 +339,8 @@ class NET_EXPORT URLRequestContext
   // The largest number of outstanding URLRequests that have been created by
   // |this| and are not yet destroyed. This doesn't need to be in CopyFrom.
   mutable size_t largest_outstanding_requests_count_seen_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };

@@ -58,6 +58,7 @@ URLRequestContext::URLRequestContext()
 }
 
 URLRequestContext::~URLRequestContext() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AssertNoURLRequests();
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);

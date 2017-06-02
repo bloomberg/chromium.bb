@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
@@ -69,8 +69,7 @@ class X509Certificate;
 //
 // NOTE: All usage of all instances of this class should be on the same thread.
 //
-class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
-                              public base::SupportsUserData {
+class NET_EXPORT URLRequest : public base::SupportsUserData {
  public:
   // Callback function implemented by protocol handlers to create new jobs.
   // The factory may return NULL to indicate an error, which will cause other
@@ -861,6 +860,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   int raw_header_size_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };
