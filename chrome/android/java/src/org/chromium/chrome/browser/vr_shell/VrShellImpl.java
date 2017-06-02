@@ -66,8 +66,10 @@ public class VrShellImpl
     private static final float WEBVR_DPR = 1.0f;
     // Fairly arbitrary values that put a good amount of content on the screen without making the
     // text too small to read.
-    private static final float DEFAULT_CONTENT_WIDTH = 960f;
-    private static final float DEFAULT_CONTENT_HEIGHT = 640f;
+    @VisibleForTesting
+    public static final float DEFAULT_CONTENT_WIDTH = 960f;
+    @VisibleForTesting
+    public static final float DEFAULT_CONTENT_HEIGHT = 640f;
 
     // Make full screen 16:9 until we get exact dimensions from playing video.
     private static final float FULLSCREEN_CONTENT_WIDTH = 1024f;

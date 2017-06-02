@@ -27,6 +27,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.concurrent.TimeoutException;
 
@@ -259,5 +260,37 @@ public class VrShellNavigationTest {
 
         assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
+    }
+
+    /**
+     * Tests exit presentation transition from WebVR to VrShell
+     */
+    @Test
+    @CommandLineFlags.Add("enable-webvr")
+    @MediumTest
+    public void testExitPresentationWebVrToVrShell()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
+
+        // Validate our size is what we expect.
+        DisplayAndroid primaryDisplay =
+                DisplayAndroid.getNonMultiDisplay(mVrTestRule.getActivity());
+        float expectedWidth = primaryDisplay.getDisplayWidth();
+        float expectedHeight = primaryDisplay.getDisplayHeight();
+        Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
+                "screen.width == " + expectedWidth + " && screen.height == " + expectedHeight,
+                POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
+
+        // Exit presentation through JavaScript.
+        mVrTestRule.runJavaScriptOrFail("vrDisplay.exitPresent();", POLL_TIMEOUT_SHORT_MS,
+                mVrTestRule.getFirstTabWebContents());
+
+        // Validate our size is what we expect.
+        expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
+        expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
+        Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
+                "screen.width == " + expectedWidth + " && screen.height == " + expectedHeight,
+                POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
     }
 }
