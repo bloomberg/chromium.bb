@@ -4,6 +4,7 @@
 
 #include "core/dom/DOMArrayBuffer.h"
 
+#include "platform/SharedBuffer.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/wtf/RefPtr.h"
@@ -77,6 +78,22 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
       v8::ArrayBuffer::New(isolate, Data(), ByteLength());
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
+}
+
+DOMArrayBuffer* DOMArrayBuffer::Create(PassRefPtr<SharedBuffer> shared_buffer) {
+  WTF::ArrayBufferContents contents(shared_buffer->size(), 1,
+                                    WTF::ArrayBufferContents::kNotShared,
+                                    WTF::ArrayBufferContents::kDontInitialize);
+  uint8_t* data = static_cast<uint8_t*>(contents.Data());
+  if (UNLIKELY(!data))
+    OOM_CRASH();
+
+  shared_buffer->ForEachSegment(
+      [&data](const char* segment, size_t segment_size, size_t segment_offset) {
+        memcpy(data + segment_offset, segment, segment_size);
+      });
+
+  return Create(ArrayBuffer::Create(contents));
 }
 
 }  // namespace blink
