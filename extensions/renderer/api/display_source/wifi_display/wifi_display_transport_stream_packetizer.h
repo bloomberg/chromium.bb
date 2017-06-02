@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_stream_packet_part.h"
 
@@ -63,7 +63,7 @@ class WiFiDisplayTransportStreamPacket {
 // Whenever a Transport Stream (TS) packet is fully created and thus ready for
 // further processing, a pure virtual member function
 // |OnPacketizedTransportStreamPacket| is called.
-class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
+class WiFiDisplayTransportStreamPacketizer {
  public:
   struct ElementaryStreamState;
 
@@ -134,7 +134,7 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
   bool SetElementaryStreams(
       const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos);
 
-  void DetachFromThread() { base::NonThreadSafe::DetachFromThread(); }
+  void DetachFromThread() { DETACH_FROM_THREAD(thread_checker_); }
 
  protected:
   bool EncodeProgramAssociationTable(bool flush);
@@ -170,6 +170,8 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
   std::vector<ElementaryStreamState> stream_states_;
   std::vector<uint8_t> program_association_table_;
   std::vector<uint8_t> program_map_table_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace extensions
