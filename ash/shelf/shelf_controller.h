@@ -6,10 +6,10 @@
 #define ASH_SHELF_SHELF_CONTROLLER_H_
 
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
-#include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 

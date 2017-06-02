@@ -11,8 +11,10 @@
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -32,9 +34,14 @@ Shelf* GetShelfForDisplay(int64_t display_id) {
 }  // namespace
 
 ShelfController::ShelfController() {
-  // Create an AppListShelfItemDelegate for the app list item.
+  // Set the delegate and title string for the app list item.
   model_.SetShelfItemDelegate(ShelfID(kAppListId),
                               base::MakeUnique<AppListShelfItemDelegate>());
+  DCHECK_EQ(0, model_.ItemIndexByID(ShelfID(kAppListId)));
+  ShelfItem item = model_.items()[0];
+  item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
+  model_.Set(0, item);
+
   model_.AddObserver(this);
 }
 

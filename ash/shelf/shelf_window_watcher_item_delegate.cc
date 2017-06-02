@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_controller.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

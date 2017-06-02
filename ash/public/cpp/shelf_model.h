@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_MODEL_H_
-#define ASH_SHELF_SHELF_MODEL_H_
+#ifndef ASH_PUBLIC_CPP_SHELF_MODEL_H_
+#define ASH_PUBLIC_CPP_SHELF_MODEL_H_
 
 #include <map>
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
@@ -21,11 +21,10 @@ class ShelfModelObserver;
 
 // An id for the AppList item, which is added in the ShelfModel constructor.
 // Generated as crx_file::id_util::GenerateId("org.chromium.applist")
-ASH_EXPORT extern const char kAppListId[];
+ASH_PUBLIC_EXPORT extern const char kAppListId[];
 
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
-// TODO(msw): Move this to ash/public/cpp and use ASH_PUBLIC_EXPORT.
-class ASH_EXPORT ShelfModel {
+class ASH_PUBLIC_EXPORT ShelfModel {
  public:
   ShelfModel();
   ~ShelfModel();
@@ -110,4 +109,4 @@ class ASH_EXPORT ShelfModel {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_MODEL_H_
+#endif  // ASH_PUBLIC_CPP_SHELF_MODEL_H_

@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_model.h"
+#include "ash/public/cpp/shelf_model.h"
 
 #include <algorithm>
 
 #include "ash/public/cpp/shelf_item_delegate.h"
-#include "ash/shelf/shelf_model_observer.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ash/public/cpp/shelf_model_observer.h"
 
 namespace ash {
 
@@ -48,11 +46,11 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 const char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
 
 ShelfModel::ShelfModel() {
-  // Add the app list item.
+  // Add the app list item; its title and delegate are set in ShelfController.
+  // This avoids an ash/public dep on ash/strings, and a Chrome-side delegate.
   ShelfItem item;
   item.type = TYPE_APP_LIST;
   item.id = ShelfID(kAppListId);
-  item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
   const int index = Add(item);
   DCHECK_EQ(0, index);
 }

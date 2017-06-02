@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

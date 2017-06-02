@@ -8,10 +8,10 @@
 #include <string>
 
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"

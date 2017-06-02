@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/shelf_item_delegate.h"
-#include "ash/shelf/shelf_model.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"

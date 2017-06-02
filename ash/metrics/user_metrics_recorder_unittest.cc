@@ -8,8 +8,8 @@
 
 #include "ash/login_status.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"

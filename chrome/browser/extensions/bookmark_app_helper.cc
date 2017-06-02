@@ -76,8 +76,8 @@
 #endif  // defined(OS_WIN)
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_model.h"  // nogncheck
-#include "ash/shell.h"              // nogncheck
+#include "ash/public/cpp/shelf_model.h"  // nogncheck
+#include "ash/shell.h"                   // nogncheck
 #endif
 
 namespace {
