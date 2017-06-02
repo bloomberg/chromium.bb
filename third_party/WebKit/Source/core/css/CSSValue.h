@@ -247,7 +247,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
 
   explicit CSSValue(ClassType class_type)
       : primitive_unit_type_(0),
-        has_cached_css_text_(false),
         value_list_separator_(kSpaceSeparator),
         class_type_(class_type) {}
 
@@ -260,7 +259,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
 
   // CSSPrimitiveValue bits:
   unsigned primitive_unit_type_ : 7;  // CSSPrimitiveValue::UnitType
-  mutable unsigned has_cached_css_text_ : 1;
 
   unsigned value_list_separator_ : kValueListSeparatorBits;
 
