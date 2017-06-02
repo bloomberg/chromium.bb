@@ -420,7 +420,7 @@ class MediaCodecBridge {
                 return MediaCodecStatus.ERROR;
             }
             boolean usesCbcs = cipherMode == MediaCodec.CRYPTO_MODE_AES_CBC;
-            if (usesCbcs && !MediaCodecUtil.platformSupportsCbcsEncryption()) {
+            if (usesCbcs && !MediaCodecUtil.platformSupportsCbcsEncryption(Build.VERSION.SDK_INT)) {
                 Log.e(TAG, "Encryption scheme 'cbcs' not supported on this platform.");
                 return MediaCodecStatus.ERROR;
             }
