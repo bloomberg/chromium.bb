@@ -549,7 +549,7 @@
     <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND" desc="Message displayed when no Bluetooth devices are found after a scan.">
       No Bluetooth devices found
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle .">
+    <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle.">
       Bluetooth enable
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
@@ -1372,8 +1372,11 @@
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, starts a connection attempt to the device.">
       Connect
     </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_ACCESSIBILITY_LABEL" desc="Accessibility only label for tether enable/disable toggle .">
-      Tether enable
+    <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_LABEL" desc="Settings > Internet: Label for Tether enable/disable toggle .">
+      Get data connection
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_SUBTEXT" desc="Settings > Internet: Description for Tether enable/disable toggle .">
+      Let this device find other devices with your Google Account that have a cellular data connection
     </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
       Mobile data enable

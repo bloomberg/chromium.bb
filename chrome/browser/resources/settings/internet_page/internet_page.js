@@ -276,6 +276,22 @@ Polymer({
   },
 
   /**
+   * @param {string} subpageType
+   * @param {!Object<!CrOnc.DeviceStateProperties>|undefined} deviceStates
+   * @return {!CrOnc.DeviceStateProperties|undefined}
+   * @private
+   */
+  getDeviceState_: function(subpageType, deviceStates) {
+    // If both Tether and Cellular are enabled, use the Cellular device state
+    // when directly navigating to the Tether page.
+    if (subpageType == CrOnc.Type.TETHER &&
+        this.deviceStates[CrOnc.Type.CELLULAR]) {
+      subpageType = CrOnc.Type.CELLULAR;
+    }
+    return deviceStates[subpageType];
+  },
+
+  /**
    * @param {!{detail: {type: string}}} event
    * @private
    */

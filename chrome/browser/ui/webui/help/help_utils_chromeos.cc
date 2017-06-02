@@ -63,8 +63,10 @@ base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX);
   if (type == shill::kTypeBluetooth)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_BLUETOOTH);
-  if (type == shill::kTypeCellular)
-    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_CELLULAR);
+  if (type == shill::kTypeCellular ||
+      chromeos::NetworkTypePattern::Tether().MatchesType(type)) {
+    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_MOBILE_DATA);
+  }
   if (type == shill::kTypeVPN)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_VPN);
   NOTREACHED();

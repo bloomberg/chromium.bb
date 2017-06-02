@@ -310,8 +310,21 @@ Polymer({
       var type = orderedDeviceTypes[i];
       var device = newDeviceStates[type];
       if (!device)
+        continue;  // The technology for this device type is unavailable.
+
+      // If both 'Tether' and 'Cellular' technoligies exist, merge the network
+      // lists and do not add an active network for 'Tether' so that there is
+      // only one 'Mobile data' section / subpage.
+      if (type == CrOnc.Type.TETHER && newDeviceStates[CrOnc.Type.CELLULAR]) {
+        newNetworkStateLists[CrOnc.Type.CELLULAR] =
+            newNetworkStateLists[CrOnc.Type.CELLULAR].concat(
+                newNetworkStateLists[CrOnc.Type.TETHER]);
         continue;
-      var state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
+      }
+
+      // Note: The active state for 'Cellular' may be a Tether network if both
+      // types are enabled but no Cellular network exists (edge case).
+      var state = this.getActiveStateForType_(activeNetworkStatesByType, type);
       if (state.Source === undefined &&
           device.State == CrOnc.DeviceState.PROHIBITED) {
         // Prohibited technologies are enforced by the device policy.
@@ -325,5 +338,20 @@ Polymer({
     this.networkStateLists_ = newNetworkStateLists;
     // Set activeNetworkStates last to rebuild the dom-repeat.
     this.activeNetworkStates_ = newActiveNetworkStates;
+  },
+
+  /**
+   * Returns the active network state for |type| or a default network state.
+   * If there is no 'Cellular' network, return the active 'Tether' network if
+   * any since the two types are represented by the same section / subpage.
+   * @param {!Map<string, !CrOnc.NetworkStateProperties>} activeStatesByType
+   * @param {string} type
+   * @return {!CrOnc.NetworkStateProperties|undefined}
+   */
+  getActiveStateForType_: function(activeStatesByType, type) {
+    var activeState = activeStatesByType.get(type);
+    if (!activeState && type == CrOnc.Type.CELLULAR)
+      activeState = activeStatesByType.get(CrOnc.Type.TETHER);
+    return activeState || {GUID: '', Type: type};
   },
 });
