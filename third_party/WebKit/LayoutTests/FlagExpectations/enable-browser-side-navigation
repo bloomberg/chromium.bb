@@ -5,11 +5,6 @@
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 
-# https://crbug.com/690946 PlzNavigate: Missing line number in console messages when the 'frame-src' CSP is infringed.
-# SourceLocation is not set when the navigation is initiated outside of a script.
-crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
-crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
-
 # These tests are flaky.
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
@@ -20,10 +15,35 @@ Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-
 Bug(718942) http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
 Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
 Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 Bug(718942) virtual/mojo-loading/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 Bug(718942) virtual/off-main-thread-fetch/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
+
+# Console error message source location is present with PlzNavigate. It means
+# that URLs are potentially disclosed across cross-origin renderers.
+# See https://crbug.com/726178.
+# One solution would be to send console messages from the browser to the
+# devtool process without the round-trip in the renderer.
+# See https://crbug.com/721329
+Bug(726178) http/tests/security/mixedContent/insecure-frame-in-data-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/insecure-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+Bug(726178) http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/insecure-frame-in-data-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
 
 # PlzNavigate: Navigation requests upgraded via upgrade-insecure-requests will not get reported	
 # See https://crbug.com/713388

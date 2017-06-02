@@ -138,6 +138,7 @@ std::unique_ptr<WebFrameScheduler> EmptyChromeClient::CreateFrameScheduler(
 
 NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     const ResourceRequest&,
+    Document* origin_document,
     DocumentLoader*,
     NavigationType,
     NavigationPolicy,
