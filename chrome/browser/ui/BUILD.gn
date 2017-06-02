@@ -1438,6 +1438,10 @@ split_static_library("ui") {
       "autofill/save_card_bubble_controller_impl.h",
       "autofill/save_card_bubble_view.h",
       "desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h",
+
+      # This test header is included because it contains forward declarations
+      # needed for "friend" statements for use in tests.
+      "translate/translate_bubble_test_utils.h",
       "views/apps/app_info_dialog/app_info_dialog_container.cc",
       "views/apps/app_info_dialog/app_info_dialog_container.h",
       "views/apps/app_info_dialog/app_info_dialog_views.cc",
@@ -1596,6 +1600,8 @@ split_static_library("ui") {
       "views/task_manager_view.h",
       "views/toolbar/toolbar_actions_bar_bubble_views.cc",
       "views/toolbar/toolbar_actions_bar_bubble_views.h",
+      "views/translate/translate_bubble_view.cc",
+      "views/translate/translate_bubble_view.h",
       "views/update_recommended_message_box.cc",
       "views/update_recommended_message_box.h",
     ]
@@ -1687,10 +1693,6 @@ split_static_library("ui") {
     if (!is_mac || mac_views_browser) {
       sources += [
         "javascript_dialogs/javascript_dialog.cc",
-
-        # This test header is included because it contains forward declarations
-        # needed for "friend" statements for use in tests.
-        "translate/translate_bubble_test_utils.h",
         "views/accessibility/invert_bubble_view.cc",
         "views/accessibility/invert_bubble_view.h",
         "views/autofill/autofill_popup_base_view.cc",
@@ -1917,8 +1919,6 @@ split_static_library("ui") {
         "views/toolbar/toolbar_view.cc",
         "views/toolbar/toolbar_view.h",
         "views/touch_uma/touch_uma.h",
-        "views/translate/translate_bubble_view.cc",
-        "views/translate/translate_bubble_view.h",
         "views/translate/translate_icon_view.cc",
         "views/translate/translate_icon_view.h",
         "views/validation_message_bubble_view.cc",
@@ -3031,6 +3031,8 @@ split_static_library("ui") {
         "cocoa/toolbar/toolbar_controller.mm",
         "cocoa/toolbar/toolbar_view_cocoa.h",
         "cocoa/toolbar/toolbar_view_cocoa.mm",
+        "cocoa/translate/translate_bubble_bridge_views.h",
+        "cocoa/translate/translate_bubble_bridge_views.mm",
         "cocoa/translate/translate_bubble_controller.h",
         "cocoa/translate/translate_bubble_controller.mm",
         "cocoa/url_drop_target.h",

@@ -345,9 +345,9 @@ void ToolbarView::ShowTranslateBubble(
   }
 
   views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
-      anchor_view, web_contents, step,
-      error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
-                                  : TranslateBubbleView::AUTOMATIC);
+      anchor_view, gfx::Point(), web_contents, step, error_type,
+      is_user_gesture ? TranslateBubbleView::USER_GESTURE
+                      : TranslateBubbleView::AUTOMATIC);
   if (bubble_widget && translate_icon_view)
     bubble_widget->AddObserver(translate_icon_view);
 }
