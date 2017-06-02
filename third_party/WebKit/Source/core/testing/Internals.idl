@@ -106,7 +106,7 @@
     [RaisesException] Range markerRangeForNode(Node node, DOMString markerType, unsigned long index);
     [RaisesException] DOMString markerDescriptionForNode(Node node, DOMString markerType, unsigned long index);
     [RaisesException] void addTextMatchMarker(Range range, DOMString matchStatus);
-    [RaisesException] void addCompositionMarker(Range range, DOMString underlineColorValue, boolean thick, DOMString backgroundColorValue);
+    [RaisesException] void addCompositionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString backgroundColorValue);
     void setTextMatchMarkersActive(Node node, unsigned long startOffset, unsigned long endOffset, boolean active);
     void setMarkedTextMatchesAreHighlighted(Document document, boolean highlight);
 

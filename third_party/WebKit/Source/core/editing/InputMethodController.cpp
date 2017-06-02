@@ -465,7 +465,9 @@ void InputMethodController::AddCompositionUnderlines(
       continue;
 
     GetDocument().Markers().AddCompositionMarker(
-        ephemeral_line_range, underline.GetColor(), underline.Thick(),
+        ephemeral_line_range, underline.GetColor(),
+        underline.Thick() ? CompositionMarker::Thickness::kThick
+                          : CompositionMarker::Thickness::kThin,
         underline.BackgroundColor());
   }
 }
@@ -689,7 +691,8 @@ void InputMethodController::SetComposition(
 
   if (underlines.IsEmpty()) {
     GetDocument().Markers().AddCompositionMarker(
-        EphemeralRange(composition_range_), Color::kBlack, false,
+        EphemeralRange(composition_range_), Color::kBlack,
+        CompositionMarker::Thickness::kThin,
         LayoutTheme::GetTheme().PlatformDefaultCompositionBackgroundColor());
     return;
   }

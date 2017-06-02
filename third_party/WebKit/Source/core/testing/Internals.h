@@ -190,7 +190,7 @@ class Internals final : public GarbageCollected<Internals>,
                           ExceptionState&);
   void addCompositionMarker(const Range*,
                             const String& underline_color_value,
-                            bool thick,
+                            const String& thickness_value,
                             const String& background_color_value,
                             ExceptionState&);
   void setTextMatchMarkersActive(Node*,
