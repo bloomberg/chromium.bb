@@ -654,7 +654,7 @@ bool WebFrameWidgetImpl::SelectionTextDirection(WebTextDirection& start,
   start = ToWebTextDirection(PrimaryDirectionOf(
       *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
   end = ToWebTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().end().AnchorNode()));
+      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
   return true;
 }
 

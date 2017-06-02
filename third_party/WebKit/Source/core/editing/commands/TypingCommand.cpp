@@ -795,16 +795,16 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
       selection_to_delete = selection_modifier.Selection();
 
       if (granularity == kCharacterGranularity &&
-          selection_to_delete.end().ComputeContainerNode() ==
+          selection_to_delete.End().ComputeContainerNode() ==
               selection_to_delete.Start().ComputeContainerNode() &&
-          selection_to_delete.end().ComputeOffsetInContainerNode() -
+          selection_to_delete.End().ComputeOffsetInContainerNode() -
                   selection_to_delete.Start().ComputeOffsetInContainerNode() >
               1) {
         // If there are multiple Unicode code points to be deleted, adjust the
         // range to match platform conventions.
         selection_to_delete.SetWithoutValidation(
-            selection_to_delete.end(),
-            PreviousPositionOf(selection_to_delete.end(),
+            selection_to_delete.End(),
+            PreviousPositionOf(selection_to_delete.End(),
                                PositionMoveType::kBackwardDeletion));
       }
 
@@ -816,7 +816,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
         // have been in the original document. We can't let the VisibleSelection
         // class's validation kick in or it'll adjust for us based on the
         // current state of the document and we'll get the wrong result.
-        selection_after_undo.SetWithoutValidation(StartingSelection().end(),
+        selection_after_undo.SetWithoutValidation(StartingSelection().End(),
                                                   selection_to_delete.Extent());
       }
       break;
@@ -884,7 +884,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
                                   kDirectionForward, kCharacterGranularity);
 
       Position downstream_end =
-          MostForwardCaretPosition(EndingSelection().end());
+          MostForwardCaretPosition(EndingSelection().End());
       VisiblePosition visible_end = EndingSelection().VisibleEnd();
       Node* enclosing_table_cell =
           EnclosingNodeOfType(visible_end.DeepEquivalent(), &IsTableCell);
@@ -905,7 +905,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
         SetEndingSelection(
             SelectionInDOMTree::Builder()
                 .SetBaseAndExtentDeprecated(
-                    EndingSelection().end(),
+                    EndingSelection().End(),
                     Position::AfterNode(downstream_end.ComputeContainerNode()))
                 .SetIsDirectional(EndingSelection().IsDirectional())
                 .Build());
@@ -930,20 +930,20 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
         // have been in the original document. We can't let the VisibleSelection
         // class's validation kick in or it'll adjust for us based on the
         // current state of the document and we'll get the wrong result.
-        Position extent = StartingSelection().end();
+        Position extent = StartingSelection().End();
         if (extent.ComputeContainerNode() !=
-            selection_to_delete.end().ComputeContainerNode()) {
+            selection_to_delete.End().ComputeContainerNode()) {
           extent = selection_to_delete.Extent();
         } else {
           int extra_characters;
           if (selection_to_delete.Start().ComputeContainerNode() ==
-              selection_to_delete.end().ComputeContainerNode())
+              selection_to_delete.End().ComputeContainerNode())
             extra_characters =
-                selection_to_delete.end().ComputeOffsetInContainerNode() -
+                selection_to_delete.End().ComputeOffsetInContainerNode() -
                 selection_to_delete.Start().ComputeOffsetInContainerNode();
           else
             extra_characters =
-                selection_to_delete.end().ComputeOffsetInContainerNode();
+                selection_to_delete.End().ComputeOffsetInContainerNode();
           extent = Position(
               extent.ComputeContainerNode(),
               extent.ComputeOffsetInContainerNode() + extra_characters);

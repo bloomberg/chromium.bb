@@ -549,7 +549,7 @@ void CompositeEditCommand::ReplaceTextInNode(Text* node,
 
 Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
   Position start = EndingSelection().Start();
-  Position end = EndingSelection().end();
+  Position end = EndingSelection().End();
   if (start.ComputeContainerNode() != end.ComputeContainerNode() ||
       !start.ComputeContainerNode()->IsTextNode() ||
       IsTabHTMLSpanElementTextNode(start.ComputeContainerNode()))
@@ -780,7 +780,7 @@ void CompositeEditCommand::RebalanceWhitespace() {
 
   RebalanceWhitespaceAt(selection.Start());
   if (selection.IsRange())
-    RebalanceWhitespaceAt(selection.end());
+    RebalanceWhitespaceAt(selection.End());
 }
 
 void CompositeEditCommand::DeleteInsignificantText(Text* text_node,

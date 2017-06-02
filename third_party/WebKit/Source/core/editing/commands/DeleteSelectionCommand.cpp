@@ -121,7 +121,7 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   HTMLElement* end_special_container = nullptr;
 
   start = selection_to_delete_.Start();
-  end = selection_to_delete_.end();
+  end = selection_to_delete_.End();
 
   // For HRs, we'll get a position at (HR,1) when hitting delete from the
   // beginning of the previous line, or (HR,0) when forward deleting, but in
@@ -394,11 +394,12 @@ void DeleteSelectionCommand::SaveTypingStyleState() {
   // of start(). We'll use this later in computeTypingStyleAfterDelete if we end
   // up outside of a Mail blockquote
   if (EnclosingNodeOfType(selection_to_delete_.Start(),
-                          IsMailHTMLBlockquoteElement))
+                          IsMailHTMLBlockquoteElement)) {
     delete_into_blockquote_style_ =
-        EditingStyle::Create(selection_to_delete_.end());
-  else
-    delete_into_blockquote_style_ = nullptr;
+        EditingStyle::Create(selection_to_delete_.End());
+    return;
+  }
+  delete_into_blockquote_style_ = nullptr;
 }
 
 bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
@@ -1073,7 +1074,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Position downstream_end =
-      MostForwardCaretPosition(selection_to_delete_.end());
+      MostForwardCaretPosition(selection_to_delete_.End());
   bool root_will_stay_open_without_placeholder =
       downstream_end.ComputeContainerNode() ==
           RootEditableElement(*downstream_end.ComputeContainerNode()) ||
@@ -1094,7 +1095,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     // open empty cells, but that's handled elsewhere).
     if (Element* table =
             TableElementJustAfter(selection_to_delete_.VisibleStart())) {
-      if (selection_to_delete_.end().AnchorNode()->IsDescendantOf(table))
+      if (selection_to_delete_.End().AnchorNode()->IsDescendantOf(table))
         need_placeholder_ = false;
     }
   }

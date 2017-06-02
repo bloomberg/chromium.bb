@@ -138,8 +138,8 @@ static SelectionInDOMTree PrepareToExtendSeelction(
   const bool base_is_start = IsBaseStart(visible_selection, direction);
   return SelectionInDOMTree::Builder(visible_selection.AsSelection())
       .Collapse(base_is_start ? visible_selection.Start()
-                              : visible_selection.end())
-      .Extend(base_is_start ? visible_selection.end()
+                              : visible_selection.End())
+      .Extend(base_is_start ? visible_selection.End()
                             : visible_selection.Start())
       .Build();
 }
@@ -289,7 +289,7 @@ VisiblePosition SelectionModifier::ModifyMovingRight(
             CreateVisiblePosition(selection_.Extent(), selection_.Affinity()));
       }
       if (DirectionOfSelection() == TextDirection::kLtr)
-        return CreateVisiblePosition(selection_.end(), selection_.Affinity());
+        return CreateVisiblePosition(selection_.End(), selection_.Affinity());
       return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
     case kWordGranularity: {
       const bool skips_space_when_moving_right =
@@ -322,7 +322,7 @@ VisiblePosition SelectionModifier::ModifyMovingForward(
   switch (granularity) {
     case kCharacterGranularity:
       if (selection_.IsRange())
-        pos = CreateVisiblePosition(selection_.end(), selection_.Affinity());
+        pos = CreateVisiblePosition(selection_.End(), selection_.Affinity());
       else
         pos = NextPositionOf(
             CreateVisiblePosition(selection_.Extent(), selection_.Affinity()),
@@ -474,7 +474,7 @@ VisiblePosition SelectionModifier::ModifyMovingLeft(
       }
       if (DirectionOfSelection() == TextDirection::kLtr)
         return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
-      return CreateVisiblePosition(selection_.end(), selection_.Affinity());
+      return CreateVisiblePosition(selection_.End(), selection_.Affinity());
     case kWordGranularity: {
       const bool skips_space_when_moving_right =
           GetFrame() &&
@@ -727,7 +727,7 @@ bool SelectionModifier::ModifyWithPageGranularity(EAlteration alter,
     case FrameSelection::kAlterationMove:
       pos = CreateVisiblePosition(direction == FrameSelection::kDirectionUp
                                       ? selection_.Start()
-                                      : selection_.end(),
+                                      : selection_.End(),
                                   selection_.Affinity());
       x_pos = LineDirectionPointForBlockDirectionNavigation(
           direction == FrameSelection::kDirectionUp ? START : END);
@@ -837,7 +837,7 @@ LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(
       pos = selection_.Start();
       break;
     case END:
-      pos = selection_.end();
+      pos = selection_.End();
       break;
     case BASE:
       pos = selection_.Base();

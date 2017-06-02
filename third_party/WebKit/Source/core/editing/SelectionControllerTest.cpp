@@ -69,7 +69,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Base());
   EXPECT_EQ(Position::BeforeNode(host), VisibleSelectionInDOMTree().Extent());
   EXPECT_EQ(Position(top, 1), VisibleSelectionInDOMTree().Start());
-  EXPECT_EQ(Position(top, 3), VisibleSelectionInDOMTree().end());
+  EXPECT_EQ(Position(top, 3), VisibleSelectionInDOMTree().End());
 
   EXPECT_EQ(PositionInFlatTree(top, 1), GetVisibleSelectionInFlatTree().Base());
   EXPECT_EQ(PositionInFlatTree(bottom, 3),
@@ -77,7 +77,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   EXPECT_EQ(PositionInFlatTree(top, 1),
             GetVisibleSelectionInFlatTree().Start());
   EXPECT_EQ(PositionInFlatTree(bottom, 3),
-            GetVisibleSelectionInFlatTree().end());
+            GetVisibleSelectionInFlatTree().End());
 
   // bottom to top
   SetNonDirectionalSelectionIfNeeded(
@@ -90,7 +90,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   EXPECT_EQ(Position::BeforeNode(bottom->parentNode()),
             VisibleSelectionInDOMTree().Extent());
   EXPECT_EQ(Position(bottom, 0), VisibleSelectionInDOMTree().Start());
-  EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().end());
+  EXPECT_EQ(Position(bottom, 3), VisibleSelectionInDOMTree().End());
 
   EXPECT_EQ(PositionInFlatTree(bottom, 3),
             GetVisibleSelectionInFlatTree().Base());
@@ -99,7 +99,7 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   EXPECT_EQ(PositionInFlatTree(top, 1),
             GetVisibleSelectionInFlatTree().Start());
   EXPECT_EQ(PositionInFlatTree(bottom, 3),
-            GetVisibleSelectionInFlatTree().end());
+            GetVisibleSelectionInFlatTree().End());
 }
 
 TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {

@@ -137,7 +137,7 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
   DCHECK(element);
 
   const EphemeralRange selection_range(EndingSelection().Start(),
-                                       EndingSelection().end());
+                                       EndingSelection().End());
   const String old_text = PlainText(selection_range);
   const String& new_text = text_;
 
@@ -163,7 +163,7 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
                                    EndingSelection().IsDirectional());
 
   SetEndingSelectionWithoutValidation(selection_for_insertion.Start(),
-                                      selection_for_insertion.end());
+                                      selection_for_insertion.End());
 
   InsertTextCommand::DoApply(editing_state);
 }

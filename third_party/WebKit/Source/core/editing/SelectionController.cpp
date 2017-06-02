@@ -150,8 +150,8 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
     return position;
   if (selection_in_user_select_all.Start().CompareTo(selection_start) < 0)
     return selection_in_user_select_all.Start();
-  if (selection_end.CompareTo(selection_in_user_select_all.end()) < 0)
-    return selection_in_user_select_all.end();
+  if (selection_end.CompareTo(selection_in_user_select_all.End()) < 0)
+    return selection_in_user_select_all.End();
   return position;
 }
 
@@ -210,7 +210,7 @@ bool SelectionController::HandleSingleClick(
     // Note: "fast/events/shift-click-user-select-none.html" makes
     // |pos.isNull()| true.
     const PositionInFlatTree& pos = AdjustPositionRespectUserSelectAll(
-        inner_node, selection.Start(), selection.end(),
+        inner_node, selection.Start(), selection.End(),
         visible_pos.DeepEquivalent());
     SelectionInFlatTree::Builder builder;
     builder.SetGranularity(this->Selection().Granularity());
@@ -221,7 +221,7 @@ bool SelectionController::HandleSingleClick(
     } else {
       // Shift+Click deselects when selection was created right-to-left
       const PositionInFlatTree& start = selection.Start();
-      const PositionInFlatTree& end = selection.end();
+      const PositionInFlatTree& end = selection.End();
       if (pos < start) {
         // |distance_to_start < distance_to_end|.
         builder.SetBaseAndExtent(end, pos);
@@ -496,7 +496,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
   if (select_input_event_type == SelectInputEventType::kTouch) {
     // If node doesn't have text except space, tab or line break, do not
     // select that 'empty' area.
-    EphemeralRangeInFlatTree range(new_selection.Start(), new_selection.end());
+    EphemeralRangeInFlatTree range(new_selection.Start(), new_selection.End());
     const String& str = PlainText(
         range,
         TextIteratorBehavior::Builder()

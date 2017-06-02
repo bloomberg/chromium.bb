@@ -899,7 +899,7 @@ void InputMethodController::ExtendSelectionAndDelete(int before, int after) {
                    .Start() == GetFrame()
                                    .Selection()
                                    .ComputeVisibleSelectionInDOMTreeDeprecated()
-                                   .end() &&
+                                   .End() &&
            before <= static_cast<int>(selection_offsets.Start()));
   // TODO(chongz): Find a way to distinguish Forward and Backward.
   Node* target = GetDocument().FocusedElement();

@@ -430,7 +430,7 @@ static TriState SelectionListState(const FrameSelection& selection,
         selection.ComputeVisibleSelectionInDOMTreeDeprecated().Start(),
         tag_name);
     Element* end_element = EnclosingElementWithTag(
-        selection.ComputeVisibleSelectionInDOMTreeDeprecated().end(), tag_name);
+        selection.ComputeVisibleSelectionInDOMTreeDeprecated().End(), tag_name);
 
     if (start_element && end_element && start_element == end_element) {
       // If the selected list has the different type of list as child, return
@@ -492,7 +492,7 @@ static WritingDirection TextDirectionForSelection(
 
   Position end;
   if (selection.IsRange()) {
-    end = MostBackwardCaretPosition(selection.end());
+    end = MostBackwardCaretPosition(selection.End());
 
     DCHECK(end.GetDocument());
     const EphemeralRange caret_range(position.ParentAnchoredEquivalent(),

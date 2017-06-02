@@ -173,10 +173,10 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
   Selection().Modify(FrameSelection::kAlterationExtend, kDirectionForward,
                      kWordGranularity);
   EXPECT_EQ(Position(two, 0), VisibleSelectionInDOMTree().Start());
-  EXPECT_EQ(Position(two, 3), VisibleSelectionInDOMTree().end());
+  EXPECT_EQ(Position(two, 3), VisibleSelectionInDOMTree().End());
   EXPECT_EQ(PositionInFlatTree(two, 0),
             GetVisibleSelectionInFlatTree().Start());
-  EXPECT_EQ(PositionInFlatTree(two, 3), GetVisibleSelectionInFlatTree().end());
+  EXPECT_EQ(PositionInFlatTree(two, 3), GetVisibleSelectionInFlatTree().End());
 }
 
 TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {

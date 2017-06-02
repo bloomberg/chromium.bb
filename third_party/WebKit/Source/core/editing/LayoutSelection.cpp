@@ -83,7 +83,7 @@ static SelectionInFlatTree CalcSelection(
     const VisibleSelectionInFlatTree& original_selection,
     bool should_show_blok_cursor) {
   const PositionInFlatTree& start = original_selection.Start();
-  const PositionInFlatTree& end = original_selection.end();
+  const PositionInFlatTree& end = original_selection.End();
   SelectionType selection_type = original_selection.GetSelectionType();
   const TextAffinity affinity = original_selection.Affinity();
 
@@ -344,7 +344,7 @@ static SelectionPaintRange CalcSelectionPaintRange(
       MostForwardCaretPosition(start_pos);
   if (IsVisuallyEquivalentCandidate(most_forward_start))
     start_pos = most_forward_start;
-  PositionInFlatTree end_pos = selection.end();
+  PositionInFlatTree end_pos = selection.End();
   const PositionInFlatTree most_backward = MostBackwardCaretPosition(end_pos);
   if (IsVisuallyEquivalentCandidate(most_backward))
     end_pos = most_backward;

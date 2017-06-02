@@ -1592,7 +1592,7 @@ bool Editor::FindString(const String& target, FindOptions options) {
   // TODO(yosin) We should make |findRangeOfString()| to return
   // |EphemeralRange| rather than|Range| object.
   Range* result_range = FindRangeOfString(
-      target, EphemeralRange(selection.Start(), selection.end()),
+      target, EphemeralRange(selection.Start(), selection.End()),
       static_cast<FindOptions>(options | kFindAPICall));
 
   if (!result_range)

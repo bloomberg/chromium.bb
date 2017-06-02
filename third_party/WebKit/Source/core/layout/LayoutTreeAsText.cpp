@@ -788,8 +788,8 @@ static void WriteSelection(TextStream& ts, const LayoutObject* o) {
     ts << "selection start: position "
        << selection.Start().ComputeEditingOffset() << " of "
        << NodePosition(selection.Start().AnchorNode()) << "\n"
-       << "selection end:   position " << selection.end().ComputeEditingOffset()
-       << " of " << NodePosition(selection.end().AnchorNode()) << "\n";
+       << "selection end:   position " << selection.End().ComputeEditingOffset()
+       << " of " << NodePosition(selection.End().AnchorNode()) << "\n";
   }
 }
 

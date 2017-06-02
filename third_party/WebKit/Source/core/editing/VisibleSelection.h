@@ -69,7 +69,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   PositionTemplate<Strategy> Base() const { return base_; }
   PositionTemplate<Strategy> Extent() const { return extent_; }
   PositionTemplate<Strategy> Start() const { return start_; }
-  PositionTemplate<Strategy> end() const { return end_; }
+  PositionTemplate<Strategy> End() const { return end_; }
 
   VisiblePositionTemplate<Strategy> VisibleStart() const {
     return CreateVisiblePosition(
@@ -101,10 +101,10 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool IsCaret() const { return GetSelectionType() == kCaretSelection; }
   bool IsRange() const { return GetSelectionType() == kRangeSelection; }
   bool IsNonOrphanedRange() const {
-    return IsRange() && !Start().IsOrphan() && !end().IsOrphan();
+    return IsRange() && !Start().IsOrphan() && !End().IsOrphan();
   }
   bool IsNonOrphanedCaretOrRange() const {
-    return !IsNone() && !Start().IsOrphan() && !end().IsOrphan();
+    return !IsNone() && !Start().IsOrphan() && !End().IsOrphan();
   }
 
   // True if base() <= extent().

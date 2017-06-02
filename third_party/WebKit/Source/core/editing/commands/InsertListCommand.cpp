@@ -205,7 +205,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
                          kCanSkipOverEditingBoundary)
             .DeepEquivalent() != start_of_last_paragraph) {
       force_list_creation =
-          !SelectionHasListOfType(selection.Start(), selection.end(), list_tag);
+          !SelectionHasListOfType(selection.Start(), selection.End(), list_tag);
 
       VisiblePosition start_of_current_paragraph = visible_start_of_selection;
       while (InSameTreeAndOrdered(start_of_current_paragraph.DeepEquivalent(),

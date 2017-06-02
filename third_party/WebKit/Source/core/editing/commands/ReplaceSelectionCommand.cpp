@@ -1028,8 +1028,8 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
                ->GetLayoutObject()
                ->Style()
                ->UserModify() == EUserModify::kReadWritePlaintextOnly) &&
-      (selection.end().AnchorNode()->GetLayoutObject() &&
-       selection.end().AnchorNode()->GetLayoutObject()->Style()->UserModify() ==
+      (selection.End().AnchorNode()->GetLayoutObject() &&
+       selection.End().AnchorNode()->GetLayoutObject()->Style()->UserModify() ==
            EUserModify::kReadWritePlaintextOnly))
     match_style_ = false;
 
@@ -1964,7 +1964,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Node* node_after_insertion_pos =
-      MostForwardCaretPosition(EndingSelection().end()).AnchorNode();
+      MostForwardCaretPosition(EndingSelection().End()).AnchorNode();
   Text* text_node = ToText(fragment.FirstChild());
   // Our fragment creation code handles tabs, spaces, and newlines, so we don't
   // have to worry about those here.

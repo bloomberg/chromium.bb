@@ -454,7 +454,7 @@ bool FrameSelection::SelectionHasFocus() const {
   const PositionInFlatTree& focused_position =
       PositionInFlatTree::FirstPositionInNode(focused_element);
   if (ComputeVisibleSelectionInFlatTree().Start() <= focused_position &&
-      ComputeVisibleSelectionInFlatTree().end() >= focused_position)
+      ComputeVisibleSelectionInFlatTree().End() >= focused_position)
     return true;
 
   bool has_editable_style = HasEditableStyle(*current);
@@ -955,7 +955,7 @@ LayoutRect FrameSelection::UnclippedBounds() const {
 static IntRect AbsoluteSelectionBoundsOf(
     const VisibleSelectionInFlatTree& selection) {
   return ComputeTextRect(
-      EphemeralRangeInFlatTree(selection.Start(), selection.end()));
+      EphemeralRangeInFlatTree(selection.Start(), selection.End()));
 }
 
 // TODO(editing-dev): This should be done in FlatTree world.

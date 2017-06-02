@@ -352,7 +352,7 @@ void IndentOutdentCommand::OutdentRegion(
     return;
   }
 
-  Position original_selection_end = EndingSelection().end();
+  Position original_selection_end = EndingSelection().End();
   Position end_after_selection =
       EndOfParagraph(NextPositionOf(end_of_last_paragraph)).DeepEquivalent();
 
@@ -386,7 +386,7 @@ void IndentOutdentCommand::OutdentRegion(
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     if (end_of_next_paragraph.IsNotNull() &&
         !end_of_next_paragraph.IsConnected()) {
-      end_of_current_paragraph = CreateVisiblePosition(EndingSelection().end());
+      end_of_current_paragraph = CreateVisiblePosition(EndingSelection().End());
       end_of_next_paragraph =
           EndOfParagraph(NextPositionOf(end_of_current_paragraph))
               .ToPositionWithAffinity();
