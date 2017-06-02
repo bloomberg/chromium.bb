@@ -668,6 +668,8 @@ class CONTENT_EXPORT WebContentsImpl
                               bool width_changed) override;
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size) override;
+  gfx::Size GetAutoResizeSize() override;
+  void ResetAutoResizeSize() override;
   void ScreenInfoChanged() override;
   void UpdateDeviceScaleFactor(double device_scale_factor) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
@@ -1445,6 +1447,10 @@ class CONTENT_EXPORT WebContentsImpl
   // The preferred size for content screen capture.  When |capturer_count_| > 0,
   // this overrides |preferred_size_|.
   gfx::Size preferred_size_for_capture_;
+
+  // Size set by a top-level frame with auto-resize enabled. This is needed by
+  // out-of-process iframes for their visible viewport size.
+  gfx::Size auto_resize_size_;
 
 #if defined(OS_ANDROID)
   // Date time chooser opened by this tab.

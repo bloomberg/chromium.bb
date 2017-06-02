@@ -232,6 +232,11 @@ gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
   // to be a main frame.  This should be cleaned up eventually.
   bool is_guest = BrowserPluginGuest::IsGuest(RenderViewHostImpl::From(host_));
   if (frame_connector_ && !is_guest) {
+    // An auto-resize set by the top-level frame overrides what would be
+    // reported by embedding RenderWidgetHostViews.
+    if (host_->delegate() && !host_->delegate()->GetAutoResizeSize().IsEmpty())
+      return host_->delegate()->GetAutoResizeSize();
+
     RenderWidgetHostView* parent_view =
         frame_connector_->GetParentRenderWidgetHostView();
     // The parent_view can be null in unit tests when using a TestWebContents.
