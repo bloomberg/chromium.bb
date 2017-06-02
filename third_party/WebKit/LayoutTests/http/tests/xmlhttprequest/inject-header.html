@@ -1,6 +1,6 @@
 <html>
 <body>
-<p>Test that setRequestHeader properly checks for line feeds in header values.</p>
+<p>Test that setRequestHeader properly checks for invalid characters in header values.</p>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -28,10 +28,11 @@ function test(val) {
     }
 }
 
-test("\nEvil: on");
-test("\rEvil: on");
-test("\r\nEvil: on");
-test("\n\rEvil: on");
+test("\nE\nvil: on");
+test("\rE\rvil: on");
+test("\r\nEvil\r\n: on");
+test("\n\rEvil\r\n: on");
+test("\r\nEvil: o\0n\n\r");
 </script>
 </body>
 </html>

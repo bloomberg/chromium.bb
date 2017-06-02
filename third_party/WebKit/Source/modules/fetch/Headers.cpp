@@ -79,37 +79,40 @@ void Headers::append(const String& name,
                      ExceptionState& exception_state) {
   // "To append a name/value (|name|/|value|) pair to a Headers object
   // (|headers|), run these steps:"
-  // "1. If |name| is not a name or |value| is not a value, throw a
+  // "1. Normalize |value|."
+  const String normalized_value = FetchUtils::NormalizeHeaderValue(value);
+  // "2. If |name| is not a name or |value| is not a value, throw a
   //     TypeError."
   if (!FetchHeaderList::IsValidHeaderName(name)) {
     exception_state.ThrowTypeError("Invalid name");
     return;
   }
-  if (!FetchHeaderList::IsValidHeaderValue(value)) {
+  if (!FetchHeaderList::IsValidHeaderValue(normalized_value)) {
     exception_state.ThrowTypeError("Invalid value");
     return;
   }
-  // "2. If guard is |request|, throw a TypeError."
+  // "3. If guard is |request|, throw a TypeError."
   if (guard_ == kImmutableGuard) {
     exception_state.ThrowTypeError("Headers are immutable");
     return;
   }
-  // "3. Otherwise, if guard is |request| and |name| is a forbidden header
+  // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
   if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
     return;
-  // "4. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
+  // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     simple header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !FetchUtils::IsSimpleHeader(AtomicString(name), AtomicString(value)))
+      !FetchUtils::IsSimpleHeader(AtomicString(name),
+                                  AtomicString(normalized_value)))
     return;
-  // "5. Otherwise, if guard is |response| and |name| is a forbidden response
+  // "6. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
   if (guard_ == kResponseGuard &&
       FetchUtils::IsForbiddenResponseHeaderName(name))
     return;
-  // "6. Append |name|/|value| to header list."
-  header_list_->Append(name, value);
+  // "7. Append |name|/|value| to header list."
+  header_list_->Append(name, normalized_value);
 }
 
 void Headers::remove(const String& name, ExceptionState& exception_state) {
@@ -173,37 +176,40 @@ void Headers::set(const String& name,
                   const String& value,
                   ExceptionState& exception_state) {
   // "The set(|name|, |value|) method, when invoked, must run these steps:"
-  // "1. If |name| is not a name or |value| is not a value, throw a
+  // "1. Normalize |value|."
+  const String normalized_value = FetchUtils::NormalizeHeaderValue(value);
+  // "2. If |name| is not a name or |value| is not a value, throw a
   //     TypeError."
   if (!FetchHeaderList::IsValidHeaderName(name)) {
     exception_state.ThrowTypeError("Invalid name");
     return;
   }
-  if (!FetchHeaderList::IsValidHeaderValue(value)) {
+  if (!FetchHeaderList::IsValidHeaderValue(normalized_value)) {
     exception_state.ThrowTypeError("Invalid value");
     return;
   }
-  // "2. If guard is |immutable|, throw a TypeError."
+  // "3. If guard is |immutable|, throw a TypeError."
   if (guard_ == kImmutableGuard) {
     exception_state.ThrowTypeError("Headers are immutable");
     return;
   }
-  // "3. Otherwise, if guard is |request| and |name| is a forbidden header
+  // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
   if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
     return;
-  // "4. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
+  // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     simple header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !FetchUtils::IsSimpleHeader(AtomicString(name), AtomicString(value)))
+      !FetchUtils::IsSimpleHeader(AtomicString(name),
+                                  AtomicString(normalized_value)))
     return;
-  // "5. Otherwise, if guard is |response| and |name| is a forbidden response
+  // "6. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
   if (guard_ == kResponseGuard &&
       FetchUtils::IsForbiddenResponseHeaderName(name))
     return;
-  // "6. Set |name|/|value| in header list."
-  header_list_->Set(name, value);
+  // "7. Set |name|/|value| in header list."
+  header_list_->Set(name, normalized_value);
 }
 
 // This overload is not called directly by Web APIs, but rather by other C++
