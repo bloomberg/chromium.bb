@@ -62,9 +62,6 @@ InspectorTest.sendCommand = function(method, params, handler)
 
 InspectorTest.sendCommandOrDie = function(command, properties, callback)
 {
-    var fulfill;
-    var result = new Promise(f => fulfill = f);
-
     InspectorTest.sendCommand(command, properties || {}, commandCallback);
     function commandCallback(msg)
     {
@@ -75,9 +72,7 @@ InspectorTest.sendCommandOrDie = function(command, properties, callback)
         }
         if (callback)
             callback(msg.result);
-        fulfill(msg.result);
     }
-    return result;
 }
 
 InspectorTest.sendCommandPromise = function(method, params)

@@ -757,7 +757,6 @@ void InspectorCSSAgent::WasEnabled() {
   HeapVector<Member<Document>> documents = dom_agent_->Documents();
   for (Document* document : documents)
     UpdateActiveStyleSheets(document);
-  was_enabled_ = true;
 }
 
 Response InspectorCSSAgent::disable() {
@@ -765,7 +764,6 @@ Response InspectorCSSAgent::disable() {
   dom_agent_->SetDOMListener(nullptr);
   instrumenting_agents_->removeInspectorCSSAgent(this);
   state_->setBoolean(CSSAgentState::kCssAgentEnabled, false);
-  was_enabled_ = false;
   resource_content_loader_->Cancel(resource_content_loader_client_id_);
   state_->setBoolean(CSSAgentState::kRuleRecordingEnabled, false);
   SetCoverageEnabled(false);
@@ -917,12 +915,8 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
         inherited_entries,
     Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*
         css_keyframes_rules) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
-
   Element* element = nullptr;
-  response = dom_agent_->AssertElement(node_id, element);
+  Response response = dom_agent_->AssertElement(node_id, element);
   if (!response.isSuccess())
     return response;
 
@@ -1098,11 +1092,8 @@ Response InspectorCSSAgent::getInlineStylesForNode(
     int node_id,
     Maybe<protocol::CSS::CSSStyle>* inline_style,
     Maybe<protocol::CSS::CSSStyle>* attributes_style) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
   Element* element = nullptr;
-  response = dom_agent_->AssertElement(node_id, element);
+  Response response = dom_agent_->AssertElement(node_id, element);
   if (!response.isSuccess())
     return response;
 
@@ -1120,11 +1111,8 @@ Response InspectorCSSAgent::getComputedStyleForNode(
     int node_id,
     std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*
         style) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
   Node* node = nullptr;
-  response = dom_agent_->AssertNode(node_id, node);
+  Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
 
@@ -1190,11 +1178,8 @@ Response InspectorCSSAgent::getPlatformFontsForNode(
     int node_id,
     std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>*
         platform_fonts) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
   Node* node = nullptr;
-  response = dom_agent_->AssertNode(node_id, node);
+  Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
 
@@ -1580,11 +1565,8 @@ Response InspectorCSSAgent::addRule(
 Response InspectorCSSAgent::forcePseudoState(
     int node_id,
     std::unique_ptr<protocol::Array<String>> forced_pseudo_classes) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
   Element* element = nullptr;
-  response = dom_agent_->AssertElement(node_id, element);
+  Response response = dom_agent_->AssertElement(node_id, element);
   if (!response.isSuccess())
     return response;
 
@@ -1909,17 +1891,9 @@ InspectorStyleSheet* InspectorCSSAgent::ViaInspectorStyleSheet(
   return css_style_sheet_to_inspector_style_sheet_.at(&inspector_sheet);
 }
 
-Response InspectorCSSAgent::AssertEnabled() {
-  return was_enabled_ ? Response::OK()
-                      : Response::Error("CSS agent was not enabled");
-}
-
 Response InspectorCSSAgent::AssertInspectorStyleSheetForId(
     const String& style_sheet_id,
     InspectorStyleSheet*& result) {
-  Response response = AssertEnabled();
-  if (!response.isSuccess())
-    return response;
   IdToInspectorStyleSheet::iterator it =
       id_to_inspector_style_sheet_.find(style_sheet_id);
   if (it == id_to_inspector_style_sheet_.end())
