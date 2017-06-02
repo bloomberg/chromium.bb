@@ -92,8 +92,9 @@ void TestingSpellCheckProvider::OnCallSpellingService(
   text_.assign(text);
   text_check_completions_.Remove(last_identifier_);
   std::vector<blink::WebTextCheckingResult> results;
-  results.push_back(blink::WebTextCheckingResult(
-      blink::kWebTextDecorationTypeSpelling, 0, 5, blink::WebString("hello")));
+  results.push_back(
+      blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 0, 5,
+                                   std::vector<blink::WebString>({"hello"})));
   completion->DidFinishCheckingText(results);
   last_request_ = text;
   last_results_ = results;

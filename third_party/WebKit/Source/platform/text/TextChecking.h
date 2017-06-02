@@ -53,7 +53,7 @@ struct TextCheckingResult {
   int location;
   int length;
   Vector<GrammarDetail> details;
-  String replacement;
+  Vector<String> replacements;
 };
 
 const int kUnrequestedTextCheckingSequence = -1;
@@ -73,7 +73,7 @@ class TextCheckingRequestData final {
   String text_;
 };
 
-class TextCheckingRequest
+class PLATFORM_EXPORT TextCheckingRequest
     : public GarbageCollectedFinalized<TextCheckingRequest> {
  public:
   virtual ~TextCheckingRequest() {}

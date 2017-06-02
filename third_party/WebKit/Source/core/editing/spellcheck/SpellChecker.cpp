@@ -536,7 +536,7 @@ static void AddMarker(Document* document,
                       DocumentMarker::MarkerType type,
                       int location,
                       int length,
-                      const String& description) {
+                      const Vector<String>& descriptions) {
   DCHECK(type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar)
       << type;
   DCHECK_GT(length, 0);
@@ -547,6 +547,13 @@ static void AddMarker(Document* document,
     return;
   if (!SpellChecker::IsSpellCheckingEnabledAt(range_to_mark.EndPosition()))
     return;
+
+  String description;
+  for (size_t i = 0; i < descriptions.size(); ++i) {
+    if (i != 0)
+      description.append('\n');
+    description.append(descriptions[i]);
+  }
 
   if (type == DocumentMarker::kSpelling) {
     document->Markers().AddSpellingMarker(range_to_mark, description);
@@ -643,7 +650,7 @@ void SpellChecker::MarkAndReplaceFor(
           continue;
         AddMarker(GetFrame().GetDocument(), paragraph.CheckingRange(),
                   DocumentMarker::kSpelling, result_location, result_length,
-                  result.replacement);
+                  result.replacements);
         continue;
 
       case kTextDecorationTypeGrammar:
@@ -659,7 +666,7 @@ void SpellChecker::MarkAndReplaceFor(
             continue;
           AddMarker(GetFrame().GetDocument(), paragraph.CheckingRange(),
                     DocumentMarker::kGrammar, result_location + detail.location,
-                    detail.length, result.replacement);
+                    detail.length, result.replacements);
         }
         continue;
     }

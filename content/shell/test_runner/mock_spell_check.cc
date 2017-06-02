@@ -114,12 +114,12 @@ bool MockSpellCheck::IsMultiWordMisspelling(
     const blink::WebString& text,
     std::vector<blink::WebTextCheckingResult>* results) {
   if (text == "Helllo wordl.") {
-    results->push_back(
-        blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 0,
-                                     6, blink::WebString("Hello")));
-    results->push_back(
-        blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 7,
-                                     5, blink::WebString("world")));
+    results->push_back(blink::WebTextCheckingResult(
+        blink::kWebTextDecorationTypeSpelling, 0, 6,
+        std::vector<blink::WebString>({"Hello"})));
+    results->push_back(blink::WebTextCheckingResult(
+        blink::kWebTextDecorationTypeSpelling, 7, 5,
+        std::vector<blink::WebString>({"world"})));
     return true;
   }
   return false;
