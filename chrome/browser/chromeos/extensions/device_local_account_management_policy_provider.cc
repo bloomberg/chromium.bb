@@ -36,11 +36,9 @@ const char* const kPublicSessionWhitelist[] = {
     "lfnfbcjdepjffcaiagkdmlmiipelnfbb",  // Citrix Receiver (branded)
     "mfaihdlpglflfgpfjcifdjdjcckigekc",  // ARC Runtime
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
-    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
     "cjanmonomjogheabiocdamfpknlpdehm",  // HP printer driver
     "ioofdkhojeeimmagbjbknkejkgbphdfl",  // RICOH Print for Chrome
     "pmnllmkmjilbojkpgplbdmckghmaocjh",  // Scan app by François Beaufort
-    "khpfeaanjngmcnplbdlpegiifgpfgdco",  // Smart Card Connector App
     "haeblkpifdemlfnkogkipmghfcbonief",  // Charismathics Smart Card Middleware
     "mpnkhdpphjiihmlmkcamhpogecnnfffa",  // Service NSW Kiosk Utility
 
@@ -59,7 +57,6 @@ const char* const kPublicSessionWhitelist[] = {
     "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled demo
     "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
     "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar demo
-    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
     "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop demo
     "jkoildpomkimndcphjpffmephmcmkfhn",  // Chromebook Demo App
     "lbhdhapagjhalobandnbdnmblnmocojh",  // Crackle demo
@@ -121,6 +118,44 @@ const char* const kPublicSessionWhitelist[] = {
     "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
     "oflckobdemeldmjddmlbaiaookhhcngo",  // Citrix Receiver QA version
     "ljacajndfccfgnfohlgkdphmbnpkjflk",  // Chrome Remote Desktop (Dev Build)
+
+    // Google Apps:
+    "mclkkofklkfljcocdinagocijmpgbhab",  // Google input tools
+    "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // Office Editing Docs/Sheets/Slides
+    "aapbdbdomjkkjkaonfhkkikfgjllcleb",  // Google Translate
+    "mgijmajocgfcbeboacabfgobmjgjcoja",  // Google Dictionary
+    "mfhehppjhmmnlfbbopchdfldgimhfhfk",  // Google Classroom
+    "mkaakpdehdafacodkgkpghoibnmamcme",  // Google Drawings
+    "pnhechapfaindjhompbnflcldabbghjo",  // Secure Shell
+    "fcgckldmmjdbpdejkclmfnnnehhocbfp",  // Google Finance
+    "jhknlonaankphkkbnmjdlpehkinifeeg",  // Google Forms
+    "jndclpdbaamdhonoechobihbbiimdgai",  // Chromebook Recovery Utility
+    "aohghmighlieiainnegkcijnfilokake",  // Google Docs
+    "eemlkeanncmjljgehlbplemhmdmalhdc",  // Chrome Connectivity Diagnostics
+    "eoieeedlomnegifmaghhjnghhmcldobl",  // Google Apps Script
+    "ndjpildffkeodjdaeebdhnncfhopkajk",  // Network File Share for Chrome OS
+    "pfoeakahkgllhkommkfeehmkfcloagkl",  // Fusion Tables
+    "aapocclcgogkmnckokdopfmhonfmgoek",  // Google Slides
+    "khpfeaanjngmcnplbdlpegiifgpfgdco",  // Smart Card Connector
+    "hmjkmjkepdijhoojdojkdfohbdgmmhki",  // Google Keep - notes and lists
+    "felcaaldnbdncclmgdcncolpebgiejap",  // Google Sheets
+    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+    "khkjfddibboofomnlkndfedpoccieiee",  // Study Kit
+    "becloognjehhioodmnimnehjcibkloed",  // Coding with Chrome
+    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
+    "adokjfanaflbkibffcbhihgihpgijcei",  // Share to Classroom
+    "heildphpnddilhkemkielfhnkaagiabh",  // Legacy Browser Support
+    "lpcaedmchfhocbbapmcbpinfpgnhiddi",  // Google Keep Chrome Extension
+    "ldipcbpaocekfooobnbcddclnhejkcpn",  // Google Scholar Button
+    "nnckehldicaciogcbchegobnafnjkcne",  // Google Tone
+    "pfmgfdlgomnbgkofeojodiodmgpgmkac",  // Data Saver
+    "djcfdncoelnlbldjfhinnjlhdjlikmph",  // High Contrast
+    "ipkjmjaledkapilfdigkgfmpekpfnkih",  // Color Enhancer
+    "kcnhkahnjcbndmmehfkdnkjomaanaooo",  // Google Voice
+    "nlbjncdgjeocebhnmkbbbdekmmmcbfjd",  // RSS Subscription Extension
+    "aoggjnmghgmcllfenalipjhmooomfdce",  // SAML SSO for Chrome Apps
+    "fhndealchbngfhdoncgcokameljahhog",  // Certificate Enrollment for Chrome OS
+    "npeicpdbkakmehahjeeohfdhnlpdklia",  // WebRTC Network Limiter
 };
 
 // List of manifest entries from https://developer.chrome.com/apps/manifest.
