@@ -8,6 +8,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -298,7 +301,11 @@ void TabUsageRecorder::ResetEvictedTab() {
 bool TabUsageRecorder::ShouldIgnoreTab(Tab* tab) {
   // Do not count chrome:// urls to avoid data noise.  For example, if they were
   // counted, every new tab created would add noise to the page load count.
-  return [tab url].SchemeIs(kChromeUIScheme);
+  web::NavigationItem* pending_item =
+      tab.webState->GetNavigationManager()->GetPendingItem();
+  if (pending_item)
+    return pending_item->GetURL().SchemeIs(kChromeUIScheme);
+  return tab.lastCommittedURL.SchemeIs(kChromeUIScheme);
 }
 
 bool TabUsageRecorder::TabAlreadyEvicted(Tab* tab) {
