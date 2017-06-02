@@ -77,9 +77,10 @@ class ASH_EXPORT DisplayConfigurationController
   void SetMirrorModeImpl(bool mirror);
   void SetPrimaryDisplayIdImpl(int64_t display_id);
 
-  // Returns the ScreenRotationAnimator associated with the |display_id|. If
-  // there is no existing ScreenRotationAnimator for |display_id|, it will make
-  // one and store the pair in the |rotation_animator_map_|.
+  // Returns the ScreenRotationAnimator associated with the |display_id|'s
+  // |root_window|. If there is no existing ScreenRotationAnimator for
+  // |root_window|, it will make one and store in the |root_window| property
+  // |kScreenRotationAnimatorKey|.
   ScreenRotationAnimator* GetScreenRotationAnimatorForDisplay(
       int64_t display_id);
 
@@ -87,14 +88,6 @@ class ASH_EXPORT DisplayConfigurationController
   WindowTreeHostManager* window_tree_host_manager_;  // weak ptr
   std::unique_ptr<DisplayAnimator> display_animator_;
   std::unique_ptr<DisplayChangeLimiter> limiter_;
-
-  // Tracks |display_id| to ScreenRotationAnimator mappings. The
-  // |rotation_animator_map_| is populated on demand the first time a
-  // ScreenRotationAnimator is needed for a given |display_id|.
-  // On animation ended or aborted, the animator may be deleted if there is no
-  // more pending rotation request.
-  std::unordered_map<int64_t, std::unique_ptr<ScreenRotationAnimator>>
-      rotation_animator_map_;
 
   base::WeakPtrFactory<DisplayConfigurationController> weak_ptr_factory_;
 

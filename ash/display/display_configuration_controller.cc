@@ -7,13 +7,18 @@
 #include "ash/display/display_animator.h"
 #include "ash/display/display_animator_chromeos.h"
 #include "ash/display/display_util.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animator.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
+#include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
+
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
 
 namespace {
 
@@ -26,6 +31,18 @@ namespace {
 const int64_t kAfterDisplayChangeThrottleTimeoutMs = 500;
 const int64_t kCycleDisplayThrottleTimeoutMs = 4000;
 const int64_t kSetPrimaryDisplayThrottleTimeoutMs = 500;
+
+// A property key to store the ScreenRotationAnimator of the window; Used for
+// screen rotation.
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::ScreenRotationAnimator,
+                                   kScreenRotationAnimatorKey,
+                                   nullptr);
+
+aura::Window* GetRootWindow(int64_t display_id) {
+  return ash::Shell::Get()
+      ->window_tree_host_manager()
+      ->GetRootWindowForDisplayId(display_id);
+}
 
 }  // namespace
 
@@ -174,15 +191,14 @@ void DisplayConfigurationController::SetPrimaryDisplayIdImpl(
 ScreenRotationAnimator*
 DisplayConfigurationController::GetScreenRotationAnimatorForDisplay(
     int64_t display_id) {
-  auto iter = rotation_animator_map_.find(display_id);
-  if (iter != rotation_animator_map_.end())
-    return iter->second.get();
-
-  auto animator = base::MakeUnique<ScreenRotationAnimator>(display_id);
-  ScreenRotationAnimator* result = animator.get();
-  rotation_animator_map_.insert(
-      std::make_pair(display_id, std::move(animator)));
-  return result;
+  aura::Window* root_window = GetRootWindow(display_id);
+  ScreenRotationAnimator* animator =
+      root_window->GetProperty(kScreenRotationAnimatorKey);
+  if (!animator) {
+    animator = new ScreenRotationAnimator(root_window);
+    root_window->SetProperty(kScreenRotationAnimatorKey, animator);
+  }
+  return animator;
 }
 
 }  // namespace ash

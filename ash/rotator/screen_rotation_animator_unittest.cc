@@ -51,6 +51,11 @@ OverviewButtonTray* GetTray() {
       ->overview_button_tray();
 }
 
+aura::Window* GetRootWindow(int64_t display_id) {
+  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+      display_id);
+}
+
 class AnimationObserver : public ScreenRotationAnimatorObserver {
  public:
   AnimationObserver() {}
@@ -70,7 +75,7 @@ class AnimationObserver : public ScreenRotationAnimatorObserver {
 
 class TestScreenRotationAnimator : public ScreenRotationAnimator {
  public:
-  TestScreenRotationAnimator(int64_t display_id,
+  TestScreenRotationAnimator(aura::Window* root_window,
                              const base::Closure& before_callback,
                              const base::Closure& after_callback);
   ~TestScreenRotationAnimator() override {}
@@ -93,10 +98,10 @@ class TestScreenRotationAnimator : public ScreenRotationAnimator {
 };
 
 TestScreenRotationAnimator::TestScreenRotationAnimator(
-    int64_t display_id,
+    aura::Window* root_window,
     const base::Closure& before_callback,
     const base::Closure& after_callback)
-    : ScreenRotationAnimator(display_id),
+    : ScreenRotationAnimator(root_window),
       intersect_before_callback_(before_callback),
       intersect_after_callback_(after_callback) {}
 
@@ -173,7 +178,8 @@ void ScreenRotationAnimatorSlowAnimationTest::SetUp() {
     return;
   }
 
-  animator_ = base::MakeUnique<ScreenRotationAnimator>(display_.id());
+  animator_ =
+      base::MakeUnique<ScreenRotationAnimator>(GetRootWindow(display_.id()));
   test_api_ =
       base::MakeUnique<test::ScreenRotationAnimatorTestApi>(animator_.get());
   test_api()->DisableAnimationTimers();
@@ -198,7 +204,7 @@ class ScreenRotationAnimatorSmoothAnimationTest : public test::AshTestBase {
 
   TestScreenRotationAnimator* animator() { return animator_.get(); }
 
-  void SetScreenRotationAnimator(int64_t display_id,
+  void SetScreenRotationAnimator(aura::Window* root_window,
                                  const base::Closure& before_callback,
                                  const base::Closure& after_callback);
 
@@ -245,7 +251,8 @@ void ScreenRotationAnimatorSmoothAnimationTest::SetUp() {
   }
 
   run_loop_ = base::MakeUnique<base::RunLoop>();
-  SetScreenRotationAnimator(display_.id(), run_loop_->QuitWhenIdleClosure(),
+  SetScreenRotationAnimator(GetRootWindow(display_.id()),
+                            run_loop_->QuitWhenIdleClosure(),
                             run_loop_->QuitWhenIdleClosure());
   non_zero_duration_mode_ =
       base::MakeUnique<ui::ScopedAnimationDurationScaleMode>(
@@ -253,11 +260,11 @@ void ScreenRotationAnimatorSmoothAnimationTest::SetUp() {
 }
 
 void ScreenRotationAnimatorSmoothAnimationTest::SetScreenRotationAnimator(
-    int64_t display_id,
+    aura::Window* root_window,
     const base::Closure& before_callback,
     const base::Closure& after_callback) {
   animator_ = base::MakeUnique<TestScreenRotationAnimator>(
-      display_id, before_callback, after_callback);
+      root_window, before_callback, after_callback);
   test_api_ =
       base::MakeUnique<test::ScreenRotationAnimatorTestApi>(animator_.get());
   test_api()->DisableAnimationTimers();
@@ -441,12 +448,13 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
     return;
   }
 
+  const int64_t display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(0).id(), run_loop_->QuitWhenIdleClosure(),
+      GetRootWindow(display_id), run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
-  SetDisplayRotation(display_id(), display::Display::ROTATE_0);
+  SetDisplayRotation(display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
@@ -454,10 +462,11 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   test_api()->CompleteAnimations();
   EXPECT_FALSE(test_api()->HasActiveAnimations());
+  EXPECT_EQ(display::Display::ROTATE_90, GetDisplayRotation(display_id));
 }
 
-// If the external secondary display is removed before the first copy request
-// callback called, it should not crash.
+// If the rotating external secondary display is removed before the first copy
+// request callback called, it should stop rotating.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        RemoveExternalSecondaryDisplayBeforeFirstCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
@@ -470,16 +479,16 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   UpdateDisplay("640x480,800x600");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 
-  const unsigned int primary_display_id =
-      display_manager()->GetDisplayAt(0).id();
+  const int64_t primary_display_id = display_manager()->GetDisplayAt(0).id();
+  const int64_t secondary_display_id = display_manager()->GetDisplayAt(1).id();
+
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(1).id(),
+      GetRootWindow(secondary_display_id),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
       run_loop_->QuitWhenIdleClosure());
-  SetDisplayRotation(display_manager()->GetDisplayAt(1).id(),
-                     display::Display::ROTATE_0);
+  SetDisplayRotation(secondary_display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
@@ -487,8 +496,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   EXPECT_EQ(primary_display_id, display_manager()->GetDisplayAt(0).id());
 }
 
-// If the external primary display is removed before the first copy request
-// callback called, it should not crash.
+// If the rotating external primary display is removed before the first copy
+// request callback called, it should stop rotating.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        RemoveExternalPrimaryDisplayBeforeFirstCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
@@ -503,16 +512,15 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       display_manager()->GetDisplayAt(1).id());
-  const unsigned int secondary_display_id =
-      display_manager()->GetDisplayAt(0).id();
+  const int64_t primary_display_id = display_manager()->GetDisplayAt(1).id();
+  const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(1).id(),
+      GetRootWindow(primary_display_id),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
       run_loop_->QuitWhenIdleClosure());
-  SetDisplayRotation(display_manager()->GetDisplayAt(1).id(),
-                     display::Display::ROTATE_0);
+  SetDisplayRotation(primary_display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
@@ -520,8 +528,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   EXPECT_EQ(secondary_display_id, display_manager()->GetDisplayAt(0).id());
 }
 
-// If the external secondary display is removed before the second copy request
-// callback called, it should not crash.
+// If the rotating external secondary display is removed before the second copy
+// request callback called, it should stop rotating.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        RemoveExternalSecondaryDisplayBeforeSecondCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
@@ -534,15 +542,14 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   UpdateDisplay("640x480,800x600");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 
-  const unsigned int primary_display_id =
-      display_manager()->GetDisplayAt(0).id();
+  const int64_t primary_display_id = display_manager()->GetDisplayAt(0).id();
+  const int64_t secondary_display_id = display_manager()->GetDisplayAt(1).id();
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(1).id(), run_loop_->QuitWhenIdleClosure(),
+      GetRootWindow(secondary_display_id), run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
-  SetDisplayRotation(display_manager()->GetDisplayAt(1).id(),
-                     display::Display::ROTATE_0);
+  SetDisplayRotation(secondary_display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
@@ -550,8 +557,8 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   EXPECT_EQ(primary_display_id, display_manager()->GetDisplayAt(0).id());
 }
 
-// If the external primary display is removed before the second copy request
-// callback called, it should not crash.
+// If the rotating external primary display is removed before the second copy
+// request callback called, it should stop rotating.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        RemoveExternalPrimaryDisplayBeforeSecondCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
@@ -566,20 +573,53 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       display_manager()->GetDisplayAt(1).id());
-  const unsigned int secondary_display_id =
-      display_manager()->GetDisplayAt(0).id();
+  const int64_t primary_display_id = display_manager()->GetDisplayAt(1).id();
+  const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(1).id(), run_loop_->QuitWhenIdleClosure(),
+      GetRootWindow(primary_display_id), run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
-  SetDisplayRotation(display_manager()->GetDisplayAt(1).id(),
-                     display::Display::ROTATE_0);
+  SetDisplayRotation(primary_display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(secondary_display_id, display_manager()->GetDisplayAt(0).id());
+}
+
+// If the external primary display is removed while rotating the secondary
+// display. It should stop rotating the secondary display because the
+// |root_window| changed.
+TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
+       RemoveExternalPrimaryDisplayDuringAnimationChangedRootWindow) {
+  // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
+  if (Shell::GetAshConfig() == Config::MASH) {
+    ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
+                display_id());
+    return;
+  }
+
+  UpdateDisplay("640x480,800x600");
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+      display_manager()->GetDisplayAt(1).id());
+  const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
+  SetScreenRotationAnimator(
+      GetRootWindow(secondary_display_id),
+      base::Bind(
+          &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
+          base::Unretained(this), "640x480"),
+      run_loop_->QuitWhenIdleClosure());
+  SetDisplayRotation(secondary_display_id, display::Display::ROTATE_0);
+  animator()->Rotate(display::Display::ROTATE_90,
+                     display::Display::RotationSource::ROTATION_SOURCE_USER);
+  WaitForCopyCallback();
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(secondary_display_id, display_manager()->GetDisplayAt(0).id());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            GetDisplayRotation(secondary_display_id));
 }
 
 // Test that smooth screen rotation animation will not interrupt hide animation.
@@ -604,12 +644,13 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   // Allow ScreenRotationAnimator animation to complete first.
   ui::ScopedAnimationDurationScaleMode rotate_duration(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  int64_t display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
-      display_manager()->GetDisplayAt(0).id(), run_loop_->QuitWhenIdleClosure(),
+      GetRootWindow(display_id), run_loop_->QuitWhenIdleClosure(),
       base::Bind(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
-  SetDisplayRotation(display_id(), display::Display::ROTATE_0);
+  SetDisplayRotation(display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   WaitForCopyCallback();
