@@ -30,14 +30,6 @@
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/chromeos_switches.h"
-#endif
-
 using content::BrowserThread;
 
 namespace constants = activity_log_constants;
@@ -113,18 +105,12 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-#if defined OS_CHROMEOS
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
-#endif
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
   }
 
   void TearDown() override {
-#if defined OS_CHROMEOS
-    test_user_manager_.reset();
-#endif
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -163,12 +149,6 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
-#endif
-
   ActivityDatabaseTestPolicy* db_delegate_;
 };
 

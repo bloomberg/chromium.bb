@@ -17,12 +17,6 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_builder.h"
 
-#if defined OS_CHROMEOS
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
-
 namespace extensions {
 
 const char kExtensionID[] = "eplckmlabaanikjjcgnigddmagoglhmp";
@@ -31,23 +25,11 @@ class ActivityLogEnabledTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-#if defined OS_CHROMEOS
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
-#endif
   }
 
   void TearDown() override {
-#if defined OS_CHROMEOS
-    test_user_manager_.reset();
-#endif
     ChromeRenderViewHostTestHarness::TearDown();
   }
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
-#endif
 };
 
 TEST_F(ActivityLogEnabledTest, NoSwitch) {
