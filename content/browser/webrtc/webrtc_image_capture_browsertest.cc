@@ -39,10 +39,9 @@ static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 // platforms where the ImageCaptureCode is landed, https://crbug.com/656810
 static struct TargetCamera {
   bool use_fake;
-} const kTestParameters[] = {
-    {true},
-#if defined(OS_LINUX)
-    {false}
+} const kTestParameters[] = {{true},
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+                             {false}
 #endif
 };
 
