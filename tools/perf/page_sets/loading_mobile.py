@@ -37,16 +37,11 @@ class LoadingMobileStorySet(story.StorySet):
        'GoogleIndia'),
       ('https://www.google.com.br/search?q=flor#q=Entrega+de+flores&start=10',
        'GoogleBrazil'),
-      # Disabled because of crbug.com/653775
-      # pylint: disable=line-too-long
-      # ('https://googleblog.blogspot.jp/2016/02/building-safer-web-for-everyone.html',
-      #  'Blogspot'),
       ('https://www.google.co.id/#q=pengiriman+bunga', 'GoogleIndonesia'),
       ('https://m.facebook.com/?soft=messages', 'Facebook'),
-      # Disabled because of crbug.com/656861
       # pylint: disable=line-too-long
-      # ('http://g1.globo.com/politica/noticia/2016/02/maioria-do-stf-autoriza-fisco-obter-dados-bancarios-sem-decisao-judicial.html',
-      #  'G1'),
+      ('http://g1.globo.com/politica/noticia/2016/02/maioria-do-stf-autoriza-fisco-obter-dados-bancarios-sem-decisao-judicial.html',
+       'G1'),
       # pylint: disable=line-too-long
       ('https://m.baidu.com/s?word=%E9%B2%9C%E8%8A%B1%E9%80%9F%E9%80%92&oq=%E9%B2%9C%E8%8A%B1',
        'Baidu'),
@@ -57,10 +52,6 @@ class LoadingMobileStorySet(story.StorySet):
       # pylint: disable=line-too-long
       ('http://noticias.bol.uol.com.br/ultimas-noticias/brasil/2016/08/03/tufao-nida-nao-deixa-vitimas-mas-prejuizos-de-us-43-milhoes.htm',
        'BOLNoticias'),
-      # Disabled because of crbug.com/653775
-      # pylint: disable=line-too-long
-      # ('http://m.detik.com/finance/read/2016/02/19/151843/3146351/1034/ekspor-tambang-mentah-mau-dibuka-lagi-kalau-sudah-bangun-smelter-bagaimana',
-      #  'Detik'),
       ('http://www.amazon.com/gp/aw/s/ref=is_s/189-8585431-1246432?k=shoes',
        'Amazon'),
       # pylint: disable=line-too-long
@@ -82,6 +73,13 @@ class LoadingMobileStorySet(story.StorySet):
       # pylint: disable=line-too-long
       ('http://enquiry.indianrail.gov.in/mntes/MntesServlet?action=MainMenu&subAction=excep&excpType=EC',
        'EnquiryIndianRail'),
+      # TODO(rnephew): Rerecord this. crbug.com/728882
+      # pylint: disable=line-too-long
+      # ('https://googleblog.blogspot.jp/2016/02/building-safer-web-for-everyone.html',
+      #  'Blogspot'),
+      # pylint: disable=line-too-long
+      # ('http://m.detik.com/finance/read/2016/02/19/151843/3146351/1034/ekspor-tambang-mentah-mau-dibuka-lagi-kalau-sudah-bangun-smelter-bagaimana',
+      #  'Detik'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['pwa'], [
@@ -90,17 +88,10 @@ class LoadingMobileStorySet(story.StorySet):
        'FlipKart'),
       ('https://smp.suumo.jp/mansion/tokyo/sc_104/cond/?moreCond=1',
        'Suumo'),
-      # Disabled because of crbug.com/653775
-      # 'https://airhorner.com', 'AirHorner'),
       ('https://guitar-tuner.appspot.com', 'GuitarTuner'),
-      # Disabled because of crbug.com/653775
-      # ('https://busrouter.sg', 'BusRouter'),
       ('https://andreasbovens.github.io/inbox-attack/',
        'InboxAttack'),
       ('https://voice-memos.appspot.com', 'VoiceMemos'),
-      # Disabled because of crbug.com/653775
-      # ('https://wiki-offline.jakearchibald.com/',
-      #  'WikiOffline'),
       ('https://dev.opera.com/', 'DevOpera'),
       ('https://www.pokedex.org/', 'Pokedex'),
       ('https://2048-opera-pwa.surge.sh/', '2048'),
@@ -108,42 +99,43 @@ class LoadingMobileStorySet(story.StorySet):
        'TrainedToThrill'),
       ('https://townwork.net', 'TownWork'),
       ('https://flipboard.com/topic/yoga', 'FlipBoard'),
+      # TODO(rnephew): Record these. crbug.com/728882
+      # ('https://wiki-offline.jakearchibald.com/',
+      #  'WikiOffline'),
+      # ('https://busrouter.sg', 'BusRouter'),
+      # ('https://airhorner.com', 'AirHorner'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['tough_ttfmp'], [
       ('http://www.localmoxie.com', 'LocalMoxie'),
       ('http://www.dawn.com', 'Dawn'),
       ('http://www.thairath.co.th', 'Thairath'),
-      # Disabled to avoid Nexus5X bot timeout crbug.com/702175
-      # ('http://www.hashocean.com', 'HashOcean'),
-      # ('http://www.163.com', '163'),
+      ('http://www.hashocean.com', 'HashOcean'),
+      ('http://www.163.com', '163'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['easy_ttfmp'], [
       ('http://www.slideshare.net', 'SlideShare'),
       ('http://www.bradesco.com.br', 'Bradesco'),
       ('http://www.gsshop.com', 'GSShop'),
-      # Disabled to avoid Nexus5X bot timeout crbug.com/702175
-      # ('http://www.sbs.co.kr', 'SBS'),
-      # ('http://www.futura-sciences.com', 'FuturaSciences'),
+      ('http://www.sbs.co.kr', 'SBS'),
+      ('http://www.futura-sciences.com', 'FuturaSciences'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['tough_tti'], [
       ('http://www.thestar.com.my', 'TheStar'),
       ('http://www.58pic.com', '58Pic'),
       ('http://www.hongkiat.com', 'Hongkiat'),
-      # Disabled to avoid Nexus5X bot timeout crbug.com/702175
-      # ('http://www.ebs.in', 'EBS'),
-      # ('http://www.ibicn.com', 'IBI'),
+      ('http://www.ebs.in', 'EBS'),
+      ('http://www.ibicn.com', 'IBI'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['easy_tti'], [
       ('http://www.dramaq.com.tw', 'Dramaq'),
       ('http://www.locanto.in', 'Locanto'),
       ('http://www.francetvinfo.fr', 'FranceTVInfo'),
-      # Disabled to avoid Nexus5X bot timeout crbug.com/702175
-      # ('http://www.gfk.com', 'GFK'),
-      # ('http://www.mlsmatrix.com' 'MLSMatrix'),
+      ('http://www.gfk.com', 'GFK'),
+      ('http://www.mlsmatrix.com', 'MLSMatrix'),
     ], cache_temperatures, traffic_settings)
 
   def AddStories(self, tags, urls, cache_temperatures, traffic_settings):
@@ -153,3 +145,33 @@ class LoadingMobileStorySet(story.StorySet):
           self.AddStory(page_cycler_story.PageCyclerStory(url, self, name=name,
               shared_page_state_class=shared_page_state.SharedMobilePageState,
               cache_temperature=temp, traffic_setting=traffic, tags=tags))
+
+class LoadingMobileExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    self.DisableStory('GFK', [story.expectations.ALL],
+                      'N5X Timeout issue: crbug.com/702175')
+    self.DisableStory('MLSMatrix', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('EBS', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('IBI', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('SBS', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('FuturaSciences', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('HashOcean', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    self.DisableStory('163', [story.expectations.ALL],
+                      'N5XTimeout issue: crbug.com/702175')
+    # TODO(rnephew): Uncomment Disablings. crbug.com/728882
+    # self.DisableStory(
+    #     'AirHorner', [story.expectations.ALL], 'crbug.com/653775')
+    # self.DisableStory(
+    #     'BusRouter', [story.expectations.ALL], 'crbug.com/653775')
+    # self.DisableStory('WikiOffline', [story.expectations.ALL],
+    #                   'crbug.com/653775')
+    # self.DisableStory('Detik', [story.expectations.ALL], 'crbug.com/653775')
+    # self.DisableStory(
+    #     'Blogspot', [story.expectations.ALL], 'crbug.com/653775')
+    self.DisableStory('G1', [story.expectations.ALL], 'crbug.com/656861')

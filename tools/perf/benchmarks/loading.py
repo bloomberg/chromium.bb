@@ -69,6 +69,9 @@ class LoadingMobile(_LoadingBase):
         cache_temperatures=[cache_temperature.ANY],
         traffic_settings=[traffic_setting.NONE, traffic_setting.REGULAR_3G])
 
+  def GetExpectations(self):
+    return page_sets.LoadingMobileExpectations()
+
   @classmethod
   def Name(cls):
     return 'loading.mobile'
