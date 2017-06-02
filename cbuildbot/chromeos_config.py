@@ -2241,50 +2241,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'x32-generic',
   ])
 
-  _paladin_hwtest_boards = frozenset([
-      'caroline',
-      'cave',
-      'elm',
-      'kip',
-      'link',
-      'lumpy',
-      'nyan_big',
-      'nyan_kitty',
-      'peach_pit',
-      'peppy',
-      'stumpy',
-      'veyron_mighty',
-      'veyron_speedy',
-      'winky',
-      'wolf',
-  ])
-
-  # Pairs of similar boards to split (bvt-inline, bvt-cq) between.
-  # bvt-cq takes longer, so generally should be given to the faster board.
-  # Assigning None as the second item in a pair means bvt-cq will not be run.
-  # pylint: disable=bad-whitespace
-  _paladin_hwtest_testsharding_pairs = frozenset([
-      # bvt-inline      # bvt-cq
-      ('wolf',          'peppy'),
-      ('peach_pit',     None),
-      ('veyron_mighty', 'veyron_speedy'),
-      ('lumpy',         'stumpy'),
-      ('nyan_big',      'nyan_kitty'),
-      ('winky',         'kip'),
-      ('elm',           None),
-      ('cave',          'caroline'),
-      ('link',          None),
-  ])
-
-  # To further spread out load for ARC++ (cheets) testing, we assign
-  # specific boards to handle the arc-bvt-cq test suite.  These boards
-  # should be separate from the BVT boards, above.
-  _paladin_cheets_hwtest_boards = frozenset([
-      'cyan',
-      'veyron_minnie',
-      'kevin',
-  ])
-
   # Jetstream devices run unique hw tests
   _paladin_jetstream_hwtest_boards = frozenset([
       'whirlwind',
@@ -2359,22 +2315,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
     customizations = config_lib.BuildConfig()
     base_config = board_configs[board]
-    if board in _paladin_hwtest_boards:
-      customizations.update(hw_tests=hw_test_list.DefaultListCQ())
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
           hw_tests=[
               config_lib.HWTestConfig(
                   constants.HWTEST_MOBLAB_QUICK_SUITE,
                   num=1, timeout=90*60,
-                  pool=constants.HWTEST_PALADIN_POOL)
-          ],
-          hw_tests_override=None)
-    if board in _paladin_cheets_hwtest_boards:
-      customizations.update(
-          hw_tests=[
-              config_lib.HWTestConfig(
-                  constants.HWTEST_ARC_COMMIT_SUITE,
                   pool=constants.HWTEST_PALADIN_POOL)
           ],
           hw_tests_override=None)
@@ -2449,6 +2395,39 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
     if config.active_waterfall:
       master_config.AddSlave(config)
+
+  # pylint: disable=bad-continuation
+  # pylint: disable=bad-whitespace
+  _paladin_hwtest_assignments = frozenset([
+    #bvt-inline        bvt-cq            arc-bvt-cq        family
+    ('wolf',           'peppy',          None),            # slippy
+    ('peach_pit',      None,             None),            # peach
+    ('veyron_mighty',  'veyron_speedy',  'veyron_minnie'), # pinky (N)
+    (None,             None,             'cyan'),          # strago
+    (None,             None,             'kevin'),         # gru
+    ('lumpy',          'stumpy',         None),            # sandybridge
+    ('nyan_big',       'nyan_kitty',     None),            # nyan
+    ('winky',          'kip',            None),            # rambi
+    ('elm',            None,             None),            # oak
+    ('cave',           'caroline',       None),            # glados
+    ('link',           None,             None),            # ivybridge
+  ])
+
+  sharded_hw_tests = hw_test_list.DefaultListCQ()
+  sharded_hw_tests.append(
+    config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                            pool=constants.HWTEST_PALADIN_POOL))
+  for board_assignments in _paladin_hwtest_assignments:
+    assert len(board_assignments) == len(sharded_hw_tests)
+    for board, suite in zip(board_assignments, sharded_hw_tests):
+      if board is None:
+        continue
+      config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
+      site_config[config_name]['hw_tests'] = [suite]
+    arc_board = board_assignments[-1]
+    if arc_board is not None:
+      config_name = '%s-%s' % (arc_board, constants.PALADIN_TYPE)
+      site_config[config_name]['hw_tests_override'] = None
 
   #
   # Paladins with alternative configs.
@@ -2528,43 +2507,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       disk_layout='4gb-rootfs',
       important=False,
   )
-
-  def ShardHWTestsBetweenBuilders(*args):
-    """Divide up the hardware tests between the given list of config names.
-
-    Each of the config names must have the same hardware test suites, and the
-    number of suites must be equal to the number of config names.
-
-    Args:
-      *args: A list of config names.
-    """
-    # List of config names.
-    names = args
-    # Verify sanity before sharding the HWTests.
-    for name in names:
-      if name is not None:
-        assert len(site_config[name].hw_tests) == len(names), \
-          '%s should have %d tests, but found %d' % (
-              name, len(names), len(site_config[name].hw_tests))
-    active_names = [name for name in names if name is not None]
-    if len(active_names) > 1:
-      for name in active_names[1:]:
-        for test1, test2 in zip(site_config[name].hw_tests,
-                                site_config[active_names[0]].hw_tests):
-          assert test1.__dict__ == test2.__dict__, \
-            '%s and %s have different hw_tests configured' % (
-                active_names[0], name)
-    # Assign each config the Nth HWTest.
-    for i, name in enumerate(names):
-      if name is not None:
-        site_config[name]['hw_tests'] = [site_config[name].hw_tests[i]]
-
-  # Shard the bvt-inline and bvt-cq hw tests between similar builders.
-  # The first builder gets bvt-inline, and the second builder gets bvt-cq.
-  # bvt-cq takes longer, so it usually makes sense to give it the faster board.
-  for board_a, board_b in _paladin_hwtest_testsharding_pairs:
-    ShardHWTestsBetweenBuilders('%s-paladin' % board_a,
-                                ('%s-paladin' % board_b) if board_b else None)
 
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
