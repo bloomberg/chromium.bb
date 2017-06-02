@@ -217,6 +217,8 @@ component("gpu") {
     if (enable_media_codec_video_decoder) {
       assert(mojo_media_host == "gpu", "MCVD requires the CDM")
       sources += [
+        "android/codec_image.cc",
+        "android/codec_image.h",
         "android/codec_wrapper.cc",
         "android/codec_wrapper.h",
         "android/media_codec_video_decoder.cc",
@@ -465,6 +467,7 @@ source_set("android_video_decode_accelerator_unittests") {
     ]
     if (enable_media_codec_video_decoder) {
       sources += [
+        "android/codec_image_unittest.cc",
         "android/codec_wrapper_unittest.cc",
         "android/media_codec_video_decoder_unittest.cc",
       ]
