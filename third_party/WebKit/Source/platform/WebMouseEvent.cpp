@@ -20,6 +20,8 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
                            WebPointerProperties::PointerType::kMouse,
                            button_param),
       click_count(click_count_param) {
+  DCHECK_GE(type, kMouseTypeFirst);
+  DCHECK_LE(type, kMouseTypeLast);
   SetPositionInWidget(gesture_event.x, gesture_event.y);
   SetPositionInScreen(gesture_event.global_x, gesture_event.global_y);
   SetFrameScale(gesture_event.FrameScale());
