@@ -35,14 +35,6 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace {
-
-bool IsInfoEmpty(const std::unique_ptr<ShortcutInfo>& info) {
-  return !info || info->url.is_empty();
-}
-
-}  // anonymous namespace
-
 namespace banners {
 
 // static
@@ -56,7 +48,11 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     int event_request_id,
     bool is_webapk,
     webapk::InstallSource webapk_install_source) {
+  DCHECK(shortcut_info);
   const GURL url = shortcut_info->url;
+  if (url.is_empty())
+    return false;
+
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
           weak_manager, app_title, std::move(shortcut_info), primary_icon,
@@ -225,7 +221,6 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
       install_state_(INSTALL_NOT_STARTED),
       webapk_install_source_(webapk_install_source),
       weak_ptr_factory_(this) {
-  DCHECK(!IsInfoEmpty(shortcut_info_));
   CreateJavaDelegate();
 }
 
@@ -280,8 +275,6 @@ bool AppBannerInfoBarDelegateAndroid::AcceptNativeApp(
 
 bool AppBannerInfoBarDelegateAndroid::AcceptWebApp(
     content::WebContents* web_contents) {
-  if (IsInfoEmpty(shortcut_info_))
-    return true;
   TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
 
   AppBannerSettingsHelper::RecordBannerInstallEvent(
@@ -296,9 +289,6 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApp(
 
 bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
     content::WebContents* web_contents) {
-  if (IsInfoEmpty(shortcut_info_))
-    return true;
-
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // If the WebAPK is installed and the "Open" button is clicked, open the
