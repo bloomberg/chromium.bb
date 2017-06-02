@@ -253,7 +253,12 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       last_send_for_timeout_(clock_->ApproximateNow()),
-      sent_packet_manager_(perspective, clock_, &stats_, kCubicBytes, kNack),
+      sent_packet_manager_(
+          perspective,
+          clock_,
+          &stats_,
+          FLAGS_quic_reloadable_flag_quic_default_to_bbr ? kBBR : kCubicBytes,
+          kNack),
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
@@ -2429,6 +2434,11 @@ void QuicConnection::CheckIfApplicationLimited() {
       !visitor_->WillingAndAbleToWrite()) {
     sent_packet_manager_.OnApplicationLimited();
   }
+}
+
+void QuicConnection::SetStreamNotifier(
+    StreamNotifierInterface* stream_notifier) {
+  sent_packet_manager_.SetStreamNotifier(stream_notifier);
 }
 
 }  // namespace net
