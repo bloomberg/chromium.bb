@@ -262,6 +262,10 @@ message LoginReputationClientResponse {
 
   // Deprecated.
   optional bool DEPRECATED_cache_expression_exact_match = 4 [deprecated = true];
+
+  // A token unique to each request which correlates response and post-warning
+  // actions.
+  optional bytes verdict_token = 5;
 }
 
 message ClientMalwareResponse {
@@ -904,6 +908,7 @@ message ClientSafeBrowsingReportRequest {
     DANGEROUS_DOWNLOAD_RECOVERY = 6;
     DANGEROUS_DOWNLOAD_WARNING = 7;
     DANGEROUS_DOWNLOAD_BY_API = 10;
+    PASSWORD_PROTECTION_PHISHING_URL = 12;
   }
 
   message HTTPHeader {
@@ -984,9 +989,10 @@ message ClientSafeBrowsingReportRequest {
   // Whether user visited this origin before.
   optional bool repeat_visit = 9;
 
-  // The same token in ClientDownloadResponse. This field is only set if its
-  // report type is DANGEROUS_DOWNLOAD_RECOVERY, DANGEROUS_DOWNLOAD_WARNING or
-  // DANGEROUS_DOWNLOAD_BY_API.
+  // The same token in ClientDownloadResponse or LoginReputationClientResponse.
+  // This field is only set if its report type is DANGEROUS_DOWNLOAD_RECOVERY,
+  // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API or
+  // PASSWORD_PROTECTION_PHISHING_URL.
   optional bytes token = 15;
 }
 

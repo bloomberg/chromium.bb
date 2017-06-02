@@ -247,7 +247,7 @@ void PasswordProtectionRequest::Finish(
                               outcome, PasswordProtectionService::MAX_OUTCOME);
   }
 
-  if (response) {
+  if (outcome == PasswordProtectionService::SUCCEEDED && response) {
     switch (request_type_) {
       case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
         UMA_HISTOGRAM_ENUMERATION(
@@ -267,7 +267,9 @@ void PasswordProtectionRequest::Finish(
   }
 
   DCHECK(password_protection_service_);
-  password_protection_service_->RequestFinished(this, std::move(response));
+  password_protection_service_->RequestFinished(
+      this, outcome == PasswordProtectionService::RESPONSE_ALREADY_CACHED,
+      std::move(response));
 }
 
 void PasswordProtectionRequest::Cancel(bool timed_out) {

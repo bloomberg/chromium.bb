@@ -67,7 +67,15 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   GURL main_frame_url() const { return main_frame_url_; }
 
-  LoginReputationClientRequest* request_proto() { return request_proto_.get(); }
+  const LoginReputationClientRequest* request_proto() const {
+    return request_proto_.get();
+  }
+
+  content::WebContents* web_contents() const { return web_contents_; }
+
+  LoginReputationClientRequest::TriggerType request_type() const {
+    return request_type_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<PasswordProtectionRequest>;

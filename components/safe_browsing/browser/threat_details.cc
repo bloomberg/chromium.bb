@@ -76,6 +76,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::CLIENT_SIDE_PHISHING_URL;
     case SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL:
       return ClientSafeBrowsingReportRequest::CLIENT_SIDE_MALWARE_URL;
+    case SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL:
+      return ClientSafeBrowsingReportRequest::PASSWORD_PROTECTION_PHISHING_URL;
     default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type "
                    << threat_type;
@@ -358,6 +360,9 @@ void ThreatDetails::StartCollection() {
     report_->set_url(resource_.url.spec());
     report_->set_type(GetReportTypeFromSBThreatType(resource_.threat_type));
   }
+
+  if (resource_.threat_type == SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL)
+    report_->set_token(resource_.token);
 
   GURL referrer_url;
   NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();

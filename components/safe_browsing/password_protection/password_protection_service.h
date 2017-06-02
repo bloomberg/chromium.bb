@@ -39,6 +39,7 @@ class PasswordProtectionRequest;
 
 extern const base::Feature kPasswordFieldOnFocusPinging;
 extern const base::Feature kProtectedPasswordEntryPinging;
+extern const base::Feature kPasswordProtectionInterstitial;
 extern const char kPasswordOnFocusRequestOutcomeHistogramName[];
 extern const char kPasswordEntryRequestOutcomeHistogramName[];
 
@@ -68,6 +69,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     URL_NOT_VALID_FOR_REPUTATION_COMPUTING = 14,
     MAX_OUTCOME
   };
+
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -89,9 +91,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Stores |verdict| in |settings| based on |url|, |verdict| and
   // |receive_time|.
-  void CacheVerdict(const GURL& url,
-                    LoginReputationClientResponse* verdict,
-                    const base::Time& receive_time);
+  virtual void CacheVerdict(const GURL& url,
+                            LoginReputationClientResponse* verdict,
+                            const base::Time& receive_time);
 
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
@@ -141,6 +143,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // itself from |requests_|.
   virtual void RequestFinished(
       PasswordProtectionRequest* request,
+      bool already_cached,
       std::unique_ptr<LoginReputationClientResponse> response);
 
   // Cancels all requests in |requests_|, empties it, and releases references to
@@ -180,6 +183,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                                 RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
+
+  virtual void ShowPhishingInterstitial(const GURL& phishing_url,
+                                        const std::string& token,
+                                        content::WebContents* web_contents) = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 

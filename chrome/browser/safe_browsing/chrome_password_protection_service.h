@@ -9,10 +9,15 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace safe_browsing {
 
 class SafeBrowsingService;
 class SafeBrowsingNavigationObserverManager;
+class SafeBrowsingUIManager;
 
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
@@ -45,6 +50,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // If user enabled history syncing.
   bool IsHistorySyncEnabled() override;
 
+  void ShowPhishingInterstitial(const GURL& phishing_url,
+                                const std::string& token,
+                                content::WebContents* web_contents) override;
+
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito);
@@ -59,8 +68,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
  private:
   friend class MockChromePasswordProtectionService;
-  // Default constructor used for tests only.
-  ChromePasswordProtectionService();
+  // Constructor used for tests only.
+  explicit ChromePasswordProtectionService(Profile* profile);
+
+  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   // Profile associated with this instance.
   Profile* profile_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>

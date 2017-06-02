@@ -74,6 +74,9 @@ const base::Feature kPasswordFieldOnFocusPinging{
 const base::Feature kProtectedPasswordEntryPinging{
     "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPasswordProtectionInterstitial{
+    "PasswordProtectionInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPasswordOnFocusRequestOutcomeHistogramName[] =
     "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
 const char kPasswordEntryRequestOutcomeHistogramName[] =
@@ -319,12 +322,26 @@ bool PasswordProtectionService::CanSendPing(const base::Feature& feature,
 
 void PasswordProtectionService::RequestFinished(
     PasswordProtectionRequest* request,
+    bool already_cached,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   DCHECK(request);
-  if (response)
-    CacheVerdict(request->main_frame_url(), response.get(), base::Time::Now());
+
+  if (response) {
+    if (!already_cached) {
+      CacheVerdict(request->main_frame_url(), response.get(),
+                   base::Time::Now());
+    }
+
+    if (request->request_type() ==
+            LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
+        response->verdict_type() == LoginReputationClientResponse::PHISHING &&
+        base::FeatureList::IsEnabled(kPasswordProtectionInterstitial)) {
+      ShowPhishingInterstitial(request->main_frame_url(),
+                               response->verdict_token(),
+                               request->web_contents());
+    }
+  }
 
   // Finished processing this request. Remove it from pending list.
   for (auto it = requests_.begin(); it != requests_.end(); it++) {
