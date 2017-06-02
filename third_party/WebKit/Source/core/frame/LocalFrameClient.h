@@ -203,7 +203,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   };
   virtual bool CanCreatePluginWithoutRenderer(
       const String& mime_type) const = 0;
-  virtual PluginView* CreatePlugin(HTMLPlugInElement*,
+  virtual PluginView* CreatePlugin(HTMLPlugInElement&,
                                    const KURL&,
                                    const Vector<String>&,
                                    const Vector<String>&,

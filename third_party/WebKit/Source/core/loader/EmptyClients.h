@@ -335,7 +335,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* CreateFrame(const FrameLoadRequest&,
                           const AtomicString&,
                           HTMLFrameOwnerElement*) override;
-  PluginView* CreatePlugin(HTMLPlugInElement*,
+  PluginView* CreatePlugin(HTMLPlugInElement&,
                            const KURL&,
                            const Vector<String>&,
                            const Vector<String>&,

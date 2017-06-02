@@ -682,9 +682,9 @@ bool WebPluginContainerImpl::WantsWheelEvents() {
 
 // Private methods -------------------------------------------------------------
 
-WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element,
+WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
-    : WebPluginContainerBase(element->GetDocument().GetFrame()),
+    : WebPluginContainerBase(element.GetDocument().GetFrame()),
       is_attached_(false),
       element_(element),
       web_plugin_(web_plugin),

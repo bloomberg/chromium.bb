@@ -748,7 +748,7 @@ bool LocalFrameClientImpl::CanCreatePluginWithoutRenderer(
 }
 
 PluginView* LocalFrameClientImpl::CreatePlugin(
-    HTMLPlugInElement* element,
+    HTMLPlugInElement& element,
     const KURL& url,
     const Vector<String>& param_names,
     const Vector<String>& param_values,
@@ -776,7 +776,7 @@ PluginView* LocalFrameClientImpl::CreatePlugin(
   if (!web_plugin->Initialize(container))
     return nullptr;
 
-  if (policy != kAllowDetachedPlugin && !element->GetLayoutObject())
+  if (policy != kAllowDetachedPlugin && !element.GetLayoutObject())
     return nullptr;
 
   return container;

@@ -66,7 +66,7 @@ bool WebHelperPluginImpl::Initialize(const String& plugin_type,
   DCHECK(frame->GetFrame()->GetDocument()->Url().IsValid());
   plugin_container_ = ToWebPluginContainerBase(
       frame->GetFrame()->Loader().Client()->CreatePlugin(
-          object_element_.Get(), frame->GetFrame()->GetDocument()->Url(),
+          *object_element_, frame->GetFrame()->GetDocument()->Url(),
           attribute_names, attribute_values, plugin_type, false,
           LocalFrameClient::kAllowDetachedPlugin));
 
