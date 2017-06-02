@@ -310,12 +310,18 @@ base::string16 NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
 NSString* NavigationItemImpl::GetDescription() const {
   return [NSString
       stringWithFormat:
-          @"url:%s originalurl:%s title:%s transition:%d displayState:%@ "
-          @"userAgentType:%s",
+          @"url:%s originalurl:%s referrer: %s title:%s transition:%d "
+           "displayState:%@ userAgentType:%s is_create_from_push_state: %@ "
+           "has_state_been_replaced: %@ is_created_from_hash_change: %@ "
+           "navigation_initiation_type: %d",
           url_.spec().c_str(), original_request_url_.spec().c_str(),
-          base::UTF16ToUTF8(title_).c_str(), transition_type_,
-          page_display_state_.GetDescription(),
-          GetUserAgentTypeDescription(user_agent_type_).c_str()];
+          referrer_.url.spec().c_str(), base::UTF16ToUTF8(title_).c_str(),
+          transition_type_, page_display_state_.GetDescription(),
+          GetUserAgentTypeDescription(user_agent_type_).c_str(),
+          is_created_from_push_state_ ? @"true" : @"false",
+          has_state_been_replaced_ ? @"true" : @"false",
+          is_created_from_hash_change_ ? @"true" : @"false",
+          navigation_initiation_type_];
 }
 #endif
 

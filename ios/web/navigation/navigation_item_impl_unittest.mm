@@ -49,10 +49,12 @@ TEST_F(NavigationItemTest, Dummy) {
 // Tests that the debug description is as expected.
 TEST_F(NavigationItemTest, Description) {
   item_->SetTitle(base::UTF8ToUTF16("Title"));
-  EXPECT_NSEQ(@"url:http://init.test/ originalurl:http://init.test/ "
+  EXPECT_NSEQ(@"url:http://init.test/ originalurl:http://init.test/ referrer:  "
               @"title:Title transition:2 displayState:{ scrollOffset:(nan, "
               @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } "
-              @"userAgentType:MOBILE",
+              @"userAgentType:MOBILE is_create_from_push_state: false "
+              @"has_state_been_replaced: false is_created_from_hash_change: "
+              @"false navigation_initiation_type: 0",
               item_->GetDescription());
 }
 #endif
