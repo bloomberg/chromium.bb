@@ -101,10 +101,8 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
       return V8String(isolate, key->GetString());
     case IDBKey::kBinaryType:
       // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-key
-      return ToV8(DOMArrayBuffer::Create(reinterpret_cast<const unsigned char*>(
-                                             key->Binary()->Data()),
-                                         key->Binary()->size()),
-                  creation_context, isolate);
+      return ToV8(DOMArrayBuffer::Create(key->Binary()), creation_context,
+                  isolate);
     case IDBKey::kDateType:
       return v8::Date::New(context, key->Date()).ToLocalChecked();
     case IDBKey::kArrayType: {

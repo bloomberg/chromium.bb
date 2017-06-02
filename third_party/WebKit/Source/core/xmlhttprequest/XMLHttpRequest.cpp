@@ -362,7 +362,8 @@ Blob* XMLHttpRequest::ResponseBlob() {
       size_t size = 0;
       if (binary_response_builder_ && binary_response_builder_->size()) {
         binary_response_builder_->ForEachSegment(
-            [&blob_data](const char* segment, size_t segment_size) {
+            [&blob_data](const char* segment, size_t segment_size,
+                         size_t segment_offset) {
               blob_data->AppendBytes(segment, segment_size);
             });
         size = binary_response_builder_->size();
