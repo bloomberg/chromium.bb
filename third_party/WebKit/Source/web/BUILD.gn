@@ -36,8 +36,6 @@ component("web") {
   defines = [ "BLINK_WEB_IMPLEMENTATION=1" ]
 
   sources = [
-    "AnimationWorkletProxyClientImpl.cpp",
-    "AnimationWorkletProxyClientImpl.h",
     "AssertMatchingEnums.cpp",
     "AudioOutputDeviceClientImpl.cpp",
     "AudioOutputDeviceClientImpl.h",
@@ -47,10 +45,6 @@ component("web") {
     "ColorChooserPopupUIController.h",
     "ColorChooserUIController.cpp",
     "ColorChooserUIController.h",
-    "CompositorProxyClientImpl.cpp",
-    "CompositorProxyClientImpl.h",
-    "CompositorWorkerProxyClientImpl.cpp",
-    "CompositorWorkerProxyClientImpl.h",
     "ContextMenuClientImpl.cpp",
     "ContextMenuClientImpl.h",
     "DedicatedWorkerMessagingProxyProviderImpl.cpp",

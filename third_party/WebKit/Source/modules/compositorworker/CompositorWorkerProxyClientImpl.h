@@ -6,10 +6,11 @@
 #define CompositorWorkerProxyClientImpl_h
 
 #include "core/animation/CompositorAnimator.h"
+#include "core/animation/CompositorProxyClientImpl.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "web/CompositorProxyClientImpl.h"
 
 namespace blink {
 
@@ -25,7 +26,7 @@ class WorkerGlobalScope;
 //
 // Owned by the main thread.
 // Should be accessed only on the compositor thread.
-class CompositorWorkerProxyClientImpl final
+class MODULES_EXPORT CompositorWorkerProxyClientImpl final
     : public GarbageCollectedFinalized<CompositorWorkerProxyClientImpl>,
       public CompositorWorkerProxyClient,
       public CompositorAnimator {

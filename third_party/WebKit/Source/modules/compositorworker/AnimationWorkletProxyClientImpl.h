@@ -6,10 +6,11 @@
 #define AnimationWorkletProxyClientImpl_h
 
 #include "core/animation/CompositorAnimator.h"
+#include "core/animation/CompositorProxyClientImpl.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "web/CompositorProxyClientImpl.h"
 
 namespace blink {
 
@@ -21,7 +22,7 @@ class CompositorMutatorImpl;
 //
 // This is constructed on the main thread but it is used in the worklet backing
 // thread i.e., compositor thread.
-class AnimationWorkletProxyClientImpl final
+class MODULES_EXPORT AnimationWorkletProxyClientImpl final
     : public GarbageCollectedFinalized<AnimationWorkletProxyClientImpl>,
       public AnimationWorkletProxyClient,
       public CompositorAnimator {
