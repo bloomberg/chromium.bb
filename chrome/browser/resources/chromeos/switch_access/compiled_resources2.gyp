@@ -40,6 +40,7 @@
     {
       'target_name': 'keyboard_handler',
       'dependencies': [
+        '<(EXTERNS_GYP):accessibility_private',
         'switch_access_interface',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
