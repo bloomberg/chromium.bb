@@ -53,6 +53,7 @@ blink_core_sources("rendering") {
     "OutlineValue.h",
     "QuotesData.cpp",
     "QuotesData.h",
+    "ScrollSnapPoints.h",
     "ShadowData.cpp",
     "ShadowData.h",
     "ShadowList.cpp",

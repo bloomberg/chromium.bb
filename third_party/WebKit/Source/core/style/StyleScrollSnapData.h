@@ -26,25 +26,13 @@
 #ifndef StyleScrollSnapData_h
 #define StyleScrollSnapData_h
 
+#include "core/style/ScrollSnapPoints.h"
 #include "platform/LengthPoint.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
-
-struct ScrollSnapPoints {
-  DISALLOW_NEW();
-  Length repeat_offset;
-  bool has_repeat;
-  bool uses_elements;
-  ScrollSnapPoints();
-};
-
-bool operator==(const ScrollSnapPoints&, const ScrollSnapPoints&);
-inline bool operator!=(const ScrollSnapPoints& a, const ScrollSnapPoints& b) {
-  return !(a == b);
-}
 
 class StyleScrollSnapData : public RefCounted<StyleScrollSnapData> {
  public:
