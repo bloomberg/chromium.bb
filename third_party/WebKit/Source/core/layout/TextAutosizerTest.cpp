@@ -739,7 +739,7 @@ TEST_F(TextAutosizerTest, ResizeAndGlyphOverflowChanged) {
   Element* html = GetDocument().body()->parentElement();
   html->setInnerHTML(
       "<head>"
-      "  <meta name='viewport' content='800'>"
+      "  <meta name='viewport' content='width=800'>"
       "  <style>"
       "    html { font-size:16px; font-family:'Times New Roman';}"
       "  </style>"
@@ -774,4 +774,41 @@ TEST_F(TextAutosizerTest, ResizeAndGlyphOverflowChanged) {
       IntSize(360, 640));
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
+
+TEST_F(TextAutosizerTest, narrowContentInsideNestedWideBlock) {
+  Element* html = GetDocument().body()->parentElement();
+  html->setInnerHTML(
+      "<head>"
+      "  <meta name='viewport' content='width=800'>"
+      "  <style>"
+      "    html { font-size:16px;}"
+      "  </style>"
+      "</head>"
+      "<body>"
+      "  <div style='width:800px'>"
+      "    <div style='width:800px'>"
+      "      <div style='width:200px' id='content'>"
+      "        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed "
+      "        do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      "        Ut enim ad minim veniam, quis nostrud exercitation ullamco "
+      "        laboris nisi ut aliquip ex ea commodo consequat. Duis aute "
+      "        irure dolor in reprehenderit in voluptate velit esse cillum "
+      "        dolore eu fugiat nulla pariatur. Excepteur sint occaecat "
+      "        cupidatat non proident, sunt in culpa qui officia deserunt "
+      "        mollit anim id est laborum."
+      "      </div>"
+      "    </div>"
+      "    Content belong to first wide block."
+      "  </div>"
+      "</body>",
+      ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* content = GetDocument().getElementById("content");
+  //(content width = 200px) / (window width = 320px) < 1.0f, multiplier = 1.0,
+  // font-size = 16px;
+  EXPECT_FLOAT_EQ(16.f,
+                  content->GetLayoutObject()->Style()->ComputedFontSize());
+}
+
 }  // namespace blink
