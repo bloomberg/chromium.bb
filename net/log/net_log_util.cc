@@ -325,7 +325,7 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
     URLRequestContext* context,
     int info_sources) {
   // May only be called on the context's thread.
-  DCHECK(context->CalledOnValidThread());
+  context->AssertCalledOnValidThread();
 
   std::unique_ptr<base::DictionaryValue> net_info_dict(
       new base::DictionaryValue());
@@ -482,7 +482,7 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
   std::vector<const URLRequest*> requests;
   for (auto* context : contexts) {
     // May only be called on the context's thread.
-    DCHECK(context->CalledOnValidThread());
+    context->AssertCalledOnValidThread();
     // Contexts should all be using the same NetLog.
     DCHECK_EQ((*contexts.begin())->net_log(), context->net_log());
     for (auto* request : context->url_requests()) {

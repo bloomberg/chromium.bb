@@ -244,6 +244,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   response_drainers_.clear();
   spdy_session_pool_.CloseAllSessions();
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);

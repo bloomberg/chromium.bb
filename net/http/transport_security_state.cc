@@ -751,7 +751,7 @@ TransportSecurityState::TransportSecurityState()
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 // Both HSTS and HPKP cause fatal SSL errors, so return true if a
@@ -813,7 +813,7 @@ void TransportSecurityState::CheckExpectStaple(
     const HostPortPair& host_port_pair,
     const SSLInfo& ssl_info,
     base::StringPiece ocsp_response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!enable_static_expect_staple_ || !report_sender_ ||
       !ssl_info.is_issued_by_known_root) {
     return;
@@ -976,24 +976,24 @@ TransportSecurityState::CheckCTRequirements(
 
 void TransportSecurityState::SetDelegate(
     TransportSecurityState::Delegate* delegate) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_ = delegate;
 }
 
 void TransportSecurityState::SetReportSender(
     TransportSecurityState::ReportSenderInterface* report_sender) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   report_sender_ = report_sender;
 }
 
 void TransportSecurityState::SetExpectCTReporter(
     ExpectCTReporter* expect_ct_reporter) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   expect_ct_reporter_ = expect_ct_reporter;
 }
 
 void TransportSecurityState::SetRequireCTDelegate(RequireCTDelegate* delegate) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   require_ct_delegate_ = delegate;
 }
 
@@ -1002,7 +1002,7 @@ void TransportSecurityState::AddHSTSInternal(
     TransportSecurityState::STSState::UpgradeMode upgrade_mode,
     const base::Time& expiry,
     bool include_subdomains) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   STSState sts_state;
   sts_state.last_observed = base::Time::Now();
@@ -1019,7 +1019,7 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
                                              bool include_subdomains,
                                              const HashValueVector& hashes,
                                              const GURL& report_uri) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   PKPState pkp_state;
   pkp_state.last_observed = last_observed;
@@ -1037,7 +1037,7 @@ void TransportSecurityState::AddExpectCTInternal(
     const base::Time& expiry,
     bool enforce,
     const GURL& report_uri) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   ExpectCTState expect_ct_state;
   expect_ct_state.last_observed = last_observed;
@@ -1055,7 +1055,7 @@ void TransportSecurityState::
 
 void TransportSecurityState::EnableSTSHost(const std::string& host,
                                            const STSState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1080,7 +1080,7 @@ void TransportSecurityState::EnableSTSHost(const std::string& host,
 
 void TransportSecurityState::EnablePKPHost(const std::string& host,
                                            const PKPState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1105,7 +1105,7 @@ void TransportSecurityState::EnablePKPHost(const std::string& host,
 
 void TransportSecurityState::EnableExpectCTHost(const std::string& host,
                                                 const ExpectCTState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsDynamicExpectCTEnabled())
     return;
 
@@ -1188,7 +1188,7 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
 bool TransportSecurityState::GetStaticExpectCTState(
     const std::string& host,
     ExpectCTState* expect_ct_state) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!IsBuildTimely())
     return false;
@@ -1236,7 +1236,7 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
 bool TransportSecurityState::GetStaticExpectStapleState(
     const std::string& host,
     ExpectStapleState* expect_staple_state) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!IsBuildTimely())
     return false;
@@ -1258,7 +1258,7 @@ bool TransportSecurityState::GetStaticExpectStapleState(
 }
 
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1291,14 +1291,14 @@ bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
 }
 
 void TransportSecurityState::ClearDynamicData() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   enabled_sts_hosts_.clear();
   enabled_pkp_hosts_.clear();
   enabled_expect_ct_hosts_.clear();
 }
 
 void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   bool dirtied = false;
   STSStateMap::iterator sts_iterator = enabled_sts_hosts_.begin();
@@ -1340,11 +1340,11 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
 }
 
 TransportSecurityState::~TransportSecurityState() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void TransportSecurityState::DirtyNotify() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (delegate_)
     delegate_->StateIsDirty(this);
@@ -1352,7 +1352,7 @@ void TransportSecurityState::DirtyNotify() {
 
 bool TransportSecurityState::AddHSTSHeader(const std::string& host,
                                            const std::string& value) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
@@ -1376,7 +1376,7 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
 bool TransportSecurityState::AddHPKPHeader(const std::string& host,
                                            const std::string& value,
                                            const SSLInfo& ssl_info) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
@@ -1399,7 +1399,7 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
 void TransportSecurityState::AddHSTS(const std::string& host,
                                      const base::Time& expiry,
                                      bool include_subdomains) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AddHSTSInternal(host, STSState::MODE_FORCE_HTTPS, expiry, include_subdomains);
 }
 
@@ -1408,7 +1408,7 @@ void TransportSecurityState::AddHPKP(const std::string& host,
                                      bool include_subdomains,
                                      const HashValueVector& hashes,
                                      const GURL& report_uri) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AddHPKPInternal(host, base::Time::Now(), expiry, include_subdomains, hashes,
                   report_uri);
 }
@@ -1417,7 +1417,7 @@ void TransportSecurityState::AddExpectCT(const std::string& host,
                                          const base::Time& expiry,
                                          bool enforce,
                                          const GURL& report_uri) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri);
 }
 
@@ -1425,7 +1425,7 @@ bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
     const std::string& value,
     const HostPortPair& host_port_pair,
     const SSLInfo& ssl_info) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   base::Time now = base::Time::Now();
   bool include_subdomains;
@@ -1458,7 +1458,7 @@ void TransportSecurityState::ProcessExpectCTHeader(
     const std::string& value,
     const HostPortPair& host_port_pair,
     const SSLInfo& ssl_info) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If a site sends `Expect-CT: preload` and appears on the preload list, they
   // are in the experimental preload-list-only, report-only version of
@@ -1572,7 +1572,7 @@ TransportSecurityState::CheckPublicKeyPinsImpl(
 bool TransportSecurityState::GetStaticDomainState(const std::string& host,
                                                   STSState* sts_state,
                                                   PKPState* pkp_state) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   sts_state->upgrade_mode = STSState::MODE_FORCE_HTTPS;
   sts_state->include_subdomains = false;
@@ -1627,7 +1627,7 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
 
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
                                                 STSState* result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1668,7 +1668,7 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
 
 bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
                                                 PKPState* result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1709,7 +1709,7 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
 
 bool TransportSecurityState::GetDynamicExpectCTState(const std::string& host,
                                                      ExpectCTState* result) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
@@ -1734,7 +1734,7 @@ bool TransportSecurityState::GetDynamicExpectCTState(const std::string& host,
 void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
     const std::string& hashed_host,
     const STSState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state.ShouldUpgradeToSSL());
   enabled_sts_hosts_[hashed_host] = state;
 }
@@ -1742,7 +1742,7 @@ void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
 void TransportSecurityState::AddOrUpdateEnabledPKPHosts(
     const std::string& hashed_host,
     const PKPState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state.HasPublicKeyPins());
   enabled_pkp_hosts_[hashed_host] = state;
 }
@@ -1750,7 +1750,7 @@ void TransportSecurityState::AddOrUpdateEnabledPKPHosts(
 void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
     const std::string& hashed_host,
     const ExpectCTState& state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state.enforce || !state.report_uri.is_empty());
   enabled_expect_ct_hosts_[hashed_host] = state;
 }
@@ -1791,7 +1791,7 @@ TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
     const TransportSecurityState& state)
     : iterator_(state.enabled_expect_ct_hosts_.begin()),
       end_(state.enabled_expect_ct_hosts_.end()) {
-  DCHECK(state.CalledOnValidThread());
+  state.AssertCalledOnValidThread();
 }
 
 TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() {}

@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -46,7 +46,7 @@ class HttpResponseHeaders;
 class ProxyInfo;
 class URLRequest;
 
-class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
+class NET_EXPORT NetworkDelegate {
  public:
   // AuthRequiredResponse indicates how a NetworkDelegate handles an
   // OnAuthRequired call. It's placed in this file to prevent url_request.h
@@ -59,7 +59,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   };
   typedef base::Callback<void(AuthRequiredResponse)> AuthCallback;
 
-  virtual ~NetworkDelegate() {}
+  virtual ~NetworkDelegate();
 
   // Notification interface called by the network stack. Note that these
   // functions mostly forward to the private virtuals. They also add some sanity
@@ -123,6 +123,9 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                              const GURL& endpoint) const;
   bool CanUseReportingClient(const url::Origin& origin,
                              const GURL& endpoint) const;
+
+ protected:
+  THREAD_CHECKER(thread_checker_);
 
  private:
   // This is the interface for subclasses of NetworkDelegate to implement. These

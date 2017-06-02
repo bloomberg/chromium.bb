@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/expiring_cache.h"
 #include "net/base/hash_value.h"
@@ -47,8 +47,7 @@ void NET_EXPORT_PRIVATE SetTransportSecurityStateSourceForTesting(
 // http://tools.ietf.org/html/ietf-websec-strict-transport-sec, and
 // HTTP-based dynamic public key pinning (HPKP) is defined in
 // http://tools.ietf.org/html/ietf-websec-key-pinning.
-class NET_EXPORT TransportSecurityState
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class NET_EXPORT TransportSecurityState {
  public:
   class NET_EXPORT Delegate {
    public:
@@ -560,6 +559,10 @@ class NET_EXPORT TransportSecurityState
                              const HostPortPair& host_port_pair,
                              const SSLInfo& ssl_info);
 
+  void AssertCalledOnValidThread() const {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  }
+
   // For unit tests only. Causes CheckCTRequirements() to return
   // CT_REQUIREMENTS_NOT_MET (if |*required| is true) or CT_REQUIREMENTS_MET (if
   // |*required| is false) for non-compliant connections by default (that is,
@@ -706,6 +709,8 @@ class NET_EXPORT TransportSecurityState
   // rate-limiting.
   ReportCache sent_hpkp_reports_cache_;
   ReportCache sent_expect_ct_reports_cache_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityState);
 };

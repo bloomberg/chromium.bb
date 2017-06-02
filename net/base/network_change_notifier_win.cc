@@ -66,6 +66,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
 }
 
 NetworkChangeNotifierWin::~NetworkChangeNotifierWin() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_watching_) {
     CancelIPChangeNotify(&addr_overlapped_);
     addr_watcher_.StopWatching();
@@ -229,7 +230,7 @@ void NetworkChangeNotifierWin::SetCurrentConnectionType(
 }
 
 void NetworkChangeNotifierWin::OnObjectSignaled(HANDLE object) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_watching_);
   is_watching_ = false;
 
@@ -241,7 +242,7 @@ void NetworkChangeNotifierWin::OnObjectSignaled(HANDLE object) {
 }
 
 void NetworkChangeNotifierWin::NotifyObservers(ConnectionType connection_type) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SetCurrentConnectionType(connection_type);
   NotifyObserversOfIPAddressChange();
 
@@ -258,7 +259,7 @@ void NetworkChangeNotifierWin::NotifyObservers(ConnectionType connection_type) {
 }
 
 void NetworkChangeNotifierWin::WatchForAddressChange() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!is_watching_);
 
   // NotifyAddrChange occasionally fails with ERROR_OPEN_FAILED for unknown
@@ -302,7 +303,7 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
 }
 
 bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!dns_config_service_thread_->IsRunning()) {
     dns_config_service_thread_->StartWithOptions(

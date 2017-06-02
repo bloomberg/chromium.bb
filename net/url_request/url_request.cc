@@ -174,6 +174,7 @@ void URLRequest::Delegate::OnResponseStarted(URLRequest* request) {
 // URLRequest
 
 URLRequest::~URLRequest() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Cancel();
 
   if (network_delegate_) {
