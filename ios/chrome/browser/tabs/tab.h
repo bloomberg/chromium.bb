@@ -101,11 +101,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
-// TODO(crbug.com/546208): Eliminate this; replace calls with either visible URL
-// or last committed URL, depending on the specific use case.
-// Do not add new calls to this method.
-@property(nonatomic, readonly) const GURL& url;
-
 // Returns the URL of the last committed NavigationItem for this Tab.
 @property(nonatomic, readonly) const GURL& lastCommittedURL;
 

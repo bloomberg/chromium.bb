@@ -590,13 +590,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                               callback:callback];
 }
 
-- (const GURL&)url {
-  // See note in header; this method should be removed.
-  web::NavigationItem* item =
-      [self navigationManagerImpl]->GetSessionController().currentItem;
-  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
-}
-
 - (const GURL&)lastCommittedURL {
   web::NavigationItem* item = self.navigationManager->GetLastCommittedItem();
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();

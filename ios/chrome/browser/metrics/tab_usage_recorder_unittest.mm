@@ -27,13 +27,11 @@
 #endif
 
 @interface TURTestTabMock : OCMockComplexTypeHelper {
-  GURL _url;
   GURL _lastCommittedURL;
   GURL _visibleURL;
   web::TestWebState _webState;
 }
 
-@property(nonatomic, assign) const GURL& url;
 @property(nonatomic, assign) const GURL& lastCommittedURL;
 @property(nonatomic, assign) const GURL& visibleURL;
 @property(nonatomic, readonly) web::WebState* webState;
@@ -41,12 +39,6 @@
 @end
 
 @implementation TURTestTabMock
-- (const GURL&)url {
-  return _url;
-}
-- (void)setUrl:(const GURL&)url {
-  _url = url;
-}
 - (const GURL&)lastCommittedURL {
   return _lastCommittedURL;
 }
@@ -134,7 +126,6 @@ class TabUsageRecorderTest : public PlatformTest {
         [OCMockObject mockForClass:[CRWWebController class]];
     [[[tab_mock stub] andReturn:web_controller_mock] webController];
     [[[tab_mock stub] andReturnBool:false] isPrerenderTab];
-    [tab_mock setUrl:webUrl_];
     [tab_mock setLastCommittedURL:webUrl_];
     [tab_mock setVisibleURL:webUrl_];
     [[[web_controller_mock stub] andReturnBool:inMemory] isViewAlive];
@@ -203,10 +194,8 @@ TEST_F(TabUsageRecorderTest, CountPageLoadsBeforeEvictedTab) {
 TEST_F(TabUsageRecorderTest, CountNativePageLoadsBeforeEvictedTab) {
   id tab_mock_a = MockTab(true);
   id tab_mock_b = MockTab(false);
-  [tab_mock_a setUrl:nativeUrl_];
   [tab_mock_a setLastCommittedURL:nativeUrl_];
   [tab_mock_a setVisibleURL:nativeUrl_];
-  [tab_mock_b setUrl:nativeUrl_];
   [tab_mock_b setLastCommittedURL:nativeUrl_];
   [tab_mock_b setVisibleURL:nativeUrl_];
 
