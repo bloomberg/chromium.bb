@@ -15,6 +15,7 @@ static base::LazyInstance<
     base::ThreadLocalPointer<CloudPrintTokenStore>>::DestructorAtExit lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
 
+// static
 CloudPrintTokenStore* CloudPrintTokenStore::current() {
   return lazy_tls.Pointer()->Get();
 }
@@ -24,12 +25,12 @@ CloudPrintTokenStore::CloudPrintTokenStore() {
 }
 
 CloudPrintTokenStore::~CloudPrintTokenStore() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   lazy_tls.Pointer()->Set(NULL);
 }
 
 void CloudPrintTokenStore::SetToken(const std::string& token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   token_ = token;
 }
 
