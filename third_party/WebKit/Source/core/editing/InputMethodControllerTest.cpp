@@ -202,7 +202,7 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
   EXPECT_EQ(2, GetFrame()
                    .Selection()
                    .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .end()
+                   .End()
                    .ComputeOffsetInContainerNode());
 
   Controller().SetComposition(String("a"), underlines, 1, 1);
@@ -416,7 +416,7 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
   EXPECT_EQ(0, GetFrame()
                    .Selection()
                    .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .end()
+                   .End()
                    .ComputeOffsetInContainerNode());
 }
 

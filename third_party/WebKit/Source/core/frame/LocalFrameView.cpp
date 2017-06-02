@@ -2094,7 +2094,7 @@ bool LocalFrameView::ComputeCompositedSelection(
       PrimaryDirectionOf(*visible_selection.Start().AnchorNode()) ==
       TextDirection::kRtl;
   selection.end.is_text_direction_rtl |=
-      PrimaryDirectionOf(*visible_selection.end().AnchorNode()) ==
+      PrimaryDirectionOf(*visible_selection.End().AnchorNode()) ==
       TextDirection::kRtl;
 
   return true;

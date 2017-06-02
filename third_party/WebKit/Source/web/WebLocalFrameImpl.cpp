@@ -1112,7 +1112,7 @@ bool WebLocalFrameImpl::HasSelection() const {
              .Start() != GetFrame()
                              ->Selection()
                              .ComputeVisibleSelectionInDOMTreeDeprecated()
-                             .end();
+                             .End();
 }
 
 WebRange WebLocalFrameImpl::SelectionRange() const {

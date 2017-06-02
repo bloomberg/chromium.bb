@@ -118,7 +118,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document,
       input_type_(input_type),
       property_level_(property_level),
       start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().end())),
+      end_(MostBackwardCaretPosition(EndingSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(nullptr),
       remove_only_(false),
@@ -145,7 +145,7 @@ ApplyStyleCommand::ApplyStyleCommand(Element* element, bool remove_only)
       input_type_(InputEvent::InputType::kNone),
       property_level_(kPropertyDefault),
       start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().end())),
+      end_(MostBackwardCaretPosition(EndingSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(element),
       remove_only_(remove_only),
@@ -161,7 +161,7 @@ ApplyStyleCommand::ApplyStyleCommand(
       input_type_(input_type),
       property_level_(kPropertyDefault),
       start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().end())),
+      end_(MostBackwardCaretPosition(EndingSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(nullptr),
       remove_only_(true),
@@ -193,7 +193,7 @@ Position ApplyStyleCommand::StartPosition() {
 
 Position ApplyStyleCommand::EndPosition() {
   if (use_ending_selection_)
-    return EndingSelection().end();
+    return EndingSelection().End();
 
   return end_;
 }

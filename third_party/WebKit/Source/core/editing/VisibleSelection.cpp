@@ -140,7 +140,7 @@ EphemeralRange FirstEphemeralRangeOf(const VisibleSelection& selection) {
   if (selection.IsNone())
     return EphemeralRange();
   Position start = selection.Start().ParentAnchoredEquivalent();
-  Position end = selection.end().ParentAnchoredEquivalent();
+  Position end = selection.End().ParentAnchoredEquivalent();
   return EphemeralRange(start, end);
 }
 
@@ -686,7 +686,7 @@ static bool EqualSelectionsAlgorithm(
   const VisibleSelectionTemplate<Strategy> selection_wrapper2(selection2);
 
   return selection_wrapper1.Start() == selection_wrapper2.Start() &&
-         selection_wrapper1.end() == selection_wrapper2.end() &&
+         selection_wrapper1.End() == selection_wrapper2.End() &&
          selection_wrapper1.Base() == selection_wrapper2.Base() &&
          selection_wrapper1.Extent() == selection_wrapper2.Extent();
 }
@@ -715,12 +715,12 @@ void VisibleSelectionTemplate<Strategy>::ShowTreeForThis() const {
             << Start()
                    .AnchorNode()
                    ->ToMarkedTreeString(Start().AnchorNode(), "S",
-                                        end().AnchorNode(), "E")
+                                        End().AnchorNode(), "E")
                    .Utf8()
                    .data()
             << "start: " << Start().ToAnchorTypeAndOffsetString().Utf8().data()
             << "\n"
-            << "end: " << end().ToAnchorTypeAndOffsetString().Utf8().data();
+            << "end: " << End().ToAnchorTypeAndOffsetString().Utf8().data();
 }
 
 #endif
@@ -735,7 +735,7 @@ void VisibleSelectionTemplate<Strategy>::PrintTo(
   }
   *ostream << "VisibleSelection(base: " << selection.Base()
            << " extent:" << selection.Extent()
-           << " start: " << selection.Start() << " end: " << selection.end()
+           << " start: " << selection.Start() << " end: " << selection.End()
            << ' ' << selection.Affinity() << ' '
            << (selection.IsDirectional() ? "Directional" : "NonDirectional")
            << ')';

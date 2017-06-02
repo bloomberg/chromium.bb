@@ -607,7 +607,7 @@ void SpellChecker::MarkAndReplaceFor(
     // behavior and should be rewritten.
     // Attempt to save the caret position so we can restore it later if needed
     const Position& caret_position =
-        GetFrame().Selection().ComputeVisibleSelectionInDOMTree().end();
+        GetFrame().Selection().ComputeVisibleSelectionInDOMTree().End();
     const Position& paragraph_start = checking_range.StartPosition();
     const int selection_offset =
         paragraph_start < caret_position

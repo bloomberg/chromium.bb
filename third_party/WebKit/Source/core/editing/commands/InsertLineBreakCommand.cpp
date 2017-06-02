@@ -225,7 +225,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     // line break that we inserted, or just before it if it's at the end of a
     // block.
     SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(EndingSelection().end())
+                           .Collapse(EndingSelection().End())
                            .Build());
   }
 

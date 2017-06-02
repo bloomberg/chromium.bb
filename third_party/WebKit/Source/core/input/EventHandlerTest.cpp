@@ -192,11 +192,11 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
           ->GetEditor()
           .IsSelectTrailingWhitespaceEnabled()) {
     EXPECT_EQ(Position(line, 4),
-              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
     EXPECT_EQ("One ", WebString(Selection().SelectedText()).Utf8());
   } else {
     EXPECT_EQ(Position(line, 3),
-              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
     EXPECT_EQ("One", WebString(Selection().SelectedText()).Utf8());
   }
 
@@ -208,7 +208,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   EXPECT_EQ(Position(line, 0),
             Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
   EXPECT_EQ(Position(line, 13),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
   EXPECT_EQ("One Two Three", WebString(Selection().SelectedText()).Utf8());
 }
 

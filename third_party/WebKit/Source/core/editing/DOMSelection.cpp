@@ -107,13 +107,13 @@ bool DOMSelection::IsBaseFirstInSelection() const {
 // removed.
 static Position AnchorPosition(const VisibleSelection& selection) {
   Position anchor =
-      selection.IsBaseFirst() ? selection.Start() : selection.end();
+      selection.IsBaseFirst() ? selection.Start() : selection.End();
   return anchor.ParentAnchoredEquivalent();
 }
 
 static Position FocusPosition(const VisibleSelection& selection) {
   Position focus =
-      selection.IsBaseFirst() ? selection.end() : selection.Start();
+      selection.IsBaseFirst() ? selection.End() : selection.Start();
   return focus.ParentAnchoredEquivalent();
 }
 
