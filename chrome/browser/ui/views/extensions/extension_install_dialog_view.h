@@ -54,7 +54,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // views::DialogDelegateView:

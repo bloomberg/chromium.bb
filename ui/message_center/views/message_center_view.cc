@@ -92,15 +92,10 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   const int button_height = button_bar_->GetPreferredSize().height();
 
   scroller_ = new views::ScrollView();
+  scroller_->SetBackgroundColor(kMessageCenterBackgroundColor);
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
-  scroller_->SetBackground(
-      views::CreateSolidBackground(kMessageCenterBackgroundColor));
-
-  scroller_->SetPaintToLayer();
-  scroller_->layer()->SetFillsBoundsOpaquely(false);
-  scroller_->layer()->SetMasksToBounds(true);
 
   message_list_view_.reset(new MessageListView());
   message_list_view_->set_scroller(scroller_);

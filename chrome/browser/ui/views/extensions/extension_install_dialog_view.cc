@@ -503,12 +503,6 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   return layout;
 }
 
-void ExtensionInstallDialogView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  scroll_view_->SetBackgroundColor(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground));
-}
-
 int ExtensionInstallDialogView::GetDialogButtons() const {
   int buttons = prompt_->GetDialogButtons();
   // Simply having just an OK button is *not* supported. See comment on function

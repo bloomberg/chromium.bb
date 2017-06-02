@@ -707,6 +707,54 @@ TEST_F(ScrollViewTest, CornerViewVisibility) {
   EXPECT_TRUE(corner_view->visible());
 }
 
+TEST_F(ScrollViewTest, ChildWithLayerTest) {
+  View* contents = InstallContents();
+  ScrollViewTestApi test_api(&scroll_view_);
+
+  if (test_api.contents_viewport()->layer())
+    return;
+
+  View* child = new View();
+  contents->AddChildView(child);
+  child->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  ASSERT_TRUE(test_api.contents_viewport()->layer());
+  // The default ScrollView color is opaque, so that fills bounds opaquely
+  // should be true.
+  EXPECT_TRUE(test_api.contents_viewport()->layer()->fills_bounds_opaquely());
+
+  // Setting a transparent color should make fills opaquely false.
+  scroll_view_.SetBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_FALSE(test_api.contents_viewport()->layer()->fills_bounds_opaquely());
+
+  child->DestroyLayer();
+  EXPECT_FALSE(test_api.contents_viewport()->layer());
+
+  View* child_child = new View();
+  child->AddChildView(child_child);
+  EXPECT_FALSE(test_api.contents_viewport()->layer());
+  child->SetPaintToLayer(ui::LAYER_TEXTURED);
+  EXPECT_TRUE(test_api.contents_viewport()->layer());
+}
+
+// Validates that if a child of a ScrollView adds a layer, then a layer
+// is added to the ScrollView's viewport.
+TEST_F(ScrollViewTest, DontCreateLayerOnViewportIfLayerOnScrollViewCreated) {
+  View* contents = InstallContents();
+  ScrollViewTestApi test_api(&scroll_view_);
+
+  if (test_api.contents_viewport()->layer())
+    return;
+
+  scroll_view_.SetPaintToLayer();
+
+  View* child = new View();
+  contents->AddChildView(child);
+  child->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  EXPECT_FALSE(test_api.contents_viewport()->layer());
+}
+
 #if defined(OS_MACOSX)
 // Tests the overlay scrollbars on Mac. Ensure that they show up properly and
 // do not overlap each other.
