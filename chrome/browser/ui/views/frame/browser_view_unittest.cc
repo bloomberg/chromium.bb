@@ -140,17 +140,10 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
-                views::NonClientFrameView::kClientEdgeThickness,
-            bookmark_bar->y());
+  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height(), bookmark_bar->y());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
-  // Contents view has a "top margin" pushing it below the bookmark bar.
-  EXPECT_EQ(bookmark_bar->height() -
-                views::NonClientFrameView::kClientEdgeThickness,
-            devtools_web_view->y());
-  EXPECT_EQ(bookmark_bar->height() -
-                views::NonClientFrameView::kClientEdgeThickness,
-            contents_web_view->y());
+  EXPECT_EQ(bookmark_bar->height(), devtools_web_view->y());
+  EXPECT_EQ(bookmark_bar->height(), contents_web_view->y());
 
   // Bookmark bar is parented back to top container on normal page.
   NavigateAndCommitActiveTabWithTitle(browser,

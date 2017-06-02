@@ -197,10 +197,6 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   // Paint background for detached state; if animating, this is fade in/out.
   const ui::ThemeProvider* tp = view->GetThemeProvider();
   gfx::Rect fill_rect = view->GetLocalBounds();
-  // We have to not color the top 1dp, because that should be painted by the
-  // toolbar. We will, however, paint the 1px separator at the bottom of the
-  // first dp. See crbug.com/610359
-  fill_rect.Inset(0, 1, 0, 0);
 
   // In detached mode, the bar is meant to overlap with |contents_container_|.
   // The detached background color may be partially transparent, but the layer
@@ -2547,8 +2543,7 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   }
   // Don't use bookmark_bar_view_->height() which won't be the final height if
   // the bookmark bar is animating.
-  return chrome::kNTPBookmarkBarHeight -
-         views::NonClientFrameView::kClientEdgeThickness;
+  return chrome::kNTPBookmarkBarHeight;
 }
 
 void BrowserView::ExecuteExtensionCommand(
