@@ -15,7 +15,9 @@
 namespace device {
 
 VRServiceImpl::VRServiceImpl()
-    : listening_for_activate_(false), weak_ptr_factory_(this) {}
+    : listening_for_activate_(false),
+      connected_devices_(0),
+      weak_ptr_factory_(this) {}
 
 VRServiceImpl::~VRServiceImpl() {
   // Destroy VRDisplay before calling RemoveService below. RemoveService might
@@ -35,13 +37,12 @@ void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
                               SetClientCallback callback) {
   DCHECK(!client_.get());
   client_ = std::move(service_client);
-  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
   // Once a client has been connected AddService will force any VRDisplays to
   // send ConnectDevice to it so that it's populated with the currently active
   // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
-  device_manager->AddService(this);
-  std::move(callback).Run(device_manager->GetNumberOfConnectedDevices());
+  VRDeviceManager::GetInstance()->AddService(this);
+  std::move(callback).Run(connected_devices_);
 }
 
 void VRServiceImpl::ConnectDevice(VRDevice* device) {
@@ -70,14 +71,16 @@ void VRServiceImpl::OnVRDisplayInfoCreated(
                    "process is not established";
     return;
   }
+
   if (!display_info) {
     // If we get passed a null display info it means the device does not exist.
     // This can happen for example if VR services are not installed. We will not
-    // instantiate a display in this case.
+    // instantiate a display in this case and don't count it as connected.
     return;
   }
   displays_[device] = base::MakeUnique<VRDisplayImpl>(
       device, this, client_.get(), std::move(display_info));
+  connected_devices_++;
 }
 
 VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(VRDevice* device) {
