@@ -10,23 +10,32 @@
 // Interface to support insert/delete/updates to a tab collection.
 @protocol TabCollectionConsumer
 
-// Inserts |item| into tab collection at |index|.
-- (void)insertItem:(TabCollectionItem*)item atIndex:(int)index;
+// Inserts |item| into tab collection at |index|. |SelectedIndex| is the index
+// of the selected item in the tab collection.
+- (void)insertItem:(TabCollectionItem*)item
+           atIndex:(int)index
+     selectedIndex:(int)selectedIndex;
 
-// Deletes |index| from tab collection.
-- (void)deleteItemAtIndex:(int)index;
+// Deletes |index| from tab collection. |SelectedIndex| is the index
+// of the selected tab in the tab collection.
+- (void)deleteItemAtIndex:(int)index selectedIndex:(int)selectedIndex;
 
-// Moves item from |fromIndex| to |toIndex|.
-- (void)moveItemFromIndex:(int)fromIndex toIndex:(int)toIndex;
+// Moves item from |fromIndex| to |toIndex|. |SelectedIndex| is the index
+// of the selected tab in the tab collection.
+- (void)moveItemFromIndex:(int)fromIndex
+                  toIndex:(int)toIndex
+            selectedIndex:(int)selectedIndex;
 
 // Replaces item at |index| with |item|.
 - (void)replaceItemAtIndex:(int)index withItem:(TabCollectionItem*)item;
 
-// Selects the item at |index|.
-- (void)selectItemAtIndex:(int)index;
+// Selects the item at |selectedIndex|.
+- (void)setSelectedIndex:(int)selectedIndex;
 
-// Populates tab collection with |items|.
-- (void)populateItems:(NSArray<TabCollectionItem*>*)items;
+// Populates tab collection with |items|. |SelectedIndex| is the index
+// of the selected item in the tab collection.
+- (void)populateItems:(NSArray<TabCollectionItem*>*)items
+        selectedIndex:(int)selectedIndex;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_CONSUMER_H_

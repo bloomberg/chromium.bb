@@ -9,8 +9,6 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 
-@protocol TabCollectionDataSource;
-
 // Controller for a scrolling view displaying square cells that represent
 // the user's open tabs.
 @interface TabCollectionViewController

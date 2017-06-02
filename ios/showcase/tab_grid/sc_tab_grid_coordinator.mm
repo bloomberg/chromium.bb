@@ -42,7 +42,7 @@
 
   TabCollectionItem* item0 = [[TabCollectionItem alloc] init];
   item0.title = @"Tab 0";
-  [self.viewController populateItems:@[ item0 ]];
+  [self.viewController populateItems:@[ item0 ] selectedIndex:0];
 
   [self.baseViewController setHidesBarsOnSwipe:YES];
   [self.baseViewController pushViewController:self.viewController animated:YES];

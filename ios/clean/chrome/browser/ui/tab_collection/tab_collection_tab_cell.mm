@@ -9,6 +9,7 @@
 #endif
 
 namespace {
+const CGFloat kBorderMargin = 6.0f;
 const CGFloat kSelectedBorderCornerRadius = 8.0f;
 const CGFloat kSelectedBorderWidth = 4.0f;
 }
@@ -17,16 +18,36 @@ const CGFloat kSelectedBorderWidth = 4.0f;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    self.selectedBackgroundView = [[UIView alloc] init];
-    self.selectedBackgroundView.backgroundColor = [UIColor blackColor];
-    self.selectedBackgroundView.layer.cornerRadius =
-        kSelectedBorderCornerRadius;
-    self.selectedBackgroundView.layer.borderWidth = kSelectedBorderWidth;
-    self.selectedBackgroundView.layer.borderColor = self.tintColor.CGColor;
-    self.selectedBackgroundView.transform = CGAffineTransformScale(
-        self.selectedBackgroundView.transform, 1.08, 1.08);
+    [self setupSelectedBackgroundView];
   }
   return self;
+}
+
+- (void)setupSelectedBackgroundView {
+  self.selectedBackgroundView = [[UIView alloc] init];
+  self.selectedBackgroundView.backgroundColor = [UIColor blackColor];
+
+  UIView* border = [[UIView alloc] init];
+  border.translatesAutoresizingMaskIntoConstraints = NO;
+  border.backgroundColor = [UIColor blackColor];
+  border.layer.cornerRadius = kSelectedBorderCornerRadius;
+  border.layer.borderWidth = kSelectedBorderWidth;
+  border.layer.borderColor = self.tintColor.CGColor;
+  [self.selectedBackgroundView addSubview:border];
+  [NSLayoutConstraint activateConstraints:@[
+    [border.topAnchor
+        constraintEqualToAnchor:self.selectedBackgroundView.topAnchor
+                       constant:-kBorderMargin],
+    [border.leadingAnchor
+        constraintEqualToAnchor:self.selectedBackgroundView.leadingAnchor
+                       constant:-kBorderMargin],
+    [border.trailingAnchor
+        constraintEqualToAnchor:self.selectedBackgroundView.trailingAnchor
+                       constant:kBorderMargin],
+    [border.bottomAnchor
+        constraintEqualToAnchor:self.selectedBackgroundView.bottomAnchor
+                       constant:kBorderMargin]
+  ]];
 }
 
 @end

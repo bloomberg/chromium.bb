@@ -40,19 +40,21 @@ class TabCollectionViewControllerTest : public PlatformTest {
 
 // Tests that an item is inserted.
 TEST_F(TabCollectionViewControllerTest, TestInsertItem) {
-  [view_controller_ insertItem:[[TabCollectionItem alloc] init] atIndex:0];
+  [view_controller_ insertItem:[[TabCollectionItem alloc] init]
+                       atIndex:0
+                 selectedIndex:0];
   EXPECT_EQ(3, static_cast<int>(view_controller_.items.count));
 }
 
 // Tests that an item is deleted.
 TEST_F(TabCollectionViewControllerTest, TestDeleteItem) {
-  [view_controller_ deleteItemAtIndex:0];
+  [view_controller_ deleteItemAtIndex:0 selectedIndex:0];
   EXPECT_EQ(1, static_cast<int>(view_controller_.items.count));
 }
 
 // Tests that an item is moved.
 TEST_F(TabCollectionViewControllerTest, TestMoveItem) {
-  [view_controller_ moveItemFromIndex:0 toIndex:1];
+  [view_controller_ moveItemFromIndex:0 toIndex:1 selectedIndex:0];
   EXPECT_NSEQ(@"Item1", view_controller_.items[0].title);
 }
 
@@ -68,6 +70,6 @@ TEST_F(TabCollectionViewControllerTest, TestReplaceItem) {
 TEST_F(TabCollectionViewControllerTest, TestInitializeItems) {
   TabCollectionItem* item = [[TabCollectionItem alloc] init];
   item.title = @"NewItem";
-  [view_controller_ populateItems:@[ item ]];
+  [view_controller_ populateItems:@[ item ] selectedIndex:0];
   EXPECT_NSEQ(@"NewItem", view_controller_.items[0].title);
 }
