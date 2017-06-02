@@ -3122,6 +3122,7 @@ cr.define('login', function() {
       this.activatedPod_ = undefined;
       this.lastFocusedPod_ = undefined;
       this.mainPod_ = undefined;
+      this.smallPodsContainer.innerHTML = '';
 
       // Switch off animation
       Oobe.getInstance().toggleClass('flying-pods', false);
