@@ -48,7 +48,7 @@ std::string CreateConnectedWifiConfigurationJsonString() {
 
 class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
-  TestNetworkConnectionHandler(base::Closure disconnect_callback)
+  explicit TestNetworkConnectionHandler(base::Closure disconnect_callback)
       : disconnect_callback_(disconnect_callback) {}
   ~TestNetworkConnectionHandler() override {}
 
@@ -105,7 +105,9 @@ class TestTetherConnector : public TetherConnector {
                         nullptr /* tether_host_fetcher */,
                         nullptr /* connection_manager */,
                         nullptr /* tether_host_response_recorder */,
-                        nullptr /* device_id_tether_network_guid_map */),
+                        nullptr /* device_id_tether_network_guid_map */,
+                        nullptr /* host_scan_cache */,
+                        nullptr /* notification_presenter */),
         should_cancel_successfully_(true) {}
   ~TestTetherConnector() override {}
 
