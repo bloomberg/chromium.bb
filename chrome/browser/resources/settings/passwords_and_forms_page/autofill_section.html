@@ -160,12 +160,12 @@
             <div class="expiration-column">
               <div id="creditCardExpiration"
                   class="expiration-date">[[expiration_(item)]]</div>
-              <template is="dom-if" if="[[item.metadata.isLocal]]">
+              <template is="dom-if" if="[[showDots_(item.metadata)]]">
                 <paper-icon-button id="creditCardMenu" icon="cr:more-vert"
                     on-tap="onCreditCardMenuTap_" title="$i18n{moreActions}">
                 </paper-icon-button>
               </template>
-              <template is="dom-if" if="[[!item.metadata.isLocal]]">
+              <template is="dom-if" if="[[!showDots_(item.metadata)]]">
                 <button is="paper-icon-button-light" class="icon-external"
                     on-tap="onRemoteEditCreditCardTap_" actionable></button>
               </template>
@@ -182,6 +182,7 @@
       <button id="menuEditCreditCard" class="dropdown-item"
           on-tap="onMenuEditCreditCardTap_">$i18n{edit}</button>
       <button id="menuRemoveCreditCard" class="dropdown-item"
+          hidden$="[[!activeCreditCard.metadata.isLocal]]"
           on-tap="onMenuRemoveCreditCardTap_">$i18n{removeCreditCard}</button>
       <button id="menuClearCreditCard" class="dropdown-item"
           on-tap="onMenuClearCreditCardTap_"
