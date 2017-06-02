@@ -5023,31 +5023,6 @@ TEST_F(ViewObserverTest, ChildViewReordered) {
   EXPECT_EQ(child_view2.get(), view_reordered());
 }
 
-// Validates that if a child of a ScrollView adds a layer, then a layer
-// is added to the ScrollView's viewport.
-TEST_F(ViewObserverTest, ScrollViewChildAddLayerTest) {
-  std::unique_ptr<ScrollView> scroll_view(new ScrollView());
-  scroll_view->SetContents(new View());
-  // Bail if the scroll view already has a layer.
-  if (scroll_view->contents_viewport_->layer())
-    return;
-
-  EXPECT_FALSE(scroll_view->contents_viewport_->layer());
-
-  std::unique_ptr<View> child_view = NewView();
-  scroll_view->AddChildView(child_view.get());
-  child_view->SetPaintToLayer(ui::LAYER_TEXTURED);
-
-  EXPECT_TRUE(scroll_view->contents_viewport_->layer());
-  // We don't want the viewport's layer to have the fill_bounds_opaquely() bit
-  // set, as we may have transparent children who want to blend into the
-  // default background.
-  EXPECT_FALSE(
-      scroll_view->contents_viewport_->layer()->fills_bounds_opaquely());
-
-  scroll_view->RemoveChildView(child_view.get());
-}
-
 // Provides a simple parent view implementation which tracks layer change
 // notifications from child views.
 class TestParentView : public View {

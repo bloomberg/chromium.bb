@@ -180,7 +180,7 @@ void IntentPickerBubbleView::Init() {
   }
 
   scroll_view_ = new views::ScrollView();
-  scroll_view_->EnableViewPortLayer();
+  scroll_view_->SetBackgroundColor(SK_ColorWHITE);
   scroll_view_->SetContents(scrollable_view);
   // Setting a customized ScrollBar which is shown only when the mouse pointer
   // is inside the ScrollView.

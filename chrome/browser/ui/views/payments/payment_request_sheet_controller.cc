@@ -145,6 +145,7 @@ class BorderedScrollView : public views::ScrollView {
   };
 
   BorderedScrollView() : views::ScrollView() {
+    SetBackgroundColor(SK_ColorWHITE);
     SetBorder(views::CreateBorderPainter(
         base::MakeUnique<BorderedScrollViewBorderPainter>(
             GetNativeTheme()->GetSystemColor(
@@ -239,7 +240,6 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
 
   scroll_ = base::MakeUnique<BorderedScrollView>();
   scroll_->set_owned_by_client();
-  scroll_->EnableViewPortLayer();
   scroll_->set_hide_horizontal_scrollbar(true);
   scroll_->SetContents(pane_);
   layout->AddView(scroll_.get());

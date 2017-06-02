@@ -35,6 +35,9 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
       max_height_(0),
       toolbar_actions_bar_observer_(this),
       weak_factory_(this) {
+  // Use a transparent background so that the menu's background shows through.
+  // None of the children use layers, so this should be ok.
+  SetBackgroundColor(SK_ColorTRANSPARENT);
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()->browser_actions();

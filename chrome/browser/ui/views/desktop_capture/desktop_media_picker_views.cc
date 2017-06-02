@@ -24,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -78,9 +77,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label_);
 
-  const SkColor bg_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-
   if (screen_list) {
     source_types_.push_back(DesktopMediaID::TYPE_SCREEN);
 
@@ -117,7 +113,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         kGenericScreenStyle.item_size.height(),
         kGenericScreenStyle.item_size.height() * 2);
     screen_scroll_view->set_hide_horizontal_scrollbar(true);
-    screen_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(screen_title_text, screen_scroll_view);
     pane_->set_listener(this);
@@ -147,7 +142,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                      kWindowStyle.item_size.height() * 2);
     window_scroll_view->set_hide_horizontal_scrollbar(true);
-    window_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(window_title_text, window_scroll_view);
     pane_->set_listener(this);
@@ -177,7 +171,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height(),
                                   kTabStyle.item_size.height() * 10);
     tab_scroll_view->set_hide_horizontal_scrollbar(true);
-    tab_scroll_view->SetBackground(views::CreateSolidBackground(bg_color));
 
     pane_->AddTab(tab_title_text, tab_scroll_view);
     pane_->set_listener(this);
