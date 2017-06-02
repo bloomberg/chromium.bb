@@ -15,12 +15,14 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -192,6 +194,25 @@ class ContentLoFiDeciderTest : public testing::Test {
     }
   }
 
+  static void VerifyAcceptTransformHeader(const net::URLRequest& request,
+                                          bool expected_accept_lite_page,
+                                          bool expected_accept_empty_image) {
+    std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
+        new data_reduction_proxy::ContentLoFiDecider());
+    net::HttpRequestHeaders headers;
+    lofi_decider->MaybeSetAcceptTransformHeader(request, false, &headers);
+
+    std::string header_value;
+    EXPECT_EQ(expected_accept_lite_page || expected_accept_empty_image,
+              headers.GetHeader(chrome_proxy_accept_transform_header(),
+                                &header_value));
+    if (expected_accept_lite_page) {
+      EXPECT_TRUE(header_value == lite_page_directive());
+    } else if (expected_accept_empty_image) {
+      EXPECT_TRUE(header_value == empty_image_directive());
+    }
+  }
+
   static void VerifyVideoHeader(bool expected_compressed_video_used,
                                 const net::HttpRequestHeaders& headers) {
     EXPECT_EQ(expected_compressed_video_used,
@@ -306,6 +327,102 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
   }
 }
 
+TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformNoAcceptForPreviewsOff) {
+  // Turn on proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequest(true /* is main */, content::PREVIEWS_OFF);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequest(true /* is main */, content::PREVIEWS_NO_TRANSFORM);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequest(true /* is main */, content::PREVIEWS_UNSPECIFIED);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+}
+
+TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformNoAcceptForHttps) {
+  // Turn on proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  content::PreviewsState both_previews_enabled =
+      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON;
+
+  // Verify no accept header for HTTPS.
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequestByType(content::RESOURCE_TYPE_MAIN_FRAME, true /* https */,
+                          both_previews_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequestByType(content::RESOURCE_TYPE_IMAGE, true /* https */,
+                                both_previews_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+}
+
+TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformHeaderAcceptLitePage) {
+  // Turn on proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  content::PreviewsState lite_page_enabled = content::SERVER_LITE_PAGE_ON;
+
+  // Verify accepting lite-page per resource type.
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequest(true /* is main */, lite_page_enabled);
+  VerifyAcceptTransformHeader(*request.get(), true /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequest(false /* is main */, lite_page_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+}
+
+TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformHeaderAcceptEmptyImage) {
+  // Turn on proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
+  content::PreviewsState lofi_enabled = content::SERVER_LOFI_ON;
+
+  // Verify accepting empty-image per resource type.
+  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
+      content::RESOURCE_TYPE_MAIN_FRAME, false /* https */, lofi_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequestByType(content::RESOURCE_TYPE_IMAGE, false /* https */,
+                                lofi_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              true /* empty-image */);
+
+  request = CreateRequestByType(content::RESOURCE_TYPE_FAVICON,
+                                false /* https */, lofi_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              true /* empty-image */);
+
+  request = CreateRequestByType(content::RESOURCE_TYPE_SCRIPT,
+                                false /* https */, lofi_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+
+  request = CreateRequestByType(content::RESOURCE_TYPE_STYLESHEET,
+                                false /* https */, lofi_enabled);
+  VerifyAcceptTransformHeader(*request.get(), false /* lite-page */,
+                              false /* empty-image */);
+}
+
 TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
@@ -399,6 +516,11 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
 }
 
 TEST_F(ContentLoFiDeciderTest, LitePageFieldTrial) {
+  // Turn off proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                          "Enabled_Preview");
@@ -426,6 +548,11 @@ TEST_F(ContentLoFiDeciderTest, LitePageFieldTrial) {
 }
 
 TEST_F(ContentLoFiDeciderTest, LitePageFieldTrialFallbackDisabled) {
+  // Turn off proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                          "Enabled_Preview");
@@ -465,6 +592,11 @@ TEST_F(ContentLoFiDeciderTest, LitePageFieldTrialFallbackDisabled) {
 }
 
 TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
+  // Turn off proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
   const struct {
     bool auto_lofi_enabled_group;
     bool auto_lofi_control_group;
@@ -513,6 +645,11 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
 }
 
 TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
+  // Turn off proxy-decides-transform feature for these unit tests.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
   const struct {
     bool slow_connections_flag_enabled;
     bool network_prohibitively_slow;
