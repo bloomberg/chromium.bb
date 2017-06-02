@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 
@@ -24,9 +24,7 @@ class AudioOutputDispatcher;
 //
 // AudioOutputProxy uses AudioOutputDispatcher to open and close
 // physical output streams.
-class MEDIA_EXPORT AudioOutputProxy
-  : public AudioOutputStream,
-    public NON_EXPORTED_BASE(base::NonThreadSafe) {
+class MEDIA_EXPORT AudioOutputProxy : public AudioOutputStream {
  public:
   // Caller keeps ownership of |dispatcher|.
   explicit AudioOutputProxy(base::WeakPtr<AudioOutputDispatcher> dispatcher);
@@ -61,6 +59,8 @@ class MEDIA_EXPORT AudioOutputProxy
   // Need to save volume here, so that we can restore it in case the stream
   // is stopped, and then started again.
   double volume_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProxy);
 };
