@@ -294,10 +294,12 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
   if (new_touch_sequence)
     UnblockTouchPointers();
 
-  // Do any necessary hit-tests and compute the event targets for all pointers
-  // in the event.
-  HeapVector<TouchEventManager::TouchInfo> touch_infos;
-  ComputeTouchTargets(event, touch_infos);
+  // Do the first point target calculation to create the user gesture.
+  EventHandlingUtil::PointerEventTarget first_pointer_event_target;
+  if (event.touches_length) {
+    first_pointer_event_target =
+        ComputePointerEventTarget(event.TouchPointInRootFrame(0));
+  }
 
   // Any finger lifting is a user gesture only when it wasn't associated with a
   // scroll.
@@ -309,111 +311,122 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
   // associated with so just pick the first finger.
   RefPtr<UserGestureToken> possible_gesture_token;
   if (event.GetType() == WebInputEvent::kTouchEnd &&
-      !in_canceled_state_for_pointer_type_touch_ && !touch_infos.IsEmpty() &&
-      touch_infos[0].target_frame) {
-    possible_gesture_token =
-        UserGestureToken::Create(touch_infos[0].target_frame->GetDocument());
+      !in_canceled_state_for_pointer_type_touch_ && event.touches_length &&
+      first_pointer_event_target.target_frame) {
+    possible_gesture_token = UserGestureToken::Create(
+        first_pointer_event_target.target_frame->GetDocument());
   }
   UserGestureIndicator holder(possible_gesture_token);
 
-  DispatchTouchPointerEvents(event, coalesced_events, touch_infos);
+  HeapVector<EventHandlingUtil::PointerEventTarget> pointer_event_targets;
+
+  for (unsigned touch_point_idx = 0; touch_point_idx < event.touches_length;
+       ++touch_point_idx) {
+    // Do any necessary hit-tests and compute the event targets for all pointers
+    // in the event.
+    const auto& touch_point = event.TouchPointInRootFrame(touch_point_idx);
+    EventHandlingUtil::PointerEventTarget pointer_event_target =
+        touch_point_idx ? ComputePointerEventTarget(touch_point)
+                        : first_pointer_event_target;
+    pointer_event_targets.push_back(pointer_event_target);
+
+    DispatchTouchPointerEvent(
+        touch_point, pointer_event_target,
+        GetCoalescedPoints(coalesced_events, touch_point.id),
+        static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
+        event.TimeStampSeconds(), event.unique_touch_event_id);
+  }
 
   return touch_event_manager_->HandleTouchEvent(event, coalesced_events,
-                                                touch_infos);
+                                                pointer_event_targets);
 }
 
-void PointerEventManager::ComputeTouchTargets(
-    const WebTouchEvent& event,
-    HeapVector<TouchEventManager::TouchInfo>& touch_infos) {
-  for (unsigned touch_point = 0; touch_point < event.touches_length;
-       ++touch_point) {
-    TouchEventManager::TouchInfo touch_info;
-    touch_info.point = event.TouchPointInRootFrame(touch_point);
+EventHandlingUtil::PointerEventTarget
+PointerEventManager::ComputePointerEventTarget(
+    const WebTouchPoint& touch_point) {
+  EventHandlingUtil::PointerEventTarget pointer_event_target;
 
-    int pointer_id = pointer_event_factory_.GetPointerEventId(touch_info.point);
-    // Do the hit test either when the touch first starts or when the touch
-    // is not captured. |m_pendingPointerCaptureTarget| indicates the target
-    // that will be capturing this event. |m_pointerCaptureTarget| may not
-    // have this target yet since the processing of that will be done right
-    // before firing the event.
-    if (touch_info.point.state == WebTouchPoint::kStatePressed ||
-        !pending_pointer_capture_target_.Contains(pointer_id)) {
-      HitTestRequest::HitTestRequestType hit_type =
-          HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
-          HitTestRequest::kActive;
-      LayoutPoint page_point = LayoutPoint(frame_->View()->RootFrameToContents(
-          touch_info.point.PositionInWidget()));
-      HitTestResult hit_test_tesult =
-          frame_->GetEventHandler().HitTestResultAtPoint(page_point, hit_type);
-      Node* node = hit_test_tesult.InnerNode();
-      if (node) {
-        touch_info.target_frame = node->GetDocument().GetFrame();
-        if (isHTMLCanvasElement(node)) {
-          HitTestCanvasResult* hit_test_canvas_result =
-              toHTMLCanvasElement(node)->GetControlAndIdIfHitRegionExists(
-                  hit_test_tesult.PointInInnerNodeFrame());
-          if (hit_test_canvas_result->GetControl())
-            node = hit_test_canvas_result->GetControl();
-          touch_info.region = hit_test_canvas_result->GetId();
-        }
-        // TODO(crbug.com/612456): We need to investigate whether pointer
-        // events should go to text nodes or not. If so we need to
-        // update the mouse code as well. Also this logic looks similar
-        // to the one in TouchEventManager. We should be able to
-        // refactor it better after this investigation.
-        if (node->IsTextNode())
-          node = FlatTreeTraversal::Parent(*node);
-        touch_info.touch_node = node;
+  int pointer_id = pointer_event_factory_.GetPointerEventId(touch_point);
+  // Do the hit test either when the touch first starts or when the touch
+  // is not captured. |m_pendingPointerCaptureTarget| indicates the target
+  // that will be capturing this event. |m_pointerCaptureTarget| may not
+  // have this target yet since the processing of that will be done right
+  // before firing the event.
+  if (touch_point.state == WebTouchPoint::kStatePressed ||
+      !pending_pointer_capture_target_.Contains(pointer_id)) {
+    HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
+                                                  HitTestRequest::kReadOnly |
+                                                  HitTestRequest::kActive;
+    LayoutPoint page_point = LayoutPoint(
+        frame_->View()->RootFrameToContents(touch_point.PositionInWidget()));
+    HitTestResult hit_test_tesult =
+        frame_->GetEventHandler().HitTestResultAtPoint(page_point, hit_type);
+    Node* node = hit_test_tesult.InnerNode();
+    if (node) {
+      pointer_event_target.target_frame = node->GetDocument().GetFrame();
+      if (isHTMLCanvasElement(node)) {
+        HitTestCanvasResult* hit_test_canvas_result =
+            toHTMLCanvasElement(node)->GetControlAndIdIfHitRegionExists(
+                hit_test_tesult.PointInInnerNodeFrame());
+        if (hit_test_canvas_result->GetControl())
+          node = hit_test_canvas_result->GetControl();
+        pointer_event_target.region = hit_test_canvas_result->GetId();
       }
-    } else {
-      // Set the target of pointer event to the captured node as this
-      // pointer is captured otherwise it would have gone to the if block
-      // and perform a hit-test.
-      touch_info.touch_node =
-          pending_pointer_capture_target_.at(pointer_id)->ToNode();
-      touch_info.target_frame = touch_info.touch_node->GetDocument().GetFrame();
+      // TODO(crbug.com/612456): We need to investigate whether pointer
+      // events should go to text nodes or not. If so we need to
+      // update the mouse code as well. Also this logic looks similar
+      // to the one in TouchEventManager. We should be able to
+      // refactor it better after this investigation.
+      if (node->IsTextNode())
+        node = FlatTreeTraversal::Parent(*node);
+      pointer_event_target.target_node = node;
     }
-
-    touch_infos.push_back(touch_info);
+  } else {
+    // Set the target of pointer event to the captured node as this
+    // pointer is captured otherwise it would have gone to the if block
+    // and perform a hit-test.
+    pointer_event_target.target_node =
+        pending_pointer_capture_target_.at(pointer_id)->ToNode();
+    pointer_event_target.target_frame =
+        pointer_event_target.target_node->GetDocument().GetFrame();
   }
+  return pointer_event_target;
 }
 
-void PointerEventManager::DispatchTouchPointerEvents(
-    const WebTouchEvent& event,
-    const Vector<WebTouchEvent>& coalesced_events,
-    HeapVector<TouchEventManager::TouchInfo>& touch_infos) {
+void PointerEventManager::DispatchTouchPointerEvent(
+    const WebTouchPoint& touch_point,
+    const EventHandlingUtil::PointerEventTarget& pointer_event_target,
+    const Vector<std::pair<WebTouchPoint, TimeTicks>>& coalesced_events,
+    WebInputEvent::Modifiers modifiers,
+    double timestamp,
+    uint32_t unique_touch_event_id) {
   // Iterate through the touch points, sending PointerEvents to the targets as
   // required.
-  for (auto touch_info : touch_infos) {
-    const WebTouchPoint& touch_point = touch_info.point;
-    // Do not send pointer events for stationary touches or null targetFrame
-    if (touch_info.touch_node && touch_info.target_frame &&
-        touch_point.state != WebTouchPoint::kStateStationary &&
-        !in_canceled_state_for_pointer_type_touch_) {
-      PointerEvent* pointer_event = pointer_event_factory_.Create(
-          touch_point, GetCoalescedPoints(coalesced_events, touch_point.id),
-          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-          TimeTicks::FromSeconds(event.TimeStampSeconds()),
-          touch_info.target_frame,
-          touch_info.touch_node
-              ? touch_info.touch_node->GetDocument().domWindow()
-              : nullptr);
+  // Do not send pointer events for stationary touches or null targetFrame
+  if (pointer_event_target.target_node && pointer_event_target.target_frame &&
+      touch_point.state != WebTouchPoint::kStateStationary &&
+      !in_canceled_state_for_pointer_type_touch_) {
+    PointerEvent* pointer_event = pointer_event_factory_.Create(
+        touch_point, coalesced_events,
+        static_cast<WebInputEvent::Modifiers>(modifiers),
+        TimeTicks::FromSeconds(timestamp), pointer_event_target.target_frame,
+        pointer_event_target.target_node
+            ? pointer_event_target.target_node->GetDocument().domWindow()
+            : nullptr);
 
-      WebInputEventResult result =
-          SendTouchPointerEvent(touch_info.touch_node, pointer_event);
+    WebInputEventResult result =
+        SendTouchPointerEvent(pointer_event_target.target_node, pointer_event);
 
-      // If a pointerdown has been canceled, queue the unique id to allow
-      // suppressing mouse events from gesture events. For mouse events
-      // fired from GestureTap & GestureLongPress (which are triggered by
-      // single touches only), it is enough to queue the ids only for
-      // primary pointers.
-      // TODO(mustaq): What about other cases (e.g. GestureTwoFingerTap)?
-      if (result != WebInputEventResult::kNotHandled &&
-          pointer_event->type() == EventTypeNames::pointerdown &&
-          pointer_event->isPrimary()) {
-        touch_ids_for_canceled_pointerdowns_.push_back(
-            event.unique_touch_event_id);
-      }
+    // If a pointerdown has been canceled, queue the unique id to allow
+    // suppressing mouse events from gesture events. For mouse events
+    // fired from GestureTap & GestureLongPress (which are triggered by
+    // single touches only), it is enough to queue the ids only for
+    // primary pointers.
+    // TODO(mustaq): What about other cases (e.g. GestureTwoFingerTap)?
+    if (result != WebInputEventResult::kNotHandled &&
+        pointer_event->type() == EventTypeNames::pointerdown &&
+        pointer_event->isPrimary()) {
+      touch_ids_for_canceled_pointerdowns_.push_back(unique_touch_event_id);
     }
   }
 }

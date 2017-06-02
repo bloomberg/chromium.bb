@@ -5,6 +5,7 @@
 #ifndef EventHandlingUtil_h
 #define EventHandlingUtil_h
 
+#include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -42,8 +43,24 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(LocalFrame*,
                                                       const HitTestRequest&,
                                                       const WebMouseEvent&);
 
+class PointerEventTarget {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+ public:
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(target_node);
+    visitor->Trace(target_frame);
+  }
+
+  Member<Node> target_node;
+  Member<LocalFrame> target_frame;
+  String region;
+};
+
 }  // namespace EventHandlingUtil
 
 }  // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::EventHandlingUtil::PointerEventTarget);
 
 #endif  // EventHandlingUtil_h
