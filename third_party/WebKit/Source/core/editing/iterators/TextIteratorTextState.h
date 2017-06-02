@@ -82,31 +82,31 @@ class CORE_EXPORT TextIteratorTextState {
                     unsigned length_to_append) const;
 
  private:
-  int text_length_;
+  int text_length_ = 0;
   String text_;
 
   // Used for whitespace characters that aren't in the DOM, so we can point at
   // them.
   // If non-zero, overrides m_text.
-  UChar single_character_buffer_;
+  UChar single_character_buffer_ = 0;
 
   // The current text and its position, in the form to be returned from the
   // iterator.
   Member<Node> position_node_;
   mutable Member<Node> position_offset_base_node_;
-  mutable int position_start_offset_;
-  mutable int position_end_offset_;
+  mutable int position_start_offset_ = 0;
+  mutable int position_end_offset_ = 0;
 
   // Used when deciding whether to emit a "positioning" (e.g. newline) before
   // any other content
-  bool has_emitted_;
-  UChar last_character_;
+  bool has_emitted_ = false;
+  UChar last_character_ = 0;
 
   const TextIteratorBehavior behavior_;
 
   // Stores the length of :first-letter when we are at the remaining text.
   // Equals to 0 in all other cases.
-  int text_start_offset_;
+  int text_start_offset_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TextIteratorTextState);
 };
