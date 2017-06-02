@@ -15134,6 +15134,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2017" label="ClientHintsDeviceRAM"/>
   <int value="2018" label="CSSRegisterProperty"/>
   <int value="2019" label="RelativeOrientationSensorConstructor"/>
+  <int value="2020" label="SmoothScrollJSInterventionActivated"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
