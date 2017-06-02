@@ -287,12 +287,6 @@ void Page::SetNeedsRecalcStyleInAllFrames() {
 
 void Page::RefreshPlugins() {
   PluginData::RefreshBrowserSidePluginCache();
-
-  for (const Page* page : AllPages()) {
-    // Clear out the page's plugin data.
-    if (page->plugin_data_)
-      page->plugin_data_->ResetPluginData();
-  }
 }
 
 PluginData* Page::GetPluginData(SecurityOrigin* main_frame_origin) {
