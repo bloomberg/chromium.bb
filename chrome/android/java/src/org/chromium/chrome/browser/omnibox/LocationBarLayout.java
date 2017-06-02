@@ -40,6 +40,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -1031,6 +1032,15 @@ public class LocationBarLayout extends FrameLayout
             if (currentTab != null) {
                 setUrlToPageUrl();
                 emphasizeUrl();
+            }
+            // Moving focus away from UrlBar(EditText) to a non-editable focus holder, such as
+            // ToolbarPhone, won't automatically hide keyboard app, but restart it with TYPE_NULL,
+            // which will result in a visual glitch. We apply this logic only to ChromeHome
+            // cautiously since hiding keyboard may lower FPS of other animation effects.
+            if (mBottomSheet != null) {
+                InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+                if (imm.isActive(mUrlBar)) imm.hideSoftInputFromWindow(getWindowToken(), 0, null);
             }
         }
 
