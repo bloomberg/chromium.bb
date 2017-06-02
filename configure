@@ -507,9 +507,6 @@ post_process_cmdline() {
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth
 
-    # Enable low-bitdepth pixel pipeline by default
-    soft_enable lowbitdepth
-
     soft_enable palette
     soft_enable alt_intra
     soft_enable palette_throughput
