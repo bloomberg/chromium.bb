@@ -745,6 +745,8 @@ TEST_F(WebMClusterParserTest, ParseBadEncryptedBlock) {
 
   parser_.reset(CreateParserWithKeyIdsAndAudioCodec(
       std::string(), "video_key_id", kUnknownAudioCodec));
+
+  EXPECT_MEDIA_LOG(HasSubstr("Failed to extract decrypt config"));
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(-1, result);
 }
