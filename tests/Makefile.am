@@ -97,8 +97,9 @@ check_PROGRAMS = $(program_TESTS)
 
 dist_check_SCRIPTS =
 
-if !MINGW
-dist_check_SCRIPTS += 			\
+# The test scripts aren't really set up to work in a cross compilation
+if !CROSS_COMPILING
+dist_check_SCRIPTS +=	 			\
 	check_all_tables.pl			\
 	check_endless_loop.pl			\
 	check_included_tables.sh		\
@@ -207,8 +208,9 @@ yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/vi-g1_harness.yaml			\
 	yaml/zh-chn.yaml
 
-TEST_EXTENSIONS = .yaml .pl
-YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml$(EXEEXT)
+TEST_EXTENSIONS = .yaml
+YAML_LOG_COMPILER =  $(WINE) $(top_builddir)/tools/lou_checkyaml$(EXEEXT)
+LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
@@ -226,8 +228,3 @@ AM_TESTS_ENVIRONMENT =								\
 	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
 	PATH=$(top_builddir)/tools:$$PATH
 
-if MINGW
-# FIXME: is there a way to prepend to LOG_COMPILE instead of to overwrite it?
-LOG_COMPILE = wine32 $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
-YAML_LOG_COMPILE = wine32 $(YAML_LOG_COMPILER) $(AM_YAML_LOG_FLAGS) $(YAML_LOG_FLAGS)
-endif
