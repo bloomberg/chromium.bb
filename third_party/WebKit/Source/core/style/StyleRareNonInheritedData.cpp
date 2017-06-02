@@ -176,6 +176,10 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       visited_link_border_right_color_(o.visited_link_border_right_color_),
       visited_link_border_top_color_(o.visited_link_border_top_color_),
       visited_link_border_bottom_color_(o.visited_link_border_bottom_color_),
+      callback_selectors_(o.callback_selectors_),
+      paint_images_(o.paint_images_
+                        ? new Vector<Persistent<StyleImage>>(*o.paint_images_)
+                        : nullptr),
       variables_(o.variables_ ? o.variables_->Clone() : nullptr),
       align_content_(o.align_content_),
       align_items_(o.align_items_),
