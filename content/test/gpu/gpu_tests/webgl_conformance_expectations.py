@@ -127,6 +127,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['passthrough'], bug=665518)
+    self.Fail('conformance/extensions/webgl-compressed-texture-s3tc-srgb.html',
+        ['passthrough'], bug=2049) # angle bug ID
     self.Skip('conformance/textures/canvas/*',
         ['passthrough'], bug=1932) # angle bug ID
     self.Skip('conformance/textures/video/*',
