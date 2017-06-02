@@ -42,6 +42,7 @@ class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
   static DOMPluginArray* Create(LocalFrame* frame) {
     return new DOMPluginArray(frame);
   }
+  void UpdatePluginData();
 
   unsigned length() const;
   DOMPlugin* item(unsigned index);
@@ -54,6 +55,8 @@ class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
  private:
   explicit DOMPluginArray(LocalFrame*);
   PluginData* GetPluginData() const;
+
+  HeapVector<Member<DOMPlugin>> dom_plugins_;
 };
 
 }  // namespace blink

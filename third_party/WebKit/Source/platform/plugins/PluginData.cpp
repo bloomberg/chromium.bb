@@ -84,6 +84,7 @@ void PluginData::RefreshBrowserSidePluginCache() {
 }
 
 void PluginData::UpdatePluginList(SecurityOrigin* main_frame_origin) {
+  ResetPluginData();
   main_frame_origin_ = main_frame_origin;
   PluginListBuilder builder(&plugins_);
   Platform::Current()->GetPluginList(
@@ -93,6 +94,17 @@ void PluginData::UpdatePluginList(SecurityOrigin* main_frame_origin) {
     for (MimeClassInfo* mime_class_info : plugin_info->mimes_)
       mimes_.push_back(mime_class_info);
   }
+
+  std::sort(
+      plugins_.begin(), plugins_.end(),
+      [](const Member<PluginInfo>& lhs, const Member<PluginInfo>& rhs) -> bool {
+        return WTF::CodePointCompareLessThan(lhs->Name(), rhs->Name());
+      });
+  std::sort(mimes_.begin(), mimes_.end(),
+            [](const Member<MimeClassInfo>& lhs,
+               const Member<MimeClassInfo>& rhs) -> bool {
+              return WTF::CodePointCompareLessThan(lhs->Type(), rhs->Type());
+            });
 }
 
 void PluginData::ResetPluginData() {
