@@ -258,6 +258,7 @@ config("default_libs") {
   } else if (is_linux) {
     libs = [
       "dl",
+      "pthread",
       "rt",
     ]
   }

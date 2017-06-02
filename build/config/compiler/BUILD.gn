@@ -421,6 +421,13 @@ config("compiler") {
     cflags += [ "-B$binutils_path" ]
   }
 
+  if (is_linux) {
+    cflags += [ "-pthread" ]
+    # Do not use the -pthread ldflag here since it becomes a no-op
+    # when using -nodefaultlibs, which would cause an unused argument
+    # error.  "-lpthread" is added in //build/config:default_libs.
+  }
+
   # Clang-specific compiler flags setup.
   # ------------------------------------
   if (is_clang) {
@@ -542,16 +549,6 @@ config("compiler") {
   if (is_posix) {
     asmflags += cflags
     asmflags += cflags_c
-  }
-}
-
-# This is separate from :compiler (and not even a sub-config there)
-# so that some targets can remove it from the list with:
-#   configs -= [ "//build/config/compiler:pthread" ]
-config("pthread") {
-  if (is_linux) {
-    cflags = [ "-pthread" ]
-    ldflags = [ "-pthread" ]
   }
 }
 
