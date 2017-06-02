@@ -586,6 +586,9 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
     const cryptauth::ToggleEasyUnlockResponse& response) {
   cryptauth_client_.reset();
 
+  GetCryptAuthDeviceManager()->ForceSyncNow(
+      cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
+  EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
   SetTurnOffFlowStatus(IDLE);
   ReloadAppAndLockScreen();
