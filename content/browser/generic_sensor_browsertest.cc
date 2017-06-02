@@ -27,10 +27,11 @@ namespace {
 
 class FakeAmbientLightSensor : public device::PlatformSensor {
  public:
-  FakeAmbientLightSensor(device::mojom::SensorType type,
-                         mojo::ScopedSharedBufferMapping mapping,
+  FakeAmbientLightSensor(mojo::ScopedSharedBufferMapping mapping,
                          device::PlatformSensorProvider* provider)
-      : PlatformSensor(type, std::move(mapping), provider) {}
+      : PlatformSensor(device::mojom::SensorType::AMBIENT_LIGHT,
+                       std::move(mapping),
+                       provider) {}
 
   device::mojom::ReportingMode GetReportingMode() override {
     return device::mojom::ReportingMode::ON_CHANGE;
@@ -46,7 +47,7 @@ class FakeAmbientLightSensor : public device::PlatformSensor {
     return true;
   }
 
-  void StopSensor() override{};
+  void StopSensor() override {};
 
  protected:
   ~FakeAmbientLightSensor() override = default;
@@ -55,9 +56,7 @@ class FakeAmbientLightSensor : public device::PlatformSensor {
     return true;
   }
   device::PlatformSensorConfiguration GetDefaultConfiguration() override {
-    device::PlatformSensorConfiguration default_configuration;
-    default_configuration.set_frequency(60);
-    return default_configuration;
+    return device::PlatformSensorConfiguration(60 /* frequency */);
   }
 };
 
@@ -78,7 +77,7 @@ class FakeSensorProvider : public device::PlatformSensorProvider {
     switch (type) {
       case device::mojom::SensorType::AMBIENT_LIGHT: {
         scoped_refptr<device::PlatformSensor> sensor =
-            new FakeAmbientLightSensor(type, std::move(mapping), this);
+            new FakeAmbientLightSensor(std::move(mapping), this);
         callback.Run(std::move(sensor));
         break;
       }
