@@ -159,6 +159,8 @@ external/wpt/css/css-masking-1 [ Skip ]
 external/wpt/css/css-multicol-1 [ Skip ]
 external/wpt/css/css-namespaces-3 [ Skip ]
 external/wpt/css/css-page-3 [ Skip ]
+## Owners: smcgruer@chromium.org
+# external/wpt/css/css-position-3 [ Pass ]
 external/wpt/css/css-pseudo-4 [ Skip ]
 external/wpt/css/css-regions-1 [ Skip ]
 ## Owners: kojii@chromium.org
