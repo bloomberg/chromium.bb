@@ -1306,7 +1306,9 @@ cr.define('login', function() {
 
     setUserPodIconType: function(userTypeClass) {
       this.userTypeIconAreaElement.classList.add(userTypeClass);
-      this.userTypeIconAreaElement.hidden = false;
+      // TODO(wzang): Evaluate all icon types other than supervised user and
+      // switch them to badges per the design spec.
+      this.userTypeIconAreaElement.hidden = true;
     },
 
     isFingerprintIconShown: function() {
@@ -2044,13 +2046,7 @@ cr.define('login', function() {
       }
       this.showError = false;
       $('bubble').hide();
-      var inputLine = this.querySelector('#input-line');
-      if (inputLine) {
-        if (!isEmpty)
-          inputLine.setAttribute('active', 'true');
-        else
-          inputLine.removeAttribute('active');
-      }
+      this.classList.toggle('input-present', !isEmpty);
     },
 
     /**
