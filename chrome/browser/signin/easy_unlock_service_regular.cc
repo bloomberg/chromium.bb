@@ -147,10 +147,8 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     dict->SetString("permitRecord.type", "license");
     dict->SetString("permitRecord.data", b64_public_key);
 
-    // TODO(tengs): Retrieve the actual BeaconSeeds from the RemoteDevice.
-    std::vector<cryptauth::BeaconSeed> beacon_seeds;
     std::unique_ptr<base::ListValue> beacon_seed_list(new base::ListValue());
-    for (const auto& beacon_seed : beacon_seeds) {
+    for (const auto& beacon_seed : device.beacon_seeds) {
       std::string b64_beacon_seed;
       base::Base64UrlEncode(beacon_seed.SerializeAsString(),
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,

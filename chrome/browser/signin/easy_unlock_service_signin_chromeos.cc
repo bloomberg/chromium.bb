@@ -514,8 +514,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
                    << device.serialized_beacon_seeds;
-      // TODO(tengs): Assign deserialized BeaconSeeds to the RemoteDevice.
-      DeserializeBeaconSeeds(device.serialized_beacon_seeds);
+      remote_device.LoadBeaconSeeds(
+          DeserializeBeaconSeeds(device.serialized_beacon_seeds));
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
