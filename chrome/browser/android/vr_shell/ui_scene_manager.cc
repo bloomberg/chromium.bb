@@ -50,11 +50,16 @@ static constexpr float kUrlBarDistance = 2.4;
 static constexpr float kUrlBarWidth = 0.672 * kUrlBarDistance;
 static constexpr float kUrlBarHeight = 0.088 * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
+static constexpr float kUrlBarRotationRad = -0.175;
 
 static constexpr float kLoadingIndicatorWidth = 0.24 * kUrlBarDistance;
 static constexpr float kLoadingIndicatorHeight = 0.008 * kUrlBarDistance;
-static constexpr float kLoadingIndicatorOffset =
-    -0.016 * kUrlBarDistance - kLoadingIndicatorHeight / 2;
+static constexpr float kLoadingIndicatorVerticalOffset =
+    (-kUrlBarVerticalOffset + kContentVerticalOffset - kContentHeight / 2 -
+     kUrlBarHeight / 2) /
+    2;
+static constexpr float kLoadingIndicatorDepthOffset =
+    (kUrlBarDistance - kContentDistance) / 2;
 
 static constexpr float kSceneSize = 25.0;
 static constexpr float kSceneHeight = 4.0;
@@ -260,6 +265,7 @@ void UiSceneManager::CreateUrlBar() {
   url_bar->set_debug_id(kUrlBar);
   url_bar->set_id(AllocateId());
   url_bar->set_translation({0, kUrlBarVerticalOffset, -kUrlBarDistance});
+  url_bar->set_rotation({1.0, 0.0, 0.0, kUrlBarRotationRad});
   url_bar->set_size({kUrlBarWidth, kUrlBarHeight, 1});
   url_bar->SetBackButtonCallback(
       base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)));
@@ -270,7 +276,8 @@ void UiSceneManager::CreateUrlBar() {
   auto indicator = base::MakeUnique<LoadingIndicator>(256);
   indicator->set_debug_id(kLoadingIndicator);
   indicator->set_id(AllocateId());
-  indicator->set_translation({0, 0, kLoadingIndicatorOffset});
+  indicator->set_translation(
+      {0, kLoadingIndicatorVerticalOffset, kLoadingIndicatorDepthOffset});
   indicator->set_size({kLoadingIndicatorWidth, kLoadingIndicatorHeight, 1});
   indicator->set_parent_id(url_bar_->id());
   indicator->set_y_anchoring(YAnchoring::YTOP);
