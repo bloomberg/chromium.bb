@@ -20,15 +20,15 @@ worker.addEventListener('message', function(e) {
         if (e.data != connection.type + ',' + connection.downlinkMax + ',' + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
             testFailed("Worker type disagrees with main frame.");
         }
-       internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+       internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
     } else if (msg_count == 1) {
-        if (e.data != newConnectionType + ',' + newDownlinkMax + ',' + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker switched to wrong connection type.");
+        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + newEffectiveType + ',' + newRtt + ',' + newDownlink) {
+            testFailed("Worker switched to wrong quality estimate.");
         }
-        internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
+        internals.setNetworkQualityInfoOverride(initialEffectiveType, initialRtt, initialDownlink);
     } else if (msg_count == 2) {
-        if (e.data != initialType + ',' + initialDownlinkMax + ','  + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker did not revert back to initial type.");
+        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + initialEffectiveType + ',' + initialRtt + ',' + initialDownlink) {
+            testFailed("Worker did not revert back to initial quality estimate.");
         }
         finishJSTest();
     }

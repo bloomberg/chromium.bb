@@ -5,8 +5,14 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS connection.type is newConnectionType
 PASS connection.downlinkMax is newDownlinkMax
+PASS connection.effectiveType is initialEffectiveType
+PASS connection.rtt is initialRtt
+PASS connection.downlink is initialDownlink
 PASS connection.type is initialType
 PASS connection.downlinkMax is initialDownlinkMax
+PASS connection.effectiveType is initialEffectiveType
+PASS connection.rtt is initialRtt
+PASS connection.downlink is initialDownlink
 PASS successfullyParsed is true
 
 TEST COMPLETE

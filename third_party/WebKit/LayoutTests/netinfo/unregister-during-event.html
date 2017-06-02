@@ -14,6 +14,9 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 var otherHandler = function(e) {
     shouldBe('connection.type', 'initialType');
     shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+    shouldBe('connection.effectiveType', 'initialEffectiveType');
+    shouldBe('connection.rtt', 'initialRtt');
+    shouldBe('connection.downlink', 'initialDownlink');
 
     finishJSTest();
 };
@@ -21,6 +24,9 @@ var otherHandler = function(e) {
 var handler = function(e) {
     shouldBe('connection.type', 'newConnectionType');
     shouldBe('connection.downlinkMax', 'newDownlinkMax');
+    shouldBe('connection.effectiveType', 'initialEffectiveType');
+    shouldBe('connection.rtt', 'initialRtt');
+    shouldBe('connection.downlink', 'initialDownlink');
     connection.removeEventListener('change', handler);
     connection.addEventListener('change', otherHandler);
     internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);

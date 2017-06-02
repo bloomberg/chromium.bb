@@ -512,7 +512,7 @@ TEST_F(NetworkStateNotifierTest, RemoveAllContexts) {
       kUnknownThroughputMbps));
 }
 
-TEST_F(NetworkStateNotifierTest, SetOverride) {
+TEST_F(NetworkStateNotifierTest, SetNetworkConnectionInfoOverride) {
   StateObserver observer;
   notifier_.AddConnectionObserver(&observer, GetTaskRunner());
 
@@ -528,8 +528,8 @@ TEST_F(NetworkStateNotifierTest, SetOverride) {
   EXPECT_EQ(kWebConnectionTypeBluetooth, notifier_.ConnectionType());
   EXPECT_EQ(kBluetoothMaxBandwidthMbps, notifier_.MaxBandwidth());
 
-  notifier_.SetOverride(true, kWebConnectionTypeEthernet,
-                        kEthernetMaxBandwidthMbps);
+  notifier_.SetNetworkConnectionInfoOverride(true, kWebConnectionTypeEthernet,
+                                             kEthernetMaxBandwidthMbps);
   RunPendingTasks();
   EXPECT_TRUE(VerifyObservations(
       observer, kWebConnectionTypeEthernet, kEthernetMaxBandwidthMbps,
@@ -563,6 +563,91 @@ TEST_F(NetworkStateNotifierTest, SetOverride) {
   EXPECT_FALSE(notifier_.OnLine());
   EXPECT_EQ(kWebConnectionTypeNone, notifier_.ConnectionType());
   EXPECT_EQ(kNoneMaxBandwidthMbps, notifier_.MaxBandwidth());
+
+  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
+}
+
+TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
+  StateObserver observer;
+  notifier_.AddConnectionObserver(&observer, GetTaskRunner());
+
+  notifier_.SetOnLine(true);
+  SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
+                WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
+                kUnknownRtt, kUnknownThroughputMbps);
+  EXPECT_TRUE(VerifyObservations(
+      observer, kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
+      WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
+      kUnknownThroughputMbps));
+  EXPECT_TRUE(notifier_.OnLine());
+  EXPECT_EQ(kWebConnectionTypeBluetooth, notifier_.ConnectionType());
+  EXPECT_EQ(kBluetoothMaxBandwidthMbps, notifier_.MaxBandwidth());
+
+  notifier_.SetNetworkQualityInfoOverride(
+      WebEffectiveConnectionType::kType3G,
+      kEthernetTransportRtt.value().InMilliseconds(),
+      kEthernetThroughputMbps.value());
+  RunPendingTasks();
+  EXPECT_TRUE(VerifyObservations(
+      observer, kWebConnectionTypeOther,
+      NetworkStateNotifier::NetworkState::kInvalidMaxBandwidth,
+      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      kEthernetThroughputMbps));
+  EXPECT_TRUE(notifier_.OnLine());
+  EXPECT_EQ(kWebConnectionTypeOther, notifier_.ConnectionType());
+  EXPECT_EQ(-1, notifier_.MaxBandwidth());
+  EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
+  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
+
+  // When override is active, calls to SetConnection are temporary ignored.
+  notifier_.SetOnLine(false);
+  SetConnection(kWebConnectionTypeNone, kNoneMaxBandwidthMbps,
+                WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
+                kUnknownRtt, kUnknownThroughputMbps);
+  RunPendingTasks();
+  EXPECT_TRUE(VerifyObservations(
+      observer, kWebConnectionTypeOther,
+      NetworkStateNotifier::NetworkState::kInvalidMaxBandwidth,
+      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      kEthernetThroughputMbps));
+  EXPECT_TRUE(notifier_.OnLine());
+  EXPECT_EQ(kWebConnectionTypeOther, notifier_.ConnectionType());
+  EXPECT_EQ(-1, notifier_.MaxBandwidth());
+  EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
+  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
+
+  // Override the network connection info as well.
+  notifier_.SetNetworkConnectionInfoOverride(true, kWebConnectionTypeEthernet,
+                                             kEthernetMaxBandwidthMbps);
+  RunPendingTasks();
+  EXPECT_TRUE(VerifyObservations(
+      observer, kWebConnectionTypeEthernet, kEthernetMaxBandwidthMbps,
+      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      kEthernetThroughputMbps));
+  EXPECT_TRUE(notifier_.OnLine());
+  EXPECT_EQ(kWebConnectionTypeEthernet, notifier_.ConnectionType());
+  EXPECT_EQ(kEthernetMaxBandwidthMbps, notifier_.MaxBandwidth());
+  EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
+  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
+
+  // CLearing the override should cause the network state to be changed and
+  // notified to observers.
+  notifier_.ClearOverride();
+  RunPendingTasks();
+  EXPECT_TRUE(VerifyObservations(
+      observer, kWebConnectionTypeNone, kNoneMaxBandwidthMbps,
+      WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
+      kUnknownThroughputMbps));
+  EXPECT_FALSE(notifier_.OnLine());
+  EXPECT_EQ(kWebConnectionTypeNone, notifier_.ConnectionType());
+  EXPECT_EQ(kNoneMaxBandwidthMbps, notifier_.MaxBandwidth());
+  EXPECT_EQ(WebEffectiveConnectionType::kTypeUnknown,
+            notifier_.EffectiveType());
+  EXPECT_EQ(kUnknownRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kUnknownThroughputMbps, notifier_.DownlinkThroughputMbps());
 
   notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }

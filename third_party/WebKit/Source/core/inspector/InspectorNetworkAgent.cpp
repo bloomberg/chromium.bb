@@ -1389,7 +1389,7 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
   // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
   // have per-frame override instead.
   if (offline || latency || download_throughput || upload_throughput)
-    GetNetworkStateNotifier().SetOverride(
+    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
         !offline, type, download_throughput / (1024 * 1024 / 8));
   else
     GetNetworkStateNotifier().ClearOverride();

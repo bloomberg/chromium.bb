@@ -3105,7 +3105,35 @@ void Internals::setNetworkConnectionInfoOverride(
         ExceptionMessages::FailedToEnumerate("connection type", type));
     return;
   }
-  GetNetworkStateNotifier().SetOverride(on_line, webtype, downlink_max_mbps);
+  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(on_line, webtype,
+                                                             downlink_max_mbps);
+}
+
+void Internals::setNetworkQualityInfoOverride(const String& effective_type,
+                                              unsigned long transport_rtt_msec,
+                                              double downlink_throughput_mbps,
+                                              ExceptionState& exception_state) {
+  WebEffectiveConnectionType web_effective_type =
+      WebEffectiveConnectionType::kTypeUnknown;
+  if (effective_type == "offline") {
+    web_effective_type = WebEffectiveConnectionType::kTypeOffline;
+  } else if (effective_type == "slow-2g") {
+    web_effective_type = WebEffectiveConnectionType::kTypeSlow2G;
+  } else if (effective_type == "2g") {
+    web_effective_type = WebEffectiveConnectionType::kType2G;
+  } else if (effective_type == "3g") {
+    web_effective_type = WebEffectiveConnectionType::kType3G;
+  } else if (effective_type == "4g") {
+    web_effective_type = WebEffectiveConnectionType::kType4G;
+  } else if (effective_type != "unknown") {
+    exception_state.ThrowDOMException(
+        kNotFoundError, ExceptionMessages::FailedToEnumerate(
+                            "effective connection type", effective_type));
+    return;
+  }
+
+  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
+      web_effective_type, transport_rtt_msec, downlink_throughput_mbps);
 }
 
 void Internals::clearNetworkConnectionInfoOverride() {

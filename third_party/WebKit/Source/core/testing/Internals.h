@@ -478,6 +478,10 @@ class Internals final : public GarbageCollected<Internals>,
                                         const String&,
                                         double downlink_max_mbps,
                                         ExceptionState&);
+  void setNetworkQualityInfoOverride(const String&,
+                                     unsigned long transport_rtt_msec,
+                                     double downlink_throughput_mbps,
+                                     ExceptionState&);
   void clearNetworkConnectionInfoOverride();
 
   unsigned countHitRegions(CanvasRenderingContext*);

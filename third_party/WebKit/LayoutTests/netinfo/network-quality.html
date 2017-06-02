@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+description('Tests that all rtt and downlink is exposed correctly.');
+
+if (!window.internals)
+  log("This test requires window.internals");
+
+var values = [
+  ["slow-2g", 25.0, 2.0, "slow-2g", 25.0, 2.0],
+  ["slow-2g", 40.0, 2.0, "slow-2g", 50.0, 2.0],
+  ["slow-2g", 40.0, 0.0, "slow-2g", 50.0, 0.0],
+  ["slow-2g", 40.0, 0.125, "slow-2g", 50.0, 0.125],
+  ["slow-2g", 40.0, 0.103, "slow-2g", 50.0, 0.1],
+  ["slow-2g", 40.0, 0.123, "slow-2g", 50.0, 0.125],
+  ["2g", 40.0, 0.123, "2g", 50.0, 0.125],
+  ["3g", 40.0, 0.123, "3g", 50.0, 0.125],
+  ["3g", 10.0, 0.123, "3g", 0.0, 0.125],
+];
+
+var count = 0;
+connection.addEventListener('change', function(e) {
+  shouldBe('connection.effectiveType', 'values[count][3]');
+  shouldBe('connection.rtt', 'values[count][4]');
+  shouldBe('connection.downlink', 'values[count][5]');
+
+  if (++count === values.length)
+    finishJSTest();
+});
+
+for(var i = 0; i < values.length; i++)
+  internals.setNetworkQualityInfoOverride(values[i][0], values[i][1], values[i][2]);
+
+</script>
+</body>
+</html>
