@@ -7,7 +7,9 @@
 
 var MessagingNatives = requireNative('messaging_natives');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
-var WebViewInternal = require('webViewInternal').WebViewInternal;
+var WebViewInternal = getInternalApi ?
+    getInternalApi('webViewInternal') :
+    require('webViewInternal').WebViewInternal;
 
 var PERMISSION_TYPES = ['media',
                         'geolocation',
