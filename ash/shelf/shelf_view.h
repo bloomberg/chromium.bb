@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
-#include "ash/shelf/shelf_model_observer.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

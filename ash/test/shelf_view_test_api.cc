@@ -4,10 +4,10 @@
 
 #include "ash/test/shelf_view_test_api.h"
 
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

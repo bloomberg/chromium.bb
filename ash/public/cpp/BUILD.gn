@@ -20,6 +20,9 @@ component("ash_public_cpp") {
     "shelf_item.h",
     "shelf_item_delegate.cc",
     "shelf_item_delegate.h",
+    "shelf_model.cc",
+    "shelf_model.h",
+    "shelf_model_observer.h",
     "shelf_types.cc",
     "shelf_types.h",
     "shell_window_ids.cc",
@@ -55,6 +58,7 @@ component("ash_public_cpp") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "shelf_model_unittest.cc",
     "shelf_struct_traits_unittest.cc",
   ]
 

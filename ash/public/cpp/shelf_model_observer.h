@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_MODEL_OBSERVER_H_
-#define ASH_SHELF_SHELF_MODEL_OBSERVER_H_
+#ifndef ASH_PUBLIC_CPP_SHELF_MODEL_OBSERVER_H_
+#define ASH_PUBLIC_CPP_SHELF_MODEL_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
@@ -13,8 +13,8 @@ namespace ash {
 struct ShelfItem;
 class ShelfItemDelegate;
 
-// TODO(msw): Move this to ash/public/cpp and use ASH_PUBLIC_EXPORT.
-class ASH_EXPORT ShelfModelObserver {
+// An observer interface for shelf item and delegate changes in ShelfModel.
+class ASH_PUBLIC_EXPORT ShelfModelObserver {
  public:
   // Invoked after an item has been added to the model.
   virtual void ShelfItemAdded(int index) = 0;
@@ -40,4 +40,4 @@ class ASH_EXPORT ShelfModelObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_MODEL_OBSERVER_H_
+#endif  // ASH_PUBLIC_CPP_SHELF_MODEL_OBSERVER_H_

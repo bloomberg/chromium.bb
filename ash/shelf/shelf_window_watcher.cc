@@ -7,10 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"

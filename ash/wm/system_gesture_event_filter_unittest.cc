@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"

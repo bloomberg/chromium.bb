@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"

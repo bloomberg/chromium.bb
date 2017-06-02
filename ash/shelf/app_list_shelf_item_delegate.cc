@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/shelf/shelf_model.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 
 namespace ash {

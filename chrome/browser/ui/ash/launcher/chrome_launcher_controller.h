@@ -11,9 +11,9 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
-#include "ash/shelf/shelf_model_observer.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -44,7 +44,6 @@ class LauncherControllerHelper;
 
 namespace ash {
 class Shelf;
-struct ShelfItem;
 class ShelfModel;
 }  // namespace ash
 
