@@ -368,6 +368,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Atomics</td>
+<td><code>&lt;atomic&gt;</code></td>
+<td>Fine-grained atomic types and operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/atomic">Atomic operations library</a></td>
+<td>Direct use should be rare because the semantics are subtle. Prefer to use higher-level abstractions built on top of atomics or synchronization primitives.</td>
+</tr>
+
+<tr>
 <td>Begin and End Non-Member Functions</td>
 <td><code>std::begin()</code>, <code>std::end()</code></td>
 <td>Allows use of free functions on any container, including fixed-size arrays</td>
@@ -607,14 +615,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <th style='width:240px;'>Description</th>
 <th style='width:240px;'>Documentation Link</th>
 <th style='width:240px;'>Notes and Discussion Thread</th>
-</tr>
-
-<tr>
-<td>Atomics</td>
-<td><code>&lt;atomic&gt;</code></td>
-<td>Fine-grained atomic types and operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/atomic">Atomic operations library</a></td>
-<td>Use in tcmalloc has caused <a href="http://crbug.com/572525">performance regressions</a>. Banned until we understand this better. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/Ej3RAiaI44s">Discussion Thread</a></td>
 </tr>
 
 <tr>
