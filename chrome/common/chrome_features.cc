@@ -85,7 +85,14 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTabsInCbd {
+  "TabsInCBD",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Whether to capture page thumbnails when the page load finishes (in addition
 // to any other times this might happen).
