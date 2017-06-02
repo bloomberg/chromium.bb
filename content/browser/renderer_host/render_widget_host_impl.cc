@@ -1052,6 +1052,9 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
                mouse_event.PositionInWidget().x, "y",
                mouse_event.PositionInWidget().y);
 
+  DCHECK_GE(mouse_event.GetType(), blink::WebInputEvent::kMouseTypeFirst);
+  DCHECK_LE(mouse_event.GetType(), blink::WebInputEvent::kMouseTypeLast);
+
   for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
     if (mouse_event_callbacks_[i].Run(mouse_event))
       return;

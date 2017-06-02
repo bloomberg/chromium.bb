@@ -41,7 +41,10 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                              PointerType::kUnknown,
                              Button::kNoButton,
                              WebFloatPoint(x_param, y_param),
-                             WebFloatPoint(global_x_param, global_y_param)) {}
+                             WebFloatPoint(global_x_param, global_y_param)) {
+    DCHECK_GE(type_param, kMouseTypeFirst);
+    DCHECK_LE(type_param, kMouseTypeLast);
+  }
 
   WebMouseEvent(Type type_param,
                 WebFloatPoint position,
@@ -61,7 +64,10 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
             button_param,
             WebFloatPoint(floor(position.x), floor(position.y)),
             WebFloatPoint(floor(global_position.x), floor(global_position.y))),
-        click_count(click_count_param) {}
+        click_count(click_count_param) {
+    DCHECK_GE(type_param, kMouseTypeFirst);
+    DCHECK_LE(type_param, kMouseTypeLast);
+  }
 
   WebMouseEvent(Type type_param,
                 int modifiers_param,
