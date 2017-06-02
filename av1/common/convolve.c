@@ -209,11 +209,12 @@ void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
 }
 
 #if CONFIG_COMPOUND_ROUND
-void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
-                     int dst_stride, int w, int h,
-                     InterpFilterParams *filter_params_x,
-                     InterpFilterParams *filter_params_y, const int subpel_x_q4,
-                     const int subpel_y_q4, ConvolveParams *conv_params) {
+void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                       int dst_stride, int w, int h,
+                       InterpFilterParams *filter_params_x,
+                       InterpFilterParams *filter_params_y,
+                       const int subpel_x_q4, const int subpel_y_q4,
+                       ConvolveParams *conv_params) {
   int x, y, k;
   uint8_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
@@ -258,11 +259,12 @@ void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
    bit widths for various intermediate values, see the comments above
    av1_warp_affine_c.
 */
-void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
-                     int dst_stride, int w, int h,
-                     InterpFilterParams *filter_params_x,
-                     InterpFilterParams *filter_params_y, const int subpel_x_q4,
-                     const int subpel_y_q4, ConvolveParams *conv_params) {
+void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                       int dst_stride, int w, int h,
+                       InterpFilterParams *filter_params_x,
+                       InterpFilterParams *filter_params_y,
+                       const int subpel_x_q4, const int subpel_y_q4,
+                       ConvolveParams *conv_params) {
   int x, y, k;
   int32_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
@@ -408,12 +410,12 @@ void av1_highbd_convolve_rounding(const int32_t *src, int src_stride,
 }
 
 #if CONFIG_COMPOUND_ROUND
-void av1_highbd_convolve_2d(const uint16_t *src, int src_stride,
-                            CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
-                            InterpFilterParams *filter_params_x,
-                            InterpFilterParams *filter_params_y,
-                            const int subpel_x_q4, const int subpel_y_q4,
-                            ConvolveParams *conv_params, int bd) {
+void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
+                              CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
+                              InterpFilterParams *filter_params_x,
+                              InterpFilterParams *filter_params_y,
+                              const int subpel_x_q4, const int subpel_y_q4,
+                              ConvolveParams *conv_params, int bd) {
   int x, y, k;
   uint16_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
@@ -452,12 +454,12 @@ void av1_highbd_convolve_2d(const uint16_t *src, int src_stride,
   }
 }
 #else
-void av1_highbd_convolve_2d(const uint16_t *src, int src_stride,
-                            CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
-                            InterpFilterParams *filter_params_x,
-                            InterpFilterParams *filter_params_y,
-                            const int subpel_x_q4, const int subpel_y_q4,
-                            ConvolveParams *conv_params, int bd) {
+void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
+                              CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
+                              InterpFilterParams *filter_params_x,
+                              InterpFilterParams *filter_params_y,
+                              const int subpel_x_q4, const int subpel_y_q4,
+                              ConvolveParams *conv_params, int bd) {
   int x, y, k;
   int32_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;

@@ -177,4 +177,11 @@ AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/highbd_warp_plane_ssse3.c
 endif
 endif
 
+ifeq ($(CONFIG_CONVOLVE_ROUND),yes)
+AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/convolve_2d_sse2.c
+ifeq ($(CONFIG_HIGHBITDEPTH),yes)
+AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/highbd_convolve_2d_ssse3.c
+endif
+endif
+
 $(eval $(call rtcd_h_template,av1_rtcd,av1/common/av1_rtcd_defs.pl))
