@@ -11,6 +11,14 @@
 
 namespace arc {
 
+namespace {
+
+std::string GetHistogramName(const std::string& base_name, bool managed) {
+  return base_name + (managed ? "Managed" : "Unmanaged");
+}
+
+}  // namespace
+
 void UpdateOptInActionUMA(OptInActionType type) {
   UMA_HISTOGRAM_ENUMERATION("Arc.OptInAction", static_cast<int>(type),
                             static_cast<int>(OptInActionType::SIZE));
@@ -32,10 +40,9 @@ void UpdateOptInFlowResultUMA(OptInFlowResult result) {
 
 void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
   DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
-  std::string histogram_name = "Arc.Provisioning.Result.";
-  histogram_name += managed ? "Managed" : "Unmanaged";
   base::LinearHistogram::FactoryGet(
-      histogram_name, 0, static_cast<int>(ProvisioningResult::SIZE),
+      GetHistogramName("Arc.Provisioning.Result.", managed), 0,
+      static_cast<int>(ProvisioningResult::SIZE),
       static_cast<int>(ProvisioningResult::SIZE) + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(static_cast<int>(result));
@@ -46,15 +53,19 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool managed) {
   std::string histogram_name = "Arc.Provisioning.TimeDelta.";
   histogram_name += success ? "Success." : "Failure.";
-  histogram_name += managed ? "Managed" : "Unmanaged";
   // The macro UMA_HISTOGRAM_CUSTOM_TIMES expects a constant string, but since
   // this measurement happens very infrequently, we do not need to use a macro
   // here.
-  base::Histogram::FactoryTimeGet(
-      histogram_name, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromMinutes(6), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->AddTime(elapsed_time);
+  base::UmaHistogramCustomTimes(GetHistogramName(histogram_name, managed),
+                                elapsed_time, base::TimeDelta::FromSeconds(1),
+                                base::TimeDelta::FromMinutes(6), 50);
+}
+
+void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
+                             bool managed) {
+  base::UmaHistogramCustomTimes(
+      GetHistogramName("Arc.PlayStoreShown.TimeDelta.", managed), elapsed_time,
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(10), 50);
 }
 
 void UpdateAuthTiming(const char* histogram_name,

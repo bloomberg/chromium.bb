@@ -186,6 +186,7 @@ void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               bool managed);
+void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time, bool managed);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
 void UpdateAuthTiming(const char* histogram_name, base::TimeDelta elapsed_time);
 void UpdateAuthCheckinAttempts(int32_t num_attempts);
