@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/display/ash_display_controller.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/media_controller.h"
 #include "ash/new_window_controller.h"
@@ -42,6 +43,12 @@ void BindAppListRequestOnMainThread(
     const service_manager::BindSourceInfo& source_info,
     app_list::mojom::AppListRequest request) {
   Shell::Get()->app_list()->BindRequest(std::move(request));
+}
+
+void BindAshDisplayControllerRequestOnMainThread(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::AshDisplayControllerRequest request) {
+  Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
 }
 
 void BindCastConfigOnMainThread(
@@ -135,6 +142,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindAppListRequestOnMainThread),
                          main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindAshDisplayControllerRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(

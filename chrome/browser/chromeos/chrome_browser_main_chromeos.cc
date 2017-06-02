@@ -147,6 +147,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/service_manager_connection.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -297,8 +298,13 @@ class DBusServices {
     // TODO(sky): once mash supports simplified display mode we should always
     // use ChromeConsoleServiceProviderDelegate.
     if (GetAshConfig() != ash::Config::MASH) {
+      std::unique_ptr<ChromeConsoleServiceProviderDelegate>
+          console_service_provider_delegate =
+              base::MakeUnique<ChromeConsoleServiceProviderDelegate>();
+      console_service_provider_delegate_ =
+          console_service_provider_delegate->AsWeakPtr();
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-          base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
+          std::move(console_service_provider_delegate)));
     } else {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<MusConsoleServiceProviderDelegate>()));
@@ -394,6 +400,12 @@ class DBusServices {
     DBusThreadManager::Shutdown();
   }
 
+  void ServiceManagerConnectionStarted(
+      content::ServiceManagerConnection* connection) {
+    if (console_service_provider_delegate_)
+      console_service_provider_delegate_->Connect(connection->GetConnector());
+  }
+
  private:
   // Hosts providers for the "org.chromium.LibCrosService" D-Bus service owned
   // by Chrome. The name of this service was chosen for historical reasons that
@@ -407,6 +419,9 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> liveness_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
+
+  base::WeakPtr<ChromeConsoleServiceProviderDelegate>
+      console_service_provider_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -581,6 +596,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
+}
+
+void ChromeBrowserMainPartsChromeos::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+  ChromeBrowserMainPartsLinux::ServiceManagerConnectionStarted(connection);
+  dbus_services_->ServiceManagerConnectionStarted(connection);
 }
 
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.

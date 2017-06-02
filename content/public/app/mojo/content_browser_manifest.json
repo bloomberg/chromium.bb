@@ -57,7 +57,7 @@
       "requires": {
         "*": [ "app" ],
         // In classic ash, the browser supplies ash interfaces to itself.
-        "content_browser": [ "ash", "memory_instrumentation" ],
+        "content_browser": [ "ash", "display", "memory_instrumentation" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],
