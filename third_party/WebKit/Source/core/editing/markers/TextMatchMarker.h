@@ -38,7 +38,7 @@ namespace blink {
 // up-to-date.
 class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
  private:
-  enum class State { kInvalid, kValidNull, kValidNotNull };
+  enum class LayoutStatus { kInvalid, kValidNull, kValidNotNull };
 
  public:
   enum class MatchStatus { kInactive, kActive };
@@ -62,8 +62,8 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
 
  private:
   MatchStatus match_status_;
+  LayoutStatus layout_status_ = LayoutStatus::kInvalid;
   LayoutRect rendered_rect_;
-  State layout_state_ = State::kInvalid;
 
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarker);
 };
