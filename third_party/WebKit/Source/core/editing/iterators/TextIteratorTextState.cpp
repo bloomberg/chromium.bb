@@ -34,15 +34,7 @@ namespace blink {
 
 TextIteratorTextState::TextIteratorTextState(
     const TextIteratorBehavior& behavior)
-    : text_length_(0),
-      single_character_buffer_(0),
-      position_node_(nullptr),
-      position_start_offset_(0),
-      position_end_offset_(0),
-      has_emitted_(false),
-      last_character_(0),
-      behavior_(behavior),
-      text_start_offset_(0) {}
+    : behavior_(behavior) {}
 
 UChar TextIteratorTextState::CharacterAt(unsigned index) const {
   SECURITY_DCHECK(index < static_cast<unsigned>(length()));
