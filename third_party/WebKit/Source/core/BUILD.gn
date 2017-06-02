@@ -92,7 +92,7 @@ source_set("generated") {
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
-    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
+    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_v8_generated",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//url",
@@ -126,7 +126,7 @@ source_set("prerequisites") {
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
-    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
+    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_v8_generated",
     "//third_party/WebKit/Source/platform",
   ]
 
@@ -1075,7 +1075,7 @@ target(core_link_small_target_type, "core_generated") {
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
-    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
+    "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_v8_generated",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//url",
