@@ -192,9 +192,7 @@ ChromeUserManagerImpl::CreateChromeUserManager() {
 }
 
 ChromeUserManagerImpl::ChromeUserManagerImpl()
-    : ChromeUserManager(base::ThreadTaskRunnerHandle::IsSet()
-                            ? base::ThreadTaskRunnerHandle::Get()
-                            : scoped_refptr<base::TaskRunner>()),
+    : ChromeUserManager(base::ThreadTaskRunnerHandle::Get()),
       cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(NULL),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)),
@@ -203,10 +201,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   UpdateNumberOfUsers();
 
   // UserManager instance should be used only on UI thread.
-  // (or in unit tests)
-  if (base::ThreadTaskRunnerHandle::IsSet())
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   registrar_.Add(this,
                  chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
                  content::NotificationService::AllSources());

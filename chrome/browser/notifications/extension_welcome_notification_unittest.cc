@@ -139,7 +139,6 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     task_runner_ = new base::TestSimpleTaskRunner();
     base::MessageLoop::current()->SetTaskRunner(task_runner_);
     profile_.reset(new TestingProfile());
-    task_runner()->RunUntilIdle();
     delegate_ = new WelcomeNotificationDelegate();
     welcome_notification_.reset(
         ExtensionWelcomeNotification::Create(profile_.get(), delegate_));

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 
-#include <memory>
 #include <string>
 
 #include "base/run_loop.h"
@@ -42,16 +41,14 @@ class ActiveTabPermissionGranterDelegateChromeOSTest
   void TearDown() override;
 
   ActiveTabPermissionGranterDelegateChromeOS delegate_;
-  std::unique_ptr<chromeos::ScopedTestPublicSessionLoginState> login_state_;
+  chromeos::ScopedTestPublicSessionLoginState login_state_;
 };
 
 void ActiveTabPermissionGranterDelegateChromeOSTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  login_state_.reset(new chromeos::ScopedTestPublicSessionLoginState());
 }
 
 void ActiveTabPermissionGranterDelegateChromeOSTest::TearDown() {
-  login_state_.reset();
   permission_helper::ResetPermissionsForTesting();
   ChromeRenderViewHostTestHarness::TearDown();
 }

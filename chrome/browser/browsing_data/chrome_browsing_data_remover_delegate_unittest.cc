@@ -78,6 +78,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -1365,6 +1367,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestCacheClear) {
 #if defined(OS_CHROMEOS)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        ContentProtectionPlatformKeysRemoval) {
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
+  chromeos::ScopedTestCrosSettings test_cros_settings;
   chromeos::MockUserManager* mock_user_manager =
       new testing::NiceMock<chromeos::MockUserManager>();
   mock_user_manager->SetActiveUser(

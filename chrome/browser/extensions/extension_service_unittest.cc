@@ -146,6 +146,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 // The blacklist tests rely on the safe-browsing database.
 #if defined(SAFE_BROWSING_DB_LOCAL)
 #define ENABLE_BLACKLIST_TESTS
@@ -5558,6 +5564,12 @@ TEST_F(ExtensionServiceTestSimple, Enabledness) {
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService device_settings_service;
+  chromeos::ScopedTestCrosSettings cros_settings;
+  std::unique_ptr<chromeos::ScopedTestUserManager> user_manager(
+      new chromeos::ScopedTestUserManager);
+#endif
   std::unique_ptr<base::CommandLine> command_line;
   base::FilePath install_dir = profile->GetPath()
       .AppendASCII(extensions::kInstallDirectoryName);
@@ -5574,6 +5586,9 @@ TEST_F(ExtensionServiceTestSimple, Enabledness) {
   service->Init();
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(recorder.ready());
+#if defined OS_CHROMEOS
+  user_manager.reset();
+#endif
 
   // If either the command line or pref is set, we are disabled.
   recorder.set_ready(false);

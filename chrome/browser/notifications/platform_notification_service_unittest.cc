@@ -48,6 +48,12 @@
 #include "extensions/common/value_builder.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 using content::NotificationResources;
 using content::PlatformNotificationData;
 
@@ -339,6 +345,13 @@ TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
 }
 
 TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
+#if defined(OS_CHROMEOS)
+  // The ExtensionService on Chrome OS requires these objects to be initialized.
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
+  chromeos::ScopedTestCrosSettings test_cros_settings;
+  chromeos::ScopedTestUserManager test_user_manager;
+#endif
+
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   extensions::TestExtensionSystem* test_extension_system =
       static_cast<extensions::TestExtensionSystem*>(

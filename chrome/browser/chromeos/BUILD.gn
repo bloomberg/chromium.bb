@@ -1541,8 +1541,6 @@ static_library("test_support") {
     "login/screens/mock_network_screen.h",
     "login/screens/mock_update_screen.cc",
     "login/screens/mock_update_screen.h",
-    "scoped_set_running_on_chromeos_for_testing.cc",
-    "scoped_set_running_on_chromeos_for_testing.h",
   ]
 
   deps = [
@@ -1843,7 +1841,6 @@ source_set("unit_tests") {
     ":device_policy_proto",
     ":test_support",
     "//ash/resources",
-    "//base",
     "//components/cryptauth:test_support",
     "//components/drive",
     "//components/drive:test_support_chromeos",
