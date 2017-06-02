@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -865,6 +866,29 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // For the 6th time, it is blocked by the scheduling provider.
   scheduler()->OnPersistentSchedulerWakeUp();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldIgnoreSubsequentStartupSignalsForM58) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      kRemoteSuggestionsEmulateM58FetchingSchedule);
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  ActivateProvider();
+
+  // The startup triggers are ignored.
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
+
+  // Foreground the browser again after a very long delay. Again, no fetch is
+  // executed for neither Foregrounded, nor ColdStart.
+  test_clock()->Advance(base::TimeDelta::FromHours(100000));
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
 }
 
 }  // namespace ntp_snippets
