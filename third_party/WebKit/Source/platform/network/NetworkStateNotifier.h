@@ -172,7 +172,12 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   //
   // Since this class is a singleton, tests must clear override when completed
   // to avoid indeterminate state across the test harness.
-  void SetOverride(bool on_line, WebConnectionType, double max_bandwidth_mbps);
+  void SetNetworkConnectionInfoOverride(bool on_line,
+                                        WebConnectionType,
+                                        double max_bandwidth_mbps);
+  void SetNetworkQualityInfoOverride(WebEffectiveConnectionType effective_type,
+                                     unsigned long transport_rtt_msec,
+                                     double downlink_throughput_mbps);
   void ClearOverride();
 
   // Must be called on the given task runner. An added observer must be removed

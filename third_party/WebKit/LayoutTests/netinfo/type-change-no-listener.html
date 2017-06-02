@@ -8,8 +8,12 @@
 description('Tests that the type changes without an active listener');
 
 internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
 shouldBe('connection.type', 'newConnectionType');
 shouldBe('connection.downlinkMax', 'newDownlinkMax');
+shouldBe('connection.effectiveType', 'newEffectiveType');
+shouldBe('connection.rtt', 'newRtt');
+shouldBe('connection.downlink', 'newDownlink');
 
 finishJSTest();
 </script>

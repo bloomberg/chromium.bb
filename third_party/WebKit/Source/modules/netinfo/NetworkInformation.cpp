@@ -150,19 +150,25 @@ void NetworkInformation::ConnectionChange(
     const Optional<double>& downlink_mbps) {
   DCHECK(GetExecutionContext()->IsContextThread());
 
-  effective_type_ = effective_type;
-  transport_rtt_msec_ = RoundRtt(transport_rtt);
-  downlink_mbps_ = RoundMbps(downlink_mbps);
+  unsigned long new_transport_rtt_msec = RoundRtt(transport_rtt);
+  double new_downlink_mbps = RoundMbps(downlink_mbps);
   // TODO(tbansal): https://crbug.com/719108. Dispatch |change| event if the
   // expected network quality has changed.
 
   // This can happen if the observer removes and then adds itself again
-  // during notification, or if HTTP RTT was the only metric that changed.
-  if (type_ == type && downlink_max_mbps_ == downlink_max_mbps)
+  // during notification, or if |http_rtt| was the only metric that changed.
+  if (type_ == type && downlink_max_mbps_ == downlink_max_mbps &&
+      effective_type_ == effective_type &&
+      transport_rtt_msec_ == new_transport_rtt_msec &&
+      downlink_mbps_ == new_downlink_mbps) {
     return;
+  }
 
   type_ = type;
   downlink_max_mbps_ = downlink_max_mbps;
+  effective_type_ = effective_type;
+  transport_rtt_msec_ = new_transport_rtt_msec;
+  downlink_mbps_ = new_downlink_mbps;
   DispatchEvent(Event::Create(EventTypeNames::typechange));
 
   if (RuntimeEnabledFeatures::netInfoDownlinkMaxEnabled())

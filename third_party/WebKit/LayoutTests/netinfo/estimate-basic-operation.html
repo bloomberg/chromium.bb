@@ -29,18 +29,18 @@ var typeChangeListener = function(e) {
 
 var changeListener = function(e) {
     shouldBe("typeof connection.type", '"string"');
-    shouldBe('connection.type', 'newConnectionType');
-    shouldBe('connection.downlinkMax', 'newDownlinkMax');
-    shouldBe('connection.effectiveType', 'initialEffectiveType');
-    shouldBe('connection.rtt', 'initialRtt');
-    shouldBe('connection.downlink', 'initialDownlink');
+    shouldBe('connection.type', 'initialType');
+    shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+    shouldBe('connection.effectiveType', 'newEffectiveType');
+    shouldBe('connection.rtt', 'newRtt');
+    shouldBe('connection.downlink', 'newDownlink');
     connection.removeEventListener('change', changeListener);
     connection.addEventListener('typechange', typeChangeListener);
-	internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
+    internals.setNetworkQualityInfoOverride(initialEffectiveType, initialRtt, initialDownlink);
 }
 
 connection.addEventListener('change', changeListener);
-internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
 
 </script>
 </body>
