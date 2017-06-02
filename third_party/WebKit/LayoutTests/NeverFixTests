@@ -758,3 +758,8 @@ external/wpt/css/css-flexbox-1/css-flexbox-height-animation-stretch.html [ WontF
 # run-webkit-tests; see https://crbug.com/359838.
 http/tests/ManualTests/ [ WontFix ]
 virtual/mojo-loading/http/tests/ManualTests/ [ WontFix ]
+
+# These test produce invisible different pixels on Win7 Debug.
+[ Win7 Debug ] fast/table/backgr_border-table-column-group-collapsed-border.html [ WontFix ]
+[ Win7 Debug ] virtual/mojo-loading/fast/table/backgr_border-table-column-group-collapsed-border.html [ WontFix ]
+
