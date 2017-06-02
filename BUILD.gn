@@ -945,10 +945,6 @@ component("icuuc") {
     ":icudata",
   ]
 
-  if (is_mac && using_sanitizer) {
-    deps += [ "//buildtools/third_party/libc++abi" ]
-  }
-
   configs -= [
     "//build/config/compiler:no_rtti",  # ICU uses RTTI.
     "//build/config/compiler:chromium_code",
