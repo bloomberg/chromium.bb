@@ -11,6 +11,10 @@
 PersistentNotificationHandler::PersistentNotificationHandler() {}
 PersistentNotificationHandler::~PersistentNotificationHandler() {}
 
+void PersistentNotificationHandler::OnShow(Profile* profile,
+                                           const std::string& notification_id) {
+}
+
 void PersistentNotificationHandler::OnClose(Profile* profile,
                                             const std::string& origin,
                                             const std::string& notification_id,

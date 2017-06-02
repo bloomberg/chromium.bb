@@ -21,6 +21,7 @@ class ExtensionNotificationHandler : public NotificationHandler {
   ~ExtensionNotificationHandler() override;
 
   // NotificationHandler implementation.
+  void OnShow(Profile* profile, const std::string& notification_id) override;
   void OnClose(Profile* profile,
                const std::string& origin,
                const std::string& notification_id,

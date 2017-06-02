@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DISPLAY_SERVICE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DISPLAY_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -14,7 +15,12 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class NullableString16;
+}
+
 class Notification;
+class NotificationHandler;
 class Profile;
 
 // Profile-bound service that enables notifications to be displayed and
@@ -28,8 +34,8 @@ class NotificationDisplayService : public KeyedService {
   using DisplayedNotificationsCallback =
       base::Callback<void(std::unique_ptr<std::set<std::string>>,
                           bool /* supports_synchronization */)>;
-  NotificationDisplayService() {}
-  ~NotificationDisplayService() override {}
+  explicit NotificationDisplayService(Profile* profile);
+  ~NotificationDisplayService() override;
 
   // Displays the |notification| identified by |notification_id|.
   virtual void Display(NotificationCommon::Type notification_type,
@@ -44,7 +50,31 @@ class NotificationDisplayService : public KeyedService {
   // invokes |callback| with the result once known.
   virtual void GetDisplayed(const DisplayedNotificationsCallback& callback) = 0;
 
+  // Used to propagate back events originate from the user (click, close...).
+  // The events are received and dispatched to the right consumer depending on
+  // the type of notification. Consumers include, service workers, pages,
+  // extensions...
+  void ProcessNotificationOperation(NotificationCommon::Operation operation,
+                                    NotificationCommon::Type notification_type,
+                                    const std::string& origin,
+                                    const std::string& notification_id,
+                                    int action_index,
+                                    const base::NullableString16& reply);
+
+ protected:
+  NotificationHandler* GetNotificationHandler(
+      NotificationCommon::Type notification_type);
+
  private:
+  // Registers an implementation object to handle notification operations
+  // for |notification_type|.
+  void AddNotificationHandler(NotificationCommon::Type notification_type,
+                              std::unique_ptr<NotificationHandler> handler);
+
+  std::map<NotificationCommon::Type, std::unique_ptr<NotificationHandler>>
+      notification_handlers_;
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayService);
 };
 

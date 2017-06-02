@@ -7,14 +7,17 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profiles/profile.h"
 
 // static
 std::unique_ptr<KeyedService> StubNotificationDisplayService::FactoryForTests(
-    content::BrowserContext* /* browser_context */) {
-  return base::MakeUnique<StubNotificationDisplayService>();
+    content::BrowserContext* context) {
+  return base::MakeUnique<StubNotificationDisplayService>(
+      Profile::FromBrowserContext(context));
 }
 
-StubNotificationDisplayService::StubNotificationDisplayService() = default;
+StubNotificationDisplayService::StubNotificationDisplayService(Profile* profile)
+    : NotificationDisplayService(profile) {}
 
 StubNotificationDisplayService::~StubNotificationDisplayService() = default;
 

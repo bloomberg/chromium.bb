@@ -9,24 +9,16 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
-#include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
-#include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "extensions/features/features.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
-#endif
 
 namespace {
 
@@ -45,7 +37,8 @@ std::string GetProfileId(Profile* profile) {
 NativeNotificationDisplayService::NativeNotificationDisplayService(
     Profile* profile,
     NotificationPlatformBridge* notification_bridge)
-    : profile_(profile),
+    : NotificationDisplayService(profile),
+      profile_(profile),
       notification_bridge_(notification_bridge),
       notification_bridge_ready_(false),
       weak_factory_(this) {
@@ -55,16 +48,6 @@ NativeNotificationDisplayService::NativeNotificationDisplayService(
   notification_bridge->SetReadyCallback(base::BindOnce(
       &NativeNotificationDisplayService::OnNotificationPlatformBridgeReady,
       weak_factory_.GetWeakPtr()));
-
-  AddNotificationHandler(NotificationCommon::NON_PERSISTENT,
-                         base::MakeUnique<NonPersistentNotificationHandler>());
-  AddNotificationHandler(NotificationCommon::PERSISTENT,
-                         base::MakeUnique<PersistentNotificationHandler>());
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  AddNotificationHandler(
-      NotificationCommon::EXTENSION,
-      base::MakeUnique<extensions::ExtensionNotificationHandler>());
-#endif
 }
 
 NativeNotificationDisplayService::~NativeNotificationDisplayService() = default;
@@ -94,13 +77,8 @@ void NativeNotificationDisplayService::Display(
     notification_bridge_->Display(notification_type, notification_id,
                                   GetProfileId(profile_),
                                   profile_->IsOffTheRecord(), notification);
-    // Unlike all other notifications non persistent notifications require
-    // an event after the notification has been displayed.
-    // TODO(miguelg) create an OnShow notification handler instead.
-    if (notification_type == NotificationCommon::NON_PERSISTENT) {
-      content::NotificationEventDispatcher::GetInstance()
-          ->DispatchNonPersistentShowEvent(notification_id);
-    }
+    NotificationHandler* handler = GetNotificationHandler(notification_type);
+    handler->OnShow(profile_, notification_id);
   } else if (message_center_display_service_) {
     message_center_display_service_->Display(notification_type, notification_id,
                                              notification);
@@ -144,42 +122,4 @@ void NativeNotificationDisplayService::GetDisplayed(
         base::BindOnce(&NativeNotificationDisplayService::GetDisplayed,
                        weak_factory_.GetWeakPtr(), callback));
   }
-}
-
-void NativeNotificationDisplayService::ProcessNotificationOperation(
-    NotificationCommon::Operation operation,
-    NotificationCommon::Type notification_type,
-    const std::string& origin,
-    const std::string& notification_id,
-    int action_index,
-    const base::NullableString16& reply) {
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  CHECK(handler);
-  switch (operation) {
-    case NotificationCommon::CLICK:
-      handler->OnClick(profile_, origin, notification_id, action_index, reply);
-      break;
-    case NotificationCommon::CLOSE:
-      handler->OnClose(profile_, origin, notification_id, true /* by_user */);
-      break;
-    case NotificationCommon::SETTINGS:
-      handler->OpenSettings(profile_);
-      break;
-  }
-}
-
-void NativeNotificationDisplayService::AddNotificationHandler(
-    NotificationCommon::Type notification_type,
-    std::unique_ptr<NotificationHandler> handler) {
-  DCHECK(handler);
-  DCHECK_EQ(notification_handlers_.count(notification_type), 0u);
-  notification_handlers_[notification_type] = std::move(handler);
-}
-
-NotificationHandler* NativeNotificationDisplayService::GetNotificationHandler(
-    NotificationCommon::Type notification_type) {
-  DCHECK(notification_handlers_.find(notification_type) !=
-         notification_handlers_.end())
-      << notification_type << " is not registered.";
-  return notification_handlers_[notification_type].get();
 }

@@ -20,9 +20,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/native_notification_display_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -79,13 +79,12 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
     return;
   }
 
-  NotificationDisplayService* display_service =
+  auto* display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
 
-  static_cast<NativeNotificationDisplayService*>(display_service)
-      ->ProcessNotificationOperation(operation, notification_type, origin,
-                                     notification_id, action_index,
-                                     base::NullableString16() /* reply */);
+  display_service->ProcessNotificationOperation(
+      operation, notification_type, origin, notification_id, action_index,
+      base::NullableString16() /* reply */);
 }
 
 // Loads the profile and process the Notification response
