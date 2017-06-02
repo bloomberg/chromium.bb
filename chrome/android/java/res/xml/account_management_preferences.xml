@@ -5,7 +5,8 @@
 
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:aapt="http://schemas.android.com/aapt">
 
     <PreferenceCategory
         android:key="accounts_category"
@@ -18,8 +19,35 @@
         android:key="parental_settings"
         android:title="@string/account_management_parental_settings"/>
 
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:key="parent_accounts"/>
+    <Preference
+        android:key="parent_accounts">
+        <aapt:attr name="android:layout">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView android:id="@+android:id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+
+                <TextView android:id="@+android:id/summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="?android:attr/textColorSecondary"/>
+
+                <LinearLayout android:id="@+android:id/widget_frame"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </aapt:attr>
+    </Preference>
 
     <Preference
         android:key="child_content"
