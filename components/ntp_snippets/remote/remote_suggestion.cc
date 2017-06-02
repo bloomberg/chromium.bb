@@ -4,14 +4,12 @@
 
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
 namespace {
@@ -389,8 +387,7 @@ SnippetProto RemoteSuggestion::ToProto() const {
 ContentSuggestion RemoteSuggestion::ToContentSuggestion(
     Category category) const {
   GURL url = url_;
-  bool use_amp = base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
-                 !amp_url_.is_empty();
+  bool use_amp = !amp_url_.is_empty();
   if (use_amp) {
     url = amp_url_;
   }
