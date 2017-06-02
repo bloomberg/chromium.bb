@@ -67,11 +67,18 @@ class VerifyCertificateChainPkitsTestDelegate {
 
     SimpleSignaturePolicy signature_policy(1024);
 
+    std::set<der::Input> user_constrained_policy_set;
+
     CertPathErrors path_errors;
-    VerifyCertificateChain(input_chain, CertificateTrust::ForTrustAnchor(),
-                           &signature_policy, info.time, KeyPurpose::ANY_EKU,
-                           &path_errors);
+    VerifyCertificateChain(
+        input_chain, CertificateTrust::ForTrustAnchor(), &signature_policy,
+        info.time, KeyPurpose::ANY_EKU, info.initial_explicit_policy,
+        info.initial_policy_set, info.initial_policy_mapping_inhibit,
+        info.initial_inhibit_any_policy, &user_constrained_policy_set,
+        &path_errors);
     bool did_succeed = !path_errors.ContainsHighSeverityErrors();
+
+    EXPECT_EQ(info.user_constrained_policy_set, user_constrained_policy_set);
 
     //  TODO(crbug.com/634443): Test errors on failure?
     if (info.should_validate != did_succeed) {
@@ -222,6 +229,21 @@ INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
                               PkitsTest07KeyUsage,
                               VerifyCertificateChainPkitsTestDelegate);
 INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PkitsTest08CertificatePolicies,
+                              VerifyCertificateChainPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PkitsTest09RequireExplicitPolicy,
+                              VerifyCertificateChainPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PkitsTest10PolicyMappings,
+                              VerifyCertificateChainPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PkitsTest11InhibitPolicyMapping,
+                              VerifyCertificateChainPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
+                              PkitsTest12InhibitAnyPolicy,
+                              VerifyCertificateChainPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
                               PkitsTest13NameConstraints,
                               VerifyCertificateChainPkitsTestDelegate);
 INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
@@ -231,9 +253,5 @@ INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
 // TODO(mattm): CRL support: PkitsTest04BasicCertificateRevocationTests,
 // PkitsTest05VerifyingPathswithSelfIssuedCertificates,
 // PkitsTest14DistributionPoints, PkitsTest15DeltaCRLs
-
-// TODO(mattm): Certificate Policies support: PkitsTest08CertificatePolicies,
-// PkitsTest09RequireExplicitPolicy PkitsTest10PolicyMappings,
-// PkitsTest11InhibitPolicyMapping, PkitsTest12InhibitAnyPolicy
 
 }  // namespace net

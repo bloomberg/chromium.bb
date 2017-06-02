@@ -46,13 +46,15 @@ struct PkitsTestInfo {
   std::set<der::Input> initial_policy_set;
 
   // The value of "initial-explicit-policy".
-  bool initial_explicit_policy = false;
+  InitialExplicitPolicy initial_explicit_policy = InitialExplicitPolicy::kFalse;
 
   // The value of "initial-policy-mapping-inhibit".
-  bool initial_policy_mapping_inhibit = false;
+  InitialPolicyMappingInhibit initial_policy_mapping_inhibit =
+      InitialPolicyMappingInhibit::kFalse;
 
   // The value of "initial-inhibit-any-policy".
-  bool initial_inhibit_any_policy = false;
+  InitialAnyPolicyInhibit initial_inhibit_any_policy =
+      InitialAnyPolicyInhibit::kFalse;
 
   // This is the time when PKITS was published.
   der::GeneralizedTime time = {2011, 4, 15, 0, 0, 0};
