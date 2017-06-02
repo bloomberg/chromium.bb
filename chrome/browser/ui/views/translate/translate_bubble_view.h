@@ -69,6 +69,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // |is_user_gesture| is true when the bubble is shown on the user's deliberate
   // action.
   static views::Widget* ShowBubble(views::View* anchor_view,
+                                   const gfx::Point& anchor_point,
                                    content::WebContents* web_contents,
                                    translate::TranslateStep step,
                                    translate::TranslateErrors::Type error_type,
@@ -174,6 +175,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CancelButtonReturningError);
 
   TranslateBubbleView(views::View* anchor_view,
+                      const gfx::Point& anchor_point,
                       std::unique_ptr<TranslateBubbleModel> model,
                       translate::TranslateErrors::Type error_type,
                       content::WebContents* web_contents);
