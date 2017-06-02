@@ -34,6 +34,8 @@ class IOSChromeSavePasswordInfoBarDelegate
 
   ~IOSChromeSavePasswordInfoBarDelegate() override;
 
+  bool ShouldExpire(const NavigationDetails& details) const override;
+
  private:
   IOSChromeSavePasswordInfoBarDelegate(
       bool is_smart_lock_branding_enabled,
