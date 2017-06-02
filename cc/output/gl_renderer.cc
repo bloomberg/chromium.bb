@@ -439,6 +439,7 @@ void GLRenderer::DidChangeVisibility() {
     TRACE_EVENT0("cc", "GLRenderer::DidChangeVisibility dropping resources");
     ReleaseRenderPassTextures();
     output_surface_->DiscardBackbuffer();
+    gl_->ReleaseShaderCompiler();
   }
 
   PrepareGeometry(NO_BINDING);
@@ -3096,6 +3097,7 @@ const gfx::ColorTransform* GLRenderer::GetColorTransform(
 void GLRenderer::CleanupSharedObjects() {
   shared_geometry_ = nullptr;
 
+  gl_->ReleaseShaderCompiler();
   for (auto& iter : program_cache_)
     iter.second->Cleanup(gl_);
   program_cache_.clear();
