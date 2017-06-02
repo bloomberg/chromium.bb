@@ -692,6 +692,7 @@ void HideButton(UIButton* button) {
 
   _gradientView.reset([[UIView alloc] initWithFrame:CGRectZero]);
   _gradientLayer.reset([[CAGradientLayer layer] retain]);
+  [_gradientView setUserInteractionEnabled:NO];
   _gradientLayer.get().colors = [NSArray
       arrayWithObjects:(id)[[UIColor colorWithWhite:1 alpha:0] CGColor],
                        (id)[self.backgroundColor CGColor], nil];
