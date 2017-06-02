@@ -512,8 +512,7 @@ int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
   }
 
   // Offset for the detached bookmark bar.
-  return bookmark_bar_->height() -
-      views::NonClientFrameView::kClientEdgeThickness;
+  return bookmark_bar_->height();
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {

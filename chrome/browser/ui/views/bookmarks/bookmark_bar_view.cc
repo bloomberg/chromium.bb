@@ -605,7 +605,6 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   // Don't let the bookmarks show on top of the location bar while animating.
   SetPaintToLayer();
   layer()->SetMasksToBounds(true);
-  layer()->SetFillsBoundsOpaquely(false);
 
   size_animation_.Reset(1);
 }
@@ -799,23 +798,19 @@ bool BookmarkBarView::IsDetached() const {
 }
 
 int BookmarkBarView::GetToolbarOverlap() const {
-  int attached_overlap = kToolbarAttachedBookmarkBarOverlap +
-      views::NonClientFrameView::kClientEdgeThickness;
+  int attached_overlap = kToolbarAttachedBookmarkBarOverlap;
+
   if (!IsDetached())
     return attached_overlap;
-
-  int detached_overlap = views::NonClientFrameView::kClientEdgeThickness;
 
   // Do not animate the overlap when the infobar is above us (i.e. when we're
   // detached), since drawing over the infobar looks weird.
   if (infobar_visible_)
-    return detached_overlap;
+    return 0;
 
   // When detached with no infobar, animate the overlap between the attached and
   // detached states.
-  return detached_overlap + static_cast<int>(
-      (attached_overlap - detached_overlap) *
-          size_animation_.GetCurrentValue());
+  return static_cast<int>(attached_overlap * size_animation_.GetCurrentValue());
 }
 
 int BookmarkBarView::GetPreferredHeight() const {
