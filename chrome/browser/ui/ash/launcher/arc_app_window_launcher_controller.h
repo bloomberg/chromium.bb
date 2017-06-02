@@ -11,6 +11,8 @@
 
 #include "ash/shell_observer.h"
 #include "base/macros.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
@@ -32,7 +34,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public aura::EnvObserver,
                                        public aura::WindowObserver,
                                        public ash::ShellObserver,
-                                       public ArcAppListPrefs::Observer {
+                                       public ArcAppListPrefs::Observer,
+                                       public arc::ArcSessionManager::Observer {
  public:
   explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
@@ -112,12 +115,22 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
 
+  // arc::ArcSessionManager::Observer:
+  void OnArcOptInManagementCheckStarted() override;
+  void OnArcSessionStopped(arc::ArcStopReason stop_reason) override;
+
   int active_task_id_ = -1;
   TaskIdToAppWindowInfo task_id_to_app_window_info_;
   ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;
   bool observing_shell_ = false;
+
+  // The time when the ARC OptIn management check was started. This happens
+  // right after user agrees the ToS or in some cases for managed user when ARC
+  // starts for the first time. OptIn management check is preceding step before
+  // ARC container is actually started.
+  base::Time opt_in_management_check_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherController);
 };

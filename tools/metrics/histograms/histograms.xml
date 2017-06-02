@@ -1714,6 +1714,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.PlayStoreShown.TimeDelta" units="ms">
+  <owner>yusukes@google.com</owner>
+  <owner>khmel@google.com</owner>
+  <summary>
+    Elapsed time from the when the user agrees ToS to when the Play Store window
+    is shown to the user.
+  </summary>
+</histogram>
+
 <histogram name="Arc.Provisioning.Result" enum="ArcProvisioningResult">
   <obsolete>
     Deprecated on 2016-09-15 and replaced by Arc.Provisioning.Result.Managed and
@@ -85803,6 +85812,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Fast"
       label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.AppListFirstPaintWarmStart"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ArcUserTypes" separator=".">
+  <suffix name="Managed" label="User with forced Play Store feature"/>
+  <suffix name="Unmanaged" label="User with optional Play Store feature"/>
+  <affected-histogram name="Arc.PlayStoreShown.TimeDelta"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AsyncDNSPref" separator="_">
