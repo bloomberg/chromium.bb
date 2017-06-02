@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
-#define UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
+#ifndef UI_EVENTS_KEYCODES_DOM_KEYCODE_CONVERTER_H_
+#define UI_EVENTS_KEYCODES_DOM_KEYCODE_CONVERTER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -99,8 +99,11 @@ class KeycodeConverter {
   // Convert a DomCode into a USB keycode.
   static uint32_t DomCodeToUsbKeycode(DomCode dom_code);
 
-  // Convert a DOM3 Event |code| string into a USB keycode value.
-  static uint32_t CodeToUsbKeycode(const std::string& code);
+  // Convert a UI Event |code| string into a USB keycode value.
+  static uint32_t CodeStringToUsbKeycode(const std::string& code);
+
+  // Convert a UI Event |code| string into a native keycode.
+  static int CodeStringToNativeKeycode(const std::string& code);
 
   // Static methods to support testing.
   static size_t NumKeycodeMapEntriesForTest();
@@ -113,4 +116,4 @@ class KeycodeConverter {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
+#endif  // UI_EVENTS_KEYCODES_DOM_KEYCODE_CONVERTER_H_
