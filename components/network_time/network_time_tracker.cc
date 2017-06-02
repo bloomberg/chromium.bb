@@ -480,8 +480,8 @@ void NetworkTimeTracker::CheckTime() {
           cookies_allowed: false
           setting: "This feature cannot be disabled by settings."
           chrome_policy {
-            NetworkTimeQueriesEnabled {
-                NetworkTimeQueriesEnabled: false
+            BrowserNetworkTimeQueriesEnabled {
+                BrowserNetworkTimeQueriesEnabled: false
             }
           }
         })");
