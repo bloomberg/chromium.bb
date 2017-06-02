@@ -223,6 +223,10 @@ static_library("test_support") {
     sources += [
       "../browser/chromeos/accessibility/speech_monitor.cc",
       "../browser/chromeos/accessibility/speech_monitor.h",
+      "../browser/chromeos/ownership/fake_owner_settings_service.cc",
+      "../browser/chromeos/ownership/fake_owner_settings_service.h",
+      "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
+      "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
     ]
     public_deps += [
       "//components/ownership",
@@ -2235,8 +2239,6 @@ test("browser_tests") {
         "../browser/chromeos/login/webview_login_browsertest.cc",
         "../browser/chromeos/login/wizard_controller_browsertest.cc",
         "../browser/chromeos/net/network_portal_detector_impl_browsertest.cc",
-        "../browser/chromeos/ownership/fake_owner_settings_service.cc",
-        "../browser/chromeos/ownership/fake_owner_settings_service.h",
         "../browser/chromeos/policy/affiliation_test_helper.cc",
         "../browser/chromeos/policy/affiliation_test_helper.h",
         "../browser/chromeos/policy/blocking_login_browsertest.cc",
@@ -2266,8 +2268,6 @@ test("browser_tests") {
         "../browser/chromeos/power/peripheral_battery_observer_browsertest.cc",
         "../browser/chromeos/preferences_chromeos_browsertest.cc",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
-        "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
-        "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",

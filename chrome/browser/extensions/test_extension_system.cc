@@ -28,6 +28,9 @@
 #include "extensions/browser/state_store.h"
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/browser/value_store/testing_value_store.h"
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/user_manager.h"
+#endif
 
 using content::BrowserThread;
 
@@ -38,7 +41,12 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
       store_factory_(new TestValueStoreFactory()),
       info_map_(new InfoMap()),
       quota_service_(new QuotaService()),
-      app_sorting_(new ChromeAppSorting(profile_)) {}
+      app_sorting_(new ChromeAppSorting(profile_)) {
+#if defined(OS_CHROMEOS)
+  if (!user_manager::UserManager::IsInitialized())
+    test_user_manager_.reset(new chromeos::ScopedTestUserManager);
+#endif
+}
 
 TestExtensionSystem::~TestExtensionSystem() {
 }

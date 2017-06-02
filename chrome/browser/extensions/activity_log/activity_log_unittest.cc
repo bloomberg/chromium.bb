@@ -33,12 +33,6 @@
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
-
 namespace {
 
 const char kExtensionId[] = "abc";
@@ -65,9 +59,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   virtual bool enable_activity_logging_switch() const { return true; }
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-#if defined OS_CHROMEOS
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
-#endif
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     if (enable_activity_logging_switch()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -82,9 +73,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
-#if defined OS_CHROMEOS
-    test_user_manager_.reset();
-#endif
     base::RunLoop().RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -198,12 +186,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   }
 
   ExtensionService* extension_service_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
-#endif
 };
 
 TEST_F(ActivityLogTest, Construct) {

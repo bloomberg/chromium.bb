@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "base/sys_info.h"
 #include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 namespace chromeos {
 
@@ -128,14 +128,9 @@ TEST(HWIDCheckerTest, KnownHWIDs) {
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-
-// Sets a valid Chrome  OS version info so IsRunningOnChromeOS() returns true.
-void SetRunningOnChromeOS() {
-  const char kLsbRelease[] =
-      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-}
+const char kLsbRelease[] =
+    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
 // Test logic for command line "test-type" switch.
 TEST(MachineHWIDCheckerTest, TestSwitch) {
@@ -146,7 +141,7 @@ TEST(MachineHWIDCheckerTest, TestSwitch) {
 
   // THEN IsMachineHWIDCorrect() is always true.
   EXPECT_TRUE(IsMachineHWIDCorrect());
-  SetRunningOnChromeOS();
+  ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease, base::Time());
   EXPECT_TRUE(IsMachineHWIDCorrect());
 
   system::ScopedFakeStatisticsProvider fake_statistics_provider;
@@ -160,7 +155,7 @@ TEST(MachineHWIDCheckerTest, TestSwitch) {
 // Test logic when not running on Chrome OS.
 TEST(MachineHWIDCheckerTest, NotOnChromeOS) {
   // GIVEN the OS is not Chrome OS.
-  base::SysInfo::SetChromeOSVersionInfoForTest("", base::Time());
+  ScopedSetRunningOnChromeOSForTesting fake_release("", base::Time());
 
   // THEN IsMachineHWIDCorrect() is always true.
   EXPECT_TRUE(IsMachineHWIDCorrect());
@@ -176,7 +171,7 @@ TEST(MachineHWIDCheckerTest, NotOnChromeOS) {
 // Test logic when running on Chrome OS but the HWID is not present.
 TEST(MachineHWIDCheckerTest, OnCrosNoHWID) {
   // GIVEN the OS is Chrome OS.
-  SetRunningOnChromeOS();
+  ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease, base::Time());
 
   // GIVEN the HWID is not present.
   system::ScopedFakeStatisticsProvider fake_statistics_provider;
@@ -204,7 +199,7 @@ TEST(MachineHWIDCheckerTest, ValidHWID) {
                                                "DELL HORIZON MAGENTA DVT 4770");
 
   // THEN IsMachineHWIDCorrect() is always true.
-  SetRunningOnChromeOS();
+  ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease, base::Time());
   EXPECT_TRUE(IsMachineHWIDCorrect());
   fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
                                                system::kIsVmValueFalse);
@@ -222,7 +217,7 @@ TEST(MachineHWIDCheckerTest, InVM) {
                                                system::kIsVmValueTrue);
 
   // GIVEN the OS is Chrome OS.
-  SetRunningOnChromeOS();
+  ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease, base::Time());
   // THEN IsMachineHWIDCorrect() is always true.
   fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
                                                "INVALID_HWID");
@@ -239,7 +234,7 @@ TEST(MachineHWIDCheckerTest, InVM) {
 // Test logic when HWID is invalid and we're not in a VM.
 TEST(MachineHWIDCheckerTest, InvalidHWIDInVMNotTrue) {
   // GIVEN the OS is Chrome OS.
-  SetRunningOnChromeOS();
+  ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease, base::Time());
 
   // GIVEN the HWID is invalid.
   system::ScopedFakeStatisticsProvider fake_statistics_provider;
