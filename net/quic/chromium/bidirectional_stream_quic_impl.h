@@ -131,6 +131,9 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   // frame with data frame in the same packet if possible.
   bool send_request_headers_automatically_;
 
+  // True when callbacks to the delegate may be invoked synchronously.
+  bool may_invoke_callbacks_;
+
   base::WeakPtrFactory<BidirectionalStreamQuicImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamQuicImpl);

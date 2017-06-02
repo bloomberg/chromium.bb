@@ -19,6 +19,22 @@
 #include "net/spdy/core/spdy_header_block.h"
 
 namespace net {
+namespace {
+// Sets a boolean to a value, and restores it to the previous value once
+// the saver goes out of scope.
+class ScopedBoolSaver {
+ public:
+  ScopedBoolSaver(bool* var, bool new_val) : var_(var), old_val_(*var) {
+    *var_ = new_val;
+  }
+
+  ~ScopedBoolSaver() { *var_ = old_val_; }
+
+ private:
+  bool* var_;
+  bool old_val_;
+};
+}  // namespace
 
 BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
     std::unique_ptr<QuicChromiumClientSession::Handle> session)
@@ -36,6 +52,7 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       closed_is_first_stream_(false),
       has_sent_headers_(false),
       send_request_headers_automatically_(true),
+      may_invoke_callbacks_(true),
       weak_factory_(this) {}
 
 BidirectionalStreamQuicImpl::~BidirectionalStreamQuicImpl() {
@@ -51,6 +68,7 @@ void BidirectionalStreamQuicImpl::Start(
     bool send_request_headers_automatically,
     BidirectionalStreamImpl::Delegate* delegate,
     std::unique_ptr<base::Timer> /* timer */) {
+  ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   DCHECK(!stream_);
   CHECK(delegate);
   DLOG_IF(WARNING, !session_->IsConnected())
@@ -77,10 +95,15 @@ void BidirectionalStreamQuicImpl::Start(
     return;
   }
 
-  OnStreamReady(rv);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::OnStreamReady,
+                            weak_factory_.GetWeakPtr(), rv));
 }
 
 void BidirectionalStreamQuicImpl::SendRequestHeaders() {
+  ScopedBoolSaver saver(&may_invoke_callbacks_, false);
+  // If this fails, a task will have been posted to notify the delegate
+  // asynchronously.
   WriteHeaders();
 }
 
@@ -117,6 +140,7 @@ bool BidirectionalStreamQuicImpl::WriteHeaders() {
 }
 
 int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
+  ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   DCHECK(buffer);
   DCHECK(buffer_len);
 
@@ -149,6 +173,7 @@ void BidirectionalStreamQuicImpl::SendvData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool end_stream) {
+  ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   DCHECK_EQ(buffers.size(), lengths.size());
 
   if (!stream_) {
@@ -256,6 +281,7 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
 }
 
 void BidirectionalStreamQuicImpl::OnSendDataComplete(int rv) {
+  CHECK(may_invoke_callbacks_);
   DCHECK(rv == OK || !stream_);
   if (rv != 0) {
     NotifyError(rv);
@@ -267,6 +293,7 @@ void BidirectionalStreamQuicImpl::OnSendDataComplete(int rv) {
 }
 
 void BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete(int rv) {
+  CHECK(may_invoke_callbacks_);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv < 0) {
     NotifyError(rv);
@@ -304,6 +331,7 @@ void BidirectionalStreamQuicImpl::ReadTrailingHeaders() {
 }
 
 void BidirectionalStreamQuicImpl::OnReadTrailingHeadersComplete(int rv) {
+  CHECK(may_invoke_callbacks_);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv < 0) {
     NotifyError(rv);
@@ -317,6 +345,7 @@ void BidirectionalStreamQuicImpl::OnReadTrailingHeadersComplete(int rv) {
 }
 
 void BidirectionalStreamQuicImpl::OnReadDataComplete(int rv) {
+  CHECK(may_invoke_callbacks_);
   DCHECK_GE(rv, 0);
   read_buffer_ = nullptr;
   read_buffer_len_ = 0;
@@ -361,11 +390,13 @@ void BidirectionalStreamQuicImpl::NotifyErrorImpl(int error,
 void BidirectionalStreamQuicImpl::NotifyFailure(
     BidirectionalStreamImpl::Delegate* delegate,
     int error) {
+  CHECK(may_invoke_callbacks_);
   delegate->OnFailed(error);
   // |this| might be destroyed at this point.
 }
 
 void BidirectionalStreamQuicImpl::NotifyStreamReady() {
+  CHECK(may_invoke_callbacks_);
   // Sending the request might result in the stream being closed.
   if (send_request_headers_automatically_ && !WriteHeaders())
     return;
