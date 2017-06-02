@@ -17,7 +17,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
-#include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
@@ -402,19 +401,12 @@ static void GetDeviceSupportedFormatsMediaFoundation(
 // distributions such as Windows 7 N and Windows 7 KN.
 // static
 bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
-  // Even though the DLLs might be available on Vista, we get crashes
-  // when running our tests on the build bots.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
   static bool g_dlls_available = LoadMediaFoundationDlls();
   return g_dlls_available;
 }
 
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
-    : use_media_foundation_(base::win::GetVersion() >=
-                                base::win::VERSION_WIN7 &&
-                            base::CommandLine::ForCurrentProcess()->HasSwitch(
+    : use_media_foundation_(base::CommandLine::ForCurrentProcess()->HasSwitch(
                                 switches::kForceMediaFoundationVideoCapture)) {}
 
 std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(

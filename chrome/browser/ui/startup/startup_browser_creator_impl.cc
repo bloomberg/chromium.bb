@@ -158,12 +158,8 @@ LaunchMode GetLaunchShortcutKind() {
       return LM_SHORTCUT_NONAME;
     base::string16 shortcut(si.lpTitle);
     // The windows quick launch path is not localized.
-    if (shortcut.find(L"\\Quick Launch\\") != base::string16::npos) {
-      if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-        return LM_SHORTCUT_TASKBAR;
-      else
-        return LM_SHORTCUT_QUICKLAUNCH;
-    }
+    if (shortcut.find(L"\\Quick Launch\\") != base::string16::npos)
+      return LM_SHORTCUT_TASKBAR;
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     std::string appdata_path;
     env->GetVar("USERPROFILE", &appdata_path);

@@ -19,7 +19,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace ui {
@@ -99,10 +98,6 @@ bool OpenFolderViaShell(const base::FilePath& full_path) {
 bool PreventWindowFromPinning(HWND hwnd) {
   DCHECK(hwnd);
 
-  // This functionality is only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
   base::win::ScopedComPtr<IPropertyStore> pps;
   if (FAILED(
           SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(pps.GetAddressOf()))))
@@ -121,10 +116,6 @@ void SetAppDetailsForWindow(const base::string16& app_id,
                             const base::string16& relaunch_display_name,
                             HWND hwnd) {
   DCHECK(hwnd);
-
-  // This functionality is only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
 
   base::win::ScopedComPtr<IPropertyStore> pps;
   if (FAILED(
@@ -176,10 +167,6 @@ void SetRelaunchDetailsForWindow(const base::string16& relaunch_command,
 void ClearWindowPropertyStore(HWND hwnd) {
   DCHECK(hwnd);
 
-  // This functionality is only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::win::ScopedComPtr<IPropertyStore> pps;
   if (FAILED(
           SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(pps.GetAddressOf()))))
@@ -208,10 +195,6 @@ bool IsAeroGlassEnabled() {
           switches::kDisableDwmComposition))
     return false;
 
-  // Technically Aero glass works in Vista but we want to put XP and Vista
-  // at the same feature level. See bug 426573.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
   // If composition is not enabled, we behave like on XP.
   BOOL enabled = FALSE;
   return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;

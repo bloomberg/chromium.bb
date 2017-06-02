@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,10 +20,6 @@ namespace {
 void UpdateTaskbarProgressBar(int download_count,
                               bool progress_known,
                               float progress) {
-  // Taskbar progress bar is only supported on Win7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = ::CoCreateInstance(
       CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));

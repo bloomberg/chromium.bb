@@ -20,7 +20,6 @@
 #if defined(OS_WIN)
 #include <shlwapi.h>
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #elif defined(OS_POSIX)
 #include "base/files/file_path.h"
 #include "rlz/lib/rlz_value_store.h"
@@ -100,31 +99,26 @@ void WriteRegistryTree(const RegistryKeyData& data, base::win::RegKey* dest) {
 void InitializeRegistryOverridesForTesting(
     registry_util::RegistryOverrideManager* override_manager) {
   // For the moment, the HKCU hive requires no initialization.
-  const bool do_copy = (base::win::GetVersion() >= base::win::VERSION_WIN7);
   RegistryKeyData data;
 
-  if (do_copy) {
-    // Copy the following HKLM subtrees to the temporary location so that the
-    // win32 APIs used by the tests continue to work:
-    //
-    //    HKLM\System\CurrentControlSet\Control\Lsa\AccessProviders
-    //
-    // This seems to be required since Win7.
-    ReadRegistryTree(base::win::RegKey(HKEY_LOCAL_MACHINE,
-                                       kHKLMAccessProviders,
-                                       KEY_READ), &data);
-  }
+  // Copy the following HKLM subtrees to the temporary location so that the
+  // win32 APIs used by the tests continue to work:
+  //
+  //    HKLM\System\CurrentControlSet\Control\Lsa\AccessProviders
+  //
+  // This seems to be required since Win7.
+  ReadRegistryTree(base::win::RegKey(HKEY_LOCAL_MACHINE,
+                                     kHKLMAccessProviders,
+                                     KEY_READ), &data);
 
   ASSERT_NO_FATAL_FAILURE(
       override_manager->OverrideRegistry(HKEY_LOCAL_MACHINE));
   ASSERT_NO_FATAL_FAILURE(
       override_manager->OverrideRegistry(HKEY_CURRENT_USER));
 
-  if (do_copy) {
-    base::win::RegKey key(
-        HKEY_LOCAL_MACHINE, kHKLMAccessProviders, KEY_ALL_ACCESS);
-    WriteRegistryTree(data, &key);
-  }
+  base::win::RegKey key(
+      HKEY_LOCAL_MACHINE, kHKLMAccessProviders, KEY_ALL_ACCESS);
+  WriteRegistryTree(data, &key);
 }
 
 }  // namespace

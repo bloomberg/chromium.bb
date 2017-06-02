@@ -1658,8 +1658,8 @@ LRESULT HWNDMessageHandler::OnPointerActivate(UINT message,
 LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
                                            WPARAM w_param,
                                            LPARAM l_param) {
-  // WM_POINTER is not supported on Windows 7 or lower.
-  if (base::win::GetVersion() <= base::win::VERSION_WIN7) {
+  // WM_POINTER is not supported on Windows 7.
+  if (base::win::GetVersion() == base::win::VERSION_WIN7) {
     SetMsgHandled(FALSE);
     return -1;
   }

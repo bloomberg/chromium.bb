@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -123,8 +122,7 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
 }
 
 bool LegacyRenderWidgetHostHWND::Init() {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    RegisterTouchWindow(hwnd(), TWF_WANTPALM);
+  RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   HRESULT hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
                                            IID_PPV_ARGS(&window_accessible_));

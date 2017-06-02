@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -183,10 +182,6 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 // http://crbug.com/396344
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
                        DISABLED_WindowProperties) {
-  // This test checks HWND properties that are only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   // Single profile case. The profile name should not be shown.
   WaitAndValidateBrowserWindowProperties(base::Bind(
       &ValidateBrowserWindowProperties, browser(), base::string16()));
@@ -230,10 +225,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
 
 // http://crbug.com/396344
 IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
-  // This test checks HWND properties that are only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   // Load an app.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app/"));

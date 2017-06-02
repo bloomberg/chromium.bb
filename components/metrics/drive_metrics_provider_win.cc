@@ -11,18 +11,12 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "base/win/windows_version.h"
 
 namespace metrics {
 
 // static
 bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
                                           bool* has_seek_penalty) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7) {
-    // TODO(dbeam): re-enable XP and Vista detection in a utility process.
-    return false;
-  }
-
   std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
 

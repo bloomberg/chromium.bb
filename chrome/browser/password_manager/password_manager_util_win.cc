@@ -25,7 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -178,10 +177,7 @@ void GetOsPasswordStatusInternal(PasswordCheckPrefs* prefs,
     *status = PASSWORD_STATUS_WIN_DOMAIN;
   } else {
     username_length = CREDUI_MAX_USERNAME_LENGTH;
-    // CheckBlankPasswordWithPrefs() isn't safe to call on before Windows 7.
-    // http://crbug.com/345916
-    if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-        GetUserName(username, &username_length)) {
+    if (GetUserName(username, &username_length)) {
       *status = CheckBlankPasswordWithPrefs(username, prefs) ?
           PASSWORD_STATUS_BLANK :
           PASSWORD_STATUS_NONBLANK;

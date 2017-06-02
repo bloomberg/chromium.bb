@@ -97,9 +97,6 @@ std::unique_ptr<BrowserWindowPropertyManager>
 BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
     BrowserView* view,
     HWND hwnd) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return nullptr;
-
   std::unique_ptr<BrowserWindowPropertyManager> browser_window_property_manager(
       new BrowserWindowPropertyManager(view, hwnd));
   browser_window_property_manager->UpdateWindowProperties();

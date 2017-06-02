@@ -20,9 +20,6 @@ namespace ui {
 // This test validates that Pixel to DIP conversion occurs as needed in the
 // WebMouseEventBuilder::Build function.
 TEST(WebInputEventBuilderTest, TestMouseEventScale) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   display::Display::ResetForceDeviceScaleFactorForTesting();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

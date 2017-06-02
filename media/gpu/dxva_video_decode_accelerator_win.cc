@@ -1254,7 +1254,7 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
     ::LoadLibrary(mfdll);
   ::LoadLibrary(L"dxva2.dll");
 
-  if (base::win::GetVersion() > base::win::VERSION_WIN7) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     LoadLibrary(L"msvproc.dll");
   } else {
 #if defined(ENABLE_DX11_FOR_WIN7)
