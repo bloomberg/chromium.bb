@@ -96,14 +96,14 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * signal that it's ready for testing.
      * @param url The URL of the page to load.
      * @param timeoutSec The timeout of the page load in seconds.
-     * @param rule The ChromeTabbedActivityTestRule to use for page loading.
      * @return The return value of ChromeActivityTestRule.loadUrl()
      */
     public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
             throws InterruptedException {
         int result = loadUrl(url, timeoutSec);
-        pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_SHORT_MS,
-                getActivity().getActivityTab().getWebContents());
+        Assert.assertTrue("JavaScript initialization successful",
+                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_SHORT_MS,
+                        getActivity().getActivityTab().getWebContents()));
         return result;
     }
 
