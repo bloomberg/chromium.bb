@@ -189,6 +189,16 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // nothing.
   void DropTemporaryReference(const SurfaceId& surface_id);
 
+  // Returns all surfaces referenced by parent |surface_id|. Will return an
+  // empty set if |surface_id| is unknown or has no references.
+  const base::flat_set<SurfaceId>& GetSurfacesReferencedByParent(
+      const SurfaceId& surface_id) const;
+
+  // Returns all surfaces that have a reference to child |surface_id|. Will
+  // return an empty set if |surface_id| is unknown or has no references to it.
+  const base::flat_set<SurfaceId>& GetSurfacesThatReferenceChild(
+      const SurfaceId& surface_id) const;
+
   scoped_refptr<SurfaceReferenceFactory> reference_factory() {
     return reference_factory_;
   }
@@ -202,6 +212,17 @@ class CC_SURFACES_EXPORT SurfaceManager {
   friend class SurfaceManagerRefTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
+
+  struct SurfaceReferenceInfo {
+    SurfaceReferenceInfo();
+    ~SurfaceReferenceInfo();
+
+    // Surfaces that have references to this surface.
+    base::flat_set<SurfaceId> parents;
+
+    // Surfaces that are referenced from this surface.
+    base::flat_set<SurfaceId> children;
+  };
 
   // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
@@ -266,23 +287,23 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // waited on.
   std::unordered_set<SurfaceSequence, SurfaceSequenceHash> satisfied_sequences_;
 
-  // Tracks references from the child surface to parent surface. If there are
-  // zero entries in the set for a SurfaceId then nothing is referencing the
-  // surface and it can be garbage collected.
-  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
-      child_to_parent_refs_;
-  // Tracks references from the parent surface to child surface. Is the inverse
-  // of |child_to_parent_refs_|.
-  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
-      parent_to_child_refs_;
-
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.
   const SurfaceId root_surface_id_;
 
+  // Always empty set that is returned when there is no entry in |references_|
+  // for a SurfaceId.
+  const base::flat_set<SurfaceId> empty_surface_id_set_;
+
   // The DirectSurfaceReferenceFactory that uses this manager to create surface
   // references.
   scoped_refptr<SurfaceReferenceFactory> reference_factory_;
+
+  // Keeps track of surface references for a surface. The graph of references is
+  // stored in both directions, so we know the parents and children for each
+  // surface.
+  std::unordered_map<SurfaceId, SurfaceReferenceInfo, SurfaceIdHash>
+      references_;
 
   // A map of surfaces that have temporary references to them. The key is the
   // SurfaceId and the value is the owner. The owner will initially be empty and

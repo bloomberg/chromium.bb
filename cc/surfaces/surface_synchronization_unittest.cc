@@ -61,9 +61,6 @@ class SurfaceSynchronizationTest : public testing::Test {
   Surface* parent_surface() {
     return parent_support().current_surface_for_testing();
   }
-  const ReferencedSurfaceTracker& parent_reference_tracker() {
-    return parent_support().ReferenceTrackerForTesting();
-  }
 
   CompositorFrameSinkSupport& child_support1() { return *supports_[2]; }
   Surface* child_surface1() {
@@ -85,7 +82,7 @@ class SurfaceSynchronizationTest : public testing::Test {
   // Returns all the references where |surface_id| is the parent.
   const base::flat_set<SurfaceId>& GetChildReferences(
       const SurfaceId& surface_id) {
-    return surface_manager().parent_to_child_refs_[surface_id];
+    return surface_manager().GetSurfacesReferencedByParent(surface_id);
   }
 
   // Returns true if there is a temporary reference for |surface_id|.
