@@ -185,14 +185,12 @@ void DeviceCloudPolicyStoreChromeOS::UpdateStatusFromService() {
     case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
       status_ = STATUS_BAD_STATE;
       return;
-    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
     case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
       status_ = STATUS_STORE_ERROR;
       return;
     case chromeos::DeviceSettingsService::STORE_NO_POLICY:
     case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
     case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR:
-    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
       status_ = STATUS_LOAD_ERROR;
       return;
   }
@@ -210,9 +208,7 @@ void DeviceCloudPolicyStoreChromeOS::CheckDMToken() {
     case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR:
       // Continue with the check below.
       break;
-    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
     case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
-    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
       // Don't check for write errors or transient read errors.
       return;
   }

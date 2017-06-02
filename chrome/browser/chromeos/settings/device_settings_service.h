@@ -59,16 +59,14 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   typedef base::Callback<void(OwnershipStatus)> OwnershipStatusCallback;
 
-  // Status codes for Store().
+  // Status codes for Load() and Store().
   enum Status {
     STORE_SUCCESS,
-    STORE_KEY_UNAVAILABLE,       // Owner key not yet configured.
-    STORE_POLICY_ERROR,          // Failure constructing the settings blob.
-    STORE_OPERATION_FAILED,      // IPC to session_manager daemon failed.
-    STORE_NO_POLICY,             // No settings blob present.
-    STORE_INVALID_POLICY,        // Invalid settings blob.
-    STORE_VALIDATION_ERROR,      // Unrecoverable policy validation failure.
-    STORE_TEMP_VALIDATION_ERROR, // Temporary policy validation failure.
+    STORE_KEY_UNAVAILABLE,   // Owner key not yet configured.
+    STORE_OPERATION_FAILED,  // IPC to session_manager daemon failed.
+    STORE_NO_POLICY,         // No settings blob present.
+    STORE_INVALID_POLICY,    // Invalid settings blob (proto parse failed).
+    STORE_VALIDATION_ERROR,  // Policy validation failure.
   };
 
   // Observer interface.
@@ -253,13 +251,10 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   base::ObserverList<Observer> observers_;
 
-  // For recoverable load errors how many retries are left before we give up.
-  int load_retries_left_;
-
   // Whether the device will be establishing consumer ownership.
   bool will_establish_consumer_ownership_ = false;
 
-  base::WeakPtrFactory<DeviceSettingsService> weak_factory_;
+  base::WeakPtrFactory<DeviceSettingsService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsService);
 };
