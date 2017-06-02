@@ -56,7 +56,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   // is set.  See bug for more details: crbug.com/353716.
   InterpolationQuality interpolation_quality =
       layout_html_canvas_.Style()->ImageRendering() ==
-              EImageRendering::kOptimizeContrast
+              EImageRendering::kWebkitOptimizeContrast
           ? kInterpolationLow
           : CanvasDefaultInterpolationQuality;
   if (layout_html_canvas_.Style()->ImageRendering() ==

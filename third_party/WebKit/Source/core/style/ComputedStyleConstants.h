@@ -266,14 +266,6 @@ enum class TextEmphasisMark {
 
 enum TextOverflow { kTextOverflowClip = 0, kTextOverflowEllipsis };
 
-enum class EImageRendering {
-  kAuto,
-  kOptimizeSpeed,
-  kOptimizeQuality,
-  kOptimizeContrast,
-  kPixelated
-};
-
 static const size_t kGridAutoFlowBits = 4;
 enum InternalGridAutoFlowAlgorithm {
   kInternalAutoFlowAlgorithmSparse = 0x1,

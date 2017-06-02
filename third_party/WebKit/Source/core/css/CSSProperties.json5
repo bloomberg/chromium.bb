@@ -1284,10 +1284,9 @@
     {
       name: "image-rendering",
       inherited: true,
-      field_template: "storage_only",
-      type_name: "EImageRendering",
-      default_value: "EImageRendering::kAuto",
-      field_size: 3,
+      field_template: "keyword",
+      keywords: ["auto", "optimize-speed", "optimize-quality", "-webkit-optimize-contrast", "pixelated"],
+      default_value: "auto",
       field_group: "rare-inherited",
     },
     {

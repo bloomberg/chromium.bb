@@ -1011,17 +1011,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_inherited_data_, respect_image_orientation_, v);
   }
 
-  // image-rendering
-  static EImageRendering InitialImageRendering() {
-    return EImageRendering::kAuto;
-  }
-  EImageRendering ImageRendering() const {
-    return static_cast<EImageRendering>(rare_inherited_data_->image_rendering_);
-  }
-  void SetImageRendering(EImageRendering v) {
-    SET_VAR(rare_inherited_data_, image_rendering_, static_cast<unsigned>(v));
-  }
-
   // isolation
   static EIsolation InitialIsolation() { return kIsolationAuto; }
   EIsolation Isolation() const {
