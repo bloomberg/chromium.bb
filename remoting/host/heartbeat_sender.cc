@@ -48,10 +48,16 @@ const char kHeartbeatResultTag[] = "heartbeat-result";
 const char kSetIntervalTag[] = "set-interval";
 const char kExpectedSequenceIdTag[] = "expected-sequence-id";
 
-const int64_t kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
-const int64_t kResendDelayMs = 10 * 1000;                   // 10 seconds.
-const int64_t kResendDelayOnHostNotFoundMs = 10 * 1000;     // 10 seconds.
+constexpr base::TimeDelta kDefaultHeartbeatInterval =
+    base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kHeartbeatResponseTimeout =
+    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kResendDelay = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kResendDelayOnHostNotFound =
+    base::TimeDelta::FromSeconds(10);
+
 const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
+const int kMaxHeartbeatTimeouts = 2;
 
 }  // namespace
 
@@ -68,12 +74,7 @@ HeartbeatSender::HeartbeatSender(
       signal_strategy_(signal_strategy),
       host_key_pair_(host_key_pair),
       directory_bot_jid_(directory_bot_jid),
-      interval_ms_(kDefaultHeartbeatIntervalMs),
-      sequence_id_(0),
-      sequence_id_was_set_(false),
-      sequence_id_recent_set_num_(0),
-      heartbeat_succeeded_(false),
-      failed_startup_heartbeat_count_(0) {
+      interval_(kDefaultHeartbeatInterval) {
   DCHECK(signal_strategy_);
   DCHECK(host_key_pair_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -92,10 +93,9 @@ HeartbeatSender::~HeartbeatSender() {
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state == SignalStrategy::CONNECTED) {
-    iq_sender_.reset(new IqSender(signal_strategy_));
+    iq_sender_ = base::MakeUnique<IqSender>(signal_strategy_);
     SendStanza();
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
-                 this, &HeartbeatSender::SendStanza);
+    timer_.Start(FROM_HERE, interval_, this, &HeartbeatSender::SendStanza);
   } else if (state == SignalStrategy::DISCONNECTED) {
     request_.reset();
     iq_sender_.reset();
@@ -169,17 +169,31 @@ void HeartbeatSender::DoSendStanza() {
 
   request_ = iq_sender_->SendIq(
       buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
-      base::Bind(&HeartbeatSender::ProcessResponse,
-                 base::Unretained(this),
+      base::Bind(&HeartbeatSender::ProcessResponse, base::Unretained(this),
                  !host_offline_reason_.empty()));
+  request_->SetTimeout(kHeartbeatResponseTimeout);
   ++sequence_id_;
 }
 
-void HeartbeatSender::ProcessResponse(
-    bool is_offline_heartbeat_response,
-    IqRequest* request,
-    const XmlElement* response) {
+void HeartbeatSender::ProcessResponse(bool is_offline_heartbeat_response,
+                                      IqRequest* request,
+                                      const XmlElement* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!response) {
+    timed_out_heartbeats_count_++;
+    if (timed_out_heartbeats_count_ >= kMaxHeartbeatTimeouts) {
+      LOG(ERROR) << "Heartbeat timed out. Reconnecting XMPP.";
+      timed_out_heartbeats_count_ = 0;
+      // SignalingConnector will reconnect SignalStrategy.
+      signal_strategy_->Disconnect();
+    } else {
+      LOG(ERROR) << "Heartbeat timed out.";
+    }
+    return;
+  } else {
+    timed_out_heartbeats_count_ = 0;
+  }
 
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
@@ -195,11 +209,8 @@ void HeartbeatSender::ProcessResponse(
         // exit.
         failed_startup_heartbeat_count_++;
         if (!heartbeat_succeeded_ && (failed_startup_heartbeat_count_ <=
-                kMaxResendOnHostNotFoundCount)) {
-          timer_resend_.Start(FROM_HERE,
-                              base::TimeDelta::FromMilliseconds(
-                                  kResendDelayOnHostNotFoundMs),
-                              this,
+                                      kMaxResendOnHostNotFoundCount)) {
+          timer_resend_.Start(FROM_HERE, kResendDelayOnHostNotFound, this,
                               &HeartbeatSender::ResendStanza);
           return;
         }
@@ -224,12 +235,13 @@ void HeartbeatSender::ProcessResponse(
                                          kSetIntervalTag));
     if (set_interval_element) {
       const std::string& interval_str = set_interval_element->BodyText();
-      int interval;
-      if (!base::StringToInt(interval_str, &interval) || interval <= 0) {
+      int interval_seconds;
+      if (!base::StringToInt(interval_str, &interval_seconds) ||
+          interval_seconds <= 0) {
         LOG(ERROR) << "Received invalid set-interval: "
                    << set_interval_element->Str();
       } else {
-        SetInterval(interval * base::Time::kMillisecondsPerSecond);
+        SetInterval(base::TimeDelta::FromSeconds(interval_seconds));
       }
     }
 
@@ -270,15 +282,14 @@ void HeartbeatSender::ProcessResponse(
   }
 }
 
-void HeartbeatSender::SetInterval(int interval) {
-  if (interval != interval_ms_) {
-    interval_ms_ = interval;
+void HeartbeatSender::SetInterval(base::TimeDelta interval) {
+  if (interval != interval_) {
+    interval_ = interval;
 
     // Restart the timer with the new interval.
     if (timer_.IsRunning()) {
       timer_.Stop();
-      timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
-                   this, &HeartbeatSender::SendStanza);
+      timer_.Start(FROM_HERE, interval_, this, &HeartbeatSender::SendStanza);
     }
   }
 }
@@ -296,11 +307,11 @@ void HeartbeatSender::SetSequenceId(int sequence_id) {
   } else {
     HOST_LOG << "The heartbeat sequence ID has been set more than once: "
               << "the new value is " << sequence_id;
-    double delay = pow(2.0, sequence_id_recent_set_num_) *
-        (1 + base::RandDouble()) * kResendDelayMs;
-    if (delay <= interval_ms_) {
-      timer_resend_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay),
-                          this, &HeartbeatSender::ResendStanza);
+    base::TimeDelta delay = pow(2.0, sequence_id_recent_set_num_) *
+                            (1 + base::RandDouble()) * kResendDelay;
+    if (delay <= interval_) {
+      timer_resend_.Start(FROM_HERE, delay, this,
+                          &HeartbeatSender::ResendStanza);
     }
   }
   sequence_id_was_set_ = true;
