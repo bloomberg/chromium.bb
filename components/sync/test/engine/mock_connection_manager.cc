@@ -5,6 +5,7 @@
 #include "components/sync/test/engine/mock_connection_manager.h"
 
 #include <map>
+#include <utility>
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -230,13 +231,13 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
 }
 
 void MockConnectionManager::SetGUClientCommand(
-    sync_pb::ClientCommand* command) {
-  gu_client_command_.reset(command);
+    std::unique_ptr<sync_pb::ClientCommand> command) {
+  gu_client_command_ = std::move(command);
 }
 
 void MockConnectionManager::SetCommitClientCommand(
-    sync_pb::ClientCommand* command) {
-  commit_client_command_.reset(command);
+    std::unique_ptr<sync_pb::ClientCommand> command) {
+  commit_client_command_ = std::move(command);
 }
 
 void MockConnectionManager::SetTransientErrorId(syncable::Id id) {
