@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/sessions/core/session_types.h"
 #import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -19,9 +18,13 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/gfx/ios/uikit_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface TabHistoryPopupController (Testing)
 + (CGFloat)popupWidthForItems:(const web::NavigationItemList)items;
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     TabHistoryViewController* tabHistoryTableViewController;
 @end
 
@@ -32,7 +35,7 @@ static const CGFloat kTabHistoryMaxWidthLandscapePhone = 350.0;
 class TabHistoryPopupControllerTest : public PlatformTest {
  protected:
   TabHistoryPopupControllerTest() : PlatformTest() {
-    parent_.reset([[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds]);
+    parent_ = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     // Create test items and populate |items_|.
     web::Referrer referrer(GURL("http://www.example.com"),
                            web::ReferrerPolicyDefault);
@@ -47,15 +50,15 @@ class TabHistoryPopupControllerTest : public PlatformTest {
     items_.back()->SetReferrer(referrer);
     // Create the popup controller using CRWSessionEntries created from the
     // NavigationItems in |items_|.
-    popup_.reset([[TabHistoryPopupController alloc]
+    popup_ = [[TabHistoryPopupController alloc]
         initWithOrigin:CGPointZero
             parentView:parent_
-                 items:web::CreateRawNavigationItemList(items_)]);
+                 items:web::CreateRawNavigationItemList(items_)];
   }
 
   web::ScopedNavigationItemList items_;
-  base::scoped_nsobject<UIView> parent_;
-  base::scoped_nsobject<TabHistoryPopupController> popup_;
+  __strong UIView* parent_;
+  __strong TabHistoryPopupController* popup_;
 };
 
 TEST_F(TabHistoryPopupControllerTest, TestTableSize) {

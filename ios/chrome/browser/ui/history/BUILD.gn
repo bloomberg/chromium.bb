@@ -91,6 +91,7 @@ source_set("history") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "favicon_view_provider_unittest.mm",
