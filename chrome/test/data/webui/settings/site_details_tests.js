@@ -123,55 +123,6 @@ suite('SiteDetails', function() {
     document.body.appendChild(testElement);
   });
 
-  test('empty state', function() {
-    var category = settings.ContentSettingsTypes.NOTIFICATIONS;
-    var site = {
-      origin: 'http://www.google.com',
-      displayName: 'http://www.google.com',
-      embeddingOrigin: '',
-    };
-    browserProxy.setPrefs(prefsEmpty);
-    testElement.category = category;
-    testElement.site = site
-
-    // expect usage to not be rendered
-    assertFalse(!!testElement.$$('#usage'));
-
-    // TODO(finnur): Check for the Permission heading hiding when no
-    // permissions are showing.
-
-    var msg = 'No category should be showing, height';
-    assertEquals(0, testElement.$.camera.offsetHeight, msg);
-    assertEquals(0, testElement.$.cookies.offsetHeight, msg);
-    assertEquals(0, testElement.$.geolocation.offsetHeight, msg);
-    assertEquals(0, testElement.$.javascript.offsetHeight, msg);
-    assertEquals(0, testElement.$.mic.offsetHeight, msg);
-    assertEquals(0, testElement.$.notification.offsetHeight, msg);
-    assertEquals(0, testElement.$.popups.offsetHeight, msg);
-  });
-
-  test('all categories visible', function() {
-    var category = settings.ContentSettingsTypes.NOTIFICATIONS;
-    var site = {
-      origin: 'https://foo-allow.com:443',
-      displayName: 'https://foo-allow.com:443',
-      embeddingOrigin: '',
-    };
-
-    browserProxy.setPrefs(prefs);
-    testElement.category = category;
-    testElement.site = site;
-
-    var msg = 'All categories should be showing';
-    assertFalse(testElement.$.camera.hidden, msg);
-    assertFalse(testElement.$.cookies.hidden, msg);
-    assertFalse(testElement.$.geolocation.hidden, msg);
-    assertFalse(testElement.$.javascript.hidden, msg);
-    assertFalse(testElement.$.mic.hidden, msg);
-    assertFalse(testElement.$.notification.hidden, msg);
-    assertFalse(testElement.$.popups.hidden, msg);
-  });
-
   test('usage heading shows on storage available', function() {
     // Remove the current website-usage-private-api element.
     var parent = testElement.$.usageApi.parentNode;
