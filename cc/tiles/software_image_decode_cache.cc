@@ -113,7 +113,8 @@ class ImageDecodeTaskImpl : public TileTask {
                  tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_.image().get(),
-        devtools_instrumentation::ScopedImageDecodeTask::SOFTWARE);
+        devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
+        ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
     cache_->DecodeImage(image_key_, image_, task_type_);
   }
 
@@ -227,6 +228,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRef(
     const DrawImage& image,
     const TracingInfo& tracing_info,
     scoped_refptr<TileTask>* task) {
+  DCHECK_EQ(tracing_info.task_type, TaskType::kInRaster);
   return GetTaskForImageAndRefInternal(
       image, tracing_info, DecodeTaskType::USE_IN_RASTER_TASKS, task);
 }
@@ -235,7 +237,8 @@ bool SoftwareImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
     const DrawImage& image,
     scoped_refptr<TileTask>* task) {
   return GetTaskForImageAndRefInternal(
-      image, TracingInfo(), DecodeTaskType::USE_OUT_OF_RASTER_TASKS, task);
+      image, TracingInfo(0, TilePriority::NOW, TaskType::kOutOfRaster),
+      DecodeTaskType::USE_OUT_OF_RASTER_TASKS, task);
 }
 
 bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
