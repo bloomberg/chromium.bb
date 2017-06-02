@@ -3151,12 +3151,12 @@
             {
               'name': 'AllowPlugins',
               'value': 1,
-              'caption': '''Allow all sites to automatically run plugins''',
+              'caption': '''Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin''',
             },
             {
               'name': 'BlockPlugins',
               'value': 2,
-              'caption': '''Block all plugins''',
+              'caption': '''Block the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin''',
             },
             {
               'name': 'ClickToPlay',
@@ -3171,13 +3171,13 @@
           },
           'example_value': 1,
           'id': 51,
-          'caption': '''Default plugins setting''',
+          'caption': '''Default <ph name="FLASH_PLUGIN_NAME">Flash</ph> setting''',
           'tags': [],
-          'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
+          'desc': '''Allows you to set whether websites are allowed to automatically run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin. Automatically running the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin can be either allowed for all websites or denied for all websites.
 
-          Click to play allows plugins to run but the user must click them to start their execution.
+          Click to play allows the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin to run but the user must click on the placeholder to start its execution.
 
-          If this policy is left not set, 'AllowPlugins' will be used and the user will be able to change it.''',
+          If this policy is left not set, the user will be able to change this setting manually.''',
         },
         {
           'name': 'DefaultPopupsSetting',
@@ -3623,9 +3623,9 @@
           },
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 73,
-          'caption': '''Allow plugins on these sites''',
+          'caption': '''Allow the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
           'tags': [],
-          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run plugins.
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
@@ -3643,9 +3643,9 @@
           },
           'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 74,
-          'caption': '''Block plugins on these sites''',
+          'caption': '''Block the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
           'tags': [],
-          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run plugins.
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
