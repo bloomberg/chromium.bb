@@ -422,12 +422,20 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
 void ChromeLauncherController::SetLauncherItemImage(
     const ash::ShelfID& shelf_id,
     const gfx::ImageSkia& image) {
+  DCHECK(!image.isNull());
   const ash::ShelfItem* item = GetItem(shelf_id);
   if (item) {
     ash::ShelfItem new_item = *item;
     new_item.image = image;
     model_->Set(model_->ItemIndexByID(shelf_id), new_item);
   }
+}
+
+void ChromeLauncherController::UpdateLauncherItemImage(
+    const std::string& app_id) {
+  AppIconLoader* icon_loader = GetAppIconLoaderForApp(app_id);
+  if (icon_loader)
+    icon_loader->UpdateImage(app_id);
 }
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
@@ -686,16 +694,6 @@ ChromeLauncherController::GetArcDeferredLauncher() {
   return arc_deferred_launcher_.get();
 }
 
-AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
-    const std::string& app_id) {
-  for (const auto& app_icon_loader : app_icon_loaders_) {
-    if (app_icon_loader->CanLoadImageForApp(app_id))
-      return app_icon_loader.get();
-  }
-
-  return nullptr;
-}
-
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
   if (!ConnectToShelfController() || updating_shelf_pref_from_observer_)
     return;
@@ -759,6 +757,16 @@ bool ChromeLauncherController::IsAppPinned(const std::string& app_id) {
 
 void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
   model_->UnpinAppWithID(app_id);
+}
+
+AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
+    const std::string& app_id) {
+  for (const auto& app_icon_loader : app_icon_loaders_) {
+    if (app_icon_loader->CanLoadImageForApp(app_id))
+      return app_icon_loader.get();
+  }
+
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

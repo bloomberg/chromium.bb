@@ -547,7 +547,7 @@ ArcAppWindowLauncherController::AttachControllerToTask(
 
   std::unique_ptr<ArcAppWindowLauncherItemController> controller =
       base::MakeUnique<ArcAppWindowLauncherItemController>(
-          app_shelf_id.ToString(), owner());
+          app_shelf_id.ToString());
   ArcAppWindowLauncherItemController* item_controller = controller.get();
   const ash::ShelfID shelf_id(app_shelf_id.ToString());
   if (!owner()->GetItem(shelf_id)) {

@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -128,32 +129,6 @@ class TestEvent : public ui::Event {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestEvent);
-};
-
-class TestAppWindowRegistryObserver
-    : public extensions::AppWindowRegistry::Observer {
- public:
-  explicit TestAppWindowRegistryObserver(Profile* profile)
-      : profile_(profile), icon_updates_(0) {
-    extensions::AppWindowRegistry::Get(profile_)->AddObserver(this);
-  }
-
-  ~TestAppWindowRegistryObserver() override {
-    extensions::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
-  }
-
-  // Overridden from AppWindowRegistry::Observer:
-  void OnAppWindowIconChanged(AppWindow* app_window) override {
-    ++icon_updates_;
-  }
-
-  int icon_updates() { return icon_updates_; }
-
- private:
-  Profile* profile_;
-  int icon_updates_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppWindowRegistryObserver);
 };
 
 // Click the "All Apps" button from the app launcher start page. Assumes that
@@ -853,28 +828,52 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 }
 
-// Flaky on Linux ChromiumOS bot -- crbug/720601.
 // Test that opening an app sets the correct icon
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
-  TestAppWindowRegistryObserver test_observer(browser()->profile());
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
+  TestAppWindowIconObserver test_observer(browser()->profile());
 
   // Enable experimental APIs to allow panel creation.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
 
   int base_shelf_item_count = shelf_model()->item_count();
-  ExtensionTestMessageListener completed_listener("Completed", false);
+  ExtensionTestMessageListener ready_listener("ready", true);
   LoadAndLaunchPlatformApp("app_icon", "Launched");
 
-  ASSERT_TRUE(completed_listener.WaitUntilSatisfied());
+  // Create panel window.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("createPanelWindow");
+  ready_listener.Reset();
+  // Default app icon + extension icon updates.
+  test_observer.WaitForIconUpdates(2);
 
-  // Now wait until the WebContent has decoded the icons and chrome has
-  // processed it. This needs to be in a loop since the renderer runs in a
-  // different process.
-  while (test_observer.icon_updates() < 4) {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  // Set panel window icon.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("setPanelWindowIcon");
+  ready_listener.Reset();
+  // Custom icon update.
+  test_observer.WaitForIconUpdate();
+
+  // Create non-shelf window.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("createNonShelfWindow");
+  ready_listener.Reset();
+  // Default app icon + extension icon updates.
+  test_observer.WaitForIconUpdates(2);
+
+  // Create shelf window.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("createShelfWindow");
+  ready_listener.Reset();
+  // Default app icon + extension icon updates.
+  test_observer.WaitForIconUpdates(2);
+
+  // Set shelf window icon.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("setShelfWindowIcon");
+  ready_listener.Reset();
+  // Custom icon update.
+  test_observer.WaitForIconUpdate();
 
   // This test creates one app window, one app window with custom icon and one
   // panel window.
@@ -892,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   const ash::ShelfItemDelegate* app_item_delegate =
       GetShelfItemDelegate(app_item.id);
   ASSERT_TRUE(app_item_delegate);
-  EXPECT_FALSE(app_item_delegate->image_set_by_controller());
+  EXPECT_TRUE(app_item_delegate->image_set_by_controller());
 
   const ash::ShelfItemDelegate* app_custom_icon_item_delegate =
       GetShelfItemDelegate(app_custom_icon_item.id);
@@ -900,10 +899,23 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   EXPECT_TRUE(app_custom_icon_item_delegate->image_set_by_controller());
 
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
+#if defined(USE_ASH)
+  EXPECT_EQ(ash::kShelfSize, app_item.image.height());
+#else
   EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALL, app_item.image.height());
+#endif
   EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
             app_custom_icon_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
+
+  // No more icon updates.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(8, test_observer.icon_updates());
+
+  // Exit.
+  ready_listener.WaitUntilSatisfied();
+  ready_listener.Reply("exit");
+  ready_listener.Reset();
 }
 
 // Test that we can launch an app with a shortcut.

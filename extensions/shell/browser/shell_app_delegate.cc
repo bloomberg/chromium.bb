@@ -81,7 +81,7 @@ bool ShellAppDelegate::CheckMediaAccessPermission(
   return true;
 }
 
-int ShellAppDelegate::PreferredIconSize() {
+int ShellAppDelegate::PreferredIconSize() const {
   return extension_misc::EXTENSION_ICON_SMALL;
 }
 

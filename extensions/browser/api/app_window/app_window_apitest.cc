@@ -30,61 +30,28 @@
 
 namespace extensions {
 
-namespace {
-
-class TestAppWindowRegistryObserver : public AppWindowRegistry::Observer {
- public:
-  explicit TestAppWindowRegistryObserver(Profile* profile)
-      : profile_(profile), icon_updates_(0) {
-    AppWindowRegistry::Get(profile_)->AddObserver(this);
-  }
-  ~TestAppWindowRegistryObserver() override {
-    AppWindowRegistry::Get(profile_)->RemoveObserver(this);
-  }
-
-  // Overridden from AppWindowRegistry::Observer:
-  void OnAppWindowIconChanged(AppWindow* app_window) override {
-    ++icon_updates_;
-  }
-
-  int icon_updates() { return icon_updates_; }
-
- private:
-  Profile* profile_;
-  int icon_updates_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppWindowRegistryObserver);
-};
-
-}  // namespace
-
 using AppWindowApiTest = PlatformAppBrowserTest;
 using ExperimentalAppWindowApiTest = ExperimentalPlatformAppBrowserTest;
 
 // Tests chrome.app.window.setIcon.
-// Flaky test crbug.com/716726
-IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, DISABLED_SetIcon) {
-  std::unique_ptr<TestAppWindowRegistryObserver> test_observer(
-      new TestAppWindowRegistryObserver(browser()->profile()));
+IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, SetIcon) {
   ExtensionTestMessageListener listener("ready", true);
 
   // Launch the app and wait for it to be ready.
   LoadAndLaunchPlatformApp("windows_api_set_icon", &listener);
-  EXPECT_EQ(0, test_observer->icon_updates());
   listener.Reply("");
+
+  AppWindow* app_window = GetFirstAppWindow();
+  ASSERT_TRUE(app_window);
 
   // Now wait until the WebContent has decoded the icon and chrome has
   // processed it. This needs to be in a loop since the renderer runs in a
   // different process.
-  while (test_observer->icon_updates() < 1) {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
-  AppWindow* app_window = GetFirstAppWindow();
-  ASSERT_TRUE(app_window);
+  while (app_window->custom_app_icon().IsEmpty())
+    base::RunLoop().RunUntilIdle();
+
   EXPECT_NE(std::string::npos,
             app_window->app_icon_url().spec().find("icon.png"));
-  EXPECT_EQ(1, test_observer->icon_updates());
 }
 
 // TODO(asargent) - Figure out what to do about the fact that minimize events

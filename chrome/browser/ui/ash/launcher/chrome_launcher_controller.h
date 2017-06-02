@@ -150,6 +150,9 @@ class ChromeLauncherController
   void SetLauncherItemImage(const ash::ShelfID& shelf_id,
                             const gfx::ImageSkia& image);
 
+  // Updates the image for a specific shelf item from the app's icon loader.
+  void UpdateLauncherItemImage(const std::string& app_id);
+
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
   void UpdateAppState(content::WebContents* contents, AppState app_state);
@@ -218,8 +221,6 @@ class ChromeLauncherController
 
   // Controller to launch ARC apps in deferred mode.
   ArcAppDeferredLauncherController* GetArcDeferredLauncher();
-
-  AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
   // Sets the shelf auto-hide and/or alignment behavior from prefs.
   void SetShelfAutoHideBehaviorFromPrefs();
@@ -388,6 +389,9 @@ class ChromeLauncherController
 
   // An internal helper to unpin a shelf item; this does not update prefs.
   void UnpinShelfItemInternal(const ash::ShelfID& id);
+
+  // Resolves the app icon image loader for the app.
+  AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
   static ChromeLauncherController* instance_;
 
