@@ -215,6 +215,7 @@
       'Win 10 Fast Ring': 'release_trybot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
+      'Windows Clang Analyzer': 'windows_chromium_analysis',
     },
 
     'chromium.goma': {
@@ -1295,6 +1296,10 @@
     'ios': [ 'error'],
 
     'linux_chromium_analysis': [
+      'analysis'
+    ],
+
+    'windows_chromium_analysis': [
       'analysis'
     ],
 
