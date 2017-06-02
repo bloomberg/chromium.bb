@@ -35,7 +35,7 @@ namespace launch_util {
 // static
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(pref_names::kBookmarkAppCreationLaunchType,
-                                LAUNCH_TYPE_REGULAR);
+                                LAUNCH_TYPE_WINDOW);
 }
 
 }  // namespace launch_util
