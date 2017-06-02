@@ -162,8 +162,13 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  // TODO(avayvod): don't do this check on low-end devices - merge with
-  // https://codereview.chromium.org/2475293003
+  if (!RuntimeEnabledFeatures::remotePlaybackBackendEnabled()) {
+    resolver->Reject(DOMException::Create(
+        kNotSupportedError,
+        "The RemotePlayback API is disabled on this platform."));
+    return promise;
+  }
+
   if (availability_ == WebRemotePlaybackAvailability::kDeviceNotAvailable) {
     resolver->Reject(DOMException::Create(kNotFoundError,
                                           "No remote playback devices found."));
