@@ -217,7 +217,7 @@ TEST_F(ProfileChooserControllerTest,
 
 TEST_F(ProfileChooserControllerTest,
        SignedInProfileActiveCardLinksWithAccountConsistency) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
 
   SignInFirstProfile();
@@ -261,7 +261,7 @@ TEST_F(ProfileChooserControllerTest,
 }
 
 TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
 
   SignInFirstProfile();

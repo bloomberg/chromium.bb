@@ -34,9 +34,6 @@ extern const char kAccelerated2dCanvasDescription[];
 extern const char kAcceleratedVideoDecodeName[];
 extern const char kAcceleratedVideoDecodeDescription[];
 
-extern const char kAccountConsistencyName[];
-extern const char kAccountConsistencyDescription[];
-
 extern const char kAddToShelfName[];
 extern const char kAddToShelfDescription[];
 
@@ -1399,6 +1396,13 @@ extern const char kPauseBackgroundTabsDescription[];
 
 extern const char kUseGoogleLocalNtpName[];
 extern const char kUseGoogleLocalNtpDescription[];
+
+extern const char kAccountConsistencyName[];
+extern const char kAccountConsistencyDescription[];
+
+// Choices for enable account consistency flag
+extern const char kAccountConsistencyChoiceMirror[];
+extern const char kAccountConsistencyChoiceDice[];
 
 #endif
 

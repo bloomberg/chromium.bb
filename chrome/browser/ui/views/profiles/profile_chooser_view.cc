@@ -611,11 +611,10 @@ void ProfileChooserView::Init() {
 
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
-  if (IsProfileChooser(view_mode_) &&
-      HasAuthError(browser_->profile()) &&
-      switches::IsEnableAccountConsistency() &&
-      avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex()).
-          signed_in) {
+  if (IsProfileChooser(view_mode_) && HasAuthError(browser_->profile()) &&
+      switches::IsAccountConsistencyMirrorEnabled() &&
+      avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex())
+          .signed_in) {
     view_mode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
   }
 
@@ -656,9 +655,9 @@ void ProfileChooserView::OnRefreshTokenAvailable(
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
     // The account management UI is only available through the
     // --enable-account-consistency flag.
-    ShowViewFromMode(switches::IsEnableAccountConsistency() ?
-        profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
-        profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
+    ShowViewFromMode(switches::IsAccountConsistencyMirrorEnabled()
+                         ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
+                         : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   }
 }
 
@@ -674,7 +673,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   // The account management view should only be displayed if the active profile
   // is signed in.
   if (view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-    DCHECK(switches::IsEnableAccountConsistency());
+    DCHECK(switches::IsAccountConsistencyMirrorEnabled());
     const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
         avatar_menu->GetActiveProfileIndex());
     if (!active_item.signed_in) {
@@ -833,9 +832,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // The account management view is only available with the
     // --enable-account-consistency flag.
     bool account_management_available =
-        SigninManagerFactory::GetForProfile(browser_->profile())->
-            IsAuthenticated() &&
-        switches::IsEnableAccountConsistency();
+        SigninManagerFactory::GetForProfile(browser_->profile())
+            ->IsAuthenticated() &&
+        switches::IsAccountConsistencyMirrorEnabled();
     ShowViewFromMode(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
@@ -1108,8 +1107,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                      views::GridLayout::USE_PREF, 0, 0);
   grid_layout->AddPaddingRow(0, 0);
   const int num_labels =
-      (avatar_item.signed_in && !switches::IsEnableAccountConsistency()) ? 2
-                                                                         : 1;
+      (avatar_item.signed_in && !switches::IsAccountConsistencyMirrorEnabled())
+          ? 2
+          : 1;
   int profile_card_height =
       kImageSide + 2 * (kBadgeSpacing + vertical_spacing_small);
   const int line_height = profile_card_height / num_labels;
@@ -1153,7 +1153,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 
   // The available links depend on the type of profile that is active.
   if (avatar_item.signed_in) {
-    if (switches::IsEnableAccountConsistency()) {
+    if (switches::IsAccountConsistencyMirrorEnabled()) {
       base::string16 button_text = l10n_util::GetStringUTF16(
           IsProfileChooser(view_mode_)
               ? IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON

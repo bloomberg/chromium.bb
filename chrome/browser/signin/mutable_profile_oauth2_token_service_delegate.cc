@@ -428,7 +428,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         }
 
         // Only load secondary accounts when account consistency is enabled.
-        if (switches::IsEnableAccountConsistency() ||
+        if (switches::IsAccountConsistencyMirrorEnabled() ||
             account_id == loading_primary_account_id_) {
           refresh_tokens_[account_id].reset(new AccountStatus(
               signin_error_controller_, account_id, refresh_token));

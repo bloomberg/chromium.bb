@@ -15,15 +15,15 @@ class CommandLine;
 
 namespace switches {
 
-// Checks whether account consistency is enabled. If enabled, the account
+// Checks whether Mirror account consistency is enabled. If enabled, the account
 // management UI is available in the avatar bubble.
-bool IsEnableAccountConsistency();
+bool IsAccountConsistencyMirrorEnabled();
 
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
 
-// Called in tests to force enable account consistency.
-void EnableAccountConsistencyForTesting(base::CommandLine* command_line);
+// Called in tests to force enable Mirror account consistency.
+void EnableAccountConsistencyMirrorForTesting(base::CommandLine* command_line);
 
 }  // namespace switches
 
