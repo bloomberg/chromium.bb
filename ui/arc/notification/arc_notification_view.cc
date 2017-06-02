@@ -86,6 +86,11 @@ void ArcNotificationView::UpdateControlButtonsVisibility() {
     contents_view_delegate_->UpdateControlButtonsVisibility();
 }
 
+void ArcNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // This data is never used since this view is never focused when the content
+  // view is focusable.
+}
+
 void ArcNotificationView::OnSlideChanged() {
   if (contents_view_delegate_)
     contents_view_delegate_->OnSlideChanged();
