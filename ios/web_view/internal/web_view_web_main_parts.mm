@@ -4,11 +4,10 @@
 
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 
-#import <Foundation/Foundation.h>
-
 #include "base/base_paths.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/translate/web_view_translate_service.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -22,16 +21,37 @@ WebViewWebMainParts::WebViewWebMainParts() {}
 
 WebViewWebMainParts::~WebViewWebMainParts() = default;
 
-void WebViewWebMainParts::PreMainMessageLoopRun() {
-  // Initialize resources.
+void WebViewWebMainParts::PreMainMessageLoopStart() {
   l10n_util::OverrideLocaleWithCocoaLocale();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       std::string(), nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+
   base::FilePath pak_file;
   PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("web_view_resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
+}
+
+void WebViewWebMainParts::PreCreateThreads() {
+  // Initialize local state.
+  PrefService* local_state = ApplicationContext::GetInstance()->GetLocalState();
+  DCHECK(local_state);
+
+  ApplicationContext::GetInstance()->PreCreateThreads();
+}
+
+void WebViewWebMainParts::PreMainMessageLoopRun() {
+  WebViewTranslateService::GetInstance()->Initialize();
+}
+
+void WebViewWebMainParts::PostMainMessageLoopRun() {
+  WebViewTranslateService::GetInstance()->Shutdown();
+  ApplicationContext::GetInstance()->SaveState();
+}
+
+void WebViewWebMainParts::PostDestroyThreads() {
+  ApplicationContext::GetInstance()->PostDestroyThreads();
 }
 
 }  // namespace ios_web_view
