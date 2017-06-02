@@ -16,6 +16,10 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Returns the language portion of |locale_code|.

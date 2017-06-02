@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("voice") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "speech_input_locale.h",
     "speech_input_locale_config.h",
