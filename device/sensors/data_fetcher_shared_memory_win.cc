@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/win/iunknown_impl.h"
-#include "base/win/windows_version.h"
 
 namespace {
 
@@ -313,9 +312,6 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     REFSENSOR_TYPE_ID sensor_type,
     ISensor** sensor,
     scoped_refptr<SensorEventSink> event_sink) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
   base::win::ScopedComPtr<ISensorManager> sensor_manager;
   HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
                                   IID_PPV_ARGS(&sensor_manager));

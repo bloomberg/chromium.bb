@@ -8,14 +8,9 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/windows_version.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gl {
-
-namespace {
-bool g_use_dwm_vsync;
-}  // namespace
 
 VSyncProviderWin::VSyncProviderWin(gfx::AcceleratedWidget window)
     : window_(window) {
@@ -29,12 +24,9 @@ void VSyncProviderWin::InitializeOneOff() {
   if (initialized)
     return;
   initialized = true;
-  g_use_dwm_vsync = (base::win::GetVersion() >= base::win::VERSION_WIN7);
 
-  if (g_use_dwm_vsync) {
-    // Prewarm sandbox
-    ::LoadLibrary(L"dwmapi.dll");
-  }
+  // Prewarm sandbox
+  ::LoadLibrary(L"dwmapi.dll");
 }
 
 void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
@@ -42,61 +34,54 @@ void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
 
   base::TimeTicks timebase;
   base::TimeDelta interval;
-  bool dwm_active = false;
 
   // Query the DWM timing info first if available. This will provide the most
   // precise values.
-  if (g_use_dwm_vsync) {
-    DWM_TIMING_INFO timing_info;
-    timing_info.cbSize = sizeof(timing_info);
-    HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);
-    if (result == S_OK) {
-      dwm_active = true;
+  DWM_TIMING_INFO timing_info;
+  timing_info.cbSize = sizeof(timing_info);
+  HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);
+  if (result == S_OK) {
+    // Calculate an interval value using the rateRefresh numerator and
+    // denominator.
+    base::TimeDelta rate_interval;
+    if (timing_info.rateRefresh.uiDenominator > 0 &&
+        timing_info.rateRefresh.uiNumerator > 0) {
+      // Swap the numerator/denominator to convert frequency to period.
+      rate_interval = base::TimeDelta::FromMicroseconds(
+          timing_info.rateRefresh.uiDenominator *
+          base::Time::kMicrosecondsPerSecond /
+          timing_info.rateRefresh.uiNumerator);
+    }
 
-      // Calculate an interval value using the rateRefresh numerator and
-      // denominator.
-      base::TimeDelta rate_interval;
-      if (timing_info.rateRefresh.uiDenominator > 0 &&
-          timing_info.rateRefresh.uiNumerator > 0) {
-        // Swap the numerator/denominator to convert frequency to period.
-        rate_interval = base::TimeDelta::FromMicroseconds(
-            timing_info.rateRefresh.uiDenominator *
-            base::Time::kMicrosecondsPerSecond /
-            timing_info.rateRefresh.uiNumerator);
-      }
-
-      if (base::TimeTicks::IsHighResolution()) {
-        // qpcRefreshPeriod is very accurate but noisy, and must be used with
-        // a high resolution timebase to avoid frequently missing Vsync.
-        timebase = base::TimeTicks::FromQPCValue(
-            static_cast<LONGLONG>(timing_info.qpcVBlank));
-        interval = base::TimeDelta::FromQPCValue(
-            static_cast<LONGLONG>(timing_info.qpcRefreshPeriod));
-        // Check for interval values that are impossibly low. A 29 microsecond
-        // interval was seen (from a qpcRefreshPeriod of 60).
-        if (interval < base::TimeDelta::FromMilliseconds(1)) {
-          interval = rate_interval;
-        }
-        // Check for the qpcRefreshPeriod interval being improbably small
-        // compared to the rateRefresh calculated interval, as another
-        // attempt at detecting driver bugs.
-        if (!rate_interval.is_zero() && interval < rate_interval / 2) {
-          interval = rate_interval;
-        }
-      } else {
-        // If FrameTime is not high resolution, we do not want to translate
-        // the QPC value provided by DWM into the low-resolution timebase,
-        // which would be error prone and jittery. As a fallback, we assume
-        // the timebase is zero and use rateRefresh, which may be rounded but
-        // isn't noisy like qpcRefreshPeriod, instead. The fact that we don't
-        // have a timebase here may lead to brief periods of jank when our
-        // scheduling becomes offset from the hardware vsync.
+    if (base::TimeTicks::IsHighResolution()) {
+      // qpcRefreshPeriod is very accurate but noisy, and must be used with
+      // a high resolution timebase to avoid frequently missing Vsync.
+      timebase = base::TimeTicks::FromQPCValue(
+          static_cast<LONGLONG>(timing_info.qpcVBlank));
+      interval = base::TimeDelta::FromQPCValue(
+          static_cast<LONGLONG>(timing_info.qpcRefreshPeriod));
+      // Check for interval values that are impossibly low. A 29 microsecond
+      // interval was seen (from a qpcRefreshPeriod of 60).
+      if (interval < base::TimeDelta::FromMilliseconds(1)) {
         interval = rate_interval;
       }
+      // Check for the qpcRefreshPeriod interval being improbably small
+      // compared to the rateRefresh calculated interval, as another
+      // attempt at detecting driver bugs.
+      if (!rate_interval.is_zero() && interval < rate_interval / 2) {
+        interval = rate_interval;
+      }
+    } else {
+      // If FrameTime is not high resolution, we do not want to translate
+      // the QPC value provided by DWM into the low-resolution timebase,
+      // which would be error prone and jittery. As a fallback, we assume
+      // the timebase is zero and use rateRefresh, which may be rounded but
+      // isn't noisy like qpcRefreshPeriod, instead. The fact that we don't
+      // have a timebase here may lead to brief periods of jank when our
+      // scheduling becomes offset from the hardware vsync.
+      interval = rate_interval;
     }
-  }
-
-  if (!dwm_active) {
+  } else {
     // When DWM compositing is active all displays are normalized to the
     // refresh rate of the primary display, and won't composite any faster.
     // If DWM compositing is disabled, though, we can use the refresh rates

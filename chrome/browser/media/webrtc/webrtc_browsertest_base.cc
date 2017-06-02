@@ -461,9 +461,9 @@ std::string WebRtcTestBase::GetStreamSize(
   return result.substr(3);
 }
 
-bool WebRtcTestBase::OnWin8() const {
+bool WebRtcTestBase::OnWin8OrHigher() const {
 #if defined(OS_WIN)
-  return base::win::GetVersion() > base::win::VERSION_WIN7;
+  return base::win::GetVersion() >= base::win::VERSION_WIN8;
 #else
   return false;
 #endif

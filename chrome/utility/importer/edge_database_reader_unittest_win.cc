@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -72,10 +71,6 @@ class EdgeDatabaseReaderTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(EdgeDatabaseReaderTest, OpenFileTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -83,19 +78,11 @@ TEST_F(EdgeDatabaseReaderTest, OpenFileTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, NoFileTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   EdgeDatabaseReader reader;
   EXPECT_FALSE(reader.OpenDatabase(L"ThisIsntARealFileName.edb"));
 }
 
 TEST_F(EdgeDatabaseReaderTest, RandomGarbageDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"random.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -103,10 +90,6 @@ TEST_F(EdgeDatabaseReaderTest, RandomGarbageDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, ZerosDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   std::string zeros(0x10000, '\0');
   ASSERT_TRUE(WriteFile(L"zeros.edb", zeros, &database_path));
@@ -115,10 +98,6 @@ TEST_F(EdgeDatabaseReaderTest, ZerosDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, EmptyDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(WriteFile(L"empty.edb", "", &database_path));
   EdgeDatabaseReader reader;
@@ -126,10 +105,6 @@ TEST_F(EdgeDatabaseReaderTest, EmptyDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, OpenTableDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -140,10 +115,6 @@ TEST_F(EdgeDatabaseReaderTest, OpenTableDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, InvalidTableDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -154,10 +125,6 @@ TEST_F(EdgeDatabaseReaderTest, InvalidTableDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, NotOpenDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   EdgeDatabaseReader reader;
   std::unique_ptr<EdgeDatabaseTableEnumerator> table_enum =
       reader.OpenTableEnumerator(L"TestTable");
@@ -166,10 +133,6 @@ TEST_F(EdgeDatabaseReaderTest, NotOpenDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, AlreadyOpenDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -179,10 +142,6 @@ TEST_F(EdgeDatabaseReaderTest, AlreadyOpenDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, OpenTableAndReadDataDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -242,10 +201,6 @@ TEST_F(EdgeDatabaseReaderTest, OpenTableAndReadDataDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, CheckEnumResetDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -266,10 +221,6 @@ TEST_F(EdgeDatabaseReaderTest, CheckEnumResetDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, InvalidColumnDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -283,10 +234,6 @@ TEST_F(EdgeDatabaseReaderTest, InvalidColumnDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, NoColumnDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -300,10 +247,6 @@ TEST_F(EdgeDatabaseReaderTest, NoColumnDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, EmptyTableDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -327,9 +270,6 @@ TEST_F(EdgeDatabaseReaderTest, UnicodeStringsDatabaseTest) {
       "\x48\x65\x6C\x6C\x6F",
       "\xEC\x95\x88\xEB\x85\x95\xED\x95\x98\xEC\x84\xB8\xEC\x9A\x94",
   };
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
 
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
@@ -352,10 +292,6 @@ TEST_F(EdgeDatabaseReaderTest, UnicodeStringsDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, NonUnicodeStringsDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -369,10 +305,6 @@ TEST_F(EdgeDatabaseReaderTest, NonUnicodeStringsDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, CheckNullColumnDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;
@@ -420,10 +352,6 @@ TEST_F(EdgeDatabaseReaderTest, CheckNullColumnDatabaseTest) {
 }
 
 TEST_F(EdgeDatabaseReaderTest, CheckInvalidColumnTypeDatabaseTest) {
-  // Only verified to work with ESE library on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   base::FilePath database_path;
   ASSERT_TRUE(CopyTestDatabase(L"testdata.edb", &database_path));
   EdgeDatabaseReader reader;

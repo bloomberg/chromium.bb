@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 
 namespace {
@@ -41,9 +40,8 @@ base::FilePath GetInstalledPath(const base::char16* app) {
   base::FilePath filepath;
   base::win::RegKey hkcu_key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
   base::string16 path;
-  // As of Win7 AppPaths can also be registered in HKCU: http://goo.gl/UgFOf.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      hkcu_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
+  // AppPaths can also be registered in HKCU: http://goo.gl/UgFOf.
+  if (hkcu_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
     filepath = base::FilePath(path);
   } else {
     base::win::RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);

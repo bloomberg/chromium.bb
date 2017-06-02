@@ -17,12 +17,10 @@
 namespace device {
 namespace {
 
-int g_blocker_count[2];
-
 HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type,
                           const std::string& description) {
   if (type == PowerRequestExecutionRequired &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
     return INVALID_HANDLE_VALUE;
   }
 
@@ -51,36 +49,12 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
     return;
 
   if (type == PowerRequestExecutionRequired &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
     return;
   }
 
   BOOL success = ::PowerClearRequest(request_handle.Get(), type);
   DCHECK(success);
-}
-
-void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type, int delta) {
-  g_blocker_count[type] += delta;
-  DCHECK_GE(g_blocker_count[type], 0);
-
-  if (g_blocker_count[type] > 1)
-    return;
-
-  DWORD this_flag = 0;
-  if (type == PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension)
-    this_flag |= ES_SYSTEM_REQUIRED;
-  else
-    this_flag |= ES_DISPLAY_REQUIRED;
-
-  DCHECK(this_flag);
-
-  static DWORD flags = ES_CONTINUOUS;
-  if (!g_blocker_count[type])
-    flags &= ~this_flag;
-  else
-    flags |= this_flag;
-
-  SetThreadExecutionState(flags);
 }
 
 }  // namespace
@@ -116,17 +90,11 @@ class PowerSaveBlocker::Delegate
 
 void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return ApplySimpleBlock(type_, 1);
-
   handle_.Set(CreatePowerRequest(RequestType(), description_));
 }
 
 void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return ApplySimpleBlock(type_, -1);
-
   DeletePowerRequest(RequestType(), handle_.Take());
 }
 
@@ -134,7 +102,7 @@ POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
   if (type_ == kPowerSaveBlockPreventDisplaySleep)
     return PowerRequestDisplayRequired;
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() == base::win::VERSION_WIN7)
     return PowerRequestSystemRequired;
 
   return PowerRequestExecutionRequired;

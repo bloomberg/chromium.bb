@@ -948,7 +948,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t** argv) {
 
 #if !defined(_WIN64)  // DEP is always enabled on 64-bit.
 TEST(ProcessMitigationsTest, CheckDep) {
-  if (base::win::GetVersion() > base::win::VERSION_WIN7)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
     return;
 
   TestRunner runner;

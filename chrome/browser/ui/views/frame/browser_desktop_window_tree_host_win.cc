@@ -325,7 +325,7 @@ MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
   gfx::Point right_bottom = display::win::ScreenWin::DIPToClientPoint(
       hwnd, gfx::Point(thicknesses.right(), thicknesses.bottom()));
 
-  if (base::win::GetVersion() <= base::win::VERSION_WIN7) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     // The 2 px (not DIP) at the inner edges of the glass are a light and
     // dark line, so we must inset further to account for those.
     constexpr gfx::Vector2d kDWMEdgeThickness(2, 2);

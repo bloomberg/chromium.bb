@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -257,9 +256,6 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 }  // namespace
 
 TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualModeAndAdjustAppIds) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   // 9 shortcuts should have their app id updated below and shortcut 11 should
   // be migrated away from dual_mode for a total of 10 shortcuts migrated.
   EXPECT_EQ(10,

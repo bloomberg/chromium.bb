@@ -746,9 +746,6 @@ base::string16 GetChromiumModelIdForProfile(
 }
 
 void MigrateTaskbarPins() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
@@ -765,8 +762,6 @@ void GetIsPinnedToTaskbarState(
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
                                    const base::FilePath& path) {
-  DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN7);
-
   // Enumerate all pinned shortcuts in the given path directly.
   base::FileEnumerator shortcuts_enum(
       path, false,  // not recursive

@@ -68,14 +68,10 @@ const UChar* XInputDllFileName() {
   // Xinput.h specifies it in build time. Approach here uses the same values
   // and it is resolving dll filename based on Windows version it is running on.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // For Windows 8 and 10, XINPUT_DLL is xinput1_4.dll.
+    // For Windows 8+, XINPUT_DLL is xinput1_4.dll.
     return FILE_PATH_LITERAL("xinput1_4.dll");
-  } else if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    return FILE_PATH_LITERAL("xinput9_1_0.dll");
-  } else {
-    NOTREACHED();
-    return nullptr;
   }
+  return FILE_PATH_LITERAL("xinput9_1_0.dll");
 }
 
 }  // namespace
