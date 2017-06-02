@@ -4,7 +4,7 @@ var actualWheelEventsOccurred = 0;
 var cumulativeScrollX = 0;
 var cumulativeScrollY = 0;
 
-var minimumWheelEventsExpected = "2";
+var minimumWheelEventsExpected = "1";
 var minimumScrollXExpected = 300;
 var minimumScrollYExpected = 300;
 
