@@ -9,7 +9,7 @@
 // third_party/WebKit/Source/bindings/templates/union_container.cpp.tmpl
 
 // clang-format off
-#include "NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord.h"
+#include "NestedUnionType.h"
 
 #include "bindings/core/v8/ByteStringOrNodeList.h"
 #include "bindings/core/v8/IDLTypes.h"
