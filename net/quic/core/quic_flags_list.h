@@ -156,7 +156,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_39, true)
 // written in big endian.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_big_endian_connection_id_client,
-          false)
+          true)
 
 // If true, on server side, 8-byte connection ID in public header is read and
 // written in big endian.
@@ -170,7 +170,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 
 // If true, enable random padding of size [1, 256] when response body is
 // compressed for QUIC version >= 38.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, true)
 
 // Use conservation in PROBE_BW ouside of super-unity gain and immediately
 // preceeding cycle.
@@ -219,3 +219,10 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_40, false)
 
 // If true, use the more CPU efficient bandwidth sampler datastructure.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_bandwidth_sampler, false)
+
+// In QUIC, notify StreamNotifier instead of per-packet AckNotifier on
+// every ack or retransmitted.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_stream_notifier, false)
+
+// When true, defaults to BBR congestion control instead of Cubic.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)

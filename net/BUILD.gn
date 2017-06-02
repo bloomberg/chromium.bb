@@ -4724,6 +4724,8 @@ test("net_unittests") {
     "quic/platform/impl/quic_chromium_clock_test.cc",
     "quic/platform/impl/quic_test_impl.cc",
     "quic/platform/impl/quic_test_impl.h",
+    "quic/quartc/quartc_session_test.cc",
+    "quic/quartc/quartc_stream_test.cc",
     "quic/test_tools/crypto_test_utils.cc",
     "quic/test_tools/crypto_test_utils.h",
     "quic/test_tools/crypto_test_utils_test.cc",
