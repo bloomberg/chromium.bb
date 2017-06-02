@@ -305,8 +305,9 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         Polymer.dom.flush();
         MockInteractions.tap(getFromElement('#setupPinButton'));
+        Polymer.dom.flush();
         var setupPinDialog = getFromElement('#setupPin');
-        assertTrue(setupPinDialog.$.dialog.open);
+        assertTrue(setupPinDialog.$$('#dialog').open);
         assertEquals(1, fakeUma.getHistogramValue(
             LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
       });
@@ -336,8 +337,6 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         document.body.appendChild(element);
         Polymer.dom.flush();
-
-        element.open();
 
         titleDiv = getFromElement('div[class="title"]');
         problemDiv = getFromElement('#problemDiv');
@@ -448,7 +447,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       // Hitting cancel at the setup step dismisses the dialog.
       test('HittingBackButtonResetsState', function() {
         MockInteractions.tap(backButton);
-        assertFalse(element.$.dialog.open);
+        assertFalse(element.$$('#dialog').open);
       });
 
       // Hitting cancel at the confirm step dismisses the dialog.
@@ -456,7 +455,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         pinKeyboard.value = '1111';
         MockInteractions.tap(continueButton);
         MockInteractions.tap(backButton);
-        assertFalse(element.$.dialog.open);
+        assertFalse(element.$$('#dialog').open);
       });
 
       // User has to re-enter PIN for confirm step.
