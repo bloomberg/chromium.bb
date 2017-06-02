@@ -2026,49 +2026,6 @@ inline EAlignmentBaseline CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EImageRendering e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EImageRendering::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case EImageRendering::kOptimizeSpeed:
-      value_id_ = CSSValueOptimizeSpeed;
-      break;
-    case EImageRendering::kOptimizeQuality:
-      value_id_ = CSSValueOptimizeQuality;
-      break;
-    case EImageRendering::kPixelated:
-      value_id_ = CSSValuePixelated;
-      break;
-    case EImageRendering::kOptimizeContrast:
-      value_id_ = CSSValueWebkitOptimizeContrast;
-      break;
-  }
-}
-
-template <>
-inline EImageRendering CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return EImageRendering::kAuto;
-    case CSSValueOptimizeSpeed:
-      return EImageRendering::kOptimizeSpeed;
-    case CSSValueOptimizeQuality:
-      return EImageRendering::kOptimizeQuality;
-    case CSSValuePixelated:
-      return EImageRendering::kPixelated;
-    case CSSValueWebkitOptimizeContrast:
-      return EImageRendering::kOptimizeContrast;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EImageRendering::kAuto;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETransformStyle3D e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
