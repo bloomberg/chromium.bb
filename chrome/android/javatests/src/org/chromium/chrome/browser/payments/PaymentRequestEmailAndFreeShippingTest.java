@@ -92,4 +92,29 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
                             "PaymentRequest.RequestedInformation", i));
         }
     }
+
+    /**
+     * Adding a new shipping address should not crash when updating the email-only contact info
+     * section.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddAddressNoCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInShippingAddressAndWait(
+                R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy", "Mountain View", "CA",
+                        "94043", "650-253-0000"},
+                mPaymentRequestTestRule.getEditorTextUpdate());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+    }
 }
