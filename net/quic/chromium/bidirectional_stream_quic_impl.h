@@ -61,6 +61,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   void OnClose() override;
   void OnError(int error) override;
 
+  // Write headers to the stream and returns true on success. Posts a task to
+  // notify the delegate asynchronously and returns false on failure
+  bool WriteHeaders();
+
   void OnStreamReady(int rv);
   void OnSendDataComplete(int rv);
   void ReadInitialHeaders();
@@ -69,12 +73,20 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   void OnReadTrailingHeadersComplete(int rv);
   void OnReadDataComplete(int rv);
 
-  // Notifies the delegate of an error.
+  // Notifies the delegate of an error, clears |stream_| and |delegate_|,
+  // and cancels any pending callbacks.
   void NotifyError(int error);
+  // Notifies the delegate of an error, clears |stream_| and |delegate_|,
+  // and cancels any pending callbacks. If |notify_delegate_later| is true
+  // then the delegate will be notified asynchronously via a posted task,
+  // otherwise the notification will be synchronous.
+  void NotifyErrorImpl(int error, bool notify_delegate_later);
   // Notifies the delegate that the stream is ready.
   void NotifyStreamReady();
   // Resets the stream and ensures that |delegate_| won't be called back.
   void ResetStream();
+  // Invokes OnFailure(error) on |delegate|.
+  void NotifyFailure(BidirectionalStreamImpl::Delegate* delegate, int error);
 
   const std::unique_ptr<QuicChromiumClientSession::Handle> session_;
   std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
