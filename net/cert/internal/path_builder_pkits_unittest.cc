@@ -81,14 +81,21 @@ class PathBuilderPkitsTestDelegate {
     SimpleSignaturePolicy signature_policy(1024);
 
     CertPathBuilder::Result result;
-    CertPathBuilder path_builder(std::move(target_cert), &trust_store,
-                                 &signature_policy, info.time,
-                                 KeyPurpose::ANY_EKU, &result);
+    CertPathBuilder path_builder(
+        std::move(target_cert), &trust_store, &signature_policy, info.time,
+        KeyPurpose::ANY_EKU, info.initial_explicit_policy,
+        info.initial_policy_set, info.initial_policy_mapping_inhibit,
+        info.initial_inhibit_any_policy, &result);
     path_builder.AddCertIssuerSource(&cert_issuer_source);
 
     path_builder.Run();
 
     ASSERT_EQ(info.should_validate, result.HasValidPath());
+
+    if (result.HasValidPath()) {
+      EXPECT_EQ(info.user_constrained_policy_set,
+                result.GetBestValidPath()->user_constrained_policy_set);
+    }
   }
 };
 
@@ -233,6 +240,21 @@ INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest07KeyUsage,
                               PathBuilderPkitsTestDelegate);
 INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
+                              PkitsTest08CertificatePolicies,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
+                              PkitsTest09RequireExplicitPolicy,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
+                              PkitsTest10PolicyMappings,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
+                              PkitsTest11InhibitPolicyMapping,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
+                              PkitsTest12InhibitAnyPolicy,
+                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               PkitsTest13NameConstraints,
                               PathBuilderPkitsTestDelegate);
 INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
@@ -242,9 +264,5 @@ INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
 // TODO(mattm): CRL support: PkitsTest04BasicCertificateRevocationTests,
 // PkitsTest05VerifyingPathswithSelfIssuedCertificates,
 // PkitsTest14DistributionPoints, PkitsTest15DeltaCRLs
-
-// TODO(mattm): Certificate Policies support: PkitsTest08CertificatePolicies,
-// PkitsTest09RequireExplicitPolicy PkitsTest10PolicyMappings,
-// PkitsTest11InhibitPolicyMapping, PkitsTest12InhibitAnyPolicy
 
 }  // namespace net

@@ -176,6 +176,11 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
     return false;
 
   // Check for an optional audio-only policy extension.
+  //
+  // TODO(eroman): Use |user_constrained_policy_set| that was output from
+  // verification instead. (Checking just the leaf certificate's policy
+  // assertion doesn't take into account policy restrictions on intermediates,
+  // policy constraints/inhibits, or policy re-mappings).
   *policy = CastDeviceCertPolicy::NONE;
   if (cert->has_policy_oids()) {
     const std::vector<net::der::Input>& policies = cert->policy_oids();
@@ -264,9 +269,11 @@ bool VerifyDeviceCertUsingCustomTrustStore(
   if (!net::der::EncodeTimeAsGeneralizedTime(time, &verification_time))
     return false;
   net::CertPathBuilder::Result result;
-  net::CertPathBuilder path_builder(target_cert.get(), trust_store,
-                                    signature_policy.get(), verification_time,
-                                    net::KeyPurpose::CLIENT_AUTH, &result);
+  net::CertPathBuilder path_builder(
+      target_cert.get(), trust_store, signature_policy.get(), verification_time,
+      net::KeyPurpose::CLIENT_AUTH, net::InitialExplicitPolicy::kFalse,
+      {net::AnyPolicy()}, net::InitialPolicyMappingInhibit::kFalse,
+      net::InitialAnyPolicyInhibit::kFalse, &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
   path_builder.Run();
   if (!result.HasValidPath()) {
