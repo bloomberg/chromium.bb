@@ -37,9 +37,6 @@ extern const base::Feature kForeignSessionsSuggestionsFeature;
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;
 
-// Feature to prefer AMP URLs over regular URLs when available.
-extern const base::Feature kPreferAmpUrlsFeature;
-
 // Feature to listen for GCM push updates from the server.
 extern const base::Feature kContentSuggestionsPushFeature;
 
