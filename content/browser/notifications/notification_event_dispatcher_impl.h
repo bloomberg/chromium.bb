@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_EVENT_DISPATCHER_IMPL_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_EVENT_DISPATCHER_IMPL_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_database_data.h"
@@ -34,10 +36,32 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
       bool by_user,
       const NotificationDispatchCompleteCallback& dispatch_complete_callback)
       override;
+  void DispatchNonPersistentShowEvent(
+      const std::string& notification_id) override;
+  void DispatchNonPersistentClickEvent(
+      const std::string& notification_id) override;
+  void DispatchNonPersistentCloseEvent(
+      const std::string& notification_id) override;
+
+  // Called when a renderer that had shown a non persistent notification
+  // dissappears.
+  void RendererGone(int renderer_id);
+
+  // Regsiter the fact that a non persistent notification has been
+  // displayed.
+  void RegisterNonPersistentNotification(const std::string& notification_id,
+                                         int renderer_id,
+                                         int non_persistent_id);
 
  private:
   NotificationEventDispatcherImpl();
   ~NotificationEventDispatcherImpl() override;
+
+  // Notification Id -> renderer Id.
+  std::map<std::string, int> renderer_ids_;
+
+  // Notification Id -> non-persistent notification id.
+  std::map<std::string, int> non_persistent_ids_;
 
   friend struct base::DefaultSingletonTraits<NotificationEventDispatcherImpl>;
 

@@ -21,6 +21,7 @@
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_event_dispatcher.h"
 #include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -93,9 +94,13 @@ void NativeNotificationDisplayService::Display(
     notification_bridge_->Display(notification_type, notification_id,
                                   GetProfileId(profile_),
                                   profile_->IsOffTheRecord(), notification);
-    notification.delegate()->Display();
-    NotificationHandler* handler = GetNotificationHandler(notification_type);
-    handler->RegisterNotification(notification_id, notification.delegate());
+    // Unlike all other notifications non persistent notifications require
+    // an event after the notification has been displayed.
+    // TODO(miguelg) create an OnShow notification handler instead.
+    if (notification_type == NotificationCommon::NON_PERSISTENT) {
+      content::NotificationEventDispatcher::GetInstance()
+          ->DispatchNonPersistentShowEvent(notification_id);
+    }
   } else if (message_center_display_service_) {
     message_center_display_service_->Display(notification_type, notification_id,
                                              notification);

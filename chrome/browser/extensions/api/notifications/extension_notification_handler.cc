@@ -96,10 +96,6 @@ void ExtensionNotificationHandler::OpenSettings(Profile* profile) {
   NOTREACHED();
 }
 
-void ExtensionNotificationHandler::RegisterNotification(
-    const std::string& notification_id,
-    NotificationDelegate* delegate) {}
-
 void ExtensionNotificationHandler::SendEvent(
     Profile* profile,
     const std::string& extension_id,

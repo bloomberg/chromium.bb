@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -90,13 +91,14 @@ NotificationMessageFilter::NotificationMessageFilter(
     BrowserContext* browser_context)
     : BrowserMessageFilter(PlatformNotificationMsgStart),
       process_id_(process_id),
+      non_persistent__notification_shown_(false),
       notification_context_(notification_context),
       resource_context_(resource_context),
       service_worker_context_(service_worker_context),
       browser_context_(browser_context),
       weak_factory_io_(this) {}
 
-NotificationMessageFilter::~NotificationMessageFilter() {}
+NotificationMessageFilter::~NotificationMessageFilter() = default;
 
 void NotificationMessageFilter::DidCloseNotification(
     const std::string& notification_id) {
@@ -105,6 +107,12 @@ void NotificationMessageFilter::DidCloseNotification(
 }
 
 void NotificationMessageFilter::OnDestruct() const {
+  if (non_persistent__notification_shown_) {
+    NotificationEventDispatcherImpl* event_dispatcher =
+        content::NotificationEventDispatcherImpl::GetInstance();
+    DCHECK(event_dispatcher);
+    event_dispatcher->RendererGone(process_id_);
+  }
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
@@ -160,6 +168,12 @@ void NotificationMessageFilter::OnShowPlatformNotification(
       GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
           origin, notification_data.tag, non_persistent_notification_id,
           process_id_);
+
+  NotificationEventDispatcherImpl* event_dispatcher =
+      content::NotificationEventDispatcherImpl::GetInstance();
+  non_persistent__notification_shown_ = true;
+  event_dispatcher->RegisterNonPersistentNotification(
+      notification_id, process_id_, non_persistent_notification_id);
 
   std::unique_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, non_persistent_notification_id,
