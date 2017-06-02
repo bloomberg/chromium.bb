@@ -176,12 +176,12 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
 }
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!observer_);
 }
 
 void MediaStreamRemoteVideoSource::OnSourceTerminated() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StopSourceImpl();
 }
 
@@ -190,7 +190,7 @@ void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
     int max_requested_height,
     double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   media::VideoCaptureFormats formats;
   // Since the remote end is free to change the resolution at any point in time
   // the supported formats are unknown.
@@ -201,7 +201,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
     const media::VideoCaptureFormat& format,
     const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());
   delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
@@ -211,7 +211,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // StopSourceImpl is called either when MediaStreamTrack.stop is called from
   // JS or blink gc the MediaStreamSource object or when OnSourceTerminated()
   // is called. Garbage collection will happen after the PeerConnection no
@@ -233,7 +233,7 @@ MediaStreamRemoteVideoSource::SinkInterfaceForTest() {
 
 void MediaStreamRemoteVideoSource::OnChanged(
     webrtc::MediaStreamTrackInterface::TrackState state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
       SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);

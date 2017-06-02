@@ -57,6 +57,7 @@ RtcDtmfSenderHandler::RtcDtmfSenderHandler(DtmfSenderInterface* dtmf_sender)
 }
 
 RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "::dtor";
   dtmf_sender_->UnregisterObserver();
   // Release |observer| before |weak_factory_| is destroyed.
