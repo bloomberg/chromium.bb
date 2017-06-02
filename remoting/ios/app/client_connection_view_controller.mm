@@ -51,11 +51,17 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (id)init {
   self = [super init];
   if (self) {
-    self.navigationItem.rightBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:@"CANCEL"
-                                         style:UIBarButtonItemStylePlain
-                                        target:self
-                                        action:@selector(didTapCancel:)];
+    // TODO(yuweih): This logic may be reused by other views.
+    UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [cancelButton setTitle:@"CANCEL" forState:UIControlStateNormal];
+    [cancelButton setImage:[[UIImage imageNamed:@"Back"]
+                               imageFlippedForRightToLeftLayoutDirection]
+                  forState:UIControlStateNormal];
+    [cancelButton addTarget:self
+                     action:@selector(didTapCancel:)
+           forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem =
+        [[UIBarButtonItem alloc] initWithCustomView:cancelButton];
 
     _navBar = [[MDCNavigationBar alloc] initWithFrame:CGRectZero];
     [_navBar observeNavigationItem:self.navigationItem];
@@ -66,6 +72,17 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [mutator mutate:_navBar];
     [self.view addSubview:_navBar];
     _navBar.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // Attach navBar to the top of the view.
+    [NSLayoutConstraint activateConstraints:@[
+      [[_navBar topAnchor] constraintEqualToAnchor:[self.view topAnchor]],
+      [[_navBar leadingAnchor]
+          constraintEqualToAnchor:[self.view leadingAnchor]],
+      [[_navBar trailingAnchor]
+          constraintEqualToAnchor:[self.view trailingAnchor]],
+      [[_navBar heightAnchor] constraintEqualToConstant:kBarHeight],
+    ]];
+
     _remoteHostName = @"";
   }
   return self;
@@ -117,9 +134,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-
-  _navBar.frame = CGRectMake(0.f, 0.f, self.view.frame.size.width, kBarHeight);
-  [_navBar setNeedsLayout];
 
   _iconView.frame = CGRectMake(0, 0, kIconRadius * 2, kIconRadius * 2.f);
   _iconView.center =
