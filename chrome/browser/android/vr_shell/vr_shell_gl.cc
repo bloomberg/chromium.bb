@@ -22,10 +22,8 @@
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
-#include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
-#include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
@@ -173,6 +171,12 @@ std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
   return mouse_event;
 }
 
+enum class ViewerType {
+  UNKNOWN_TYPE = 0,
+  CARDBOARD = 1,
+  DAYDREAM = 2,
+  VIEWER_TYPE_MAX,
+};
 
 void MatfToGvrMat(const vr::Mat4f& in, gvr::Mat4f* out) {
   // If our std::array implementation doesn't have any non-data members, we can
@@ -431,10 +435,23 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
   controller_.reset(new VrController(gvr_api));
 
-  VrMetricsUtil::LogVrViewerType(gvr_api);
+  ViewerType viewerType;
+  switch (gvr_api_->GetViewerType()) {
+    case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
+      viewerType = ViewerType::DAYDREAM;
+      break;
+    case gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD:
+      viewerType = ViewerType::CARDBOARD;
+      break;
+    default:
+      NOTREACHED();
+      viewerType = ViewerType::UNKNOWN_TYPE;
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("VRViewerType", static_cast<int>(viewerType),
+                            static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 
-  cardboard_ =
-      (gvr_api_->GetViewerType() == gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD);
+  cardboard_ = (viewerType == ViewerType::CARDBOARD);
   if (cardboard_ && web_vr_mode_) {
     browser_->ToggleCardboardGamepad(true);
   }

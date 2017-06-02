@@ -13,6 +13,7 @@ import com.google.vr.vrcore.base.api.VrCoreUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
@@ -24,14 +25,14 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
     private static final String MIN_SDK_VERSION_PARAM_NAME = "min_sdk_version";
 
     @Override
-    public VrCoreInfo getVrCoreInfo() {
+    public int getVrCoreCompatibility() {
         // Supported Build version is determined by the webvr cardboard support feature.
         // Default is KITKAT unless specified via server side finch config.
         if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                                             ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
                                             MIN_SDK_VERSION_PARAM_NAME,
                                             Build.VERSION_CODES.KITKAT)) {
-            return new VrCoreInfo(null, VrCoreCompatibility.VR_NOT_SUPPORTED);
+            return VrCoreVersionChecker.VR_NOT_SUPPORTED;
         }
         try {
             String vrCoreSdkLibraryVersionString = VrCoreUtils.getVrCoreSdkLibraryVersion(
@@ -40,9 +41,9 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             Version targetSdkLibraryVersion =
                     Version.parse(com.google.vr.ndk.base.BuildConstants.VERSION);
             if (!vrCoreSdkLibraryVersion.isAtLeast(targetSdkLibraryVersion)) {
-                return new VrCoreInfo(vrCoreSdkLibraryVersion, VrCoreCompatibility.VR_OUT_OF_DATE);
+                return VrCoreVersionChecker.VR_OUT_OF_DATE;
             }
-            return new VrCoreInfo(vrCoreSdkLibraryVersion, VrCoreCompatibility.VR_READY);
+            return VrCoreVersionChecker.VR_READY;
         } catch (VrCoreNotAvailableException e) {
             Log.i(TAG, "Unable to find VrCore.");
             // Old versions of VrCore are not integrated with the sdk library version check and will
@@ -52,9 +53,9 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             if (PackageUtils.getPackageVersion(
                         ContextUtils.getApplicationContext(), VR_CORE_PACKAGE_ID)
                     != -1) {
-                return new VrCoreInfo(null, VrCoreCompatibility.VR_OUT_OF_DATE);
+                return VrCoreVersionChecker.VR_OUT_OF_DATE;
             }
-            return new VrCoreInfo(null, VrCoreCompatibility.VR_NOT_AVAILABLE);
+            return VrCoreVersionChecker.VR_NOT_AVAILABLE;
         }
     }
 }

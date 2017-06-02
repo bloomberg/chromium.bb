@@ -205,7 +205,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_core_info.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "third_party/gvr-android-sdk/display_synchronizer_jni.h"
@@ -448,7 +447,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
 #if BUILDFLAG(ENABLE_VR)
-    {"VrCoreInfo", vr_shell::RegisterVrCoreInfo},
     {"VrShell", vr_shell::RegisterVrShell},
     {"VrShellDelegate", vr_shell::RegisterVrShellDelegate},
     {"DisplaySynchronizer",

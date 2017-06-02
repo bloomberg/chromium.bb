@@ -1066,14 +1066,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     private static boolean isVrCoreCompatible(
             VrCoreVersionChecker versionChecker, Tab tabToShowInfobarIn) {
-        int vrCoreCompatibility = versionChecker.getVrCoreInfo().compatibility;
+        int vrCoreCompatibility = versionChecker.getVrCoreCompatibility();
 
-        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
-                || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
+        if (vrCoreCompatibility == VrCoreVersionChecker.VR_NOT_AVAILABLE
+                || vrCoreCompatibility == VrCoreVersionChecker.VR_OUT_OF_DATE) {
             promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
         }
 
-        return vrCoreCompatibility == VrCoreCompatibility.VR_READY;
+        return vrCoreCompatibility == VrCoreVersionChecker.VR_READY;
     }
 
     private static void promptToUpdateVrServices(int vrCoreCompatibility, Tab tab) {
@@ -1083,11 +1083,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         final Activity activity = tab.getActivity();
         String infobarText;
         String buttonText;
-        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
+        if (vrCoreCompatibility == VrCoreVersionChecker.VR_NOT_AVAILABLE) {
             // Supported, but not installed. Ask user to install instead of upgrade.
             infobarText = activity.getString(R.string.vr_services_check_infobar_install_text);
             buttonText = activity.getString(R.string.vr_services_check_infobar_install_button);
-        } else if (vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
+        } else if (vrCoreCompatibility == VrCoreVersionChecker.VR_OUT_OF_DATE) {
             infobarText = activity.getString(R.string.vr_services_check_infobar_update_text);
             buttonText = activity.getString(R.string.vr_services_check_infobar_update_button);
         } else {
@@ -1229,12 +1229,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @CalledByNative
     private long getNativePointer() {
         return mNativeVrShellDelegate;
-    }
-
-    @CalledByNative
-    private long getVrCoreInfo() {
-        assert mVrCoreVersionChecker != null;
-        return mVrCoreVersionChecker.getVrCoreInfo().makeNativeVrCoreInfo();
     }
 
     private void destroy() {
