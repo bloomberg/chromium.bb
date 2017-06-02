@@ -145,43 +145,6 @@ int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
   return rv;
 }
 
-void BidirectionalStreamQuicImpl::SendData(const scoped_refptr<IOBuffer>& data,
-                                           int length,
-                                           bool end_stream) {
-  DCHECK(length > 0 || (length == 0 && end_stream));
-  if (!stream_) {
-    LOG(ERROR) << "Trying to send data after stream has been destroyed.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::NotifyError,
-                              weak_factory_.GetWeakPtr(), ERR_UNEXPECTED));
-    return;
-  }
-
-  std::unique_ptr<QuicConnection::ScopedPacketBundler> bundler;
-  if (!has_sent_headers_) {
-    DCHECK(!send_request_headers_automatically_);
-    // Creates a bundler only if there are headers to be sent along with the
-    // single data buffer.
-    bundler =
-        session_->CreatePacketBundler(QuicConnection::SEND_ACK_IF_PENDING);
-    // Sending the request might result in the stream being closed.
-    if (!WriteHeaders())
-      return;
-  }
-
-  QuicStringPiece string_data(data->data(), length);
-  int rv = stream_->WriteStreamData(
-      string_data, end_stream,
-      base::Bind(&BidirectionalStreamQuicImpl::OnSendDataComplete,
-                 weak_factory_.GetWeakPtr()));
-  DCHECK(rv == OK || rv == ERR_IO_PENDING);
-  if (rv == OK) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::OnSendDataComplete,
-                              weak_factory_.GetWeakPtr(), OK));
-  }
-}
-
 void BidirectionalStreamQuicImpl::SendvData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
