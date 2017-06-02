@@ -261,6 +261,9 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Saves a hash of |password| for password reuse checking.
   void SaveSyncPasswordHash(const base::string16& password);
+
+  // Clears the saved sync password hash.
+  void ClearSyncPasswordHash();
 #endif
 
  protected:
@@ -430,6 +433,9 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation of SaveSyncPasswordHash().
   void SaveSyncPasswordHashImpl(const base::string16& password);
+
+  // Synchronous implementation of ClearSyncPasswordHash().
+  void ClearSyncPasswordHashImpl();
 #endif
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).

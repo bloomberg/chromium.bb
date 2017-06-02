@@ -137,6 +137,12 @@ void PasswordReuseDetector::SaveSyncPasswordHash(
   }
 }
 
+void PasswordReuseDetector::ClearSyncPasswordHash() {
+  sync_password_hash_.reset();
+  if (prefs_)
+    prefs_->ClearPref(prefs::kSyncPasswordHash);
+}
+
 void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
   if (form.password_value.size() < kMinPasswordLengthToCheck)
     return;

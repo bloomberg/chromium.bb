@@ -58,6 +58,9 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Saves a hash of |password| for password reuse checking.
   void SaveSyncPasswordHash(const base::string16& password);
 
+  // Clears a sync password hash if it was saved.
+  void ClearSyncPasswordHash();
+
  private:
   using passwords_iterator = std::map<base::string16,
                                       std::set<std::string>,

@@ -332,6 +332,10 @@ void PasswordStore::SaveSyncPasswordHash(const base::string16& password) {
   ScheduleTask(
       base::Bind(&PasswordStore::SaveSyncPasswordHashImpl, this, password));
 }
+
+void PasswordStore::ClearSyncPasswordHash() {
+  ScheduleTask(base::Bind(&PasswordStore::ClearSyncPasswordHashImpl, this));
+}
 #endif
 
 PasswordStore::~PasswordStore() {
@@ -418,6 +422,11 @@ void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
 void PasswordStore::SaveSyncPasswordHashImpl(const base::string16& password) {
   if (reuse_detector_)
     reuse_detector_->SaveSyncPasswordHash(password);
+}
+
+void PasswordStore::ClearSyncPasswordHashImpl() {
+  if (reuse_detector_)
+    reuse_detector_->ClearSyncPasswordHash();
 }
 #endif
 

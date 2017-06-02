@@ -103,9 +103,21 @@ class PasswordStoreTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+#if defined(OS_MACOSX)
+    // Mock Keychain. There is a call to Keychain on initializling
+    // PasswordReuseDetector, so it should be mocked.
+    OSCryptMocker::SetUpWithSingleton();
+#endif
+  }
 
-  void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
+  void TearDown() override {
+    ASSERT_TRUE(temp_dir_.Delete());
+#if defined(OS_MACOSX)
+    OSCryptMocker::TearDown();
+#endif
+  }
 
   base::FilePath test_login_db_file_path() const {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
@@ -923,11 +935,6 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
       {PasswordForm::SCHEME_HTML, "https://facebook.com",
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
-#if defined(OS_MACOSX)
-  // Mock Keychain. There is a call to Keychain on initializling
-  // PasswordReuseDetector, so it should be mocked.
-  OSCryptMocker::SetUpWithSingleton();
-#endif
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
@@ -967,9 +974,36 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
-#if defined(OS_MACOSX)
-  OSCryptMocker::TearDown();
-#endif
+}
+
+TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  const base::string16 sync_password = base::ASCIIToUTF16("password");
+  const base::string16 input = base::ASCIIToUTF16("123password");
+  store->SaveSyncPasswordHash(sync_password);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that sync password reuse is found.
+  MockPasswordReuseDetectorConsumer mock_consumer;
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(sync_password, "accounts.google.com", 1, 0));
+  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Check that no sync password reuse is found after clearing the saved sync
+  // password hash.
+  store->ClearSyncPasswordHash();
+  EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
+  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  base::RunLoop().RunUntilIdle();
+
+  store->ShutdownOnUIThread();
+  base::RunLoop().RunUntilIdle();
 }
 #endif
 
