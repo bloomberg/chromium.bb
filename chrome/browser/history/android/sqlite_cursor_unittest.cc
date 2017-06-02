@@ -102,8 +102,8 @@ class SQLiteCursorTest : public testing::Test,
   }
 
  protected:
-  TestingProfileManager profile_manager_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  TestingProfileManager profile_manager_;
   std::unique_ptr<AndroidHistoryProviderService> service_;
   base::CancelableTaskTracker cancelable_tracker_;
   TestingProfile* testing_profile_;
