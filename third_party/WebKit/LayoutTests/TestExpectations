@@ -2512,6 +2512,7 @@ crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ N
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-window.html [ NeedsManualRebaseline ]
 crbug.com/713732 http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 crbug.com/713732 virtual/mojo-loading/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
+crbug.com/713732 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
