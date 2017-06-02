@@ -1256,6 +1256,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
 
 NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     const ResourceRequest& request,
+    Document* origin_document,
     const SubstituteData& substitute_data,
     DocumentLoader* loader,
     ContentSecurityPolicyDisposition
@@ -1291,8 +1292,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   bool replaces_current_history_item =
       frame_load_type == kFrameLoadTypeReplaceCurrentItem;
   policy = Client()->DecidePolicyForNavigation(
-      request, loader, type, policy, replaces_current_history_item,
-      is_client_redirect, form,
+      request, origin_document, loader, type, policy,
+      replaces_current_history_item, is_client_redirect, form,
       should_check_main_world_content_security_policy);
   if (policy == kNavigationPolicyCurrentTab ||
       policy == kNavigationPolicyIgnore ||
@@ -1325,10 +1326,15 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
                     kCheckContentSecurityPolicy,
                 settings && settings->GetBrowserSideNavigationEnabled(),
                 ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
+
   return ShouldContinueForNavigationPolicy(
-      request, substitute_data, loader,
-      should_check_main_world_content_security_policy, type, policy,
-      frame_load_type, is_client_redirect, form);
+      request,
+      // |origin_document| is not set. It doesn't really matter here. It is
+      // useful for PlzNavigate (aka browser-side-navigation). It is used
+      // during the first navigation and not during redirects.
+      nullptr,  // origin_document
+      substitute_data, loader, should_check_main_world_content_security_policy,
+      type, policy, frame_load_type, is_client_redirect, form);
 }
 
 NavigationPolicy FrameLoader::CheckLoadCanStart(
@@ -1362,7 +1368,8 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
   ModifyRequestForCSP(resource_request, nullptr);
 
   return ShouldContinueForNavigationPolicy(
-      resource_request, frame_load_request.GetSubstituteData(), nullptr,
+      resource_request, frame_load_request.OriginDocument(),
+      frame_load_request.GetSubstituteData(), nullptr,
       frame_load_request.ShouldCheckMainWorldContentSecurityPolicy(),
       navigation_type, navigation_policy, type,
       frame_load_request.ClientRedirect() ==

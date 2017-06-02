@@ -290,6 +290,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   NavigationPolicy DecidePolicyForNavigation(
       const ResourceRequest&,
+      Document* origin_document,
       DocumentLoader*,
       NavigationType,
       NavigationPolicy,

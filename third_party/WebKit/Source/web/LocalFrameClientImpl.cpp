@@ -494,6 +494,7 @@ static bool AllowCreatingBackgroundTabs() {
 
 NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     const ResourceRequest& request,
+    Document* origin_document,
     DocumentLoader* loader,
     NavigationType type,
     NavigationPolicy policy,
@@ -555,8 +556,14 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   if (form)
     navigation_info.form = WebFormElement(form);
 
+  // The frame has navigated either by itself or by the action of the
+  // |origin_document| when it is defined. |source_location| represents the
+  // line of code that has initiated the navigation. It is used to let web
+  // developpers locate the root cause of blocked navigations.
   std::unique_ptr<SourceLocation> source_location =
-      SourceLocation::Capture(web_frame_->GetFrame()->GetDocument());
+      origin_document
+          ? SourceLocation::Capture(origin_document)
+          : SourceLocation::Capture(web_frame_->GetFrame()->GetDocument());
   if (source_location && !source_location->IsUnknown()) {
     navigation_info.source_location.url = source_location->Url();
     navigation_info.source_location.line_number = source_location->LineNumber();

@@ -107,6 +107,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidChangeThemeColor() override;
   NavigationPolicy DecidePolicyForNavigation(
       const ResourceRequest&,
+      Document* origin_document,
       DocumentLoader*,
       NavigationType,
       NavigationPolicy,
