@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
@@ -513,7 +514,8 @@ void PaymentSheetViewController::StyledLabelLinkClicked(
     int event_flags) {
   // The only thing that can trigger this is the user clicking on the "settings"
   // link in the data attribution text.
-  chrome::ShowSettingsSubPageForProfile(dialog()->GetProfile(), "");
+  chrome::ShowSettingsSubPageForProfile(dialog()->GetProfile(),
+                                        chrome::kAutofillSubPage);
 }
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
