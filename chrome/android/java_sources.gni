@@ -1725,6 +1725,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/media/ui/MediaImageManagerTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationActionsUpdatedTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationButtonComputationTest.java",
+  "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationFaviconTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerNotificationTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerServiceActionsTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationManagerServiceLifecycleTest.java",
