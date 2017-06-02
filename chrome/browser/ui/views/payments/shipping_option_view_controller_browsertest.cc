@@ -92,6 +92,15 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW, false);
 
+  // Now no address is selected.
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
+  EXPECT_EQ(request->state()->shipping_profiles().back(),
+            request->state()->selected_shipping_option_error_profile());
+
+  // The address selector has this error.
+  EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
+            GetLabelText(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
+
   // There is no a longer shipping option section, because no shipping options
   // are available for Canada.
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
@@ -100,16 +109,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
 
-  // There is now an appropriate error that is shown in the shipping address
-  // section of the Payment Sheet. The string is returned by the merchant.
-  EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
-            GetProfileLabelValues(
-                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)
-                .back());
-
-  // Go to the address selector and see this error as well.
-  EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
 }
 
 }  // namespace payments

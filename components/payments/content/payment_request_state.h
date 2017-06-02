@@ -114,6 +114,11 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::AutofillProfile* selected_shipping_profile() const {
     return selected_shipping_profile_;
   }
+  // If |spec()->selected_shipping_option_error()| is not empty, this contains
+  // the profile for which the error is about.
+  autofill::AutofillProfile* selected_shipping_option_error_profile() const {
+    return selected_shipping_option_error_profile_;
+  }
   autofill::AutofillProfile* selected_contact_profile() const {
     return selected_contact_profile_;
   }
@@ -216,6 +221,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::PersonalDataManager* personal_data_manager_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
+  autofill::AutofillProfile* selected_shipping_option_error_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
   PaymentInstrument* selected_instrument_;
 

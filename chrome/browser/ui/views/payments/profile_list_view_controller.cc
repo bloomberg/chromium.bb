@@ -119,19 +119,17 @@ class ShippingProfileViewController : public ProfileListViewController,
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
-    if (!IsEnabled(profile)) {
-      // The error is not shown in the label itself on this screen, but the
-      // entry is disabled.
-      return GetShippingAddressLabelWithError(
-          AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
-          /*error=*/base::string16(), /*disabled_state=*/true);
-    }
     return GetShippingAddressLabelWithMissingInfo(
         AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
-        *(state()->profile_comparator()));
+        *(state()->profile_comparator()),
+        /*enabled=*/IsEnabled(profile));
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
+    // This will trigger a merchant update as well as a full spinner on top
+    // of the profile list. When the spec comes back updated (in OnSpecUpdated),
+    // the decision will be made to either stay on this screen or go back to the
+    // payment sheet.
     state()->SetSelectedShippingProfile(profile);
   }
 
@@ -148,10 +146,7 @@ class ShippingProfileViewController : public ProfileListViewController,
   }
 
   autofill::AutofillProfile* GetSelectedProfile() override {
-    // If there are no errors with the currently selected profile, return it.
-    return spec()->selected_shipping_option_error().empty()
-               ? state()->selected_shipping_profile()
-               : nullptr;
+    return state()->selected_shipping_profile();
   }
 
   bool IsValidProfile(const autofill::AutofillProfile& profile) override {
@@ -219,15 +214,24 @@ class ShippingProfileViewController : public ProfileListViewController,
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
   }
 
+  bool IsEnabled(autofill::AutofillProfile* profile) override {
+    // If selected_shipping_option_error_profile() is null, then no error is
+    // reported by the merchant and all items are enabled. If it is not null and
+    // equal to |profile|, then |profile| should be disabled.
+    return !state()->selected_shipping_option_error_profile() ||
+           profile != state()->selected_shipping_option_error_profile();
+  }
+
  private:
   void OnSpecUpdated() override {
     // If there's an error, stay on this screen so the user can select a
     // different address. Otherwise, go back to the payment sheet.
     if (spec()->current_update_reason() ==
         PaymentRequestSpec::UpdateReason::SHIPPING_ADDRESS) {
-      if (spec()->selected_shipping_option_error().empty()) {
+      if (!state()->selected_shipping_option_error_profile()) {
         dialog()->GoBack();
       } else {
+        // The error profile is known, refresh the view to display it correctly.
         UpdateContentView();
       }
     }
@@ -339,14 +343,7 @@ ProfileListViewController::ProfileListViewController(
 ProfileListViewController::~ProfileListViewController() {}
 
 bool ProfileListViewController::IsEnabled(autofill::AutofillProfile* profile) {
-  // If selected_shipping_option_error() is not empty, it means the current
-  // selected_shipping_profile() is not supported by this merchant and should be
-  // shown in a disabled state. Therefore, |profile| is enabled in cases where
-  // (1) it's not the selected_shipping_profile
-  // OR
-  // (2) if it is, there is no shipping option error reported by the merchant.
-  return profile != state()->selected_shipping_profile() ||
-         spec()->selected_shipping_option_error().empty();
+  return true;
 }
 
 std::unique_ptr<views::View> ProfileListViewController::CreateHeaderView() {
