@@ -45,6 +45,9 @@ ExtensionNotificationHandler::ExtensionNotificationHandler() = default;
 
 ExtensionNotificationHandler::~ExtensionNotificationHandler() = default;
 
+void ExtensionNotificationHandler::OnShow(Profile* profile,
+                                          const std::string& notification_id) {}
+
 void ExtensionNotificationHandler::OnClose(Profile* profile,
                                            const std::string& origin,
                                            const std::string& notification_id,

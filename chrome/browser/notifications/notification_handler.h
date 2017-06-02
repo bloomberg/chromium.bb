@@ -15,10 +15,13 @@ class NullableString16;
 class Profile;
 
 // Interface that enables the different kind of notifications to process
-// operations coming from the user.
+// operations coming from the user or decisions made by the underlying
+// notification type.
 class NotificationHandler {
  public:
   virtual ~NotificationHandler() {}
+
+  virtual void OnShow(Profile* profile, const std::string& notification_id) = 0;
 
   // Process notification close events.
   virtual void OnClose(Profile* profile,

@@ -14,6 +14,8 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 
+class Profile;
+
 // Implementation of the NotificationDisplayService interface that can be used
 // for testing purposes. Supports additional methods enabling instrumenting the
 // faked underlying notification system.
@@ -24,7 +26,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   static std::unique_ptr<KeyedService> FactoryForTests(
       content::BrowserContext* browser_context);
 
-  StubNotificationDisplayService();
+  explicit StubNotificationDisplayService(Profile* profile);
   ~StubNotificationDisplayService() override;
 
   // Removes the notification identified by |notification_id|.

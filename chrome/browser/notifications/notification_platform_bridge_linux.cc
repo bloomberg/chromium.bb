@@ -25,8 +25,8 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/notifications/native_notification_display_service.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration_linux.h"
@@ -166,8 +166,8 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
   if (!profile)
     return;
 
-  auto* display_service = static_cast<NativeNotificationDisplayService*>(
-      NotificationDisplayServiceFactory::GetForProfile(profile));
+  auto* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile);
   display_service->ProcessNotificationOperation(operation, notification_type,
                                                 origin, notification_id,
                                                 action_index, reply);
@@ -341,7 +341,7 @@ class NotificationPlatformBridgeLinuxImpl
 
     // A copy of the origin_url from the underlying
     // message_center::Notification.  Used to pass back to
-    // NativeNotificationDisplayService.
+    // NotificationDisplayService.
     const GURL origin_url;
 
     // Used to keep track of the IDs of the buttons currently displayed
