@@ -69,6 +69,8 @@ FakeLayerTreeHost::~FakeLayerTreeHost() {
 void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }
 
 LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
+  // TODO(pdr): Update the LayerTreeImpl lifecycle states here so lifecycle
+  // violations can be caught.
   TreeSynchronizer::SynchronizeTrees(root_layer(), active_tree());
   active_tree()->SetPropertyTrees(property_trees());
   TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),

@@ -121,6 +121,7 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+    host_impl_.active_tree()->UpdateScrollbarGeometries();
 
     scrollbar_controller_ = ScrollbarAnimationController::
         CreateScrollbarAnimationControllerAuraOverlay(
@@ -1261,6 +1262,8 @@ class ScrollbarAnimationControllerAndroidTest
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+    DCHECK(host_impl_.active_tree()->ScrollbarGeometriesNeedUpdate());
+    host_impl_.active_tree()->UpdateScrollbarGeometries();
 
     scrollbar_controller_ =
         ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(

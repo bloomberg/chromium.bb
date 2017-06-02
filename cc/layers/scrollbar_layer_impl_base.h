@@ -21,15 +21,17 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   ElementId scroll_element_id() const { return scroll_element_id_; }
   void SetScrollElementId(ElementId scroll_element_id);
 
-  float current_pos() const { return current_pos_; }
+  // The following setters should be called when updating scrollbar geometries
+  // (see: LayerTreeImpl::UpdateScrollbarGeometries).
   bool SetCurrentPos(float current_pos);
-  bool SetClipLayerLength(float clip_layer_length);
-  bool SetScrollLayerLength(float scroll_layer_length);
-  bool SetVerticalAdjust(float vertical_adjust);
+  void SetClipLayerLength(float clip_layer_length);
+  void SetScrollLayerLength(float scroll_layer_length);
+  void SetVerticalAdjust(float vertical_adjust);
 
-  float clip_layer_length() const { return clip_layer_length_; }
-  float scroll_layer_length() const { return scroll_layer_length_; }
-  float vertical_adjust() const { return vertical_adjust_; }
+  float current_pos() const;
+  float clip_layer_length() const;
+  float scroll_layer_length() const;
+  float vertical_adjust() const;
 
   bool is_overlay_scrollbar() const { return is_overlay_scrollbar_; }
   void set_is_overlay_scrollbar(bool is_overlay) {
@@ -53,7 +55,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   float thumb_thickness_scale_factor() {
     return thumb_thickness_scale_factor_;
   }
-  bool SetThumbThicknessScaleFactor(float thumb_thickness_scale_factor);
+  void SetThumbThicknessScaleFactor(float thumb_thickness_scale_factor);
 
   virtual int ThumbThickness() const = 0;
 
