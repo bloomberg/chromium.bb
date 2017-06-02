@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -319,33 +320,92 @@ class AutofillMetrics {
     NUM_SAVE_CARD_PROMPT_METRICS,
   };
 
-  // Metrics measuring how well we predict field types.  Exactly three such
-  // metrics are logged for each fillable field in a submitted form: for
-  // the heuristic prediction, for the crowd-sourced prediction, and for the
-  // overall prediction.
+  // Metrics measuring how well we predict field types.  These metric values are
+  // logged for each field in a submitted form for:
+  //     - the heuristic prediction
+  //     - the crowd-sourced (server) prediction
+  //     - for the overall prediction
+  //
+  // For each of these prediction types, these metrics are also logged by
+  // actual and predicted field type.
   enum FieldTypeQualityMetric {
-    // The field was found to be of type T, but autofill made no prediction.
-    TYPE_UNKNOWN = 0,
     // The field was found to be of type T, which matches the predicted type.
-    TYPE_MATCH,
-    // The field was found to be of type T, autofill predicted some other type.
-    TYPE_MISMATCH,
-    // The field was left empty and autofil predicted that the field type would
-    // be UNKNOWN.
-    TYPE_MATCH_EMPTY,
-    // The field was populated with data that did not match any part of the
-    // user's profile (it's type could not be determined). Autofill predicted
-    // the field's type would be UNKNOWN.
-    TYPE_MATCH_UNKNOWN,
-    // The field was left empty, autofill predicted the user would populate it
-    // with autofillable data.
-    TYPE_MISMATCH_EMPTY,
-    // The field was populated with data that did not match any part of the
-    // user's profile (it's type could not be determined). Autofill predicted
-    // the user would populate it with autofillable data.
-    TYPE_MISMATCH_UNKNOWN,
-    // This must be the last value.
-    NUM_FIELD_TYPE_QUALITY_METRICS,
+    // i.e. actual_type == predicted type == T
+    //
+    // This is captured as a type-specific log entry for T. Is is also captured
+    // as an aggregate (non-type-specific) log entry.
+    TRUE_POSITIVE = 0,
+
+    // The field type is AMBIGUOUS and autofill made no prediction.
+    // i.e. actual_type == AMBIGUOUS,predicted type == UNKNOWN|NO_SERVER_DATA.
+    //
+    // This is captured as an aggregate (non-type-specific) log entry. It is
+    // NOT captured by type-specific logging.
+    TRUE_NEGATIVE_AMBIGUOUS,
+
+    // The field type is UNKNOWN and autofill made no prediction.
+    // i.e. actual_type == UNKNOWN and predicted type == UNKNOWN|NO_SERVER_DATA.
+    //
+    // This is captured as an aggregate (non-type-specific) log entry. It is
+    // NOT captured by type-specific logging.
+    TRUE_NEGATIVE_UNKNOWN,
+
+    // The field type is EMPTY and autofill predicted UNKNOWN
+    // i.e. actual_type == EMPTY and predicted type == UNKNOWN|NO_SERVER_DATA.
+    //
+    // This is captured as an aggregate (non-type-specific) log entry. It is
+    // NOT captured by type-specific logging.
+    TRUE_NEGATIVE_EMPTY,
+
+    // Autofill predicted type T, but the field actually had a different type.
+    // i.e., actual_type == T, predicted_type = U, T != U,
+    //       UNKNOWN not in (T,U).
+    //
+    // This is captured as a type-specific log entry for U. It is NOT captured
+    // as an aggregate (non-type-specific) entry as this would double count with
+    // FALSE_NEGATIVE_MISMATCH logging captured for T.
+    FALSE_POSITIVE_MISMATCH,
+
+    // Autofill predicted type T, but the field actually matched multiple
+    // pieces of autofill data, none of which are T.
+    // i.e., predicted_type == T, actual_type = {U, V, ...),
+    //       T not in {U, V, ...}.
+    //
+    // This is captured as a type-specific log entry for T. It is also captured
+    // as an aggregate (non-type-specific) log entry.
+    FALSE_POSITIVE_AMBIGUOUS,
+
+    // The field type is UNKNOWN, but autofill predicted it to be of type T.
+    // i.e., actual_type == UNKNOWN, predicted_type = T, T != UNKNOWN
+    //
+    // This is captured as a type-specific log entry for T. Is is also captured
+    // as an aggregate (non-type-specific) log entry.
+    FALSE_POSITIVE_UNKNOWN,
+
+    // The field type is EMPTY, but autofill predicted it to be of type T.
+    // i.e., actual_type == EMPTY, predicted_type = T, T != UNKNOWN
+    //
+    // This is captured as a type-specific log entry for T. Is is also captured
+    // as an aggregate (non-type-specific) log entry.
+    FALSE_POSITIVE_EMPTY,
+
+    // The field is of type T, but autofill did not make a type prediction.
+    // i.e., actual_type == T, predicted_type = UNKNOWN, T != UNKNOWN.
+    //
+    // This is captured as a type-specific log entry for T. Is is also captured
+    // as an aggregate (non-type-specific) log entry.
+    FALSE_NEGATIVE_UNKNOWN,
+
+    // The field is of type T, but autofill predicted it to be of type U.
+    // i.e., actual_type == T, predicted_type = U, T != U,
+    //       UNKNOWN not in (T,U).
+    //
+    // This is captured as a type-specific log entry for T. Is is also captured
+    // as an aggregate (non-type-specific) log entry.
+    FALSE_NEGATIVE_MISMATCH,
+
+    // This must be last.
+    NUM_FIELD_TYPE_QUALITY_METRICS
   };
 
   enum QualityMetricType {
@@ -675,15 +735,18 @@ class AutofillMetrics {
 
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
-  static void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
-                                         ServerFieldType field_type,
-                                         QualityMetricType metric_type);
-  static void LogOverallTypePrediction(FieldTypeQualityMetric metric,
-                                       ServerFieldType field_type,
-                                       QualityMetricType metric_type);
-  static void LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                      ServerFieldType field_type,
-                                      QualityMetricType metric_type);
+  static void LogHeuristicPredictionQualityMetrics(
+      const ServerFieldTypeSet& possible_types,
+      ServerFieldType predicted_type,
+      QualityMetricType metric_type);
+  static void LogServerPredictionQualityMetrics(
+      const ServerFieldTypeSet& possible_types,
+      ServerFieldType predicted_type,
+      QualityMetricType metric_type);
+  static void LogOverallPredictionQualityMetrics(
+      const ServerFieldTypeSet& possible_types,
+      ServerFieldType predicted_type,
+      QualityMetricType metric_type);
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 

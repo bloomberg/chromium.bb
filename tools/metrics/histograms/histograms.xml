@@ -3880,6 +3880,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.FieldPrediction">
+<!-- Name completed by histogram_suffixes
+     name="AutofillFieldPredictionSource" -->
+
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    Predicted and actual form field type. This is a computed sparse histogram
+    where the value is ((predicted &lt;&lt; 16)| actual). Predicted and actual
+    are taken from the autofill::ServerFieldType enumeration.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FieldPredictionQuality.Aggregate"
+    enum="AutofillFieldPredictionQuality">
+<!-- Name completed by histogram_suffixes
+     name="AutofillFieldPredictionSource" -->
+
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    Aggregate Autofill field-type prediction outcomes. See
+    https://en.wikipedia.org/wiki/Confusion_matrix for an explanation of the
+    values.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FieldPredictionQuality.ByFieldType"
+    enum="AutofillFieldPredictionQualityByFieldType">
+<!-- Name completed by histogram_suffixes
+     name="AutofillFieldPredictionSource" -->
+
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    Autofill field-type prediction outcomes, broken down by field type. See
+    https://en.wikipedia.org/wiki/Confusion_matrix for an explanation of the
+    values.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.FillDuration.FromInteraction.WithAutofill">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -4206,12 +4244,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.Quality.HeuristicType" enum="AutofillTypeQuality">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.Aggregate.Heuristic.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>The quality of Autofill's heuristic field type detection.</summary>
 </histogram>
 
 <histogram name="Autofill.Quality.HeuristicType.ByFieldType"
     enum="AutofillTypeQualityByFieldType">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.ByFieldType.Heuristic.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>
     The quality of Autofill's heuristic field type detection, broken down by the
@@ -4221,12 +4267,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.Quality.PredictedType" enum="AutofillTypeQuality">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.Aggregate.Overall.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>The overall quality of the Autofill field type predictions.</summary>
 </histogram>
 
 <histogram name="Autofill.Quality.PredictedType.ByFieldType"
     enum="AutofillTypeQualityByFieldType">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.ByFieldType.Overall.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>
     The overall quality of the Autofill field type predictions, broken down by
@@ -4236,12 +4290,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Autofill.Quality.ServerType" enum="AutofillTypeQuality">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.Aggregate.Server.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>The quality of the Autofill server's field type detection.</summary>
 </histogram>
 
 <histogram name="Autofill.Quality.ServerType.ByFieldType"
     enum="AutofillTypeQualityByFieldType">
+  <obsolete>
+    Deprecated as of 6/2017, replaced by
+    Autofill.FieldPredictionQuality.ByFieldType.Server.
+  </obsolete>
   <owner>isherman@chromium.org</owner>
   <summary>
     The quality of the Autofill server's field type detection, broken down by
@@ -85771,6 +85833,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Autofill.FormEvents.CreditCard"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AutofillFieldPredictionSource" separator=".">
+  <suffix name="Heuristic"
+      label="Field type predictions using local heuristics."/>
+  <suffix name="Server"
+      label="Field types based on crowd-sourced prediction fetched from the
+             Autofill Server"/>
+  <suffix name="Overall"
+      label="Field type prediction as seen by the user after combining the
+             heuristic and crowd sourced predictions."/>
+  <affected-histogram name="Autofill.FieldPrediction"/>
+  <affected-histogram name="Autofill.FieldPredictionQuality.Aggregate"/>
+  <affected-histogram name="Autofill.FieldPredictionQuality.ByFieldType"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AutofillPayloadCompressionType" separator=".">
   <suffix name="Query" label="Query request compression"/>
   <suffix name="Upload" label="Upload request compression"/>
@@ -87803,6 +87879,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="NoSubmission" label="No observed submission."/>
   <suffix name="BasedOnAutocomplete"
       label="Quality metrics based on autocomplete attributes."/>
+  <affected-histogram name="Autofill.FieldPrediction.Heuristic"/>
+  <affected-histogram name="Autofill.FieldPrediction.Overall"/>
+  <affected-histogram name="Autofill.FieldPrediction.Server"/>
+  <affected-histogram
+      name="Autofill.FieldPredictionQuality.Aggregate.Heuristic"/>
+  <affected-histogram name="Autofill.FieldPredictionQuality.Aggregate.Overall"/>
+  <affected-histogram name="Autofill.FieldPredictionQuality.Aggregate.Server"/>
+  <affected-histogram
+      name="Autofill.FieldPredictionQuality.ByFieldType.Heuristic"/>
+  <affected-histogram
+      name="Autofill.FieldPredictionQuality.ByFieldType.Overall"/>
+  <affected-histogram
+      name="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
   <affected-histogram
       name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"/>
   <affected-histogram name="Autofill.Quality.HeuristicType"/>

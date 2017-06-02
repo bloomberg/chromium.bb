@@ -1749,6 +1749,232 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="fp05cc03e1"/>
 </enum>
 
+<enum name="AutofillFieldPredictionQuality" type="int">
+  <int value="0" label="True Positive"/>
+  <int value="1" label="True Negative (Ambiguous)"/>
+  <int value="2" label="True Negative (Unknown)"/>
+  <int value="3" label="True Negative (Empty)"/>
+  <int value="4" label="False Positive (Mismatch)"/>
+  <int value="5" label="False Positive (Ambiguous)"/>
+  <int value="6" label="False Positive (Unknown)"/>
+  <int value="7" label="False Positive (Empty)"/>
+  <int value="8" label="False Negative (Mismatch)"/>
+  <int value="9" label="False Negative (Unknown)"/>
+</enum>
+
+<enum name="AutofillFieldPredictionQualityByFieldType" type="int">
+  <int value="0" label="Ambiguous: True Positive"/>
+  <int value="1" label="Ambiguous: True Negative (Ambiguous)"/>
+  <int value="2" label="Ambiguous: True Negative (Unknown)"/>
+  <int value="3" label="Ambiguous: True Negative (Empty)"/>
+  <int value="4" label="Ambiguous: False Positive (Mismatch)"/>
+  <int value="5" label="Ambiguous: False Positive (Ambiguous)"/>
+  <int value="6" label="Ambiguous: False Positive (Unknown)"/>
+  <int value="7" label="Ambiguous: False Positive (Empty)"/>
+  <int value="8" label="Ambiguous: False Negative (Mismatch)"/>
+  <int value="9" label="Ambiguous: False Negative (Unknown)"/>
+  <int value="256" label="Name: True Positive"/>
+  <int value="257" label="Name: True Negative (Ambiguous)"/>
+  <int value="258" label="Name: True Negative (Unknown)"/>
+  <int value="259" label="Name: True Negative (Empty)"/>
+  <int value="260" label="Name: False Positive (Mismatch)"/>
+  <int value="261" label="Name: False Positive (Ambiguous)"/>
+  <int value="262" label="Name: False Positive (Unknown)"/>
+  <int value="263" label="Name: False Positive (Empty)"/>
+  <int value="264" label="Name: False Negative (Mismatch)"/>
+  <int value="265" label="Name: False Negative (Unknown)"/>
+  <int value="512" label="Company: True Positive"/>
+  <int value="513" label="Company: True Negative (Ambiguous)"/>
+  <int value="514" label="Company: True Negative (Unknown)"/>
+  <int value="515" label="Company: True Negative (Empty)"/>
+  <int value="516" label="Company: False Positive (Mismatch)"/>
+  <int value="517" label="Company: False Positive (Ambiguous)"/>
+  <int value="518" label="Company: False Positive (Unknown)"/>
+  <int value="519" label="Company: False Positive (Empty)"/>
+  <int value="520" label="Company: False Negative (Mismatch)"/>
+  <int value="521" label="Company: False Negative (Unknown)"/>
+  <int value="768" label="Address Line 1: True Positive"/>
+  <int value="769" label="Address Line 1: True Negative (Ambiguous)"/>
+  <int value="770" label="Address Line 1: True Negative (Unknown)"/>
+  <int value="771" label="Address Line 1: True Negative (Empty)"/>
+  <int value="772" label="Address Line 1: False Positive (Mismatch)"/>
+  <int value="773" label="Address Line 1: False Positive (Ambiguous)"/>
+  <int value="774" label="Address Line 1: False Positive (Unknown)"/>
+  <int value="775" label="Address Line 1: False Positive (Empty)"/>
+  <int value="776" label="Address Line 1: False Negative (Mismatch)"/>
+  <int value="777" label="Address Line 1: False Negative (Unknown)"/>
+  <int value="1024" label="Address Line 2: True Positive"/>
+  <int value="1025" label="Address Line 2: True Negative (Ambiguous)"/>
+  <int value="1026" label="Address Line 2: True Negative (Unknown)"/>
+  <int value="1027" label="Address Line 2: True Negative (Empty)"/>
+  <int value="1028" label="Address Line 2: False Positive (Mismatch)"/>
+  <int value="1029" label="Address Line 2: False Positive (Ambiguous)"/>
+  <int value="1030" label="Address Line 2: False Positive (Unknown)"/>
+  <int value="1031" label="Address Line 2: False Positive (Empty)"/>
+  <int value="1032" label="Address Line 2: False Negative (Mismatch)"/>
+  <int value="1033" label="Address Line 2: False Negative (Unknown)"/>
+  <int value="1280" label="City: True Positive"/>
+  <int value="1281" label="City: True Negative (Ambiguous)"/>
+  <int value="1282" label="City: True Negative (Unknown)"/>
+  <int value="1283" label="City: True Negative (Empty)"/>
+  <int value="1284" label="City: False Positive (Mismatch)"/>
+  <int value="1285" label="City: False Positive (Ambiguous)"/>
+  <int value="1286" label="City: False Positive (Unknown)"/>
+  <int value="1287" label="City: False Positive (Empty)"/>
+  <int value="1288" label="City: False Negative (Mismatch)"/>
+  <int value="1289" label="City: False Negative (Unknown)"/>
+  <int value="1536" label="State: True Positive"/>
+  <int value="1537" label="State: True Negative (Ambiguous)"/>
+  <int value="1538" label="State: True Negative (Unknown)"/>
+  <int value="1539" label="State: True Negative (Empty)"/>
+  <int value="1540" label="State: False Positive (Mismatch)"/>
+  <int value="1541" label="State: False Positive (Ambiguous)"/>
+  <int value="1542" label="State: False Positive (Unknown)"/>
+  <int value="1543" label="State: False Positive (Empty)"/>
+  <int value="1544" label="State: False Negative (Mismatch)"/>
+  <int value="1545" label="State: False Negative (Unknown)"/>
+  <int value="1792" label="ZIP: True Positive"/>
+  <int value="1793" label="ZIP: True Negative (Ambiguous)"/>
+  <int value="1794" label="ZIP: True Negative (Unknown)"/>
+  <int value="1795" label="ZIP: True Negative (Empty)"/>
+  <int value="1796" label="ZIP: False Positive (Mismatch)"/>
+  <int value="1797" label="ZIP: False Positive (Ambiguous)"/>
+  <int value="1798" label="ZIP: False Positive (Unknown)"/>
+  <int value="1799" label="ZIP: False Positive (Empty)"/>
+  <int value="1800" label="ZIP: False Negative (Mismatch)"/>
+  <int value="1801" label="ZIP: False Negative (Unknown)"/>
+  <int value="2048" label="Country: True Positive"/>
+  <int value="2049" label="Country: True Negative (Ambiguous)"/>
+  <int value="2050" label="Country: True Negative (Unknown)"/>
+  <int value="2051" label="Country: True Negative (Empty)"/>
+  <int value="2052" label="Country: False Positive (Mismatch)"/>
+  <int value="2053" label="Country: False Positive (Ambiguous)"/>
+  <int value="2054" label="Country: False Positive (Unknown)"/>
+  <int value="2055" label="Country: False Positive (Empty)"/>
+  <int value="2056" label="Country: False Negative (Mismatch)"/>
+  <int value="2057" label="Country: False Negative (Unknown)"/>
+  <int value="2304" label="Phone: True Positive"/>
+  <int value="2305" label="Phone: True Negative (Ambiguous)"/>
+  <int value="2306" label="Phone: True Negative (Unknown)"/>
+  <int value="2307" label="Phone: True Negative (Empty)"/>
+  <int value="2308" label="Phone: False Positive (Mismatch)"/>
+  <int value="2309" label="Phone: False Positive (Ambiguous)"/>
+  <int value="2310" label="Phone: False Positive (Unknown)"/>
+  <int value="2311" label="Phone: False Positive (Empty)"/>
+  <int value="2312" label="Phone: False Negative (Mismatch)"/>
+  <int value="2313" label="Phone: False Negative (Unknown)"/>
+  <int value="2560" label="Fax: True Positive"/>
+  <int value="2561" label="Fax: True Negative (Ambiguous)"/>
+  <int value="2562" label="Fax: True Negative (Unknown)"/>
+  <int value="2563" label="Fax: True Negative (Empty)"/>
+  <int value="2564" label="Fax: False Positive (Mismatch)"/>
+  <int value="2565" label="Fax: False Positive (Ambiguous)"/>
+  <int value="2566" label="Fax: False Positive (Unknown)"/>
+  <int value="2567" label="Fax: False Positive (Empty)"/>
+  <int value="2568" label="Fax: False Negative (Mismatch)"/>
+  <int value="2569" label="Fax: False Negative (Unknown)"/>
+  <int value="2816" label="Email: True Positive"/>
+  <int value="2817" label="Email: True Negative (Ambiguous)"/>
+  <int value="2818" label="Email: True Negative (Unknown)"/>
+  <int value="2819" label="Email: True Negative (Empty)"/>
+  <int value="2820" label="Email: False Positive (Mismatch)"/>
+  <int value="2821" label="Email: False Positive (Ambiguous)"/>
+  <int value="2822" label="Email: False Positive (Unknown)"/>
+  <int value="2823" label="Email: False Positive (Empty)"/>
+  <int value="2824" label="Email: False Negative (Mismatch)"/>
+  <int value="2825" label="Email: False Negative (Unknown)"/>
+  <int value="3072" label="CC Name: True Positive"/>
+  <int value="3073" label="CC Name: True Negative (Ambiguous)"/>
+  <int value="3074" label="CC Name: True Negative (Unknown)"/>
+  <int value="3075" label="CC Name: True Negative (Empty)"/>
+  <int value="3076" label="CC Name: False Positive (Mismatch)"/>
+  <int value="3077" label="CC Name: False Positive (Ambiguous)"/>
+  <int value="3078" label="CC Name: False Positive (Unknown)"/>
+  <int value="3079" label="CC Name: False Positive (Empty)"/>
+  <int value="3080" label="CC Name: False Negative (Mismatch)"/>
+  <int value="3081" label="CC Name: False Negative (Unknown)"/>
+  <int value="3328" label="CC Number: True Positive"/>
+  <int value="3329" label="CC Number: True Negative (Ambiguous)"/>
+  <int value="3330" label="CC Number: True Negative (Unknown)"/>
+  <int value="3331" label="CC Number: True Negative (Empty)"/>
+  <int value="3332" label="CC Number: False Positive (Mismatch)"/>
+  <int value="3333" label="CC Number: False Positive (Ambiguous)"/>
+  <int value="3334" label="CC Number: False Positive (Unknown)"/>
+  <int value="3335" label="CC Number: False Positive (Empty)"/>
+  <int value="3336" label="CC Number: False Negative (Mismatch)"/>
+  <int value="3337" label="CC Number: False Negative (Unknown)"/>
+  <int value="3584" label="CC Expiry: True Positive"/>
+  <int value="3585" label="CC Expiry: True Negative (Ambiguous)"/>
+  <int value="3586" label="CC Expiry: True Negative (Unknown)"/>
+  <int value="3587" label="CC Expiry: True Negative (Empty)"/>
+  <int value="3588" label="CC Expiry: False Positive (Mismatch)"/>
+  <int value="3589" label="CC Expiry: False Positive (Ambiguous)"/>
+  <int value="3590" label="CC Expiry: False Positive (Unknown)"/>
+  <int value="3591" label="CC Expiry: False Positive (Empty)"/>
+  <int value="3592" label="CC Expiry: False Negative (Mismatch)"/>
+  <int value="3593" label="CC Expiry: False Negative (Unknown)"/>
+  <int value="3840" label="CC Type: True Positive"/>
+  <int value="3841" label="CC Type: True Negative (Ambiguous)"/>
+  <int value="3842" label="CC Type: True Negative (Unknown)"/>
+  <int value="3843" label="CC Type: True Negative (Empty)"/>
+  <int value="3844" label="CC Type: False Positive (Mismatch)"/>
+  <int value="3845" label="CC Type: False Positive (Ambiguous)"/>
+  <int value="3846" label="CC Type: False Positive (Unknown)"/>
+  <int value="3847" label="CC Type: False Positive (Empty)"/>
+  <int value="3848" label="CC Type: False Negative (Mismatch)"/>
+  <int value="3849" label="CC Type: False Negative (Unknown)"/>
+  <int value="4096" label="Password: True Positive"/>
+  <int value="4097" label="Password: True Negative (Ambiguous)"/>
+  <int value="4098" label="Password: True Negative (Unknown)"/>
+  <int value="4099" label="Password: True Negative (Empty)"/>
+  <int value="4100" label="Password: False Positive (Mismatch)"/>
+  <int value="4101" label="Password: False Positive (Ambiguous)"/>
+  <int value="4102" label="Password: False Positive (Unknown)"/>
+  <int value="4103" label="Password: False Positive (Empty)"/>
+  <int value="4104" label="Password: False Negative (Mismatch)"/>
+  <int value="4105" label="Password: False Negative (Unknown)"/>
+  <int value="4352" label="Address Line 3: True Positive"/>
+  <int value="4353" label="Address Line 3: True Negative (Ambiguous)"/>
+  <int value="4354" label="Address Line 3: True Negative (Unknown)"/>
+  <int value="4355" label="Address Line 3: True Negative (Empty)"/>
+  <int value="4356" label="Address Line 3: False Positive (Mismatch)"/>
+  <int value="4357" label="Address Line 3: False Positive (Ambiguous)"/>
+  <int value="4358" label="Address Line 3: False Positive (Unknown)"/>
+  <int value="4359" label="Address Line 3: False Positive (Empty)"/>
+  <int value="4360" label="Address Line 3: False Negative (Mismatch)"/>
+  <int value="4361" label="Address Line 3: False Negative (Unknown)"/>
+  <int value="4608" label="Username: True Positive"/>
+  <int value="4609" label="Username: True Negative (Ambiguous)"/>
+  <int value="4610" label="Username: True Negative (Unknown)"/>
+  <int value="4611" label="Username: True Negative (Empty)"/>
+  <int value="4612" label="Username: False Positive (Mismatch)"/>
+  <int value="4613" label="Username: False Positive (Ambiguous)"/>
+  <int value="4614" label="Username: False Positive (Unknown)"/>
+  <int value="4615" label="Username: False Positive (Empty)"/>
+  <int value="4616" label="Username: False Negative (Mismatch)"/>
+  <int value="4617" label="Username: False Negative (Unknown)"/>
+  <int value="4864" label="Street Address: True Positive"/>
+  <int value="4865" label="Street Address: True Negative (Ambiguous)"/>
+  <int value="4866" label="Street Address: True Negative (Unknown)"/>
+  <int value="4867" label="Street Address: True Negative (Empty)"/>
+  <int value="4868" label="Street Address: False Positive (Mismatch)"/>
+  <int value="4869" label="Street Address: False Positive (Ambiguous)"/>
+  <int value="4870" label="Street Address: False Positive (Unknown)"/>
+  <int value="4871" label="Street Address: False Positive (Empty)"/>
+  <int value="4872" label="Street Address: False Negative (Mismatch)"/>
+  <int value="4873" label="Street Address: False Negative (Unknown)"/>
+  <int value="5120" label="CVC: True Positive"/>
+  <int value="5121" label="CVC: True Negative (Ambiguous)"/>
+  <int value="5122" label="CVC: True Negative (Unknown)"/>
+  <int value="5123" label="CVC: True Negative (Empty)"/>
+  <int value="5124" label="CVC: False Positive (Mismatch)"/>
+  <int value="5125" label="CVC: False Positive (Ambiguous)"/>
+  <int value="5126" label="CVC: False Positive (Unknown)"/>
+  <int value="5127" label="CVC: False Positive (Empty)"/>
+  <int value="5128" label="CVC: False Negative (Mismatch)"/>
+  <int value="5129" label="CVC: False Negative (Unknown)"/>
+</enum>
+
 <enum name="AutofillFormEvent" type="int">
   <int value="0" label="Interacted (once)"/>
   <int value="1" label="Suggestions shown"/>

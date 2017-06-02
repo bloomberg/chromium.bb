@@ -12,6 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -79,6 +81,10 @@ enum FieldTypeGroupForMetrics {
   GROUP_CREDIT_CARD_VERIFICATION,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
+
+const int KMaxFieldTypeGroupMetric =
+    (NUM_FIELD_TYPE_GROUPS_FOR_METRICS << 8) |
+    AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS;
 
 std::string PreviousSaveCreditCardPromptUserDecisionToString(
     int previous_save_credit_card_prompt_user_decision) {
@@ -228,9 +234,12 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
       break;
   }
 
-  // Interpolate the |metric| with the |group|, so that all metrics for a given
-  // |group| are adjacent.
-  return (group * AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS) + metric;
+  // Use bits 8-15 for the group and bits 0-7 for the metric.
+  static_assert(AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS <= UINT8_MAX,
+                "maximum field type quality metric must fit into 8 bits");
+  static_assert(NUM_FIELD_TYPE_GROUPS_FOR_METRICS <= UINT8_MAX,
+                "number of field type groups must fit into 8 bits");
+  return (group << 8) | metric;
 }
 
 namespace {
@@ -268,40 +277,194 @@ void LogUMAHistogramLongTimes(const std::string& name,
   histogram->AddTime(duration);
 }
 
-// Logs a type quality metric.  The primary histogram name is constructed based
-// on |base_name|.  The field-specific histogram name also factors in the
-// |field_type|.  Logs a sample of |metric|, which should be in the range
-// [0, |num_possible_metrics|). May log a suffixed version of the metric
-// depending on |metric_type|.
-void LogTypeQualityMetric(const std::string& base_name,
-                          AutofillMetrics::FieldTypeQualityMetric metric,
-                          ServerFieldType field_type,
-                          AutofillMetrics::QualityMetricType metric_type) {
-  DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-
-  std::string suffix;
+const char* GetQualityMetricTypeSuffix(
+    AutofillMetrics::QualityMetricType metric_type) {
   switch (metric_type) {
-    case AutofillMetrics::TYPE_SUBMISSION:
-      break;
-    case AutofillMetrics::TYPE_NO_SUBMISSION:
-      suffix = ".NoSubmission";
-      break;
-    case AutofillMetrics::TYPE_AUTOCOMPLETE_BASED:
-      suffix = ".BasedOnAutocomplete";
-      break;
     default:
       NOTREACHED();
-  }
-  LogUMAHistogramEnumeration(base_name + suffix, metric,
-                             AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    // Fall through...
 
-  int field_type_group_metric = GetFieldTypeGroupMetric(field_type, metric);
-  int num_field_type_group_metrics =
-      AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS *
-      NUM_FIELD_TYPE_GROUPS_FOR_METRICS;
-  LogUMAHistogramEnumeration(base_name + ".ByFieldType" + suffix,
-                             field_type_group_metric,
-                             num_field_type_group_metrics);
+    case AutofillMetrics::TYPE_SUBMISSION:
+      return "";
+    case AutofillMetrics::TYPE_NO_SUBMISSION:
+      return ".NoSubmission";
+    case AutofillMetrics::TYPE_AUTOCOMPLETE_BASED:
+      return ".BasedOnAutocomplete";
+  }
+}
+
+// Given a set of |possible_types| for a field, select the best type to use as
+// the "actual" field type when calculating metrics. If the |predicted_type| is
+// among the |possible_types] then use that as the best type (i.e., the
+// prediction is deemed to have been correct).
+ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
+                                   ServerFieldType predicted_type) {
+  DCHECK_NE(possible_types.size(), 0u);
+
+  if (possible_types.count(EMPTY_TYPE)) {
+    DCHECK_EQ(possible_types.size(), 1u);
+    return EMPTY_TYPE;
+  }
+
+  if (possible_types.count(UNKNOWN_TYPE)) {
+    DCHECK_EQ(possible_types.size(), 1u);
+    return UNKNOWN_TYPE;
+  }
+
+  if (possible_types.count(predicted_type))
+    return predicted_type;
+
+  // Collapse field types that Chrome treats as identical, e.g. home and
+  // billing address fields.
+  ServerFieldTypeSet collapsed_field_types;
+  for (const auto& type : possible_types) {
+    DCHECK_NE(type, EMPTY_TYPE);
+    DCHECK_NE(type, UNKNOWN_TYPE);
+
+    // A phone number that's only missing its country code is (for metrics
+    // purposes) the same as the whole phone number.
+    if (type == PHONE_HOME_CITY_AND_NUMBER)
+      collapsed_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+    else
+      collapsed_field_types.insert(AutofillType(type).GetStorableType());
+  }
+
+  // Capture the field's type, if it is unambiguous.
+  ServerFieldType actual_type = AMBIGUOUS_TYPE;
+  if (collapsed_field_types.size() == 1)
+    actual_type = *collapsed_field_types.begin();
+
+  DVLOG(2) << "Inferred Type: " << AutofillType(actual_type).ToString();
+  return actual_type;
+}
+
+// Logs field type prediction quality metrics.  The primary histogram name is
+// constructed based on |source| The field-specific histogram name also factors
+// possible and predicted field types (|possible_types| and |predicted_type|,
+// respectively). May log a suffixed version of the metric depending on
+// |metric_type|.
+void LogPredictionQualityMetrics(
+    const base::StringPiece& source,
+    const ServerFieldTypeSet& possible_types,
+    ServerFieldType predicted_type,
+    AutofillMetrics::QualityMetricType metric_type) {
+  // Generate histogram names.
+  const char* const suffix = GetQualityMetricTypeSuffix(metric_type);
+  std::string raw_data_histogram =
+      base::JoinString({"Autofill.FieldPrediction.", source, suffix}, "");
+  std::string aggregate_histogram = base::JoinString(
+      {"Autofill.FieldPredictionQuality.Aggregate.", source, suffix}, "");
+  std::string type_specific_histogram = base::JoinString(
+      {"Autofill.FieldPredictionQuality.ByFieldType.", source, suffix}, "");
+
+  // Get the best type classification we can for the field.
+  ServerFieldType actual_type =
+      GetActualFieldType(possible_types, predicted_type);
+
+  DVLOG(2) << "Predicted: " << AutofillType(predicted_type).ToString() << "; "
+           << "Actual: " << AutofillType(actual_type).ToString();
+
+  DCHECK_LE(predicted_type, UINT16_MAX);
+  DCHECK_LE(actual_type, UINT16_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(raw_data_histogram,
+                              (predicted_type << 16) | actual_type);
+
+  // NO_SERVER_DATA is the equivalent of predicting UNKNOWN.
+  if (predicted_type == NO_SERVER_DATA)
+    predicted_type = UNKNOWN_TYPE;
+
+  // The actual type being EMPTY_TYPE is the same as UNKNOWN_TYPE for comparison
+  // purposes, but remember whether or not it was empty for more precise logging
+  // later.
+  bool is_empty = (actual_type == EMPTY_TYPE);
+  bool is_ambiguous = (actual_type == AMBIGUOUS_TYPE);
+  if (is_empty || is_ambiguous)
+    actual_type = UNKNOWN_TYPE;
+
+  // If the predicted and actual types match then it's either a true positive
+  // or a true negative (if they are both unknown). Do not log type specific
+  // true negatives (instead log a true positive for the "Ambiguous" type).
+  if (predicted_type == actual_type) {
+    if (actual_type == UNKNOWN_TYPE) {
+      // Only log aggregate true negative; do not log type specific metrics
+      // for UNKNOWN/EMPTY.
+      DVLOG(2) << "TRUE NEGATIVE";
+      LogUMAHistogramEnumeration(
+          aggregate_histogram,
+          (is_empty ? AutofillMetrics::TRUE_NEGATIVE_EMPTY
+                    : (is_ambiguous ? AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS
+                                    : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)),
+          AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+      return;
+    }
+
+    DVLOG(2) << "TRUE POSITIVE";
+    // Log both aggregate and type specific true positive if we correctly
+    // predict that type with which the field was filled.
+    LogUMAHistogramEnumeration(aggregate_histogram,
+                               AutofillMetrics::TRUE_POSITIVE,
+                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    LogUMAHistogramEnumeration(
+        type_specific_histogram,
+        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE),
+        KMaxFieldTypeGroupMetric);
+    return;
+  }
+
+  // Note: At this point predicted_type != actual type
+  // If actual type is UNKNOWN_TYPE then the prediction is a false positive.
+  // Further specialize the type of false positive by whether the field was
+  // empty or contained an unknown value.
+  if (actual_type == UNKNOWN_TYPE) {
+    DVLOG(2) << "FALSE POSITIVE";
+    auto metric =
+        (is_empty ? AutofillMetrics::FALSE_POSITIVE_EMPTY
+                  : (is_ambiguous ? AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS
+                                  : AutofillMetrics::FALSE_POSITIVE_UNKNOWN));
+    LogUMAHistogramEnumeration(aggregate_histogram, metric,
+                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    LogUMAHistogramEnumeration(type_specific_histogram,
+                               GetFieldTypeGroupMetric(predicted_type, metric),
+                               KMaxFieldTypeGroupMetric);
+    return;
+  }
+
+  // Note: At this point predicted_type != actual type, actual_type != UNKNOWN.
+  // If predicted type is UNKNOWN_TYPE then the prediction is a false negative
+  // unknown.
+  if (predicted_type == UNKNOWN_TYPE) {
+    DVLOG(2) << "FALSE NEGATIVE";
+    LogUMAHistogramEnumeration(aggregate_histogram,
+                               AutofillMetrics::FALSE_NEGATIVE_UNKNOWN,
+                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    LogUMAHistogramEnumeration(
+        type_specific_histogram,
+        GetFieldTypeGroupMetric(actual_type,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        KMaxFieldTypeGroupMetric);
+    return;
+  }
+
+  DVLOG(2) << "MISMATCH";
+
+  // Note: At this point predicted_type != actual type, actual_type != UNKNOWN,
+  //       predicted_type != UNKNOWN.
+  // This is a mismatch. From the reference of the actual type, this is a false
+  // negative (it was T, but predicted U). From the reference of the prediction,
+  // this is a false positive (predicted it was T, but it was U).
+  LogUMAHistogramEnumeration(aggregate_histogram,
+                             AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
+                             AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+  LogUMAHistogramEnumeration(
+      type_specific_histogram,
+      GetFieldTypeGroupMetric(actual_type,
+                              AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+      KMaxFieldTypeGroupMetric);
+  LogUMAHistogramEnumeration(
+      type_specific_histogram,
+      GetFieldTypeGroupMetric(predicted_type,
+                              AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+      KMaxFieldTypeGroupMetric);
 }
 
 }  // namespace
@@ -500,29 +663,28 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
                             NUM_DEVELOPER_ENGAGEMENT_METRICS);
 }
 
-// static
-void AutofillMetrics::LogHeuristicTypePrediction(
-    FieldTypeQualityMetric metric,
-    ServerFieldType field_type,
-    QualityMetricType metric_type) {
-  LogTypeQualityMetric("Autofill.Quality.HeuristicType", metric, field_type,
-                       metric_type);
+void AutofillMetrics::LogHeuristicPredictionQualityMetrics(
+    const ServerFieldTypeSet& possible_types,
+    ServerFieldType predicted_type,
+    AutofillMetrics::QualityMetricType metric_type) {
+  LogPredictionQualityMetrics("Heuristic", possible_types, predicted_type,
+                              metric_type);
 }
 
-// static
-void AutofillMetrics::LogOverallTypePrediction(FieldTypeQualityMetric metric,
-                                               ServerFieldType field_type,
-                                               QualityMetricType metric_type) {
-  LogTypeQualityMetric("Autofill.Quality.PredictedType", metric, field_type,
-                       metric_type);
+void AutofillMetrics::LogServerPredictionQualityMetrics(
+    const ServerFieldTypeSet& possible_types,
+    ServerFieldType predicted_type,
+    AutofillMetrics::QualityMetricType metric_type) {
+  LogPredictionQualityMetrics("Server", possible_types, predicted_type,
+                              metric_type);
 }
 
-// static
-void AutofillMetrics::LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                              ServerFieldType field_type,
-                                              QualityMetricType metric_type) {
-  LogTypeQualityMetric("Autofill.Quality.ServerType", metric, field_type,
-                       metric_type);
+void AutofillMetrics::LogOverallPredictionQualityMetrics(
+    const ServerFieldTypeSet& possible_types,
+    ServerFieldType predicted_type,
+    AutofillMetrics::QualityMetricType metric_type) {
+  LogPredictionQualityMetrics("Overall", possible_types, predicted_type,
+                              metric_type);
 }
 
 // static
