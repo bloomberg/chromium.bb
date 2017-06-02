@@ -7,6 +7,10 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/physical_web/ios_chrome_physical_web_data_source.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 std::unique_ptr<physical_web::PhysicalWebDataSource>
 CreateIOSChromePhysicalWebDataSource(PrefService* prefService) {
   return base::MakeUnique<IOSChromePhysicalWebDataSource>(prefService);
