@@ -3516,7 +3516,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLenum target,
     GLuint texture_client_id,
     const volatile GLbyte* mailbox) {
-  if (resources_->texture_id_map.GetServiceID(texture_client_id, nullptr)) {
+  if (!texture_client_id ||
+      resources_->texture_id_map.GetServiceID(texture_client_id, nullptr)) {
     return error::kInvalidArguments;
   }
 
