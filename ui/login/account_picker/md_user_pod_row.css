@@ -108,6 +108,36 @@ html[dir=rtl] .user-image-pane {
   flex: none;
 }
 
+.pod .badge-container {
+  background: #FFF;
+  border-radius: 50%;
+  bottom: 0;
+  display: none;
+  height: 27px;
+  position: absolute;
+  right: 0;
+  width: 27px;
+}
+
+.pod .badge-container iron-icon {
+  --iron-icon-height: 25px;
+  --iron-icon-width: 25px;
+  display: none;
+  padding: 0;
+}
+
+/* Signed-in badge should be hidden when there's another badge. */
+.pod.legacy-supervised.signed-in .signed-in-badge {
+  display: none;
+}
+
+.pod.legacy-supervised .badge-container,
+.pod.signed-in .badge-container,
+.pod.legacy-supervised .legacy-supervised-badge,
+.pod.signed-in .signed-in-badge {
+  display: block;
+}
+
 /* TODO(noms): Refactor this out into a CrOS-specific file and simplify the
  style rule once it is included on CrOS only. crbug.com/397638 */
 html:not([screen=login-add-user]) .pod .user-image {
@@ -201,7 +231,7 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
-#input-line {
+.input-line {
   opacity: 0.34;
   position: absolute;
   stroke: #FFFFFF;
@@ -209,7 +239,7 @@ html[dir=rtl] .main-pane {
   top: 40px;
 }
 
-#input-line[active] {
+.input-present .input-line {
   opacity: 1;
 }
 
@@ -226,6 +256,10 @@ html[dir=rtl] .main-pane {
 .password-container {
   height: 40px;
   width: 180px;
+}
+
+.capslock-on .password-container {
+  width: 160px;
 }
 
 .pod input[type='password'] {
@@ -252,18 +286,21 @@ html[dir=rtl] .main-pane {
 .capslock-on .capslock-hint-container {
   display: block;
   flex: none;
-  height: 43px;
+  height: 40px;
   position: relative;
   width: 20px;
 }
 </if>
 
 .capslock-hint {
-  -webkit-margin-end: 6px;
-  -webkit-margin-start: -2px;
-  margin: auto;
-  position: relative;
-  top: 15px;
+  --iron-icon-height: 22px;
+  --iron-icon-width: 22px;
+  opacity: 0.34;
+  padding: 13px 0 5px;
+}
+
+.input-present .capslock-hint {
+  opacity: 1;
 }
 
 .password-label,
