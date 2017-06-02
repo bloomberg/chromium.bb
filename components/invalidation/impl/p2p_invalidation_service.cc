@@ -36,6 +36,7 @@ P2PInvalidationService::P2PInvalidationService(
 }
 
 P2PInvalidationService::~P2PInvalidationService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void P2PInvalidationService::UpdateCredentials(const std::string& username,

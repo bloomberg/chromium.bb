@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -37,8 +37,7 @@ namespace invalidation {
 // them.
 class GCMInvalidationBridge : public gcm::GCMAppHandler,
                               public gcm::GCMConnectionObserver,
-                              public OAuth2TokenService::Consumer,
-                              public base::NonThreadSafe {
+                              public OAuth2TokenService::Consumer {
  public:
   class Core;
 
@@ -106,6 +105,8 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   syncer::GCMNetworkChannelDelegate::RequestTokenCallback
       request_token_callback_;
   bool subscribed_for_incoming_messages_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<GCMInvalidationBridge> weak_factory_;
 

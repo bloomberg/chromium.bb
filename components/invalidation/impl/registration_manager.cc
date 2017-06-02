@@ -65,11 +65,11 @@ RegistrationManager::RegistrationManager(
 }
 
 RegistrationManager::~RegistrationManager() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const ObjectIdSet& old_ids = GetRegisteredIds();
   const ObjectIdSet& to_register = ids;
@@ -100,7 +100,7 @@ ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
 
 void RegistrationManager::MarkRegistrationLost(
     const invalidation::ObjectId& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     DVLOG(1) << "Attempt to mark non-existent registration for "
@@ -116,7 +116,7 @@ void RegistrationManager::MarkRegistrationLost(
 }
 
 void RegistrationManager::MarkAllRegistrationsLost() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto it = registration_statuses_.begin();
        it != registration_statuses_.end(); ++it) {
     if (IsIdRegistered(it->first)) {
@@ -126,7 +126,7 @@ void RegistrationManager::MarkAllRegistrationsLost() {
 }
 
 void RegistrationManager::DisableId(const invalidation::ObjectId& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     DVLOG(1) << "Attempt to disable non-existent registration for "
@@ -161,7 +161,7 @@ ObjectIdSet RegistrationManager::GetRegisteredIdsForTest() const {
 
 RegistrationManager::PendingRegistrationMap
     RegistrationManager::GetPendingRegistrationsForTest() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PendingRegistrationMap pending_registrations;
   for (const auto& status_pair : registration_statuses_) {
     const invalidation::ObjectId& id = status_pair.first;
@@ -180,7 +180,7 @@ RegistrationManager::PendingRegistrationMap
 }
 
 void RegistrationManager::FirePendingRegistrationsForTest() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& status_pair : registration_statuses_) {
     if (status_pair.second->registration_timer.IsRunning()) {
       status_pair.second->DoRegister();
@@ -198,7 +198,7 @@ double RegistrationManager::GetJitter() {
 
 void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
                                         bool is_retry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
     NOTREACHED() << "TryRegisterId called on " << ObjectIdToString(id)
@@ -251,7 +251,7 @@ void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
 }
 
 void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   invalidation_client_->Register(id);
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
@@ -264,7 +264,7 @@ void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
 }
 
 void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   invalidation_client_->Unregister(id);
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
@@ -277,7 +277,7 @@ void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
 
 
 ObjectIdSet RegistrationManager::GetRegisteredIds() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ObjectIdSet ids;
   for (const auto& status_pair : registration_statuses_) {
     if (IsIdRegistered(status_pair.first)) {
@@ -289,7 +289,7 @@ ObjectIdSet RegistrationManager::GetRegisteredIds() const {
 
 bool RegistrationManager::IsIdRegistered(
     const invalidation::ObjectId& id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = registration_statuses_.find(id);
   return it != registration_statuses_.end() &&
       it->second->state == invalidation::InvalidationListener::REGISTERED;

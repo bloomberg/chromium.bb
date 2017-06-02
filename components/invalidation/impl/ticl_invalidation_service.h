@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/invalidation/impl/invalidation_logger.h"
@@ -42,8 +42,7 @@ class GCMInvalidationBridge;
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
-class TiclInvalidationService : public base::NonThreadSafe,
-                                public InvalidationService,
+class TiclInvalidationService : public InvalidationService,
                                 public OAuth2TokenService::Consumer,
                                 public OAuth2TokenService::Observer,
                                 public IdentityProvider::Observer,
@@ -159,6 +158,8 @@ class TiclInvalidationService : public base::NonThreadSafe,
   // Keep a copy of the important parameters used in network channel creation
   // for debugging.
   base::DictionaryValue network_channel_options_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TiclInvalidationService);
 };

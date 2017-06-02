@@ -19,9 +19,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/invalidator_registrar.h"
@@ -33,8 +33,7 @@ namespace syncer {
 // This class must live on the IO thread.
 class INVALIDATION_EXPORT InvalidationNotifier
     : public Invalidator,
-      public SyncInvalidationListener::Delegate,
-      public base::NonThreadSafe {
+      public SyncInvalidationListener::Delegate {
  public:
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
@@ -97,6 +96,8 @@ class INVALIDATION_EXPORT InvalidationNotifier
 
   // The invalidation listener.
   SyncInvalidationListener invalidation_listener_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationNotifier);
 };
