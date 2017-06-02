@@ -8,6 +8,10 @@
 #import "ios/chrome/browser/physical_web/physical_web_initial_state_recorder.h"
 #import "ios/chrome/common/physical_web/physical_web_scanner.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromePhysicalWebDataSource::IOSChromePhysicalWebDataSource(
     PrefService* pref_service) {
   initialStateRecorder_.reset([[PhysicalWebInitialStateRecorder alloc]

@@ -18,6 +18,10 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 void StartPhysicalWebDiscovery(PrefService* pref_service,
                                ios::ChromeBrowserState* browser_state) {
   // Do not scan if the Physical Web feature is disabled by a command line flag
