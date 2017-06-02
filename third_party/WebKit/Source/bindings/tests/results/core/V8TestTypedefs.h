@@ -15,7 +15,7 @@
 #include "bindings/core/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord.h"
+#include "bindings/core/v8/NestedUnionType.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/ToV8ForCore.h"

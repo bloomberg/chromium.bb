@@ -418,8 +418,16 @@ def get_interface_exposed_arguments(file_contents):
 # pylint: disable=line-too-long
 def shorten_union_name(union_type):
     aliases = {
+        # modules/canvas2d/CanvasRenderingContext2D.idl
+        'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
+        # modules/canvas/HTMLCanvasElementModule.idl
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext': 'RenderingContext',
+        # core/imagebitmap/ImageBitmapFactories.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
+        # bindings/tests/idls/core/TestTypedefs.idl
+        'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
+        # modules/offscreencanvas/OffscreenCanvasModules.idl
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext': 'OffscreenRenderingContext',
     }
 
     idl_type = union_type
@@ -429,7 +437,7 @@ def shorten_union_name(union_type):
     alias = aliases.get(name)
     if alias:
         return alias
-    if len(name) >= 120:
+    if len(name) >= 80:
         raise Exception('crbug.com/711464: The union name %s is too long. '
                         'Please add an alias to shorten_union_name()' % name)
     return name

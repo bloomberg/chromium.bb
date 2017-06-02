@@ -5,7 +5,7 @@
 #ifndef BaseRenderingContext2D_h
 #define BaseRenderingContext2D_h
 
-#include "bindings/modules/v8/CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas.h"
+#include "bindings/modules/v8/CanvasImageSource.h"
 #include "bindings/modules/v8/StringOrCanvasGradientOrCanvasPattern.h"
 #include "core/html/ImageData.h"
 #include "modules/ModulesExport.h"
