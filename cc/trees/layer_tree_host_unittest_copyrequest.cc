@@ -533,8 +533,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void AfterTest() override { EXPECT_TRUE(did_swap_); }
 
-  int parent_render_pass_id = 0;
-  int copy_layer_render_pass_id = 0;
+  RenderPassId parent_render_pass_id = 0;
+  RenderPassId copy_layer_render_pass_id = 0;
   TestCompositorFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;

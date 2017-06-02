@@ -42,14 +42,15 @@ class CC_EXPORT OverlayProcessor {
 
   gfx::Rect GetAndResetOverlayDamage();
 
+  using FilterOperationsMap = base::flat_map<RenderPassId, FilterOperations*>;
+
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
   void ProcessForOverlays(
       ResourceProvider* resource_provider,
       RenderPass* root_render_pass,
-      const base::flat_map<int, FilterOperations*>& render_pass_filters,
-      const base::flat_map<int, FilterOperations*>&
-          render_pass_background_filters,
+      const FilterOperationsMap& render_pass_filters,
+      const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       DCLayerOverlayList* dc_layer_overlays,
@@ -66,18 +67,16 @@ class CC_EXPORT OverlayProcessor {
   bool ProcessForCALayers(
       ResourceProvider* resource_provider,
       RenderPass* render_pass,
-      const base::flat_map<int, FilterOperations*>& render_pass_filters,
-      const base::flat_map<int, FilterOperations*>&
-          render_pass_background_filters,
+      const FilterOperationsMap& render_pass_filters,
+      const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       ResourceProvider* resource_provider,
       RenderPass* render_pass,
-      const base::flat_map<int, FilterOperations*>& render_pass_filters,
-      const base::flat_map<int, FilterOperations*>&
-          render_pass_background_filters,
+      const FilterOperationsMap& render_pass_filters,
+      const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect);

@@ -77,8 +77,8 @@ bool ProcessForCALayerOverlays(
     ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
-    const base::flat_map<int, FilterOperations*>& render_pass_filters,
-    const base::flat_map<int, FilterOperations*>&
+    const base::flat_map<RenderPassId, FilterOperations*>& render_pass_filters,
+    const base::flat_map<RenderPassId, FilterOperations*>&
         render_pass_background_filters,
     CALayerOverlayList* ca_layer_overlays);
 

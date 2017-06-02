@@ -108,7 +108,7 @@ static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
 
 void AddOneOfEveryQuadType(RenderPass* to_pass,
                            ResourceProvider* resource_provider,
-                           int child_pass_id,
+                           RenderPassId child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_tebxture) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);

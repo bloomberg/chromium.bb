@@ -179,7 +179,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   auto& root_render_pass = render_passes_in_draw_order.back();
 
-  base::flat_map<int, gfx::Size> render_passes_in_frame;
+  base::flat_map<RenderPassId, gfx::Size> render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
     if (pass != root_render_pass) {
       if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass.get())) {
@@ -455,13 +455,13 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
 }
 
 const FilterOperations* DirectRenderer::FiltersForPass(
-    int render_pass_id) const {
+    RenderPassId render_pass_id) const {
   auto it = render_pass_filters_.find(render_pass_id);
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
 const FilterOperations* DirectRenderer::BackgroundFiltersForPass(
-    int render_pass_id) const {
+    RenderPassId render_pass_id) const {
   auto it = render_pass_background_filters_.find(render_pass_id);
   return it == render_pass_background_filters_.end() ? nullptr : it->second;
 }

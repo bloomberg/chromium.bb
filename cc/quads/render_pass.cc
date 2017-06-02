@@ -146,7 +146,7 @@ void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
     out->push_back(source->DeepCopy());
 }
 
-void RenderPass::SetNew(int id,
+void RenderPass::SetNew(uint64_t id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
@@ -164,7 +164,7 @@ void RenderPass::SetNew(int id,
   DCHECK(shared_quad_state_list.empty());
 }
 
-void RenderPass::SetAll(int id,
+void RenderPass::SetAll(uint64_t id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target,
@@ -231,7 +231,7 @@ SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
 RenderPassDrawQuad* RenderPass::CopyFromAndAppendRenderPassDrawQuad(
     const RenderPassDrawQuad* quad,
     const SharedQuadState* shared_quad_state,
-    int render_pass_id) {
+    RenderPassId render_pass_id) {
   RenderPassDrawQuad* copy_quad =
       CopyFromAndAppendTypedDrawQuad<RenderPassDrawQuad>(quad);
   copy_quad->shared_quad_state = shared_quad_state;

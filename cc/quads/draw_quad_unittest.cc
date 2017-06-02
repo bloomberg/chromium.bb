@@ -432,7 +432,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  int render_pass_id = 61;
+  RenderPassId render_pass_id = 61;
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0, 0, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -440,7 +440,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::PointF filters_origin;
   gfx::RectF tex_coord_rect(1, 1, 255, 254);
 
-  int copied_render_pass_id = 235;
+  RenderPassId copied_render_pass_id = 235;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,

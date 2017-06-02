@@ -221,7 +221,7 @@ DamageTracker::LayerRectMapData& DamageTracker::RectDataForLayer(
 }
 
 DamageTracker::SurfaceRectMapData& DamageTracker::RectDataForSurface(
-    int surface_id,
+    uint64_t surface_id,
     bool* surface_is_new) {
   SurfaceRectMapData data(surface_id);
 

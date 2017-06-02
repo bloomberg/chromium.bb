@@ -695,7 +695,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
-  const int render_pass_id = 1234;
+  const RenderPassId render_pass_id = 1234u;
   const gfx::RectF mask_uv_rect(0, 0, 1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
@@ -821,7 +821,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
 }
 
 TEST_F(StructTraitsTest, RenderPass) {
-  const int id = 3;
+  const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -836,8 +836,9 @@ TEST_F(StructTraitsTest, RenderPass) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
-  input->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-                background_filters, color_space, has_transparent_background);
+  input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
+                filters, background_filters, color_space,
+                has_transparent_background);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -883,7 +884,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(input->quad_list.size(), output->quad_list.size());
   EXPECT_EQ(input->shared_quad_state_list.size(),
             output->shared_quad_state_list.size());
-  EXPECT_EQ(id, output->id);
+  EXPECT_EQ(render_pass_id, output->id);
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
@@ -942,7 +943,7 @@ TEST_F(StructTraitsTest, RenderPass) {
 }
 
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
-  const int id = 3;
+  const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -952,7 +953,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
-  input->SetAll(id, output_rect, damage_rect, transform_to_root,
+  input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 FilterOperations(), FilterOperations(), color_space,
                 has_transparent_background);
 
@@ -965,7 +966,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(input->quad_list.size(), output->quad_list.size());
   EXPECT_EQ(input->shared_quad_state_list.size(),
             output->shared_quad_state_list.size());
-  EXPECT_EQ(id, output->id);
+  EXPECT_EQ(render_pass_id, output->id);
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
@@ -974,7 +975,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
 }
 
 TEST_F(StructTraitsTest, ReturnedResource) {
-  const uint32_t id = 1337;
+  const RenderPassId id = 1337u;
   const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
   const int32_t extra_data_field = 0xbeefbeef;
   const gpu::CommandBufferId command_buffer_id(

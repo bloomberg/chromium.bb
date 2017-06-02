@@ -57,7 +57,7 @@ void AddSurfaceQuad(RenderPass* pass,
   }
 }
 
-void AddRenderPassQuad(RenderPass* pass, int render_pass_id) {
+void AddRenderPassQuad(RenderPass* pass, RenderPassId render_pass_id) {
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), output_rect, output_rect, output_rect,

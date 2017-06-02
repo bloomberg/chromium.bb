@@ -12,7 +12,7 @@ import "ui/gfx/mojo/transform.mojom";
 
 // See cc/quads/render_pass.h.
 struct RenderPass {
-  int32 id;
+  uint64 id;
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;
