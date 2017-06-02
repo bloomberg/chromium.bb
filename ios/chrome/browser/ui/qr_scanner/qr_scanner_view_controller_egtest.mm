@@ -6,7 +6,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,6 +32,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using namespace chrome_test_util;
 using namespace qr_scanner;
@@ -110,8 +113,8 @@ id<GREYMatcher> DialogCancelButton() {
 // Opens the QR Scanner view using a command.
 // TODO(crbug.com/629776): Replace the command call with a UI action.
 void ShowQRScannerWithCommand() {
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER];
   chrome_test_util::RunCommandWithActiveViewController(command);
 }
 
