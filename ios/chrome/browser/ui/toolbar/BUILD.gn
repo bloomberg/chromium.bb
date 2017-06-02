@@ -40,6 +40,8 @@ bundle_data("resources") {
 source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "keyboard_accessory_view.h",
+    "keyboard_accessory_view.mm",
     "new_tab_button.h",
     "new_tab_button.mm",
     "toolbar_button_tints.h",
