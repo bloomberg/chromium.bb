@@ -517,16 +517,30 @@ class DetectRelevantChangesStageTest(
                                                     self._current_board,
                                                     self.changes)
 
-  def testRecordIrrelevantChanges(self):
-    """Test RecordIrrelevantChanges."""
+  def testRecordActionForChangesWithIrrelevantAction(self):
+    """Test _RecordActionForChanges with irrelevant action.."""
     stage = self.ConstructStage()
-    stage._RecordIrrelevantChanges(self.changes)
+    stage._RecordActionForChanges(
+        self.changes, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
     action_history = self.fake_db.GetActionHistory()
     self.assertEqual(len(action_history), 2)
+    for action in action_history:
+      self.assertEqual(action.action, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
 
-  def testRecordIrrelevantChangesWithEmptySet(self):
-    """Test RecordIrrelevantChanges with an empty changes set."""
+  def testRecordActionForChangesWithEmptySet(self):
+    """Test _RecordActionForChanges with an empty changes set."""
     stage = self.ConstructStage()
-    stage._RecordIrrelevantChanges(set())
+    stage._RecordActionForChanges(
+        set(), constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
     action_history = self.fake_db.GetActionHistory()
     self.assertEqual(len(action_history), 0)
+
+  def testRecordActionForChangesWithRelevantAction(self):
+    """Test _RecordActionForChanges with relevant action."""
+    stage = self.ConstructStage()
+    stage._RecordActionForChanges(
+        self.changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
+    action_history = self.fake_db.GetActionHistory()
+    self.assertEqual(len(action_history), 2)
+    for action in action_history:
+      self.assertEqual(action.action, constants.CL_ACTION_RELEVANT_TO_SLAVE)

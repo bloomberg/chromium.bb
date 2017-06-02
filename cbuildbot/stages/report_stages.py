@@ -1160,34 +1160,31 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
 
     return subsystem_set
 
-  def _RecordIrrelevantChanges(self, changes):
-    """Records |changes| irrelevant to the slave build into cidb.
+  def _RecordActionForChanges(self, changes, action):
+    """Records |changes| action to the slave build into cidb.
 
     Args:
       builder_run: BuilderRun instance for this build.
-      changes: A set of irrelevant changes to record.
+      changes: A set of changes to record.
+      action: The action for the changes to record (must be one of
+        constants.CL_ACTIONS).
     """
-    if not changes:
-      logging.info('All changes are considered relevant to this build.')
-      return
-
-    logging.info('The following changes are irrelevant to this build: %s',
-                 cros_patch.GetChangesAsString(changes))
-
     build_id, db = self._run.GetCIDBHandle()
     if db:
       cl_actions = [clactions.CLAction.FromGerritPatchAndAction(
-          change, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-                    for change in changes]
+          change, action) for change in changes]
       db.InsertCLActions(build_id, cl_actions)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Run DetectRelevantChangesStage."""
-    irrelevant_changes = None
+    irrelevant_changes = set()
+    relevant_changes = set(self.changes)
+
     if not self._run.config.master:
       # Slave writes the irrelevant changes to current board to metadata.
       irrelevant_changes = self._GetIrrelevantChangesBoardBase(self.changes)
+      relevant_changes = relevant_changes - irrelevant_changes
       change_dict_list = [c.GetAttributeDict() for c in irrelevant_changes]
       change_dict_list = sorted(change_dict_list,
                                 key=lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
@@ -1206,9 +1203,19 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
         # irrelevant changes to metadata in the DetectRelevantChanges stage.
 
         # Record the irrelevant changes to CIDB.
-        self._RecordIrrelevantChanges(irrelevant_changes)
+        self._RecordActionForChanges(
+            irrelevant_changes, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
 
-    relevant_changes = list(set(self.changes) - irrelevant_changes)
+        if not irrelevant_changes:
+          logging.info('No changes are considered irrelevant to this build.')
+        else:
+          logging.info('The following changes are irrelevant to this build: %s',
+                       cros_patch.GetChangesAsString(irrelevant_changes))
+
+        # Record the relevant changes to CIDB.
+        self._RecordActionForChanges(
+            relevant_changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
+
     if relevant_changes:
       logging.info('Below are the relevant changes for board: %s.',
                    self._current_board)
