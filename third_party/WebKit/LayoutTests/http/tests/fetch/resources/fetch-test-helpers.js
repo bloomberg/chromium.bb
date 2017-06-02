@@ -76,11 +76,18 @@ var VALID_TOKENS = FORBIDDEN_METHODS
 // A header name must match token in RFC 2616.
 // Fetch API Spec: https://fetch.spec.whatwg.org/#concept-header-name
 var INVALID_HEADER_NAMES = INVALID_TOKENS;
+
+// A header value is a byte sequence that matches the following conditions:
+// * Has no leading or trailing HTTP whitespace bytes (0x09, 0x0A, 0x0D and
+//   0x20).
+// * Contains no 0x00, 0x0A or 0x0D bytes.
+// Note that header values are normalized (ie. stripped of leading and trailing
+// HTTP whitespace bytes) when a new header/value pair is appended or set.
 var INVALID_HEADER_VALUES = [
   'test \r data', 'test \n data', 'test \0 data',
   'test\r\n data',
-  'test\r', 'test\n', 'test\r\n', 'test\0',
-  '\0'.repeat(100000), '\r\n'.repeat(50000), 'x'.repeat(100000) + '\0'];
+  'test\0',
+  '\0'.repeat(100000), 'x'.repeat(100000) + '\0'];
 
 var FORBIDDEN_HEADER_NAMES =
   ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers',

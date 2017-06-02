@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Create headers with not normalized values Failed to construct 'Headers': Invalid value
-FAIL Check append method with not normalized values assert_equals: name: name1 has value: space expected "space" but got " space "
-FAIL Check set method with not normalized values assert_equals: name: name1 has value: space expected "space" but got " space "
-Harness: the test ran to completion.
-
