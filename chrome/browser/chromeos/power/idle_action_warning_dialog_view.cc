@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,7 +21,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -64,9 +64,9 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
     : idle_action_time_(idle_action_time),
       label_(NULL) {
   label_ = new FixedWidthLabel(kIdleActionWarningContentWidth);
-  label_->SetBorder(views::CreateEmptyBorder(
-      views::kPanelVertMargin, views::kButtonHEdgeMarginNew,
-      views::kPanelVertMargin, views::kButtonHEdgeMarginNew));
+  label_->SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
   AddChildView(label_);
   SetLayoutManager(new views::FillLayout());
 

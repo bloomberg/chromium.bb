@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_util.h"
@@ -29,7 +30,6 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -174,8 +174,11 @@ void EnrollmentDialogView::InitDialog() {
                      0,   // Ignored for USE_PREF.
                      0);  // Minimum size.
   columns = grid_layout->AddColumnSet(1);
+
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   columns->AddPaddingColumn(
-      0, views::kUnrelatedControlHorizontalSpacing);
+      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING,  // Horizontal leading.
                      views::GridLayout::FILL,     // Vertical resize.
                      1,   // Resize weight.
@@ -185,7 +188,8 @@ void EnrollmentDialogView::InitDialog() {
 
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(label);
-  grid_layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  grid_layout->AddPaddingRow(
+      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
   grid_layout->Layout(this);
 }
 
