@@ -93,10 +93,24 @@ public class JourneyLogger {
 
     /**
      * Records that an event occurred.
+     *
+     * @param event The event that occured.
      */
     public void setEventOccurred(int event) {
+        assert event >= 0;
         assert event < Event.ENUM_MAX;
         nativeSetEventOccurred(mJourneyLoggerAndroid, event);
+    }
+
+    /**
+     * Records the payment method that was selected by the user.
+     *
+     * @param paymentMethod The payment method that was selected.
+     */
+    public void setSelectedPaymentMethod(int paymentMethod) {
+        assert paymentMethod >= 0;
+        assert paymentMethod < SelectedPaymentMethod.MAX;
+        nativeSetSelectedPaymentMethod(mJourneyLoggerAndroid, paymentMethod);
     }
 
     /**
@@ -158,6 +172,8 @@ public class JourneyLogger {
             long nativeJourneyLoggerAndroid, boolean value);
     private native void nativeSetShowCalled(long nativeJourneyLoggerAndroid);
     private native void nativeSetEventOccurred(long nativeJourneyLoggerAndroid, int event);
+    private native void nativeSetSelectedPaymentMethod(
+            long nativeJourneyLoggerAndroid, int paymentMethod);
     private native void nativeSetCompleted(long nativeJourneyLoggerAndroid);
     private native void nativeSetAborted(long nativeJourneyLoggerAndroid, int reason);
     private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);

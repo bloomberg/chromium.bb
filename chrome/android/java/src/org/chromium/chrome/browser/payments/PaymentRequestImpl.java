@@ -1627,15 +1627,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 PersonalDataManager.getInstance().recordAndLogCreditCardUse(
                         selectedPaymentMethod.getIdentifier());
             }
-            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    SelectedPaymentMethod.CREDIT_CARD);
+            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.CREDIT_CARD);
         } else if (methodName.equals(ANDROID_PAY_METHOD_NAME)
                 || methodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
-            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    SelectedPaymentMethod.ANDROID_PAY);
+            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.ANDROID_PAY);
         } else {
-            PaymentRequestMetrics.recordSelectedPaymentMethodHistogram(
-                    SelectedPaymentMethod.OTHER_PAYMENT_APP);
+            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.OTHER_PAYMENT_APP);
         }
 
         // Showing the payment request UI if we were previously skipping it so the loading
