@@ -45,7 +45,7 @@
     More from this site
   </message>
   <message name="IDS_HISTORY_NO_RESULTS" desc="Text shown when no history entries are found.">
-    No history entries found
+    Your browsing history appears here
   </message>
   <message name="IDS_HISTORY_NO_SEARCH_RESULTS" desc="Text shown when no history search results have been found">
     No search results found
