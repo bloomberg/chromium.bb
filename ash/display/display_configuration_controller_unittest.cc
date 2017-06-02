@@ -23,24 +23,22 @@ TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   test::DisplayConfigurationControllerTestApi testapi(
       Shell::Get()->display_configuration_controller());
-  ScreenRotationAnimator* screen_rotation_animator =
+  ScreenRotationAnimator* old_screen_rotation_animator =
       testapi.GetScreenRotationAnimatorForDisplay(display.id());
-  EXPECT_EQ(1, testapi.DisplayScreenRotationAnimatorMapSize());
 
   Shell::Get()->display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_0,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
-  screen_rotation_animator->Rotate(
+  old_screen_rotation_animator->Rotate(
       display::Display::ROTATE_90,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
-  EXPECT_EQ(1, testapi.DisplayScreenRotationAnimatorMapSize());
 
-  screen_rotation_animator =
+  ScreenRotationAnimator* new_screen_rotation_animator =
       testapi.GetScreenRotationAnimatorForDisplay(display.id());
-  screen_rotation_animator->Rotate(
+  new_screen_rotation_animator->Rotate(
       display::Display::ROTATE_180,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
-  EXPECT_EQ(1, testapi.DisplayScreenRotationAnimatorMapSize());
+  EXPECT_EQ(old_screen_rotation_animator, new_screen_rotation_animator);
 }
 
 }  // namespace ash

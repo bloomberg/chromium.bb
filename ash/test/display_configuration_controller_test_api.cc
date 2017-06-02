@@ -17,11 +17,6 @@ void DisplayConfigurationControllerTestApi::DisableDisplayAnimator() {
   controller_->ResetAnimatorForTest();
 }
 
-int DisplayConfigurationControllerTestApi::
-    DisplayScreenRotationAnimatorMapSize() {
-  return controller_->rotation_animator_map_.size();
-}
-
 ScreenRotationAnimator*
 DisplayConfigurationControllerTestApi::GetScreenRotationAnimatorForDisplay(
     int64_t display_id) {

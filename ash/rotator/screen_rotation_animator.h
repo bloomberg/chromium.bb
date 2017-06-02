@@ -26,7 +26,6 @@ class CopyOutputResult;
 namespace ui {
 class AnimationMetricsReporter;
 class Layer;
-class LayerOwner;
 class LayerTreeOwner;
 }  // namespace ui
 
@@ -40,21 +39,18 @@ class ScreenRotationAnimatorObserver;
 // Utility to perform a screen rotation with an animation.
 class ASH_EXPORT ScreenRotationAnimator {
  public:
-  explicit ScreenRotationAnimator(int64_t display_id);
+  explicit ScreenRotationAnimator(aura::Window* root_window);
   virtual ~ScreenRotationAnimator();
 
-  // Rotates the display::Display specified by |display_id_| to the
-  // |new_rotation| orientation, for the given |source|. The rotation will also
-  // become active. Should only be called when |display_id_| references a valid
-  // display::Display. |screen_rotation_animator_observer_| will be notified
-  // when rotation is finished and there is no more pending rotation request.
-  // Otherwise, any ongoing animation will be stopped and progressed to the
-  // target position, followed by a new |Rotate()| call with the pending
+  // Rotates the display::Display specified by |display_id| of the |root_window|
+  // to the |new_rotation| orientation, for the given |source|. The rotation
+  // will also become active. |screen_rotation_animator_observer_| will be
+  // notified when rotation is finished and there is no more pending rotation
+  // request. Otherwise, any ongoing animation will be stopped and progressed to
+  // the target position, followed by a new |Rotate()| call with the pending
   // rotation request.
   void Rotate(display::Display::Rotation new_rotation,
               display::Display::RotationSource source);
-
-  int64_t display_id() const { return display_id_; }
 
   void AddScreenRotationAnimatorObserver(
       ScreenRotationAnimatorObserver* observer);
@@ -71,10 +67,15 @@ class ASH_EXPORT ScreenRotationAnimator {
       base::Callback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
   struct ScreenRotationRequest {
     ScreenRotationRequest(int64_t id,
+                          int64_t display_id,
                           display::Display::Rotation to_rotation,
                           display::Display::RotationSource from_source)
-        : id(id), new_rotation(to_rotation), source(from_source) {}
+        : id(id),
+          display_id(display_id),
+          new_rotation(to_rotation),
+          source(from_source) {}
     int64_t id;
+    int64_t display_id;
     display::Display::Rotation old_rotation;
     display::Display::Rotation new_rotation;
     display::Display::RotationSource source;
@@ -108,7 +109,8 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   // A wrapper to call |display_manager| to set screen rotation and rotate the
   // |old_layer_tree| to the |old_rotation|.
-  void SetRotation(display::Display::Rotation old_rotation,
+  void SetRotation(int64_t display_id,
+                   display::Display::Rotation old_rotation,
                    display::Display::Rotation new_rotation,
                    display::Display::RotationSource source);
 
@@ -150,8 +152,8 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   void StopAnimating();
 
-  // The id of the display to rotate.
-  int64_t display_id_;
+  aura::Window* root_window_;
+  ui::Layer* screen_rotation_container_layer_;
 
   // For current slow rotation animation, there are two states |ROTATING| and
   // |IDLE|. For the smooth rotation animation, we need to send copy request
@@ -174,11 +176,9 @@ class ASH_EXPORT ScreenRotationAnimator {
       screen_rotation_animator_observers_;
   std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner_;
   std::unique_ptr<ui::LayerTreeOwner> new_layer_tree_owner_;
-  std::unique_ptr<ui::LayerOwner> black_mask_layer_owner_;
+  std::unique_ptr<ui::LayerTreeOwner> mask_layer_tree_owner_;
   std::unique_ptr<ScreenRotationRequest> last_pending_request_;
   bool has_switch_ash_disable_smooth_screen_rotation_;
-  aura::Window* root_window_;
-  ui::Layer* screen_rotation_container_layer_;
   base::WeakPtrFactory<ScreenRotationAnimator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimator);
