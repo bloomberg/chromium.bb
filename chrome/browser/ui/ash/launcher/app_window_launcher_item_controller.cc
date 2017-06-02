@@ -27,7 +27,7 @@ void AppWindowLauncherItemController::AddWindow(ui::BaseWindow* app_window) {
   aura::Window* window = app_window->GetNativeWindow();
   if (window)
     observed_windows_.Add(window);
-  UpdateLauncherItem();
+  UpdateShelfItemIcon();
 }
 
 AppWindowLauncherItemController::WindowList::iterator
@@ -51,7 +51,7 @@ void AppWindowLauncherItemController::RemoveWindow(ui::BaseWindow* app_window) {
     return;
   }
   windows_.erase(iter);
-  UpdateLauncherItem();
+  UpdateShelfItemIcon();
 }
 
 ui::BaseWindow* AppWindowLauncherItemController::GetAppWindow(
@@ -66,7 +66,7 @@ void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
   ui::BaseWindow* app_window = GetAppWindow(window);
   if (app_window)
     last_active_window_ = app_window;
-  UpdateLauncherItem();
+  UpdateShelfItemIcon();
 }
 
 AppWindowLauncherItemController*
@@ -143,6 +143,8 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
       status = ash::STATUS_RUNNING;
     }
     ChromeLauncherController::instance()->SetItemStatus(shelf_id(), status);
+  } else if (key == aura::client::kAppIconKey) {
+    UpdateShelfItemIcon();
   }
 }
 
@@ -173,4 +175,26 @@ AppWindowLauncherItemController::ActivateOrAdvanceToNextAppWindow(
     return ShowAndActivateOrMinimize(window_to_show);
   }
   return ash::SHELF_ACTION_NONE;
+}
+
+void AppWindowLauncherItemController::UpdateShelfItemIcon() {
+  // Set the shelf item icon from the kAppIconKey property of the current
+  // (or most recently) active window. If there is no valid icon, ask
+  // ChromeLauncherController to update the icon.
+  const gfx::ImageSkia* app_icon = nullptr;
+  ui::BaseWindow* last_active_window = GetLastActiveWindow();
+  if (last_active_window && last_active_window->GetNativeWindow()) {
+    app_icon = last_active_window->GetNativeWindow()->GetProperty(
+        aura::client::kAppIconKey);
+  }
+  // TODO(khmel): Remove using image_set_by_controller
+  if (app_icon && !app_icon->isNull()) {
+    set_image_set_by_controller(true);
+    ChromeLauncherController::instance()->SetLauncherItemImage(shelf_id(),
+                                                               *app_icon);
+  } else if (image_set_by_controller()) {
+    set_image_set_by_controller(false);
+    ChromeLauncherController::instance()->UpdateLauncherItemImage(
+        shelf_id().app_id);
+  }
 }

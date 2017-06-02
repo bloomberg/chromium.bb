@@ -28,6 +28,7 @@ static base::LazyInstance<ExtensionIconSet>::DestructorAtExit g_empty_icon_set =
 
 // static
 const ExtensionIconSet& IconsInfo::GetIcons(const Extension* extension) {
+  DCHECK(extension);
   IconsInfo* info = static_cast<IconsInfo*>(
       extension->GetManifestData(keys::kIcons));
   return info ? info->icons : g_empty_icon_set.Get();

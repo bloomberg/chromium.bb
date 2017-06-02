@@ -20,10 +20,8 @@
 #include "ui/base/base_window.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
-    const std::string& arc_app_id,
-    ChromeLauncherController* owner)
-    : AppWindowLauncherItemController(ash::ShelfID(arc_app_id)),
-      owner_(owner) {}
+    const std::string& arc_app_id)
+    : AppWindowLauncherItemController(ash::ShelfID(arc_app_id)) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 
@@ -67,8 +65,8 @@ void ArcAppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
 ash::MenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
     int event_flags) {
   ash::MenuItemList items;
-  base::string16 app_title =
-      LauncherControllerHelper::GetAppTitle(owner_->profile(), app_id());
+  base::string16 app_title = LauncherControllerHelper::GetAppTitle(
+      ChromeLauncherController::instance()->profile(), app_id());
   for (auto it = windows().begin(); it != windows().end(); ++it) {
     // TODO(khmel): resolve correct icon here.
     size_t i = std::distance(windows().begin(), it);
@@ -81,22 +79,4 @@ ash::MenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
   }
 
   return items;
-}
-
-void ArcAppWindowLauncherItemController::UpdateLauncherItem() {
-  const ArcAppWindow* arc_app_window =
-      static_cast<const ArcAppWindow*>(GetLastActiveWindow());
-  if (!arc_app_window || arc_app_window->icon().isNull()) {
-    if (!image_set_by_controller())
-      return;
-    set_image_set_by_controller(false);
-    owner_->SetLauncherItemImage(shelf_id(), gfx::ImageSkia());
-    AppIconLoader* icon_loader = owner_->GetAppIconLoaderForApp(app_id());
-    if (icon_loader)
-      icon_loader->UpdateImage(app_id());
-    return;
-  }
-
-  owner_->SetLauncherItemImage(shelf_id(), arc_app_window->icon());
-  set_image_set_by_controller(true);
 }

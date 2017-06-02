@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
 class ExtensionKeybindingRegistryViews;
 
 class ChromeNativeAppWindowViews
-    : public native_app_window::NativeAppWindowViews {
+    : public native_app_window::NativeAppWindowViews,
+      public extensions::ChromeAppIconDelegate {
  public:
   ChromeNativeAppWindowViews();
   ~ChromeNativeAppWindowViews() override;
@@ -69,6 +71,12 @@ class ChromeNativeAppWindowViews
       const extensions::AppWindow::CreateParams& create_params) override;
 
  private:
+  // Ensures that the Chrome app icon is created.
+  void EnsureAppIconCreated();
+
+  // extensions::ChromeAppIconDelegate:
+  void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
+
   // Custom shape of the window. If this is not set then the window has a
   // default shape, usually rectangular.
   std::unique_ptr<SkRegion> shape_;
@@ -80,6 +88,10 @@ class ChromeNativeAppWindowViews
   // The class that registers for keyboard shortcuts for extension commands.
   std::unique_ptr<ExtensionKeybindingRegistryViews>
       extension_keybinding_registry_;
+
+  // Contains the default Chrome app icon. It is used in case the custom icon
+  // for the extension app window is not set, or as a part of composite image.
+  std::unique_ptr<extensions::ChromeAppIcon> app_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };

@@ -24,10 +24,6 @@ namespace extensions {
 void AppWindowRegistry::Observer::OnAppWindowAdded(AppWindow* app_window) {
 }
 
-void AppWindowRegistry::Observer::OnAppWindowIconChanged(
-    AppWindow* app_window) {
-}
-
 void AppWindowRegistry::Observer::OnAppWindowRemoved(AppWindow* app_window) {
 }
 
@@ -62,12 +58,6 @@ void AppWindowRegistry::AddAppWindow(AppWindow* app_window) {
   BringToFront(app_window);
   for (auto& observer : observers_)
     observer.OnAppWindowAdded(app_window);
-}
-
-void AppWindowRegistry::AppWindowIconChanged(AppWindow* app_window) {
-  AddAppWindowToList(app_window);
-  for (auto& observer : observers_)
-    observer.OnAppWindowIconChanged(app_window);
 }
 
 void AppWindowRegistry::AppWindowActivated(AppWindow* app_window) {

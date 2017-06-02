@@ -46,7 +46,7 @@ class ShellAppDelegate : public AppDelegate {
                                   const GURL& security_origin,
                                   content::MediaStreamType type,
                                   const Extension* extension) override;
-  int PreferredIconSize() override;
+  int PreferredIconSize() const override;
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;

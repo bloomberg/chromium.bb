@@ -140,8 +140,11 @@ class ShellSurface : public SurfaceDelegate,
   // Set whether the surface is always on top.
   void SetAlwaysOnTop(bool always_on_top);
 
-  // Set title for surface.
+  // Set title for the surface.
   void SetTitle(const base::string16& title);
+
+  // Set icon for the surface.
+  void SetIcon(const gfx::ImageSkia& icon);
 
   // Sets the system modality.
   void SetSystemModal(bool system_modal);
@@ -227,6 +230,7 @@ class ShellSurface : public SurfaceDelegate,
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   bool GetSavedWindowPlacement(const views::Widget* widget,
@@ -373,6 +377,7 @@ class ShellSurface : public SurfaceDelegate,
   bool shadow_underlay_in_surface_ = true;
   bool pending_shadow_underlay_in_surface_ = true;
   bool system_modal_ = false;
+  gfx::ImageSkia icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

@@ -13,11 +13,16 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/extensions/chrome_app_icon.h"
+#include "chrome/browser/extensions/chrome_app_icon_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
+#include "extensions/browser/app_window/app_delegate.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -250,14 +255,38 @@ bool ChromeNativeAppWindowViews::IsAlwaysOnTop() const {
 // views::WidgetDelegate implementation.
 
 gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowAppIcon() {
-  gfx::Image app_icon = app_window()->app_icon();
-  if (app_icon.IsEmpty())
-    return GetWindowIcon();
-  else
-    return *app_icon.ToImageSkia();
+  // Resulting icon is cached in aura::client::kAppIconKey window property.
+  const gfx::Image& custom_image = app_window()->custom_app_icon();
+  if (app_window()->app_icon_url().is_valid() &&
+      app_window()->show_in_shelf()) {
+    EnsureAppIconCreated();
+    gfx::Image base_image =
+        !custom_image.IsEmpty()
+            ? custom_image
+            : gfx::Image(extensions::util::GetDefaultAppIcon());
+    // Scale the icon to EXTENSION_ICON_LARGE.
+    const int large_icon_size = extension_misc::EXTENSION_ICON_LARGE;
+    if (base_image.Width() != large_icon_size ||
+        base_image.Height() != large_icon_size) {
+      gfx::ImageSkia resized_image =
+          gfx::ImageSkiaOperations::CreateResizedImage(
+              base_image.AsImageSkia(), skia::ImageOperations::RESIZE_BEST,
+              gfx::Size(large_icon_size, large_icon_size));
+      return gfx::ImageSkiaOperations::CreateIconWithBadge(
+          resized_image, app_icon_->image_skia());
+    }
+    return gfx::ImageSkiaOperations::CreateIconWithBadge(
+        base_image.AsImageSkia(), app_icon_->image_skia());
+  }
+
+  if (!custom_image.IsEmpty())
+    return *custom_image.ToImageSkia();
+  EnsureAppIconCreated();
+  return app_icon_->image_skia();
 }
 
 gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowIcon() {
+  // Resulting icon is cached in aura::client::kWindowIconKey window property.
   content::WebContents* web_contents = app_window()->web_contents();
   if (web_contents) {
     favicon::FaviconDriver* favicon_driver =
@@ -365,4 +394,26 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       widget()->GetFocusManager(),
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       NULL));
+}
+
+void ChromeNativeAppWindowViews::EnsureAppIconCreated() {
+  if (app_icon_ && app_icon_->IsValid())
+    return;
+
+  // To avoid recursive call, reset the smart pointer. It will be checked in
+  // OnIconUpdated to determine if this is a real update or the initial callback
+  // on icon creation.
+  app_icon_.reset();
+  app_icon_ =
+      extensions::ChromeAppIconService::Get(app_window()->browser_context())
+          ->CreateIcon(this, app_window()->extension_id(),
+                       app_window()->app_delegate()->PreferredIconSize());
+}
+
+void ChromeNativeAppWindowViews::OnIconUpdated(
+    extensions::ChromeAppIcon* icon) {
+  if (!app_icon_)
+    return;
+  DCHECK_EQ(app_icon_.get(), icon);
+  UpdateWindowIcon();
 }

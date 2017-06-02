@@ -294,7 +294,7 @@ bool ChromeAppDelegate::CheckMediaAccessPermission(
           web_contents, security_origin, type, extension);
 }
 
-int ChromeAppDelegate::PreferredIconSize() {
+int ChromeAppDelegate::PreferredIconSize() const {
 #if defined(USE_ASH)
   return ash::kShelfSize;
 #else

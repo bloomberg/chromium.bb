@@ -60,11 +60,6 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
 
-  // Called when launcher item may need to be updated, eg. label or icon.
-  // TODO(khmel): Use aura::Window property and observe property change
-  // http://crbug.com/724292
-  virtual void UpdateLauncherItem() {}
-
   const WindowList& windows() const { return windows_; }
 
  protected:
@@ -86,6 +81,10 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
 
  private:
   WindowList::iterator GetFromNativeWindow(aura::Window* window);
+
+  // Handles the case when the app window in this controller has been changed,
+  // and sets the new controller icon based on the currently active window.
+  void UpdateShelfItemIcon();
 
   // List of associated app windows
   WindowList windows_;

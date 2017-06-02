@@ -2329,6 +2329,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
 
   // Set custom icon on active item. Icon should change to custom.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(item_delegate->image_set_by_controller());
 
   // Switch back to the item without custom icon. Icon should be changed to

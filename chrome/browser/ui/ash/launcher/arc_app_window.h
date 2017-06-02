@@ -13,10 +13,12 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "ui/base/base_window.h"
-#include "ui/gfx/image/image_skia.h"
 
 class ArcAppWindowLauncherController;
 class ArcAppWindowLauncherItemController;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 class Widget;
@@ -63,8 +65,6 @@ class ArcAppWindow : public ui::BaseWindow, public ImageDecoder::ImageRequest {
 
   ArcAppWindowLauncherItemController* controller() { return controller_; }
 
-  const gfx::ImageSkia& icon() const { return icon_; }
-
   // ui::BaseWindow:
   bool IsActive() const override;
   bool IsMaximized() const override;
@@ -89,8 +89,8 @@ class ArcAppWindow : public ui::BaseWindow, public ImageDecoder::ImageRequest {
   void SetAlwaysOnTop(bool always_on_top) override;
 
  private:
-  // Resets the icon and updates |controller_|'s active icon as needed.
-  void ResetIcon();
+  // Sets the icon for the window.
+  void SetIcon(const gfx::ImageSkia& icon);
 
   // ImageDecoder::ImageRequest:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
@@ -103,8 +103,6 @@ class ArcAppWindow : public ui::BaseWindow, public ImageDecoder::ImageRequest {
   ash::ShelfID shelf_id_;
   // Keeps current full-screen mode.
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
-  // Contains custom icon if it was set.
-  gfx::ImageSkia icon_;
   // Unowned pointers
   views::Widget* const widget_;
   ArcAppWindowLauncherController* const owner_;

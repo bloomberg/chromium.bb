@@ -2025,7 +2025,11 @@ test("browser_tests") {
       }
     }
     if (use_aura) {
-      sources += [ "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc" ]
+      sources += [
+        "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc",
+        "../browser/ui/test/test_app_window_icon_observer.cc",
+        "../browser/ui/test/test_app_window_icon_observer.h",
+      ]
     }
     if (use_aura || toolkit_views) {
       deps += [ "//ui/events:test_support" ]

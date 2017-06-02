@@ -75,24 +75,6 @@ void ExtensionAppWindowLauncherController::AdditionalUserAddedToSession(
   registry_.insert(registry);
 }
 
-void ExtensionAppWindowLauncherController::OnAppWindowIconChanged(
-    AppWindow* app_window) {
-  const ash::ShelfID shelf_id = GetShelfId(app_window);
-  AppControllerMap::iterator iter = app_controller_map_.find(shelf_id);
-  if (iter == app_controller_map_.end())
-    return;
-
-  // Check if the window actually overrides its default icon. Otherwise use app
-  // icon loader provided by owner.
-  if (!app_window->HasCustomIcon() || app_window->app_icon().IsEmpty())
-    return;
-
-  ExtensionAppWindowLauncherItemController* controller = iter->second;
-  controller->set_image_set_by_controller(true);
-  owner()->SetLauncherItemImage(controller->shelf_id(),
-                                app_window->app_icon().AsImageSkia());
-}
-
 void ExtensionAppWindowLauncherController::OnAppWindowShown(
     AppWindow* app_window,
     bool was_hidden) {
@@ -149,21 +131,18 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     std::unique_ptr<ExtensionAppWindowLauncherItemController> controller =
         base::MakeUnique<ExtensionAppWindowLauncherItemController>(shelf_id);
     app_controller_map_[shelf_id] = controller.get();
-    controller->AddAppWindow(app_window);
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.
     if (!owner()->GetItem(shelf_id)) {
       owner()->CreateAppLauncherItem(std::move(controller), status);
-      // Restore any existing app icon and flag as set.
-      if (app_window->HasCustomIcon() && !app_window->app_icon().IsEmpty()) {
-        owner()->SetLauncherItemImage(shelf_id,
-                                      app_window->app_icon().AsImageSkia());
-        app_controller_map_[shelf_id]->set_image_set_by_controller(true);
-      }
     } else {
       owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
                                                    std::move(controller));
     }
+
+    // Register the window after a shelf item is created to let the controller
+    // set the shelf icon property.
+    app_controller_map_[shelf_id]->AddAppWindow(app_window);
   }
 
   owner()->SetItemStatus(shelf_id, status);

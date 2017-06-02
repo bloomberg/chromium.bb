@@ -70,7 +70,7 @@ class AppDelegate {
                                           const GURL& security_origin,
                                           content::MediaStreamType type,
                                           const Extension* extension) = 0;
-  virtual int PreferredIconSize() = 0;
+  virtual int PreferredIconSize() const = 0;
 
   // Web contents modal dialog support.
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,

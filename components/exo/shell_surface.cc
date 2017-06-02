@@ -492,6 +492,14 @@ void ShellSurface::SetTitle(const base::string16& title) {
     widget_->UpdateWindowTitle();
 }
 
+void ShellSurface::SetIcon(const gfx::ImageSkia& icon) {
+  TRACE_EVENT0("exo", "ShellSurface::SetIcon");
+
+  icon_ = icon;
+  if (widget_)
+    widget_->UpdateWindowIcon();
+}
+
 void ShellSurface::SetSystemModal(bool system_modal) {
   // System modal container is used by clients to implement client side
   // managed system modal dialogs using a single ShellSurface instance.
@@ -827,6 +835,10 @@ bool ShellSurface::CanMinimize() const {
 
 base::string16 ShellSurface::GetWindowTitle() const {
   return title_;
+}
+
+gfx::ImageSkia ShellSurface::GetWindowIcon() {
+  return icon_;
 }
 
 void ShellSurface::SaveWindowPlacement(const gfx::Rect& bounds,
