@@ -886,24 +886,6 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
           rare_non_inherited_data_->visited_link_text_decoration_color_ !=
               other.rare_non_inherited_data_
                   ->visited_link_text_decoration_color_)) ||
-        (rare_inherited_data_.Get() != other.rare_inherited_data_.Get() &&
-         (TextFillColor() != other.TextFillColor() ||
-          TextStrokeColor() != other.TextStrokeColor() ||
-          TextEmphasisColor() != other.TextEmphasisColor() ||
-          VisitedLinkTextFillColor() != other.VisitedLinkTextFillColor() ||
-          VisitedLinkTextStrokeColor() != other.VisitedLinkTextStrokeColor() ||
-          VisitedLinkTextEmphasisColor() !=
-              other.VisitedLinkTextEmphasisColor() ||
-          rare_inherited_data_->text_emphasis_fill_ !=
-              other.rare_inherited_data_->text_emphasis_fill_ ||
-          rare_inherited_data_->text_underline_position_ !=
-              other.rare_inherited_data_->text_underline_position_ ||
-          rare_inherited_data_->text_decoration_skip_ !=
-              other.rare_inherited_data_->text_decoration_skip_ ||
-          rare_inherited_data_->applied_text_decorations_ !=
-              other.rare_inherited_data_->applied_text_decorations_ ||
-          CaretColor() != CaretColor() ||
-          VisitedLinkCaretColor() != other.VisitedLinkCaretColor())) ||
         ComputedStyleBase::
             UpdatePropertySpecificDifferencesTextDecorationOrColor(other)) {
       diff.SetTextDecorationOrColorChanged();
