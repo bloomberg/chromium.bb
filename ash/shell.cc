@@ -22,6 +22,7 @@
 #include "ash/cast_config_controller.h"
 #include "ash/devtools/ash_devtools_css_agent.h"
 #include "ash/devtools/ash_devtools_dom_agent.h"
+#include "ash/display/ash_display_controller.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_configuration_controller.h"
@@ -548,6 +549,7 @@ void Shell::SetIsBrowserProcessWithMash() {
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              std::unique_ptr<ShellPort> shell_port)
     : shell_port_(std::move(shell_port)),
+      ash_display_controller_(base::MakeUnique<AshDisplayController>()),
       brightness_control_delegate_(
           base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),

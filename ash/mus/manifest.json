@@ -23,6 +23,10 @@
           "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
         ],
+        // Only chrome is allowed to use this (required as dbus runs in Chrome).
+        "display": [
+          "ash::mojom::AshDisplayController"
+        ],
         "mus:window_manager": [ "ui::mojom::AcceleratorRegistrar" ]
       },
       "requires": {
