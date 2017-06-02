@@ -17,6 +17,17 @@ print_preview.PreviewSettings;
 
 /**
  * @typedef {{
+ *   deviceName: string,
+ *   printerName: string,
+ *   printerDescription: (string | undefined),
+ *   cupsEnterprisePrinter: (boolean | undefined),
+ *   printerOptions: (Object | undefined),
+ * }}
+ */
+print_preview.LocalDestinationInfo;
+
+/**
+ * @typedef {{
  *   printerId: string,
  *   success: boolean,
  *   capabilities: Object,
@@ -34,7 +45,6 @@ cr.define('print_preview', function() {
   function NativeLayer() {
     // Bind global handlers
     global.setUseCloudPrint = this.onSetUseCloudPrint_.bind(this);
-    global.setPrinters = this.onSetPrinters_.bind(this);
     global.updateWithPrinterCapabilities =
         this.onUpdateWithPrinterCapabilities_.bind(this);
     global.failedToGetPrinterCapabilities =
@@ -220,9 +230,10 @@ cr.define('print_preview', function() {
     /**
      * Requests the system's local print destinations. A LOCAL_DESTINATIONS_SET
      * event will be dispatched in response.
+     * @return {!Promise<!Array<print_preview.LocalDestinationInfo>>}
      */
-    startGetLocalDestinations: function() {
-      chrome.send('getPrinters');
+    getPrinters: function() {
+      return cr.sendWithPromise('getPrinters');
     },
 
     /**
@@ -547,19 +558,6 @@ cr.define('print_preview', function() {
       cloudPrintEnableEvent.baseCloudPrintUrl = settings['cloudPrintUrl'] || '';
       cloudPrintEnableEvent.appKioskMode = settings['appKioskMode'] || false;
       this.eventTarget_.dispatchEvent(cloudPrintEnableEvent);
-    },
-
-    /**
-     * Updates the print preview with local printers.
-     * Called from PrintPreviewHandler::SetupPrinterList().
-     * @param {Array} printers Array of printer info objects.
-     * @private
-     */
-    onSetPrinters_: function(printers) {
-      var localDestsSetEvent = new Event(
-          NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-      localDestsSetEvent.destinationInfos = printers;
-      this.eventTarget_.dispatchEvent(localDestsSetEvent);
     },
 
     /**

@@ -242,7 +242,8 @@ class PrintPreviewHandler
                         std::unique_ptr<base::DictionaryValue> settings_info);
 
   // Send the list of printers to the Web UI.
-  void SetupPrinterList(const printing::PrinterList& printer_list);
+  void SetupPrinterList(const std::string& callback_id,
+                        const printing::PrinterList& printer_list);
 
   // Send whether cloud print integration should be enabled.
   void SendCloudPrintEnabled();

@@ -10,8 +10,8 @@ cr.define('print_preview', function() {
 
   /**
    * Parses a local print destination.
-   * @param {!Object} destinationInfo Information describing a local print
-   *     destination.
+   * @param {!print_preview.LocalDestinationInfo} destinationInfo Information
+   *     describing a local print destination.
    * @return {!print_preview.Destination} Parsed local print destination.
    */
   LocalDestinationParser.parse = function(destinationInfo) {

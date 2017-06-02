@@ -1078,7 +1078,8 @@ cr.define('print_preview', function() {
     startLoadLocalDestinations: function() {
       if (!this.hasLoadedAllLocalDestinations_) {
         this.hasLoadedAllLocalDestinations_ = true;
-        this.nativeLayer_.startGetLocalDestinations();
+        this.nativeLayer_.getPrinters().then(
+            this.onLocalDestinationsSet_.bind(this));
         this.isLocalDestinationSearchInProgress_ = true;
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
@@ -1362,10 +1363,6 @@ cr.define('print_preview', function() {
       var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
       this.tracker_.add(
           nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET,
-          this.onLocalDestinationsSet_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.CAPABILITIES_SET,
           this.onLocalDestinationCapabilitiesSet_.bind(this));
       this.tracker_.add(
@@ -1437,11 +1434,12 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the local destinations have been got from the native layer.
-     * @param {Event} event Contains the local destinations.
+     * @param {!Array<!print_preview.LocalDestinationInfo>} destinationInfos A
+     *     list of the local destinations retrieved.
      * @private
      */
-    onLocalDestinationsSet_: function(event) {
-      var localDestinations = event.destinationInfos.map(function(destInfo) {
+    onLocalDestinationsSet_: function(destinationInfos) {
+      var localDestinations = destinationInfos.map(function(destInfo) {
         return print_preview.LocalDestinationParser.parse(destInfo);
       });
       this.insertDestinations_(localDestinations);
