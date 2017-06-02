@@ -165,6 +165,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         break;
       case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
+      case safe_browsing::SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL:
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
         break;
       case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:

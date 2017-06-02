@@ -78,6 +78,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   void RequestFinished(
       PasswordProtectionRequest* request,
+      bool already_cached_unused,
       std::unique_ptr<LoginReputationClientResponse> response) override {
     latest_request_ = request;
     latest_response_ = std::move(response);
@@ -105,6 +106,10 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return true;
   }
 
+  void ShowPhishingInterstitial(const GURL& phishing_url,
+                                const std::string& token,
+                                content::WebContents* web_contents) override {}
+
   bool IsHistorySyncEnabled() override { return false; }
 
   LoginReputationClientResponse* latest_response() {
@@ -115,7 +120,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   size_t GetPendingRequestsCount() { return requests_.size(); }
 
-  LoginReputationClientRequest* GetLatestRequestProto() {
+  const LoginReputationClientRequest* GetLatestRequestProto() {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
@@ -609,7 +614,7 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
 
-  LoginReputationClientRequest* actual_request =
+  const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
   EXPECT_EQ(kTargetUrl, actual_request->page_url());
   EXPECT_EQ(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
@@ -638,7 +643,7 @@ TEST_F(PasswordProtectionServiceTest,
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
 
-  LoginReputationClientRequest* actual_request =
+  const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
   EXPECT_EQ(kTargetUrl, actual_request->page_url());
   EXPECT_EQ(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,

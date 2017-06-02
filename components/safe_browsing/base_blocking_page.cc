@@ -264,6 +264,8 @@ std::string BaseBlockingPage::GetExtraMetricsSuffix(
       return "from_device_v4";
     case safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION:
       return "from_client_side_detection";
+    case safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE:
+      return "from_password_protection_service";
     case safe_browsing::ThreatSource::UNKNOWN:
       break;
   }
@@ -287,7 +289,8 @@ BaseBlockingPage::GetInterstitialReason(
       harmful = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-             threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
+             threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
+             threat_type == SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL);
     }
   }
 

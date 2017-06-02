@@ -310,6 +310,10 @@ void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup();
 }
 
+void ChromeAutofillClient::DidAttachInterstitialPage() {
+  HideAutofillPopup();
+}
+
 #if !defined(OS_ANDROID)
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
