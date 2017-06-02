@@ -40,6 +40,7 @@ class ArcNotificationView : public message_center::MessageView {
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;
