@@ -100,6 +100,9 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // rather than EasyUnlock.
   bool ShouldForcePassword();
 
+  // The type of the screenlock (i.e. login or unlock).
+  ScreenlockType screenlock_type_;
+
   // Lists of remote devices, keyed by user account id.
   std::map<AccountId, cryptauth::RemoteDeviceList> remote_devices_map_;
 
