@@ -4,14 +4,40 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/sessions/core/session_id.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace predictors {
+
+// Does nothing, controls which URLs are prefetchable.
+class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
+ public:
+  MockResourcePrefetchPredictor(const LoadingPredictorConfig& config,
+                                Profile* profile);
+  ~MockResourcePrefetchPredictor();
+
+  bool IsUrlPrefetchable(const GURL& main_frame_url) const override {
+    return prefetchable_urls_.find(main_frame_url) != prefetchable_urls_.end();
+  }
+
+  void AddPrefetchableUrl(const GURL& url) { prefetchable_urls_.insert(url); }
+
+  MOCK_CONST_METHOD2(GetPrefetchData,
+                     bool(const GURL& main_frame_url, Prediction* prediction));
+  MOCK_METHOD0(StartInitialization, void());
+  MOCK_METHOD0(Shutdown, void());
+  MOCK_METHOD1(StartPrefetching, void(const GURL&));
+  MOCK_METHOD1(StopPrefeching, void(const GURL&));
+
+ private:
+  std::set<GURL> prefetchable_urls_;
+};
 
 void InitializeResourceData(ResourceData* resource,
                             const std::string& resource_url,
@@ -76,6 +102,10 @@ ResourcePrefetchPredictor::URLRequestSummary CreateURLRequestSummary(
     const std::string& redirect_url = std::string(),
     bool has_validators = false,
     bool always_revalidate = false);
+
+ResourcePrefetchPredictor::Prediction CreatePrediction(
+    const std::string& main_frame_key,
+    std::vector<GURL> subresource_urls);
 
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db = true);
 

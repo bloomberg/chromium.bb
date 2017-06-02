@@ -18,6 +18,14 @@ namespace predictors {
 
 using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
+using Prediction = ResourcePrefetchPredictor::Prediction;
+
+MockResourcePrefetchPredictor::MockResourcePrefetchPredictor(
+    const LoadingPredictorConfig& config,
+    Profile* profile)
+    : ResourcePrefetchPredictor(config, profile) {}
+
+MockResourcePrefetchPredictor::~MockResourcePrefetchPredictor() = default;
 
 void InitializeResourceData(ResourceData* resource,
                             const std::string& resource_url,
@@ -174,6 +182,17 @@ URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
   summary.is_no_store = false;
   summary.network_accessed = true;
   return summary;
+}
+
+ResourcePrefetchPredictor::Prediction CreatePrediction(
+    const std::string& main_frame_key,
+    std::vector<GURL> subresource_urls) {
+  Prediction prediction;
+  prediction.main_frame_key = main_frame_key;
+  prediction.subresource_urls = subresource_urls;
+  prediction.is_host = true;
+  prediction.is_redirected = false;
+  return prediction;
 }
 
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
