@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import itertools
 import logging
 import os
@@ -13,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from third_party import schema
 
+import gclient
 import gclient_eval
 
 
@@ -67,73 +69,54 @@ class GClientEvalTest(unittest.TestCase):
       self.assertEqual(expected, result.items())
 
 
-class GClientExecTest(unittest.TestCase):
-  def test_basic(self):
-    self.assertEqual(
-        {'a': '1', 'b': '2', 'c': '3'},
-        gclient_eval._gclient_exec('a = "1"\nb = "2"\nc = "3"', {}))
-
+class ExecTest(unittest.TestCase):
   def test_multiple_assignment(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_exec('a, b, c = "a", "b", "c"', {})
+      gclient_eval.Exec('a, b, c = "a", "b", "c"', {}, {})
     self.assertIn(
         'invalid assignment: target should be a name', str(cm.exception))
 
   def test_override(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_exec('a = "a"\na = "x"', {})
+      gclient_eval.Exec('a = "a"\na = "x"', {}, {})
     self.assertIn(
         'invalid assignment: overrides var \'a\'', str(cm.exception))
 
-
-class CheckTest(unittest.TestCase):
-  TEST_CODE="""
-include_rules = ["a", "b", "c"]
-
-vars = {"a": "1", "b": "2", "c": "3"}
-
-deps_os = {
-  "linux": {"a": "1", "b": "2", "c": "3"}
-}"""
-
-  def setUp(self):
-    self.expected = {}
-    exec(self.TEST_CODE, {}, self.expected)
-
-  def test_pass(self):
-    gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
-
-  def test_fail_list(self):
-    self.expected['include_rules'][0] = 'x'
-    with self.assertRaises(gclient_eval.CheckFailure):
-      gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
-
-  def test_fail_dict(self):
-    self.expected['vars']['a'] = 'x'
-    with self.assertRaises(gclient_eval.CheckFailure):
-      gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
-
-  def test_fail_nested(self):
-    self.expected['deps_os']['linux']['c'] = 'x'
-    with self.assertRaises(gclient_eval.CheckFailure):
-      gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
-
   def test_schema_unknown_key(self):
     with self.assertRaises(schema.SchemaWrongKeyError):
-      gclient_eval.Check('foo = "bar"', '<string>', {}, {'foo': 'bar'})
+      gclient_eval.Exec('foo = "bar"', {}, {}, '<string>')
 
   def test_schema_wrong_type(self):
     with self.assertRaises(schema.SchemaError):
-      gclient_eval.Check(
-          'include_rules = {}', '<string>', {}, {'include_rules': {}})
+      gclient_eval.Exec('include_rules = {}', {}, {}, '<string>')
 
   def test_recursedeps_list(self):
-    gclient_eval.Check(
+    local_scope = {}
+    gclient_eval.Exec(
         'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]',
-        '<string>',
-        {},
-        {'recursedeps': [['src/third_party/angle', 'DEPS.chromium']]})
+        {}, local_scope,
+        '<string>')
+    self.assertEqual(
+        {'recursedeps': [['src/third_party/angle', 'DEPS.chromium']]},
+        local_scope)
 
+  def test_var(self):
+    local_scope = {}
+    global_scope = {
+        'Var': gclient.GClientKeywords.VarImpl({}, local_scope).Lookup,
+    }
+    gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+        'deps = {',
+        '  "a_dep": "a" + Var("foo") + "b",',
+        '}',
+    ]), global_scope, local_scope, '<string>')
+    self.assertEqual({
+        'vars': collections.OrderedDict([('foo', 'bar')]),
+        'deps': collections.OrderedDict([('a_dep', 'abarb')]),
+    }, local_scope)
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL

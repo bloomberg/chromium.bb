@@ -555,11 +555,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         }
       # Eval the content.
       try:
-        exec(deps_content, global_scope, local_scope)
+        if self._get_option('validate_syntax', False):
+          gclient_eval.Exec(deps_content, global_scope, local_scope, filepath)
+        else:
+          exec(deps_content, global_scope, local_scope)
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
-      if self._get_option('validate_syntax', False):
-        gclient_eval.Check(deps_content, filepath, global_scope, local_scope)
       if use_strict:
         for key, val in local_scope.iteritems():
           if not isinstance(val, (dict, list, tuple, str)):
