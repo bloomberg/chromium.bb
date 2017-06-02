@@ -875,7 +875,7 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
   if (text_state_->PositionNode()) {
     text_state_->FlushPositionOffsets();
-    return text_state_->PositionStartOffset() + text_state_->TextStartOffset();
+    return text_state_->PositionStartOffset();
   }
   DCHECK(end_container_);
   return end_offset_;
@@ -885,7 +885,7 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
   if (text_state_->PositionNode()) {
     text_state_->FlushPositionOffsets();
-    return text_state_->PositionEndOffset() + text_state_->TextStartOffset();
+    return text_state_->PositionEndOffset();
   }
   DCHECK(end_container_);
   return end_offset_;

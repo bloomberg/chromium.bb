@@ -330,7 +330,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
         // come back again to finish handling this text box; don't advance to
         // the next one.
         if (static_cast<unsigned>(text_state_->PositionEndOffset()) <
-            text_box_end)
+            text_box_end + text_start_offset)
           return;
 
         if (behavior_.DoesNotEmitSpaceBeyondRangeEnd()) {

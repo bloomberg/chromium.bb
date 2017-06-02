@@ -52,7 +52,7 @@ UChar TextIteratorTextState::CharacterAt(unsigned index) const {
     return single_character_buffer_;
   }
 
-  return text_[PositionStartOffset() + index];
+  return text_[text_start_offset_ + index];
 }
 
 String TextIteratorTextState::Substring(unsigned position,
@@ -66,7 +66,7 @@ String TextIteratorTextState::Substring(unsigned position,
     DCHECK_EQ(length, 1u);
     return String(&single_character_buffer_, 1);
   }
-  return text_.Substring(PositionStartOffset() + position, length);
+  return text_.Substring(text_start_offset_ + position, length);
 }
 
 void TextIteratorTextState::AppendTextToStringBuilder(
@@ -81,7 +81,7 @@ void TextIteratorTextState::AppendTextToStringBuilder(
     DCHECK_EQ(position, 0u);
     builder.Append(single_character_buffer_);
   } else {
-    builder.Append(text_, PositionStartOffset() + position, length_to_append);
+    builder.Append(text_, text_start_offset_ + position, length_to_append);
   }
 }
 
@@ -94,15 +94,15 @@ void TextIteratorTextState::UpdateForReplacedElement(Node* base_node) {
   single_character_buffer_ = 0;
 
   text_length_ = 0;
-  last_character_ = 0;
   text_start_offset_ = 0;
+  last_character_ = 0;
 }
 
 void TextIteratorTextState::EmitAltText(Node* node) {
   text_ = ToHTMLElement(node)->AltText();
+  text_start_offset_ = 0;
   text_length_ = text_.length();
   last_character_ = text_length_ ? text_[text_length_ - 1] : 0;
-  text_start_offset_ = 0;
 }
 
 void TextIteratorTextState::FlushPositionOffsets() const {
@@ -135,12 +135,14 @@ void TextIteratorTextState::SpliceBuffer(UChar c,
   single_character_buffer_ = c;
   DCHECK(single_character_buffer_);
   text_length_ = 1;
+  text_start_offset_ = 0;
 
   // remember some iteration state
   last_character_ = c;
-  text_start_offset_ = 0;
 }
 
+// TODO(xiaochengh): Remove the dependency on LayoutText, so that the class can
+// also be used by Layout NG.
 void TextIteratorTextState::EmitText(Node* text_node,
                                      LayoutText* layout_object,
                                      int text_start_offset,
@@ -160,14 +162,14 @@ void TextIteratorTextState::EmitText(Node* text_node,
 
   position_node_ = text_node;
   position_offset_base_node_ = nullptr;
-  position_start_offset_ = text_start_offset;
-  position_end_offset_ = text_end_offset;
+  position_start_offset_ = text_start_offset + layout_object->TextStartOffset();
+  position_end_offset_ = text_end_offset + layout_object->TextStartOffset();
   single_character_buffer_ = 0;
+  text_start_offset_ = text_start_offset;
   text_length_ = text_end_offset - text_start_offset;
   last_character_ = text_[text_end_offset - 1];
 
   has_emitted_ = true;
-  text_start_offset_ = layout_object->TextStartOffset();
 }
 
 void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
@@ -186,17 +188,11 @@ void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
     output->PushCharacters(single_character_buffer_, 1);
     return;
   }
-  if (PositionNode()) {
-    FlushPositionOffsets();
-    unsigned offset = PositionStartOffset() + position;
-    if (text_.Is8Bit())
-      output->PushRange(text_.Characters8() + offset, length_to_append);
-    else
-      output->PushRange(text_.Characters16() + offset, length_to_append);
-    return;
-  }
-  // We shouldn't be attempting to append text that doesn't exist.
-  NOTREACHED();
+  unsigned offset = text_start_offset_ + position;
+  if (text_.Is8Bit())
+    output->PushRange(text_.Characters8() + offset, length_to_append);
+  else
+    output->PushRange(text_.Characters16() + offset, length_to_append);
 }
 
 }  // namespace blink
