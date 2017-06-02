@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.net.NetworkChangeNotifier;
@@ -228,6 +229,7 @@ public class NewTabPage
         @Override
         public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {
             if (mIsDestroyed) return;
+            if (VrShellDelegate.isInVr()) return;
             if (mFakeboxDelegate != null) {
                 if (beginVoiceSearch) {
                     mFakeboxDelegate.startVoiceRecognition();
