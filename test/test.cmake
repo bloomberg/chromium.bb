@@ -336,6 +336,17 @@ function (setup_aom_test_targets)
                                     "AOM_UNIT_TEST_COMMON_INTRIN_NEON")
   endif ()
 
+  if (NOT ENABLE_IDE_TEST_HOSTING)
+    if (MSVC OR XCODE)
+      # Skip creation of test data download and test run targets when generating
+      # for Visual Studio and Xcode unless the user explicitly requests IDE test
+      # hosting. This is done to make build cycles in the IDE tolerable when the
+      # IDE command for build project is used to build AOM. Default behavior in
+      # IDEs is to build all targets, and the test run takes hours.
+      return ()
+    endif ()
+  endif ()
+
   make_test_data_lists("${AOM_UNIT_TEST_DATA_LIST_FILE}"
                        test_files test_file_checksums)
   list(LENGTH test_files num_test_files)
@@ -366,8 +377,6 @@ function (setup_aom_test_targets)
     set(num_test_targets 10)
   endif ()
 
-  # TODO(tomfinegan): This needs some work for MSVC and Xcode. Executable suffix
-  # and config based executable output paths are the obvious issues.
   math(EXPR max_shard_index "${num_test_targets} - 1")
   foreach (shard_index RANGE ${max_shard_index})
     set(test_name "test_${shard_index}")
@@ -382,15 +391,6 @@ function (setup_aom_test_targets)
   endforeach ()
   add_custom_target(runtests)
   add_dependencies(runtests ${test_targets})
-
-  if (MSVC)
-    set_target_properties(${testdata_targets} PROPERTIES
-                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
-    set_target_properties(${test_targets} PROPERTIES
-                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
-    set_target_properties(testdata runtests PROPERTIES
-                          EXCLUDE_FROM_DEFAULT_BUILD TRUE)
-  endif ()
 endfunction ()
 
 endif ()  # AOM_TEST_TEST_CMAKE_
