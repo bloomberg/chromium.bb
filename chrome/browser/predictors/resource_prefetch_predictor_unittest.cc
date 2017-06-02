@@ -32,9 +32,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ContainerEq;
-using testing::Pointee;
-using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
 
@@ -277,12 +274,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   }
 
   void InitializeSampleData();
-  void TestRedirectStatusHistogram(
-      const std::string& predictor_initial_key,
-      const std::string& predictor_key,
-      const std::string& navigation_initial_url,
-      const std::string& navigation_url,
-      ResourcePrefetchPredictor::RedirectStatus expected_status);
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -498,54 +489,6 @@ void ResourcePrefetchPredictorTest::InitializeSampleData() {
                          12, 0, 0, 3., false, true);
     test_origin_data_.insert({"twitter.com", twitter});
   }
-}
-
-void ResourcePrefetchPredictorTest::TestRedirectStatusHistogram(
-    const std::string& predictor_initial_key,
-    const std::string& predictor_key,
-    const std::string& navigation_initial_url,
-    const std::string& navigation_url,
-    ResourcePrefetchPredictor::RedirectStatus expected_status) {
-  // Database initialization.
-  const std::string& script_url = "https://cdn.google.com/script.js";
-  PrefetchData google = CreatePrefetchData(predictor_key, 1);
-  // We need at least one resource for prediction.
-  InitializeResourceData(google.add_resources(), script_url,
-                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
-                         net::MEDIUM, false, false);
-  predictor_->host_resource_data_->UpdateData(google.primary_key(), google);
-
-  if (predictor_initial_key != predictor_key) {
-    RedirectData redirect = CreateRedirectData(predictor_initial_key, 1);
-    InitializeRedirectStat(redirect.add_redirect_endpoints(), predictor_key, 10,
-                           0, 0);
-    predictor_->host_redirect_data_->UpdateData(redirect.primary_key(),
-                                                redirect);
-  }
-
-  // Navigation simulation.
-  URLRequestSummary initial =
-      CreateURLRequestSummary(1, navigation_initial_url);
-  predictor_->RecordURLRequest(initial);
-
-  if (navigation_initial_url != navigation_url) {
-    URLRequestSummary redirect =
-        CreateRedirectRequestSummary(1, navigation_initial_url, navigation_url);
-    predictor_->RecordURLRedirect(redirect);
-  }
-  NavigationID navigation_id = CreateNavigationID(1, navigation_url);
-
-  URLRequestSummary script = CreateURLRequestSummary(
-      1, navigation_url, script_url, content::RESOURCE_TYPE_SCRIPT);
-  predictor_->RecordURLResponse(script);
-
-  predictor_->RecordMainFrameLoadComplete(navigation_id);
-  profile_->BlockUntilHistoryProcessesPendingRequests();
-
-  // Histogram check.
-  histogram_tester_->ExpectBucketCount(
-      internal::kResourcePrefetchPredictorRedirectStatusHistogram,
-      static_cast<int>(expected_status), 1);
 }
 
 // Confirm that there's been no shift in the
@@ -1974,87 +1917,6 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   urls.clear();
   EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &prediction));
   EXPECT_THAT(urls, UnorderedElementsAre(GURL(font_url)));
-}
-
-TEST_F(ResourcePrefetchPredictorTest, TestPrecisionRecallHistograms) {
-  // Fill the database with 3 resources: 1 useful, 2 useless.
-  const std::string main_frame_url = "http://google.com/?query=cats";
-  PrefetchData google = CreatePrefetchData("google.com", 1);
-
-  const std::string script_url = "https://cdn.google.com/script.js";
-  InitializeResourceData(google.add_resources(), script_url,
-                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
-                         net::MEDIUM, false, false);
-  InitializeResourceData(google.add_resources(), script_url + "foo",
-                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
-                         net::MEDIUM, false, false);
-  InitializeResourceData(google.add_resources(), script_url + "bar",
-                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
-                         net::MEDIUM, false, false);
-  predictor_->host_resource_data_->UpdateData(google.primary_key(), google);
-
-  ResourcePrefetchPredictor::Prediction prediction;
-  EXPECT_TRUE(predictor_->GetPrefetchData(GURL(main_frame_url), &prediction));
-
-  // Simulate a navigation with 2 resources, one we know, one we don't.
-  URLRequestSummary main_frame = CreateURLRequestSummary(1, main_frame_url);
-  predictor_->RecordURLRequest(main_frame);
-
-  URLRequestSummary script = CreateURLRequestSummary(
-      1, main_frame_url, script_url, content::RESOURCE_TYPE_SCRIPT);
-  predictor_->RecordURLResponse(script);
-
-  URLRequestSummary new_script = CreateURLRequestSummary(
-      1, main_frame_url, script_url + "2", content::RESOURCE_TYPE_SCRIPT);
-  predictor_->RecordURLResponse(new_script);
-
-  predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
-  profile_->BlockUntilHistoryProcessesPendingRequests();
-
-  histogram_tester_->ExpectBucketCount(
-      internal::kResourcePrefetchPredictorRecallHistogram, 50, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kResourcePrefetchPredictorPrecisionHistogram, 33, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kResourcePrefetchPredictorCountHistogram, 3, 1);
-}
-
-TEST_F(ResourcePrefetchPredictorTest, TestRedirectStatusNoRedirect) {
-  TestRedirectStatusHistogram(
-      "google.com", "google.com", "http://google.com?query=cats",
-      "http://google.com?query=cats",
-      ResourcePrefetchPredictor::RedirectStatus::NO_REDIRECT);
-}
-
-TEST_F(ResourcePrefetchPredictorTest,
-       TestRedirectStatusNoRedirectButPredicted) {
-  TestRedirectStatusHistogram(
-      "google.com", "www.google.com", "http://google.com?query=cats",
-      "http://google.com?query=cats",
-      ResourcePrefetchPredictor::RedirectStatus::NO_REDIRECT_BUT_PREDICTED);
-}
-
-TEST_F(ResourcePrefetchPredictorTest, TestRedirectStatusRedirectNotPredicted) {
-  TestRedirectStatusHistogram(
-      "google.com", "google.com", "http://google.com?query=cats",
-      "http://www.google.com?query=cats",
-      ResourcePrefetchPredictor::RedirectStatus::REDIRECT_NOT_PREDICTED);
-}
-
-TEST_F(ResourcePrefetchPredictorTest,
-       TestRedirectStatusRedirectWrongPredicted) {
-  TestRedirectStatusHistogram(
-      "google.com", "google.fr", "http://google.com?query=cats",
-      "http://www.google.com?query=cats",
-      ResourcePrefetchPredictor::RedirectStatus::REDIRECT_WRONG_PREDICTED);
-}
-
-TEST_F(ResourcePrefetchPredictorTest,
-       TestRedirectStatusRedirectCorrectlyPredicted) {
-  TestRedirectStatusHistogram(
-      "google.com", "www.google.com", "http://google.com?query=cats",
-      "http://www.google.com?query=cats",
-      ResourcePrefetchPredictor::RedirectStatus::REDIRECT_CORRECTLY_PREDICTED);
 }
 
 TEST_F(ResourcePrefetchPredictorTest, TestRecordFirstContentfulPaint) {

@@ -22,6 +22,7 @@ class Profile;
 namespace predictors {
 
 class ResourcePrefetchPredictor;
+class LoadingStatsCollector;
 
 // Entry point for the Loading predictor.
 // From a high-level request (GURL and motivation) and a database of historical
@@ -80,6 +81,7 @@ class LoadingPredictor : public KeyedService,
   LoadingPredictorConfig config_;
   Profile* profile_;
   std::unique_ptr<ResourcePrefetchPredictor> resource_prefetch_predictor_;
+  std::unique_ptr<LoadingStatsCollector> stats_collector_;
   std::map<GURL, base::TimeTicks> active_hints_;
   // Initial URL.
   std::map<NavigationID, GURL> active_navigations_;

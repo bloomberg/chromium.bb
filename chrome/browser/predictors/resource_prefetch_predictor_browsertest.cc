@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
 #include <algorithm>
+#include <cstddef>
 #include <set>
 
 #include "base/command_line.h"
@@ -12,9 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/predictors/loading_stats_collector.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

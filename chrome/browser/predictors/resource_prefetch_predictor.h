@@ -43,28 +43,8 @@ class URLRequest;
 namespace predictors {
 
 namespace internal {
-constexpr char kResourcePrefetchPredictorPrecisionHistogram[] =
-    "ResourcePrefetchPredictor.LearningPrecision";
-constexpr char kResourcePrefetchPredictorRecallHistogram[] =
-    "ResourcePrefetchPredictor.LearningRecall";
-constexpr char kResourcePrefetchPredictorCountHistogram[] =
-    "ResourcePrefetchPredictor.LearningCount";
 constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
     "ResourcePrefetchPredictor.PrefetchingDuration";
-constexpr char kResourcePrefetchPredictorPrefetchMissesCountCached[] =
-    "ResourcePrefetchPredictor.PrefetchMissesCount.Cached";
-constexpr char kResourcePrefetchPredictorPrefetchMissesCountNotCached[] =
-    "ResourcePrefetchPredictor.PrefetchMissesCount.NotCached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsCountCached[] =
-    "ResourcePrefetchPredictor.PrefetchHitsCount.Cached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsCountNotCached[] =
-    "ResourcePrefetchPredictor.PrefetchHitsCount.NotCached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsSize[] =
-    "ResourcePrefetchPredictor.PrefetchHitsSizeKB";
-constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
-    "ResourcePrefetchPredictor.PrefetchMissesSizeKB";
-constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
-    "ResourcePrefetchPredictor.RedirectStatus";
 
 const uint32_t kVersionedRemovedExperiment = 0x03ff25e3;
 const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
@@ -86,6 +66,7 @@ struct LastVisitTimeCompare {
 
 class TestObserver;
 class ResourcePrefetcherManager;
+class LoadingStatsCollector;
 
 // Contains logic for learning what can be prefetched and for kicking off
 // speculative prefetching.
@@ -274,6 +255,15 @@ class ResourcePrefetchPredictor
   // this with nullptr parameter to de-register observer.
   void SetObserverForTesting(TestObserver* observer);
 
+  // Sets the |stats_collector| which is used to report histograms.
+  void SetStatsCollector(LoadingStatsCollector* stats_collector);
+
+  // Returns true iff there is PrefetchData that can be used for a
+  // |main_frame_url| and fills |prediction| with resources that need to be
+  // prefetched. |prediction| pointer may be nullptr to get return value only.
+  virtual bool GetPrefetchData(const GURL& main_frame_url,
+                               Prediction* prediction) const;
+
  private:
   // Starts prefetching if it is enabled and prefetching data exists for the
   // |main_frame_url| either at the URL or at the host level.
@@ -380,12 +370,6 @@ class ResourcePrefetchPredictor
                            const RedirectDataMap& redirect_data,
                            std::string* redirect_endpoint) const;
 
-  // Returns true iff there is PrefetchData that can be used for a
-  // |main_frame_url| and fills |prediction| with resources that need to be
-  // prefetched. |prediction| pointer may be nullptr to get return value only.
-  bool GetPrefetchData(const GURL& main_frame_url,
-                       Prediction* prediction) const;
-
   // Returns true iff the |resource_data| contains PrefetchData that can be used
   // for a |main_frame_key| and fills |urls| with resources that need to be
   // prefetched. |urls| may be nullptr to get the return value only.
@@ -405,7 +389,7 @@ class ResourcePrefetchPredictor
   // database has been read.
   void OnHistoryAndCacheLoaded();
 
-  // Cleanup inflight_navigations_, and prefetcher_stats_.
+  // Cleanup inflight_navigations_ and call a cleanup for stats_collector_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
 
   // Deletes all URLs from the predictor database, the caches and removes all
@@ -471,6 +455,7 @@ class ResourcePrefetchPredictor
 
   Profile* const profile_;
   TestObserver* observer_;
+  LoadingStatsCollector* stats_collector_;
   const LoadingPredictorConfig config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
@@ -485,9 +470,6 @@ class ResourcePrefetchPredictor
   std::unique_ptr<OriginDataMap> origin_data_;
 
   NavigationMap inflight_navigations_;
-
-  std::map<GURL, std::unique_ptr<ResourcePrefetcher::PrefetcherStats>>
-      prefetcher_stats_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

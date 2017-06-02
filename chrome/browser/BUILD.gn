@@ -982,6 +982,8 @@ split_static_library("browser") {
     "predictors/loading_predictor_config.h",
     "predictors/loading_predictor_factory.cc",
     "predictors/loading_predictor_factory.h",
+    "predictors/loading_stats_collector.cc",
+    "predictors/loading_stats_collector.h",
     "predictors/predictor_database.cc",
     "predictors/predictor_database.h",
     "predictors/predictor_database_factory.cc",

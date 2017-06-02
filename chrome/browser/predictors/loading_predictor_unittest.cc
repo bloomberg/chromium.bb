@@ -7,6 +7,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -24,28 +26,6 @@ const char kUrl[] = "http://www.google.com/cats";
 const char kUrl2[] = "http://www.google.com/dogs";
 const char kUrl3[] = "https://unknown.website/catsanddogs";
 }
-
-// Does nothing, controls which URLs are prefetchable.
-class MockResourcePrefetcherPredictor : public ResourcePrefetchPredictor {
- public:
-  MockResourcePrefetcherPredictor(const LoadingPredictorConfig& config,
-                                  Profile* profile)
-      : ResourcePrefetchPredictor(config, profile) {}
-
-  bool IsUrlPrefetchable(const GURL& main_frame_url) const override {
-    return prefetchable_urls_.find(main_frame_url) != prefetchable_urls_.end();
-  }
-
-  void AddPrefetchableUrl(const GURL& url) { prefetchable_urls_.insert(url); }
-
-  MOCK_METHOD0(StartInitialization, void());
-  MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD1(StartPrefetching, void(const GURL&));
-  MOCK_METHOD1(StopPrefeching, void(const GURL&));
-
- private:
-  std::set<GURL> prefetchable_urls_;
-};
 
 class LoadingPredictorTest : public testing::Test {
  public:
@@ -73,7 +53,7 @@ void LoadingPredictorTest::SetUp() {
   PopulateTestConfig(&config);
   predictor_ = base::MakeUnique<LoadingPredictor>(config, profile_.get());
   auto mock =
-      base::MakeUnique<MockResourcePrefetcherPredictor>(config, profile_.get());
+      base::MakeUnique<MockResourcePrefetchPredictor>(config, profile_.get());
   mock->AddPrefetchableUrl(GURL(kUrl));
   mock->AddPrefetchableUrl(GURL(kUrl2));
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
