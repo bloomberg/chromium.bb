@@ -80,13 +80,11 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
       : element_(element), attribute_name_(attr) {}
   Element& GetElement() const { return *element_; }
 
-  bool ValidateToken(const String&, ExceptionState&) const;
-  bool ValidateTokens(const Vector<String>&, ExceptionState&) const;
   virtual bool ValidateTokenValue(const AtomicString&, ExceptionState&) const;
-  void AddTokens(const Vector<String>&);
-  void RemoveTokens(const Vector<String>&);
 
  private:
+  void AddTokens(const Vector<String>&);
+  void RemoveTokens(const Vector<String>&);
   void UpdateWithTokenSet(const SpaceSplitString&);
   static AtomicString SerializeSet(const SpaceSplitString&);
 
