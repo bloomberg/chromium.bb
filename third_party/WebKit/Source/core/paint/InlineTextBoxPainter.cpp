@@ -681,7 +681,7 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
             ToCompositionMarker(marker);
         CompositionUnderline underline(
             composition_marker.StartOffset(), composition_marker.EndOffset(),
-            composition_marker.UnderlineColor(), composition_marker.Thick(),
+            composition_marker.UnderlineColor(), composition_marker.IsThick(),
             composition_marker.BackgroundColor());
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
           PaintSingleCompositionBackgroundRun(

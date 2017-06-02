@@ -1061,13 +1061,31 @@ static bool ParseColor(const String& value,
   return true;
 }
 
+static WTF::Optional<CompositionMarker::Thickness> ThicknessFrom(
+    const String& thickness) {
+  if (EqualIgnoringASCIICase(thickness, "thin"))
+    return CompositionMarker::Thickness::kThin;
+  if (EqualIgnoringASCIICase(thickness, "thick"))
+    return CompositionMarker::Thickness::kThick;
+  return WTF::nullopt;
+}
+
 void Internals::addCompositionMarker(const Range* range,
                                      const String& underline_color_value,
-                                     bool thick,
+                                     const String& thickness_value,
                                      const String& background_color_value,
                                      ExceptionState& exception_state) {
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  WTF::Optional<CompositionMarker::Thickness> thickness =
+      ThicknessFrom(thickness_value);
+  if (!thickness) {
+    exception_state.ThrowDOMException(
+        kSyntaxError,
+        "The thickness provided ('" + thickness_value + "') is invalid.");
+    return;
+  }
 
   Color underline_color;
   Color background_color;
@@ -1076,7 +1094,8 @@ void Internals::addCompositionMarker(const Range* range,
       ParseColor(background_color_value, background_color, exception_state,
                  "Invalid background color.")) {
     range->OwnerDocument().Markers().AddCompositionMarker(
-        EphemeralRange(range), underline_color, thick, background_color);
+        EphemeralRange(range), underline_color, thickness.value(),
+        background_color);
   }
 }
 

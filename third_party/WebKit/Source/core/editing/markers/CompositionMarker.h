@@ -16,10 +16,12 @@ namespace blink {
 // transparent).
 class CORE_EXPORT CompositionMarker final : public DocumentMarker {
  public:
+  enum class Thickness { kThin, kThick };
+
   CompositionMarker(unsigned start_offset,
                     unsigned end_offset,
                     Color underline_color,
-                    bool thick,
+                    Thickness,
                     Color background_color);
 
   // DocumentMarker implementations
@@ -27,13 +29,13 @@ class CORE_EXPORT CompositionMarker final : public DocumentMarker {
 
   // CompositionMarker-specific
   Color UnderlineColor() const;
-  bool Thick() const;
+  bool IsThick() const;
   Color BackgroundColor() const;
 
  private:
   const Color underline_color_;
   const Color background_color_;
-  const bool thick_;
+  const Thickness thickness_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositionMarker);
 };
