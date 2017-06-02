@@ -19,9 +19,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
+#include "chrome/browser/notifications/native_notification_delegate.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -205,31 +209,6 @@ class ShutdownNotifierFactory
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
 };
-
-// Temporary native notification api delagate, it is only used
-// to extract the delegate id.
-// This is an interim state until the work in
-// https://bugs.chromium.org/p/chromium/issues/detail?id=720345
-// is completed. We need a small delegate shim since the
-// Notification object has a non virtual method (delegate_id) that is
-// used all over the place whose implementation returns delegate->id()
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-class NativeNotificationApiDelegate : public NotificationDelegate {
- public:
-  NativeNotificationApiDelegate(const std::string& extension_id,
-                                const std::string& notification_id)
-      : scoped_notification_id_(
-            CreateScopedIdentifier(extension_id, notification_id)) {}
-
-  std::string id() const override { return scoped_notification_id_; }
-
- private:
-  ~NativeNotificationApiDelegate() override = default;
-  const std::string scoped_notification_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeNotificationApiDelegate);
-};
-#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
 // Message center based notification delegate with all the functionality.
 class NotificationApiDelegate : public NotificationDelegate {
@@ -520,8 +499,10 @@ bool NotificationsApiFunction::CreateNotification(
   // Create the notification api delegate. Ownership passed to the notification.
   NotificationDelegate* api_delegate;
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
-    api_delegate = new NativeNotificationApiDelegate(extension_->id(), id);
+  if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
+      g_browser_process->notification_platform_bridge()) {
+    api_delegate = new NativeNotificationDelegate(
+        CreateScopedIdentifier(extension_->id(), id));
   } else {
     api_delegate =
         new NotificationApiDelegate(this, GetProfile(), extension_->id(), id);

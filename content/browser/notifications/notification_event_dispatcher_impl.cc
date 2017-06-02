@@ -7,12 +7,16 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/platform_notification_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/platform_notification_data.h"
 
@@ -356,9 +360,8 @@ NotificationEventDispatcherImpl::GetInstance() {
   return base::Singleton<NotificationEventDispatcherImpl>::get();
 }
 
-NotificationEventDispatcherImpl::NotificationEventDispatcherImpl() {}
-
-NotificationEventDispatcherImpl::~NotificationEventDispatcherImpl() {}
+NotificationEventDispatcherImpl::NotificationEventDispatcherImpl() = default;
+NotificationEventDispatcherImpl::~NotificationEventDispatcherImpl() = default;
 
 void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     BrowserContext* browser_context,
@@ -385,6 +388,80 @@ void NotificationEventDispatcherImpl::DispatchNotificationCloseEvent(
       base::Bind(&DoDispatchNotificationCloseEvent, notification_id, by_user,
                  dispatch_complete_callback),
       dispatch_complete_callback);
+}
+
+void NotificationEventDispatcherImpl::RegisterNonPersistentNotification(
+    const std::string& notification_id,
+    int renderer_id,
+    int non_persistent_id) {
+  renderer_ids_[notification_id] = renderer_id;
+  non_persistent_ids_[notification_id] = non_persistent_id;
+}
+
+void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
+    const std::string& notification_id) {
+  if (!renderer_ids_.count(notification_id))
+    return;
+  DCHECK(non_persistent_ids_.count(notification_id));
+
+  RenderProcessHost* sender =
+      RenderProcessHost::FromID(renderer_ids_[notification_id]);
+  if (!sender)
+    return;
+
+  sender->Send(new PlatformNotificationMsg_DidShow(
+      non_persistent_ids_[notification_id]));
+}
+
+void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
+    const std::string& notification_id) {
+  if (!renderer_ids_.count(notification_id))
+    return;
+  DCHECK(non_persistent_ids_.count(notification_id));
+
+  RenderProcessHost* sender =
+      RenderProcessHost::FromID(renderer_ids_[notification_id]);
+
+  // This can happen when a notification is clicked by the user but the
+  // renderer does not exist any more, for example because the tab has been
+  // closed.
+  if (!sender)
+    return;
+  sender->Send(new PlatformNotificationMsg_DidClick(
+      non_persistent_ids_[notification_id]));
+}
+
+void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
+    const std::string& notification_id) {
+  if (!renderer_ids_.count(notification_id))
+    return;
+  DCHECK(non_persistent_ids_.count(notification_id));
+
+  RenderProcessHost* sender =
+      RenderProcessHost::FromID(renderer_ids_[notification_id]);
+
+  // This can happen when a notification is closed by the user but the
+  // renderer does not exist any more, for example because the tab has been
+  // closed.
+  if (!sender)
+    return;
+  sender->Send(new PlatformNotificationMsg_DidClose(
+      non_persistent_ids_[notification_id]));
+
+  static_cast<RenderProcessHostImpl*>(sender)
+      ->notification_message_filter()
+      ->DidCloseNotification(notification_id);
+}
+
+void NotificationEventDispatcherImpl::RendererGone(int renderer_id) {
+  for (auto iter = renderer_ids_.begin(); iter != renderer_ids_.end();) {
+    if (iter->second == renderer_id) {
+      non_persistent_ids_.erase(iter->first);
+      iter = renderer_ids_.erase(iter);
+    } else {
+      iter++;
+    }
+  }
 }
 
 }  // namespace content

@@ -12,7 +12,6 @@ namespace base {
 class NullableString16;
 }
 
-class NotificationDelegate;
 class Profile;
 
 // Interface that enables the different kind of notifications to process
@@ -37,10 +36,6 @@ class NotificationHandler {
 
   // Open notification settings.
   virtual void OpenSettings(Profile* profile) = 0;
-
-  // Registers a |delegate| object with this handler.
-  virtual void RegisterNotification(const std::string& notification_id,
-                                    NotificationDelegate* delegate) = 0;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_HANDLER_H_

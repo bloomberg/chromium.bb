@@ -5,13 +5,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NON_PERSISTENT_NOTIFICATION_HANDLER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NON_PERSISTENT_NOTIFICATION_HANDLER_H_
 
-#include <unordered_map>
-
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/notifications/notification_handler.h"
-
-class NotificationDelegate;
 
 // NotificationHandler implementation for non persistent notifications.
 class NonPersistentNotificationHandler : public NotificationHandler {
@@ -33,14 +28,7 @@ class NonPersistentNotificationHandler : public NotificationHandler {
 
   void OpenSettings(Profile* profile) override;
 
-  void RegisterNotification(const std::string& notification_id,
-                            NotificationDelegate* delegate) override;
-
  private:
-  // map of delegate objects keyed by notification id.
-  std::unordered_map<std::string, scoped_refptr<NotificationDelegate>>
-      notifications_;
-
   DISALLOW_COPY_AND_ASSIGN(NonPersistentNotificationHandler);
 };
 

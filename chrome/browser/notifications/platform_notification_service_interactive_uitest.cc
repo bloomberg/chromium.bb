@@ -68,7 +68,8 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   ~PlatformNotificationServiceBrowserTest() override {}
 
   // InProcessBrowserTest overrides.
-  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override;
+
   void SetUp() override;
   void SetUpOnMainThread() override;
   void TearDown() override;
@@ -136,11 +137,19 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
       // filesystem.
       test_page_url_(std::string("/") + kTestFileName) {}
 
-void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
+void PlatformNotificationServiceBrowserTest::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {
+  InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+
+  // Needed for the Reply button tests
   command_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
 
-  InProcessBrowserTest::SetUpCommandLine(command_line);
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+  // TODO(crbug.com/714679): Temporary change while tests are upgraded to deal
+  // with native notifications.
+  command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                  features::kNativeNotifications.name);
+#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }
 
 void PlatformNotificationServiceBrowserTest::SetUp() {
@@ -824,8 +833,14 @@ class PlatformNotificationServiceWithoutContentImageBrowserTest
  public:
   // InProcessBrowserTest overrides.
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kNotificationContentImage);
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+    scoped_feature_list_.InitWithFeatures(
+        {},
+        {features::kNotificationContentImage, features::kNativeNotifications});
+#else
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kNotificationContentImage});
+#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 

@@ -136,6 +136,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   NotificationIdGenerator* GetNotificationIdGenerator() const;
 
   int process_id_;
+  bool non_persistent__notification_shown_;
   scoped_refptr<PlatformNotificationContextImpl> notification_context_;
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

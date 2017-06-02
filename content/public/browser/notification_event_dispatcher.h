@@ -32,6 +32,9 @@ class CONTENT_EXPORT NotificationEventDispatcher {
   using NotificationDispatchCompleteCallback =
       base::Callback<void(PersistentNotificationStatus)>;
 
+  // Dispatch methods for persistent (SW backed) notifications.
+  // TODO(miguelg) consider merging them with the non persistent ones below.
+
   // Dispatches the "notificationclick" event on the Service Worker associated
   // with |notification_id| belonging to |origin|. The |callback| will be
   // invoked when it's known whether the event successfully executed.
@@ -55,6 +58,15 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       bool by_user,
       const NotificationDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
+
+  // Dispatch methods for the different non persistent (not backed by a service
+  // worker) notification events.
+  virtual void DispatchNonPersistentShowEvent(
+      const std::string& notification_id) = 0;
+  virtual void DispatchNonPersistentClickEvent(
+      const std::string& notification_id) = 0;
+  virtual void DispatchNonPersistentCloseEvent(
+      const std::string& notification_id) = 0;
 
  protected:
   virtual ~NotificationEventDispatcher() {}

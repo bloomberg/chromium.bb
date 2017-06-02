@@ -65,23 +65,19 @@ const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 class MockDesktopNotificationDelegate
     : public content::DesktopNotificationDelegate {
  public:
-  MockDesktopNotificationDelegate()
-      : displayed_(false),
-        clicked_(false) {}
+  MockDesktopNotificationDelegate() : displayed_(false) {}
 
   ~MockDesktopNotificationDelegate() override {}
 
   // content::DesktopNotificationDelegate implementation.
   void NotificationDisplayed() override { displayed_ = true; }
   void NotificationClosed() override {}
-  void NotificationClick() override { clicked_ = true; }
+  void NotificationClick() override {}
 
   bool displayed() const { return displayed_; }
-  bool clicked() const { return clicked_; }
 
  private:
   bool displayed_;
-  bool clicked_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDesktopNotificationDelegate);
 };
@@ -193,12 +189,15 @@ class PlatformNotificationServiceTest : public testing::Test {
   std::unique_ptr<std::set<std::string>> displayed_notifications_;
 };
 
+// Native, non persistent notifications don't have delegates any more
+#if !defined(OS_MACOSX)
 TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {
   auto* delegate = CreateSimplePageNotification();
 
   EXPECT_EQ(1u, GetNotificationCount());
   EXPECT_TRUE(delegate->displayed());
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
   base::Closure close_closure;
