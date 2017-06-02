@@ -28,6 +28,10 @@ KeyboardHandler.prototype = {
    * @private
    */
   init_: function() {
+    // Capture keycodes for keys 1 through 4, and 6 through 9.
+    let keyCodes = ['1', '2', '3', '4', '6', '7', '8', '9'].map(
+        key => key.charCodeAt(0));
+    chrome.accessibilityPrivate.setSwitchAccessKeys(keyCodes);
     document.addEventListener('keyup', this.handleKeyEvent_.bind(this));
   },
 

@@ -24,15 +24,16 @@ SwitchAccessEventHandler::~SwitchAccessEventHandler() {
     ash::Shell::Get()->RemovePreTargetHandler(this);
 }
 
+void SwitchAccessEventHandler::SetKeysToCapture(
+    const std::set<int>& key_codes) {
+  captured_keys_ = key_codes;
+}
+
 void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(event);
 
   ui::KeyboardCode key_code = event->key_code();
-  if (key_code == ui::VKEY_1 || key_code == ui::VKEY_2 ||
-      key_code == ui::VKEY_3 || key_code == ui::VKEY_4 ||
-      key_code == ui::VKEY_5 || key_code == ui::VKEY_6 ||
-      key_code == ui::VKEY_7 || key_code == ui::VKEY_8 ||
-      key_code == ui::VKEY_9) {
+  if (captured_keys_.find(key_code) != captured_keys_.end()) {
     CancelEvent(event);
     DispatchKeyEventToSwitchAccess(*event);
   }

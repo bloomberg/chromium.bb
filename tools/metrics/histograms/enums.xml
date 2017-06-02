@@ -12648,6 +12648,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1175" label="MEDIAPERCEPTIONPRIVATE_SETSTATE"/>
   <int value="1176" label="MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS"/>
   <int value="1177" label="NETWORKINGPRIVATE_GETCERTIFICATELISTS"/>
+  <int value="1178" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSKEYS"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

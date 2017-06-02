@@ -1531,4 +1531,9 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
     extension_registry_observer_.Add(registry);
 }
 
+void AccessibilityManager::SetSwitchAccessKeys(const std::set<int>& key_codes) {
+  if (switch_access_enabled_)
+    switch_access_event_handler_->SetKeysToCapture(key_codes);
+}
+
 }  // namespace chromeos

@@ -311,6 +311,9 @@ class AccessibilityManager
   }
   bool keyboard_listener_capture() { return keyboard_listener_capture_; }
 
+  // Set the keys to be captured by Switch Access.
+  void SetSwitchAccessKeys(const std::set<int>& key_codes);
+
  protected:
   AccessibilityManager();
   ~AccessibilityManager() override;

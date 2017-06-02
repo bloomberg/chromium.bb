@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SWITCH_ACCESS_EVENT_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SWITCH_ACCESS_EVENT_HANDLER_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
 
@@ -22,12 +24,16 @@ class SwitchAccessEventHandler : public ui::EventHandler {
   SwitchAccessEventHandler();
   ~SwitchAccessEventHandler() override;
 
+  void SetKeysToCapture(const std::set<int>& key_codes);
+
  private:
   // EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   void CancelEvent(ui::Event* event);
   void DispatchKeyEventToSwitchAccess(const ui::KeyEvent& event);
+
+  std::set<int> captured_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessEventHandler);
 };

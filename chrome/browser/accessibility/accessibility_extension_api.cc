@@ -27,6 +27,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -164,3 +165,29 @@ AccessibilityPrivateDarkenScreenFunction::Run() {
 
   return RespondNow(Error(kErrorNotSupported));
 }
+
+#if defined(OS_CHROMEOS)
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
+  std::unique_ptr<accessibility_private::SetSwitchAccessKeys::Params> params =
+      accessibility_private::SetSwitchAccessKeys::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // For now, only accept key code if it represents an alphanumeric character.
+  std::set<int> key_codes;
+  for (auto key_code : params->key_codes) {
+    EXTENSION_FUNCTION_VALIDATE(key_code >= ui::VKEY_0 &&
+                                key_code <= ui::VKEY_Z);
+    key_codes.insert(key_code);
+  }
+
+  chromeos::AccessibilityManager* manager =
+      chromeos::AccessibilityManager::Get();
+
+  // AccessibilityManager can be null during system shut down, but no need to
+  // return error in this case, so just check that manager is not null.
+  if (manager)
+    manager->SetSwitchAccessKeys(key_codes);
+  return RespondNow(NoArguments());
+}
+#endif  // defined (OS_CHROMEOS)
