@@ -9871,6 +9871,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.MigrationUI.MigrationResult"
+    enum="MigrationUIMigrationResult">
+  <owner>fukino@chromium.org</owner>
+  <summary>
+    The result of encryption migration from eCryptfs to Ext4 dircrypto. The
+    recorded result is what the migration UI in Chrome side is notified from
+    cryptohomed.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.MigrationUI.RemoveCryptohomeResult"
+    enum="MigrationUIRemoveCryptohomeResult">
+  <owner>fukino@chromium.org</owner>
+  <summary>
+    The result of the removal of user's cryptohome. When the migration UI is
+    notified that the migration failed, the UI tries to remove the user's
+    cryptohome to make sure that the user can create clean crytohome directory
+    in the next sign-in.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.MigrationUI.UserChoice"
     enum="MigrationUIUserChoice">
   <owner>fukino@chromium.org</owner>
@@ -9878,6 +9899,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     User's choice when the system is ready to migrate encryption. The user can
     start migration or skip it. It is used to know how many users have skipped
     migration.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.MigrationUI.VisibleScreen" enum="MigrationUIScreen">
+  <owner>fukino@chromium.org</owner>
+  <summary>
+    How many times each screen in migration UI is shown to the user. A screen is
+    recorded as a visible screen when the screen is kept displayed at least for
+    a second.
   </summary>
 </histogram>
 

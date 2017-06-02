@@ -16,6 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
@@ -46,18 +48,25 @@ constexpr char kCheckStoragePath[] = "/home";
 // JS API callbacks names.
 constexpr char kJsApiStartMigration[] = "startMigration";
 constexpr char kJsApiSkipMigration[] = "skipMigration";
-constexpr char kJsApiRequestRestart[] = "requestRestart";
+constexpr char kJsApiRequestRestartOnLowStorage[] =
+    "requestRestartOnLowStorage";
+constexpr char kJsApiRequestRestartOnFailure[] = "requestRestartOnFailure";
 constexpr char kJsApiOpenFeedbackDialog[] = "openFeedbackDialog";
 
 // UMA names.
 constexpr char kUmaNameFirstScreen[] = "Cryptohome.MigrationUI.FirstScreen";
 constexpr char kUmaNameUserChoice[] = "Cryptohome.MigrationUI.UserChoice";
+constexpr char kUmaNameMigrationResult[] =
+    "Cryptohome.MigrationUI.MigrationResult";
+constexpr char kUmaNameRemoveCryptohomeResult[] =
+    "Cryptohome.MigrationUI.RemoveCryptohomeResult";
 constexpr char kUmaNameConsumedBatteryPercent[] =
     "Cryptohome.MigrationUI.ConsumedBatteryPercent";
+constexpr char kUmaNameVisibleScreen[] = "Cryptohome.MigrationUI.VisibleScreen";
 
-// This enum must match the numbering for Cryptohome.MigrationUI.FirstScreen in
-// histograms.xml. Do not reorder or remove items, only add new items before
-// FIRST_SCREEN_MAX.
+// This enum must match the numbering for MigrationUIFirstScreen in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// before FIRST_SCREEN_COUNT.
 enum class FirstScreen {
   FIRST_SCREEN_READY = 0,
   FIRST_SCREEN_RESUME = 1,
@@ -65,13 +74,42 @@ enum class FirstScreen {
   FIRST_SCREEN_COUNT
 };
 
-// This enum must match the numbering for Cryptohome.MigrationUI.UserChoice in
-// histograms.xml. Do not reorder or remove items, only add new items before
-// FIRST_SCREEN_MAX.
+// This enum must match the numbering for MigrationUIUserChoice in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// before USER_CHOICE_COUNT.
 enum class UserChoice {
   USER_CHOICE_UPDATE = 0,
   USER_CHOICE_SKIP = 1,
+  USER_CHOICE_RESTART_ON_FAILURE = 2,
+  USER_CHOICE_RESTART_ON_LOW_STORAGE = 3,
+  USER_CHOICE_REPORT_AN_ISSUE = 4,
   USER_CHOICE_COUNT
+};
+
+// This enum must match the numbering for MigrationUIMigrationResult in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// before COUNT.
+enum class MigrationResult {
+  SUCCESS_IN_NEW_MIGRATION = 0,
+  SUCCESS_IN_RESUMED_MIGRATION = 1,
+  GENERAL_FAILURE_IN_NEW_MIGRATION = 2,
+  GENERAL_FAILURE_IN_RESUMED_MIGRATION = 3,
+  REQUEST_FAILURE_IN_NEW_MIGRATION = 4,
+  REQUEST_FAILURE_IN_RESUMED_MIGRATION = 5,
+  MOUNT_FAILURE_IN_NEW_MIGRATION = 6,
+  MOUNT_FAILURE_IN_RESUMED_MIGRATION = 7,
+  COUNT
+};
+
+// This enum must match the numbering for MigrationUIRemoveCryptohomeResult in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// before COUNT.
+enum class RemoveCryptohomeResult {
+  SUCCESS_IN_NEW_MIGRATION = 0,
+  SUCCESS_IN_RESUMED_MIGRATION = 1,
+  FAILURE_IN_NEW_MIGRATION = 2,
+  FAILURE_IN_RESUMED_MIGRATION = 3,
+  COUNT
 };
 
 bool IsTestingUI() {
@@ -81,13 +119,30 @@ bool IsTestingUI() {
 
 // Wrapper functions for histogram macros to avoid duplication of expanded code.
 void RecordFirstScreen(FirstScreen first_screen) {
-  UMA_HISTOGRAM_ENUMERATION(kUmaNameFirstScreen, static_cast<int>(first_screen),
-                            static_cast<int>(FirstScreen::FIRST_SCREEN_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameFirstScreen, first_screen,
+                            FirstScreen::FIRST_SCREEN_COUNT);
 }
 
 void RecordUserChoice(UserChoice user_choice) {
-  UMA_HISTOGRAM_ENUMERATION(kUmaNameUserChoice, static_cast<int>(user_choice),
-                            static_cast<int>(UserChoice::USER_CHOICE_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameUserChoice, user_choice,
+                            UserChoice::USER_CHOICE_COUNT);
+}
+
+void RecordMigrationResult(MigrationResult migration_result) {
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameMigrationResult, migration_result,
+                            MigrationResult::COUNT);
+}
+
+void RecordRemoveCryptohomeResult(bool success, bool is_resumed_migration) {
+  RemoveCryptohomeResult result =
+      success ? (is_resumed_migration
+                     ? RemoveCryptohomeResult::SUCCESS_IN_RESUMED_MIGRATION
+                     : RemoveCryptohomeResult::SUCCESS_IN_NEW_MIGRATION)
+              : (is_resumed_migration
+                     ? RemoveCryptohomeResult::FAILURE_IN_RESUMED_MIGRATION
+                     : RemoveCryptohomeResult::FAILURE_IN_NEW_MIGRATION);
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameRemoveCryptohomeResult, result,
+                            RemoveCryptohomeResult::COUNT);
 }
 
 }  // namespace
@@ -204,8 +259,11 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
               &EncryptionMigrationScreenHandler::HandleStartMigration);
   AddCallback(kJsApiSkipMigration,
               &EncryptionMigrationScreenHandler::HandleSkipMigration);
-  AddCallback(kJsApiRequestRestart,
-              &EncryptionMigrationScreenHandler::HandleRequestRestart);
+  AddCallback(
+      kJsApiRequestRestartOnLowStorage,
+      &EncryptionMigrationScreenHandler::HandleRequestRestartOnLowStorage);
+  AddCallback(kJsApiRequestRestartOnFailure,
+              &EncryptionMigrationScreenHandler::HandleRequestRestartOnFailure);
   AddCallback(kJsApiOpenFeedbackDialog,
               &EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog);
 }
@@ -258,11 +316,18 @@ void EncryptionMigrationScreenHandler::HandleSkipMigration() {
   }
 }
 
-void EncryptionMigrationScreenHandler::HandleRequestRestart() {
+void EncryptionMigrationScreenHandler::HandleRequestRestartOnLowStorage() {
+  RecordUserChoice(UserChoice::USER_CHOICE_RESTART_ON_LOW_STORAGE);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void EncryptionMigrationScreenHandler::HandleRequestRestartOnFailure() {
+  RecordUserChoice(UserChoice::USER_CHOICE_RESTART_ON_FAILURE);
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 void EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog() {
+  RecordUserChoice(UserChoice::USER_CHOICE_REPORT_AN_ISSUE);
   const std::string description = base::StringPrintf(
       "Auto generated feedback for http://crbug.com/719266.\n"
       "(uniquifier:%s)",
@@ -291,6 +356,16 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
     StopBlockingPowerSave();
     PowerPolicyController::Get()->SetEncryptionMigrationActive(false);
   }
+
+  // Record which screen is visible to the user.
+  // We record it after delay to make sure that the user was actually able
+  // to see the screen (i.e. the screen is not just a flash).
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &EncryptionMigrationScreenHandler::OnDelayedRecordVisibleScreen,
+          weak_ptr_factory_.GetWeakPtr(), state),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
@@ -351,6 +426,9 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
     cryptohome::MountError return_code,
     const std::string& mount_hash) {
   if (!success || return_code != cryptohome::MOUNT_ERROR_NONE) {
+    RecordMigrationResult(
+        should_resume_ ? MigrationResult::MOUNT_FAILURE_IN_RESUMED_MIGRATION
+                       : MigrationResult::MOUNT_FAILURE_IN_NEW_MIGRATION);
     UpdateUIState(UIState::MIGRATION_FAILED);
     return;
   }
@@ -402,6 +480,7 @@ void EncryptionMigrationScreenHandler::OnRemoveCryptohome(
     cryptohome::MountError return_code) {
   LOG_IF(ERROR, !success) << "Removing cryptohome failed. return code: "
                           << return_code;
+  RecordRemoveCryptohomeResult(success, should_resume_);
   UpdateUIState(UIState::MIGRATION_FAILED);
 }
 
@@ -433,6 +512,9 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       CallJS("setMigrationProgress", static_cast<double>(current) / total);
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
+      RecordMigrationResult(should_resume_
+                                ? MigrationResult::SUCCESS_IN_RESUMED_MIGRATION
+                                : MigrationResult::SUCCESS_IN_NEW_MIGRATION);
       // If the battery level decreased during migration, record the consumed
       // battery level.
       if (*current_battery_percent_ < initial_battery_percent_) {
@@ -445,6 +527,9 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_FAILED:
+      RecordMigrationResult(
+          should_resume_ ? MigrationResult::GENERAL_FAILURE_IN_RESUMED_MIGRATION
+                         : MigrationResult::GENERAL_FAILURE_IN_NEW_MIGRATION);
       // Stop listening to the progress updates.
       DBusThreadManager::Get()
           ->GetCryptohomeClient()
@@ -461,8 +546,21 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
 void EncryptionMigrationScreenHandler::OnMigrationRequested(bool success) {
   if (!success) {
     LOG(ERROR) << "Requesting MigrateToDircrypto failed.";
+    RecordMigrationResult(
+        should_resume_ ? MigrationResult::REQUEST_FAILURE_IN_RESUMED_MIGRATION
+                       : MigrationResult::REQUEST_FAILURE_IN_NEW_MIGRATION);
     UpdateUIState(UIState::MIGRATION_FAILED);
   }
+}
+
+void EncryptionMigrationScreenHandler::OnDelayedRecordVisibleScreen(
+    UIState ui_state) {
+  if (current_ui_state_ != ui_state)
+    return;
+
+  // If |current_ui_state_| is not changed for a second, record the current
+  // screen as a "visible" screen.
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameVisibleScreen, ui_state, UIState::COUNT);
 }
 
 }  // namespace chromeos
