@@ -599,14 +599,14 @@ initiationType:(web::NavigationInitiationType)initiationType;
                                     andItem:(web::NavigationItem*)secondItem {
   if (!firstItem || !secondItem || firstItem == secondItem)
     return NO;
-  NSUInteger firstIndex = [self indexOfItem:firstItem];
-  NSUInteger secondIndex = [self indexOfItem:secondItem];
-  if (firstIndex == NSNotFound || secondIndex == NSNotFound)
+  int firstIndex = [self indexOfItem:firstItem];
+  int secondIndex = [self indexOfItem:secondItem];
+  if (firstIndex == -1 || secondIndex == -1)
     return NO;
-  NSUInteger startIndex = firstIndex < secondIndex ? firstIndex : secondIndex;
-  NSUInteger endIndex = firstIndex < secondIndex ? secondIndex : firstIndex;
+  int startIndex = firstIndex < secondIndex ? firstIndex : secondIndex;
+  int endIndex = firstIndex < secondIndex ? secondIndex : firstIndex;
 
-  for (NSUInteger i = startIndex + 1; i <= endIndex; i++) {
+  for (int i = startIndex + 1; i <= endIndex; i++) {
     web::NavigationItemImpl* item = self.items[i].get();
     // Every item in the sequence has to be created from a hash change or
     // pushState() call.
@@ -621,13 +621,13 @@ initiationType:(web::NavigationInitiationType)initiationType;
   return YES;
 }
 
-- (NSInteger)indexOfItem:(const web::NavigationItem*)item {
+- (int)indexOfItem:(const web::NavigationItem*)item {
   DCHECK(item);
   for (size_t index = 0; index < self.items.size(); ++index) {
     if (self.items[index].get() == item)
       return index;
   }
-  return NSNotFound;
+  return -1;
 }
 
 - (web::NavigationItemImpl*)itemAtIndex:(NSInteger)index {

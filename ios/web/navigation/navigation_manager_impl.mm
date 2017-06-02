@@ -267,6 +267,11 @@ NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
   return [session_controller_ itemAtIndex:index];
 }
 
+int NavigationManagerImpl::GetIndexOfItem(
+    const web::NavigationItem* item) const {
+  return [session_controller_ indexOfItem:item];
+}
+
 int NavigationManagerImpl::GetPendingItemIndex() const {
   if (GetPendingItem()) {
     if ([session_controller_ pendingItemIndex] != -1) {
