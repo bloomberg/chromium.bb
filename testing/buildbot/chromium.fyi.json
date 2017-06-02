@@ -11655,7 +11655,7 @@
           "--mash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
         ],
-        "name": "ash_unittests --mash",
+        "name": "ash_unittests-mash",
         "override_isolate_target": "ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11667,7 +11667,7 @@
           "--mus",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mus.filter"
         ],
-        "name": "ash_unittests --mus",
+        "name": "ash_unittests-mus",
         "override_isolate_target": "ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
