@@ -5,7 +5,20 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sync/test/integration/themes_helper.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "content/public/test/test_utils.h"
+
+void SetCustomTheme(Profile* profile, int theme_index) {
+  themes_helper::UseCustomTheme(profile, theme_index);
+  content::WindowedNotificationObserver theme_change_observer(
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+      content::Source<ThemeService>(
+          ThemeServiceFactory::GetForProfile(profile)));
+  theme_change_observer.Wait();
+}
 
 ServerCountMatchStatusChecker::ServerCountMatchStatusChecker(
     syncer::ModelType type,

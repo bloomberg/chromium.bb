@@ -76,8 +76,8 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::NotificationService::AllSources());
   InstallExtension("theme2.crx");
-  infobar_added_2.Wait();
   infobar_removed_1.Wait();
+  infobar_added_2.Wait();
   EXPECT_EQ(
       0u,
       InfoBarService::FromWebContents(
