@@ -454,6 +454,15 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # Set USE_GOMA env var so that chrome is built with goma.
     self._portage_extra_env['USE_GOMA'] = 'true'
 
+    # Set MAX_COMPILER_DISABLED_TASKS. In case of local fallback
+    # goma enters to Burst mode.
+    # Specifically, this is short-term workaround of the case that all compile
+    # processes get local fallback. This happens when toolchain is updated
+    # in repository, but prebuilt package is not yet ready.
+    # (cf. crbug.com/728971)
+    # Note that '30' is just heuristically chosen by discussion with goma team.
+    self._portage_extra_env['GOMA_MAX_COMPILER_DISABLED_TASKS'] = '30'
+
     if self._run.options.goma_client_json:
       chroot_args.extend([
           '--goma_client_json', self._run.options.goma_client_json])
