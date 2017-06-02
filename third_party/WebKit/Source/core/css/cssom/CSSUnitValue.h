@@ -27,7 +27,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   void setUnit(const String& new_unit, ExceptionState&);
   String unit() const;
 
-  String cssType() const;
+  String type() const;
 
   StyleValueType GetType() const override { return StyleValueType::kUnitType; }
 

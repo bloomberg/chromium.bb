@@ -14,5 +14,5 @@
 ] interface CSSUnitValue : CSSNumericValue {
   [EnforceRange] attribute double value;
   [RaisesException=Setter] attribute DOMString unit;
-  [ImplementedAs=cssType] readonly attribute DOMString type;
+  readonly attribute DOMString type;
 };
