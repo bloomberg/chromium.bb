@@ -55,6 +55,21 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithImageInTableNoCrash) {
   GetDocument().GetFrame()->GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
+// Regression test for crbug.com/728801
+TEST_F(SpellCheckerTest, AdvancedToNextMisspellingWrapSearchNoCrash) {
+  SetBodyContent("<div contenteditable>  zz zz zz  </div>");
+
+  Element* div = GetDocument().QuerySelector("div");
+  div->focus();
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position::LastPositionInNode(div))
+                               .Build());
+  UpdateAllLifecyclePhases();
+
+  // TODO(xiaochengh): We should have SpellCheckTestBase::GetSpellChecker().
+  GetFrame().GetSpellChecker().AdvanceToNextMisspelling(false);
+}
+
 TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   SetBodyContent("<input>");
   HTMLInputElement* input =
