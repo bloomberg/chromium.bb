@@ -200,6 +200,7 @@ class PLATFORM_EXPORT DisplayItem {
   DisplayItem(const DisplayItemClient& client, Type type, size_t derived_size)
       : client_(&client),
         visual_rect_(client.VisualRect()),
+        outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         type_(type),
         derived_size_(derived_size),
         skipped_cache_(false)
@@ -239,6 +240,9 @@ class PLATFORM_EXPORT DisplayItem {
   // not invalidated. Otherwise it saves the previous visual rect of the client.
   // See DisplayItemClient::VisualRect() about its coordinate space.
   const LayoutRect& VisualRect() const { return visual_rect_; }
+  LayoutUnit OutsetForRasterEffects() const {
+    return outset_for_raster_effects_;
+  }
 
   // Visual rect can change without needing invalidation of the client, e.g.
   // when ancestor clip changes. This is called from PaintController::
@@ -376,6 +380,7 @@ class PLATFORM_EXPORT DisplayItem {
 
   const DisplayItemClient* client_;
   LayoutRect visual_rect_;
+  LayoutUnit outset_for_raster_effects_;
 
   static_assert(kTypeLast < (1 << 16),
                 "DisplayItem::Type should fit in 16 bits");

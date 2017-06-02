@@ -135,7 +135,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     result.MoveBy(-context.paint_invalidation_container->PaintOffset());
   }
 
-  object.AdjustVisualRectForRasterEffects(result);
+  if (!result.IsEmpty())
+    result.Inflate(object.VisualRectOutsetForRasterEffects());
 
   PaintLayer::MapRectInPaintInvalidationContainerToBacking(
       *context.paint_invalidation_container, result);

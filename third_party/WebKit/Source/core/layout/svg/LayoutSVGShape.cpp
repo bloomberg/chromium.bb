@@ -45,19 +45,6 @@
 
 namespace blink {
 
-bool LayoutSVGShape::AdjustVisualRectForRasterEffects(
-    LayoutRect& visual_rect) const {
-  // Account for raster expansions due to SVG stroke hairline raster effects.
-  if (!visual_rect.IsEmpty() && StyleRef().SvgStyle().HasVisibleStroke()) {
-    LayoutUnit pad(0.5f);
-    if (StyleRef().SvgStyle().CapStyle() != kButtCap)
-      pad += 0.5f;
-    visual_rect.Inflate(pad);
-    return true;
-  }
-  return false;
-}
-
 LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
     : LayoutSVGModelObject(node),
       // Default is false, the cached rects are empty from the beginning.
@@ -338,6 +325,17 @@ LayoutSVGShapeRareData& LayoutSVGShape::EnsureRareData() const {
   if (!rare_data_)
     rare_data_ = WTF::MakeUnique<LayoutSVGShapeRareData>();
   return *rare_data_.get();
+}
+
+LayoutUnit LayoutSVGShape::VisualRectOutsetForRasterEffects() const {
+  // Account for raster expansions due to SVG stroke hairline raster effects.
+  if (StyleRef().SvgStyle().HasVisibleStroke()) {
+    LayoutUnit outset(0.5f);
+    if (StyleRef().SvgStyle().CapStyle() != kButtCap)
+      outset += 0.5f;
+    return outset;
+  }
+  return LayoutUnit();
 }
 
 }  // namespace blink

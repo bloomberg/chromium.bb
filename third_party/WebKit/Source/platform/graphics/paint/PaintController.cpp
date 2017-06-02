@@ -271,6 +271,10 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
             new_paint_chunks_.PaintChunkAt(last_chunk_index));
       }
     }
+
+    new_paint_chunks_.LastChunk().outset_for_raster_effects =
+        std::max(new_paint_chunks_.LastChunk().outset_for_raster_effects,
+                 display_item.OutsetForRasterEffects().ToFloat());
   }
 
 #if DCHECK_IS_ON()

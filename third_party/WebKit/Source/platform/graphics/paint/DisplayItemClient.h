@@ -51,10 +51,18 @@ class PLATFORM_EXPORT DisplayItemClient {
 
   virtual String DebugName() const = 0;
 
-  // The visual rect of this DisplayItemClient, in the object space of the
-  // object that owns the GraphicsLayer, i.e. offset by
+  // The visual rect of this DisplayItemClient. For SPv1, it's in the object
+  // space of the object that owns the GraphicsLayer, i.e. offset by
   // GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation().
+  // For SPv2, it's in the space of the parent transform node.
   virtual LayoutRect VisualRect() const = 0;
+
+  // The outset will be used to inflate visual rect after the visual rect is
+  // mapped into the space of the composited layer, for any special raster
+  // effects that might expand the rastered pixel area.
+  virtual LayoutUnit VisualRectOutsetForRasterEffects() const {
+    return LayoutUnit();
+  }
 
   // This is declared here instead of in LayoutObject for verifying the
   // condition in DrawingRecorder.
