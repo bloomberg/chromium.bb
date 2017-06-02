@@ -810,14 +810,15 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             private static final int OPTION_ROW_TYPE_WARNING = 3;
 
             private final int mRowType;
-            private final PaymentOption mOption;
+            @Nullable private final PaymentOption mOption;
             private final View mButton;
             private final TextView mLabel;
             private final View mOptionIcon;
             private final View mEditIcon;
 
-            public OptionRow(GridLayout parent, int rowIndex, int rowType, PaymentOption item,
-                    boolean isSelected) {
+            public OptionRow(GridLayout parent, int rowIndex, int rowType,
+                    @Nullable PaymentOption item, boolean isSelected) {
+                assert item != null || rowType != OPTION_ROW_TYPE_OPTION;
                 boolean optionIconExists = item != null && item.getDrawableIcon() != null;
                 boolean editIconExists = item != null && item.isEditable() && isSelected;
                 boolean isEnabled = item != null && item.isValid();
