@@ -33,6 +33,7 @@ class WebFrameWidget;
 class WebInputMethodController;
 class WebRange;
 class WebScriptExecutionCallback;
+class WebSharedWorkerRepositoryClient;
 class WebTextCheckClient;
 class WebURLLoader;
 enum class WebCachePolicy;
@@ -110,6 +111,8 @@ class WebLocalFrame : public WebFrame {
   virtual WebAutofillClient* AutofillClient() = 0;
   virtual void SetDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
   virtual WebDevToolsAgent* DevToolsAgent() = 0;
+  virtual void SetSharedWorkerRepositoryClient(
+      WebSharedWorkerRepositoryClient*) = 0;
 
   // Hierarchy ----------------------------------------------------------
 

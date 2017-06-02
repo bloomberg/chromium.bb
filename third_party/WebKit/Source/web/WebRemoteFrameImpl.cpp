@@ -92,11 +92,6 @@ WebVector<WebIconURL> WebRemoteFrameImpl::IconURLs(int icon_types_mask) const {
   return WebVector<WebIconURL>();
 }
 
-void WebRemoteFrameImpl::SetSharedWorkerRepositoryClient(
-    WebSharedWorkerRepositoryClient*) {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::SetCanHaveScrollbars(bool) {
   NOTREACHED();
 }
