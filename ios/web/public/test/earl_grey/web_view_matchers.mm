@@ -8,7 +8,6 @@
 #import <WebKit/WebKit.h>
 
 #import "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +18,10 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "net/base/mac/url_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using testing::kWaitForDownloadTimeout;
 using testing::WaitUntilConditionOrTimeout;
@@ -59,8 +62,8 @@ char kTestCssSelectorJavaScriptTemplate[] = "!!document.querySelector(\"%s\");";
 
 // Fetches the image from |image_url|.
 UIImage* LoadImage(const GURL& image_url) {
-  __block base::scoped_nsobject<UIImage> image;
-  __block base::scoped_nsobject<NSError> error;
+  __block UIImage* image;
+  __block NSError* error;
   TestURLSessionDelegate* session_delegate =
       [[TestURLSessionDelegate alloc] init];
   NSURLSessionConfiguration* session_config =
@@ -70,12 +73,8 @@ UIImage* LoadImage(const GURL& image_url) {
                                     delegate:session_delegate
                                delegateQueue:nil];
   id completion_handler = ^(NSData* data, NSURLResponse*, NSError* task_error) {
-    if (task_error) {
-      error.reset([task_error retain]);
-    } else {
-      image.reset([[UIImage alloc] initWithData:data]);
-    }
-    [session_delegate autorelease];
+    error = task_error;
+    image = [[UIImage alloc] initWithData:data];
   };
 
   NSURLSessionDataTask* task =
@@ -88,7 +87,7 @@ UIImage* LoadImage(const GURL& image_url) {
   });
   GREYAssert(image_loaded, @"Failed to download image");
 
-  return [[image retain] autorelease];
+  return image;
 }
 
 // Helper function for matching web views containing or not containing |text|,
@@ -115,11 +114,11 @@ id<GREYMatcher> WebViewWithText(std::string text,
     [description appendText:base::SysUTF8ToNSString(text)];
   };
 
-  return grey_allOf(WebViewInWebState(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      WebViewInWebState(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 // Matcher for WKWebView containing loaded or blocked image with |image_id|.
@@ -191,11 +190,11 @@ id<GREYMatcher> WebViewContainingImage(std::string image_id,
     [description appendText:base::SysUTF8ToNSString(image_id)];
   };
 
-  return grey_allOf(WebViewInWebState(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      WebViewInWebState(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 }  // namespace
@@ -212,9 +211,8 @@ id<GREYMatcher> WebViewInWebState(WebState* web_state) {
     [description appendText:@"web view in web state"];
   };
 
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 id<GREYMatcher> WebViewContainingText(std::string text, WebState* web_state) {
@@ -256,11 +254,11 @@ id<GREYMatcher> WebViewCssSelector(std::string selector, WebState* web_state) {
     [description appendText:base::SysUTF8ToNSString(selector)];
   };
 
-  return grey_allOf(WebViewInWebState(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      WebViewInWebState(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 id<GREYMatcher> WebViewScrollView(WebState* web_state) {
@@ -274,9 +272,8 @@ id<GREYMatcher> WebViewScrollView(WebState* web_state) {
     [description appendText:@"web view scroll view"];
   };
 
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 id<GREYMatcher> Interstitial(WebState* web_state) {
@@ -291,11 +288,11 @@ id<GREYMatcher> Interstitial(WebState* web_state) {
     [description appendText:@"interstitial displayed"];
   };
 
-  return grey_allOf(WebViewInWebState(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      WebViewInWebState(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 id<GREYMatcher> InterstitialContainingText(NSString* text,
@@ -313,11 +310,11 @@ id<GREYMatcher> InterstitialContainingText(NSString* text,
     [description appendText:text];
   };
 
-  return grey_allOf(Interstitial(web_state),
-                    [[[GREYElementMatcherBlock alloc]
-                        initWithMatchesBlock:matches
-                            descriptionBlock:describe] autorelease],
-                    nil);
+  return grey_allOf(
+      Interstitial(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 }  // namespace web

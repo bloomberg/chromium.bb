@@ -15,6 +15,10 @@
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using web::test::ExecuteJavaScript;
 
 namespace {
@@ -90,12 +94,12 @@ bool AddVerifierToElementWithId(web::WebState* web_state,
 
   // The callback doesn't care about any of the parameters, just whether it is
   // called or not.
-  auto callback = base::BindBlock(^bool(const base::DictionaryValue& /* json */,
-                                        const GURL& /* origin_url */,
-                                        bool /* user_is_interacting */) {
-    *verified = true;
-    return true;
-  });
+  auto callback = base::BindBlockArc(
+      ^bool(const base::DictionaryValue& /* json */,
+            const GURL& /* origin_url */, bool /* user_is_interacting */) {
+        *verified = true;
+        return true;
+      });
 
   static_cast<web::WebStateImpl*>(web_state)->AddScriptCommandCallback(
       callback, kCallbackPrefix);

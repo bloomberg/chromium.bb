@@ -23,7 +23,7 @@ void WaitUntilWindowIdInjected(WebState* web_state);
 // fails with a GREYAssert.
 id ExecuteJavaScript(WebState* web_state,
                      NSString* javascript,
-                     NSError** out_error);
+                     NSError* __autoreleasing* out_error);
 
 // Synchronously returns the result of executed JavaScript on interstitial page
 // displayed for |web_state|.

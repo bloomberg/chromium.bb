@@ -358,6 +358,7 @@ source_set("reload_type") {
 }
 
 source_set("earl_grey_test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   deps = [
