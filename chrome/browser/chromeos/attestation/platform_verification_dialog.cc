@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -27,7 +28,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -75,8 +75,11 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       domain_(domain),
       callback_(callback) {
   SetLayoutManager(new views::FillLayout());
-  SetBorder(views::CreateEmptyBorder(0, views::kButtonHEdgeMarginNew, 0,
-                                     views::kButtonHEdgeMarginNew));
+
+  gfx::Insets dialog_insets = ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS);
+  SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
+                                     dialog_insets.right()));
   const base::string16 learn_more = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   std::vector<size_t> offsets;
   base::string16 headline = l10n_util::GetStringFUTF16(
