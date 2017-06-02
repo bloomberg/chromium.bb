@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/build_time.h"
 #include "base/command_line.h"
@@ -336,9 +337,7 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
       GetChannelForVariations(client_->GetChannel());
   UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
 
-  const std::string latest_country =
-      local_state_->GetString(prefs::kVariationsCountry);
-
+  const std::string latest_country = GetLatestCountry();
   std::unique_ptr<const base::FieldTrial::EntropyProvider> low_entropy_provider(
       CreateLowEntropyProvider());
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
@@ -780,8 +779,7 @@ void VariationsService::PerformSimulationWithVersion(
   variations::VariationsSeedSimulator seed_simulator(*default_provider,
                                                      *low_provider);
 
-  const std::string latest_country =
-      local_state_->GetString(prefs::kVariationsCountry);
+  const std::string latest_country = GetLatestCountry();
   const variations::VariationsSeedSimulator::Result result =
       seed_simulator.SimulateSeedStudies(
           *seed, client_->GetApplicationLocale(),
@@ -822,6 +820,12 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
     const std::string& latest_country) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(version.IsValid());
+
+  const std::string override_country =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kVariationsOverrideCountry);
+  if (!override_country.empty())
+    return override_country;
 
   const base::ListValue* list_value =
       local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
@@ -930,7 +934,12 @@ bool VariationsService::OverrideStoredPermanentCountry(
 }
 
 std::string VariationsService::GetLatestCountry() const {
-  return local_state_->GetString(prefs::kVariationsCountry);
+  const std::string override_country =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kVariationsOverrideCountry);
+  return !override_country.empty()
+             ? override_country
+             : local_state_->GetString(prefs::kVariationsCountry);
 }
 
 }  // namespace variations

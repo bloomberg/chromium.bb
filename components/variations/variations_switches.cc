@@ -26,6 +26,13 @@ const char kFakeVariationsChannel[] = "fake-variations-channel";
 // escaped for all non-alphanumeric characters.
 const char kForceFieldTrialParams[] = "force-fieldtrial-params";
 
+// Allows overriding the country used for evaluating variations. This is similar
+// to the "Override Variations Country" entry on chrome://translate-internals,
+// but is exposed as a command-line flag to allow testing First Run scenarios.
+// Additionally, unlike chrome://translate-internals, the value isn't persisted
+// across sessions.
+const char kVariationsOverrideCountry[] = "variations-override-country";
+
 // Specifies a custom URL for the server which reports variation data to the
 // client. Specifying this switch enables the Variations service on
 // unofficial builds. See variations_service.cc.
