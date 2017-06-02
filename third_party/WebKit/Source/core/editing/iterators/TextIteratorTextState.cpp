@@ -36,6 +36,11 @@ TextIteratorTextState::TextIteratorTextState(
     const TextIteratorBehavior& behavior)
     : behavior_(behavior) {}
 
+DEFINE_TRACE(TextIteratorTextState) {
+  visitor->Trace(position_node_);
+  visitor->Trace(position_offset_base_node_);
+}
+
 UChar TextIteratorTextState::CharacterAt(unsigned index) const {
   SECURITY_DCHECK(index < static_cast<unsigned>(length()));
   if (!(index < static_cast<unsigned>(length())))

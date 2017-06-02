@@ -37,6 +37,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/iterators/TextIteratorTextNodeHandler.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
@@ -186,8 +187,9 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       shadow_depth_(
           ShadowDepthOf<Strategy>(*start_container_, *end_container_)),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
-      text_state_(behavior_),
-      text_node_handler_(behavior_, &text_state_) {
+      text_state_(new TextIteratorTextState(behavior_)),
+      text_node_handler_(
+          new TextIteratorTextNodeHandler(behavior_, text_state_)) {
   DCHECK(start_container_);
   DCHECK(end_container_);
 
@@ -253,12 +255,12 @@ bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
 
   if (needs_handle_replaced_element_) {
     HandleReplacedElement();
-    if (text_state_.PositionNode())
+    if (text_state_->PositionNode())
       return true;
   }
 
   // Try to emit more text runs if we are handling a text node.
-  return text_node_handler_.HandleRemainingTextRuns();
+  return text_node_handler_->HandleRemainingTextRuns();
 }
 
 template <typename Strategy>
@@ -269,7 +271,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
   if (node_)
     DCHECK(!node_->GetDocument().NeedsLayoutTreeUpdate()) << node_;
 
-  text_state_.ResetRunInformation();
+  text_state_->ResetRunInformation();
 
   if (HandleRememberedProgress())
     return;
@@ -355,7 +357,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           HandleNonTextNode();
         }
         iteration_progress_ = kHandledNode;
-        if (text_state_.PositionNode())
+        if (text_state_->PositionNode())
           return;
       }
     }
@@ -388,7 +390,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           parent_node = Strategy::Parent(*node_);
           if (have_layout_object)
             ExitNode();
-          if (text_state_.PositionNode()) {
+          if (text_state_->PositionNode()) {
             iteration_progress_ = kHandledChildren;
             return;
           }
@@ -449,7 +451,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     iteration_progress_ = kHandledNone;
 
     // how would this ever be?
-    if (text_state_.PositionNode())
+    if (text_state_->PositionNode())
       return;
   }
 }
@@ -473,16 +475,16 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
   // an offset range with unbounded endpoint(s) in an easy but still clear way.
   if (node_ != start_container_) {
     if (node_ != end_container_)
-      text_node_handler_.HandleTextNodeWhole(text);
+      text_node_handler_->HandleTextNodeWhole(text);
     else
-      text_node_handler_.HandleTextNodeEndAt(text, end_offset_);
+      text_node_handler_->HandleTextNodeEndAt(text, end_offset_);
     return;
   }
   if (node_ != end_container_) {
-    text_node_handler_.HandleTextNodeStartFrom(text, start_offset_);
+    text_node_handler_->HandleTextNodeStartFrom(text, start_offset_);
     return;
   }
-  text_node_handler_.HandleTextNodeInRange(text, start_offset_, end_offset_);
+  text_node_handler_->HandleTextNodeInRange(text, start_offset_, end_offset_);
 }
 
 template <typename Strategy>
@@ -519,9 +521,9 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return;
   }
 
-  DCHECK_EQ(last_text_node_, text_node_handler_.GetNode());
+  DCHECK_EQ(last_text_node_, text_node_handler_->GetNode());
   if (last_text_node_) {
-    if (text_node_handler_.FixLeadingWhiteSpaceForReplacedElement(
+    if (text_node_handler_->FixLeadingWhiteSpaceForReplacedElement(
             Strategy::Parent(*last_text_node_))) {
       needs_handle_replaced_element_ = true;
       return;
@@ -541,11 +543,11 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return;
   }
 
-  text_state_.UpdateForReplacedElement(node_);
+  text_state_->UpdateForReplacedElement(node_);
 
   if (EmitsImageAltText() && TextIterator::SupportsAltText(node_)) {
-    text_state_.EmitAltText(node_);
-    if (text_state_.length())
+    text_state_->EmitAltText(node_);
+    if (text_state_->length())
       return;
   }
 }
@@ -673,11 +675,11 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
 
   // Leave element positioned flush with start of a paragraph
   // (e.g. do not insert tab before a table cell at the start of a paragraph)
-  if (text_state_.LastCharacter() == '\n')
+  if (text_state_->LastCharacter() == '\n')
     return false;
 
   // Otherwise, show the position if we have emitted any characters
-  if (text_state_.HasEmitted())
+  if (text_state_->HasEmitted())
     return true;
 
   // We've not emitted anything yet. Generally, there is no need for any
@@ -782,7 +784,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   // FIXME: !m_hasEmitted does not necessarily mean there was a collapsed
   // block... it could have been an hr (e.g.). Also, a collapsed block could
   // have height (e.g. a table) and therefore look like a blank line.
-  if (!text_state_.HasEmitted())
+  if (!text_state_->HasEmitted())
     return;
 
   // Emit with a position *inside* m_node, after m_node's contents, in
@@ -801,7 +803,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
 
     // FIXME: We need to emit a '\n' as we leave an empty block(s) that
     // contain a VisiblePosition when doing selection preservation.
-    if (text_state_.LastCharacter() != '\n') {
+    if (text_state_->LastCharacter() != '\n') {
       // insert a newline with a position following this block's contents.
       SpliceBuffer(kNewlineCharacter, Strategy::Parent(*base_node), base_node,
                    1, 1);
@@ -816,7 +818,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   }
 
   // If nothing was emitted, see if we need to emit a space.
-  if (!text_state_.PositionNode() && ShouldEmitSpaceBeforeAndAfterNode(node_))
+  if (!text_state_->PositionNode() && ShouldEmitSpaceBeforeAndAfterNode(node_))
     SpliceBuffer(kSpaceCharacter, Strategy::Parent(*base_node), base_node, 1,
                  1);
 }
@@ -827,16 +829,16 @@ void TextIteratorAlgorithm<Strategy>::SpliceBuffer(UChar c,
                                                    Node* offset_base_node,
                                                    int text_start_offset,
                                                    int text_end_offset) {
-  text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
-                           text_end_offset);
-  text_node_handler_.ResetCollapsedWhiteSpaceFixup();
+  text_state_->SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
+                            text_end_offset);
+  text_node_handler_->ResetCollapsedWhiteSpaceFixup();
 }
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::Range()
     const {
   // use the current run information, if we have it
-  if (text_state_.PositionNode()) {
+  if (text_state_->PositionNode()) {
     return EphemeralRangeTemplate<Strategy>(StartPositionInCurrentContainer(),
                                             EndPositionInCurrentContainer());
   }
@@ -851,8 +853,8 @@ EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::Range()
 
 template <typename Strategy>
 Document* TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
-  if (text_state_.PositionNode())
-    return &text_state_.PositionNode()->GetDocument();
+  if (text_state_->PositionNode())
+    return &text_state_->PositionNode()->GetDocument();
   if (end_container_)
     return &end_container_->GetDocument();
   return 0;
@@ -860,7 +862,7 @@ Document* TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
 
 template <typename Strategy>
 Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
-  if (text_state_.PositionNode() || end_container_) {
+  if (text_state_->PositionNode() || end_container_) {
     Node* node = CurrentContainer();
     if (node->IsCharacterDataNode())
       return node;
@@ -871,9 +873,9 @@ Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
 
 template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
-  if (text_state_.PositionNode()) {
-    text_state_.FlushPositionOffsets();
-    return text_state_.PositionStartOffset() + text_state_.TextStartOffset();
+  if (text_state_->PositionNode()) {
+    text_state_->FlushPositionOffsets();
+    return text_state_->PositionStartOffset() + text_state_->TextStartOffset();
   }
   DCHECK(end_container_);
   return end_offset_;
@@ -881,9 +883,9 @@ int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
 
 template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
-  if (text_state_.PositionNode()) {
-    text_state_.FlushPositionOffsets();
-    return text_state_.PositionEndOffset() + text_state_.TextStartOffset();
+  if (text_state_->PositionNode()) {
+    text_state_->FlushPositionOffsets();
+    return text_state_->PositionEndOffset() + text_state_->TextStartOffset();
   }
   DCHECK(end_container_);
   return end_offset_;
@@ -891,8 +893,8 @@ int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
 
 template <typename Strategy>
 Node* TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
-  if (text_state_.PositionNode()) {
-    return text_state_.PositionNode();
+  if (text_state_->PositionNode()) {
+    return text_state_->PositionNode();
   }
   DCHECK(end_container_);
   return end_container_;
@@ -966,7 +968,7 @@ void TextIteratorAlgorithm<Strategy>::CopyCodeUnitsTo(
     ForwardsTextBuffer* output,
     int position,
     int copy_length) const {
-  text_state_.AppendTextTo(output, position, copy_length);
+  text_state_->AppendTextTo(output, position, copy_length);
 }
 
 // --------
