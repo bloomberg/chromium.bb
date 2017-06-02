@@ -677,7 +677,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // column-rule-width (aka -webkit-column-rule-width)
   static unsigned short InitialColumnRuleWidth() { return 3; }
   unsigned short ColumnRuleWidth() const {
-    return rare_non_inherited_data_->multi_col_->RuleWidth();
+    const BorderValue& rule = rare_non_inherited_data_->multi_col_->rule_;
+    if (rule.Style() == EBorderStyle::kNone ||
+        rule.Style() == EBorderStyle::kHidden)
+      return 0;
+    return rule.Width();
   }
   void SetColumnRuleWidth(unsigned short w) {
     SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_, rule_, w);
