@@ -282,8 +282,7 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
 }
 
 PingLoaderImpl::~PingLoaderImpl() {
-  // TODO(kinuko): Turn this to DCHECK once crbug.com/662769 is resolved.
-  CHECK(!loader_);
+  DCHECK(!loader_);
 }
 
 void PingLoaderImpl::Dispose() {
