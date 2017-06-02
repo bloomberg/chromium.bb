@@ -566,6 +566,12 @@ static void get_entropy_contexts_plane(
   const ENTROPY_CONTEXT *const above = pd->above_context;
   const ENTROPY_CONTEXT *const left = pd->left_context;
 
+#if CONFIG_LV_MAP
+  memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
+  memcpy(t_left, left, sizeof(ENTROPY_CONTEXT) * num_4x4_h);
+  return;
+#endif  // CONFIG_LV_MAP
+
   int i;
 
 #if CONFIG_CHROMA_2X2
