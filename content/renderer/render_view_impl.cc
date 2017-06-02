@@ -528,29 +528,10 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
   ui::LatencyInfo latency_info_;
 };
 
-const char kWindowFeatureBackground[] = "background";
-const char kWindowFeaturePersistent[] = "persistent";
-
 content::mojom::WindowContainerType WindowFeaturesToContainerType(
     const blink::WebWindowFeatures& window_features) {
-  bool background = false;
-  bool persistent = false;
-
-  for (size_t i = 0; i < window_features.additional_features.size(); ++i) {
-    blink::WebString feature = window_features.additional_features[i];
-    if (feature.ContainsOnlyASCII()) {
-      std::string featureASCII = feature.Ascii();
-      if (base::LowerCaseEqualsASCII(featureASCII, kWindowFeatureBackground)) {
-        background = true;
-      } else if (base::LowerCaseEqualsASCII(featureASCII,
-                                            kWindowFeaturePersistent)) {
-        persistent = true;
-      }
-    }
-  }
-
-  if (background) {
-    if (persistent)
+  if (window_features.background) {
+    if (window_features.persistent)
       return content::mojom::WindowContainerType::PERSISTENT;
     else
       return content::mojom::WindowContainerType::BACKGROUND;

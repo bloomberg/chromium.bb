@@ -91,7 +91,7 @@ struct ViewportDescription;
 struct WebCursorInfo;
 struct WebPoint;
 struct WebScreenInfo;
-struct WindowFeatures;
+struct WebWindowFeatures;
 
 class CORE_EXPORT ChromeClient : public PlatformChromeClient {
  public:
@@ -131,11 +131,9 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   // request could be fulfilled. The ChromeClient should not load the request.
   virtual Page* CreateWindow(LocalFrame*,
                              const FrameLoadRequest&,
-                             const WindowFeatures&,
+                             const WebWindowFeatures&,
                              NavigationPolicy) = 0;
-  virtual void Show(NavigationPolicy = kNavigationPolicyIgnore) = 0;
-
-  void SetWindowFeatures(const WindowFeatures&);
+  virtual void Show(NavigationPolicy) = 0;
 
   // All the parameters should be in viewport space. That is, if an event
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
@@ -145,20 +143,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
                              const FloatSize& velocity_in_viewport) = 0;
-
-  virtual void SetToolbarsVisible(bool) = 0;
-  virtual bool ToolbarsVisible() = 0;
-
-  virtual void SetStatusbarVisible(bool) = 0;
-  virtual bool StatusbarVisible() = 0;
-
-  virtual void SetScrollbarsVisible(bool) = 0;
-  virtual bool ScrollbarsVisible() = 0;
-
-  virtual void SetMenubarVisible(bool) = 0;
-  virtual bool MenubarVisible() = 0;
-
-  virtual void SetResizable(bool) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
@@ -280,6 +264,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
       WebEventListenerClass) const = 0;
   virtual void UpdateEventRectsForSubframeIfNecessary(LocalFrame*) = 0;
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
+  virtual const WebInputEvent* GetCurrentInputEvent() const { return nullptr; }
 
   virtual void SetTouchAction(LocalFrame*, TouchAction) = 0;
 

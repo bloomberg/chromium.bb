@@ -376,9 +376,6 @@ class WEB_EXPORT WebViewImpl final
   static const WebInputEvent* CurrentInputEvent() {
     return current_input_event_;
   }
-  void SetCurrentInputEventForTest(const WebInputEvent* event) override {
-    current_input_event_ = event;
-  }
 
   GraphicsLayer* RootGraphicsLayer() override;
   void RegisterViewportLayersWithCompositor() override;

@@ -59,7 +59,6 @@
 #include "core/loader/HistoryItem.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/page/Page.h"
-#include "core/page/WindowFeatures.h"
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationAbsoluteController.h"

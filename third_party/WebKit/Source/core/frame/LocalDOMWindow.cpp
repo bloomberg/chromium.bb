@@ -75,7 +75,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/Page.h"
-#include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -1638,11 +1637,10 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
     return target_frame->DomWindow();
   }
 
-  WindowFeatures features(window_features_string);
   DOMWindow* new_window =
-      CreateWindow(url_string, frame_name, features, *calling_window,
-                   *first_frame, *GetFrame(), exception_state);
-  return features.noopener ? nullptr : new_window;
+      CreateWindow(url_string, frame_name, window_features_string,
+                   *calling_window, *first_frame, *GetFrame(), exception_state);
+  return new_window;
 }
 
 DEFINE_TRACE(LocalDOMWindow) {

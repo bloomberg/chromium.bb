@@ -75,7 +75,6 @@
 #include "core/page/CreateWindow.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"

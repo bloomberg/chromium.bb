@@ -1379,6 +1379,7 @@ source_set("unit_tests") {
     "loader/resource/MultipartImageResourceParserTest.cpp",
     "origin_trials/OriginTrialContextTest.cpp",
     "page/ChromeClientTest.cpp",
+    "page/EffectiveNavigationPolicyTest.cpp",
     "page/FocusControllerTest.cpp",
     "page/PagePopupClientTest.cpp",
     "page/PrintContextTest.cpp",
