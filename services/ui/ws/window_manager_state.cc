@@ -192,6 +192,20 @@ void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
   event_dispatcher_.ReleaseCaptureBlockedByAnyModalWindow();
 }
 
+void WindowManagerState::SetCursorLocation(const gfx::Point& display_pixels,
+                                           int64_t display_id) {
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (!display) {
+    NOTIMPLEMENTED() << "Window manager sent invalid display_id!";
+    return;
+  }
+
+  event_dispatcher()->SetMousePointerDisplayLocation(display_pixels,
+                                                     display_id);
+  UpdateNativeCursorFromDispatcher();
+  display->platform_display()->MoveCursorTo(display_pixels);
+}
+
 void WindowManagerState::SetDragDropSourceWindow(
     DragSource* drag_source,
     ServerWindow* window,

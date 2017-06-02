@@ -139,6 +139,11 @@ void PlatformDisplayDefault::SetCursor(const ui::CursorData& cursor_data) {
   platform_window_->SetCursor(native_cursor.platform());
 }
 
+void PlatformDisplayDefault::MoveCursorTo(
+    const gfx::Point& window_pixel_location) {
+  platform_window_->MoveCursorTo(window_pixel_location);
+}
+
 void PlatformDisplayDefault::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();

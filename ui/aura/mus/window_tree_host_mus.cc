@@ -200,10 +200,12 @@ gfx::ICCProfile WindowTreeHostMus::GetICCProfileForCurrentDisplay() {
 
 void WindowTreeHostMus::MoveCursorToScreenLocationInPixels(
     const gfx::Point& location_in_pixels) {
-  // TODO: this needs to message the server http://crbug.com/693340. Setting
-  // the location is really only appropriate in tests, outside of tests this
-  // value is ignored.
-  NOTIMPLEMENTED();
+  gfx::Point screen_location_in_pixels = location_in_pixels;
+  gfx::Point location = GetLocationOnScreenInPixels();
+  screen_location_in_pixels.Offset(-location.x(), -location.y());
+  delegate_->OnWindowTreeHostMoveCursorToDisplayLocation(
+      screen_location_in_pixels, display_id_);
+
   Env::GetInstance()->set_last_mouse_location(location_in_pixels);
 }
 

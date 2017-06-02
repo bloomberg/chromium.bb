@@ -68,6 +68,9 @@ class WindowManagerState : public EventDispatcherDelegate,
   void ReleaseCaptureBlockedByModalWindow(const ServerWindow* modal_window);
   void ReleaseCaptureBlockedByAnyModalWindow();
 
+  // Sets the location of the cursor to a location on display |display_id|.
+  void SetCursorLocation(const gfx::Point& display_pixels, int64_t display_id);
+
   void SetDragDropSourceWindow(
       DragSource* drag_source,
       ServerWindow* window,

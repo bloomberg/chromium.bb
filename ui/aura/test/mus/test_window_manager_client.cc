@@ -72,6 +72,10 @@ void TestWindowManagerClient::WmSetCursorVisible(bool visible) {}
 void TestWindowManagerClient::WmSetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {}
 
+void TestWindowManagerClient::WmMoveCursorToDisplayLocation(
+    const gfx::Point& display_pixels,
+    int64_t display_id) {}
+
 void TestWindowManagerClient::OnWmCreatedTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id) {}

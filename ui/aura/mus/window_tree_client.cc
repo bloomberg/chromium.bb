@@ -2000,6 +2000,16 @@ void WindowTreeClient::OnWindowTreeHostCancelWindowMove(
       WindowMus::Get(window_tree_host->window())->server_id());
 }
 
+void WindowTreeClient::OnWindowTreeHostMoveCursorToDisplayLocation(
+    const gfx::Point& location_in_pixels,
+    int64_t display_id) {
+  DCHECK(window_manager_client_);
+  if (window_manager_client_) {
+    window_manager_client_->WmMoveCursorToDisplayLocation(location_in_pixels,
+                                                          display_id);
+  }
+}
+
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
     const std::map<std::string, std::vector<uint8_t>>* properties) {
   std::unique_ptr<WindowPortMus> window_port =

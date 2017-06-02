@@ -323,6 +323,10 @@ interface WindowManagerClient {
   // clear.
   WmSetGlobalOverrideCursor(CursorData? cursor);
 
+  // Moves the cursor to the given location on the given display.
+  WmMoveCursorToDisplayLocation(gfx.mojom.Point display_pixels,
+                                int64 display_id);
+
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.
   OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);

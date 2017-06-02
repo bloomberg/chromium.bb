@@ -515,6 +515,9 @@ class AURA_EXPORT WindowTreeClient
       const base::Callback<void(bool)>& callback) override;
   void OnWindowTreeHostCancelWindowMove(
       WindowTreeHostMus* window_tree_host) override;
+  void OnWindowTreeHostMoveCursorToDisplayLocation(
+      const gfx::Point& location_in_pixels,
+      int64_t display_id) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;

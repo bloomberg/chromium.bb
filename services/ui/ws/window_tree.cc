@@ -2367,6 +2367,12 @@ void WindowTree::WmSetGlobalOverrideCursor(
   window_manager_state_->cursor_state().SetGlobalOverrideCursor(cursor);
 }
 
+void WindowTree::WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,
+                                               int64_t display_id) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->SetCursorLocation(display_pixels, display_id);
+}
+
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
                                            Id transport_window_id) {
   ServerWindow* window =
