@@ -9,30 +9,28 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.skia.mojom.Bitmap;
+import org.chromium.skia.mojom.ColorType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-
-import java.nio.ByteBuffer;
 
 /**
  * Test suite for conversion-to-Frame utils.
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class SharedBufferUtilsTest {
+public class BitmapUtilsTest {
     private static final int VALID_WIDTH = 1;
     private static final int VALID_HEIGHT = 1;
     private static final int INVALID_WIDTH = 0;
     private static final long NUM_BYTES = VALID_WIDTH * VALID_HEIGHT * 4;
+    private static final byte[] EMPTY_DATA = new byte[0];
 
-    public SharedBufferUtilsTest() {}
+    public BitmapUtilsTest() {}
 
     @Before
     public void setUp() {
@@ -41,15 +39,15 @@ public class SharedBufferUtilsTest {
     }
 
     /**
-     * Verify conversion fails if the SharedBufferHandle is invalid.
+     * Verify conversion fails if the Bitmap is invalid.
      */
     @Test
     @Feature({"ShapeDetection"})
-    public void testConversionFailsWithInvalidHandle() {
-        SharedBufferHandle handle = Mockito.mock(SharedBufferHandle.class);
-        Mockito.when(handle.isValid()).thenReturn(false);
+    public void testConversionFailsWithInvalidBitmap() {
+        Bitmap bitmap = new Bitmap();
+        bitmap.pixelData = null;
 
-        assertNull(SharedBufferUtils.convertToFrame(handle, VALID_WIDTH, VALID_HEIGHT));
+        assertNull(BitmapUtils.convertToFrame(bitmap));
     }
 
     /**
@@ -58,23 +56,26 @@ public class SharedBufferUtilsTest {
     @Test
     @Feature({"ShapeDetection"})
     public void testConversionFailsWithInvalidDimensions() {
-        SharedBufferHandle handle = Mockito.mock(SharedBufferHandle.class);
-        Mockito.when(handle.isValid()).thenReturn(true);
+        Bitmap bitmap = new Bitmap();
+        bitmap.pixelData = EMPTY_DATA;
+        bitmap.width = INVALID_WIDTH;
+        bitmap.height = VALID_HEIGHT;
 
-        assertNull(SharedBufferUtils.convertToFrame(handle, INVALID_WIDTH, VALID_HEIGHT));
+        assertNull(BitmapUtils.convertToFrame(bitmap));
     }
 
     /**
-     * Verify conversion fails if SharedBufferHandle fails to map().
+     * Verify conversion fails if Bitmap fails to wrap().
      */
     @Test
     @Feature({"ShapeDetection"})
-    public void testConversionFailsWithWronglyMappedBuffer() {
-        SharedBufferHandle handle = Mockito.mock(SharedBufferHandle.class);
-        Mockito.when(handle.isValid()).thenReturn(true);
-        Mockito.when(handle.map(Mockito.eq(0L), Mockito.eq(NUM_BYTES), Mockito.any(MapFlags.class)))
-                .thenReturn(ByteBuffer.allocate(0));
+    public void testConversionFailsWithWronglyWrappedData() {
+        Bitmap bitmap = new Bitmap();
+        bitmap.pixelData = EMPTY_DATA;
+        bitmap.width = VALID_WIDTH;
+        bitmap.height = VALID_HEIGHT;
+        bitmap.colorType = ColorType.RGBA_8888;
 
-        assertNull(SharedBufferUtils.convertToFrame(handle, VALID_WIDTH, VALID_HEIGHT));
+        assertNull(BitmapUtils.convertToFrame(bitmap));
     }
 }

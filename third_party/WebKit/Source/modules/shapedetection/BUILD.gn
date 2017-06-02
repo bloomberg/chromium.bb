@@ -24,5 +24,6 @@ blink_modules_sources("shapedetection") {
 
   public_deps = [
     "//services/shape_detection/public/interfaces:interfaces_blink",
+    "//skia/public/interfaces:interfaces_blink",
   ]
 }

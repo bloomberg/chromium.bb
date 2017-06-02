@@ -29,9 +29,7 @@ class MODULES_EXPORT TextDetector final : public ShapeDetector,
   ~TextDetector() override = default;
 
   ScriptPromise DoDetect(ScriptPromiseResolver*,
-                         mojo::ScopedSharedBufferHandle,
-                         int image_width,
-                         int image_height) override;
+                         skia::mojom::blink::BitmapPtr) override;
   void OnDetectText(
       ScriptPromiseResolver*,
       Vector<shape_detection::mojom::blink::TextDetectionResultPtr>);

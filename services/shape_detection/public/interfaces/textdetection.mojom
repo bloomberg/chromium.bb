@@ -4,6 +4,7 @@
 
 module shape_detection.mojom;
 
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct TextDetectionResult {
@@ -12,8 +13,7 @@ struct TextDetectionResult {
 };
 
 interface TextDetection {
-  // |frame_data| contains tightly packed image pixels in ARGB32 format,
-  // row-major order.
-  Detect(handle<shared_buffer> frame_data, uint32 width, uint32 height)
+  // |bitmap_data| contains tightly packed image pixels in row-major order.
+  Detect(skia.mojom.Bitmap bitmap_data)
     => (array<TextDetectionResult> results);
 };
