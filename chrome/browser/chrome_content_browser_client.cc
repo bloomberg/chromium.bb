@@ -2935,10 +2935,6 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
   return g_browser_process->rappor_service();
 }
 
-::ukm::UkmRecorder* ChromeContentBrowserClient::GetUkmRecorder() {
-  return g_browser_process->ukm_recorder();
-}
-
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,

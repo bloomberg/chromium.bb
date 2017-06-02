@@ -120,6 +120,15 @@ void LatencyTracker::ReportRapporScrollLatency(
   // Mus.
 }
 
+void LatencyTracker::ReportUkmScrollLatency(
+    const std::string& event_name,
+    const std::string& metric_name,
+    const LatencyInfo::LatencyComponent& start_component,
+    const LatencyInfo::LatencyComponent& end_component) {
+  // TODO(mfomitchev): crbug.com/717629: Make RAPPOR or UKM reporting work with
+  // Mus.
+}
+
 void LatencyTracker::ComputeEndToEndLatencyHistograms(
     const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const ui::LatencyInfo::LatencyComponent& gpu_swap_end_component,
@@ -170,6 +179,9 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
       ReportRapporScrollLatency(
           "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2",
           original_component, gpu_swap_begin_component);
+      ReportUkmScrollLatency("Event.ScrollUpdate.Touch",
+                             "TimeToScrollUpdateSwapBegin", original_component,
+                             gpu_swap_begin_component);
     }
   } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                                  &original_component)) {

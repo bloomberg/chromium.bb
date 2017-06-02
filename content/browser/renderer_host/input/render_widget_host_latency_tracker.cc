@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/rappor/public/rappor_utils.h"
+#include "components/ukm/public/ukm_entry_builder.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -76,7 +77,8 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
-    : last_event_id_(0),
+    : ukm_source_id_(-1),
+      last_event_id_(0),
       latency_component_id_(0),
       device_scale_factor_(1),
       has_seen_first_gesture_scroll_update_(false),
@@ -325,4 +327,33 @@ void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
   }
 }
 
+ukm::SourceId RenderWidgetHostLatencyTracker::GetUkmSourceId() {
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  if (ukm_recorder && ukm_source_id_ == -1) {
+    ukm_source_id_ = ukm_recorder->GetNewSourceID();
+    render_widget_host_delegate_->UpdateUrlForUkmSource(ukm_recorder,
+                                                        ukm_source_id_);
+  }
+  return ukm_source_id_;
+}
+
+void RenderWidgetHostLatencyTracker::ReportUkmScrollLatency(
+    const std::string& event_name,
+    const std::string& metric_name,
+    const LatencyInfo::LatencyComponent& start_component,
+    const LatencyInfo::LatencyComponent& end_component) {
+  CONFIRM_VALID_TIMING(start_component, end_component)
+
+  ukm::SourceId ukm_source_id = GetUkmSourceId();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+
+  if (ukm_source_id == -1 || !ukm_recorder)
+    return;
+
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder->GetEntryBuilder(ukm_source_id, event_name.c_str());
+  builder->AddMetric(metric_name.c_str(), (end_component.last_event_time -
+                                           start_component.first_event_time)
+                                              .InMicroseconds());
+}
 }  // namespace content

@@ -28,6 +28,12 @@ class LatencyTracker {
       const LatencyInfo::LatencyComponent& start_component,
       const LatencyInfo::LatencyComponent& end_component);
 
+  virtual void ReportUkmScrollLatency(
+      const std::string& event_name,
+      const std::string& metric_name,
+      const LatencyInfo::LatencyComponent& start_component,
+      const LatencyInfo::LatencyComponent& end_component);
+
  private:
   void ComputeEndToEndLatencyHistograms(
       const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
