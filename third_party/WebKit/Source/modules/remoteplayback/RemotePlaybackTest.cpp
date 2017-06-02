@@ -48,6 +48,19 @@ class MockEventListener : public EventListener {
 
 class RemotePlaybackTest : public ::testing::Test {
  protected:
+  void SetUp() override {
+    was_remote_playback_backend_enabled_ =
+        RuntimeEnabledFeatures::remotePlaybackBackendEnabled();
+    // Pretend the backend is enabled by default to test the API with backend
+    // implemented.
+    RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(true);
+  }
+
+  void TearDown() override {
+    RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(
+        was_remote_playback_backend_enabled_);
+  }
+
   void CancelPrompt(RemotePlayback* remote_playback) {
     remote_playback->PromptCancelled();
   }
@@ -55,6 +68,9 @@ class RemotePlaybackTest : public ::testing::Test {
   void SetState(RemotePlayback* remote_playback, WebRemotePlaybackState state) {
     remote_playback->StateChanged(state);
   }
+
+ private:
+  bool was_remote_playback_backend_enabled_;
 };
 
 TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
@@ -261,6 +277,78 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);
+
+  // Runs pending promises.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(resolve);
+  ::testing::Mock::VerifyAndClear(reject);
+  ::testing::Mock::VerifyAndClear(callback_function);
+}
+
+TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
+  RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(false);
+  V8TestingScope scope;
+
+  auto page_holder = DummyPageHolder::Create();
+
+  HTMLMediaElement* element =
+      HTMLVideoElement::Create(page_holder->GetDocument());
+  RemotePlayback* remote_playback =
+      HTMLMediaElementRemotePlayback::remote(*element);
+
+  auto resolve = MockFunction::Create(scope.GetScriptState());
+  auto reject = MockFunction::Create(scope.GetScriptState());
+
+  EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
+  EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
+
+  UserGestureIndicator indicator(UserGestureToken::Create(
+      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  remote_playback->prompt(scope.GetScriptState())
+      .Then(resolve->Bind(), reject->Bind());
+
+  // Runs pending promises.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  ::testing::Mock::VerifyAndClear(resolve);
+  ::testing::Mock::VerifyAndClear(reject);
+}
+
+TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
+  RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(false);
+  V8TestingScope scope;
+
+  auto page_holder = DummyPageHolder::Create();
+
+  HTMLMediaElement* element =
+      HTMLVideoElement::Create(page_holder->GetDocument());
+  RemotePlayback* remote_playback =
+      HTMLMediaElementRemotePlayback::remote(*element);
+
+  MockFunction* callback_function =
+      MockFunction::Create(scope.GetScriptState());
+  RemotePlaybackAvailabilityCallback* availability_callback =
+      RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
+                                                 callback_function->Bind());
+
+  // The initial call upon registering will not happen as it's posted on the
+  // message loop.
+  EXPECT_CALL(*callback_function, Call(::testing::_)).Times(0);
+
+  MockFunction* resolve = MockFunction::Create(scope.GetScriptState());
+  MockFunction* reject = MockFunction::Create(scope.GetScriptState());
+
+  EXPECT_CALL(*resolve, Call(::testing::_)).Times(1);
+  EXPECT_CALL(*reject, Call(::testing::_)).Times(0);
+
+  remote_playback
+      ->watchAvailability(scope.GetScriptState(), availability_callback)
+      .Then(resolve->Bind(), reject->Bind());
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());

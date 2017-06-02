@@ -475,5 +475,10 @@
     "prefix": "new-remote-playback-pipeline",
     "base": "media/controls",
     "args": ["--enable-features=NewRemotePlaybackPipeline"]
+  },
+  {
+    "prefix": "new-remote-playback-pipeline",
+    "base": "external/wpt/remote-playback",
+    "args": ["--enable-features=NewRemotePlaybackPipeline"]
   }
 ]
