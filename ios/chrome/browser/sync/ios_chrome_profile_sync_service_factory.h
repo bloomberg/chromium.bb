@@ -43,7 +43,7 @@ class IOSChromeProfileSyncServiceFactory
   IOSChromeProfileSyncServiceFactory();
   ~IOSChromeProfileSyncServiceFactory() override;
 
-  // BrowserContextKeyedServiceFactory:
+  // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 };
