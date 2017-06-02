@@ -207,13 +207,11 @@ typedef enum {
 
   THR_TM,
 
-#if CONFIG_ALT_INTRA
   THR_SMOOTH,
 #if CONFIG_SMOOTH_HV
   THR_SMOOTH_V,
   THR_SMOOTH_H,
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
 
 #if CONFIG_EXT_INTER
 

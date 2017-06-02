@@ -697,13 +697,11 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         THR_D153_PRED /*D153_PRED*/,
         THR_D207_PRED /*D207_PRED*/,
         THR_D63_PRED /*D63_PRED*/,
-#if CONFIG_ALT_INTRA
         THR_SMOOTH, /*SMOOTH_PRED*/
 #if CONFIG_SMOOTH_HV
         THR_SMOOTH_V, /*SMOOTH_V_PRED*/
         THR_SMOOTH_H, /*SMOOTH_H_PRED*/
 #endif                // CONFIG_SMOOTH_HV
-#endif                // CONFIG_ALT_INTRA
         THR_TM /*TM_PRED*/,
       };
       ++mode_chosen_counts[kf_mode_index[mbmi->mode]];

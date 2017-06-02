@@ -21,25 +21,20 @@ extern "C" {
 enum {
   INTRA_ALL = (1 << DC_PRED) | (1 << V_PRED) | (1 << H_PRED) | (1 << D45_PRED) |
               (1 << D135_PRED) | (1 << D117_PRED) | (1 << D153_PRED) |
-              (1 << D207_PRED) | (1 << D63_PRED) |
-#if CONFIG_ALT_INTRA
-              (1 << SMOOTH_PRED) |
+              (1 << D207_PRED) | (1 << D63_PRED) | (1 << SMOOTH_PRED) |
 #if CONFIG_SMOOTH_HV
               (1 << SMOOTH_V_PRED) | (1 << SMOOTH_H_PRED) |
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
               (1 << TM_PRED),
 #if CONFIG_CFL
   UV_INTRA_ALL = (1 << UV_DC_PRED) | (1 << UV_V_PRED) | (1 << UV_H_PRED) |
                  (1 << UV_D45_PRED) | (1 << UV_D135_PRED) |
                  (1 << UV_D117_PRED) | (1 << UV_D153_PRED) |
                  (1 << UV_D207_PRED) | (1 << UV_D63_PRED) |
-#if CONFIG_ALT_INTRA
                  (1 << UV_SMOOTH_PRED) |
 #if CONFIG_SMOOTH_HV
                  (1 << UV_SMOOTH_V_PRED) | (1 << UV_SMOOTH_H_PRED) |
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
                  (1 << UV_TM_PRED) | (1 << UV_CFL_PRED),
   UV_INTRA_DC = (1 << UV_DC_PRED),
   UV_INTRA_DC_CFL = (1 << UV_DC_PRED) | (1 << UV_CFL_PRED),

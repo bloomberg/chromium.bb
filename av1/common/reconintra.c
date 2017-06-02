@@ -59,13 +59,11 @@ static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // D153
   NEED_LEFT | NEED_BOTTOMLEFT,              // D207
   NEED_ABOVE | NEED_ABOVERIGHT,             // D63
-#if CONFIG_ALT_INTRA
-  NEED_LEFT | NEED_ABOVE,  // SMOOTH
+  NEED_LEFT | NEED_ABOVE,                   // SMOOTH
 #if CONFIG_SMOOTH_HV
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_V
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_H
 #endif                                      // CONFIG_SMOOTH_HV
-#endif                                      // CONFIG_ALT_INTRA
   NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // TM
 };
 
@@ -713,16 +711,12 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(pred[D135_PRED], d135);
   INIT_ALL_SIZES(pred[D153_PRED], d153);
 
-#if CONFIG_ALT_INTRA
   INIT_ALL_SIZES(pred[TM_PRED], paeth);
   INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
 #if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v);
   INIT_ALL_SIZES(pred[SMOOTH_H_PRED], smooth_h);
 #endif  // CONFIG_SMOOTH_HV
-#else
-  INIT_ALL_SIZES(pred[TM_PRED], tm);
-#endif  // CONFIG_ALT_INTRA
 
   INIT_ALL_SIZES(dc_pred[0][0], dc_128);
   INIT_ALL_SIZES(dc_pred[0][1], dc_top);
@@ -739,16 +733,12 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(pred_high[D135_PRED], highbd_d135);
   INIT_ALL_SIZES(pred_high[D153_PRED], highbd_d153);
 
-#if CONFIG_ALT_INTRA
   INIT_ALL_SIZES(pred_high[TM_PRED], highbd_paeth);
   INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
 #if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v);
   INIT_ALL_SIZES(pred_high[SMOOTH_H_PRED], highbd_smooth_h);
 #endif  // CONFIG_SMOOTH_HV
-#else
-  INIT_ALL_SIZES(pred_high[TM_PRED], highbd_tm);
-#endif  // CONFIG_ALT_INTRA
 
   INIT_ALL_SIZES(dc_pred_high[0][0], highbd_dc_128);
   INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);

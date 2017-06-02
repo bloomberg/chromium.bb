@@ -158,13 +158,11 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // D153_PRED
     MB_MODE_COUNT,  // D207_PRED
     MB_MODE_COUNT,  // D63_PRED
-#if CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // SMOOTH_PRED
 #if CONFIG_SMOOTH_HV
     MB_MODE_COUNT,  // SMOOTH_V_PRED
     MB_MODE_COUNT,  // SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-#endif              // CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // TM_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
@@ -206,13 +204,11 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // D153_PRED
     MB_MODE_COUNT,  // D207_PRED
     MB_MODE_COUNT,  // D63_PRED
-#if CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // SMOOTH_PRED
 #if CONFIG_SMOOTH_HV
     MB_MODE_COUNT,  // SMOOTH_V_PRED
     MB_MODE_COUNT,  // SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-#endif              // CONFIG_ALT_INTRA
     MB_MODE_COUNT,  // TM_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
@@ -518,22 +514,20 @@ static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
 #if CONFIG_CFL
 static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
   static const PREDICTION_MODE uv2y[UV_INTRA_MODES] = {
-    DC_PRED,    // UV_DC_PRED
-    V_PRED,     // UV_V_PRED
-    H_PRED,     // UV_H_PRED
-    D45_PRED,   // UV_D45_PRED
-    D135_PRED,  // UV_D135_PRED
-    D117_PRED,  // UV_D117_PRED
-    D153_PRED,  // UV_D153_PRED
-    D207_PRED,  // UV_D207_PRED
-    D63_PRED,   // UV_D63_PRED
-#if CONFIG_ALT_INTRA
+    DC_PRED,      // UV_DC_PRED
+    V_PRED,       // UV_V_PRED
+    H_PRED,       // UV_H_PRED
+    D45_PRED,     // UV_D45_PRED
+    D135_PRED,    // UV_D135_PRED
+    D117_PRED,    // UV_D117_PRED
+    D153_PRED,    // UV_D153_PRED
+    D207_PRED,    // UV_D207_PRED
+    D63_PRED,     // UV_D63_PRED
     SMOOTH_PRED,  // UV_SMOOTH_PRED
 #if CONFIG_SMOOTH_HV
     SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
     SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-#endif              // CONFIG_ALT_INTRA
     TM_PRED,        // UV_TM_PRED
     DC_PRED,        // CFL_PRED
   };
@@ -815,13 +809,11 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
   DCT_ADST,   // D153
   DCT_ADST,   // D207
   ADST_DCT,   // D63
-#if CONFIG_ALT_INTRA
   ADST_ADST,  // SMOOTH
 #if CONFIG_SMOOTH_HV
   ADST_DCT,   // SMOOTH_V
   DCT_ADST,   // SMOOTH_H
 #endif        // CONFIG_SMOOTH_HV
-#endif        // CONFIG_ALT_INTRA
   ADST_ADST,  // TM
 };
 
@@ -1204,13 +1196,10 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 #define ANGLE_STEP 3
 extern const int16_t dr_intra_derivative[90];
 static const uint8_t mode_to_angle_map[] = {
-  0, 90, 180, 45, 135, 111, 157, 203, 67, 0,
-#if CONFIG_ALT_INTRA
-  0,
+  0, 90, 180, 45, 135, 111, 157, 203, 67, 0, 0,
 #if CONFIG_SMOOTH_HV
   0, 0,
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
 };
 #if CONFIG_INTRA_INTERP
 // Returns whether filter selection is needed for a given

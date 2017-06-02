@@ -359,13 +359,11 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 
   { TM_PRED, { INTRA_FRAME, NONE_FRAME } },
 
-#if CONFIG_ALT_INTRA
   { SMOOTH_PRED, { INTRA_FRAME, NONE_FRAME } },
 #if CONFIG_SMOOTH_HV
   { SMOOTH_V_PRED, { INTRA_FRAME, NONE_FRAME } },
   { SMOOTH_H_PRED, { INTRA_FRAME, NONE_FRAME } },
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
 
 #if CONFIG_EXT_INTER
   { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
@@ -634,29 +632,22 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 };
 
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
-  DC_PRED,       H_PRED,        V_PRED,
-#if CONFIG_ALT_INTRA
-  SMOOTH_PRED,
-#endif  // CONFIG_ALT_INTRA
-  TM_PRED,
-#if CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
+  DC_PRED,       H_PRED,        V_PRED,    SMOOTH_PRED, TM_PRED,
+#if CONFIG_SMOOTH_HV
   SMOOTH_V_PRED, SMOOTH_H_PRED,
-#endif  // CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
-  D135_PRED,     D207_PRED,     D153_PRED, D63_PRED, D117_PRED, D45_PRED,
+#endif  // CONFIG_SMOOTH_HV
+  D135_PRED,     D207_PRED,     D153_PRED, D63_PRED,    D117_PRED, D45_PRED,
 };
 
 #if CONFIG_CFL
 static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
-  UV_DC_PRED,       UV_CFL_PRED,      UV_H_PRED,    UV_V_PRED,
-#if CONFIG_ALT_INTRA
-  UV_SMOOTH_PRED,
-#endif  // CONFIG_ALT_INTRA
-  UV_TM_PRED,
-#if CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
+  UV_DC_PRED,       UV_CFL_PRED,      UV_H_PRED,
+  UV_V_PRED,        UV_SMOOTH_PRED,   UV_TM_PRED,
+#if CONFIG_SMOOTH_HV
   UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
-#endif  // CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
-  UV_D135_PRED,     UV_D207_PRED,     UV_D153_PRED, UV_D63_PRED,
-  UV_D117_PRED,     UV_D45_PRED,
+#endif  // CONFIG_SMOOTH_HV
+  UV_D135_PRED,     UV_D207_PRED,     UV_D153_PRED,
+  UV_D63_PRED,      UV_D117_PRED,     UV_D45_PRED,
 };
 #else
 #define uv_rd_search_mode_order intra_rd_search_mode_order
@@ -4140,9 +4131,7 @@ static const uint8_t gradient_to_angle_bin[2][7][16] = {
 /* clang-format off */
 static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
   0, 2, 6, 0, 4, 3, 5, 7, 1, 0,
-#if CONFIG_ALT_INTRA
   0,
-#endif  // CONFIG_ALT_INTRA
 };
 /* clang-format on */
 

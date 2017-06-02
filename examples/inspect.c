@@ -194,13 +194,11 @@ const map_entry prediction_mode_map[] = { ENUM(DC_PRED),
                                           ENUM(D153_PRED),
                                           ENUM(D207_PRED),
                                           ENUM(D63_PRED),
-#if CONFIG_ALT_INTRA
                                           ENUM(SMOOTH_PRED),
 #if CONFIG_SMOOTH_HV
                                           ENUM(SMOOTH_V_PRED),
                                           ENUM(SMOOTH_H_PRED),
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
                                           ENUM(TM_PRED),
                                           ENUM(NEARESTMV),
                                           ENUM(NEARMV),
@@ -225,13 +223,10 @@ const map_entry uv_prediction_mode_map[] = {
   ENUM(UV_H_PRED),        ENUM(UV_D45_PRED),
   ENUM(UV_D135_PRED),     ENUM(UV_D117_PRED),
   ENUM(UV_D153_PRED),     ENUM(UV_D207_PRED),
-  ENUM(UV_D63_PRED),
-#if CONFIG_ALT_INTRA
-  ENUM(UV_SMOOTH_PRED),
+  ENUM(UV_D63_PRED),      ENUM(UV_SMOOTH_PRED),
 #if CONFIG_SMOOTH_HV
   ENUM(UV_SMOOTH_V_PRED), ENUM(UV_SMOOTH_H_PRED),
 #endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
   ENUM(UV_TM_PRED),
 #if CONFIG_CFL
   ENUM(UV_CFL_PRED),

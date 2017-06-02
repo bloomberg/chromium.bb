@@ -179,7 +179,6 @@ static INLINE void h_predictor(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   }
 }
 
-#if CONFIG_ALT_INTRA
 static INLINE int abs_diff(int a, int b) { return (a > b) ? a - b : b - a; }
 
 static INLINE uint16_t paeth_predictor_single(uint16_t left, uint16_t top,
@@ -343,21 +342,6 @@ static INLINE void smooth_h_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
   }
 }
 #endif  // CONFIG_SMOOTH_HV
-
-#else
-
-static INLINE void tm_predictor(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
-                                const uint8_t *above, const uint8_t *left) {
-  int r, c;
-  int ytop_left = above[-1];
-
-  for (r = 0; r < bh; r++) {
-    for (c = 0; c < bw; c++)
-      dst[c] = clip_pixel(left[r] + above[c] - ytop_left);
-    dst += stride;
-  }
-}
-#endif  // CONFIG_ALT_INTRA
 
 static INLINE void dc_128_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint8_t *above,
@@ -794,7 +778,6 @@ void aom_highbd_d153_predictor_2x2_c(uint16_t *dst, ptrdiff_t stride,
   DST(1, 1) = AVG3(J, I, X);
 }
 
-#if CONFIG_ALT_INTRA
 static INLINE void highbd_paeth_predictor(uint16_t *dst, ptrdiff_t stride,
                                           int bw, int bh, const uint16_t *above,
                                           const uint16_t *left, int bd) {
@@ -901,23 +884,7 @@ static INLINE void highbd_smooth_h_predictor(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#endif
-
-#else
-static INLINE void highbd_tm_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
-                                       int bh, const uint16_t *above,
-                                       const uint16_t *left, int bd) {
-  int r, c;
-  int ytop_left = above[-1];
-  (void)bd;
-
-  for (r = 0; r < bh; r++) {
-    for (c = 0; c < bw; c++)
-      dst[c] = clip_pixel_highbd(left[r] + above[c] - ytop_left, bd);
-    dst += stride;
-  }
-}
-#endif  // CONFIG_ALT_INTRA
+#endif  // CONFIG_SMOOTH_HV
 
 static INLINE void highbd_dc_128_predictor(uint16_t *dst, ptrdiff_t stride,
                                            int bw, int bh,
@@ -1118,16 +1085,12 @@ intra_pred_above_4x4(d135)
 intra_pred_above_4x4(d153)
 intra_pred_allsizes(v)
 intra_pred_allsizes(h)
-#if CONFIG_ALT_INTRA
 intra_pred_allsizes(smooth)
 #if CONFIG_SMOOTH_HV
 intra_pred_allsizes(smooth_v)
 intra_pred_allsizes(smooth_h)
 #endif  // CONFIG_SMOOTH_HV
 intra_pred_allsizes(paeth)
-#else
-intra_pred_allsizes(tm)
-#endif  // CONFIG_ALT_INTRA
 intra_pred_allsizes(dc_128)
 intra_pred_allsizes(dc_left)
 intra_pred_allsizes(dc_top)

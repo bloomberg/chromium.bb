@@ -284,7 +284,6 @@ EXPERIMENT_LIST="
     q_adapt_probs
     bitstream_debug
     inter_stats_only
-    alt_intra
     palette_delta_encoding
     rawbits
     ec_smallmul
@@ -528,7 +527,6 @@ post_process_cmdline() {
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
 
-    soft_enable alt_intra
     soft_enable palette_throughput
     soft_enable tempmv_signaling
 
@@ -547,7 +545,6 @@ post_process_cmdline() {
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
-    enabled smooth_hv && soft_enable alt_intra
     enabled intra_edge && enable_feature ext_intra
     enabled chroma_2x2 && disable_feature chroma_sub8x8
     enabled dpcm_intra && enable_feature ext_tx

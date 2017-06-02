@@ -557,12 +557,10 @@ static const uint16_t above_border_uv = 0x000f;
 
 static const int mode_lf_lut[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // INTRA_MODES
-#if CONFIG_ALT_INTRA
   0,
 #if CONFIG_SMOOTH_HV
   0, 0,
 #endif         // CONFIG_SMOOTH_HV
-#endif         // CONFIG_ALT_INTRA
   1, 1, 0, 1,  // INTER_MODES (ZEROMV == 0)
 #if CONFIG_EXT_INTER
 #if CONFIG_COMPOUND_SINGLEREF
