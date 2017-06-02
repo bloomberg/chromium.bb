@@ -7,7 +7,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/invalidation/impl/p2p_invalidator.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,8 +30,7 @@ class InvalidationLogger;
 // This service is a wrapper around P2PInvalidator.  Unlike other
 // InvalidationServices, it can both send and receive invalidations.  It is used
 // only in tests, where we're unable to connect to a real invalidations server.
-class P2PInvalidationService : public base::NonThreadSafe,
-                               public InvalidationService {
+class P2PInvalidationService : public InvalidationService {
  public:
   P2PInvalidationService(
       std::unique_ptr<IdentityProvider> identity_provider,
@@ -63,6 +62,8 @@ class P2PInvalidationService : public base::NonThreadSafe,
   std::unique_ptr<IdentityProvider> identity_provider_;
   std::unique_ptr<syncer::P2PInvalidator> invalidator_;
   std::string invalidator_id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(P2PInvalidationService);
 };

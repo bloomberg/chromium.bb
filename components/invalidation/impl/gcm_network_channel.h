@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "components/invalidation/impl/sync_system_resources.h"
 #include "components/invalidation/public/invalidation_export.h"
@@ -49,8 +49,7 @@ struct GCMNetworkChannelDiagnostic {
 class INVALIDATION_EXPORT GCMNetworkChannel
     : public SyncNetworkChannel,
       public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
-      public base::NonThreadSafe {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   GCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -126,6 +125,8 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   bool http_channel_online_;
 
   GCMNetworkChannelDiagnostic diagnostic_info_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<GCMNetworkChannel> weak_factory_;
 

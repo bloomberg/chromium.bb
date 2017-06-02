@@ -73,7 +73,7 @@ TiclInvalidationService::TiclInvalidationService(
       logger_() {}
 
 TiclInvalidationService::~TiclInvalidationService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   invalidator_registrar_->UpdateInvalidatorState(
       syncer::INVALIDATOR_SHUTTING_DOWN);
   settings_provider_->RemoveObserver(this);
@@ -87,7 +87,7 @@ TiclInvalidationService::~TiclInvalidationService() {
 void TiclInvalidationService::Init(
     std::unique_ptr<syncer::InvalidationStateTracker>
         invalidation_state_tracker) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   invalidation_state_tracker_ = std::move(invalidation_state_tracker);
 
   if (invalidation_state_tracker_->GetInvalidatorClientId().empty()) {
@@ -122,7 +122,7 @@ void TiclInvalidationService::InitForTest(
 
 void TiclInvalidationService::RegisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Registering an invalidation handler";
   invalidator_registrar_->RegisterHandler(handler);
   logger_.OnRegistration(handler->GetOwnerName());
@@ -131,7 +131,7 @@ void TiclInvalidationService::RegisterInvalidationHandler(
 bool TiclInvalidationService::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Registering ids: " << ids.size();
   if (!invalidator_registrar_->UpdateRegisteredIds(handler, ids))
     return false;
@@ -145,7 +145,7 @@ bool TiclInvalidationService::UpdateRegisteredInvalidationIds(
 
 void TiclInvalidationService::UnregisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Unregistering";
   invalidator_registrar_->UnregisterHandler(handler);
   if (invalidator_) {
@@ -156,7 +156,7 @@ void TiclInvalidationService::UnregisterInvalidationHandler(
 }
 
 syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (invalidator_) {
     DVLOG(2) << "GetInvalidatorState returning "
         << invalidator_->GetInvalidatorState();
@@ -168,7 +168,7 @@ syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
 }
 
 std::string TiclInvalidationService::GetInvalidatorClientId() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return invalidation_state_tracker_->GetInvalidatorClientId();
 }
 
@@ -349,7 +349,7 @@ bool TiclInvalidationService::IsStarted() const {
 
 void TiclInvalidationService::StartInvalidator(
     InvalidationNetworkChannel network_channel) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!invalidator_);
   DCHECK(invalidation_state_tracker_);
   DCHECK(!invalidation_state_tracker_->GetInvalidatorClientId().empty());
