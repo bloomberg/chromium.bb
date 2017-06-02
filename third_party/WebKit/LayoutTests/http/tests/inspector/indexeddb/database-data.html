@@ -183,7 +183,7 @@ function test()
 
     function runClearTests()
     {
-        indexedDBModel.clearObjectStore(databaseId, objectStoreName, step1);
+        indexedDBModel.clearObjectStore(databaseId, objectStoreName).then(step1);
         InspectorTest.addResult("Cleared data from objectStore");
 
         function step1() {
