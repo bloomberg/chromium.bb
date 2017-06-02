@@ -188,7 +188,7 @@ class DeployChrome(object):
     # Developers sometimes run session_manager manually, in which case we'll
     # need to help shut the chrome processes down.
     try:
-      with timeout_util.Timeout(KILL_PROC_MAX_WAIT):
+      with timeout_util.Timeout(self.options.process_timeout):
         while self._ChromeFileInUse():
           logging.warning('The chrome binary on the device is in use.')
           logging.warning('Killing chrome and session_manager processes...\n')
@@ -200,7 +200,8 @@ class DeployChrome(object):
           logging.info('Rechecking the chrome binary...')
     except timeout_util.TimeoutError:
       msg = ('Could not kill processes after %s seconds.  Please exit any '
-             'running chrome processes and try again.' % KILL_PROC_MAX_WAIT)
+             'running chrome processes and try again.'
+             % self.options.process_timeout)
       raise DeployFailure(msg)
 
   def _MountRootfsAsWritable(self, error_code_ok=True):
@@ -445,6 +446,9 @@ def _CreateParser():
                           "Overrides the default arguments.")
   group.add_argument('--ping', action='store_true', default=False,
                      help='Ping the device before connection attempt.')
+  group.add_argument('--process-timeout', type=int,
+                     default=KILL_PROC_MAX_WAIT,
+                     help='Timeout for process shutdown.')
 
   group = parser.add_argument_group(
       'Metadata Overrides (Advanced)',

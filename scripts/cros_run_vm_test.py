@@ -71,9 +71,12 @@ class VMTest(object):
     Args:
       build_dir: Build directory.
     """
-    cros_build_lib.RunCommand(['deploy_chrome', '--build-dir', build_dir,
-                               '--force', '--to', 'localhost',
+    cros_build_lib.RunCommand(['deploy_chrome', '--force',
+                               '--build-dir', build_dir,
+                               '--process-timeout', '180',
+                               '--to', 'localhost',
                                '--port', str(self.ssh_port)], log_output=True)
+    self._vm.WaitForBoot()
 
   def _RunCatapultTests(self, test_pattern, guest):
     """Run catapult tests matching a pattern.
