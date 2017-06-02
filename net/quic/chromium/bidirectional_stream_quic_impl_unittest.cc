@@ -1248,6 +1248,75 @@ TEST_P(BidirectionalStreamQuicImplTest,
       delegate->GetTotalReceivedBytes());
 }
 
+// Tests that when request headers are delayed and SendData triggers the
+// headers to be sent, if that write fails the stream does not crash.
+TEST_P(BidirectionalStreamQuicImplTest,
+       SendDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
+  AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+  request.extra_headers.SetHeader("cookie", std::string(2048, 'A'));
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize, DeleteStreamDelegate::ON_FAILED));
+  delegate->DoNotSendRequestHeadersAutomatically();
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback(kOnStreamReady);
+
+  // Attempt to send the headers and data.
+  const char kBody1[] = "here are some data";
+  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer(kBody1));
+  delegate->SendData(buf1, buf1->size(), !kFin);
+
+  delegate->WaitUntilNextCallback(kOnFailed);
+}
+
+// Tests that when request headers are delayed and SendvData triggers the
+// headers to be sent, if that write fails the stream does not crash.
+TEST_P(BidirectionalStreamQuicImplTest,
+       SendvDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
+  AddWriteError(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
+
+  Initialize();
+
+  BidirectionalStreamRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.end_stream_on_headers = false;
+  request.priority = DEFAULT_PRIORITY;
+  request.extra_headers.SetHeader("cookie", std::string(2048, 'A'));
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize, DeleteStreamDelegate::ON_FAILED));
+  delegate->DoNotSendRequestHeadersAutomatically();
+  delegate->Start(&request, net_log().bound(), session()->CreateHandle());
+  ConfirmHandshake();
+  delegate->WaitUntilNextCallback(kOnStreamReady);
+
+  // Attempt to send the headers and data.
+  const char kBody1[] = "here are some data";
+  const char kBody2[] = "data keep coming";
+  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer(kBody1));
+  scoped_refptr<StringIOBuffer> buf2(new StringIOBuffer(kBody2));
+  std::vector<int> lengths = {buf1->size(), buf2->size()};
+  delegate->SendvData({buf1, buf2}, lengths, !kFin);
+
+  delegate->WaitUntilNextCallback(kOnFailed);
+}
+
 TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
@@ -1520,7 +1589,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   // Server sends a Rst.
   ProcessPacket(ConstructServerRstStreamPacket(1));
 
-  EXPECT_TRUE(delegate->on_failed_called());
+  delegate->WaitUntilNextCallback(kOnFailed);
 
   TestCompletionCallback cb;
   EXPECT_THAT(delegate->ReadData(cb.callback()),
@@ -1584,7 +1653,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   // Server sends a Rst.
   ProcessPacket(ConstructServerRstStreamPacket(3));
 
-  EXPECT_TRUE(delegate->on_failed_called());
+  delegate->WaitUntilNextCallback(kOnFailed);
 
   EXPECT_THAT(delegate->ReadData(cb.callback()),
               IsError(ERR_QUIC_PROTOCOL_ERROR));
@@ -1638,7 +1707,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   session()->connection()->CloseConnection(
       QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
-  EXPECT_TRUE(delegate->on_failed_called());
+  delegate->WaitUntilNextCallback(kOnFailed);
 
   // Try to send data after OnFailed(), should not get called back.
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
