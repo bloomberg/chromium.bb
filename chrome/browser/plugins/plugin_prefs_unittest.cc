@@ -24,12 +24,12 @@ class PluginPrefsTest : public ::testing::Test {
 
 TEST_F(PluginPrefsTest, AlwaysOpenPdfExternally) {
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(
-                base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName)));
+            plugin_prefs_->PolicyStatusForPlugin(base::ASCIIToUTF16(
+                ChromeContentClient::kPDFExtensionPluginName)));
 
   SetAlwaysOpenPdfExternally(true);
 
   EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
-            plugin_prefs_->PolicyStatusForPlugin(
-                base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName)));
+            plugin_prefs_->PolicyStatusForPlugin(base::ASCIIToUTF16(
+                ChromeContentClient::kPDFExtensionPluginName)));
 }

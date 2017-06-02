@@ -824,7 +824,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         // Report PDF load metrics. Since the PDF plugin is comprised of an
         // extension that loads a second plugin, avoid double counting by
         // ignoring the creation of the second plugin.
-        if (info.name == ASCIIToUTF16(ChromeContentClient::kPDFPluginName) &&
+        if (info.name ==
+                ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName) &&
             GURL(frame->GetDocument().Url()).host_piece() !=
                 extension_misc::kPdfExtensionId) {
           bool is_main_frame_plugin_document =
@@ -876,7 +877,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
-        if (info.name == ASCIIToUTF16(ChromeContentClient::kPDFPluginName)) {
+        if (info.name ==
+            ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
           ReportPDFLoadStatus(
               PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
         }

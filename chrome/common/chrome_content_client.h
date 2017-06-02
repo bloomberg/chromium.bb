@@ -35,7 +35,8 @@ class ChromeContentClient : public content::ContentClient {
   // on-demand and therefore should still appear in navigator.plugins.
   static const char kNotPresent[];
 #endif
-  static const char kPDFPluginName[];
+  static const char kPDFExtensionPluginName[];
+  static const char kPDFInternalPluginName[];
   static const char kPDFPluginPath[];
   static const char kRemotingViewerPluginPath[];
 

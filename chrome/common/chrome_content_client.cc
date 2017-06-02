@@ -162,7 +162,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   content::PepperPluginInfo pdf_info;
   pdf_info.is_internal = true;
   pdf_info.is_out_of_process = true;
-  pdf_info.name = ChromeContentClient::kPDFPluginName;
+  pdf_info.name = ChromeContentClient::kPDFInternalPluginName;
   pdf_info.description = kPDFPluginDescription;
   pdf_info.path = base::FilePath::FromUTF8Unsafe(
       ChromeContentClient::kPDFPluginPath);
