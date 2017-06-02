@@ -85,7 +85,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   mojom::URLLoaderClient* forwarding_client_;
   mojo::Binding<mojom::URLLoaderClient> client_binding_;
 
-  mojom::URLLoaderPtr url_loader_;
+  mojom::URLLoaderAssociatedPtr url_loader_;
 
   // Set if start is deferred.
   mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
