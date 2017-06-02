@@ -24365,9 +24365,38 @@ from previous Chrome versions.
   <int value="2" label="LowStorage"/>
 </enum>
 
+<enum name="MigrationUIMigrationResult" type="int">
+  <int value="0" label="Success in new migration"/>
+  <int value="1" label="Success in resumed migration"/>
+  <int value="2" label="General failure in new migration"/>
+  <int value="3" label="General failure in resumed migration"/>
+  <int value="4" label="Request failure in new migration"/>
+  <int value="5" label="Request failure in resumed migration"/>
+  <int value="6" label="Mount failure in new migration"/>
+  <int value="7" label="Mount failure in resumed migration"/>
+</enum>
+
+<enum name="MigrationUIRemoveCryptohomeResult" type="int">
+  <int value="0" label="Success in new migration"/>
+  <int value="1" label="Success in resumed migration"/>
+  <int value="2" label="Failure in new migration"/>
+  <int value="3" label="Failure in resumed migration"/>
+</enum>
+
+<enum name="MigrationUIScreen" type="int">
+  <int value="0" label="Initial"/>
+  <int value="1" label="Ready"/>
+  <int value="2" label="Migrating"/>
+  <int value="3" label="Migration failed"/>
+  <int value="4" label="Not enough storage"/>
+</enum>
+
 <enum name="MigrationUIUserChoice" type="int">
   <int value="0" label="Update"/>
   <int value="1" label="Skip"/>
+  <int value="2" label="Restart on migration failure"/>
+  <int value="3" label="Restart on low storage"/>
+  <int value="4" label="Report an issue"/>
 </enum>
 
 <enum name="MissingStartType" type="int">
