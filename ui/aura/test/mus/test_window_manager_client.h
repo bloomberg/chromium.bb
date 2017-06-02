@@ -58,6 +58,8 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void WmSetCursorVisible(bool visible) override;
   void WmSetGlobalOverrideCursor(
       base::Optional<ui::CursorData> cursor) override;
+  void WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,
+                                     int64_t display_id) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
   void OnAcceleratorAck(

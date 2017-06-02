@@ -1493,6 +1493,45 @@ TEST_F(WindowTreeTest, SetModalTypeForwardedToWindowManager) {
   EXPECT_TRUE(wm_internal.on_set_modal_type_called());
 }
 
+TEST_F(WindowTreeTest, TestWindowManagerSettingCursorLocation) {
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  EXPECT_TRUE(
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
+  ASSERT_TRUE(embed_window);
+  EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
+  ASSERT_TRUE(FirstRoot(wm_tree()));
+  const ClientWindowId wm_root_id = FirstRootId(wm_tree());
+  EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  wm_root->SetBounds(gfx::Rect(0, 0, 100, 100));
+  // This tests expects |wm_root| to be a possible target.
+  wm_root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  mojom::WindowTreeClientPtr client;
+  wm_client()->Bind(mojo::MakeRequest(&client));
+  const uint32_t embed_flags = 0;
+  wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
+  ASSERT_TRUE(tree1 != nullptr);
+  ASSERT_NE(tree1, wm_tree());
+
+  embed_window->SetBounds(gfx::Rect(20, 20, 20, 20));
+  embed_window->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+
+  // Because the cursor is still at the origin, changing the cursor shouldn't
+  // have switched to ibeam.
+  EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
+
+  // Have the window manager mvoe the cursor within the embed window.
+  static_cast<mojom::WindowManagerClient*>(wm_tree())
+      ->WmMoveCursorToDisplayLocation(gfx::Point(21, 21), -1);
+
+  EXPECT_EQ(ui::CursorType::kIBeam, cursor_type());
+}
+
 using WindowTreeShutdownTest = testing::Test;
 
 // Makes sure WindowTreeClient doesn't get any messages during shutdown.
