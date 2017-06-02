@@ -97,7 +97,8 @@ protocol::KeyEvent MakeKeyEvent(const pp::KeyboardInputEvent& pp_key_event) {
   } else if (dom_code == "OSRight") {
     dom_code = "MetaRight";
   }
-  key_event.set_usb_keycode(ui::KeycodeConverter::CodeToUsbKeycode(dom_code));
+  key_event.set_usb_keycode(
+      ui::KeycodeConverter::CodeStringToUsbKeycode(dom_code));
   key_event.set_pressed(pp_key_event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
   key_event.set_lock_states(MakeLockStates(pp_key_event));
   return key_event;

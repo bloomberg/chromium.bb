@@ -75,6 +75,9 @@ int KeycodeConverter::InvalidNativeKeycode() {
   return usb_keycode_map[0].native_keycode;
 }
 
+// TODO(zijiehe): Most of the following functions can be optimized by using
+// either multiple arrays or unordered_map.
+
 // static
 DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
@@ -297,7 +300,7 @@ uint32_t KeycodeConverter::DomCodeToUsbKeycode(DomCode dom_code) {
 }
 
 // static
-uint32_t KeycodeConverter::CodeToUsbKeycode(const std::string& code) {
+uint32_t KeycodeConverter::CodeStringToUsbKeycode(const std::string& code) {
   if (code.empty())
     return InvalidUsbKeycode();
 
@@ -307,6 +310,11 @@ uint32_t KeycodeConverter::CodeToUsbKeycode(const std::string& code) {
     }
   }
   return InvalidUsbKeycode();
+}
+
+// static
+int KeycodeConverter::CodeStringToNativeKeycode(const std::string& code) {
+  return UsbKeycodeToNativeKeycode(CodeStringToUsbKeycode(code));
 }
 
 }  // namespace ui
