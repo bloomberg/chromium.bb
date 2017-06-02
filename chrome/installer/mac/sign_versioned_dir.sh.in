@@ -112,9 +112,13 @@ codesign_with_options "${app_mode_loader_tmp}" \
 cp "${app_mode_loader_tmp}" "${app_mode_loader}"
 rm -f "${app_mode_loader_tmp}"
 
+xpc_plist="${notification_service}/Contents/Info"
+xpc_bundle_id="$(__CFPREFERENCES_AVOID_DAEMON=1 defaults read \
+    "${xpc_plist}" "CFBundleIdentifier")"
+
 codesign_with_options "${notification_service}" \
                       "${enforcement_flags_helpers}" \
-                      "com.google.Chrome.framework.AlertNotificationService"
+                      "${xpc_bundle_id}"
 
 # Only sign widevine plugin if it is present in the bundle.
 # ${enforcement_flags*} are meaningless for dynamic libraries.
