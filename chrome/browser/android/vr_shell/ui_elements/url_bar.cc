@@ -57,7 +57,7 @@ void UrlBar::OnButtonDown(const gfx::PointF& position) {
 void UrlBar::OnButtonUp(const gfx::PointF& position) {
   down_ = false;
   OnStateUpdated(position);
-  if (texture_->HitsBackButton(position))
+  if (can_go_back_ && texture_->HitsBackButton(position))
     back_button_callback_.Run();
 }
 
@@ -84,7 +84,8 @@ void UrlBar::SetURL(const GURL& gurl) {
 }
 
 void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
-  texture_->SetHistoryButtonsEnabled(can_go_back);
+  can_go_back_ = can_go_back;
+  texture_->SetHistoryButtonsEnabled(can_go_back_);
 }
 
 void UrlBar::SetSecurityLevel(security_state::SecurityLevel level) {

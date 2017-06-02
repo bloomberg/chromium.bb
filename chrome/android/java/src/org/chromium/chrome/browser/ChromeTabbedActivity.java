@@ -1742,6 +1742,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         //   exit Chrome on top of closing the tab
         final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
         if (minimizeApp) {
+            // TODO(mthiesse): We never want to close Chrome through the in-vr back button (but we
+            // want to reuse CTA logic for how the back button should otherwise behave). We should
+            // refactor the behaviour in this function so that we can either re-use the parts of
+            // this behaviour we want, or be able to know in advance whether or not clicking the
+            // back button would close Chrome so that we can disable it.
+            if (VrShellDelegate.isInVr()) return true;
             if (shouldCloseTab) {
                 recordBackPressedUma("Minimized and closed tab", BACK_PRESSED_MINIMIZED_TAB_CLOSED);
                 mActivityStopMetrics.setStopReason(ActivityStopMetrics.STOP_REASON_BACK_BUTTON);
