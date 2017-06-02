@@ -75,7 +75,7 @@ String CSSUnitValue::unit() const {
   return CSSPrimitiveValue::UnitTypeToString(unit_);
 }
 
-String CSSUnitValue::cssType() const {
+String CSSUnitValue::type() const {
   if (unit_ == CSSPrimitiveValue::UnitType::kNumber)
     return "number";
   if (unit_ == CSSPrimitiveValue::UnitType::kPercentage)
