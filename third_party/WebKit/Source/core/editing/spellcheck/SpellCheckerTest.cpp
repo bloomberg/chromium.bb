@@ -36,7 +36,7 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {
   Element* input = GetDocument().QuerySelector("input");
   input->focus();
   // Do not crash in advanceToNextMisspelling.
-  GetDocument().GetFrame()->GetSpellChecker().AdvanceToNextMisspelling(false);
+  GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
 // Regression test for crbug.com/701309
@@ -52,7 +52,7 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithImageInTableNoCrash) {
   UpdateAllLifecyclePhases();
 
   // Do not crash in advanceToNextMisspelling.
-  GetDocument().GetFrame()->GetSpellChecker().AdvanceToNextMisspelling(false);
+  GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
 // Regression test for crbug.com/728801
@@ -66,8 +66,7 @@ TEST_F(SpellCheckerTest, AdvancedToNextMisspellingWrapSearchNoCrash) {
                                .Build());
   UpdateAllLifecyclePhases();
 
-  // TODO(xiaochengh): We should have SpellCheckTestBase::GetSpellChecker().
-  GetFrame().GetSpellChecker().AdvanceToNextMisspelling(false);
+  GetSpellChecker().AdvanceToNextMisspelling(false);
 }
 
 TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
@@ -88,10 +87,10 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
       SelectionInDOMTree::Builder().Collapse(new_position).Build());
   ASSERT_EQ(3u, input->selectionStart());
 
-  EXPECT_TRUE(GetFrame().GetSpellChecker().IsSpellCheckingEnabled());
+  EXPECT_TRUE(GetSpellChecker().IsSpellCheckingEnabled());
   ForceLayout();
   int start_count = LayoutCount();
-  GetFrame().GetSpellChecker().RespondToChangedSelection(
+  GetSpellChecker().RespondToChangedSelection(
       old_selection.Start(),
       FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle);
   EXPECT_EQ(start_count, LayoutCount());
