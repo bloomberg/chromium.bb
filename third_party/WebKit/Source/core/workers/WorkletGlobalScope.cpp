@@ -45,6 +45,16 @@ v8::Local<v8::Object> WorkletGlobalScope::AssociateWithWrapper(
   return v8::Local<v8::Object>();
 }
 
+bool WorkletGlobalScope::HasPendingActivity() const {
+  // The worklet global scope wrapper is kept alive as longs as its execution
+  // context is active.
+  return !ExecutionContext::IsContextDestroyed();
+}
+
+ExecutionContext* WorkletGlobalScope::GetExecutionContext() const {
+  return const_cast<WorkletGlobalScope*>(this);
+}
+
 bool WorkletGlobalScope::IsSecureContext(String& error_message) const {
   // Until there are APIs that are available in worklets and that
   // require a privileged context test that checks ancestors, just do

@@ -5,6 +5,8 @@
 // https://drafts.css-houdini.org/worklets/#workletglobalscope
 
 [
+    DependentLifetime,
+    ActiveScriptWrappable,
     Exposed=Worklet,
     RuntimeEnabled=Worklet,
     ImmutablePrototype,
