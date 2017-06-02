@@ -47,13 +47,6 @@ class CORE_EXPORT StyleMultiColData : public RefCounted<StyleMultiColData> {
   bool operator==(const StyleMultiColData&) const;
   bool operator!=(const StyleMultiColData& o) const { return !(*this == o); }
 
-  unsigned short RuleWidth() const {
-    if (rule_.Style() == EBorderStyle::kNone ||
-        rule_.Style() == EBorderStyle::kHidden)
-      return 0;
-    return rule_.Width();
-  }
-
   float width_;
   unsigned short count_;
   float gap_;
