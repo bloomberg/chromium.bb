@@ -990,4 +990,26 @@ TransformTree& LayerImpl::GetTransformTree() const {
   return GetPropertyTrees()->transform_tree;
 }
 
+bool LayerImpl::HasValidPropertyTreeIndices() const {
+  // TODO(crbug.com/726423): LayerImpls should never have invalid PropertyTree
+  // indices.
+  const bool has_valid_transform_node =
+      !!GetTransformTree().Node(transform_tree_index());
+  DCHECK(has_valid_transform_node);
+
+  const bool has_valid_effect_node =
+      !!GetEffectTree().Node(effect_tree_index());
+  DCHECK(has_valid_effect_node);
+
+  const bool has_valid_clip_node = !!GetClipTree().Node(clip_tree_index());
+  DCHECK(has_valid_clip_node);
+
+  const bool has_valid_scroll_node =
+      !!GetScrollTree().Node(scroll_tree_index());
+  DCHECK(has_valid_scroll_node);
+
+  return has_valid_transform_node && has_valid_effect_node &&
+         has_valid_clip_node && has_valid_scroll_node;
+}
+
 }  // namespace cc
