@@ -55,6 +55,14 @@ suite('SiteDetails', function() {
           source: 'preference',
         },
       ],
+      images: [
+        {
+          embeddingOrigin: 'https://foo-allow.com:443',
+          origin: 'https://foo-allow.com:443',
+          setting: 'allow',
+          source: 'preference',
+        },
+      ],
       javascript: [
         {
           embeddingOrigin: 'https://foo-allow.com:443',

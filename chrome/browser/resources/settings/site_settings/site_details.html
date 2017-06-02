@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="constants.html">
@@ -88,6 +89,10 @@
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.PLUGINS}}"
           icon="cr:extension" id="plugins" label="$i18n{siteSettingsFlash}"
+          site="[[site]]">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.IMAGES}}"
+          icon="settings:photo" id="images" label="$i18n{siteSettingsImages}"
           site="[[site]]">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.POPUPS}}"
