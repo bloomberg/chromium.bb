@@ -132,6 +132,40 @@ const uint32_t DownloadItem::kInvalidId = 0;
 // The maximum number of attempts we will make to resume automatically.
 const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
+DownloadItemImpl::RequestInfo::RequestInfo(
+    const std::vector<GURL>& url_chain,
+    const GURL& referrer_url,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
+    const std::string& suggested_filename,
+    const base::FilePath& forced_file_path,
+    ui::PageTransition transition_type,
+    bool has_user_gesture,
+    const std::string& remote_address,
+    base::Time start_time)
+    : url_chain(url_chain),
+      referrer_url(referrer_url),
+      site_url(site_url),
+      tab_url(tab_url),
+      tab_referrer_url(tab_referrer_url),
+      suggested_filename(suggested_filename),
+      forced_file_path(forced_file_path),
+      transition_type(transition_type),
+      has_user_gesture(has_user_gesture),
+      remote_address(remote_address),
+      start_time(start_time) {}
+
+DownloadItemImpl::RequestInfo::RequestInfo(const GURL& url)
+    : url_chain(std::vector<GURL>(1, url)), start_time(base::Time::Now()) {}
+
+DownloadItemImpl::RequestInfo::RequestInfo() = default;
+
+DownloadItemImpl::RequestInfo::RequestInfo(
+    const DownloadItemImpl::RequestInfo& other) = default;
+
+DownloadItemImpl::RequestInfo::~RequestInfo() = default;
+
 // Constructor for reading from the history service.
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
@@ -161,14 +195,20 @@ DownloadItemImpl::DownloadItemImpl(
     bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log)
-    : guid_(base::ToUpperASCII(guid)),
+    : request_info_(url_chain,
+                    referrer_url,
+                    site_url,
+                    tab_url,
+                    tab_refererr_url,
+                    std::string(),
+                    base::FilePath(),
+                    ui::PAGE_TRANSITION_LINK,
+                    false,
+                    std::string(),
+                    start_time),
+      guid_(base::ToUpperASCII(guid)),
       download_id_(download_id),
       target_path_(target_path),
-      url_chain_(url_chain),
-      referrer_url_(referrer_url),
-      site_url_(site_url),
-      tab_url_(tab_url),
-      tab_referrer_url_(tab_refererr_url),
       mime_type_(mime_type),
       original_mime_type_(original_mime_type),
       total_bytes_(total_bytes),
@@ -176,7 +216,6 @@ DownloadItemImpl::DownloadItemImpl(
       start_tick_(base::TimeTicks()),
       state_(ExternalToInternalState(state)),
       danger_type_(danger_type),
-      start_time_(start_time),
       end_time_(end_time),
       delegate_(delegate),
       opened_(opened),
@@ -203,32 +242,32 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    uint32_t download_id,
                                    const DownloadCreateInfo& info,
                                    const net::NetLogWithSource& net_log)
-    : guid_(info.guid.empty() ? base::ToUpperASCII(base::GenerateGUID())
+    : request_info_(info.url_chain,
+                    info.referrer_url,
+                    info.site_url,
+                    info.tab_url,
+                    info.tab_referrer_url,
+                    base::UTF16ToUTF8(info.save_info->suggested_name),
+                    info.save_info->file_path,
+                    info.transition_type ? info.transition_type.value()
+                                         : ui::PAGE_TRANSITION_LINK,
+                    info.has_user_gesture,
+                    info.remote_address,
+                    info.start_time),
+      guid_(info.guid.empty() ? base::ToUpperASCII(base::GenerateGUID())
                               : info.guid),
       download_id_(download_id),
       target_disposition_((info.save_info->prompt_for_save_location)
                               ? TARGET_DISPOSITION_PROMPT
                               : TARGET_DISPOSITION_OVERWRITE),
-      url_chain_(info.url_chain),
-      referrer_url_(info.referrer_url),
-      site_url_(info.site_url),
-      tab_url_(info.tab_url),
-      tab_referrer_url_(info.tab_referrer_url),
-      suggested_filename_(base::UTF16ToUTF8(info.save_info->suggested_name)),
-      forced_file_path_(info.save_info->file_path),
-      transition_type_(info.transition_type ? info.transition_type.value()
-                                            : ui::PAGE_TRANSITION_LINK),
-      has_user_gesture_(info.has_user_gesture),
       response_headers_(info.response_headers),
       content_disposition_(info.content_disposition),
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
-      remote_address_(info.remote_address),
       total_bytes_(info.total_bytes),
       last_reason_(info.result),
       start_tick_(base::TimeTicks::Now()),
       state_(INITIAL_INTERNAL),
-      start_time_(info.start_time),
       delegate_(delegate),
       is_temporary_(!info.transient && !info.save_info->file_path.empty()),
       transient_(info.transient),
@@ -258,16 +297,15 @@ DownloadItemImpl::DownloadItemImpl(
     const std::string& mime_type,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const net::NetLogWithSource& net_log)
-    : is_save_package_download_(true),
+    : request_info_(url),
+      is_save_package_download_(true),
       guid_(base::ToUpperASCII(base::GenerateGUID())),
       download_id_(download_id),
       target_path_(path),
-      url_chain_(1, url),
       mime_type_(mime_type),
       original_mime_type_(mime_type),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS_INTERNAL),
-      start_time_(base::Time::Now()),
       delegate_(delegate),
       current_path_(path),
       net_log_(net_log),
@@ -576,37 +614,39 @@ bool DownloadItemImpl::IsDone() const {
 }
 
 const GURL& DownloadItemImpl::GetURL() const {
-  return url_chain_.empty() ? GURL::EmptyGURL() : url_chain_.back();
+  return request_info_.url_chain.empty() ? GURL::EmptyGURL()
+                                         : request_info_.url_chain.back();
 }
 
 const std::vector<GURL>& DownloadItemImpl::GetUrlChain() const {
-  return url_chain_;
+  return request_info_.url_chain;
 }
 
 const GURL& DownloadItemImpl::GetOriginalUrl() const {
   // Be careful about taking the front() of possibly-empty vectors!
   // http://crbug.com/190096
-  return url_chain_.empty() ? GURL::EmptyGURL() : url_chain_.front();
+  return request_info_.url_chain.empty() ? GURL::EmptyGURL()
+                                         : request_info_.url_chain.front();
 }
 
 const GURL& DownloadItemImpl::GetReferrerUrl() const {
-  return referrer_url_;
+  return request_info_.referrer_url;
 }
 
 const GURL& DownloadItemImpl::GetSiteUrl() const {
-  return site_url_;
+  return request_info_.site_url;
 }
 
 const GURL& DownloadItemImpl::GetTabUrl() const {
-  return tab_url_;
+  return request_info_.tab_url;
 }
 
 const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
-  return tab_referrer_url_;
+  return request_info_.tab_referrer_url;
 }
 
 std::string DownloadItemImpl::GetSuggestedFilename() const {
-  return suggested_filename_;
+  return request_info_.suggested_filename;
 }
 
 const scoped_refptr<const net::HttpResponseHeaders>&
@@ -627,16 +667,16 @@ std::string DownloadItemImpl::GetOriginalMimeType() const {
 }
 
 std::string DownloadItemImpl::GetRemoteAddress() const {
-  return remote_address_;
+  return request_info_.remote_address;
 }
 
 bool DownloadItemImpl::HasUserGesture() const {
-  return has_user_gesture_;
-};
+  return request_info_.has_user_gesture;
+}
 
 ui::PageTransition DownloadItemImpl::GetTransitionType() const {
-  return transition_type_;
-};
+  return request_info_.transition_type;
+}
 
 const std::string& DownloadItemImpl::GetLastModifiedTime() const {
   return last_modified_time_;
@@ -661,7 +701,7 @@ const base::FilePath& DownloadItemImpl::GetTargetFilePath() const {
 const base::FilePath& DownloadItemImpl::GetForcedFilePath() const {
   // TODO(asanka): Get rid of GetForcedFilePath(). We should instead just
   // require that clients respect GetTargetFilePath() if it is already set.
-  return forced_file_path_;
+  return request_info_.forced_file_path;
 }
 
 base::FilePath DownloadItemImpl::GetFileNameToReportUser() const {
@@ -766,7 +806,7 @@ DownloadItemImpl::GetReceivedSlices() const {
 }
 
 base::Time DownloadItemImpl::GetStartTime() const {
-  return start_time_;
+  return request_info_.start_time;
 }
 
 base::Time DownloadItemImpl::GetEndTime() const {
@@ -869,9 +909,9 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
 
   // Construct a string of the URL chain.
   std::string url_list("<none>");
-  if (!url_chain_.empty()) {
-    std::vector<GURL>::const_iterator iter = url_chain_.begin();
-    std::vector<GURL>::const_iterator last = url_chain_.end();
+  if (!request_info_.url_chain.empty()) {
+    std::vector<GURL>::const_iterator iter = request_info_.url_chain.begin();
+    std::vector<GURL>::const_iterator last = request_info_.url_chain.end();
     url_list = (*iter).is_valid() ? (*iter).spec() : "<invalid>";
     ++iter;
     for ( ; verbose && (iter != last); ++iter) {
@@ -1029,7 +1069,7 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   //   download since the initial request, in order.
   std::vector<GURL>::const_iterator chain_iter =
       new_create_info.url_chain.begin();
-  if (*chain_iter == url_chain_.back())
+  if (*chain_iter == request_info_.url_chain.back())
     ++chain_iter;
 
   // Record some stats. If the precondition failed (the server returned
@@ -1049,8 +1089,8 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
   RecordOriginStateOnResumption(is_partial, origin_state);
 
-  url_chain_.insert(
-      url_chain_.end(), chain_iter, new_create_info.url_chain.end());
+  request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
+                                 new_create_info.url_chain.end());
   etag_ = new_create_info.etag;
   last_modified_time_ = new_create_info.last_modified;
   response_headers_ = new_create_info.response_headers;
@@ -1203,10 +1243,10 @@ void DownloadItemImpl::Init(bool active,
     file_name = target_path_.AsUTF8Unsafe();
   } else {
     // See if it's set programmatically.
-    file_name = forced_file_path_.AsUTF8Unsafe();
+    file_name = GetForcedFilePath().AsUTF8Unsafe();
     // Possibly has a 'download' attribute for the anchor.
     if (file_name.empty())
-      file_name = suggested_filename_;
+      file_name = GetSuggestedFilename();
     // From the URL file name.
     if (file_name.empty())
       file_name = GetURL().ExtractFileName();
@@ -2078,7 +2118,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
 
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartitionForSite(GetBrowserContext(),
-                                                 site_url_);
+                                                 request_info_.site_url);
 
   // Avoid using the WebContents even if it's still around. Resumption requests
   // are consistently routed through the no-renderer code paths so that the

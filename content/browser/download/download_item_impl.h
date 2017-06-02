@@ -43,6 +43,65 @@ class CONTENT_EXPORT DownloadItemImpl
     RESUME_MODE_USER_RESTART
   };
 
+  // Information about the initial request that triggers the download. Most of
+  // the fields are immutable after the DownloadItem is successfully created.
+  // However, it is possible that the url chain is changed when resuming an
+  // interrupted download. In that case, the download will restart from the
+  // beginning.
+  struct CONTENT_EXPORT RequestInfo {
+    RequestInfo(const std::vector<GURL>& url_chain,
+                const GURL& referrer_url,
+                const GURL& site_url,
+                const GURL& tab_url,
+                const GURL& tab_referrer_url,
+                const std::string& suggested_filename,
+                const base::FilePath& forced_file_path,
+                ui::PageTransition transition_type,
+                bool has_user_gesture,
+                const std::string& remote_address,
+                base::Time start_time);
+    RequestInfo();
+    RequestInfo(const RequestInfo& other);
+    RequestInfo(const GURL& url);
+    ~RequestInfo();
+
+    // The chain of redirects that leading up to and including the final URL.
+    std::vector<GURL> url_chain;
+
+    // The URL of the page that initiated the download.
+    GURL referrer_url;
+
+    // Site URL for the site instance that initiated this download.
+    GURL site_url;
+
+    // The URL of the tab that initiated the download.
+    GURL tab_url;
+
+    // The URL of the referrer of the tab that initiated the download.
+    GURL tab_referrer_url;
+
+    // Filename suggestion from DownloadSaveInfo. It could, among others, be the
+    // suggested filename in 'download' attribute of an anchor. Details:
+    // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
+    std::string suggested_filename;
+
+    // If non-empty, contains an externally supplied path that should be used as
+    // the target path.
+    base::FilePath forced_file_path;
+
+    // Page transition that triggerred the download.
+    ui::PageTransition transition_type = ui::PAGE_TRANSITION_LINK;
+
+    // Whether the download was triggered with a user gesture.
+    bool has_user_gesture = false;
+
+    // The remote IP address where the download was fetched from.
+    std::string remote_address;
+
+    // Time the download was started.
+    base::Time start_time;
+  };
+
   // The maximum number of attempts we will make to resume automatically.
   static const int kMaxAutoResumeAttempts;
 
@@ -517,6 +576,8 @@ class CONTENT_EXPORT DownloadItemImpl
   static bool IsValidStateTransition(DownloadInternalState from,
                                      DownloadInternalState to);
 
+  RequestInfo request_info_;
+
   // Will be false for save package downloads retrieved from the history.
   // TODO(rdsmith): Replace with a generalized enum for "download source".
   const bool is_save_package_download_ = false;
@@ -537,36 +598,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Whether the target should be overwritten, uniquified or prompted for.
   TargetDisposition target_disposition_ = TARGET_DISPOSITION_OVERWRITE;
 
-  // The chain of redirects that leading up to and including the final URL.
-  std::vector<GURL> url_chain_;
-
-  // The URL of the page that initiated the download.
-  GURL referrer_url_;
-
-  // Site URL for the site instance that initiated this download.
-  GURL site_url_;
-
-  // The URL of the tab that initiated the download.
-  GURL tab_url_;
-
-  // The URL of the referrer of the tab that initiated the download.
-  GURL tab_referrer_url_;
-
-  // Filename suggestion from DownloadSaveInfo. It could, among others, be the
-  // suggested filename in 'download' attribute of an anchor. Details:
-  // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
-  std::string suggested_filename_;
-
-  // If non-empty, contains an externally supplied path that should be used as
-  // the target path.
-  base::FilePath forced_file_path_;
-
-  // Page transition that triggerred the download.
-  ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
-
-  // Whether the download was triggered with a user gesture.
-  bool has_user_gesture_ = false;
-
   // Information from the response.
 
   // The HTTP response headers. This contains a nullptr when the response has
@@ -583,10 +614,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // may be different from |mime_type_|, which may be set based on heuristics
   // which may look at the file extension and first few bytes of the file.
   std::string original_mime_type_;
-
-  // The remote IP address where the download was fetched from.  Copied from
-  // DownloadCreateInfo::remote_address.
-  std::string remote_address_;
 
   // Total bytes expected.
   int64_t total_bytes_ = 0;
@@ -605,9 +632,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // The views of this item in the download shelf and download contents.
   base::ObserverList<Observer> observers_;
-
-  // Time the download was started.
-  base::Time start_time_;
 
   // Time the download completed.
   base::Time end_time_;
