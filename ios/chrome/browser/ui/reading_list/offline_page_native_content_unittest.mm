@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
@@ -20,6 +19,10 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 class OfflinePageNativeContentTest : public web::WebTestWithWebState {
  protected:
@@ -38,12 +41,11 @@ TEST_F(OfflinePageNativeContentTest, BasicOfflinePageTest) {
   GURL url = reading_list::OfflineURLForPath(
       base::FilePath("offline_id/page.html"), entry_url, distilled_url);
   id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  base::scoped_nsobject<OfflinePageNativeContent> content(
-      [[OfflinePageNativeContent alloc]
-          initWithLoader:loader
-            browserState:chrome_browser_state_.get()
-                webState:web_state()
-                     URL:url]);
+  OfflinePageNativeContent* content = [[OfflinePageNativeContent alloc]
+      initWithLoader:loader
+        browserState:chrome_browser_state_.get()
+            webState:web_state()
+                 URL:url];
   ASSERT_EQ(url, [content url]);
   ASSERT_EQ(distilled_url, [content virtualURL]);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
@@ -63,12 +65,11 @@ TEST_F(OfflinePageNativeContentTest, DismissOfflineContent) {
   GURL url = reading_list::OfflineURLForPath(
       base::FilePath("offline_id/page.html"), entry_url, virtual_url);
   id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  base::scoped_nsobject<OfflinePageNativeContent> content(
-      [[OfflinePageNativeContent alloc]
-          initWithLoader:loader
-            browserState:chrome_browser_state_.get()
-                webState:web_state()
-                     URL:url]);
+  OfflinePageNativeContent* content = [[OfflinePageNativeContent alloc]
+      initWithLoader:loader
+        browserState:chrome_browser_state_.get()
+            webState:web_state()
+                 URL:url];
   ASSERT_EQ(url, [content url]);
   ASSERT_EQ(virtual_url, [content virtualURL]);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
