@@ -189,6 +189,19 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
+  void CreateAmbiguousProfiles() {
+    web_profiles_.clear();
+    CreateTestAutofillProfiles(&web_profiles_);
+
+    auto profile = base::MakeUnique<AutofillProfile>();
+    test::SetProfileInfo(profile.get(), "John", "Decca", "Public",
+                         "john@gmail.com", "Company", "123 Main St.", "unit 7",
+                         "Springfield", "Texas", "79401", "US", "2345678901");
+    profile->set_guid("00000000-0000-0000-0000-000000000003");
+    web_profiles_.push_back(std::move(profile));
+    Refresh();
+  }
+
  private:
   void CreateTestAutofillProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
@@ -522,111 +535,259 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   autofill_manager_->SubmitForm(form, TimeTicks::Now());
 
   // Heuristic predictions.
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(PHONE_HOME_CITY_AND_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
-      1);
+  {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate.Heuristic";
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType.Heuristic";
 
-  // Server predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+    // Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 2);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TRUE_POSITIVE), 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_CITY_AND_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_NUMBER,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+    // False Positive Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_NUMBER,
+                                AutofillMetrics::FALSE_POSITIVE_UNKNOWN),
+        1);
+    // False Positive Empty:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_EMPTY, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL,
+                                AutofillMetrics::FALSE_POSITIVE_EMPTY),
+        1);
 
-  // Overall predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 7);
+  }
+
+  // Server overrides heuristic so Overall and Server are the same predictions
+  // (as there were no test fields where server == NO_SERVER_DATA and heuristic
+  // != UNKNOWN_TYPE).
+  for (const std::string source : {"Server", "Overall"}) {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source;
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source;
+
+    // Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 2);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TRUE_POSITIVE),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FIRST,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+
+    // False Positive Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS,
+                                AutofillMetrics::FALSE_POSITIVE_UNKNOWN),
+        1);
+    // False Positive Empty:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_EMPTY, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FIRST,
+                                AutofillMetrics::FALSE_POSITIVE_EMPTY),
+        1);
+
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 7);
+  }
 }
 
 // Tests the true negatives (empty + no prediction and unknown + no prediction)
 // and false positives (empty + bad prediction and unknown + bad prediction)
 // are counted correctly.
 
-struct UnrecognizedOrEmptyFieldsCase {
+struct QualityMetricsTestCase {
+  const ServerFieldType predicted_field_type;
   const ServerFieldType actual_field_type;
-  const bool make_prediction;
-  const AutofillMetrics::FieldTypeQualityMetric metric_to_test;
 };
 
-class UnrecognizedOrEmptyFieldsTest
+class QualityMetricsTest
     : public AutofillMetricsTest,
-      public testing::WithParamInterface<UnrecognizedOrEmptyFieldsCase> {};
+      public testing::WithParamInterface<QualityMetricsTestCase> {
+ public:
+  const char* ValueForType(ServerFieldType type) {
+    switch (type) {
+      case EMPTY_TYPE:
+        return "";
+      case UNKNOWN_TYPE:
+        return "unknown";
+      case COMPANY_NAME:
+        return "RCA";
+      case NAME_FIRST:
+        return "Elvis";
+      case NAME_MIDDLE:
+        return "Aaron";
+      case NAME_LAST:
+        return "Presley";
+      case NAME_FULL:
+        return "Elvis Aaron Presley";
+      case EMAIL_ADDRESS:
+        return "buddy@gmail.com";
+      case PHONE_HOME_NUMBER:
+      case PHONE_HOME_WHOLE_NUMBER:
+      case PHONE_HOME_CITY_AND_NUMBER:
+        return "2345678901";
+      case ADDRESS_HOME_STREET_ADDRESS:
+        return "123 Apple St.\nunit 6";
+      case ADDRESS_HOME_LINE1:
+        return "123 Apple St.";
+      case ADDRESS_HOME_LINE2:
+        return "unit 6";
+      case ADDRESS_HOME_CITY:
+        return "Lubbock";
+      case ADDRESS_HOME_STATE:
+        return "Texas";
+      case ADDRESS_HOME_ZIP:
+        return "79401";
+      case ADDRESS_HOME_COUNTRY:
+        return "US";
+      case AMBIGUOUS_TYPE:
+        // This occurs as both a company name and a middle name once ambiguous
+        // profiles are created.
+        personal_data_->CreateAmbiguousProfiles();
+        return "Decca";
 
-TEST_P(UnrecognizedOrEmptyFieldsTest, QualityMetrics) {
+      default:
+        NOTREACHED();  // Fall through
+        return "unexpected!";
+    }
+  }
+
+  bool IsExampleOf(AutofillMetrics::FieldTypeQualityMetric metric,
+                   ServerFieldType predicted_type,
+                   ServerFieldType actual_type) {
+    switch (metric) {
+      case AutofillMetrics::TRUE_POSITIVE:
+        return unknown_equivalent_types_.count(actual_type) == 0 &&
+               predicted_type == actual_type;
+
+      case AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS:
+        return actual_type == AMBIGUOUS_TYPE && predicted_type == UNKNOWN_TYPE;
+
+      case AutofillMetrics::TRUE_NEGATIVE_UNKNOWN:
+        return actual_type == UNKNOWN_TYPE && predicted_type == UNKNOWN_TYPE;
+
+      case AutofillMetrics::TRUE_NEGATIVE_EMPTY:
+        return actual_type == EMPTY_TYPE && predicted_type == UNKNOWN_TYPE;
+
+      case AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS:
+        return actual_type == AMBIGUOUS_TYPE && predicted_type != UNKNOWN_TYPE;
+
+      case AutofillMetrics::FALSE_POSITIVE_UNKNOWN:
+        return actual_type == UNKNOWN_TYPE && predicted_type != UNKNOWN_TYPE;
+
+      case AutofillMetrics::FALSE_POSITIVE_EMPTY:
+        return actual_type == EMPTY_TYPE && predicted_type != UNKNOWN_TYPE;
+
+      // False negative mismatch and false positive mismatch trigger on the same
+      // conditions:
+      //   - False positive prediction of predicted type
+      //   - False negative prediction of actual type
+      case AutofillMetrics::FALSE_POSITIVE_MISMATCH:
+      case AutofillMetrics::FALSE_NEGATIVE_MISMATCH:
+        return unknown_equivalent_types_.count(actual_type) == 0 &&
+               actual_type != predicted_type && predicted_type != UNKNOWN_TYPE;
+
+      case AutofillMetrics::FALSE_NEGATIVE_UNKNOWN:
+        return unknown_equivalent_types_.count(actual_type) == 0 &&
+               actual_type != predicted_type && predicted_type == UNKNOWN_TYPE;
+
+      default:
+        NOTREACHED();
+    }
+    return false;
+  }
+
+  static int FieldTypeCross(ServerFieldType predicted_type,
+                            ServerFieldType actual_type) {
+    EXPECT_LE(predicted_type, UINT16_MAX);
+    EXPECT_LE(actual_type, UINT16_MAX);
+    return (predicted_type << 16) | actual_type;
+  }
+
+  const ServerFieldTypeSet unknown_equivalent_types_{UNKNOWN_TYPE, EMPTY_TYPE,
+                                                     AMBIGUOUS_TYPE};
+};
+
+TEST_P(QualityMetricsTest, Classification) {
+  const std::vector<std::string> prediction_sources{"Heuristic", "Server",
+                                                    "Overall"};
   // Setup the test parameters.
-  const ServerFieldType actual_field_type = GetParam().actual_field_type;
-  const ServerFieldType heuristic_type =
-      GetParam().make_prediction ? EMAIL_ADDRESS : UNKNOWN_TYPE;
-  const ServerFieldType server_type =
-      GetParam().make_prediction ? EMAIL_ADDRESS : NO_SERVER_DATA;
-  const AutofillMetrics::FieldTypeQualityMetric metric_to_test =
-      GetParam().metric_to_test;
+  ServerFieldType actual_field_type = GetParam().actual_field_type;
+  ServerFieldType predicted_type = GetParam().predicted_field_type;
+
+  VLOG(2) << "Test Case = Predicted: "
+          << AutofillType(predicted_type).ToString() << "; "
+          << "Actual: " << AutofillType(actual_field_type).ToString();
 
   // Set up our form data.
   FormData form;
@@ -638,27 +799,26 @@ TEST_P(UnrecognizedOrEmptyFieldsTest, QualityMetrics) {
   AutofillField field;
 
   // Add a first name field, that is predicted correctly.
-  test::CreateTestFormField("first", "first", "Elvis", "text", &field);
-  field.set_possible_types({NAME_FIRST});
+  test::CreateTestFormField("first", "first", ValueForType(NAME_FIRST), "text",
+                            &field);
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FIRST);
   server_types.push_back(NAME_FIRST);
 
   // Add a last name field, that is predicted correctly.
-  test::CreateTestFormField("last", "last", "Presley", "test", &field);
-  field.set_possible_types({NAME_LAST});
+  test::CreateTestFormField("last", "last", ValueForType(NAME_LAST), "test",
+                            &field);
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_LAST);
   server_types.push_back(NAME_LAST);
 
   // Add an empty or unknown field, that is predicted as per the test params.
   test::CreateTestFormField("Unknown", "Unknown",
-                            (actual_field_type == EMPTY_TYPE ? "" : "unknown"),
-                            "text", &field);
-  field.set_possible_types({actual_field_type});
+                            ValueForType(actual_field_type), "text", &field);
   form.fields.push_back(field);
-  heuristic_types.push_back(heuristic_type);
-  server_types.push_back(server_type);
+  heuristic_types.push_back(predicted_type);
+  server_types.push_back(predicted_type == UNKNOWN_TYPE ? NO_SERVER_DATA
+                                                        : predicted_type);
 
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
@@ -667,65 +827,122 @@ TEST_P(UnrecognizedOrEmptyFieldsTest, QualityMetrics) {
   base::HistogramTester histogram_tester;
   autofill_manager_->SubmitForm(form, TimeTicks::Now());
 
-  // Validate the histogram counter values.
+  // Resolve any field type ambiguity.
+  if (actual_field_type == AMBIGUOUS_TYPE) {
+    if (predicted_type == COMPANY_NAME || predicted_type == NAME_MIDDLE)
+      actual_field_type = predicted_type;
+  }
+
+  // Validate the total samples and the crossed (predicted-to-actual) samples.
+  for (const auto& source : prediction_sources) {
+    const std::string crossed_histogram = "Autofill.FieldPrediction." + source;
+    const std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source;
+    const std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source;
+
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(crossed_histogram, 3);
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 3);
+    histogram_tester.ExpectTotalCount(
+        by_field_type_histogram,
+        2 +
+            (predicted_type != UNKNOWN_TYPE &&
+             predicted_type != actual_field_type) +
+            (unknown_equivalent_types_.count(actual_field_type) == 0));
+
+    // The Crossed Histogram:
+    histogram_tester.ExpectBucketCount(
+        crossed_histogram, FieldTypeCross(NAME_FIRST, NAME_FIRST), 1);
+    histogram_tester.ExpectBucketCount(crossed_histogram,
+                                       FieldTypeCross(NAME_LAST, NAME_LAST), 1);
+    histogram_tester.ExpectBucketCount(
+        crossed_histogram,
+        FieldTypeCross((source == "Server" && predicted_type == UNKNOWN_TYPE
+                            ? NO_SERVER_DATA
+                            : predicted_type),
+                       actual_field_type),
+        1);
+  }
+
+  // Validate the individual histogram counter values.
   for (int i = 0; i < AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS; ++i) {
     // The metric enum value we're currently examining.
     auto metric = static_cast<AutofillMetrics::FieldTypeQualityMetric>(i);
 
-    // For the overall metric counts...
-    // If the current metric is the metric we're testing, then we expect its
-    // count to be 1. Otherwise, the metric's count should be zero (0) except
-    // for the TYPE_MATCH metric which should be 2 (because of the matching
-    // first and last name fields)
-    int overall_expected_count =
-        (metric == metric_to_test)
-            ? 1
-            : ((metric == AutofillMetrics::TYPE_MATCH) ? 2 : 0);
+    // The type specific expected count is 1 if (predicted, actual) is an
+    // example
+    int basic_expected_count =
+        IsExampleOf(metric, predicted_type, actual_field_type) ? 1 : 0;
 
-    histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType", metric,
-                                       overall_expected_count);
-    histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType", metric,
-                                       overall_expected_count);
-    histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType", metric,
-                                       overall_expected_count);
+    // For aggregate metrics don't capture aggregate FALSE_POSITIVE_MISMATCH.
+    // Note there are two true positive values (first and last name) hard-
+    // coded into the test.
+    int aggregate_expected_count =
+        (metric == AutofillMetrics::TRUE_POSITIVE ? 2 : 0) +
+        (metric == AutofillMetrics::FALSE_POSITIVE_MISMATCH
+             ? 0
+             : basic_expected_count);
 
-    // For the ByFieldType metric counts...
-    // We only examine the counter for the field_type being tested. If the
-    // current metric is the metric we're testing, then we expect its
-    // count to be 1 otherwise it should be 0.
-    int field_type_expected_count = (metric == metric_to_test) ? 1 : 0;
+    // If this test exercises the ambiguous middle name match, then validation
+    // of the name-specific metrics must include the true-positives created by
+    // the first and last name fields.
+    if (metric == AutofillMetrics::TRUE_POSITIVE &&
+        predicted_type == NAME_MIDDLE && actual_field_type == NAME_MIDDLE) {
+      basic_expected_count += 2;
+    }
 
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.HeuristicType.ByFieldType",
-        GetFieldTypeGroupMetric(actual_field_type, metric),
-        field_type_expected_count);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.ServerType.ByFieldType",
-        GetFieldTypeGroupMetric(actual_field_type, metric),
-        field_type_expected_count);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.PredictedType.ByFieldType",
-        GetFieldTypeGroupMetric(actual_field_type, metric),
-        field_type_expected_count);
+    // For metrics keyed to the actual field type, we don't capture unknown,
+    // empty or ambiguous and we don't capture false positive mismatches.
+    int expected_count_for_actual_type =
+        (unknown_equivalent_types_.count(actual_field_type) == 0 &&
+         metric != AutofillMetrics::FALSE_POSITIVE_MISMATCH)
+            ? basic_expected_count
+            : 0;
+
+    // For metrics keyed to the predicted field type, we don't capture unknown
+    // (empty is not a predictable value) and we don't capture false negative
+    // mismatches.
+    int expected_count_for_predicted_type =
+        (predicted_type != UNKNOWN_TYPE &&
+         metric != AutofillMetrics::FALSE_NEGATIVE_MISMATCH)
+            ? basic_expected_count
+            : 0;
+
+    for (const auto& source : prediction_sources) {
+      std::string aggregate_histogram =
+          "Autofill.FieldPredictionQuality.Aggregate." + source;
+      std::string by_field_type_histogram =
+          "Autofill.FieldPredictionQuality.ByFieldType." + source;
+      histogram_tester.ExpectBucketCount(aggregate_histogram, metric,
+                                         aggregate_expected_count);
+      histogram_tester.ExpectBucketCount(
+          by_field_type_histogram,
+          GetFieldTypeGroupMetric(actual_field_type, metric),
+          expected_count_for_actual_type);
+      histogram_tester.ExpectBucketCount(
+          by_field_type_histogram,
+          GetFieldTypeGroupMetric(predicted_type, metric),
+          expected_count_for_predicted_type);
+    }
   }
 }
 
 INSTANTIATE_TEST_CASE_P(
     AutofillMetricsTest,
-    UnrecognizedOrEmptyFieldsTest,
-    testing::Values(
-        UnrecognizedOrEmptyFieldsCase{EMPTY_TYPE,
-                                      /* make_prediction = */ false,
-                                      AutofillMetrics::TYPE_MATCH_EMPTY},
-        UnrecognizedOrEmptyFieldsCase{UNKNOWN_TYPE,
-                                      /* make_prediction = */ false,
-                                      AutofillMetrics::TYPE_MATCH_UNKNOWN},
-        UnrecognizedOrEmptyFieldsCase{EMPTY_TYPE,
-                                      /* make_prediction = */ true,
-                                      AutofillMetrics::TYPE_MISMATCH_EMPTY},
-        UnrecognizedOrEmptyFieldsCase{UNKNOWN_TYPE,
-                                      /* make_prediction = */ true,
-                                      AutofillMetrics::TYPE_MISMATCH_UNKNOWN}));
+    QualityMetricsTest,
+    testing::Values(QualityMetricsTestCase{UNKNOWN_TYPE, EMPTY_TYPE},
+                    QualityMetricsTestCase{UNKNOWN_TYPE, UNKNOWN_TYPE},
+                    QualityMetricsTestCase{UNKNOWN_TYPE, AMBIGUOUS_TYPE},
+                    QualityMetricsTestCase{UNKNOWN_TYPE, EMAIL_ADDRESS},
+                    QualityMetricsTestCase{EMAIL_ADDRESS, EMPTY_TYPE},
+                    QualityMetricsTestCase{EMAIL_ADDRESS, UNKNOWN_TYPE},
+                    QualityMetricsTestCase{EMAIL_ADDRESS, AMBIGUOUS_TYPE},
+                    QualityMetricsTestCase{EMAIL_ADDRESS, EMAIL_ADDRESS},
+                    QualityMetricsTestCase{EMAIL_ADDRESS, COMPANY_NAME},
+                    QualityMetricsTestCase{COMPANY_NAME, EMAIL_ADDRESS},
+                    QualityMetricsTestCase{NAME_MIDDLE, AMBIGUOUS_TYPE},
+                    QualityMetricsTestCase{COMPANY_NAME, AMBIGUOUS_TYPE}));
 
 // Ensures that metrics that measure timing some important Autofill functions
 // actually are recorded and retrieved.
@@ -831,92 +1048,127 @@ TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
   autofill_manager_->RunRunLoop();
 
   // Heuristic predictions.
-  // Unknown:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.NoSubmission",
-      AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.NoSubmission",
-      AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.NoSubmission",
-      AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
-      1);
+  {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate.Heuristic.NoSubmission";
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType.Heuristic.NoSubmission";
+    // False Negative:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 2);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TRUE_POSITIVE), 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_NUMBER,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+    // False Positives:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_EMPTY, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL,
+                                AutofillMetrics::FALSE_POSITIVE_EMPTY),
+        1);
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_NUMBER,
+                                AutofillMetrics::FALSE_POSITIVE_UNKNOWN),
+        1);
 
-  // Server predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
-                                     AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType.NoSubmission",
-                                     AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 7);
+  }
 
-  // Overall predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.NoSubmission",
-      AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.NoSubmission",
-      AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MATCH), 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillMetrics::TYPE_MATCH),
-      1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.NoSubmission",
-      AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType.NoSubmission",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+  // Server predictions override heuristics, so server and overall will be the
+  // same.
+  for (const std::string source : {"Server", "Overall"}) {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source + ".NoSubmission";
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source +
+        ".NoSubmission";
+
+    // Unknown.
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 2);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TRUE_POSITIVE),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
+                                AutofillMetrics::TRUE_POSITIVE),
+        1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FIRST,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+
+    // False Positives:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_EMPTY, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FIRST,
+                                AutofillMetrics::FALSE_POSITIVE_EMPTY),
+        1);
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_POSITIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS,
+                                AutofillMetrics::FALSE_POSITIVE_UNKNOWN),
+        1);
+
+    // Sanity Check:
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 6);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 7);
+  }
 }
 
 // Test that we log quality metrics for heuristics and server predictions based
@@ -987,53 +1239,46 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   EXPECT_EQ(ADDRESS_HOME_ZIP,
             form_structure_ptr->field(2)->Type().GetStorableType());
 
-  // Heuristic predictions.
-  // Unknown:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP, AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_MATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(NAME_LAST, AutofillMetrics::TYPE_MATCH), 1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(NAME_MIDDLE, AutofillMetrics::TYPE_MISMATCH), 1);
+  for (const std::string source : {"Heuristic", "Server"}) {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source +
+        ".BasedOnAutocomplete";
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source +
+        ".BasedOnAutocomplete";
 
-  // Server predictions.
-  // Unknown:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP, AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_MATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(NAME_LAST, AutofillMetrics::TYPE_MATCH), 1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.BasedOnAutocomplete",
-      AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
-      GetFieldTypeGroupMetric(NAME_MIDDLE, AutofillMetrics::TYPE_MISMATCH), 1);
+    // Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_LAST, AutofillMetrics::TRUE_POSITIVE), 1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FIRST,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_MIDDLE,
+                                AutofillMetrics::FALSE_POSITIVE_MISMATCH),
+        1);
+
+    // Sanity check.
+    histogram_tester.ExpectTotalCount(aggregate_histogram, 3);
+    histogram_tester.ExpectTotalCount(by_field_type_histogram, 4);
+  }
 }
 
 // Test that we log UPI Virtual Payment Address.
@@ -1077,195 +1322,6 @@ TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
       "Autofill.UserHappiness", AutofillMetrics::USER_DID_ENTER_UPI_VPA, 1);
 }
 
-// Test that we do not log RAPPOR metrics when the number of mismatches is not
-// high enough.
-TEST_F(AutofillMetricsTest, Rappor_LowMismatchRate_NoMetricsReported) {
-  // Set up our form data.
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-
-  std::vector<ServerFieldType> heuristic_types, server_types;
-  FormFieldData field;
-
-  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
-                            "text", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(NAME_FULL);
-  server_types.push_back(NAME_FULL);
-
-  test::CreateTestFormField("Autofill Failed", "autofillfailed",
-                            "buddy@gmail.com", "text", &field);
-  field.is_autofilled = false;
-  form.fields.push_back(field);
-  heuristic_types.push_back(EMAIL_ADDRESS);
-  server_types.push_back(NAME_LAST);
-
-  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
-  server_types.push_back(EMAIL_ADDRESS);
-
-  // Simulate having seen this form on page load.
-  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-
-  // Simulate form submission.
-  autofill_manager_->SubmitForm(form, TimeTicks::Now());
-
-  // The number of mismatches did not trigger the RAPPOR metric logging.
-  EXPECT_EQ(0, autofill_client_.test_rappor_service()->GetReportsCount());
-}
-
-// Test that we don't log RAPPOR metrics in the case heuristics and/or server
-// have no data.
-TEST_F(AutofillMetricsTest, Rappor_NoDataServerAndHeuristic_NoMetricsReported) {
-  // Set up our form data.
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-
-  std::vector<ServerFieldType> heuristic_types, server_types;
-  FormFieldData field;
-
-  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
-                            "text", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(UNKNOWN_TYPE);
-  server_types.push_back(NO_SERVER_DATA);
-
-  test::CreateTestFormField("Autofill Failed", "autofillfailed",
-                            "buddy@gmail.com", "text", &field);
-  field.is_autofilled = false;
-  form.fields.push_back(field);
-  heuristic_types.push_back(UNKNOWN_TYPE);
-  server_types.push_back(NO_SERVER_DATA);
-
-  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(UNKNOWN_TYPE);
-  server_types.push_back(NO_SERVER_DATA);
-
-  // Simulate having seen this form on page load.
-  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-
-  // Simulate form submission.
-  autofill_manager_->SubmitForm(form, TimeTicks::Now());
-
-  // No RAPPOR metrics are logged in the case of multiple UNKNOWN_TYPE and
-  // NO_SERVER_DATA for heuristics and server predictions, respectively.
-  EXPECT_EQ(0, autofill_client_.test_rappor_service()->GetReportsCount());
-}
-
-// Test that we log high number of mismatches for the server prediction.
-TEST_F(AutofillMetricsTest, Rappor_HighServerMismatchRate_MetricsReported) {
-  // Set up our form data.
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-
-  std::vector<ServerFieldType> heuristic_types, server_types;
-  FormFieldData field;
-
-  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
-                            "text", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(NAME_FULL);
-  server_types.push_back(NAME_FIRST);
-
-  test::CreateTestFormField("Autofill Failed", "autofillfailed",
-                            "buddy@gmail.com", "text", &field);
-  field.is_autofilled = false;
-  form.fields.push_back(field);
-  heuristic_types.push_back(PHONE_HOME_NUMBER);
-  server_types.push_back(NAME_LAST);
-
-  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
-  server_types.push_back(EMAIL_ADDRESS);
-
-  // Simulate having seen this form on page load.
-  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-
-  // Simulate form submission.
-  autofill_manager_->SubmitForm(form, TimeTicks::Now());
-
-  // The number of mismatches did trigger the RAPPOR metric logging for server
-  // predictions.
-  EXPECT_EQ(1, autofill_client_.test_rappor_service()->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_FALSE(
-      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
-          "Autofill.HighNumberOfHeuristicMismatches", &sample, &type));
-  EXPECT_TRUE(
-      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
-          "Autofill.HighNumberOfServerMismatches", &sample, &type));
-  EXPECT_EQ("example.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
-}
-
-// Test that we log high number of mismatches for the heuristic predictions.
-TEST_F(AutofillMetricsTest, Rappor_HighHeuristicMismatchRate_MetricsReported) {
-  // Set up our form data.
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-
-  std::vector<ServerFieldType> heuristic_types, server_types;
-  FormFieldData field;
-
-  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
-                            "text", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(NAME_FIRST);
-  server_types.push_back(NAME_FULL);
-
-  test::CreateTestFormField("Autofill Failed", "autofillfailed",
-                            "buddy@gmail.com", "text", &field);
-  field.is_autofilled = false;
-  form.fields.push_back(field);
-  heuristic_types.push_back(PHONE_HOME_NUMBER);
-  server_types.push_back(NAME_LAST);
-
-  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  heuristic_types.push_back(EMAIL_ADDRESS);
-  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
-
-  // Simulate having seen this form on page load.
-  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-
-  // Simulate form submission.
-  autofill_manager_->SubmitForm(form, TimeTicks::Now());
-
-  // The number of mismatches did trigger the RAPPOR metric logging for
-  // heuristic predictions.
-  EXPECT_EQ(1, autofill_client_.test_rappor_service()->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_FALSE(
-      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
-          "Autofill.HighNumberOfServerMismatches", &sample, &type));
-  EXPECT_TRUE(
-      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
-          "Autofill.HighNumberOfHeuristicMismatches", &sample, &type));
-  EXPECT_EQ("example.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
-}
-
 // Verify that when a field is annotated with the autocomplete attribute, its
 // predicted type is remembered when quality metrics are logged.
 TEST_F(AutofillMetricsTest, PredictedMetricsWithAutocomplete) {
@@ -1293,69 +1349,43 @@ TEST_F(AutofillMetricsTest, PredictedMetricsWithAutocomplete) {
 
   std::vector<FormData> forms(1, form);
 
-  {
-    base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks());
-    // We change the value of the text fields to change the default/seen values
-    // (hence the values are not cleared in UpdateFromCache). The new values
-    // match what is in the test profile.
-    form.fields[1].value = base::ASCIIToUTF16("79401");
-    form.fields[2].value = base::ASCIIToUTF16("2345678901");
-    autofill_manager_->SubmitForm(form, TimeTicks::Now());
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
 
+  // We change the value of the text fields to change the default/seen values
+  // (hence the values are not cleared in UpdateFromCache). The new values
+  // match what is in the test profile.
+  form.fields[1].value = base::ASCIIToUTF16("79401");
+  form.fields[2].value = base::ASCIIToUTF16("2345678901");
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  for (const std::string source : {"Heuristic", "Server", "Overall"}) {
+    std::string histogram_name =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source;
     // First verify that country was not predicted by client or server.
     histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.ServerType.ByFieldType",
+        histogram_name,
         GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.HeuristicType.ByFieldType",
-        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    // We expect a match for country because it had |autocomplete_attribute|.
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.PredictedType.ByFieldType",
-        GetFieldTypeGroupMetric(ADDRESS_HOME_COUNTRY,
-                                AutofillMetrics::TYPE_MATCH),
+                                source == "Overall"
+                                    ? AutofillMetrics::TRUE_POSITIVE
+                                    : AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
         1);
 
     // We did not predict zip code or phone number, because they did not have
     // |autocomplete_attribute|, nor client or server predictions.
     histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.ServerType.ByFieldType",
+        histogram_name,
         GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
-                                AutofillMetrics::TYPE_UNKNOWN),
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
         1);
     histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.HeuristicType.ByFieldType",
-        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.PredictedType.ByFieldType",
-        GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.ServerType.ByFieldType",
+        histogram_name,
         GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.HeuristicType.ByFieldType",
-        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                                AutofillMetrics::TYPE_UNKNOWN),
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.Quality.PredictedType.ByFieldType",
-        GetFieldTypeGroupMetric(PHONE_HOME_WHOLE_NUMBER,
-                                AutofillMetrics::TYPE_UNKNOWN),
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
         1);
 
     // Sanity check.
-    histogram_tester.ExpectTotalCount("Autofill.Quality.PredictedType", 3);
+    histogram_tester.ExpectTotalCount(histogram_name, 3);
   }
 }
 
@@ -1415,88 +1445,45 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   base::HistogramTester histogram_tester;
   autofill_manager_->SubmitForm(form, TimeTicks::Now());
 
-  // Heuristic predictions.
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_STATE,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_MATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_CITY, AutofillMetrics::TYPE_MATCH),
-      1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType",
-                                     AutofillMetrics::TYPE_MISMATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.HeuristicType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
-      1);
+  for (const std::string source : {"Heuristic", "Server", "Overall"}) {
+    std::string aggregate_histogram =
+        "Autofill.FieldPredictionQuality.Aggregate." + source;
+    std::string by_field_type_histogram =
+        "Autofill.FieldPredictionQuality.ByFieldType." + source;
 
-  // Server predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_STATE,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_MATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType",
-                                     AutofillMetrics::TYPE_MISMATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_CITY,
-                              AutofillMetrics::TYPE_MISMATCH),
-      1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.ServerType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
-      1);
-
-  // Overall predictions:
-  // Unknown:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_STATE,
-                              AutofillMetrics::TYPE_UNKNOWN),
-      1);
-  // Match:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_MATCH, 1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MATCH), 1);
-  // Mismatch:
-  histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType",
-                                     AutofillMetrics::TYPE_MISMATCH, 2);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(ADDRESS_HOME_CITY,
-                              AutofillMetrics::TYPE_MISMATCH),
-      1);
-  histogram_tester.ExpectBucketCount(
-      "Autofill.Quality.PredictedType.ByFieldType",
-      GetFieldTypeGroupMetric(EMAIL_ADDRESS, AutofillMetrics::TYPE_MISMATCH),
-      1);
+    // Unknown:
+    histogram_tester.ExpectBucketCount(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_STATE,
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
+        1);
+    // Match:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::TRUE_POSITIVE,
+                                       source == "Heuristic" ? 2 : 1);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TRUE_POSITIVE), 1);
+    // Mismatch:
+    histogram_tester.ExpectBucketCount(aggregate_histogram,
+                                       AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
+                                       source == "Heuristic" ? 1 : 2);
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(EMAIL_ADDRESS,
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+    // Source dependent:
+    histogram_tester.ExpectBucketCount(
+        by_field_type_histogram,
+        GetFieldTypeGroupMetric(ADDRESS_HOME_CITY,
+                                source == "Heuristic"
+                                    ? AutofillMetrics::TRUE_POSITIVE
+                                    : AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
+        1);
+  }
 }
 
 // Verify that when submitting an autofillable form, the stored profile metric
