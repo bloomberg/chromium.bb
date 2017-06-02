@@ -70,6 +70,9 @@ _GCLIENT_SCHEMA = schema.Schema({
     # Hooks executed before processing DEPS. See 'hooks' for more details.
     schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
 
+    # Recursion limit for nested DEPS.
+    schema.Optional('recursion'): int,
+
     # Whitelists deps for which recursion should be enabled.
     schema.Optional('recursedeps'): [
         schema.Optional(schema.Or(
@@ -111,6 +114,8 @@ def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
   def _convert(node):
     if isinstance(node, ast.Str):
       return node.s
+    elif isinstance(node, ast.Num):
+      return node.n
     elif isinstance(node, ast.Tuple):
       return tuple(map(_convert, node.elts))
     elif isinstance(node, ast.List):
