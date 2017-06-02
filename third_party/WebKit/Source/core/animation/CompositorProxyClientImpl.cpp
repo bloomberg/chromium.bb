@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/CompositorProxyClientImpl.h"
+#include "core/animation/CompositorProxyClientImpl.h"
 
 #include "core/dom/CompositorProxy.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/CompositorWorkerProxyClientImpl.h"
+#include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/CompositorProxy.h"

@@ -5,13 +5,14 @@
 #ifndef CompositorProxyClientImpl_h
 #define CompositorProxyClientImpl_h
 
+#include "core/CoreExport.h"
 #include "core/dom/CompositorProxyClient.h"
 
 namespace blink {
 
 // Registry for CompositorProxies on the control thread.
 // Owned by the control thread.
-class CompositorProxyClientImpl
+class CORE_EXPORT CompositorProxyClientImpl
     : public GarbageCollectedFinalized<CompositorProxyClientImpl>,
       public CompositorProxyClient {
   USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
