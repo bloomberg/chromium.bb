@@ -10,7 +10,7 @@ cr.define('print_preview', function() {
   */
   function NativeLayerStub() {
     settings.TestBrowserProxy.call(this, [
-        'getInitialSettings', 'setupPrinter' ]);
+        'getInitialSettings', 'getPrinters', 'setupPrinter' ]);
 
     /**
      * @private {!cr.EventTarget} The event target used for dispatching and
@@ -32,6 +32,13 @@ cr.define('print_preview', function() {
      *     to be used for the response to a |getInitialSettings| call.
      */
     this.initialSettings_ = null;
+
+    /**
+     *
+     * @private {!Array<!print_preview.LocalDestinationInfo>} Local destination
+     *     list to be used for the response to |getPrinters|.
+     */
+    this.localDestinationInfos_ = [];
 
     /**
      * @private {!print_preview.PrinterSetupResponse} The response to be sent
@@ -64,6 +71,12 @@ cr.define('print_preview', function() {
     getInitialSettings: function() {
       this.methodCalled('getInitialSettings');
       return Promise.resolve(this.initialSettings_);
+    },
+
+    /** @override */
+    getPrinters: function() {
+      this.methodCalled('getPrinters');
+      return Promise.resolve(this.localDestinationInfos_);
     },
 
     /** @override */
@@ -129,6 +142,14 @@ cr.define('print_preview', function() {
      */
     setInitialSettings: function(settings) {
       this.initialSettings_ = settings;
+    },
+
+    /**
+     * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
+     *     The local destinations to return as a response to |getPrinters|.
+     */
+    setLocalDestinations: function(localDestinations) {
+      this.localDestinationInfos_ = localDestinations;
     },
 
     /**

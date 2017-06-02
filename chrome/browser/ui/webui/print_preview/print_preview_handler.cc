@@ -661,10 +661,17 @@ printing::PrinterBackendProxy* PrintPreviewHandler::printer_backend_proxy() {
   return printer_backend_proxy_.get();
 }
 
-void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
+void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   VLOG(1) << "Enumerate printers start";
-  printer_backend_proxy()->EnumeratePrinters(base::Bind(
-      &PrintPreviewHandler::SetupPrinterList, weak_factory_.GetWeakPtr()));
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(!callback_id.empty());
+
+  AllowJavascript();
+
+  printer_backend_proxy()->EnumeratePrinters(
+      base::Bind(&PrintPreviewHandler::SetupPrinterList,
+                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
@@ -1325,6 +1332,7 @@ void PrintPreviewHandler::SendPrinterSetup(
 }
 
 void PrintPreviewHandler::SetupPrinterList(
+    const std::string& callback_id,
     const printing::PrinterList& printer_list) {
   base::ListValue printers;
   PrintersToValues(printer_list, &printers);
@@ -1337,7 +1345,7 @@ void PrintPreviewHandler::SetupPrinterList(
     has_logged_printers_count_ = true;
   }
 
-  web_ui()->CallJavascriptFunctionUnsafe("setPrinters", printers);
+  ResolveJavascriptCallback(base::Value(callback_id), printers);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
