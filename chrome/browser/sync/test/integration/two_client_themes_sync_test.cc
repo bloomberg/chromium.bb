@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
 
-  UseCustomTheme(GetProfile(0), 0);
+  SetCustomTheme(GetProfile(0));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
 
   // TODO(sync): Add functions to simulate when a pending extension
@@ -57,8 +57,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncNative)) {
   ASSERT_TRUE(SetupClients());
 
-  UseCustomTheme(GetProfile(0), 0);
-  UseCustomTheme(GetProfile(1), 0);
+  SetCustomTheme(GetProfile(0));
+  SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
 
@@ -77,8 +77,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncDefault)) {
   ASSERT_TRUE(SetupClients());
 
-  UseCustomTheme(GetProfile(0), 0);
-  UseCustomTheme(GetProfile(1), 0);
+  SetCustomTheme(GetProfile(0));
+  SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  UseCustomTheme(GetProfile(0), 0);
+  SetCustomTheme(GetProfile(0));
 
   ASSERT_TRUE(
       ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(0)).Wait());
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(1)));
 
-  UseCustomTheme(GetProfile(0), 1);
+  SetCustomTheme(GetProfile(0), 1);
   ASSERT_TRUE(
       ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(1)).Wait());
   EXPECT_EQ(GetCustomTheme(1), GetThemeID(GetProfile(0)));

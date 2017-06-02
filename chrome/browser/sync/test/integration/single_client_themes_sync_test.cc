@@ -4,19 +4,24 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "content/public/test/test_utils.h"
 
 using themes_helper::GetCustomTheme;
 using themes_helper::GetThemeID;
-using themes_helper::UseCustomTheme;
 using themes_helper::UseDefaultTheme;
 using themes_helper::UseSystemTheme;
 using themes_helper::UsingCustomTheme;
 using themes_helper::UsingDefaultTheme;
 using themes_helper::UsingSystemTheme;
+
+namespace {
 
 class SingleClientThemesSyncTest : public SyncTest {
  public:
@@ -34,18 +39,18 @@ class SingleClientThemesSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
-  ASSERT_FALSE(UsingCustomTheme(verifier()));
+  EXPECT_FALSE(UsingCustomTheme(GetProfile(0)));
+  EXPECT_FALSE(UsingCustomTheme(verifier()));
 
-  UseCustomTheme(GetProfile(0), 0);
-  UseCustomTheme(verifier(), 0);
-  ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
-  ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
+  SetCustomTheme(GetProfile(0));
+  SetCustomTheme(verifier());
+  EXPECT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
+  EXPECT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
-  ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
+  EXPECT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
+  EXPECT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 }
 
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
@@ -56,41 +61,43 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  UseCustomTheme(GetProfile(0), 0);
-  UseCustomTheme(verifier(), 0);
-  ASSERT_FALSE(UsingSystemTheme(GetProfile(0)));
-  ASSERT_FALSE(UsingSystemTheme(verifier()));
+  SetCustomTheme(GetProfile(0));
+  SetCustomTheme(verifier());
+  EXPECT_FALSE(UsingSystemTheme(GetProfile(0)));
+  EXPECT_FALSE(UsingSystemTheme(verifier()));
 
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   UseSystemTheme(GetProfile(0));
   UseSystemTheme(verifier());
-  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingSystemTheme(verifier()));
+  EXPECT_TRUE(UsingSystemTheme(GetProfile(0)));
+  EXPECT_TRUE(UsingSystemTheme(verifier()));
 
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingSystemTheme(verifier()));
+  EXPECT_TRUE(UsingSystemTheme(GetProfile(0)));
+  EXPECT_TRUE(UsingSystemTheme(verifier()));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  UseCustomTheme(GetProfile(0), 0);
-  UseCustomTheme(verifier(), 0);
-  ASSERT_FALSE(UsingDefaultTheme(GetProfile(0)));
-  ASSERT_FALSE(UsingDefaultTheme(verifier()));
+  SetCustomTheme(GetProfile(0));
+  EXPECT_FALSE(UsingDefaultTheme(GetProfile(0)));
 
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  SetCustomTheme(verifier());
+  EXPECT_FALSE(UsingDefaultTheme(verifier()));
 
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   UseDefaultTheme(GetProfile(0));
+  EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
   UseDefaultTheme(verifier());
-  ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingDefaultTheme(verifier()));
+  EXPECT_TRUE(UsingDefaultTheme(verifier()));
 
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingDefaultTheme(verifier()));
+  EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
+  EXPECT_TRUE(UsingDefaultTheme(verifier()));
 }
+
+}  // namespace

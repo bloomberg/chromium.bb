@@ -11,9 +11,14 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "components/sync/base/model_type.h"
 
+class Profile;
+
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
+
+// Sets a custom theme and wait until the asynchronous process is done.
+void SetCustomTheme(Profile* profile, int theme_index = 0);
 
 // Checker to block until the server has a given number of entities.
 class ServerCountMatchStatusChecker

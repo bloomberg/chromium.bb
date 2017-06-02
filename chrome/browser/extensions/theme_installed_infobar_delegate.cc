@@ -144,7 +144,9 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
     const extensions::Extension* previous_theme =
         extension_service_->GetExtensionById(previous_theme_id_, true);
     if (previous_theme) {
-      theme_service_->SetTheme(previous_theme);
+      theme_service_->RevertToTheme(previous_theme);
+      // TODO(estade): while we're waiting to close, it would be nice to
+      // indicate that the theme is busy reverting.
       return false;  // The theme change will close us.
     }
   }

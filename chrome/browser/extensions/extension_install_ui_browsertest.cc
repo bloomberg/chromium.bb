@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 
 using content::WebContents;
@@ -34,6 +35,9 @@ using extensions::Extension;
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
  public:
+  ExtensionInstallUIBrowserTest() {}
+  ~ExtensionInstallUIBrowserTest() override {}
+
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
@@ -47,18 +51,29 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
         infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
+    WaitForThemeChange();
     ASSERT_EQ(0U, infobar_service->infobar_count());
   }
 
   // Install the given theme from the data dir and verify expected name.
   void InstallThemeAndVerify(const char* theme_name,
                              const std::string& expected_name) {
-    // If there is already a theme installed, the current theme should be
-    // disabled and the new one installed + enabled.
-    int expected_change = GetTheme() ? 0 : 1;
     const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_name);
-    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, expected_change,
-        browser()));
+    const bool theme_exists = GetTheme();
+    // Themes install asynchronously so we must check the number of enabled
+    // extensions after theme install completes.
+    size_t num_before = extensions::ExtensionRegistry::Get(profile())
+                            ->enabled_extensions()
+                            .size();
+    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, 1, browser()));
+    WaitForThemeChange();
+    size_t num_after = extensions::ExtensionRegistry::Get(profile())
+                           ->enabled_extensions()
+                           .size();
+    // If a theme was already installed, we're just swapping one for another, so
+    // no change in extension count.
+    EXPECT_EQ(num_before + (theme_exists ? 0 : 1), num_after);
+
     const Extension* theme = GetTheme();
     ASSERT_TRUE(theme);
     ASSERT_EQ(theme->name(), expected_name);
@@ -67,6 +82,17 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   const Extension* GetTheme() const {
     return ThemeServiceFactory::GetThemeForProfile(browser()->profile());
   }
+
+  void WaitForThemeChange() {
+    content::WindowedNotificationObserver theme_change_observer(
+        chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+        content::Source<ThemeService>(
+            ThemeServiceFactory::GetForProfile(browser()->profile())));
+    theme_change_observer.Wait();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallUIBrowserTest);
 };
 
 // Fails on Linux and Windows (http://crbug.com/580907).
@@ -75,6 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // Install theme once and undo to verify we go back to default theme.
   base::FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
+  WaitForThemeChange();
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
@@ -83,10 +110,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   // Set the same theme twice and undo to verify we go back to default theme.
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
+  WaitForThemeChange();
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
+  WaitForThemeChange();
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
@@ -104,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // Then install second theme.
   InstallThemeAndVerify("theme2", "snowflake theme");
   const Extension* theme2 = GetTheme();
-  EXPECT_FALSE(theme_id == theme2->id());
+  EXPECT_NE(theme_id, theme2->id());
 
   // Undo second theme will revert to first theme.
   VerifyThemeInfoBarAndUndoInstall();
