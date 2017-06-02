@@ -13,8 +13,8 @@ namespace vr_shell {
 
 namespace {
 
-static constexpr SkColor kBackground = 0xCCAAAAAA;
-static constexpr SkColor kForeground = 0xCC444444;
+static constexpr SkColor kBackground = 0xFF8C8C8C;
+static constexpr SkColor kForeground = 0xFF333333;
 static constexpr float kWidth = 0.24;
 static constexpr float kHeight = 0.008;
 

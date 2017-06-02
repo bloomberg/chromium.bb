@@ -48,6 +48,10 @@ struct ColorScheme {
 
   // The color used for disabled icons.
   SkColor disabled;
+
+  // Colors used for the loading progress bar indicator.
+  SkColor loading_background;
+  SkColor loading_foreground;
 };
 
 }  // namespace vr_shell

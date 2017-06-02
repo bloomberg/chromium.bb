@@ -22,15 +22,17 @@ using security_state::SecurityLevel;
 
 namespace vr_shell {
 
+// TODO(cjgrant): Use ColorScheme instead of hardcoded values
+// where it makes sense.
 static const SkColor kEmphasizedColor = 0xFF000000;
 static const SkColor kDeemphasizedColor = 0xFF5A5A5A;
 static const SkColor kSecureColor = gfx::kGoogleGreen700;
 static const SkColor kWarningColor = gfx::kGoogleRed700;
 
-static const SkColor kIncognitoDeemphasizedColor = 0xFFE6E6E6;
-static const SkColor kIncognitoEmphasizedColor = 0xFFFFFFFF;
-static const SkColor kIncognitoSecureColor = 0xFFE6E6E6;
-static const SkColor kIncognitoWarningColor = 0xFFE6E6E6;
+static const SkColor kIncognitoDeemphasizedColor = 0xFF878787;
+static const SkColor kIncognitoEmphasizedColor = 0xFFEDEDED;
+static const SkColor kIncognitoSecureColor = 0xFFEDEDED;
+static const SkColor kIncognitoWarningColor = 0xFFEDEDED;
 
 static constexpr int kUrlWidth = 400;
 static constexpr int kUrlHeight = 30;
