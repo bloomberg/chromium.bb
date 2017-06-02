@@ -196,16 +196,22 @@ def CumulativeSmallIntegerDistribution(name, reset_after=False):
       bucketer=ts_mon.FixedWidthBucketer(1))
 
 @_Metric
-def SecondsDistribution(name, reset_after=False):
+def SecondsDistribution(name, scale=1, reset_after=False):
   """Returns a metric handle for a cumulative distribution named |name|.
 
   The distribution handle returned by this method is better suited than the
   default one for recording handling times, in seconds.
 
   This metric handle has bucketing that is optimized for time intervals
-  (in seconds) in the range of 1 second to 32 days.
+  (in seconds) in the range of 1 second to 32 days. Use |scale| to adjust this
+  (e.g. scale=0.1 covers a range from .1 seconds to 3.2 days).
+
+  Args:
+    name: string name of metric
+    scale: scaling factor of buckets, and size of the first bucket. default: 1
   """
-  b = ts_mon.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR)
+  b = ts_mon.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR,
+                               scale=scale)
   return ts_mon.CumulativeDistributionMetric(
       name, bucketer=b, units=ts_mon.MetricsDataUnits.SECONDS)
 
@@ -231,7 +237,7 @@ def PercentageDistribution(name, num_buckets=1000, reset_after=False):
   return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
 
 @contextlib.contextmanager
-def SecondsTimer(name, fields=None):
+def SecondsTimer(name, scale=1, fields=None):
   """Record the time of an operation to a SecondsDistributionMetric.
 
   Records the time taken inside of the context block, to the
@@ -260,7 +266,7 @@ def SecondsTimer(name, fields=None):
                    # value for it was specified in the context constructor.
                    # It will be silently ignored.
   """
-  m = SecondsDistribution(name)
+  m = SecondsDistribution(name, scale=scale)
   f = fields or {}
   f = dict(f)
   keys = f.keys()
@@ -295,7 +301,7 @@ def SecondsTimerDecorator(name, fields=None):
   def decorator(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-      with SecondsTimer(name, fields):
+      with SecondsTimer(name, fields=fields):
         return fn(*args, **kwargs)
 
     return wrapper
