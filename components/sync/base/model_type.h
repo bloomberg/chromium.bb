@@ -285,9 +285,7 @@ const char* ModelTypeToString(ModelType model_type);
 int ModelTypeToHistogramInt(ModelType model_type);
 
 // Handles all model types, and not just real ones.
-//
-// Caller takes ownership of returned value.
-base::Value* ModelTypeToValue(ModelType model_type);
+std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type);
 
 // Converts a Value into a ModelType - complement to ModelTypeToValue().
 ModelType ModelTypeFromValue(const base::Value& value);

@@ -106,7 +106,7 @@ std::string P2PNotificationData::ToString() const {
   base::DictionaryValue dict;
   dict.SetString(kSenderIdKey, sender_id_);
   dict.SetString(kNotificationTypeKey, P2PNotificationTargetToString(target_));
-  dict.Set(kInvalidationsKey, invalidation_map_.ToValue().release());
+  dict.Set(kInvalidationsKey, invalidation_map_.ToValue());
   std::string json;
   base::JSONWriter::Write(dict, &json);
   return json;

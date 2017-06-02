@@ -504,7 +504,8 @@ FakeServer::GetEntitiesAsDictionaryValue() {
   // Initialize an empty ListValue for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
-    dictionary->Set(ModelTypeToString(it.Get()), new base::ListValue());
+    dictionary->Set(ModelTypeToString(it.Get()),
+                    base::MakeUnique<base::ListValue>());
   }
 
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();

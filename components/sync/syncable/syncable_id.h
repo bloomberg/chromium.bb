@@ -69,9 +69,8 @@ class Id {
   // by operator<.
   Id GetLexicographicSuccessor() const;
 
-  // Dumps the ID as a value and returns it.  Transfers ownership of
-  // the StringValue to the caller.
-  base::Value* ToValue() const;
+  // Dumps the ID as a value and returns it.
+  std::unique_ptr<base::Value> ToValue() const;
 
   // Three functions are used to work with our proto buffers.
   std::string GetServerId() const;

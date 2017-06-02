@@ -1054,7 +1054,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewWithScaling) {
 
   // Non default scaling value
   dict.SetInteger(kSettingScaleFactor, 80);
-  dict.Set(kSettingMediaSize, media_size.release());
+  dict.Set(kSettingMediaSize, std::move(media_size));
 
   OnPrintForPrintPreview(dict);
 

@@ -4,7 +4,10 @@
 
 #include "components/sync/engine_impl/js_sync_encryption_handler_observer.h"
 
+#include <utility>
+
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
@@ -104,11 +107,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnBootstrapTokenUpdated) {
 }
 
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
-  base::DictionaryValue expected_details;
-  base::ListValue* encrypted_type_values = new base::ListValue();
-  const bool encrypt_everything = false;
-  expected_details.Set("encryptedTypes", encrypted_type_values);
-  expected_details.SetBoolean("encryptEverything", encrypt_everything);
+  auto encrypted_type_values = base::MakeUnique<base::ListValue>();
   ModelTypeSet encrypted_types;
 
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
@@ -117,12 +116,17 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
     encrypted_type_values->AppendString(ModelTypeToString(type));
   }
 
+  base::DictionaryValue expected_details;
+  const bool kEncrytEverything = false;
+  expected_details.Set("encryptedTypes", std::move(encrypted_type_values));
+  expected_details.SetBoolean("encryptEverything", kEncrytEverything);
+
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onEncryptedTypesChanged",
                             HasDetailsAsDictionary(expected_details)));
 
   js_sync_encryption_handler_observer_.OnEncryptedTypesChanged(
-      encrypted_types, encrypt_everything);
+      encrypted_types, kEncrytEverything);
   PumpLoop();
 }
 

@@ -4,6 +4,9 @@
 
 #include "components/proximity_auth/screenlock_bridge.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -63,15 +66,15 @@ ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {
 
 std::unique_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  auto result = base::MakeUnique<base::DictionaryValue>();
   std::string icon_id = GetIdForIcon(icon_);
   result->SetString("id", icon_id);
 
   if (!tooltip_.empty()) {
-    base::DictionaryValue* tooltip_options = new base::DictionaryValue();
+    auto tooltip_options = base::MakeUnique<base::DictionaryValue>();
     tooltip_options->SetString("text", tooltip_);
     tooltip_options->SetBoolean("autoshow", autoshow_tooltip_);
-    result->Set("tooltip", tooltip_options);
+    result->Set("tooltip", std::move(tooltip_options));
   }
 
   if (!aria_label_.empty())

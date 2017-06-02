@@ -209,7 +209,7 @@ std::string CreateRequestBody(
   base::DictionaryValue request_dict;
   request_dict.SetString("method", method);
   request_dict.SetString("apiVersion", "v1");
-  request_dict.Set("params", params_dict.release());
+  request_dict.Set("params", std::move(params_dict));
 
   std::string request_body;
   bool success = base::JSONWriter::Write(request_dict, &request_body);

@@ -4,6 +4,7 @@
 #ifndef COMPONENTS_SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 #define COMPONENTS_SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/values.h"
@@ -88,7 +89,7 @@ struct SyncProtocolError {
   SyncProtocolError();
   SyncProtocolError(const SyncProtocolError& other);
   ~SyncProtocolError();
-  base::DictionaryValue* ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 };
 
 const char* GetSyncErrorTypeString(SyncProtocolErrorType type);

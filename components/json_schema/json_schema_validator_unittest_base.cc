@@ -255,9 +255,9 @@ void JSONSchemaValidatorTestBase::TestObject() {
   schema->Remove(schema::kPatternProperties, NULL);
 
   // Test additional properties.
-  base::DictionaryValue* additional_properties = new base::DictionaryValue();
+  base::DictionaryValue* additional_properties = schema->SetDictionary(
+      schema::kAdditionalProperties, base::MakeUnique<base::DictionaryValue>());
   additional_properties->SetString(schema::kType, schema::kAny);
-  schema->Set(schema::kAdditionalProperties, additional_properties);
 
   instance->SetBoolean("extra", true);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
@@ -406,9 +406,9 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
                      schema::kString,
                      schema::kInteger));
 
-  base::DictionaryValue* additional_properties = new base::DictionaryValue();
+  base::DictionaryValue* additional_properties = schema->SetDictionary(
+      schema::kAdditionalProperties, base::MakeUnique<base::DictionaryValue>());
   additional_properties->SetString(schema::kType, schema::kAny);
-  schema->Set(schema::kAdditionalProperties, additional_properties);
   instance->Set(0, base::MakeUnique<base::Value>("42"));
   instance->AppendString("anything");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);

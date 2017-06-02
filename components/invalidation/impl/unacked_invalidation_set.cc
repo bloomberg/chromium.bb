@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -167,7 +169,7 @@ std::unique_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
        it != invalidations_.end(); ++it) {
     list_value->Append(it->ToValue());
   }
-  value->Set(kInvalidationListKey, list_value.release());
+  value->Set(kInvalidationListKey, std::move(list_value));
 
   return value;
 }

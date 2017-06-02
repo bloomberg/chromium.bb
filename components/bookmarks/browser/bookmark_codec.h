@@ -42,15 +42,15 @@ class BookmarkCodec {
   // returned object. This is invoked to encode the contents of the bookmark bar
   // model and is currently a convenience to invoking Encode that takes the
   // bookmark bar node and other folder node.
-  base::Value* Encode(BookmarkModel* model);
+  std::unique_ptr<base::Value> Encode(BookmarkModel* model);
 
-  // Encodes the bookmark bar and other folders returning the JSON value. It's
-  // up to the caller to delete the returned object.
-  base::Value* Encode(const BookmarkNode* bookmark_bar_node,
-                      const BookmarkNode* other_folder_node,
-                      const BookmarkNode* mobile_folder_node,
-                      const BookmarkNode::MetaInfoMap* model_meta_info_map,
-                      int64_t sync_transaction_version);
+  // Encodes the bookmark bar and other folders returning the JSON value.
+  std::unique_ptr<base::Value> Encode(
+      const BookmarkNode* bookmark_bar_node,
+      const BookmarkNode* other_folder_node,
+      const BookmarkNode* mobile_folder_node,
+      const BookmarkNode::MetaInfoMap* model_meta_info_map,
+      int64_t sync_transaction_version);
 
   // Decodes the previously encoded value to the specified nodes as well as
   // setting |max_node_id| to the greatest node id. Returns true on success,
@@ -112,9 +112,9 @@ class BookmarkCodec {
   // Encodes node and all its children into a Value object and returns it.
   std::unique_ptr<base::Value> EncodeNode(const BookmarkNode* node);
 
-  // Encodes the given meta info into a Value object and returns it. The caller
-  // takes ownership of the returned object.
-  base::Value* EncodeMetaInfo(const BookmarkNode::MetaInfoMap& meta_info_map);
+  // Encodes the given meta info into a Value object and returns it.
+  std::unique_ptr<base::Value> EncodeMetaInfo(
+      const BookmarkNode::MetaInfoMap& meta_info_map);
 
   // Helper to perform decoding.
   bool DecodeHelper(BookmarkNode* bb_node,

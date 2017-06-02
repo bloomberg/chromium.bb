@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/string_escape.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cryptographer.h"
@@ -82,15 +83,15 @@ template <class T, class U, class V>
 void SetFieldValues(const EntryKernel& kernel,
                     base::DictionaryValue* dictionary_value,
                     const char* (*enum_key_fn)(T),
-                    V* (*enum_value_fn)(U),
+                    std::unique_ptr<V> (*enum_value_fn)(U),
                     int field_key_min,
                     int field_key_max) {
   DCHECK_LE(field_key_min, field_key_max);
   for (int i = field_key_min; i <= field_key_max; ++i) {
     T field = static_cast<T>(i);
     const std::string& key = enum_key_fn(field);
-    V* value = enum_value_fn(kernel.ref(field));
-    dictionary_value->Set(key, value);
+    std::unique_ptr<V> value = enum_value_fn(kernel.ref(field));
+    dictionary_value->Set(key, std::move(value));
   }
 }
 
@@ -121,32 +122,33 @@ void SetEncryptableProtoValues(const EntryKernel& kernel,
 
 // Helper functions for SetFieldValues().
 
-base::Value* Int64ToValue(int64_t i) {
-  return new base::Value(base::Int64ToString(i));
+std::unique_ptr<base::Value> Int64ToValue(int64_t i) {
+  return base::MakeUnique<base::Value>(base::Int64ToString(i));
 }
 
-base::Value* TimeToValue(const base::Time& t) {
-  return new base::Value(GetTimeDebugString(t));
+std::unique_ptr<base::Value> TimeToValue(const base::Time& t) {
+  return base::MakeUnique<base::Value>(GetTimeDebugString(t));
 }
 
-base::Value* IdToValue(const Id& id) {
+std::unique_ptr<base::Value> IdToValue(const Id& id) {
   return id.ToValue();
 }
 
-base::Value* BooleanToValue(bool bool_val) {
-  return new base::Value(bool_val);
+std::unique_ptr<base::Value> BooleanToValue(bool bool_val) {
+  return base::MakeUnique<base::Value>(bool_val);
 }
 
-base::Value* StringToValue(const std::string& str) {
-  return new base::Value(str);
+std::unique_ptr<base::Value> StringToValue(const std::string& str) {
+  return base::MakeUnique<base::Value>(str);
 }
 
-base::Value* UniquePositionToValue(const UniquePosition& pos) {
-  return new base::Value(pos.ToDebugString());
+std::unique_ptr<base::Value> UniquePositionToValue(const UniquePosition& pos) {
+  return base::MakeUnique<base::Value>(pos.ToDebugString());
 }
 
-base::Value* AttachmentMetadataToValue(const sync_pb::AttachmentMetadata& a) {
-  return new base::Value(a.SerializeAsString());
+std::unique_ptr<base::Value> AttachmentMetadataToValue(
+    const sync_pb::AttachmentMetadata& a) {
+  return base::MakeUnique<base::Value>(a.SerializeAsString());
 }
 
 // Estimates memory usage of ProtoValuePtr<T> arrays where consecutive
@@ -166,9 +168,9 @@ size_t EstimateSharedMemoryUsage(ProtoValuePtr<T> const (&ptrs)[N]) {
 
 }  // namespace
 
-base::DictionaryValue* EntryKernel::ToValue(
+std::unique_ptr<base::DictionaryValue> EntryKernel::ToValue(
     Cryptographer* cryptographer) const {
-  base::DictionaryValue* kernel_info = new base::DictionaryValue();
+  auto kernel_info = base::MakeUnique<base::DictionaryValue>();
   kernel_info->SetBoolean("isDirty", is_dirty());
   ModelType dataType = GetServerModelType();
   if (!IsRealDataType(dataType))
@@ -176,52 +178,52 @@ base::DictionaryValue* EntryKernel::ToValue(
   kernel_info->Set("modelType", ModelTypeToValue(dataType));
 
   // Int64 fields.
-  SetFieldValues(*this, kernel_info, &GetMetahandleFieldString, &Int64ToValue,
-                 INT64_FIELDS_BEGIN, META_HANDLE);
-  SetFieldValues(*this, kernel_info, &GetBaseVersionString, &Int64ToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetMetahandleFieldString,
+                 &Int64ToValue, INT64_FIELDS_BEGIN, META_HANDLE);
+  SetFieldValues(*this, kernel_info.get(), &GetBaseVersionString, &Int64ToValue,
                  META_HANDLE + 1, BASE_VERSION);
-  SetFieldValues(*this, kernel_info, &GetInt64FieldString, &Int64ToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetInt64FieldString, &Int64ToValue,
                  BASE_VERSION + 1, INT64_FIELDS_END - 1);
 
   // Time fields.
-  SetFieldValues(*this, kernel_info, &GetTimeFieldString, &TimeToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetTimeFieldString, &TimeToValue,
                  TIME_FIELDS_BEGIN, TIME_FIELDS_END - 1);
 
   // ID fields.
-  SetFieldValues(*this, kernel_info, &GetIdFieldString, &IdToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetIdFieldString, &IdToValue,
                  ID_FIELDS_BEGIN, ID_FIELDS_END - 1);
 
   // Bit fields.
-  SetFieldValues(*this, kernel_info, &GetIndexedBitFieldString, &BooleanToValue,
-                 BIT_FIELDS_BEGIN, INDEXED_BIT_FIELDS_END - 1);
-  SetFieldValues(*this, kernel_info, &GetIsDelFieldString, &BooleanToValue,
-                 INDEXED_BIT_FIELDS_END, IS_DEL);
-  SetFieldValues(*this, kernel_info, &GetBitFieldString, &BooleanToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetIndexedBitFieldString,
+                 &BooleanToValue, BIT_FIELDS_BEGIN, INDEXED_BIT_FIELDS_END - 1);
+  SetFieldValues(*this, kernel_info.get(), &GetIsDelFieldString,
+                 &BooleanToValue, INDEXED_BIT_FIELDS_END, IS_DEL);
+  SetFieldValues(*this, kernel_info.get(), &GetBitFieldString, &BooleanToValue,
                  IS_DEL + 1, BIT_FIELDS_END - 1);
 
   // String fields.
   {
     // Pick out the function overload we want.
-    SetFieldValues(*this, kernel_info, &GetStringFieldString, &StringToValue,
-                   STRING_FIELDS_BEGIN, STRING_FIELDS_END - 1);
+    SetFieldValues(*this, kernel_info.get(), &GetStringFieldString,
+                   &StringToValue, STRING_FIELDS_BEGIN, STRING_FIELDS_END - 1);
   }
 
   // Proto fields.
-  SetEncryptableProtoValues(*this, cryptographer, kernel_info,
+  SetEncryptableProtoValues(*this, cryptographer, kernel_info.get(),
                             PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 
   // UniquePosition fields
-  SetFieldValues(*this, kernel_info, &GetUniquePositionFieldString,
+  SetFieldValues(*this, kernel_info.get(), &GetUniquePositionFieldString,
                  &UniquePositionToValue, UNIQUE_POSITION_FIELDS_BEGIN,
                  UNIQUE_POSITION_FIELDS_END - 1);
 
   // AttachmentMetadata fields
-  SetFieldValues(*this, kernel_info, &GetAttachmentMetadataFieldString,
+  SetFieldValues(*this, kernel_info.get(), &GetAttachmentMetadataFieldString,
                  &AttachmentMetadataToValue, ATTACHMENT_METADATA_FIELDS_BEGIN,
                  ATTACHMENT_METADATA_FIELDS_END - 1);
 
   // Bit temps.
-  SetFieldValues(*this, kernel_info, &GetBitTempString, &BooleanToValue,
+  SetFieldValues(*this, kernel_info.get(), &GetBitTempString, &BooleanToValue,
                  BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);
 
   return kernel_info;
@@ -251,7 +253,7 @@ std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(
 
 std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->Set("original", mutation.original.ToValue(nullptr));
   dict->Set("mutated", mutation.mutated.ToValue(nullptr));
   return dict;

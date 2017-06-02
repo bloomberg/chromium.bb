@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/reading_list/core/reading_list_enable_flags.h"
@@ -562,16 +563,16 @@ int ModelTypeToHistogramInt(ModelType model_type) {
   return 0;
 }
 
-base::Value* ModelTypeToValue(ModelType model_type) {
+std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
-    return new base::Value(ModelTypeToString(model_type));
+    return base::MakeUnique<base::Value>(ModelTypeToString(model_type));
   } else if (model_type == TOP_LEVEL_FOLDER) {
-    return new base::Value("Top-level folder");
+    return base::MakeUnique<base::Value>("Top-level folder");
   } else if (model_type == UNSPECIFIED) {
-    return new base::Value("Unspecified");
+    return base::MakeUnique<base::Value>("Unspecified");
   }
   NOTREACHED();
-  return new base::Value(std::string());
+  return base::MakeUnique<base::Value>(std::string());
 }
 
 ModelType ModelTypeFromValue(const base::Value& value) {

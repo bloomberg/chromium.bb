@@ -231,7 +231,7 @@ std::unique_ptr<const Value> DomainReliabilityContext::CreateReport(
 
   std::unique_ptr<DictionaryValue> report_value(new DictionaryValue());
   report_value->SetString("reporter", upload_reporter_string_);
-  report_value->Set("entries", beacons_value.release());
+  report_value->Set("entries", std::move(beacons_value));
 
   *max_upload_depth_out = max_upload_depth;
   return std::move(report_value);
