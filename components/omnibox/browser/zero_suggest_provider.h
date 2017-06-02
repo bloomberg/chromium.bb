@@ -116,11 +116,10 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // function to return those |urls|.
   void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& urls);
 
-  // Whether we can show zero suggest without sending |current_page_url| to
-  // |suggest_url| search provider. Also checks that other conditions for
-  // non-contextual zero suggest are satisfied.
-  bool ShouldShowNonContextualZeroSuggest(const GURL& suggest_url,
-                                          const GURL& current_page_url) const;
+  // Whether we can show zero suggest suggestions that are not based on
+  // |current_page_url|. Also checks that other conditions for non-contextual
+  // zero suggest are satisfied.
+  bool ShouldShowNonContextualZeroSuggest(const GURL& current_page_url) const;
 
   // Returns a URL string that should be used to to request contextual
   // suggestions from the default provider.  Does not take into account whether
