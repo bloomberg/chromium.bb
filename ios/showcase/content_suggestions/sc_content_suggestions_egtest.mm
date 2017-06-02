@@ -4,6 +4,9 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "components/strings/grit/components_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
@@ -20,6 +23,14 @@
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunch {
   showcase_utils::Open(@"ContentSuggestionsViewController");
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)]
+      assertWithMatcher:grey_interactable()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   showcase_utils::Close();
 }
 

@@ -6,11 +6,24 @@ source_set("content_suggestions") {
   sources = [
     "sc_content_suggestions_coordinator.h",
     "sc_content_suggestions_coordinator.mm",
+    "sc_content_suggestions_data_source.h",
+    "sc_content_suggestions_data_source.mm",
+    "sc_content_suggestions_item.h",
+    "sc_content_suggestions_item.mm",
+    "sc_content_suggestions_most_visited_item.h",
+    "sc_content_suggestions_most_visited_item.mm",
   ]
   deps = [
     "//base",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
+    "//ios/chrome/browser/ui/content_suggestions/identifier",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/showcase/common",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -22,6 +35,9 @@ source_set("eg_tests") {
     "sc_content_suggestions_egtest.mm",
   ]
   deps = [
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
     "//ios/third_party/earl_grey",
   ]
