@@ -12,7 +12,7 @@ enum OperationType {
     RuntimeEnabled=Budget,
     Exposed=(Window,Worker)
 ] interface BudgetService {
-    [OriginTrialEnabled=BudgetQuery, CallWith=ScriptState] Promise<double> getCost(OperationType operation);
-    [OriginTrialEnabled=BudgetQuery, CallWith=ScriptState] Promise<sequence<BudgetState>> getBudget();
+    [OriginTrialEnabled=BudgetQuery, CallWith=ScriptState, MeasureAs=BudgetAPIGetCost] Promise<double> getCost(OperationType operation);
+    [OriginTrialEnabled=BudgetQuery, CallWith=ScriptState, MeasureAs=BudgetAPIGetBudget] Promise<sequence<BudgetState>> getBudget();
     [CallWith=ScriptState] Promise<boolean> reserve(OperationType operation);
 };
