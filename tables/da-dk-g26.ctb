@@ -993,11 +993,22 @@ noback context `["-"]~ @36-36
 # Ensure letsign between letter and numsign
 noback context $l[]$D @6
 
+# No "nd", "hv", "or", or "st" after a digit and a letsign
+noback context $dy["hv"] @6-125-1236
+noback context $dy$Spm["hv"] @6-125-1236
+noback context $dy["nd"] @6-1345-145
+noback context $dy$Spm["nd"] @6-1345-145
+noback context $dy["or"] @6-135-1235
+noback context $dy$Spm["or"] @6-135-1235
+noback context $dy["st"] @6-234-2345
+noback context $dy$Spm["st"] @6-234-2345
+noback context $dy["te"] @6-2345-15
+noback context $dy$Spm["te"] @6-2345-15
+
+
 #ensure dot 6 between a digit and a letter
 noback context $dy[]$u @6
-
-# The rules are unclear whether to have letsign after digit + punctuation
-#noback context $dy$Spm.[]$u @6
+noback context $dy$Spm.[]$u @6
 
 ### context - backward translation
 
@@ -1084,11 +1095,11 @@ nofor pass2 $l[]@46 @68-6
 ### Pass 3 - backward translation
 
 # Save letters that have been defined with letsign as part of their definitions
-nofor pass3 @6-12345 @123457
-nofor pass3 @6-2456 @24567
-nofor pass3 @6-1346 @13467
-nofor pass3 @6-1356 @13567
-nofor pass3 @6-1256 @12567
+nofor pass3 @6-12345 @6-123457
+nofor pass3 @6-2456 @6-24567
+nofor pass3 @6-1346 @6-13467
+nofor pass3 @6-1356 @6-13567
+nofor pass3 @6-1256 @6-12567
 
 # save ~ and |  before inserting extra letsigns and endcapsword in pass 2.
 nofor pass3 @45-6 @467 # Create alternative representation of "~"
