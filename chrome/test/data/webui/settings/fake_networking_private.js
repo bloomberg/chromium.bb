@@ -29,6 +29,7 @@ cr.define('settings', function() {
         Ethernet: {Type: 'Ethernet', State: 'Enabled'},
         WiFi: {Type: 'WiFi', State: ''},
         Cellular: {Type: 'Cellular', State: ''},
+        Tether: {Type: 'Tether', State: ''},
         WiMAX: {Type: 'WiMAX', State: ''},
       };
 
@@ -56,7 +57,13 @@ cr.define('settings', function() {
     getProperties: assertNotReached,
 
     /** @override */
-    getManagedProperties: assertNotReached,
+    getManagedProperties: function(guid) {
+      var result = this.networkStates_.find(function(state) {
+        return state.GUID == guid;
+      });
+      // TODO(stevenjb): Convert state to ManagedProperties.
+      return result;
+    },
 
     /** @override */
     getState: assertNotReached,

@@ -158,8 +158,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
       if (tether_technology_state_ != TECHNOLOGY_ENABLED &&
           tether_technology_state_ != TECHNOLOGY_AVAILABLE) {
         NET_LOG(ERROR) << "SetTechnologyEnabled() called for the Tether "
-                       << "DeviceState, but the current state was not "
-                       << "TECHNOLOGY_ENABLED or TECHNOLOGY_AVAILABLE.";
+                       << "DeviceState, but the current state was: "
+                       << tether_technology_state_;
         network_handler::RunErrorCallback(
             error_callback, kTetherDevicePath,
             NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable,

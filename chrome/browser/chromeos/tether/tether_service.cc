@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/net/tether_notification_presenter.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
@@ -69,9 +70,14 @@ TetherService::TetherService(
                  base::Bind(&TetherService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
 
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&TetherService::OnBluetoothAdapterFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // GetAdapter may call OnBluetoothAdapterFetched immediately which can cause
+  // problems with the Fake implementation since the class is not fully
+  // constructed yet. Post the GetAdapter call to avoid this.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(device::BluetoothAdapterFactory::GetAdapter,
+                 base::Bind(&TetherService::OnBluetoothAdapterFetched,
+                            weak_ptr_factory_.GetWeakPtr())));
 }
 
 TetherService::~TetherService() {}
@@ -230,6 +236,8 @@ TetherService::GetTetherTechnologyState() {
 
 void TetherService::OnBluetoothAdapterFetched(
     scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (shut_down_)
+    return;
   adapter_ = adapter;
   adapter_->AddObserver(this);
   UpdateTetherTechnologyState();

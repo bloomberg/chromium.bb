@@ -72,7 +72,7 @@
         <paper-toggle-button  id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
-            enabled="[[enableToggleIsEnabled_(deviceState)]]"
+            disabled="[[!enableToggleIsEnabled_(deviceState)]]"
             on-tap="onDeviceEnabledTap_">
         </paper-toggle-button>
       </template>

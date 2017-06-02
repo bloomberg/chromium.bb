@@ -108,8 +108,8 @@ Polymer({
 // <if expr="chromeos">
     CrOncStrings = {
       OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-      OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
       OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),

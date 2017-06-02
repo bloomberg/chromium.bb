@@ -60,10 +60,10 @@
             aria-label="$i18n{internetAddWiFi}"
             on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
         </paper-icon-button>
-        <paper-toggle-button  id="deviceEnabledButton"
+        <paper-toggle-button id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
-            enabled="[[enableToggleIsEnabled_(deviceState)]]"
+            disabled="[[!enableToggleIsEnabled_(deviceState)]]"
             on-tap="onDeviceEnabledTap_">
         </paper-toggle-button>
       </div>
@@ -124,6 +124,25 @@
         </template>
       </div>
 
+      <template is="dom-if"
+          if="[[tetherToggleIsVisible_(deviceState, tetherDeviceState)]]">
+        <div class="settings-box two-line" actionable
+            on-tap="onTetherEnabledTap_">
+          <div class="start">
+            $i18n{internetToggleTetherLabel}
+            <div id="tetherSecondary" class="secondary">
+              $i18n{internetToggleTetherSubtext}
+            </div>
+          </div>
+          <paper-toggle-button id="tetherEnabledButton"
+              aria-label="$i18n{internetToggleTetherLabel}"
+              aria-describedby="tetherSecondary"
+              checked="[[deviceIsEnabled_(tetherDeviceState)]]"
+              disabled="[[!tetherToggleIsEnabled_(deviceState,
+                  tetherDeviceState)]]">
+          </paper-toggle-button>
+        </div>
+      </template>
     </template>
 
   </template>
