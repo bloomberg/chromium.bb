@@ -921,7 +921,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
 void ComputedStyle::AddPaintImage(StyleImage* image) {
   if (!rare_non_inherited_data_.Access()->paint_images_) {
     rare_non_inherited_data_.Access()->paint_images_ =
-        WTF::MakeUnique<Vector<Persistent<StyleImage>>>();
+        WTF::MakeUnique<PaintImages>();
   }
   rare_non_inherited_data_.Access()->paint_images_->push_back(image);
 }

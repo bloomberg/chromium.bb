@@ -37,6 +37,7 @@
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/OutlineValue.h"
+#include "core/style/PaintImages.h"
 #include "core/style/ShapeValue.h"
 #include "core/style/StyleContentAlignmentData.h"
 #include "core/style/StyleScrollSnapData.h"
@@ -147,7 +148,7 @@ class CORE_EXPORT StyleRareNonInheritedData
 
   Vector<String> callback_selectors_;
 
-  std::unique_ptr<Vector<Persistent<StyleImage>>> paint_images_;
+  std::unique_ptr<PaintImages> paint_images_;
 
   std::unique_ptr<StyleNonInheritedVariables> variables_;
 
