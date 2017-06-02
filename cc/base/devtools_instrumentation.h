@@ -57,31 +57,17 @@ class CC_BASE_EXPORT ScopedLayerTask {
 
 class CC_BASE_EXPORT ScopedImageDecodeTask {
  public:
-  enum Type { SOFTWARE, GPU };
+  enum DecodeType { kSoftware, kGpu };
+  enum TaskType { kInRaster, kOutOfRaster };
 
-  ScopedImageDecodeTask(const void* imagePtr, Type type)
-      : type_(type), start_time_(base::TimeTicks::Now()) {
-    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
-                       internal::kPixelRefId,
-                       reinterpret_cast<uint64_t>(imagePtr));
-  }
-  ~ScopedImageDecodeTask() {
-    TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
-    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
-    switch (type_) {
-      case SOFTWARE:
-        UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Software",
-                                duration.InMicroseconds());
-        break;
-      case GPU:
-        UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Gpu",
-                                duration.InMicroseconds());
-        break;
-    }
-  }
+  ScopedImageDecodeTask(const void* image_ptr,
+                        DecodeType decode_type,
+                        TaskType task_type);
+  ~ScopedImageDecodeTask();
 
  private:
-  const Type type_;
+  const DecodeType decode_type_;
+  const TaskType task_type_;
   const base::TimeTicks start_time_;
   DISALLOW_COPY_AND_ASSIGN(ScopedImageDecodeTask);
 };

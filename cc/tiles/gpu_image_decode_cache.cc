@@ -173,7 +173,8 @@ class ImageDecodeTaskImpl : public TileTask {
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_.image().get(),
-        devtools_instrumentation::ScopedImageDecodeTask::GPU);
+        devtools_instrumentation::ScopedImageDecodeTask::kGpu,
+        ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
     cache_->DecodeImage(image_);
   }
 
@@ -399,6 +400,7 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
 bool GpuImageDecodeCache::GetTaskForImageAndRef(const DrawImage& draw_image,
                                                 const TracingInfo& tracing_info,
                                                 scoped_refptr<TileTask>* task) {
+  DCHECK_EQ(tracing_info.task_type, TaskType::kInRaster);
   return GetTaskForImageAndRefInternal(
       draw_image, tracing_info, DecodeTaskType::PART_OF_UPLOAD_TASK, task);
 }
@@ -407,7 +409,8 @@ bool GpuImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
     const DrawImage& draw_image,
     scoped_refptr<TileTask>* task) {
   return GetTaskForImageAndRefInternal(
-      draw_image, TracingInfo(), DecodeTaskType::STAND_ALONE_DECODE_TASK, task);
+      draw_image, TracingInfo(0, TilePriority::NOW, TaskType::kOutOfRaster),
+      DecodeTaskType::STAND_ALONE_DECODE_TASK, task);
 }
 
 bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(

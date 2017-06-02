@@ -59678,9 +59678,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Renderer4.ImageDecodeTaskDurationUs" units="microseconds">
   <owner>vmpstr@chromium.org</owner>
   <summary>
-    This metric records the duration of an image decode in the compositor. It is
-    recorded every time we decode an image. It is suffixed by the type of
-    rasterization we're in (either Gpu or Software).
+    This metric records the duration of an image decode for the raster path in
+    the compositor. It is recorded every time we decode an image. It is suffixed
+    by the type of rasterization we're in (either Gpu or Software).
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.ImageDecodeTaskDurationUs.OutOfRaster"
+    units="microseconds">
+  <owner>vmpstr@chromium.org, khushalsagar@chromium.org</owner>
+  <summary>
+    This metric records the duration of an image decode for out of raster path
+    in the compositor. It is recorded every time we decode an image. It is
+    suffixed by the type of rasterization we're in (either Gpu or Software).
   </summary>
 </histogram>
 
@@ -92820,6 +92830,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="Compositing.Renderer.RasterTask.RasterPixelsPerMs2"/>
   <affected-histogram name="Compositing.Renderer.RasterTask.RasterUs"/>
   <affected-histogram name="Renderer4.ImageDecodeTaskDurationUs"/>
+  <affected-histogram name="Renderer4.ImageDecodeTaskDurationUs.OutOfRaster"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ReferrerAttribution" separator=".">
