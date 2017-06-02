@@ -42,7 +42,6 @@ class CommonSwitches {
         error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_DISABLED),
         enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
                                      FeatureSwitch::DEFAULT_DISABLED),
-        extension_action_redesign(nullptr, FeatureSwitch::DEFAULT_ENABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
@@ -72,7 +71,6 @@ class CommonSwitches {
 
   FeatureSwitch error_console;
   FeatureSwitch enable_override_bookmarks_ui;
-  FeatureSwitch extension_action_redesign;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
@@ -97,9 +95,6 @@ FeatureSwitch* FeatureSwitch::error_console() {
 }
 FeatureSwitch* FeatureSwitch::enable_override_bookmarks_ui() {
   return &g_common_switches.Get().enable_override_bookmarks_ui;
-}
-FeatureSwitch* FeatureSwitch::extension_action_redesign() {
-  return &g_common_switches.Get().extension_action_redesign;
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {
   return &g_common_switches.Get().scripts_require_action;

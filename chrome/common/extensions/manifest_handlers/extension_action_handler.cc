@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -61,8 +60,6 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     else
       ActionInfo::SetBrowserActionInfo(extension, action_info.release());
   } else {  // No key, used for synthesizing an action for extensions with none.
-    if (!FeatureSwitch::extension_action_redesign()->IsEnabled())
-      return true;  // Do nothing if the switch is off.
     if (Manifest::IsComponentLocation(extension->location()))
       return true;  // Don't synthesize actions for component extensions.
     if (extension->was_installed_by_default())
