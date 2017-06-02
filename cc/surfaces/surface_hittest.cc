@@ -78,7 +78,7 @@ bool SurfaceHittest::TransformPointToTargetSurface(
 
 bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
     const SurfaceId& surface_id,
-    int render_pass_id,
+    RenderPassId render_pass_id,
     const gfx::Point& point_in_root_target,
     std::set<const RenderPass*>* referenced_passes,
     SurfaceId* out_surface_id,
@@ -173,7 +173,7 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
 bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
     const SurfaceId& root_surface_id,
     const SurfaceId& target_surface_id,
-    int render_pass_id,
+    RenderPassId render_pass_id,
     std::set<const RenderPass*>* referenced_passes,
     gfx::Transform* out_transform) {
   if (root_surface_id == target_surface_id) {
@@ -252,7 +252,7 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
 
 const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
     const SurfaceId& surface_id,
-    int render_pass_id) {
+    RenderPassId render_pass_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return nullptr;

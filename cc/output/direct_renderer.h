@@ -140,8 +140,9 @@ class CC_EXPORT DirectRenderer {
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
 
-  const FilterOperations* FiltersForPass(int render_pass_id) const;
-  const FilterOperations* BackgroundFiltersForPass(int render_pass_id) const;
+  const FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
+  const FilterOperations* BackgroundFiltersForPass(
+      RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
@@ -199,14 +200,16 @@ class CC_EXPORT DirectRenderer {
   int frames_since_using_dc_layers_ = 0;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<int, std::unique_ptr<ScopedResource>> render_pass_textures_;
+  base::flat_map<RenderPassId, std::unique_ptr<ScopedResource>>
+      render_pass_textures_;
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass.
-  base::flat_map<int, TileDrawQuad> render_pass_bypass_quads_;
+  base::flat_map<RenderPassId, TileDrawQuad> render_pass_bypass_quads_;
 
   // A map from RenderPass id to the filters used when drawing the RenderPass.
-  base::flat_map<int, FilterOperations*> render_pass_filters_;
-  base::flat_map<int, FilterOperations*> render_pass_background_filters_;
+  base::flat_map<RenderPassId, FilterOperations*> render_pass_filters_;
+  base::flat_map<RenderPassId, FilterOperations*>
+      render_pass_background_filters_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;

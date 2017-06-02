@@ -34,9 +34,9 @@
 namespace cc {
 
 RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
-                                     int stable_effect_id)
+                                     uint64_t stable_id)
     : layer_tree_impl_(layer_tree_impl),
-      stable_effect_id_(stable_effect_id),
+      stable_id_(stable_id),
       effect_tree_index_(EffectTree::kInvalidNodeId),
       num_contributors_(0),
       has_contributing_layer_that_escapes_clip_(false),
@@ -350,10 +350,6 @@ void RenderSurfaceImpl::ResetPropertyChangedFlags() {
   ancestor_property_changed_ = false;
 }
 
-int RenderSurfaceImpl::GetRenderPassId() {
-  return id();
-}
-
 std::unique_ptr<RenderPass> RenderSurfaceImpl::CreateRenderPass() {
   std::unique_ptr<RenderPass> pass = RenderPass::Create(num_contributors_);
   gfx::Rect damage_rect = GetDamageRect();
@@ -427,10 +423,9 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
-               GetRenderPassId(), mask_resource_id, mask_uv_rect,
-               mask_texture_size, surface_contents_scale, FiltersOrigin(),
-               tex_coord_rect);
+  quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect, id(),
+               mask_resource_id, mask_uv_rect, mask_texture_size,
+               surface_contents_scale, FiltersOrigin(), tex_coord_rect);
 }
 
 void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
@@ -513,9 +508,9 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
         quad->SetNew(shared_quad_state, render_quad_rect,
                      gfx::IntersectRects(temp_quad->visible_rect,
                                          visible_layer_rect_in_coverage_space),
-                     GetRenderPassId(), temp_quad->resources.ids[0],
-                     mask_uv_rect, mask_texture_size,
-                     owning_layer_to_surface_contents_scale, FiltersOrigin(),
+                     id(), temp_quad->resources.ids[0], mask_uv_rect,
+                     mask_texture_size, owning_layer_to_surface_contents_scale,
+                     FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
       } break;
       case DrawQuad::SOLID_COLOR: {
@@ -530,7 +525,7 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
         quad->SetNew(shared_quad_state, render_quad_rect,
                      gfx::IntersectRects(temp_quad->visible_rect,
                                          visible_layer_rect_in_coverage_space),
-                     GetRenderPassId(), 0, gfx::RectF(), gfx::Size(),
+                     id(), 0, gfx::RectF(), gfx::Size(),
                      owning_layer_to_surface_contents_scale, FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
       } break;

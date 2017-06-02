@@ -98,7 +98,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
       1u,
       surface->GetActiveFrame().render_pass_list.back()->copy_requests.size());
 
-  std::multimap<int, std::unique_ptr<CopyOutputRequest>> copy_requests;
+  Surface::CopyRequestsMap copy_requests;
   surface->TakeCopyOutputRequests(&copy_requests);
   EXPECT_EQ(1u, copy_requests.size());
   // Last (root) pass should receive copy request.

@@ -121,7 +121,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
                                 &aggregated_frame.render_pass_list);
 
     // Ensure no duplicate pass ids output.
-    std::set<int> used_passes;
+    std::set<RenderPassId> used_passes;
     for (const auto& pass : aggregated_frame.render_pass_list) {
       EXPECT_TRUE(used_passes.insert(pass->id).second);
     }
@@ -761,7 +761,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
       aggregated_frame.render_pass_list;
 
   ASSERT_EQ(5u, aggregated_pass_list.size());
-  int actual_pass_ids[] = {
+  RenderPassId actual_pass_ids[] = {
       aggregated_pass_list[0]->id, aggregated_pass_list[1]->id,
       aggregated_pass_list[2]->id, aggregated_pass_list[3]->id,
       aggregated_pass_list[4]->id};
@@ -976,7 +976,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   SurfaceId child_surface_id(child_support_->frame_sink_id(),
                              child_local_surface_id);
 
-  int child_pass_id[] = {1, 2};
+  RenderPassId child_pass_id[] = {1u, 2u};
   test::Quad child_quad[][1] = {{test::Quad::SolidColorQuad(SK_ColorGREEN)},
                                 {test::Quad::RenderPassQuad(child_pass_id[0])}};
   test::Pass surface_passes[] = {
@@ -987,7 +987,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
                         arraysize(surface_passes), child_local_surface_id);
 
   // Pass IDs from the parent surface may collide with ones from the child.
-  int parent_pass_id[] = {3, 2};
+  RenderPassId parent_pass_id[] = {3u, 2u};
   test::Quad parent_quad[][1] = {
       {test::Quad::SurfaceQuad(child_surface_id, InvalidSurfaceId(), 1.f)},
       {test::Quad::RenderPassQuad(parent_pass_id[0])}};
@@ -1005,9 +1005,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
       aggregated_frame.render_pass_list;
 
   ASSERT_EQ(3u, aggregated_pass_list.size());
-  int actual_pass_ids[] = {aggregated_pass_list[0]->id,
-                           aggregated_pass_list[1]->id,
-                           aggregated_pass_list[2]->id};
+  RenderPassId actual_pass_ids[] = {aggregated_pass_list[0]->id,
+                                    aggregated_pass_list[1]->id,
+                                    aggregated_pass_list[2]->id};
   // Make sure the aggregated frame's pass IDs are all unique.
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < i; ++j) {

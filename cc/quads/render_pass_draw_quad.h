@@ -12,6 +12,7 @@
 #include "cc/base/filter_operations.h"
 #include "cc/cc_export.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/render_pass.h"
 
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -29,7 +30,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              int render_pass_id,
+              RenderPassId render_pass_id,
               ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
@@ -42,7 +43,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              int render_pass_id,
+              RenderPassId render_pass_id,
               ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
@@ -50,7 +51,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::PointF& filters_origin,
               const gfx::RectF& tex_coord_rect);
 
-  int render_pass_id;
+  RenderPassId render_pass_id;
   gfx::RectF mask_uv_rect;
   gfx::Size mask_texture_size;
 

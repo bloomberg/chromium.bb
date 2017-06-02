@@ -114,7 +114,7 @@ class CC_EXPORT DamageTracker {
 
   struct SurfaceRectMapData {
     SurfaceRectMapData() : surface_id_(0), mailboxId_(0) {}
-    explicit SurfaceRectMapData(int surface_id)
+    explicit SurfaceRectMapData(uint64_t surface_id)
         : surface_id_(surface_id), mailboxId_(0) {}
     void Update(const gfx::Rect& rect, unsigned int mailboxId) {
       mailboxId_ = mailboxId;
@@ -125,7 +125,7 @@ class CC_EXPORT DamageTracker {
       return surface_id_ < other.surface_id_;
     }
 
-    int surface_id_;
+    uint64_t surface_id_;
     unsigned int mailboxId_;
     gfx::Rect rect_;
   };
@@ -133,7 +133,8 @@ class CC_EXPORT DamageTracker {
   typedef std::vector<SurfaceRectMapData> SortedRectMapForSurfaces;
 
   LayerRectMapData& RectDataForLayer(int layer_id, bool* layer_is_new);
-  SurfaceRectMapData& RectDataForSurface(int layer_id, bool* layer_is_new);
+  SurfaceRectMapData& RectDataForSurface(uint64_t surface_id,
+                                         bool* layer_is_new);
 
   SortedRectMapForLayers rect_history_for_layers_;
   SortedRectMapForSurfaces rect_history_for_surfaces_;

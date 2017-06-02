@@ -94,7 +94,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
 
-  int RemapPassId(int surface_local_pass_id, const SurfaceId& surface_id);
+  RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
+                           const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          const gfx::Transform& target_transform,
@@ -144,9 +145,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
   // used in the aggregated frame. An entry is removed from the map if it's not
   // used for one output frame.
-  base::flat_map<std::pair<SurfaceId, int>, RenderPassInfo>
+  base::flat_map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>
       render_pass_allocator_map_;
-  int next_render_pass_id_;
+  RenderPassId next_render_pass_id_;
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
 
@@ -158,7 +159,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // passes.
   gfx::ColorSpace blending_color_space_;
   // The id for the final color conversion render pass.
-  int color_conversion_render_pass_id_ = 0;
+  RenderPassId color_conversion_render_pass_id_ = 0;
 
   base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
 
@@ -183,15 +184,16 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of aggregated pass ids that are affected by filters that
   // move pixels.
-  base::flat_set<int> moved_pixel_passes_;
+  base::flat_set<RenderPassId> moved_pixel_passes_;
 
   // This is the set of aggregated pass ids that are drawn by copy requests, so
   // should not have their damage rects clipped to the root damage rect.
-  base::flat_set<int> copy_request_passes_;
+  base::flat_set<RenderPassId> copy_request_passes_;
 
   // This maps each aggregated pass id to the set of (aggregated) pass ids
   // that its RenderPassDrawQuads depend on
-  base::flat_map<int, base::flat_set<int>> render_pass_dependencies_;
+  base::flat_map<RenderPassId, base::flat_set<RenderPassId>>
+      render_pass_dependencies_;
 
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;

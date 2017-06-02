@@ -78,8 +78,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
   // until we can remove animation subsystem dependency on layer
   // references. http://crbug.com/709137
   transform_node.owning_layer_id = root_layer_->id();
-  transform_tree.SetOwningLayerIdForNode(&transform_node,
-                                         transform_node.owning_layer_id);
+  transform_tree.SetOwningLayerIdForNode(&transform_node, root_layer_->id());
 
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
@@ -127,12 +126,11 @@ void PropertyTreeManager::SetupRootEffectNode() {
   cc::EffectNode& effect_node =
       *effect_tree.Node(effect_tree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effect_node.id, kSecondaryRootNodeId);
-  effect_node.owning_layer_id = root_layer_->id();
+  effect_node.stable_id = root_layer_->id();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.has_render_surface = true;
-  effect_tree.SetOwningLayerIdForNode(&effect_node,
-                                      effect_node.owning_layer_id);
+  effect_tree.SetOwningLayerIdForNode(&effect_node, effect_node.stable_id);
 
   effect_stack_.push_back(
       BlinkEffectAndCcIdPair{EffectPaintPropertyNode::Root(), effect_node.id});
@@ -418,7 +416,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   cc::EffectNode& effect_node = *GetEffectTree().Node(GetEffectTree().Insert(
       cc::EffectNode(), GetCurrentCompositorEffectNodeIndex()));
-  effect_node.owning_layer_id = dummy_layer->id();
+  effect_node.stable_id = dummy_layer->id();
   effect_node.clip_id = output_clip_id;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
@@ -446,8 +444,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
   }
   effect_node.blend_mode = next_effect->BlendMode();
-  GetEffectTree().SetOwningLayerIdForNode(&effect_node,
-                                          effect_node.owning_layer_id);
+  GetEffectTree().SetOwningLayerIdForNode(&effect_node, dummy_layer->id());
   CompositorElementId compositor_element_id =
       next_effect->GetCompositorElementId();
   if (compositor_element_id) {

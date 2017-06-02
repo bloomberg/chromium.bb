@@ -618,7 +618,7 @@ TEST_F(CCParamTraitsTest, Resources) {
 #endif
 
   std::unique_ptr<RenderPass> renderpass_in = RenderPass::Create();
-  renderpass_in->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  renderpass_in->SetNew(1u, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   CompositorFrame frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);

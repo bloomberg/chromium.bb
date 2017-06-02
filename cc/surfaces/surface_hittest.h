@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "cc/quads/render_pass.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -53,7 +54,7 @@ class CC_SURFACES_EXPORT SurfaceHittest {
  private:
   bool GetTargetSurfaceAtPointInternal(
       const SurfaceId& surface_id,
-      int render_pass_id,
+      RenderPassId render_pass_id,
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
       SurfaceId* out_surface_id,
@@ -62,12 +63,12 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   bool GetTransformToTargetSurfaceInternal(
       const SurfaceId& root_surface_id,
       const SurfaceId& target_surface_id,
-      int render_pass_id,
+      RenderPassId render_pass_id,
       std::set<const RenderPass*>* referenced_passes,
       gfx::Transform* out_transform);
 
   const RenderPass* GetRenderPassForSurfaceById(const SurfaceId& surface_id,
-                                                int render_pass_id);
+                                                RenderPassId render_pass_id);
 
   bool PointInQuad(const DrawQuad* quad,
                    const gfx::Point& point_in_render_pass_space,

@@ -772,7 +772,8 @@ static void AppendQuadsToFillScreen(
   }
 }
 
-static RenderPass* FindRenderPassById(const RenderPassList& list, int id) {
+static RenderPass* FindRenderPassById(const RenderPassList& list,
+                                      RenderPassId id) {
   auto it = std::find_if(
       list.begin(), list.end(),
       [id](const std::unique_ptr<RenderPass>& p) { return p->id == id; });
@@ -888,7 +889,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
-    auto target_render_pass_id = it.target_render_surface()->GetRenderPassId();
+    auto target_render_pass_id = it.target_render_surface()->id();
     RenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
 
@@ -1147,10 +1148,10 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   DCHECK_GE(frame->render_passes.size(), 1u);
 
   // A set of RenderPasses that we have seen.
-  base::flat_set<int> pass_exists;
+  base::flat_set<RenderPassId> pass_exists;
   // A set of RenderPassDrawQuads that we have seen (stored by the RenderPasses
   // they refer to).
-  base::flat_map<int, int> pass_references;
+  base::flat_map<RenderPassId, int> pass_references;
 
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).

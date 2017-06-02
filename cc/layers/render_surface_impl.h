@@ -33,7 +33,7 @@ class LayerTreeImpl;
 
 class CC_EXPORT RenderSurfaceImpl {
  public:
-  RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl, int stable_effect_id);
+  RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl, uint64_t stable_id);
   virtual ~RenderSurfaceImpl();
 
   // Returns the RenderSurfaceImpl that this render surface contributes to. Root
@@ -141,7 +141,7 @@ class CC_EXPORT RenderSurfaceImpl {
     occlusion_in_content_space_ = occlusion;
   }
 
-  int id() const { return stable_effect_id_; }
+  uint64_t id() const { return stable_id_; }
 
   LayerImpl* MaskLayer();
   bool HasMask() const;
@@ -161,8 +161,6 @@ class CC_EXPORT RenderSurfaceImpl {
 
   DamageTracker* damage_tracker() const { return damage_tracker_.get(); }
   gfx::Rect GetDamageRect() const;
-
-  int GetRenderPassId();
 
   std::unique_ptr<RenderPass> CreateRenderPass();
   void AppendQuads(RenderPass* render_pass, AppendQuadsData* append_quads_data);
@@ -185,7 +183,7 @@ class CC_EXPORT RenderSurfaceImpl {
                      const gfx::Rect& visible_layer_rect);
 
   LayerTreeImpl* layer_tree_impl_;
-  int stable_effect_id_;
+  uint64_t stable_id_;
   int effect_tree_index_;
 
   // Container for properties that render surfaces need to compute before they

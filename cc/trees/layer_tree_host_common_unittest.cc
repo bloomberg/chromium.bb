@@ -1419,7 +1419,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   ASSERT_TRUE(GetRenderSurface(root));
   EXPECT_EQ(0, GetRenderSurface(root)->num_contributors());
   EXPECT_EQ(1U, render_surface_list.size());
-  EXPECT_EQ(root->id(), render_surface_list.at(0)->id());
+  EXPECT_EQ(static_cast<RenderPassId>(root->id()),
+            render_surface_list.at(0)->id());
   EXPECT_EQ(gfx::Rect(), root->drawable_content_rect());
 }
 
@@ -1724,8 +1725,10 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   ExecuteCalculateDrawProperties(root);
 
   ASSERT_EQ(2U, render_surface_list_impl()->size());
-  EXPECT_EQ(root->id(), render_surface_list_impl()->at(0)->id());
-  EXPECT_EQ(child->id(), render_surface_list_impl()->at(1)->id());
+  EXPECT_EQ(static_cast<uint64_t>(root->id()),
+            render_surface_list_impl()->at(0)->id());
+  EXPECT_EQ(static_cast<uint64_t>(child->id()),
+            render_surface_list_impl()->at(1)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
@@ -1762,7 +1765,8 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   // We should cull child and grand_child from the
   // render_surface_list.
   ASSERT_EQ(1U, render_surface_list_impl()->size());
-  EXPECT_EQ(root->id(), render_surface_list_impl()->at(0)->id());
+  EXPECT_EQ(static_cast<uint64_t>(root->id()),
+            render_surface_list_impl()->at(0)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
@@ -4920,10 +4924,14 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // parent since it has opacity and two drawing descendants, one for the parent
   // since it owns a surface, and one for the copy_layer.
   ASSERT_EQ(4u, render_surface_list.size());
-  EXPECT_EQ(root_layer->id(), render_surface_list.at(0)->id());
-  EXPECT_EQ(copy_grand_parent_layer->id(), render_surface_list.at(1)->id());
-  EXPECT_EQ(copy_parent_layer->id(), render_surface_list.at(2)->id());
-  EXPECT_EQ(copy_layer->id(), render_surface_list.at(3)->id());
+  EXPECT_EQ(static_cast<uint64_t>(root_layer->id()),
+            render_surface_list.at(0)->id());
+  EXPECT_EQ(static_cast<uint64_t>(copy_grand_parent_layer->id()),
+            render_surface_list.at(1)->id());
+  EXPECT_EQ(static_cast<uint64_t>(copy_parent_layer->id()),
+            render_surface_list.at(2)->id());
+  EXPECT_EQ(static_cast<uint64_t>(copy_layer->id()),
+            render_surface_list.at(3)->id());
 
   // The root render surface should have 2 contributing layers.
   EXPECT_EQ(2, GetRenderSurface(root_layer)->num_contributors());
@@ -5011,7 +5019,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
 
   // We should have two render surface, as the others are clipped out.
   ASSERT_EQ(2u, render_surface_list.size());
-  EXPECT_EQ(root_layer->id(), render_surface_list.at(0)->id());
+  EXPECT_EQ(static_cast<uint64_t>(root_layer->id()),
+            render_surface_list.at(0)->id());
 
   // The root render surface should have only 2 contributing layer, since the
   // other layers are clipped away.

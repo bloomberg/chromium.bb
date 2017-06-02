@@ -910,7 +910,7 @@ bool AddEffectNodeIfNeeded(
   int node_id = effect_tree.Insert(EffectNode(), parent_id);
   EffectNode* node = effect_tree.back();
 
-  node->owning_layer_id = layer->id();
+  node->stable_id = layer->id();
   node->opacity = Opacity(layer);
   node->blend_mode = BlendMode(layer);
   node->unscaled_mask_target_size = layer->bounds();

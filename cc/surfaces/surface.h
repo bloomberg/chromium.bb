@@ -71,10 +71,12 @@ class CC_SURFACES_EXPORT Surface {
   // it's marked as respecting deadlines.
   void ActivatePendingFrameForDeadline();
 
+  using CopyRequestsMap =
+      std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>;
+
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them. |copy_requests| is keyed by RenderPass ids.
-  void TakeCopyOutputRequests(
-      std::multimap<int, std::unique_ptr<CopyOutputRequest>>* copy_requests);
+  void TakeCopyOutputRequests(CopyRequestsMap* copy_requests);
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasActiveFrame() returns true before calling this
