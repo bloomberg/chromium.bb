@@ -14,6 +14,7 @@ namespace switches {
 extern const char kDisableFieldTrialTestingConfig[];
 extern const char kFakeVariationsChannel[];
 extern const char kForceFieldTrialParams[];
+extern const char kVariationsOverrideCountry[];
 extern const char kVariationsServerURL[];
 
 }  // namespace switches
