@@ -82314,6 +82314,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.WebSocket.HandshakeResult"
     enum="WebSocketHandshakeResult">
+  <obsolete>
+    Deprecated 2014-06 when we replaced the WebSocket implementation (see issue
+    226931).
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -82345,6 +82349,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.WebSocket.PerMessageDeflateContextTakeOverMode"
     enum="WebSocketPerMessageDeflateContextTakeOverMode">
+  <obsolete>
+    Deprecated 2014-06 when we replaced the WebSocket implementation (see issue
+    226931).
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
