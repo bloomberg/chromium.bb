@@ -70,7 +70,7 @@ class CONTENT_EXPORT ResourceMessageFilter
 
   base::WeakPtr<ResourceMessageFilter> GetWeakPtr();
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,

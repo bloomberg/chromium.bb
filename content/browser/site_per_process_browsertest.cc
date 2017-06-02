@@ -2405,7 +2405,7 @@ class FailingLoadFactory : public mojom::URLLoaderFactory {
   FailingLoadFactory() {}
   ~FailingLoadFactory() override {}
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
