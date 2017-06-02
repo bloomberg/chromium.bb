@@ -572,6 +572,11 @@ class WebLocalFrame : public WebFrame {
   // frame is attached to a document.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
 
+  // Geometry -----------------------------------------------------------------
+
+  // If set to false, do not draw scrollbars on this frame's view.
+  virtual void SetCanHaveScrollbars(bool) = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 
