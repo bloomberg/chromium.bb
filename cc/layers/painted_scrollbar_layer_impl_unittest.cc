@@ -57,6 +57,9 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   scrollbar_layer_impl->set_thumb_ui_resource_id(thumb_uid);
   scrollbar_layer_impl->set_thumb_opacity(thumb_opacity);
 
+  DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+  impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
+
   impl.CalcDrawProps(viewport_size);
 
   gfx::Rect thumb_rect = scrollbar_layer_impl->ComputeThumbQuadRect();

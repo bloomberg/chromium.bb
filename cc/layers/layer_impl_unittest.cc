@@ -141,6 +141,7 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
 
   root->test_properties()->force_render_surface = true;
   root->SetMasksToBounds(true);
+  root->SetScrollClipLayer(root_clip->id());
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   root->test_properties()->AddChild(

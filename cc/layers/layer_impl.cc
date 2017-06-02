@@ -94,7 +94,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
 
-  layer_tree_impl_->UnregisterScrollLayer(this);
   layer_tree_impl_->UnregisterLayer(this);
 
   layer_tree_impl_->RemoveFromElementMap(this);
@@ -275,10 +274,12 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
 void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
   if (scroll_clip_layer_id_ == scroll_clip_layer_id)
     return;
-
-  layer_tree_impl()->UnregisterScrollLayer(this);
   scroll_clip_layer_id_ = scroll_clip_layer_id;
+
   layer_tree_impl()->RegisterScrollLayer(this);
+
+  // The scrolling bounds are determined from the scroll clip layer's bounds.
+  layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 }
 
 LayerImpl* LayerImpl::scroll_clip_layer() const {
@@ -516,7 +517,8 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
 
   bounds_ = bounds;
 
-  layer_tree_impl()->DidUpdateScrollState(id());
+  // Scrollbar positions depend on scrolling bounds and scroll clip bounds.
+  layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 
   NoteLayerPropertyChanged();
 }
@@ -543,7 +545,9 @@ void LayerImpl::SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta) {
       NOTREACHED();
   }
 
-  layer_tree_impl()->DidUpdateScrollState(id());
+  // Viewport scrollbar positions are determined using the viewport bounds
+  // delta.
+  layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 
   if (masks_to_bounds()) {
     // If layer is clipping, then update the clip node using the new bounds.
