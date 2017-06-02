@@ -9,21 +9,18 @@ digraph arch_wayland {
     ]
 
     node[
-        shape="Mrecord",
         color=none,
-        fillcolor="#ffbc00",
-        style="filled",
+        margin=0,
         fontname="DejaVu Sans",
         fontsize="18",
    ]
 
-    c1 [label="Wayland Client", URL="#c1"]
-    c2 [label="Wayland Client", URL="#c2"]
+    c1 [label=<<TABLE STYLE="rounded" BGCOLOR="#ffbc00"><TR><TD>Wayland Client</TD></TR></TABLE>>, URL="#c1"]
+    c2 [label=<<TABLE STYLE="rounded" BGCOLOR="#ffbc00"><TR><TD>Wayland Client</TD></TR></TABLE>>, URL="#c2"]
 
-    comp [tooltip="Wayland Compositor", label="|{|Wayland\nCompositor|}|", URL="#comp"]
+    comp [tooltip="Wayland Compositor", label=<<TABLE STYLE="rounded" BGCOLOR="#ffbc00"><TR><TD><BR/>Wayland<BR/>Compositor<BR/><BR/></TD></TR></TABLE>>, URL="#comp"]
 
-    impl [tooltip="KMS evdev Kernel", label="|{{KMS|evdev}|Kernel}|", URL="#impl"]
-
+    impl [tooltip="KMS evdev Kernel", label=<<TABLE STYLE="rounded" BGCOLOR="#ffbc00"><TR><TD>KMS</TD><TD>evdev</TD></TR><TR><TD COLSPAN="2">Kernel</TD></TR></TABLE>>, URL="#impl"]
 
     c1 -> comp [taillabel="③", labeldistance=2.5, URL="#step_3"];
     c2 -> comp;
