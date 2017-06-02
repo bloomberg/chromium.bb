@@ -14,15 +14,21 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/media/audio_messages.h"
-#include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/audio_ipc_factory.h"
 #include "content/renderer/pepper/audio_helper.h"
 #include "content/renderer/pepper/pepper_audio_output_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+
+namespace {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+const int64_t kMaxAuthorizationTimeoutMs = 4000;
+#else
+const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+#endif
+}
 
 namespace content {
 
@@ -254,9 +260,7 @@ bool PepperPlatformAudioOutputDev::Initialize(int sample_rate,
 
   client_ = client;
 
-  RenderThreadImpl* const render_thread = RenderThreadImpl::current();
-  ipc_ = render_thread->audio_message_filter()->CreateAudioOutputIPC(
-      render_frame_id_);
+  ipc_ = AudioIPCFactory::get()->CreateAudioOutputIPC(render_frame_id_);
   CHECK(ipc_);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
