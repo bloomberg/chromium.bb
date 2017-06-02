@@ -13,6 +13,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,12 +51,6 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_main_runner.h"
-#include "content/public/browser/browser_thread.h"
-#endif
-
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
@@ -71,8 +66,9 @@ namespace {
 // Note: We only want to do this in the browser process, and not forked
 // processes. That might lead to hangs because of locks inside tcmalloc or the
 // OS. See http://crbug.com/141302.
-static int g_browser_process_pid;
-static void DumpStackTraceSignalHandler(int signal) {
+int g_browser_process_pid;
+
+void DumpStackTraceSignalHandler(int signal) {
   if (g_browser_process_pid == base::GetCurrentProcId()) {
     std::string message("BrowserTestBase received signal: ");
     message += strsignal(signal);
@@ -121,7 +117,7 @@ BrowserTestBase::BrowserTestBase()
   // called more than once
   base::i18n::AllowMultipleInitializeCallsForTesting();
 
-  embedded_test_server_.reset(new net::EmbeddedTestServer);
+  embedded_test_server_ = base::MakeUnique<net::EmbeddedTestServer>();
 
   // SequencedWorkerPool is enabled by default in tests (see
   // base::TestSuite::Initialize). In browser tests, disable it and expect it
@@ -135,7 +131,7 @@ BrowserTestBase::~BrowserTestBase() {
 #if defined(OS_ANDROID)
   // RemoteTestServer can cause wait on the UI thread.
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  spawned_test_server_.reset(NULL);
+  spawned_test_server_.reset();
 #endif
 
   CHECK(set_up_called_) << "SetUp was not called. This probably means that the "
@@ -227,7 +223,7 @@ void BrowserTestBase::SetUp() {
   if (use_software_gl && !use_software_compositing_)
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
 
-  test_host_resolver_.reset(new TestHostResolver);
+  test_host_resolver_ = base::MakeUnique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -237,32 +233,33 @@ void BrowserTestBase::SetUp() {
   // wipe out the current feature list.
   std::string enabled_features;
   std::string disabled_features;
-  if (base::FeatureList::GetInstance())
+  if (base::FeatureList::GetInstance()) {
     base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
                                                           &disabled_features);
-  if (!enabled_features.empty())
+  }
+  if (!enabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     enabled_features);
-  if (!disabled_features.empty())
+  }
+  if (!disabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kDisableFeatures,
                                     disabled_features);
+  }
 
   // Need to wipe feature list clean, since BrowserMain calls
   // FeatureList::SetInstance, which expects no instance to exist.
   base::FeatureList::ClearInstanceForTesting();
 
-  base::Closure* ui_task =
-      new base::Closure(
-          base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop,
-                     base::Unretained(this)));
+  auto ui_task = base::MakeUnique<base::Closure>(base::Bind(
+      &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   MainFunctionParams params(*command_line);
-  params.ui_task = ui_task;
+  params.ui_task = ui_task.release();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
 #else
-  GetContentMainParams()->ui_task = ui_task;
+  GetContentMainParams()->ui_task = ui_task.release();
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
 #endif
   TearDownInProcessBrowserTestFixture();
@@ -338,9 +335,9 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   CHECK(!spawned_test_server_.get());
-  spawned_test_server_.reset(new net::SpawnedTestServer(
+  spawned_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
       net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
-      test_server_base));
+      test_server_base);
   embedded_test_server()->AddDefaultHandlers(test_server_base);
 }
 
