@@ -9,6 +9,7 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -104,8 +105,7 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
                          gcm::GCMProfileService* profile_service,
                          PrefService* prefs,
                          base::DictionaryValue* results) {
-  base::DictionaryValue* device_info = new base::DictionaryValue();
-  results->Set(kDeviceInfo, device_info);
+  auto device_info = base::MakeUnique<base::DictionaryValue>();
 
   device_info->SetBoolean(kProfileServiceCreated, profile_service != NULL);
   device_info->SetBoolean(kGcmEnabled,
@@ -136,43 +136,45 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
     }
     device_info->SetInteger(kSendQueueSize, stats->send_queue_size);
     device_info->SetInteger(kResendQueueSize, stats->resend_queue_size);
+    results->Set(kDeviceInfo, std::move(device_info));
 
     if (stats->recorded_activities.checkin_activities.size() > 0) {
-      base::ListValue* checkin_info = new base::ListValue();
-      results->Set(kCheckinInfo, checkin_info);
+      auto checkin_info = base::MakeUnique<base::ListValue>();
       SetCheckinInfo(stats->recorded_activities.checkin_activities,
-                     checkin_info);
+                     checkin_info.get());
+      results->Set(kCheckinInfo, std::move(checkin_info));
     }
     if (stats->recorded_activities.connection_activities.size() > 0) {
-      base::ListValue* connection_info = new base::ListValue();
-      results->Set(kConnectionInfo, connection_info);
+      auto connection_info = base::MakeUnique<base::ListValue>();
       SetConnectionInfo(stats->recorded_activities.connection_activities,
-                        connection_info);
+                        connection_info.get());
+      results->Set(kConnectionInfo, std::move(connection_info));
     }
     if (stats->recorded_activities.registration_activities.size() > 0) {
-      base::ListValue* registration_info = new base::ListValue();
-      results->Set(kRegistrationInfo, registration_info);
+      auto registration_info = base::MakeUnique<base::ListValue>();
       SetRegistrationInfo(stats->recorded_activities.registration_activities,
-                          registration_info);
+                          registration_info.get());
+      results->Set(kRegistrationInfo, std::move(registration_info));
     }
     if (stats->recorded_activities.receiving_activities.size() > 0) {
-      base::ListValue* receive_info = new base::ListValue();
-      results->Set(kReceiveInfo, receive_info);
+      auto receive_info = base::MakeUnique<base::ListValue>();
       SetReceivingInfo(stats->recorded_activities.receiving_activities,
-                       receive_info);
+                       receive_info.get());
+      results->Set(kReceiveInfo, std::move(receive_info));
     }
     if (stats->recorded_activities.sending_activities.size() > 0) {
-      base::ListValue* send_info = new base::ListValue();
-      results->Set(kSendInfo, send_info);
-      SetSendingInfo(stats->recorded_activities.sending_activities, send_info);
+      auto send_info = base::MakeUnique<base::ListValue>();
+      SetSendingInfo(stats->recorded_activities.sending_activities,
+                     send_info.get());
+      results->Set(kSendInfo, std::move(send_info));
     }
 
     if (stats->recorded_activities.decryption_failure_activities.size() > 0) {
-      base::ListValue* failure_info = new base::ListValue();
-      results->Set(kDecryptionFailureInfo, failure_info);
+      auto failure_info = base::MakeUnique<base::ListValue>();
       SetDecryptionFailureInfo(
           stats->recorded_activities.decryption_failure_activities,
-          failure_info);
+          failure_info.get());
+      results->Set(kDecryptionFailureInfo, std::move(failure_info));
     }
   }
 }

@@ -301,24 +301,24 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   expected_value.SetInteger("int", 123);
   expected_value.SetString("string", "omg");
 
-  base::ListValue* list = new base::ListValue();
+  auto list = base::MakeUnique<base::ListValue>();
   list->AppendString("first");
   list->AppendString("second");
-  expected_value.Set("array", list);
+  expected_value.Set("array", std::move(list));
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString("sub", "value");
-  list = new base::ListValue();
-  std::unique_ptr<base::DictionaryValue> sub(new base::DictionaryValue());
+  list = base::MakeUnique<base::ListValue>();
+  auto sub = base::MakeUnique<base::DictionaryValue>();
   sub->SetInteger("aaa", 111);
   sub->SetInteger("bbb", 222);
   list->Append(std::move(sub));
-  sub.reset(new base::DictionaryValue());
+  sub = base::MakeUnique<base::DictionaryValue>();
   sub->SetString("ccc", "333");
   sub->SetString("ddd", "444");
   list->Append(std::move(sub));
-  dict->Set("sublist", list);
-  expected_value.Set("dictionary", dict);
+  dict->Set("sublist", std::move(list));
+  expected_value.Set("dictionary", std::move(dict));
 
   CheckValue(test_keys::kKeyDictionary,
              expected_value,
@@ -370,15 +370,15 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   policy_dict.SetInteger("int", 789);
   policy_dict.SetString("string", "string value");
 
-  base::ListValue* list = new base::ListValue();
+  auto list = base::MakeUnique<base::ListValue>();
   for (int i = 0; i < 2; ++i) {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetInteger("subdictindex", i);
-    dict->Set("subdict", policy_dict.DeepCopy());
+    dict->Set("subdict", base::MakeUnique<base::Value>(policy_dict));
     list->Append(std::move(dict));
   }
-  policy_dict.Set("list", list);
-  policy_dict.Set("dict", policy_dict.DeepCopy());
+  policy_dict.Set("list", std::move(list));
+  policy_dict.Set("dict", base::MakeUnique<base::Value>(policy_dict));
 
   // Install these policies as a Chrome policy.
   test_harness_->InstallDictionaryPolicy(test_keys::kKeyDictionary,
@@ -386,14 +386,15 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   // Install them as 3rd party policies too.
   base::DictionaryValue policy_3rdparty;
   policy_3rdparty.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                      policy_dict.DeepCopy());
+                      base::MakeUnique<base::Value>(policy_dict));
   policy_3rdparty.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                      policy_dict.DeepCopy());
+                      base::MakeUnique<base::Value>(policy_dict));
   // Install invalid 3rd party policies that shouldn't be loaded. These also
   // help detecting memory leaks in the code paths that detect invalid input.
-  policy_3rdparty.Set("invalid-domain.component", policy_dict.DeepCopy());
-  policy_3rdparty.Set("extensions.cccccccccccccccccccccccccccccccc",
-                      new base::Value("invalid-value"));
+  policy_3rdparty.Set("invalid-domain.component",
+                      base::MakeUnique<base::Value>(policy_dict));
+  policy_3rdparty.SetString("extensions.cccccccccccccccccccccccccccccccc",
+                            "invalid-value");
   test_harness_->Install3rdPartyPolicy(&policy_3rdparty);
 
   provider_->RefreshPolicies();

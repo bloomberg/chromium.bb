@@ -12,7 +12,9 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -159,9 +161,9 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
   entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
-  base::ListValue* alternate_urls = new base::ListValue;
+  auto alternate_urls = base::MakeUnique<base::ListValue>();
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
-  entry->Set("alternate_urls", alternate_urls);
+  entry->Set("alternate_urls", std::move(alternate_urls));
   entry->SetString("search_terms_replacement_key", "espv");
   overrides = base::MakeUnique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());

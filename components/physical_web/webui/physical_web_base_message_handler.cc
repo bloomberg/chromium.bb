@@ -4,6 +4,8 @@
 
 #include "components/physical_web/webui/physical_web_base_message_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -88,7 +90,7 @@ void PhysicalWebBaseMessageHandler::PushNearbyURLs() {
     ++index;
   }
 
-  results.Set(physical_web_ui::kMetadata, metadata.release());
+  results.Set(physical_web_ui::kMetadata, std::move(metadata));
 
   // Pass the list of Physical Web URL metadata to the WebUI. A jstemplate will
   // create a list view with an item for each URL.

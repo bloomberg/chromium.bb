@@ -5,9 +5,11 @@
 #include "components/sync/engine_impl/js_mutation_event_observer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/js/js_event_details.h"
@@ -53,20 +55,20 @@ void JsMutationEventObserver::OnChangesApplied(
   details.SetString("modelType", ModelTypeToString(model_type));
   details.SetString("writeTransactionId",
                     base::Int64ToString(write_transaction_id));
-  base::Value* changes_value = nullptr;
+  std::unique_ptr<base::Value> changes_value;
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
-    base::ListValue* changes_list = new base::ListValue();
+    auto changes_list = base::MakeUnique<base::ListValue>();
     for (ChangeRecordList::const_iterator it = changes.Get().begin();
          it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
     }
-    changes_value = changes_list;
+    changes_value = std::move(changes_list);
   } else {
-    changes_value =
-        new base::Value(base::SizeTToString(changes_size) + " changes");
+    changes_value = base::MakeUnique<base::Value>(
+        base::SizeTToString(changes_size) + " changes");
   }
-  details.Set("changes", changes_value);
+  details.Set("changes", std::move(changes_value));
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));
 }
 

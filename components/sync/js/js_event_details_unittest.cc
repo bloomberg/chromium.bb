@@ -5,7 +5,10 @@
 #include "components/sync/js/js_event_details.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -22,9 +25,9 @@ TEST_F(JsEventDetailsTest, EmptyList) {
 TEST_F(JsEventDetailsTest, FromDictionary) {
   base::DictionaryValue dict;
   dict.SetString("foo", "bar");
-  dict.Set("baz", new base::ListValue());
+  dict.Set("baz", base::MakeUnique<base::ListValue>());
 
-  std::unique_ptr<base::DictionaryValue> dict_copy(dict.DeepCopy());
+  auto dict_copy = base::MakeUnique<base::DictionaryValue>(dict);
 
   JsEventDetails details(&dict);
 

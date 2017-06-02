@@ -21,11 +21,11 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     base::ExpectStringValue(ModelTypeToString(model_type),
-                            ModelTypeToValue(model_type));
+                            *ModelTypeToValue(model_type));
   }
   base::ExpectStringValue("Top-level folder",
-                          ModelTypeToValue(TOP_LEVEL_FOLDER));
-  base::ExpectStringValue("Unspecified", ModelTypeToValue(UNSPECIFIED));
+                          *ModelTypeToValue(TOP_LEVEL_FOLDER));
+  base::ExpectStringValue("Unspecified", *ModelTypeToValue(UNSPECIFIED));
 }
 
 TEST_F(ModelTypeTest, ModelTypeFromValue) {

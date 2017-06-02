@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
@@ -58,8 +59,8 @@ TEST_F(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
-  base::ListValue* key_ops = new base::ListValue;
-  dict.Set("key_ops", key_ops);  // Takes ownership.
+  base::ListValue* key_ops =
+      dict.SetList("key_ops", base::MakeUnique<base::ListValue>());
 
   key_ops->AppendString("wrapKey");
 

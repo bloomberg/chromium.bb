@@ -96,15 +96,14 @@ const size_t kIndentSize = 4;
 // Class responsible for the actual writing. Takes ownership of favicons_map.
 class Writer : public base::RefCountedThreadSafe<Writer> {
  public:
-  Writer(base::Value* bookmarks,
+  Writer(std::unique_ptr<base::Value> bookmarks,
          const base::FilePath& path,
          BookmarkFaviconFetcher::URLFaviconMap* favicons_map,
          BookmarksExportObserver* observer)
-      : bookmarks_(bookmarks),
+      : bookmarks_(std::move(bookmarks)),
         path_(path),
         favicons_map_(favicons_map),
-        observer_(observer) {
-  }
+        observer_(observer) {}
 
   // Writing bookmarks and favicons data to file.
   void DoWrite() {

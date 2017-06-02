@@ -34,7 +34,7 @@ void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
                      base::MakeUnique<base::Value>(1));
   auto overrides = base::MakeUnique<base::ListValue>();
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  auto entry = base::MakeUnique<base::DictionaryValue>();
 
   entry->SetString("name", update ? "new_foo" : "foo");
   entry->SetString("keyword", update ? "new_fook" : "fook");
@@ -44,23 +44,23 @@ void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
   entry->SetInteger("id", 1001);
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
   entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
-  base::ListValue* alternate_urls = new base::ListValue;
+  auto alternate_urls = base::MakeUnique<base::ListValue>();
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
-  entry->Set("alternate_urls", alternate_urls);
+  entry->Set("alternate_urls", std::move(alternate_urls));
   entry->SetString("search_terms_replacement_key", "espv");
-  overrides->Append(entry->CreateDeepCopy());
+  overrides->Append(std::move(entry));
 
-  entry.reset(new base::DictionaryValue);
+  entry = base::MakeUnique<base::DictionaryValue>();
   entry->SetInteger("id", 1002);
   entry->SetString("name", update ? "new_bar" : "bar");
   entry->SetString("keyword", update ? "new_bark" : "bark");
   entry->SetString("encoding", std::string());
-  overrides->Append(entry->CreateDeepCopy());
+  overrides->Append(base::MakeUnique<base::Value>(*entry));
   entry->SetInteger("id", 1003);
   entry->SetString("name", "baz");
   entry->SetString("keyword", "bazk");
   entry->SetString("encoding", "UTF-8");
-  overrides->Append(entry->CreateDeepCopy());
+  overrides->Append(std::move(entry));
   prefs->SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 }
 

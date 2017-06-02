@@ -395,10 +395,10 @@ SyncInvalidationListener::CollectDebugData() const {
            unacked_invalidations_map_.begin();
        it != unacked_invalidations_map_.end();
        ++it) {
-    unacked_map->Set((it->first).name(), (it->second).ToValue().release());
+    unacked_map->Set((it->first).name(), (it->second).ToValue());
   }
   return_value->Set("SyncInvalidationListener.UnackedInvalidationsMap",
-                    unacked_map.release());
+                    std::move(unacked_map));
   return return_value;
 }
 

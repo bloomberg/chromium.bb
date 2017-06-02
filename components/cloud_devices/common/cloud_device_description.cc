@@ -63,9 +63,7 @@ const base::DictionaryValue* CloudDeviceDescription::GetItem(
 
 base::DictionaryValue* CloudDeviceDescription::CreateItem(
     const std::string& path) {
-  base::DictionaryValue* value = new base::DictionaryValue;
-  root_->Set(path, value);
-  return value;
+  return root_->SetDictionary(path, base::MakeUnique<base::DictionaryValue>());
 }
 
 const base::ListValue* CloudDeviceDescription::GetListItem(
@@ -77,9 +75,7 @@ const base::ListValue* CloudDeviceDescription::GetListItem(
 
 base::ListValue* CloudDeviceDescription::CreateListItem(
     const std::string& path) {
-  base::ListValue* value = new base::ListValue;
-  root_->Set(path, value);
-  return value;
+  return root_->SetList(path, base::MakeUnique<base::ListValue>());
 }
 
 }  // namespace cloud_devices

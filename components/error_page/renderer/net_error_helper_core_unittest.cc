@@ -9,12 +9,14 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -82,12 +84,12 @@ const NavigationCorrection kDefaultCorrections[] = {
 
 std::string SuggestionsToResponse(const NavigationCorrection* corrections,
                                   int num_corrections) {
-  base::ListValue* url_corrections = new base::ListValue();
+  auto url_corrections = base::MakeUnique<base::ListValue>();
   for (int i = 0; i < num_corrections; ++i)
     url_corrections->Append(corrections[i].ToValue());
 
   base::DictionaryValue response;
-  response.Set("result.UrlCorrections", url_corrections);
+  response.Set("result.UrlCorrections", std::move(url_corrections));
   response.SetString("result.eventId", kNavigationCorrectionEventId);
   response.SetString("result.fingerprint", kNavigationCorrectionFingerprint);
 

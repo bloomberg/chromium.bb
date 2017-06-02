@@ -83,12 +83,12 @@ TEST(SyncableIdTest, GetLeastIdForLexicographicComparison) {
 }
 
 TEST(SyncableIdTest, ToValue) {
-  base::ExpectStringValue("r", Id::CreateFromServerId("0").ToValue());
-  base::ExpectStringValue("svalue", Id::CreateFromServerId("value").ToValue());
+  base::ExpectStringValue("r", *Id::CreateFromServerId("0").ToValue());
+  base::ExpectStringValue("svalue", *Id::CreateFromServerId("value").ToValue());
 
-  base::ExpectStringValue("r", Id::CreateFromClientString("0").ToValue());
+  base::ExpectStringValue("r", *Id::CreateFromClientString("0").ToValue());
   base::ExpectStringValue("cvalue",
-                          Id::CreateFromClientString("value").ToValue());
+                          *Id::CreateFromClientString("value").ToValue());
 }
 
 }  // namespace syncable

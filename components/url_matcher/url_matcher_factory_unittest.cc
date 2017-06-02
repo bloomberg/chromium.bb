@@ -34,7 +34,8 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
 
   // Invalid value type: {"hostSuffix": []}
   base::DictionaryValue invalid_condition2;
-  invalid_condition2.Set(keys::kHostSuffixKey, new base::ListValue);
+  invalid_condition2.Set(keys::kHostSuffixKey,
+                         base::MakeUnique<base::ListValue>());
 
   // Invalid regex value: {"urlMatches": "*"}
   base::DictionaryValue invalid_condition3;
@@ -53,21 +54,21 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   // }
 
   // Port range: Allow 80;1000-1010.
-  std::unique_ptr<base::ListValue> port_range(new base::ListValue());
+  auto port_range = base::MakeUnique<base::ListValue>();
   port_range->AppendInteger(1000);
   port_range->AppendInteger(1010);
-  base::ListValue* port_ranges = new base::ListValue();
+  auto port_ranges = base::MakeUnique<base::ListValue>();
   port_ranges->AppendInteger(80);
   port_ranges->Append(std::move(port_range));
 
-  base::ListValue* scheme_list = new base::ListValue();
+  auto scheme_list = base::MakeUnique<base::ListValue>();
   scheme_list->AppendString("http");
 
   base::DictionaryValue valid_condition;
   valid_condition.SetString(keys::kHostSuffixKey, "example.com");
   valid_condition.SetString(keys::kHostPrefixKey, "www");
-  valid_condition.Set(keys::kPortsKey, port_ranges);
-  valid_condition.Set(keys::kSchemesKey, scheme_list);
+  valid_condition.Set(keys::kPortsKey, std::move(port_ranges));
+  valid_condition.Set(keys::kSchemesKey, std::move(scheme_list));
 
   // Test wrong condition name passed.
   error.clear();
@@ -142,10 +143,10 @@ TEST(URLMatcherFactoryTest, UpperCase) {
   invalid_condition4.SetString(keys::kHostEqualsKey, "WWW.example.Com");
 
   // {"scheme": ["HTTP"]}
-  base::ListValue* scheme_list = new base::ListValue();
+  auto scheme_list = base::MakeUnique<base::ListValue>();
   scheme_list->AppendString("HTTP");
   base::DictionaryValue invalid_condition5;
-  invalid_condition5.Set(keys::kSchemesKey, scheme_list);
+  invalid_condition5.Set(keys::kSchemesKey, std::move(scheme_list));
 
   const base::DictionaryValue* invalid_conditions[] = {
     &invalid_condition1,

@@ -372,11 +372,11 @@ struct EntryKernel {
   bool ShouldMaintainHierarchy() const;
 
   // Dumps all kernel info into a DictionaryValue and returns it.
-  // Transfers ownership of the DictionaryValue to the caller.
   // Note: |cryptographer| is an optional parameter for use in decrypting
   // encrypted specifics. If it is null or the specifics are not decryptsble,
   // they will be serialized as empty proto's.
-  base::DictionaryValue* ToValue(Cryptographer* cryptographer) const;
+  std::unique_ptr<base::DictionaryValue> ToValue(
+      Cryptographer* cryptographer) const;
 
   size_t EstimateMemoryUsage() const;
 
