@@ -200,6 +200,17 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests opening a child window using the following link
+// <a href="data:text/html,<script>window.location='about:newtab';</script>"
+//    target="_blank">
+// TODO(crbug.com/687863): Enable this test.
+- (void)DISABLED_testWindowOpenWithAboutNewTabScript {
+  TapWebViewElementWithId("webScenarioWindowOpenWithAboutNewTabScript");
+  AssertMainTabCount(2);
+  [[EarlGrey selectElementWithMatcher:OmniboxText("about:newtab")]
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests that closing the current window using DOM fails.
 - (void)testCloseWindowNotOpenByDOM {
   TapWebViewElementWithId("webScenarioWindowClose");
