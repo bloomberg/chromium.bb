@@ -40,7 +40,7 @@ CWV_EXPORT
 @property(nonatomic, readonly) BOOL canGoForward;
 
 // Whether or not this web view is loading a page.
-@property(nonatomic, readonly) BOOL isLoading;
+@property(nonatomic, readonly, getter=isLoading) BOOL loading;
 
 // The URL displayed in the url bar.
 @property(nonatomic, readonly) NSURL* visibleURL;
