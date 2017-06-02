@@ -18,11 +18,11 @@ FakeExternalBeginFrameSource::FakeExternalBeginFrameSource(
     : tick_automatically_(tick_automatically),
       milliseconds_per_frame_(1000.0 / refresh_rate),
       weak_ptr_factory_(this) {
-  DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 FakeExternalBeginFrameSource::~FakeExternalBeginFrameSource() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void FakeExternalBeginFrameSource::SetPaused(bool paused) {
@@ -87,7 +87,7 @@ BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
 
 void FakeExternalBeginFrameSource::TestOnBeginFrame(
     const BeginFrameArgs& args) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_args_ = args;
   std::set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
