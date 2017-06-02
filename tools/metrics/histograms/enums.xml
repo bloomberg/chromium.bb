@@ -22295,6 +22295,7 @@ from previous Chrome versions.
   <int value="385969127" label="disable-win32k-lockdown"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
+  <int value="393704200" label="account-consistency"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>

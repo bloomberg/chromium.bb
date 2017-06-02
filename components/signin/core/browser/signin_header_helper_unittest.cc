@@ -71,7 +71,7 @@ class SigninHeaderHelperTest : public testing::Test {
 // Tests that no Mirror request is returned when the user is not signed in (no
 // account id).
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "", "");
   CheckMirrorCookieRequest(GURL("https://docs.google.com"), "", "");
@@ -80,7 +80,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
 // Tests that no Mirror request is returned when the cookies aren't allowed to
 // be set.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestCookieSettingBlocked) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "0123456789", "");
@@ -89,7 +89,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestCookieSettingBlocked) {
 
 // Tests that no Mirror request is returned when the target is a non-Google URL.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestExternalURL) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckMirrorHeaderRequest(GURL("https://foo.com"), "0123456789", "");
   CheckMirrorCookieRequest(GURL("https://foo.com"), "0123456789", "");
@@ -98,7 +98,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestExternalURL) {
 // Tests that the Mirror request is returned without the GAIA Id when the target
 // is a google TLD domain.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleTLD) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckMirrorHeaderRequest(GURL("https://google.fr"), "0123456789",
                            "mode=0,enable_account_consistency=true");
@@ -109,7 +109,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleTLD) {
 // Tests that the Mirror request is returned when the target is the domain
 // google.com, and that the GAIA Id is only attached for the cookie.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckMirrorHeaderRequest(GURL("https://www.google.com"), "0123456789",
                            "mode=0,enable_account_consistency=true");
@@ -125,7 +125,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
 // only relevant on Desktop.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
-  DCHECK(!switches::IsEnableAccountConsistency());
+  DCHECK(!switches::IsAccountConsistencyMirrorEnabled());
   CheckMirrorHeaderRequest(
       GURL("https://docs.google.com/document"), "0123456789",
       "id=0123456789,mode=0,enable_account_consistency=false");
@@ -134,7 +134,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
       "id=0123456789:mode=0:enable_account_consistency=false");
 
   // Enable Account Consistency will override the disable.
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckMirrorHeaderRequest(
       GURL("https://docs.google.com/document"), "0123456789",
@@ -148,7 +148,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
 // Tests that the Mirror header request is returned normally when the redirect
 // URL is eligible.
 TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("https://www.google.com");
@@ -166,7 +166,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
 // Tests that the Mirror header request is stripped when the redirect URL is not
 // eligible.
 TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("http://www.foo.com");
@@ -184,7 +184,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
 // Tests that the Mirror header, whatever its value is, is untouched when both
 // the current and the redirect URL are non-eligible.
 TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   const GURL url("https://www.bar.com");
   const GURL redirect_url("http://www.foo.com");

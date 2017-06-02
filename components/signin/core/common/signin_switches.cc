@@ -17,8 +17,16 @@ const char kDisableSigninPromo[] = "disable-signin-promo";
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-// Enables consistent identity features.
-const char kEnableAccountConsistency[] = "enable-account-consistency";
+// Command line flag for enabling account consistency. Default mode is disabled.
+// Mirror is a legacy mode in which Google accounts are always addded to Chrome,
+// and Chrome then adds them to the Google authentication cookies.
+// Dice is a new experiment in which Chrome is aware of the accounts in the
+// Google authentication cookies.
+const char kAccountConsistency[] = "account-consistency";
+
+// Values for the kAccountConsistency flag.
+const char kAccountConsistencyMirror[] = "mirror";
+const char kAccountConsistencyDice[] = "dice";
 #endif
 
 // Enables sending EnableRefreshTokenAnnotationRequest.

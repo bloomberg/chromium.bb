@@ -121,7 +121,8 @@ bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url) {
     return false;
 
   GURL origin(url.GetOrigin());
-  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
+  bool is_enable_account_consistency =
+      switches::IsAccountConsistencyMirrorEnabled();
   bool is_google_url = is_enable_account_consistency &&
                        (google_util::IsGoogleDomainUrl(
                             url, google_util::ALLOW_SUBDOMAIN,
@@ -169,7 +170,7 @@ std::string BuildMirrorRequestIfPossible(
                          base::IntToString(profile_mode_mask).c_str()));
   parts.push_back(base::StringPrintf(
       "%s=%s", kEnableAccountConsistencyAttrName,
-      switches::IsEnableAccountConsistency() ? "true" : "false"));
+      switches::IsAccountConsistencyMirrorEnabled() ? "true" : "false"));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }
@@ -283,7 +284,7 @@ ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,
     return empty_params;
   }
 
-  DCHECK(switches::IsEnableAccountConsistency() && !is_off_the_record);
+  DCHECK(switches::IsAccountConsistencyMirrorEnabled() && !is_off_the_record);
   return BuildManageAccountsParams(header_value);
 }
 

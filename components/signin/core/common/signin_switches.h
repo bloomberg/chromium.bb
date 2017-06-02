@@ -23,9 +23,11 @@ extern const char kEnableSigninPromo[];
 extern const char kExtensionsMultiAccount[];
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-// Note: Account consistency is already enabled on mobile platforms, so this
-// switch only exist on desktop platforms.
-extern const char kEnableAccountConsistency[];
+// Note: Account consistency (Mirror) is already enabled on mobile platforms, so
+// this switch only exist on desktop platforms.
+extern const char kAccountConsistency[];
+extern const char kAccountConsistencyMirror[];
+extern const char kAccountConsistencyDice[];
 #endif
 
 }  // namespace switches

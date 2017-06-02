@@ -303,6 +303,16 @@ const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
     {flag_descriptions::kDefaultTileHeightVenti, switches::kDefaultTileHeight,
      "1024"}};
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::Choice kAccountConsistencyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kAccountConsistencyChoiceMirror,
+     switches::kAccountConsistency, switches ::kAccountConsistencyMirror},
+    {flag_descriptions::kAccountConsistencyChoiceDice,
+     switches::kAccountConsistency, switches::kAccountConsistencyDice},
+};
+#endif
+
 const FeatureEntry::Choice kSimpleCacheBackendChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceDisabled,
@@ -1672,8 +1682,8 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
 #if !defined(OS_ANDROID)
     {"enable-account-consistency", flag_descriptions::kAccountConsistencyName,
-     flag_descriptions::kAccountConsistencyDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableAccountConsistency)},
+     flag_descriptions::kAccountConsistencyDescription,
+     kOsWin | kOsLinux | kOsMac, MULTI_VALUE_TYPE(kAccountConsistencyChoices)},
 #endif
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"reset-app-list-install-state",

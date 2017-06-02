@@ -1725,13 +1725,6 @@ const char kEnableWebNotificationCustomLayoutsDescription[] =
     "Enable custom layouts for Web Notifications. They will have subtle "
     "layout improvements that are otherwise not possible.";
 
-const char kAccountConsistencyName[] =
-    "Identity consistency between browser and cookie jar";
-
-const char kAccountConsistencyDescription[] =
-    "When enabled, the browser manages signing in and out of Google "
-    "accounts.";
-
 const char kGoogleProfileInfoName[] = "Google profile name and icon";
 
 const char kGoogleProfileInfoDescription[] =
@@ -3202,6 +3195,16 @@ const char kEnableD3DVsyncDescription[] =
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+const char kAccountConsistencyName[] =
+    "Identity consistency between browser and cookie jar";
+
+const char kAccountConsistencyDescription[] =
+    "When enabled, the browser manages signing in and out of Google "
+    "accounts.";
+
+const char kAccountConsistencyChoiceMirror[] = "Mirror";
+const char kAccountConsistencyChoiceDice[] = "Dice";
 
 const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
 const char kUseGoogleLocalNtpDescription[] =

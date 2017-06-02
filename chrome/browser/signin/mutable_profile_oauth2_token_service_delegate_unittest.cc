@@ -181,7 +181,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceDBUpgrade) {
   AddAuthTokenManually(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                        main_refresh_token);
 
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
 
   // Force LoadCredentials.
@@ -296,7 +296,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentials) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
 
   // Ensure DB is clean.
@@ -505,7 +505,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, CanonicalizeAccountId) {
   tokens["AccountId-Foo.Bar@gmail.com"] = "refresh_token";
   tokens["AccountId-12345"] = "refresh_token";
 
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
@@ -522,7 +522,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   tokens["AccountId-Foo.Bar@gmail.com"] = "bad_token";
   tokens["AccountId-foobar@gmail.com"] = "good_token";
 
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
@@ -535,7 +535,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   EXPECT_TRUE(oauth2_service_delegate_->GetAccounts().empty());
   oauth2_service_delegate_->UpdateCredentials("account_id1", "refresh_token1");
@@ -558,7 +558,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     std::string email = "foo@gmail.com";
     std::string gaia_id = "foo's gaia id";
 
-    switches::EnableAccountConsistencyForTesting(
+    switches::EnableAccountConsistencyMirrorForTesting(
         base::CommandLine::ForCurrentProcess());
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
@@ -617,7 +617,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     std::string email2 = "bar@gmail.com";
     std::string gaia_id2 = "bar's gaia id";
 
-    switches::EnableAccountConsistencyForTesting(
+    switches::EnableAccountConsistencyMirrorForTesting(
         base::CommandLine::ForCurrentProcess());
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
@@ -704,7 +704,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
   AddAuthTokenManually("AccountId-" + primary_account, "refresh_token");
   AddAuthTokenManually("AccountId-" + secondary_account, "refresh_token");
-  switches::EnableAccountConsistencyForTesting(
+  switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   oauth2_service_delegate_->LoadCredentials(primary_account);
   base::RunLoop().RunUntilIdle();

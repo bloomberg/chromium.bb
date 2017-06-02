@@ -1783,7 +1783,8 @@ void PrintPreviewHandler::OnExtensionPrintResult(bool success,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!gaia_cookie_manager_service_);
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (switches::IsEnableAccountConsistency() && !profile->IsOffTheRecord()) {
+  if (switches::IsAccountConsistencyMirrorEnabled() &&
+      !profile->IsOffTheRecord()) {
     gaia_cookie_manager_service_ =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
     if (gaia_cookie_manager_service_)
