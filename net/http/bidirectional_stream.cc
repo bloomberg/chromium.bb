@@ -167,21 +167,6 @@ int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
   return rv;
 }
 
-void BidirectionalStream::SendData(const scoped_refptr<IOBuffer>& data,
-                                   int length,
-                                   bool end_stream) {
-  DCHECK(stream_impl_);
-  DCHECK(write_buffer_list_.empty());
-  DCHECK(write_buffer_len_list_.empty());
-
-  if (net_log_.IsCapturing()) {
-    net_log_.AddEvent(NetLogEventType::BIDIRECTIONAL_STREAM_SEND_DATA);
-  }
-  stream_impl_->SendData(data, length, end_stream);
-  write_buffer_list_.push_back(data);
-  write_buffer_len_list_.push_back(length);
-}
-
 void BidirectionalStream::SendvData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
