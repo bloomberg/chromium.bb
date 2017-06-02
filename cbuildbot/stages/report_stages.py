@@ -1004,8 +1004,10 @@ class ReportStage(generic_stages.BuilderStage,
     # goma on bots, too.
     goma_tmp_dir = self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir')
     if goma_tmp_dir:
-      upload_goma_info.GomaLogUploader(
+      goma_url = upload_goma_info.GomaLogUploader(
           goma_log_dir=os.path.join(goma_tmp_dir, 'log_dir')).Upload()
+      if goma_url:
+        logging.PrintBuildbotLink('Goma compiler_proxy log', goma_url)
 
     if db:
       status_for_db = final_status

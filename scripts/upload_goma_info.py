@@ -34,6 +34,8 @@ GOMA_LOG_GS_BUCKET = 'chrome-goma-log'
 _TIMESTAMP_PATTERN = re.compile(r'(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})')
 _TIMESTAMP_FORMAT = '%Y/%m/%d %H:%M:%S'
 
+_GOMA_LOG_URL_TEMPLATE = (
+    'http://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
 
 def _GetGomaLogDirectory():
   """Returns goma's log directory.
@@ -154,14 +156,18 @@ class GomaLogUploader(object):
       pattern: matching path pattern.
       start_timestamp: files created after this timestamp will be uploaded.
         Can be _LATEST if latest one should be uploaded.
+
+    Returns:
+      A list of uploaded file paths.
     """
     paths = self._GetGlogInfoFileList(pattern, start_timestamp)
     if not paths:
       logging.warning('No glog files matched with: %s', pattern)
-      return
+      return []
 
     for path in paths:
       self._UploadToGomaLogGS(path, remote_dir, headers)
+    return paths
 
   def Upload(self, today=None):
     """Uploads goma related INFO files to Google Cloud Storage.
@@ -170,12 +176,15 @@ class GomaLogUploader(object):
       today: datetime.date instance representing today. This is introduced for
         testing purpose, because datetime.date is unpatchable.
         In real use case, this must be None.
+
+    Returns:
+      URL to the simple log viewer.
     """
     if today is None:
       today = datetime.date.today()
-    remote_dir = 'gs://%s/%s/%s' % (
-        GOMA_LOG_GS_BUCKET, today.strftime('%Y/%m/%d'),
-        cros_build_lib.GetHostName())
+    dest_path = '%s/%s' % (
+        today.strftime('%Y/%m/%d'), cros_build_lib.GetHostName())
+    remote_dir = 'gs://%s/%s' % (GOMA_LOG_GS_BUCKET, dest_path)
 
     builder_info = json.dumps(_GetBuilderInfo())
     logging.info('BuilderInfo: %s', builder_info)
@@ -183,16 +192,22 @@ class GomaLogUploader(object):
 
     self._UploadInfoFiles(
         remote_dir, headers, 'compiler_proxy-subproc', GomaLogUploader._LATEST)
-    self._UploadInfoFiles(
+    compiler_proxy_paths = self._UploadInfoFiles(
         remote_dir, headers, 'compiler_proxy', GomaLogUploader._LATEST)
     compiler_proxy_start_time = self._GetCompilerProxyStartTime()
     if not compiler_proxy_start_time:
       logging.error('Compiler proxy start time is not found. '
                     'So, gomacc INFO files will not be uploaded.')
-      return
 
     # TODO(crbug.com/719843): Enable uploading gomacc logs after
     # crbug.com/719843 is resolved.
+
+    # Build the URL to the compiler_proxy log viewer.
+    if not compiler_proxy_paths:
+      logging.error('Compiler proxy file was not found.')
+      return None
+    return _GOMA_LOG_URL_TEMPLATE % (
+        dest_path, os.path.basename(compiler_proxy_paths[0]) + '.gz')
 
 
 def _GetParser():
