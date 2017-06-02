@@ -140,20 +140,15 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         mock_caller_(NULL),
         mock_homedir_methods_(NULL),
         owner_key_util_(new ownership::MockOwnerKeyUtil()) {
-    // Testing profile must be initialized after user_manager_ +
-    // user_manager_enabler_, because it will create another UserManager
-    // instance if UserManager instance has not been registed before.
-    profile_.reset(new TestingProfile);
     OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
     user_context_.SetKey(Key("fakepass"));
     user_context_.SetUserIDHash("me_nowhere_com_hash");
     const user_manager::User* user =
         user_manager_->AddUser(user_context_.GetAccountId());
-    profile_->set_profile_name(user_context_.GetAccountId().GetUserEmail());
+    profile_.set_profile_name(user_context_.GetAccountId().GetUserEmail());
 
-    ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                            profile_.get());
+    ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, &profile_);
 
     CreateTransformedKey(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                          SystemSaltGetter::ConvertRawSaltToHexString(
@@ -330,9 +325,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
 
-  chromeos::FakeChromeUserManager* user_manager_;
-  std::unique_ptr<TestingProfile> profile_;
+  TestingProfile profile_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  chromeos::FakeChromeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;

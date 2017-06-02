@@ -5,11 +5,9 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
 #include "base/files/file_path.h"
-#include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,17 +20,9 @@ namespace file_manager {
 namespace util {
 namespace {
 
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
-
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
-  // MigratePathFromOldFormat is explicitly disabled on Linux build.
-  // So we need to fake that this is real ChromeOS system.
-  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
-                                                              base::Time());
 
   // This looks like "/home/chronos/u-hash/Downloads" in the production
   // environment.

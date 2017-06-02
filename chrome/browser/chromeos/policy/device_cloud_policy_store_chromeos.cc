@@ -40,8 +40,7 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
 }
 
 DeviceCloudPolicyStoreChromeOS::~DeviceCloudPolicyStoreChromeOS() {
-  if (device_settings_service_)
-    device_settings_service_->RemoveObserver(this);
+  device_settings_service_->RemoveObserver(this);
 }
 
 void DeviceCloudPolicyStoreChromeOS::Store(
@@ -108,7 +107,6 @@ void DeviceCloudPolicyStoreChromeOS::DeviceSettingsUpdated() {
 }
 
 void DeviceCloudPolicyStoreChromeOS::OnDeviceSettingsServiceShutdown() {
-  device_settings_service_->RemoveObserver(this);
   device_settings_service_ = nullptr;
 }
 

@@ -119,7 +119,7 @@ class PublicSessionPermissionHelperTest
 
   std::vector<PermissionIDSet> allowed_permissions_;
 
-  std::unique_ptr<chromeos::ScopedTestPublicSessionLoginState> login_state_;
+  chromeos::ScopedTestPublicSessionLoginState login_state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicSessionPermissionHelperTest);
@@ -127,13 +127,11 @@ class PublicSessionPermissionHelperTest
 
 void PublicSessionPermissionHelperTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  login_state_.reset(new chromeos::ScopedTestPublicSessionLoginState());
   extension_a_ = LoadManifestHelper("extension_a");
   extension_b_ = LoadManifestHelper("extension_b");
 }
 
 void PublicSessionPermissionHelperTest::TearDown() {
-  login_state_.reset();
   ResetPermissionsForTesting();
   ChromeRenderViewHostTestHarness::TearDown();
 }

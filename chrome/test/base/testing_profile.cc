@@ -28,7 +28,6 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -426,13 +425,6 @@ void TestingProfile::Init() {
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-#if defined(OS_CHROMEOS)
-  if (!chromeos::CrosSettings::IsInitialized()) {
-    scoped_cros_settings_test_helper_.reset(
-        new chromeos::ScopedCrosSettingsTestHelper);
-  }
-#endif
 
   set_is_guest_profile(guest_session_);
 

@@ -37,8 +37,10 @@
 #if defined(OS_CHROMEOS)
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
@@ -449,7 +451,10 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   AccountId account_id = AccountId::FromUserEmailGaiaId(user_email, user_id);
   std::string user_id_hash = chromeos::ProfileHelper::Get()->
       GetUserIdHashByUserIdForTesting(user_id);
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
+  chromeos::ScopedTestUserManager test_user_manager_;
   chromeos::WallpaperManager::Initialize();
   g_browser_process->local_state()->SetString(
       "PublicAccountPendingDataRemoval", user_email);
@@ -486,7 +491,6 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   // Cleanup.
   chromeos::WallpaperManager::Shutdown();
   delete ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
-  chromeos::ChromeUserManager::Get()->Shutdown();
 }
 #endif  // defined(OS_CHROMEOS)
 
