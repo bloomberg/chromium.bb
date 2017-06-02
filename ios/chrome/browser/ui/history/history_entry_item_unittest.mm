@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/ui/history/history_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const char kTestUrl[] = "http://test/";
@@ -25,11 +28,10 @@ HistoryEntryItem* GetHistoryEntryItem(const GURL& url,
   history::HistoryEntry entry = history::HistoryEntry(
       history::HistoryEntry::LOCAL_ENTRY, GURL(url), base::UTF8ToUTF16(title),
       timestamp, "", false, base::string16(), false);
-  HistoryEntryItem* item =
-      [[[HistoryEntryItem alloc] initWithType:0
-                                 historyEntry:entry
-                                 browserState:nil
-                                     delegate:nil] autorelease];
+  HistoryEntryItem* item = [[HistoryEntryItem alloc] initWithType:0
+                                                     historyEntry:entry
+                                                     browserState:nil
+                                                         delegate:nil];
   return item;
 }
 
@@ -41,14 +43,13 @@ TEST(HistoryEntryItemTest, ConfigureCell) {
   HistoryEntryItem* item =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp);
 
-  base::scoped_nsobject<HistoryEntryCell> cell([[[item cellClass] alloc] init]);
+  HistoryEntryCell* cell = [[[item cellClass] alloc] init];
   EXPECT_TRUE([cell isMemberOfClass:[HistoryEntryCell class]]);
   [item configureCell:cell];
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kTestTitle), cell.get().textLabel.text);
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kTestUrl),
-              cell.get().detailTextLabel.text);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kTestTitle), cell.textLabel.text);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kTestUrl), cell.detailTextLabel.text);
   EXPECT_NSEQ(base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(timestamp)),
-              cell.get().timeLabel.text);
+              cell.timeLabel.text);
 }
 
 // Tests that -[HistoryItem isEqualToHistoryItem:] returns YES if the two items
