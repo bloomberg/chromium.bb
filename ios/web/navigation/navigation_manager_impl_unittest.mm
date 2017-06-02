@@ -5,6 +5,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 
 #include "base/logging.h"
+#include "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
@@ -13,9 +14,26 @@
 #include "ios/web/test/test_url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/scheme_host_port.h"
+#include "url/url_util.h"
 
 namespace web {
 namespace {
+
+// URL scheme that will be rewritten by UrlRewriter installed in
+// NavigationManagerTest fixture. Scheme will be changed to kTestWebUIScheme.
+const char kSchemeToRewrite[] = "navigationmanagerschemetorewrite";
+
+// Replaces |kSchemeToRewrite| scheme with |kTestWebUIScheme|.
+bool UrlRewriter(GURL* url, BrowserState* browser_state) {
+  if (url->scheme() == kSchemeToRewrite) {
+    GURL::Replacements scheme_replacements;
+    scheme_replacements.SetSchemeStr(kTestWebUIScheme);
+    *url = url->ReplaceComponents(scheme_replacements);
+  }
+  return false;
+}
+
 // Stub class for NavigationManagerDelegate.
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
@@ -39,6 +57,10 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
 class NavigationManagerTest : public PlatformTest {
  protected:
   NavigationManagerTest() : manager_(new NavigationManagerImpl()) {
+    // Setup rewriter.
+    BrowserURLRewriter::GetInstance()->AddURLRewriter(UrlRewriter);
+    url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITHOUT_PORT);
+
     manager_->SetDelegate(&delegate_);
     manager_->SetBrowserState(&browser_state_);
     controller_.reset(
@@ -1297,6 +1319,48 @@ TEST_F(NavigationManagerTest,
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(expected_original_url,
             navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that app-specific URLs are not rewritten for renderer-initiated loads
+// unless requested by a page with app-specific url.
+TEST_F(NavigationManagerTest, RewritingAppSpecificUrls) {
+  // URL should not be rewritten as there is no committed URL.
+  GURL url1(url::SchemeHostPort(kSchemeToRewrite, "test", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url1, Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(url1, navigation_manager()->GetPendingItem()->GetURL());
+
+  // URL should not be rewritten because last committed URL is not app-specific.
+  [session_controller() commitPendingItem];
+  GURL url2(url::SchemeHostPort(kSchemeToRewrite, "test2", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url2, Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(url2, navigation_manager()->GetPendingItem()->GetURL());
+
+  // URL should be rewritten for user initiated navigations.
+  GURL url3(url::SchemeHostPort(kSchemeToRewrite, "test3", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url3, Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  GURL rewritten_url3(
+      url::SchemeHostPort(kTestWebUIScheme, "test3", 0).Serialize());
+  EXPECT_EQ(rewritten_url3, navigation_manager()->GetPendingItem()->GetURL());
+
+  // URL should be rewritten because last committed URL is app-specific.
+  [session_controller() commitPendingItem];
+  GURL url4(url::SchemeHostPort(kSchemeToRewrite, "test4", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url4, Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  GURL rewritten_url4(
+      url::SchemeHostPort(kTestWebUIScheme, "test4", 0).Serialize());
+  EXPECT_EQ(rewritten_url4, navigation_manager()->GetPendingItem()->GetURL());
 }
 
 }  // namespace web

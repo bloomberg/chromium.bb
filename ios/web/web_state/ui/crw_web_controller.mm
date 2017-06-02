@@ -1263,14 +1263,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
   if (_webView) {
-    GURL url([self webURLWithTrustLevel:trustLevel]);
-    // Web views treat all about: URLs as the same origin, which makes it
-    // possible for pages to document.write into about:<foo> pages, where <foo>
-    // can be something misleading. Report any about: URL as about:blank to
-    // prevent that. See crbug.com/326118
-    if (url.scheme() == url::kAboutScheme)
-      return GURL(url::kAboutBlankURL);
-    return url;
+    return [self webURLWithTrustLevel:trustLevel];
   }
   // Any non-web URL source is trusted.
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
@@ -2137,7 +2130,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
          ![[_navigationStates lastAddedNavigation] isEqual:navigation] ||
          // invalid URL load
          (!_lastRegisteredRequestURL.is_valid() &&
-          _documentURL.spec() == url::kAboutBlankURL))
+          _documentURL.spec() == url::kAboutBlankURL) ||
+         // about URL was changed by WebKit (e.g. about:newtab -> about:blank)
+         (_lastRegisteredRequestURL.scheme() == url::kAboutScheme &&
+          currentURL.spec() == url::kAboutBlankURL))
       << std::endl
       << "currentURL = [" << currentURL << "]" << std::endl
       << "_lastRegisteredRequestURL = [" << _lastRegisteredRequestURL << "]";
