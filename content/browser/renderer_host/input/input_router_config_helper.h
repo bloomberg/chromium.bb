@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_CONFIG_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_CONFIG_HELPER_H_
 
-#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/input_router.h"
 
 namespace content {
 
 // Return an InputRouter configuration with parameters tailored to the current
 // platform.
-InputRouterImpl::Config GetInputRouterConfigForPlatform();
+InputRouter::Config GetInputRouterConfigForPlatform();
 
 }  // namespace content
 

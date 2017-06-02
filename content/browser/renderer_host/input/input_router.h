@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 
 #include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
+#include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ipc/ipc_listener.h"
@@ -19,6 +21,12 @@ namespace content {
 // received, it is free to customize when those events are dispatched.
 class InputRouter : public IPC::Listener {
  public:
+  struct CONTENT_EXPORT Config {
+    Config();
+    GestureEventQueue::Config gesture_config;
+    TouchEventQueue::Config touch_config;
+  };
+
   ~InputRouter() override {}
 
   // Send and take ownership of the the given InputMsg_*. This should be used

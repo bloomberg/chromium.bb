@@ -48,12 +48,6 @@ class CONTENT_EXPORT InputRouterImpl
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
-  struct CONTENT_EXPORT Config {
-    Config();
-    GestureEventQueue::Config gesture_config;
-    TouchEventQueue::Config touch_config;
-  };
-
   InputRouterImpl(IPC::Sender* sender,
                   InputRouterClient* client,
                   InputAckHandler* ack_handler,
