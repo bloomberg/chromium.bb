@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -140,19 +141,37 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(
     content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
       skip_post_install_ui_(false),
-      use_app_installed_bubble_(false) {}
+      previous_using_system_theme_(false),
+      use_app_installed_bubble_(false) {
+  // |profile| can be NULL during tests.
+  if (profile_) {
+    // Remember the current theme in case the user presses undo.
+    const Extension* previous_theme =
+        ThemeServiceFactory::GetThemeForProfile(profile_);
+    if (previous_theme)
+      previous_theme_id_ = previous_theme->id();
+    previous_using_system_theme_ =
+        ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme();
+  }
+}
 
 ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                                  const SkBitmap* icon) {
-  if (skip_post_install_ui_ || extension->is_theme())
+  if (skip_post_install_ui_)
     return;
 
   if (!profile_) {
     // TODO(zelidrag): Figure out what exact conditions cause crash
     // http://crbug.com/159437 and write browser test to cover it.
     NOTREACHED();
+    return;
+  }
+
+  if (extension->is_theme()) {
+    ThemeInstalledInfoBarDelegate::Create(
+        extension, profile_, previous_theme_id_, previous_using_system_theme_);
     return;
   }
 

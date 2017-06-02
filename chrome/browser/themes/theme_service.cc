@@ -17,12 +17,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
@@ -264,7 +262,7 @@ void ThemeService::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_ENABLED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->is_theme())
-        DoSetTheme(extension, true);
+        SetTheme(extension);
       break;
     }
     default:
@@ -273,18 +271,40 @@ void ThemeService::Observe(int type,
 }
 
 void ThemeService::SetTheme(const Extension* extension) {
-  DoSetTheme(extension, false);
-}
-
-void ThemeService::RevertToTheme(const Extension* extension) {
   DCHECK(extension->is_theme());
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(!service->IsExtensionEnabled(extension->id()));
-  // |extension| is disabled when reverting to the previous theme via an
-  // infobar.
-  service->EnableExtension(extension->id());
-  // Enabling the extension will call back to SetTheme().
+  if (!service->IsExtensionEnabled(extension->id())) {
+    // |extension| is disabled when reverting to the previous theme via an
+    // infobar.
+    service->EnableExtension(extension->id());
+    // Enabling the extension will call back to SetTheme().
+    return;
+  }
+
+  std::string previous_theme_id = GetThemeID();
+
+  // Clear our image cache.
+  FreePlatformCaches();
+
+  BuildFromExtension(extension);
+  SaveThemeID(extension->id());
+
+  NotifyThemeChanged();
+  base::RecordAction(UserMetricsAction("Themes_Installed"));
+
+  if (previous_theme_id != kDefaultThemeID &&
+      previous_theme_id != extension->id() &&
+      service->GetInstalledExtension(previous_theme_id)) {
+    // Do not disable the previous theme if it is already uninstalled. Sending
+    // NOTIFICATION_BROWSER_THEME_CHANGED causes the previous theme to be
+    // uninstalled when the notification causes the remaining infobar to close
+    // and does not open any new infobars. See crbug.com/468280.
+
+    // Disable the old theme.
+    service->DisableExtension(previous_theme_id,
+                              extensions::Extension::DISABLE_USER_ACTION);
+  }
 }
 
 void ThemeService::UseDefaultTheme() {
@@ -329,10 +349,8 @@ void ThemeService::OnInfobarDisplayed() {
 void ThemeService::OnInfobarDestroyed() {
   number_of_infobars_--;
 
-  if (number_of_infobars_ == 0 &&
-      !build_extension_task_tracker_.HasTrackedTasks()) {
+  if (number_of_infobars_ == 0)
     RemoveUnusedThemes(false);
-  }
 }
 
 void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
@@ -357,8 +375,8 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   for (extensions::ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = it->get();
-    if (extension->is_theme() && extension->id() != current_theme &&
-        extension->id() != building_extension_id_) {
+    if (extension->is_theme() &&
+        extension->id() != current_theme) {
       // Only uninstall themes which are not disabled or are disabled with
       // reason DISABLE_USER_ACTION. We cannot blanket uninstall all disabled
       // themes because externally installed themes are initially disabled.
@@ -560,7 +578,7 @@ void ThemeService::LoadThemePrefs() {
 
   // If we don't have a file pack, we're updating from an old version.
   base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
-  if (!path.empty()) {
+  if (path != base::FilePath()) {
     path = path.Append(chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
     if (theme_supplier_)
@@ -667,15 +685,6 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
   return SkColorSetA(separator_color, alpha);
 }
 
-void ThemeService::DoSetTheme(const Extension* extension,
-                              bool suppress_infobar) {
-  DCHECK(extension->is_theme());
-  DCHECK(extensions::ExtensionSystem::Get(profile_)
-             ->extension_service()
-             ->IsExtensionEnabled(extension->id()));
-  BuildFromExtension(extension, suppress_infobar);
-}
-
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
   gfx::Image image = GetImageNamed(id, incognito);
   if (image.IsEmpty())
@@ -776,6 +785,10 @@ void ThemeService::OnExtensionServiceReady() {
     // be recreated from the extension.
     MigrateTheme();
     set_ready();
+
+    // Send notification in case anyone requested data and cached it when the
+    // theme service was not ready yet.
+    NotifyThemeChanged();
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -793,18 +806,15 @@ void ThemeService::OnExtensionServiceReady() {
 }
 
 void ThemeService::MigrateTheme() {
+  // TODO(erg): We need to pop up a dialog informing the user that their
+  // theme is being migrated.
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension =
       service ? service->GetExtensionById(GetThemeID(), false) : nullptr;
   if (extension) {
     DLOG(ERROR) << "Migrating theme";
-    // Theme migration is done on the UI thread. Blocking the UI from appearing
-    // until it's ready is deemed better than showing a blip of the default
-    // theme.
-    scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
-    BrowserThemePack::BuildFromExtension(extension, pack);
-    OnThemeBuiltFromExtension(extension->id(), pack, true);
+    BuildFromExtension(extension);
     base::RecordAction(UserMetricsAction("Themes.Migrated"));
   } else {
     DLOG(ERROR) << "Theme is mysteriously gone.";
@@ -831,26 +841,10 @@ void ThemeService::SaveThemeID(const std::string& id) {
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, id);
 }
 
-void ThemeService::BuildFromExtension(const Extension* extension,
-                                      bool suppress_infobar) {
-  build_extension_task_tracker_.TryCancelAll();
-  building_extension_id_ = extension->id();
-  scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
-  auto task_runner = base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
-  build_extension_task_tracker_.PostTaskAndReply(
-      task_runner.get(), FROM_HERE,
-      base::Bind(&BrowserThemePack::BuildFromExtension, extension, pack),
-      base::Bind(&ThemeService::OnThemeBuiltFromExtension,
-                 weak_ptr_factory_.GetWeakPtr(), extension->id(), pack,
-                 suppress_infobar));
-}
-
-void ThemeService::OnThemeBuiltFromExtension(
-    const extensions::ExtensionId& extension_id,
-    scoped_refptr<BrowserThemePack> pack,
-    bool suppress_infobar) {
-  if (!pack->is_valid()) {
+void ThemeService::BuildFromExtension(const Extension* extension) {
+  scoped_refptr<BrowserThemePack> pack(
+      BrowserThemePack::BuildFromExtension(extension));
+  if (!pack.get()) {
     // TODO(erg): We've failed to install the theme; perhaps we should tell the
     // user? http://crbug.com/34780
     LOG(ERROR) << "Could not load theme.";
@@ -861,57 +855,16 @@ void ThemeService::OnThemeBuiltFromExtension(
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
-  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)
-                                   ->enabled_extensions()
-                                   .GetByID(extension_id);
-  if (!extension)
-    return;
 
   // Write the packed file to disk.
   service->GetFileTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack),
                             extension->path()));
 
-  const std::string previous_theme_id = GetThemeID();
-  const bool previous_using_system_theme = UsingSystemTheme();
-
   // Save only the extension path. The packed file will be loaded via
   // LoadThemePrefs().
   SavePackName(extension->path());
   SwapThemeSupplier(pack);
-
-  // Clear our image cache.
-  FreePlatformCaches();
-  SaveThemeID(extension->id());
-  NotifyThemeChanged();
-
-  // Same old theme, but the theme has changed (migrated) or auto-updated.
-  if (previous_theme_id == extension->id())
-    return;
-
-  base::RecordAction(UserMetricsAction("Themes_Installed"));
-
-  bool can_revert_theme = previous_theme_id == kDefaultThemeID;
-  if (previous_theme_id != kDefaultThemeID &&
-      service->GetInstalledExtension(previous_theme_id)) {
-    // Do not disable the previous theme if it is already uninstalled. Sending
-    // NOTIFICATION_BROWSER_THEME_CHANGED causes the previous theme to be
-    // uninstalled when the notification causes the remaining infobar to close
-    // and does not open any new infobars. See crbug.com/468280.
-
-    // Disable the old theme.
-    service->DisableExtension(previous_theme_id,
-                              extensions::Extension::DISABLE_USER_ACTION);
-
-    can_revert_theme = true;
-  }
-
-  // Offer to revert to the old theme.
-  if (can_revert_theme && !suppress_infobar) {
-    ThemeInstalledInfoBarDelegate::Create(
-        extension, profile_, previous_theme_id, previous_using_system_theme);
-  }
-  building_extension_id_.clear();
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
