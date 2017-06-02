@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
@@ -58,7 +59,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -88,13 +88,6 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
     /**
-     * Account name preferences will be ordered sequentially, starting with this "order" value.
-     * This ensures that the account name preferences appear in the correct location in the
-     * preference fragment. See account_management_preferences.xml for details.
-     */
-    private static final int FIRST_ACCOUNT_PREF_ORDER = 100;
-
-    /**
      * SharedPreference name for the preference that disables signing out of Chrome.
      * Signing out is forever disabled once Chrome signs the user in automatically
      * if the device has a child account or if the device is an Android EDU device.
@@ -106,7 +99,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private static String sChildAccountId;
     private static Bitmap sCachedBadgedPicture;
 
-    public static final String PREF_ADD_ACCOUNT = "add_account";
+    public static final String PREF_ACCOUNTS_CATEGORY = "accounts_category";
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
     public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
     public static final String PREF_CHILD_CONTENT = "child_content";
@@ -120,8 +113,6 @@ public class AccountManagementFragment extends PreferenceFragment
     private static final String ACCOUNT_SETTINGS_ACCOUNT_KEY = "account";
 
     private int mGaiaServiceType;
-
-    private ArrayList<Preference> mAccountsListPreferences = new ArrayList<>();
 
     private Profile mProfile;
     private String mSignedInAccountName;
@@ -233,7 +224,6 @@ public class AccountManagementFragment extends PreferenceFragment
         getActivity().setTitle(fullName);
 
         configureSignOutSwitch();
-        configureAddAccountPreference();
         configureChildAccountPreferences();
         configureSyncSettings();
         configureGoogleActivityControls();
@@ -331,43 +321,6 @@ public class AccountManagementFragment extends PreferenceFragment
         });
     }
 
-    private void configureAddAccountPreference() {
-        ChromeBasePreference addAccount = (ChromeBasePreference) findPreference(PREF_ADD_ACCOUNT);
-
-        if (mProfile.isChild()) {
-            getPreferenceScreen().removePreference(addAccount);
-        } else {
-            addAccount.setTitle(getResources().getString(
-                    R.string.account_management_add_account_title));
-            addAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!isVisible() || !isResumed()) return false;
-
-                    AccountManagementScreenHelper.logEvent(
-                            ProfileAccountManagementMetrics.ADD_ACCOUNT,
-                            mGaiaServiceType);
-
-                    AccountAdder.getInstance().addAccount(
-                            getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
-
-                    // Return to the last opened tab if triggered from the content area.
-                    if (mGaiaServiceType != AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE) {
-                        if (isAdded()) getActivity().finish();
-                    }
-
-                    return true;
-                }
-            });
-            addAccount.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-                @Override
-                public boolean isPreferenceControlledByPolicy(Preference preference) {
-                    return !canAddAccounts();
-                }
-            });
-        }
-    }
-
     private void configureChildAccountPreferences() {
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
@@ -420,22 +373,18 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void updateAccountsList() {
-        PreferenceScreen prefScreen = getPreferenceScreen();
-        if (prefScreen == null) return;
+        PreferenceCategory accountsCategory =
+                (PreferenceCategory) findPreference(PREF_ACCOUNTS_CATEGORY);
+        if (accountsCategory == null) return;
 
-        for (int i = 0; i < mAccountsListPreferences.size(); i++) {
-            prefScreen.removePreference(mAccountsListPreferences.get(i));
-        }
-        mAccountsListPreferences.clear();
+        accountsCategory.removeAll();
 
+        boolean isChildAccount = mProfile.isChild();
         Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
-        int nextPrefOrder = FIRST_ACCOUNT_PREF_ORDER;
-
         for (final Account account : accounts) {
             ChromeBasePreference pref = new ChromeBasePreference(getActivity());
             pref.setTitle(account.name);
 
-            boolean isChildAccount = mProfile.isChild();
             pref.setUseReducedPadding(isChildAccount);
             pref.setIcon(new BitmapDrawable(getResources(),
                     isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
@@ -450,10 +399,44 @@ public class AccountManagementFragment extends PreferenceFragment
                 }
             });
 
-            pref.setOrder(nextPrefOrder++);
-            prefScreen.addPreference(pref);
-            mAccountsListPreferences.add(pref);
+            accountsCategory.addPreference(pref);
         }
+
+        if (!isChildAccount) {
+            accountsCategory.addPreference(createAddAccountPreference());
+        }
+    }
+
+    private ChromeBasePreference createAddAccountPreference() {
+        ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
+        addAccountPreference.setIcon(R.drawable.add_circle_blue);
+        addAccountPreference.setTitle(R.string.account_management_add_account_title);
+        addAccountPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (!isVisible() || !isResumed()) return false;
+
+                AccountManagementScreenHelper.logEvent(
+                        ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
+
+                AccountAdder.getInstance().addAccount(
+                        getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
+
+                // Return to the last opened tab if triggered from the content area.
+                if (mGaiaServiceType != AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE) {
+                    if (isAdded()) getActivity().finish();
+                }
+
+                return true;
+            }
+        });
+        addAccountPreference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return !canAddAccounts();
+            }
+        });
+        return addAccountPreference;
     }
 
     // ProfileDownloader.Observer implementation:
