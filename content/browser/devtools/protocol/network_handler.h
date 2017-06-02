@@ -8,10 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+
+namespace net {
+class URLRequest;
+}  // namespace net
 
 namespace content {
 
@@ -65,6 +70,17 @@ class NetworkHandler : public DevToolsDomainHandler,
   Response SetUserAgentOverride(const std::string& user_agent) override;
   Response CanEmulateNetworkConditions(bool* result) override;
 
+  DispatchResponse EnableRequestInterception(bool enabled) override;
+  void ContinueInterceptedRequest(
+      const std::string& request_id,
+      Maybe<std::string> error_reason,
+      Maybe<std::string> base64_raw_response,
+      Maybe<std::string> url,
+      Maybe<std::string> method,
+      Maybe<std::string> post_data,
+      Maybe<protocol::Network::Headers> headers,
+      std::unique_ptr<ContinueInterceptedRequestCallback> callback) override;
+
   void NavigationPreloadRequestSent(int worker_version_id,
                                     const std::string& request_id,
                                     const ResourceRequest& request);
@@ -82,11 +98,18 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool enabled() const { return enabled_; }
   std::string UserAgentOverride() const;
 
+  Network::Frontend* frontend() const { return frontend_.get(); }
+
+  static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
+      const net::URLRequest* request);
+
  private:
   std::unique_ptr<Network::Frontend> frontend_;
   RenderFrameHostImpl* host_;
   bool enabled_;
+  bool interception_enabled_;
   std::string user_agent_;
+  base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
