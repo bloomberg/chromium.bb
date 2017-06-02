@@ -8,9 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/cancelable_callback.h"
@@ -21,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -41,6 +44,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
+#include "content/renderer/media/audio_ipc_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/media_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -317,10 +321,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   AudioInputMessageFilter* audio_input_message_filter() {
     return audio_input_message_filter_.get();
-  }
-
-  AudioMessageFilter* audio_message_filter() {
-    return audio_message_filter_.get();
   }
 
   MidiMessageFilter* midi_message_filter() {
@@ -619,7 +619,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<BlobMessageFilter> blob_message_filter_;
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
-  scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
@@ -641,6 +640,11 @@ class CONTENT_EXPORT RenderThreadImpl
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 #endif
+
+  // Provides AudioOutputIPC objects for audio output devices. It either uses
+  // an AudioMessageFilter for this or provides MojoAudioOutputIPC objects.
+  // Initialized in Init.
+  base::Optional<AudioIPCFactory> audio_ipc_factory_;
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;

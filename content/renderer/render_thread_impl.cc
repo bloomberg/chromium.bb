@@ -708,8 +708,13 @@ void RenderThreadImpl::Init(
   audio_input_message_filter_ = new AudioInputMessageFilter(GetIOTaskRunner());
   AddFilter(audio_input_message_filter_.get());
 
-  audio_message_filter_ = new AudioMessageFilter(GetIOTaskRunner());
-  AddFilter(audio_message_filter_.get());
+  auto audio_message_filter =
+      base::MakeRefCounted<AudioMessageFilter>(GetIOTaskRunner());
+  AddFilter(audio_message_filter.get());
+  // TODO(maxmorin): Based on a feature flag, don't create the
+  // AudioMessageFilter, making AudioIPCFactory instead use mojo factories.
+  audio_ipc_factory_.emplace(std::move(audio_message_filter),
+                             GetIOTaskRunner());
 
   midi_message_filter_ = new MidiMessageFilter(GetIOTaskRunner());
   AddFilter(midi_message_filter_.get());
