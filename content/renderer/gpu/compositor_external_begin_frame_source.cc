@@ -20,11 +20,11 @@ CompositorExternalBeginFrameSource::CompositorExternalBeginFrameSource(
       routing_id_(routing_id) {
   DCHECK(begin_frame_source_filter_);
   DCHECK(message_sender_);
-  DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 CompositorExternalBeginFrameSource::~CompositorExternalBeginFrameSource() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (begin_frame_source_proxy_) {
     begin_frame_source_proxy_->ClearBeginFrameSource();
     begin_frame_source_filter_->RemoveHandlerOnCompositorThread(
@@ -35,7 +35,7 @@ CompositorExternalBeginFrameSource::~CompositorExternalBeginFrameSource() {
 
 void CompositorExternalBeginFrameSource::AddObserver(
     cc::BeginFrameObserver* obs) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!begin_frame_source_proxy_) {
     begin_frame_source_proxy_ =
@@ -71,7 +71,7 @@ void CompositorExternalBeginFrameSource::OnNeedsBeginFrames(
 
 void CompositorExternalBeginFrameSource::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(begin_frame_source_proxy_);
   IPC_BEGIN_MESSAGE_MAP(CompositorExternalBeginFrameSource, message)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBeginFramePaused,
