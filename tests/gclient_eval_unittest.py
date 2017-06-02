@@ -118,6 +118,34 @@ class ExecTest(unittest.TestCase):
         'deps': collections.OrderedDict([('a_dep', 'abarb')]),
     }, local_scope)
 
+
+class EvaluateConditionTest(unittest.TestCase):
+  def test_true(self):
+    self.assertTrue(gclient_eval.EvaluateCondition('True', {}))
+
+  def test_variable(self):
+    self.assertFalse(gclient_eval.EvaluateCondition('foo', {'foo': 'False'}))
+
+  def test_variable_cyclic_reference(self):
+    with self.assertRaises(ValueError) as cm:
+      self.assertTrue(gclient_eval.EvaluateCondition('bar', {'bar': 'bar'}))
+    self.assertIn(
+        'invalid cyclic reference to \'bar\' (inside \'bar\')',
+        str(cm.exception))
+
+  def test_operators(self):
+    self.assertFalse(gclient_eval.EvaluateCondition(
+        'a and not (b or c)', {'a': 'True', 'b': 'False', 'c': 'True'}))
+
+  def test_expansion(self):
+    self.assertTrue(gclient_eval.EvaluateCondition(
+        'a or b', {'a': 'b and c', 'b': 'not c', 'c': 'False'}))
+
+  def test_string_equality(self):
+    self.assertFalse(gclient_eval.EvaluateCondition(
+        'foo == "bar"', {'foo': '"baz"'}))
+
+
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL
   logging.basicConfig(

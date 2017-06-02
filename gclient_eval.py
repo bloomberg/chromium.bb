@@ -196,3 +196,69 @@ def Exec(content, global_scope, local_scope, filename='<unknown>'):
             getattr(node_or_string, 'lineno', '<unknown>')))
 
   _GCLIENT_SCHEMA.validate(local_scope)
+
+
+def EvaluateCondition(condition, variables, referenced_variables=None):
+  """Safely evaluates a boolean condition. Returns the result."""
+  if not referenced_variables:
+    referenced_variables = set()
+  _allowed_names = {'None': None, 'True': True, 'False': False}
+  main_node = ast.parse(condition, mode='eval')
+  if isinstance(main_node, ast.Expression):
+    main_node = main_node.body
+  def _convert(node):
+    if isinstance(node, ast.Str):
+      return node.s
+    elif isinstance(node, ast.Name):
+      if node.id in referenced_variables:
+        raise ValueError(
+            'invalid cyclic reference to %r (inside %r)' % (
+                node.id, condition))
+      elif node.id in _allowed_names:
+        return _allowed_names[node.id]
+      elif node.id in variables:
+        return EvaluateCondition(
+            variables[node.id],
+            variables,
+            referenced_variables.union([node.id]))
+      else:
+        raise ValueError(
+            'invalid name %r (inside %r)' % (node.id, condition))
+    elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
+      if len(node.values) != 2:
+        raise ValueError(
+            'invalid "or": exactly 2 operands required (inside %r)' % (
+                condition))
+      return _convert(node.values[0]) or _convert(node.values[1])
+    elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.And):
+      if len(node.values) != 2:
+        raise ValueError(
+            'invalid "and": exactly 2 operands required (inside %r)' % (
+                condition))
+      return _convert(node.values[0]) and _convert(node.values[1])
+    elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+      return not _convert(node.operand)
+    elif isinstance(node, ast.Compare):
+      if len(node.ops) != 1:
+        raise ValueError(
+            'invalid compare: exactly 1 operator required (inside %r)' % (
+                condition))
+      if len(node.comparators) != 1:
+        raise ValueError(
+            'invalid compare: exactly 1 comparator required (inside %r)' % (
+                condition))
+
+      left = _convert(node.left)
+      right = _convert(node.comparators[0])
+
+      if isinstance(node.ops[0], ast.Eq):
+        return left == right
+
+      raise ValueError(
+          'unexpected operator: %s %s (inside %r)' % (
+              node.ops[0], ast.dump(node), condition))
+    else:
+      raise ValueError(
+          'unexpected AST node: %s %s (inside %r)' % (
+              node, ast.dump(node), condition))
+  return _convert(main_node)
