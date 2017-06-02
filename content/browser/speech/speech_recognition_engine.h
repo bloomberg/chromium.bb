@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/chunked_byte_buffer.h"
 #include "content/common/content_export.h"
@@ -57,9 +57,7 @@ struct SpeechRecognitionError;
 // EndRecognition. If a recognition was started, the caller can free the
 // SpeechRecognitionEngine only after calling EndRecognition.
 
-class CONTENT_EXPORT SpeechRecognitionEngine
-    : public net::URLFetcherDelegate,
-      public NON_EXPORTED_BASE(base::NonThreadSafe) {
+class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
  public:
   class Delegate {
    public:
@@ -215,6 +213,8 @@ class CONTENT_EXPORT SpeechRecognitionEngine
   bool is_dispatching_event_;
   bool use_framed_post_data_;
   FSMState state_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionEngine);
 };

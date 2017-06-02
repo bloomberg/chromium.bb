@@ -102,7 +102,9 @@ SpeechRecognitionEngine::SpeechRecognitionEngine(
       use_framed_post_data_(false),
       state_(STATE_IDLE) {}
 
-SpeechRecognitionEngine::~SpeechRecognitionEngine() {}
+SpeechRecognitionEngine::~SpeechRecognitionEngine() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void SpeechRecognitionEngine::SetConfig(const Config& config) {
   config_ = config;
@@ -145,7 +147,7 @@ void SpeechRecognitionEngine::OnURLFetchDownloadProgress(
 
 void SpeechRecognitionEngine::DispatchHTTPResponse(const URLFetcher* source,
                                                    bool end_of_response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(source);
   const bool response_is_good = source->GetStatus().is_success() &&
                                 source->GetResponseCode() == 200;
@@ -214,7 +216,7 @@ void SpeechRecognitionEngine::DispatchHTTPResponse(const URLFetcher* source,
 }
 
 bool SpeechRecognitionEngine::IsRecognitionPending() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_ != STATE_IDLE;
 }
 
@@ -226,7 +228,7 @@ int SpeechRecognitionEngine::GetDesiredAudioChunkDurationMs() const {
 
 void SpeechRecognitionEngine::DispatchEvent(
     const FSMEventArgs& event_args) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(event_args.event, EVENT_MAX_VALUE);
   DCHECK_LE(state_, STATE_MAX_VALUE);
 
