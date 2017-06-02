@@ -57,13 +57,20 @@ function test()
 
     }
 
-    async function platformFontsForElementWithSelector(selector)
+    function platformFontsForElementWithSelector(selector)
     {
-        var nodeId = await InspectorTest.requestNodeId(documentNodeId, selector);
-        await InspectorTest.sendCommandOrDie("CSS.enable", {});
-        var response = await InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId });
-        collectResults(response);
-        testNextPageElement();
+        InspectorTest.requestNodeId(documentNodeId, selector, onNodeId);
+
+        function onNodeId(nodeId)
+        {
+            InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId }, onGotComputedFonts);
+        }
+
+        function onGotComputedFonts(response)
+        {
+            collectResults(response);
+            testNextPageElement();
+        }
     }
 
     function collectResults(response)

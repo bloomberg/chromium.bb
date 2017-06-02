@@ -280,8 +280,6 @@ class CORE_EXPORT InspectorCSSAgent final
   InspectorStyleSheet* InspectorStyleSheetForRule(CSSStyleRule*);
 
   InspectorStyleSheet* ViaInspectorStyleSheet(Document*);
-
-  protocol::Response AssertEnabled();
   protocol::Response AssertInspectorStyleSheetForId(const String&,
                                                     InspectorStyleSheet*&);
   protocol::Response AssertStyleSheetForId(const String&,
@@ -354,7 +352,6 @@ class CORE_EXPORT InspectorCSSAgent final
   Member<CSSStyleSheet> inspector_user_agent_style_sheet_;
 
   int resource_content_loader_client_id_;
-  bool was_enabled_ = false;
 
   friend class InspectorResourceContentLoaderCallback;
   friend class StyleSheetBinder;
