@@ -257,6 +257,7 @@ IntRect PaintArtifactCompositor::MapRasterInvalidationRectFromChunkToLayer(
   // Now rect is in the space of the containing transform node of pending_layer,
   // so need to subtract off the layer offset.
   rect.Rect().Move(-layer_offset.x(), -layer_offset.y());
+  rect.Rect().Inflate(paint_chunk.outset_for_raster_effects);
   return EnclosingIntRect(rect.Rect());
 }
 
@@ -330,9 +331,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
       auto info = raster_tracking->invalidations[i];
       info.rect = rect;
       cc_tracking.invalidations.push_back(info);
-      // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
-      // invalidation rect.
-      rect.Inflate(1);
       cc_tracking.invalidation_region_since_last_paint.Unite(rect);
     }
   }

@@ -1438,13 +1438,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
-  // Allows objects to adjust |visualEffect|, which is in the space of the
-  // paint invalidation container, for any special raster effects that might
-  // expand the rastered pixel area. Returns true if the rect is expanded.
-  virtual bool AdjustVisualRectForRasterEffects(LayoutRect& visual_rect) const {
-    return false;
-  }
-
   // Return the offset to the column in which the specified point (in
   // flow-thread coordinates) lives. This is used to convert a flow-thread point
   // to a point in the containing coordinate space.

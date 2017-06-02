@@ -468,7 +468,8 @@ LayoutRect PaintInvalidationState::ComputeVisualRectInBackingForSVG() const {
   PaintLayer::MapRectInPaintInvalidationContainerToBacking(
       *paint_invalidation_container_, rect);
 
-  current_object_.AdjustVisualRectForRasterEffects(rect);
+  if (!rect.IsEmpty())
+    rect.Inflate(current_object_.VisualRectOutsetForRasterEffects());
 
   rect.Move(current_object_.ScrollAdjustmentForPaintInvalidation(
       *paint_invalidation_container_));
@@ -518,7 +519,8 @@ void PaintInvalidationState::MapLocalRectToVisualRectInBacking(
   PaintLayer::MapRectInPaintInvalidationContainerToBacking(
       *paint_invalidation_container_, rect);
 
-  current_object_.AdjustVisualRectForRasterEffects(rect);
+  if (!rect.IsEmpty())
+    rect.Inflate(current_object_.VisualRectOutsetForRasterEffects());
 
   rect.Move(current_object_.ScrollAdjustmentForPaintInvalidation(
       *paint_invalidation_container_));
