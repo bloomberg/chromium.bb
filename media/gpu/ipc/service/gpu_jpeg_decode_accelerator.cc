@@ -454,4 +454,24 @@ bool GpuJpegDecodeAccelerator::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void GpuJpegDecodeAccelerator::Initialize(InitializeCallback callback) {
+  // TODO(c.padhi): see http://crbug.com/699255.
+  NOTIMPLEMENTED();
+}
+
+void GpuJpegDecodeAccelerator::Decode(
+    mojom::BitstreamBufferPtr input_buffer,
+    const gfx::Size& coded_size,
+    mojo::ScopedSharedBufferHandle output_handle,
+    uint32_t output_buffer_size,
+    DecodeCallback callback) {
+  // TODO(c.padhi): see http://crbug.com/699255.
+  NOTIMPLEMENTED();
+}
+
+void GpuJpegDecodeAccelerator::Uninitialize() {
+  // TODO(c.padhi): see http://crbug.com/699255.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace media

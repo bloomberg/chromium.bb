@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "media/gpu/mojo/jpeg_decoder.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
@@ -41,8 +42,11 @@ class GpuJpegDecodeAcceleratorFactoryProvider {
   static std::vector<CreateAcceleratorCB> GetAcceleratorFactories();
 };
 
+// TODO(c.padhi): Move GpuJpegDecodeAccelerator to media/gpu/mojo, see
+// http://crbug.com/699255.
 class GpuJpegDecodeAccelerator
     : public IPC::Sender,
+      public mojom::GpuJpegDecodeAccelerator,
       public base::SupportsWeakPtr<GpuJpegDecodeAccelerator> {
  public:
   // |channel| must outlive this object.
@@ -66,6 +70,15 @@ class GpuJpegDecodeAccelerator
   void NotifyDecodeStatus(int32_t route_id,
                           int32_t bitstream_buffer_id,
                           JpegDecodeAccelerator::Error error);
+
+  // mojom::GpuJpegDecodeAccelerator implementation.
+  void Initialize(InitializeCallback callback) override;
+  void Decode(mojom::BitstreamBufferPtr input_buffer,
+              const gfx::Size& coded_size,
+              mojo::ScopedSharedBufferHandle output_handle,
+              uint32_t output_buffer_size,
+              DecodeCallback callback) override;
+  void Uninitialize() override;
 
   // Function to delegate sending to actual sender.
   bool Send(IPC::Message* message) override;

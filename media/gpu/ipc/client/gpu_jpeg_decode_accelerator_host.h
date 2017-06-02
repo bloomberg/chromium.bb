@@ -29,6 +29,8 @@ class Message;
 
 namespace media {
 
+// TODO(c.padhi): Move GpuJpegDecodeAcceleratorHost to media/gpu/mojo, see
+// http://crbug.com/699255.
 // This class is used to talk to JpegDecodeAccelerator in the GPU process
 // through IPC messages.
 class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
