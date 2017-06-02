@@ -356,7 +356,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
   ImageBitmapColorSpaceConversionImageBitmap
 #endif
 
-TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
+TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::Create());
 
@@ -475,7 +475,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
   ImageBitmapColorSpaceConversionStaticBitmapImage
 #endif
 
-TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
+TEST_F(ImageBitmapTest,
+       MAYBE_ImageBitmapColorSpaceConversionStaticBitmapImage) {
   SkPaint p;
   p.setColor(SK_ColorRED);
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
