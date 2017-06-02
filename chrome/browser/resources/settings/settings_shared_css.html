@@ -39,6 +39,13 @@
         -webkit-margin-start: var(--cr-icon-ripple-margin));
       }
 
+      .list-item paper-icon-button {
+        /* Workaround iron-list cutting off ripples on paper-icon-buttons.
+         * TODO(dschuyler): Can the end margin be done differently to allow for
+         * ripples to look like they are overlapping the margin. */
+        -webkit-margin-end: 0;
+      }
+
       /* See notes in .primary-button.
        * TODO(dschuyler): Remove unnecessary .secondary-button references. */
       paper-button {
@@ -66,6 +73,11 @@
        * the row. */
       .settings-box paper-button:last-of-type {
         -webkit-margin-end: calc(var(--settings-button-edge-spacing) * -1);
+      }
+
+      /* Special case for buttons inside of toggle-buttons. */
+      .settings-box settings-toggle-button paper-button:last-of-type {
+        -webkit-margin-end: 16px;
       }
 
       /* Space out multiple buttons in the same row. */
