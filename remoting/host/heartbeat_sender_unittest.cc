@@ -41,8 +41,9 @@ const char kHostId[] = "0";
 const char kTestJid[] = "User@gmail.com/chromotingABC123";
 const char kTestJidNormalized[] = "user@gmail.com/chromotingABC123";
 const char kStanzaId[] = "123";
-const int kTestInterval = 123;
-const base::TimeDelta kTestTimeout = base::TimeDelta::FromSeconds(123);
+constexpr base::TimeDelta kTestInterval = base::TimeDelta::FromSeconds(123);
+constexpr base::TimeDelta kOfflineReasonTimeout =
+    base::TimeDelta::FromSeconds(123);
 
 }  // namespace
 
@@ -86,9 +87,8 @@ class HeartbeatSenderTest
                                const char* expected_sequence_id,
                                const char* expected_host_offline_reason);
 
-  void ProcessResponseWithInterval(
-    bool is_offline_heartbeat_response,
-    int interval);
+  void ProcessResponseWithInterval(bool is_offline_heartbeat_response,
+                                   base::TimeDelta interval);
 
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
@@ -206,7 +206,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
 
 void HeartbeatSenderTest::ProcessResponseWithInterval(
     bool is_offline_heartbeat_response,
-    int interval) {
+    base::TimeDelta interval) {
   std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "type"), "result");
 
@@ -218,7 +218,7 @@ void HeartbeatSenderTest::ProcessResponseWithInterval(
       QName(kChromotingXmlNamespace, "set-interval"));
   result->AddElement(set_interval);
 
-  set_interval->AddText(base::IntToString(interval));
+  set_interval->AddText(base::IntToString(interval.InSeconds()));
 
   heartbeat_sender_->ProcessResponse(
       is_offline_heartbeat_response, nullptr, response.get());
@@ -230,7 +230,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
 
   ProcessResponseWithInterval(false, kTestInterval);
 
-  EXPECT_EQ(kTestInterval * 1000, heartbeat_sender_->interval_ms_);
+  EXPECT_EQ(kTestInterval, heartbeat_sender_->interval_);
 }
 
 // Make sure SetHostOfflineReason sends a correct stanza.
@@ -247,7 +247,7 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
       .WillRepeatedly(Return(SignalStrategy::CONNECTED));
   EXPECT_CALL(mock_ack_callback, Run(_)).Times(0);
 
-  heartbeat_sender_->SetHostOfflineReason("test_error", kTestTimeout,
+  heartbeat_sender_->SetHostOfflineReason("test_error", kOfflineReasonTimeout,
                                           mock_ack_callback.Get());
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
@@ -277,7 +277,7 @@ TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
   // Callback should not run, until response to offline-reason.
   EXPECT_CALL(mock_ack_callback, Run(_)).Times(0);
 
-  heartbeat_sender_->SetHostOfflineReason("test_error", kTestTimeout,
+  heartbeat_sender_->SetHostOfflineReason("test_error", kOfflineReasonTimeout,
                                           mock_ack_callback.Get());
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
@@ -370,6 +370,36 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
   std::string expected_signature = key_pair->SignMessage(
       std::string(kTestJidNormalized) + ' ' + expected_sequence_id);
   EXPECT_EQ(expected_signature, signature->BodyText());
+}
+
+TEST_F(HeartbeatSenderTest, ResponseTimeout) {
+  XmlElement* sent_iq = nullptr;
+  EXPECT_CALL(signal_strategy_, GetNextId()).WillOnce(Return(kStanzaId));
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
+      .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
+  EXPECT_CALL(signal_strategy_, GetState())
+      .WillRepeatedly(Return(SignalStrategy::CONNECTED));
+
+  heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  base::RunLoop().RunUntilIdle();
+
+  std::unique_ptr<XmlElement> stanza(sent_iq);
+  ASSERT_TRUE(stanza);
+
+  XmlElement* sent_iq2 = nullptr;
+  EXPECT_CALL(signal_strategy_, GetNextId()).WillOnce(Return(kStanzaId + 1));
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
+      .WillOnce(DoAll(SaveArg<0>(&sent_iq2), Return(true)));
+
+  heartbeat_sender_->ProcessResponse(false, nullptr, nullptr /* timeout */);
+  heartbeat_sender_->DoSendStanza();
+  base::RunLoop().RunUntilIdle();
+
+  std::unique_ptr<XmlElement> stanza2(sent_iq2);
+  ASSERT_TRUE(stanza2);
+
+  EXPECT_CALL(signal_strategy_, Disconnect());
+  heartbeat_sender_->ProcessResponse(false, nullptr, nullptr /* timeout */);
 }
 
 }  // namespace remoting
