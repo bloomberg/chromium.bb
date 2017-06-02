@@ -57,18 +57,15 @@ PkitsTestInfo::PkitsTestInfo() {
 }
 
 void PkitsTestInfo::SetInitialExplicitPolicy(bool b) {
-  initial_explicit_policy =
-      b ? InitialExplicitPolicy::kTrue : InitialExplicitPolicy::kFalse;
+  initial_explicit_policy = b;
 }
 
 void PkitsTestInfo::SetInitialPolicyMappingInhibit(bool b) {
-  initial_policy_mapping_inhibit = b ? InitialPolicyMappingInhibit::kTrue
-                                     : InitialPolicyMappingInhibit::kFalse;
+  initial_policy_mapping_inhibit = b;
 }
 
 void PkitsTestInfo::SetInitialInhibitAnyPolicy(bool b) {
-  initial_inhibit_any_policy =
-      b ? InitialAnyPolicyInhibit::kTrue : InitialAnyPolicyInhibit::kFalse;
+  initial_inhibit_any_policy = b;
 }
 
 PkitsTestInfo::~PkitsTestInfo() = default;

@@ -2113,7 +2113,6 @@ WRAPPED_TYPED_TEST_P(PkitsTest10PolicyMappings,
                               "MappingFromanyPolicyCACRL"};
   PkitsTestInfo info;
   info.should_validate = false;
-  info.SetUserConstrainedPolicySet("");
 
   this->RunTest(certs, crls, info);
 }
