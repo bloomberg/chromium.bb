@@ -46,8 +46,8 @@ enum class ProcessType {
   // scores are better than BACKGROUND_TABs and BACKGROUND_APPs.
   IMPORTANT_APP = 3,
 
-  BACKGROUND_TAB = 4,
-  BACKGROUND_APP = 5,
+  BACKGROUND_APP = 4,
+  BACKGROUND_TAB = 5,
   UNKNOWN_TYPE = 6,
 };
 
