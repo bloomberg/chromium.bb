@@ -523,9 +523,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 
-  signin::FixMirrorRequestHeaderHelper(request, GURL() /* redirect_url */,
-                                       io_data, info->GetChildID(),
-                                       info->GetRouteID());
+  signin::FixAccountConsistencyRequestHeader(request, GURL() /* redirect_url */,
+                                             io_data, info->GetChildID(),
+                                             info->GetRouteID());
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -828,14 +828,17 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
-  // In the Mirror world (for users that are signed in to the browser on
-  // Android, the identity is mirrored into the content area), Chrome should
-  // append a X-Chrome-Connected header to all Gaia requests from a connected
-  // profile so Gaia could return a 204 response and let Chrome handle the
-  // action with native UI. The only exception is requests from gaia webview,
-  // since the native profile management UI is built on top of it.
-  signin::FixMirrorRequestHeaderHelper(request, redirect_url, io_data,
-                                       info->GetChildID(), info->GetRouteID());
+  // Chrome tries to ensure that the identity is consistent between Chrome and
+  // the content area.
+  //
+  // For example, on Android, for users that are signed in to Chrome, the
+  // identity is mirrored into the content area. To do so, Chrome appends a
+  // X-Chrome-Connected header to all Gaia requests from a connected profile so
+  // Gaia could return a 204 response and let Chrome handle the action with
+  // native UI. The only exception is requests from gaia webview, since the
+  // native profile management UI is built on top of it.
+  signin::FixAccountConsistencyRequestHeader(
+      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
 
   if (io_data->loading_predictor_observer()) {
     io_data->loading_predictor_observer()->OnRequestRedirected(

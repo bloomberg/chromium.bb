@@ -23,6 +23,8 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+namespace signin {
+
 namespace {
 
 // Dictionary of fields in a mirror response header.
@@ -65,22 +67,21 @@ bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request) {
 }
 
 // Determines the service type that has been passed from GAIA in the header.
-signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
-    const std::string& header_value) {
+GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
   if (header_value == "SIGNOUT")
-    return signin::GAIA_SERVICE_TYPE_SIGNOUT;
+    return GAIA_SERVICE_TYPE_SIGNOUT;
   else if (header_value == "INCOGNITO")
-    return signin::GAIA_SERVICE_TYPE_INCOGNITO;
+    return GAIA_SERVICE_TYPE_INCOGNITO;
   else if (header_value == "ADDSESSION")
-    return signin::GAIA_SERVICE_TYPE_ADDSESSION;
+    return GAIA_SERVICE_TYPE_ADDSESSION;
   else if (header_value == "REAUTH")
-    return signin::GAIA_SERVICE_TYPE_REAUTH;
+    return GAIA_SERVICE_TYPE_REAUTH;
   else if (header_value == "SIGNUP")
-    return signin::GAIA_SERVICE_TYPE_SIGNUP;
+    return GAIA_SERVICE_TYPE_SIGNUP;
   else if (header_value == "DEFAULT")
-    return signin::GAIA_SERVICE_TYPE_DEFAULT;
+    return GAIA_SERVICE_TYPE_DEFAULT;
   else
-    return signin::GAIA_SERVICE_TYPE_NONE;
+    return GAIA_SERVICE_TYPE_NONE;
 }
 
 // Parses the mirror response header. Its expected format is
@@ -104,6 +105,41 @@ MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
   return dictionary;
 }
 
+// Checks if the url has the required properties to have a X-Chrome-Connected
+// header.
+bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url) {
+  // Only set the header for Drive and Gaia always, and other Google properties
+  // if account consistency is enabled.
+  // Vasquette, which is integrated with most Google properties, needs the
+  // header to redirect certain user actions to Chrome native UI. Drive and Gaia
+  // need the header to tell if the current user is connected. The drive path is
+  // a temporary workaround until the more generic chrome.principals API is
+  // available.
+
+  // Consider the account id sensitive and limit it to secure domains.
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  GURL origin(url.GetOrigin());
+  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
+  bool is_google_url = is_enable_account_consistency &&
+                       (google_util::IsGoogleDomainUrl(
+                            url, google_util::ALLOW_SUBDOMAIN,
+                            google_util::DISALLOW_NON_STANDARD_PORTS) ||
+                        google_util::IsYoutubeDomainUrl(
+                            url, google_util::ALLOW_SUBDOMAIN,
+                            google_util::DISALLOW_NON_STANDARD_PORTS));
+  return is_google_url || IsDriveOrigin(origin) ||
+         gaia::IsGaiaSignonRealm(origin);
+}
+
+// Checks if the url has the required properties to have an account consistency
+// header.
+bool IsUrlEligibleForAccountConsistencyRequestHeader(const GURL& url) {
+  // TODO(droger): Support X-Chrome-ID-Consistency-Request.
+  return IsUrlEligibleForXChromeConnectedHeader(url);
+}
+
 std::string BuildMirrorRequestIfPossible(
     bool is_header_request,
     const GURL& url,
@@ -114,12 +150,12 @@ std::string BuildMirrorRequestIfPossible(
     return std::string();
 
   // If signin cookies are not allowed, don't add the header.
-  if (!signin::SettingsAllowSigninCookies(cookie_settings)) {
+  if (!SettingsAllowSigninCookies(cookie_settings)) {
     return std::string();
   }
 
   // Check if url is elligible for the header.
-  if (!signin::IsUrlEligibleForXChromeConnectedHeader(url))
+  if (!IsUrlEligibleForXChromeConnectedHeader(url))
     return std::string();
 
   std::vector<std::string> parts;
@@ -139,8 +175,6 @@ std::string BuildMirrorRequestIfPossible(
 }
 
 }  // namespace
-
-namespace signin {
 
 extern const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 
@@ -178,37 +212,39 @@ std::string BuildMirrorRequestCookieIfPossible(
                                       profile_mode_mask);
 }
 
-bool AppendOrRemoveMirrorRequestHeaderIfPossible(
+bool AppendOrRemoveAccountConsistentyRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+
+  // TODO(droger): Support X-Chrome-ID-Consistency-Request.
+  std::string header_name = kChromeConnectedHeader;
   std::string header_value = BuildMirrorRequestIfPossible(
       true /* is_header_request */, url, account_id, cookie_settings,
       profile_mode_mask);
-  if (header_value.empty()) {
-    // If the request is being redirected, and it has the x-chrome-connected
+
+  if (!header_name.empty() && header_value.empty()) {
+    // If the request is being redirected, and it has the account consistency
     // header, and current url is a Google URL, and the redirected one is not,
     // remove the header.
     if (!redirect_url.is_empty() &&
-        request->extra_request_headers().HasHeader(
-            signin::kChromeConnectedHeader) &&
-        signin::IsUrlEligibleForXChromeConnectedHeader(request->url()) &&
-        !signin::IsUrlEligibleForXChromeConnectedHeader(redirect_url)) {
-      request->RemoveRequestHeaderByName(signin::kChromeConnectedHeader);
+        request->extra_request_headers().HasHeader(header_name) &&
+        IsUrlEligibleForAccountConsistencyRequestHeader(request->url()) &&
+        !IsUrlEligibleForAccountConsistencyRequestHeader(redirect_url)) {
+      request->RemoveRequestHeaderByName(header_name);
     }
     return false;
   }
-  request->SetExtraRequestHeaderByName(kChromeConnectedHeader, header_value,
-                                       false);
+  request->SetExtraRequestHeaderByName(header_name, header_value, false);
   return true;
 }
 
 ManageAccountsParams BuildManageAccountsParams(
     const std::string& header_value) {
-  signin::ManageAccountsParams params;
+  ManageAccountsParams params;
   MirrorResponseHeaderDictionary header_dictionary =
       ParseMirrorResponseHeader(header_value);
   MirrorResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
@@ -249,34 +285,6 @@ ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,
 
   DCHECK(switches::IsEnableAccountConsistency() && !is_off_the_record);
   return BuildManageAccountsParams(header_value);
-}
-
-// Checks if the url has the required properties to have an
-// X-Chrome-Connected header.
-bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url) {
-  // Only set the header for Drive and Gaia always, and other Google properties
-  // if account consistency is enabled.
-  // Vasquette, which is integrated with most Google properties, needs the
-  // header to redirect certain user actions to Chrome native UI. Drive and Gaia
-  // need the header to tell if the current user is connected. The drive path is
-  // a temporary workaround until the more generic chrome.principals API is
-  // available.
-
-  // Consider the account id sensitive and limit it to secure domains.
-  if (!url.SchemeIsCryptographic())
-    return false;
-
-  GURL origin(url.GetOrigin());
-  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
-  bool is_google_url = is_enable_account_consistency &&
-                       (google_util::IsGoogleDomainUrl(
-                            url, google_util::ALLOW_SUBDOMAIN,
-                            google_util::DISALLOW_NON_STANDARD_PORTS) ||
-                        google_util::IsYoutubeDomainUrl(
-                            url, google_util::ALLOW_SUBDOMAIN,
-                            google_util::DISALLOW_NON_STANDARD_PORTS));
-  return is_google_url || IsDriveOrigin(origin) ||
-         gaia::IsGaiaSignonRealm(origin);
 }
 
 }  // namespace signin

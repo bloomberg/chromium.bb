@@ -46,7 +46,7 @@ class SigninHeaderHelperTest : public testing::Test {
     std::unique_ptr<net::URLRequest> url_request =
         url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
-    EXPECT_EQ(signin::AppendOrRemoveMirrorRequestHeaderIfPossible(
+    EXPECT_EQ(signin::AppendOrRemoveAccountConsistentyRequestHeader(
                   url_request.get(), GURL(), account_id, cookie_settings_.get(),
                   signin::PROFILE_MODE_DEFAULT),
               expected_result);
@@ -156,7 +156,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  EXPECT_TRUE(signin::AppendOrRemoveMirrorRequestHeaderIfPossible(
+  EXPECT_TRUE(signin::AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
       signin::PROFILE_MODE_DEFAULT));
   EXPECT_TRUE(url_request->extra_request_headers().HasHeader(
@@ -174,7 +174,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  EXPECT_FALSE(signin::AppendOrRemoveMirrorRequestHeaderIfPossible(
+  EXPECT_FALSE(signin::AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
       signin::PROFILE_MODE_DEFAULT));
   EXPECT_FALSE(url_request->extra_request_headers().HasHeader(
@@ -195,7 +195,7 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   url_request->SetExtraRequestHeaderByName(signin::kChromeConnectedHeader,
                                            fake_header, false);
-  EXPECT_FALSE(signin::AppendOrRemoveMirrorRequestHeaderIfPossible(
+  EXPECT_FALSE(signin::AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
       signin::PROFILE_MODE_DEFAULT));
   std::string header;

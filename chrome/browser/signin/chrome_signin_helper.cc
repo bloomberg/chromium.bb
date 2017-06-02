@@ -117,11 +117,11 @@ ManageAccountsParams BuildManageAccountsParamsHelper(net::URLRequest* request,
 
 }  // namespace
 
-void FixMirrorRequestHeaderHelper(net::URLRequest* request,
-                                  const GURL& redirect_url,
-                                  ProfileIOData* io_data,
-                                  int child_id,
-                                  int route_id) {
+void FixAccountConsistencyRequestHeader(net::URLRequest* request,
+                                        const GURL& redirect_url,
+                                        ProfileIOData* io_data,
+                                        int child_id,
+                                        int route_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (io_data->IsOffTheRecord())
@@ -131,7 +131,7 @@ void FixMirrorRequestHeaderHelper(net::URLRequest* request,
   extensions::WebViewRendererState::WebViewInfo webview_info;
   bool is_guest = extensions::WebViewRendererState::GetInstance()->GetInfo(
       child_id, route_id, &webview_info);
-  // Do not set the x-chrome-connected header on requests from a native signin
+  // Do not set the account consistency header on requests from a native signin
   // webview, as identified by an empty extension id which means the webview is
   // embedded in a webui page, otherwise user may end up with a blank page as
   // gaia uses the header to decide whether it returns 204 for certain end
@@ -148,7 +148,7 @@ void FixMirrorRequestHeaderHelper(net::URLRequest* request,
   }
 
   // If new url is eligible to have the header, add it, otherwise remove it.
-  AppendOrRemoveMirrorRequestHeaderIfPossible(
+  AppendOrRemoveAccountConsistentyRequestHeader(
       request, redirect_url, io_data->google_services_account_id()->GetValue(),
       io_data->GetCookieSettings(), profile_mode_mask);
 }
