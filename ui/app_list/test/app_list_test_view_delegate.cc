@@ -80,10 +80,6 @@ std::vector<views::View*> AppListTestViewDelegate::CreateCustomPageWebViews(
   return std::vector<views::View*>();
 }
 
-views::View* AppListTestViewDelegate::GetSearchAnswerWebView() {
-  return nullptr;
-}
-
 bool AppListTestViewDelegate::IsSpeechRecognitionEnabled() {
   return false;
 }

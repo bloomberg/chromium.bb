@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/app_list/launcher_page_event_dispatcher.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
-#include "chrome/browser/ui/app_list/search_answer_web_contents_delegate.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
@@ -154,7 +153,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
       start_page_service->RemoveObserver(this);
     app_sync_ui_state_watcher_.reset();
     model_ = NULL;
-    search_answer_delegate_.reset();
   }
 
   template_url_service_observer_.RemoveAll();
@@ -187,10 +185,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
 
     app_sync_ui_state_watcher_.reset(
         new AppSyncUIStateWatcher(profile_, model_));
-
-    search_answer_delegate_ =
-        base::MakeUnique<app_list::SearchAnswerWebContentsDelegate>(profile_,
-                                                                    model_);
 
     SetUpSearchUI();
     SetUpCustomLauncherPages();
@@ -279,8 +273,6 @@ void AppListViewDelegate::StartSearch() {
     search_controller_->Start();
     controller_->OnSearchStarted();
   }
-  if (search_answer_delegate_)
-    search_answer_delegate_->Update();
 }
 
 void AppListViewDelegate::StopSearch() {
@@ -493,10 +485,6 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
   }
 
   return web_views;
-}
-
-views::View* AppListViewDelegate::GetSearchAnswerWebView() {
-  return search_answer_delegate_->web_view();
 }
 
 void AppListViewDelegate::CustomLauncherPageAnimationChanged(double progress) {

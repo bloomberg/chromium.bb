@@ -6,7 +6,7 @@
 
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/views/search_result_page_view.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -14,26 +14,20 @@
 
 namespace app_list {
 
-namespace {
-
-// Answer card relevance is high to always have it first.
-constexpr double kSearchAnswerCardRelevance = 100;
-
-}  // namespace
-
 // Container of the search answer view.
 class SearchResultAnswerCardView::SearchAnswerContainerView
-    : public views::CustomButton {
+    : public views::CustomButton,
+      public views::ButtonListener {
  public:
-  explicit SearchAnswerContainerView(views::View* search_results_page_view)
-      : CustomButton(nullptr),
-        search_results_page_view_(search_results_page_view) {
+  explicit SearchAnswerContainerView(AppListViewDelegate* view_delegate)
+      : CustomButton(this), view_delegate_(view_delegate) {
     // Center the card horizontally in the container.
     views::BoxLayout* answer_container_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     answer_container_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     SetLayoutManager(answer_container_layout);
+    SetVisible(false);
   }
 
   void SetSelected(bool selected) {
@@ -43,22 +37,37 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     UpdateBackgroundColor();
   }
 
+  void SetSearchResult(SearchResult* search_result) {
+    views::View* const old_result_view = child_count() ? child_at(0) : nullptr;
+    views::View* const new_result_view =
+        search_result ? search_result->view() : nullptr;
+
+    if (old_result_view != new_result_view) {
+      if (old_result_view != nullptr)
+        RemoveChildView(old_result_view);
+      if (new_result_view != nullptr)
+        AddChildView(new_result_view);
+    }
+
+    search_result_ = search_result ? search_result->Duplicate() : nullptr;
+
+    SetVisible(new_result_view != nullptr);
+  }
+
   // views::CustomButton overrides:
-  void ChildPreferredSizeChanged(View* child) override {
-    // Card size changed.
-    if (visible())
-      search_results_page_view_->Layout();
-  }
-
-  int GetHeightForWidth(int w) const override {
-    return visible() ? CustomButton::GetHeightForWidth(w) : 0;
-  }
-
   const char* GetClassName() const override {
     return "SearchAnswerContainerView";
   }
 
   void StateChanged(ButtonState old_state) override { UpdateBackgroundColor(); }
+
+  // views::ButtonListener overrides:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    DCHECK(sender == this);
+    DCHECK(search_result_);
+    view_delegate_->OpenSearchResult(search_result_.get(), false,
+                                     event.flags());
+  }
 
  private:
   void UpdateBackgroundColor() {
@@ -70,29 +79,22 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     SchedulePaint();
   }
 
-  views::View* const search_results_page_view_;
+  AppListViewDelegate* const view_delegate_;  // Not owned.
   bool selected_ = false;
+  std::unique_ptr<SearchResult> search_result_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerContainerView);
 };
 
 SearchResultAnswerCardView::SearchResultAnswerCardView(
-    AppListModel* model,
-    SearchResultPageView* search_results_page_view,
-    views::View* search_answer_view)
-    : model_(model),
-      search_answer_container_view_(
-          new SearchAnswerContainerView(search_results_page_view)) {
-  search_answer_container_view_->SetVisible(false);
-  search_answer_container_view_->AddChildView(search_answer_view);
+    AppListViewDelegate* view_delegate)
+    : search_answer_container_view_(
+          new SearchAnswerContainerView(view_delegate)) {
   AddChildView(search_answer_container_view_);
-  model->AddObserver(this);
   SetLayoutManager(new views::FillLayout);
 }
 
-SearchResultAnswerCardView::~SearchResultAnswerCardView() {
-  model_->RemoveObserver(this);
-}
+SearchResultAnswerCardView::~SearchResultAnswerCardView() {}
 
 const char* SearchResultAnswerCardView::GetClassName() const {
   return "SearchResultAnswerCardView";
@@ -112,8 +114,17 @@ int SearchResultAnswerCardView::GetYSize() {
 }
 
 int SearchResultAnswerCardView::DoUpdate() {
-  const bool have_result = search_answer_container_view_->visible();
-  set_container_score(have_result ? kSearchAnswerCardRelevance : 0);
+  std::vector<SearchResult*> display_results =
+      AppListModel::FilterSearchResultsByDisplayType(
+          results(), SearchResult::DISPLAY_CARD, 1);
+
+  const bool have_result =
+      !display_results.empty() && !features::IsAnswerCardDarkRunEnabled();
+
+  search_answer_container_view_->SetSearchResult(
+      have_result ? display_results[0] : nullptr);
+
+  set_container_score(have_result ? display_results.front()->relevance() : 0);
   return have_result ? 1 : 0;
 }
 
@@ -128,14 +139,13 @@ void SearchResultAnswerCardView::UpdateSelectedIndex(int old_selected,
     NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 }
 
-void SearchResultAnswerCardView::OnSearchAnswerAvailableChanged(
-    bool has_answer) {
-  const bool visible = has_answer && !features::IsAnswerCardDarkRunEnabled();
-  if (visible == search_answer_container_view_->visible())
-    return;
+bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (selected_index() == 0 &&
+      search_answer_container_view_->OnKeyPressed(event)) {
+    return true;
+  }
 
-  search_answer_container_view_->SetVisible(visible);
-  ScheduleUpdate();
+  return SearchResultContainerView::OnKeyPressed(event);
 }
 
 }  // namespace app_list

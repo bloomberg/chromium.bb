@@ -15,15 +15,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
+#include "chrome/browser/ui/app_list/search_answer_web_contents_delegate.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
-#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 
 namespace app_list {
 
@@ -68,6 +70,9 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 1.0);
   size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0);
   size_t webstore_group_id = controller->AddGroup(kMaxWebstoreResults, 0.4);
+  // Multiplier 100 is used because the answer card is designed to be the most
+  // relevant result and must be on the top of the result list.
+  size_t answer_card_group_id = controller->AddGroup(1, 100.0);
 
   // Add search providers.
   controller->AddProvider(
@@ -81,6 +86,11 @@ std::unique_ptr<SearchController> CreateSearchController(
   controller->AddProvider(
       webstore_group_id,
       base::MakeUnique<WebstoreProvider>(profile, list_controller));
+  if (features::IsAnswerCardEnabled()) {
+    controller->AddProvider(
+        answer_card_group_id,
+        base::MakeUnique<SearchAnswerWebContentsDelegate>(profile, model));
+  }
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =
         controller->AddGroup(kMaxSuggestionsResults, 1.0);

@@ -294,8 +294,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return std::vector<views::View*>();
   }
 
-  views::View* GetSearchAnswerWebView() override { return nullptr; }
-
   void CustomLauncherPageAnimationChanged(double progress) override {}
 
   void CustomLauncherPagePopSubpage() override {}
