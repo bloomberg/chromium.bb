@@ -36,7 +36,7 @@
       }
 
       .copyable {
-        -webkit-user-select: text;
+        user-select: text;
       }
 
       .info-section {
@@ -107,7 +107,8 @@
                   src="[[getIconSrc_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
               <div class="start padded">
-                <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]"
+                <div id="updateStatusMessage" class="copyable"
+                    hidden="[[!showUpdateStatus_]]"
 <if expr="not chromeos">
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
                         currentUpdateStatusEvent_)]]">
