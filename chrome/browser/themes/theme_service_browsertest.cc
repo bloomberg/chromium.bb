@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -61,14 +59,6 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, PRE_ThemeDataPackInvalid) {
             profile->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename));
 
   InstallExtension(test_data_dir_.AppendASCII("theme"), 1);
-  // The theme isn't installed synchronously.
-  EXPECT_FALSE(UsingCustomTheme(*theme_service));
-
-  // Wait for the theme to be loaded.
-  content::WindowedNotificationObserver theme_change_observer(
-      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(theme_service));
-  theme_change_observer.Wait();
 
   // Check that the theme was installed.
   EXPECT_TRUE(UsingCustomTheme(*theme_service));

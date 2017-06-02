@@ -53,11 +53,11 @@ class DataPack;
 // will trip our IO on the UI thread detector.
 class BrowserThemePack : public CustomThemeSupplier {
  public:
-  // Builds the theme from |extension| into |pack|. This may be done on a
-  // separate thread as it takes so long. This can fail in the case where the
-  // theme has invalid data, in which case |pack->is_valid()| will be false.
-  static void BuildFromExtension(const extensions::Extension* extension,
-                                 scoped_refptr<BrowserThemePack> pack);
+  // Builds the theme pack from all data from |extension|. This is often done
+  // on a separate thread as it takes so long. This can fail and return NULL in
+  // the case where the theme has invalid data.
+  static scoped_refptr<BrowserThemePack> BuildFromExtension(
+      const extensions::Extension* extension);
 
   // Builds the theme pack from a previously performed WriteToDisk(). This
   // operation should be relatively fast, as it should be an mmap() and some
@@ -68,11 +68,6 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Returns whether the specified identifier is one of the images we persist
   // in the data pack.
   static bool IsPersistentImageID(int id);
-
-  // Default. Everything is empty.
-  BrowserThemePack();
-
-  bool is_valid() const { return is_valid_; }
 
   // Builds a data pack on disk at |path| for future quick loading by
   // BuildFromDataPack(). Often (but not always) called from the file thread;
@@ -107,6 +102,9 @@ class BrowserThemePack : public CustomThemeSupplier {
 
   // Maps image ids to maps of scale factors to file paths.
   typedef std::map<int, ScaleFactorToFileMap> FilePathMap;
+
+  // Default. Everything is empty.
+  BrowserThemePack();
 
   ~BrowserThemePack() override;
 
@@ -219,7 +217,7 @@ class BrowserThemePack : public CustomThemeSupplier {
 
     // theme_id without NULL terminator.
     uint8_t theme_id[16];
-  }* header_ = nullptr;
+  } *header_;
 
   // The remaining structs represent individual entries in an array. For the
   // following three structs, BrowserThemePack will either allocate an array or
@@ -229,21 +227,21 @@ class BrowserThemePack : public CustomThemeSupplier {
     double h;
     double s;
     double l;
-  }* tints_ = nullptr;
+  } *tints_;
 
   struct ColorPair {
     int32_t id;
     SkColor color;
-  }* colors_ = nullptr;
+  } *colors_;
 
   struct DisplayPropertyPair {
     int32_t id;
     int32_t property;
-  }* display_properties_ = nullptr;
+  } *display_properties_;
 
   // A list of included source images. A pointer to a -1 terminated array of
   // our persistent IDs.
-  int* source_images_ = nullptr;
+  int* source_images_;
 #pragma pack(pop)
 
   // The scale factors represented by the images in the theme pack.
@@ -256,18 +254,15 @@ class BrowserThemePack : public CustomThemeSupplier {
   RawImages image_memory_;
 
   // Loaded images. These are loaded from |image_memory_|, from |data_pack_|,
-  // and by BuildFromExtension().
-  ImageCache images_;
+  // and by BuildFromExtension(). These images should only be accessed on the UI
+  // thread.
+  ImageCache images_on_ui_thread_;
 
   // Cache of images created in BuildFromExtension(). Once the theme pack is
   // created, this cache should only be accessed on the file thread. There
   // should be no IDs in |image_memory_| that are in |images_on_file_thread_|
   // or vice versa.
   ImageCache images_on_file_thread_;
-
-  // Whether the theme pack has been succesfully initialized and is ready to
-  // use.
-  bool is_valid_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThemePack);
 };
