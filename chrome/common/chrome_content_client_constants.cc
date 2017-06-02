@@ -6,9 +6,13 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 const char ChromeContentClient::kNotPresent[] = "internal-not-yet-present";
-const char ChromeContentClient::kPDFPluginName[] = "Chrome PDF Viewer";
+const char ChromeContentClient::kPDFExtensionPluginName[] = "Chrome PDF Viewer";
+const char ChromeContentClient::kPDFInternalPluginName[] = "Chrome PDF Plugin";
 #else
-const char ChromeContentClient::kPDFPluginName[] = "Chromium PDF Viewer";
+const char ChromeContentClient::kPDFExtensionPluginName[] =
+    "Chromium PDF Viewer";
+const char ChromeContentClient::kPDFInternalPluginName[] =
+    "Chromium PDF Plugin";
 #endif
 const char ChromeContentClient::kPDFPluginPath[] = "internal-pdf-viewer";
 const char ChromeContentClient::kRemotingViewerPluginPath[] =

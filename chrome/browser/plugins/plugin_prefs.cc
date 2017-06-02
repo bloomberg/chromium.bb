@@ -49,7 +49,10 @@ using content::PluginService;
 namespace {
 
 bool IsPDFViewerPlugin(const base::string16& plugin_name) {
-  return plugin_name == base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
+  return (plugin_name ==
+          base::ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) ||
+         (plugin_name ==
+          base::ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName));
 }
 
 bool IsAdobeFlashPlayerPlugin(const base::string16& plugin_name) {

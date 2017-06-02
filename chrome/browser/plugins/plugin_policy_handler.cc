@@ -53,7 +53,10 @@ void PluginPolicyHandler::ProcessPolicy(const policy::PolicyMap& policies,
     std::string plugin;
     if (!plugins->GetString(i, &plugin))
       continue;
-    if (base::MatchPattern(ChromeContentClient::kPDFPluginName, plugin) &&
+    if ((base::MatchPattern(ChromeContentClient::kPDFExtensionPluginName,
+                            plugin) ||
+         base::MatchPattern(ChromeContentClient::kPDFInternalPluginName,
+                            plugin)) &&
         !policies.GetValue(policy::key::kAlwaysOpenPdfExternally)) {
       prefs->SetValue(prefs::kPluginsAlwaysOpenPdfExternally,
                       base::MakeUnique<base::Value>(disable_pdf_plugin));
@@ -104,7 +107,10 @@ void PluginPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
     std::string plugin;
     if (!plugins->GetString(i, &plugin))
       continue;
-    if (base::MatchPattern(ChromeContentClient::kPDFPluginName, plugin) &&
+    if ((base::MatchPattern(ChromeContentClient::kPDFExtensionPluginName,
+                            plugin) ||
+         base::MatchPattern(ChromeContentClient::kPDFInternalPluginName,
+                            plugin)) &&
         !policies.GetValue(policy::key::kAlwaysOpenPdfExternally)) {
       prefs->RemoveValue(prefs::kPluginsAlwaysOpenPdfExternally);
     }

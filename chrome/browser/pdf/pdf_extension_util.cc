@@ -32,7 +32,8 @@ std::string GetManifest() {
           IDR_PDF_MANIFEST).as_string();
   DCHECK(manifest_contents.find(kNameTag) != std::string::npos);
   base::ReplaceFirstSubstringAfterOffset(
-      &manifest_contents, 0, kNameTag, ChromeContentClient::kPDFPluginName);
+      &manifest_contents, 0, kNameTag,
+      ChromeContentClient::kPDFExtensionPluginName);
 
   return manifest_contents;
 }
