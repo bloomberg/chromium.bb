@@ -56,7 +56,8 @@ def support_cow(src, dest):
   except subprocess.CalledProcessError:
     return False
   finally:
-    os.remove(dest)
+    if os.path.isfile(dest):
+      os.remove(dest)
   return True
 
 
@@ -64,7 +65,7 @@ def try_vol_snapshot(src, dest):
   try:
     subprocess.check_call(['btrfs', 'subvol', 'snapshot', src, dest],
                             stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError:
+  except (subprocess.CalledProcessError, OSError):
     return False
   return True
 
