@@ -70,7 +70,7 @@ CommitRequestData MockModelTypeWorker::GetLatestPendingCommitForHash(
   return CommitRequestData();
 }
 
-void MockModelTypeWorker::ExpectNthPendingCommit(
+void MockModelTypeWorker::VerifyNthPendingCommit(
     size_t n,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
@@ -81,7 +81,7 @@ void MockModelTypeWorker::ExpectNthPendingCommit(
   EXPECT_EQ(specifics.SerializeAsString(), data.specifics.SerializeAsString());
 }
 
-void MockModelTypeWorker::ExpectPendingCommits(
+void MockModelTypeWorker::VerifyPendingCommits(
     const std::vector<std::string>& tag_hashes) {
   EXPECT_EQ(tag_hashes.size(), GetNumPendingCommits());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
