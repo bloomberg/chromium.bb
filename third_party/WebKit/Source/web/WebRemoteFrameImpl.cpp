@@ -92,10 +92,6 @@ WebVector<WebIconURL> WebRemoteFrameImpl::IconURLs(int icon_types_mask) const {
   return WebVector<WebIconURL>();
 }
 
-void WebRemoteFrameImpl::SetCanHaveScrollbars(bool) {
-  NOTREACHED();
-}
-
 WebSize WebRemoteFrameImpl::GetScrollOffset() const {
   NOTREACHED();
   return WebSize();

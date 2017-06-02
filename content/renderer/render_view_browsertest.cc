@@ -2194,7 +2194,8 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   LoadHTML("<body style='margin:0;'><div style='display:inline-block; "
            "width:400px; height:400px;'/></body>");
-  view()->webview()->MainFrame()->SetCanHaveScrollbars(false);
+  view()->webview()->MainFrame()->ToWebLocalFrame()->SetCanHaveScrollbars(
+      false);
   EnablePreferredSizeMode();
 
   gfx::Size size = GetPreferredSize();
