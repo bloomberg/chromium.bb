@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
@@ -106,7 +106,8 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   int next_callbacks_id_;
   WaitableCallbackResultsMap waitable_results_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // Thread-affine per use of TLS in impl.
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WebFileSystemImpl);
 };

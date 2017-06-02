@@ -8,7 +8,7 @@
 #include <string>
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 
 // This class serves as the single repository for cloud print auth tokens. This
 // is only used within the CloudPrintProxyCoreThread.
@@ -26,14 +26,15 @@ class CloudPrintTokenStore {
 
   void SetToken(const std::string& token);
   std::string token() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return token_;
   }
 
  private:
   std::string token_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // Thread-affine per use of TLS in impl.
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintTokenStore);
 };
