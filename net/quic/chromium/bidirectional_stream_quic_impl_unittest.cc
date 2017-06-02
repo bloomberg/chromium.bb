@@ -163,12 +163,18 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   void Start(const BidirectionalStreamRequestInfo* request_info,
              const NetLogWithSource& net_log,
              std::unique_ptr<QuicChromiumClientSession::Handle> session) {
+    not_expect_callback_ = true;
     stream_ = base::MakeUnique<BidirectionalStreamQuicImpl>(std::move(session));
     stream_->Start(request_info, net_log, send_request_headers_automatically_,
                    this, nullptr);
+    not_expect_callback_ = false;
   }
 
-  void SendRequestHeaders() { stream_->SendRequestHeaders(); }
+  void SendRequestHeaders() {
+    not_expect_callback_ = true;
+    stream_->SendRequestHeaders();
+    not_expect_callback_ = false;
+  }
 
   void SendData(const scoped_refptr<IOBuffer>& data,
                 int length,
