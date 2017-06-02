@@ -18,12 +18,12 @@ AudioOutputProxy::AudioOutputProxy(
 }
 
 AudioOutputProxy::~AudioOutputProxy() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ == kCreated || state_ == kClosed) << "State is: " << state_;
 }
 
 bool AudioOutputProxy::Open() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, kCreated);
 
   if (!dispatcher_ || !dispatcher_->OpenStream()) {
@@ -36,7 +36,7 @@ bool AudioOutputProxy::Open() {
 }
 
 void AudioOutputProxy::Start(AudioSourceCallback* callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // We need to support both states since the callback may not handle OnError()
   // immediately (or at all).  It's also possible for subsequent StartStream()
@@ -52,7 +52,7 @@ void AudioOutputProxy::Start(AudioSourceCallback* callback) {
 }
 
 void AudioOutputProxy::Stop() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state_ != kPlaying)
     return;
 
@@ -62,7 +62,7 @@ void AudioOutputProxy::Stop() {
 }
 
 void AudioOutputProxy::SetVolume(double volume) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   volume_ = volume;
 
   if (dispatcher_)
@@ -70,12 +70,12 @@ void AudioOutputProxy::SetVolume(double volume) {
 }
 
 void AudioOutputProxy::GetVolume(double* volume) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   *volume = volume_;
 }
 
 void AudioOutputProxy::Close() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ == kCreated || state_ == kOpenError || state_ == kOpened ||
          state_ == kStartError);
 
