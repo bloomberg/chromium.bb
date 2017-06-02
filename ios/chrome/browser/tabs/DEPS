@@ -7,7 +7,6 @@ specific_include_rules = {
     "+ios/web/navigation/navigation_manager_impl.h",
   ],
   "^tab_unittest\.mm$": [
-    "+ios/web/navigation/crw_session_controller.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
     "+ios/web/web_state/navigation_context_impl.h",
     "+ios/web/navigation/navigation_manager_impl.h",
@@ -16,12 +15,10 @@ specific_include_rules = {
 
   # TODO(crbug.com/620480): Remove tab.mm and tab_unittest.mm exceptions.
   "^tab_model\.mm$": [
-    "+ios/web/navigation/crw_session_certificate_policy_manager.h",
     "+ios/web/web_state/web_state_impl.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],
   "^tab_model_unittest\.mm$": [
-    "+ios/web/navigation/crw_session_controller.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
     "+ios/web/web_state/web_state_impl.h",
     "+ios/web/navigation/navigation_manager_impl.h",
