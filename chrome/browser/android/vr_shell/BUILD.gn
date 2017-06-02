@@ -86,6 +86,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//base",
       "//cc/paint",
       "//components/security_state/core",
+      "//components/toolbar:vector_icons",
       "//components/url_formatter",
       "//components/vector_icons",
       "//content/public/browser",
