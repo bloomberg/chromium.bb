@@ -120,6 +120,13 @@ suite('settings-fingerprint-list', function() {
     return {model: {index: index, item: opt_label || ''}};
   }
 
+  function openDialog() {
+    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    Polymer.dom.flush();
+    dialog = fingerprintList.$$('settings-setup-fingerprint-dialog');
+    addAnotherButton = dialog.$$('#addAnotherButton');
+  }
+
   /**
    * @param {!Element} element
    */
@@ -134,8 +141,6 @@ suite('settings-fingerprint-list', function() {
     PolymerTest.clearBody();
     fingerprintList = document.createElement('settings-fingerprint-list');
     document.body.appendChild(fingerprintList);
-    dialog = fingerprintList.$.setupFingerprint;
-    addAnotherButton = dialog.$.addAnotherButton;
     Polymer.dom.flush();
     return Promise.all([
         browserProxy.whenCalled('startAuthentication'),
@@ -148,10 +153,9 @@ suite('settings-fingerprint-list', function() {
   // Verify running through the enroll session workflow
   // (settings-setup-fingerprint-dialog) works as expected.
   test('EnrollingFingerprint', function() {
-    assertFalse(dialog.$.dialog.open);
-    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
-      assertTrue(dialog.$.dialog.open);
+      assertTrue(dialog.$$('#dialog').open);
       assertEquals(0, dialog.receivedScanCount_);
       assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
@@ -163,17 +167,17 @@ suite('settings-fingerprint-list', function() {
       browserProxy.scanReceived(settings.FingerprintResultType.TOO_FAST, false);
       assertEquals(1, dialog.receivedScanCount_);
       assertEquals('visible',
-          window.getComputedStyle(dialog.$.problemDiv).visibility);
+          window.getComputedStyle(dialog.$$('#problemDiv')).visibility);
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
       assertEquals('hidden',
-          window.getComputedStyle(dialog.$.problemDiv).visibility);
+          window.getComputedStyle(dialog.$$('#problemDiv')).visibility);
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
       assertEquals(settings.FingerprintSetupStep.READY, dialog.step_);
 
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
-      MockInteractions.tap(dialog.$.closeButton);
+      MockInteractions.tap(dialog.$$('#closeButton'));
       return PolymerTest.flushTasks().then(function() {
         Promise.all([
              browserProxy.whenCalled('startAuthentication'),
@@ -188,18 +192,17 @@ suite('settings-fingerprint-list', function() {
   // Verify enrolling a fingerprint, then enrolling another without closing the
   // dialog works as intended.
   test('EnrollingAnotherFingerprint', function() {
-    assertFalse(dialog.$.dialog.open);
-    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       browserProxy.resetResolver('startEnroll');
 
-      assertTrue(dialog.$.dialog.open);
+      assertTrue(dialog.$$('#dialog').open);
       assertEquals(0, dialog.receivedScanCount_);
       assertFalse(isVisible(addAnotherButton));
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
       assertEquals(settings.FingerprintSetupStep.READY, dialog.step_);
 
-      assertTrue(dialog.$.dialog.open);
+      assertTrue(dialog.$$('#dialog').open);
       assertTrue(isVisible(addAnotherButton));
       MockInteractions.tap(addAnotherButton);
 
@@ -211,13 +214,13 @@ suite('settings-fingerprint-list', function() {
     }).then(function() {
       browserProxy.resetResolver('getFingerprintsList');
 
-      assertTrue(dialog.$.dialog.open);
+      assertTrue(dialog.$$('#dialog').open);
       assertFalse(isVisible(addAnotherButton));
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
 
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have two fingerprints registered.
-      MockInteractions.tap(dialog.$.closeButton);
+      MockInteractions.tap(dialog.$$('#closeButton'));
       return browserProxy.whenCalled('getFingerprintsList');
     }).then(function() {
        assertEquals(2, fingerprintList.fingerprints_.length);
@@ -225,10 +228,9 @@ suite('settings-fingerprint-list', function() {
   });
 
   test('CancelEnrollingFingerprint', function() {
-    assertFalse(dialog.$.dialog.open);
-    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
-      assertTrue(dialog.$.dialog.open);
+      assertTrue(dialog.$$('#dialog').open);
       assertEquals(0, dialog.receivedScanCount_);
       assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
       browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
@@ -237,7 +239,7 @@ suite('settings-fingerprint-list', function() {
 
       // Verify that by tapping the exit button we should exit the dialog
       // and the fingerprint list should have zero fingerprints registered.
-      MockInteractions.tap(dialog.$.closeButton);
+      MockInteractions.tap(dialog.$$('#closeButton'));
       return Promise.all([
           browserProxy.whenCalled('cancelCurrentEnroll'),
           browserProxy.whenCalled('startAuthentication')]);

@@ -160,13 +160,17 @@
         </div>
       </template>
 
-      <settings-password-prompt-dialog id="passwordPrompt"
-          on-close="onPasswordClosed_" set-modes="{{setModes_}}">
-      </settings-password-prompt-dialog>
+      <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
+        <settings-password-prompt-dialog id="passwordPrompt"
+            on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}">
+        </settings-password-prompt-dialog>
+      </template>
 
-      <settings-setup-pin-dialog id="setupPin" on-done="onPinSetupDone_"
-          on-close="onSetupPinClosed_" set-modes="[[setModes_]]">
-      </settings-setup-pin-dialog>
+      <template is="dom-if" if="[[showSetupPinDialog_]]" restamp>
+        <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes_]]"
+            on-close="onSetupPinDialogClose_">
+        </settings-setup-pin-dialog>
+      </template>
 
       <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]" restamp>
         <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"

@@ -79,12 +79,7 @@ Polymer({
     this.addWebUIListener(
         'on-fingerprint-scan-received', this.onScanReceived_.bind(this));
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
-  },
 
-  /**
-   * Opens the dialog.
-   */
-  open: function() {
     this.$.arc.clearCanvas();
     this.$.arc.drawBackgroundCircle();
     this.$.arc.drawShadow(10, 0, 0);
