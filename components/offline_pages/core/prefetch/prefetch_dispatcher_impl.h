@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_IMPL_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/task_queue.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 class PrefetchDispatcherImpl : public PrefetchDispatcher {
  public:
@@ -16,14 +20,20 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
   ~PrefetchDispatcherImpl() override;
 
   // PrefetchDispatcher implementation:
+  void SetService(PrefetchService* service) override;
   void AddCandidatePrefetchURLs(
-      const std::vector<PrefetchURL>& suggested_urls) override;
+      const std::vector<PrefetchURL>& prefetch_urls) override;
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
   void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
   void StopBackgroundTask(ScopedBackgroundTask* task) override;
 
  private:
+  friend class PrefetchDispatcherTest;
+
+  PrefetchService* service_;
+  TaskQueue task_queue_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefetchDispatcherImpl);
 };
 

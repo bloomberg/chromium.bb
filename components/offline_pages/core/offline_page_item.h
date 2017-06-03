@@ -7,28 +7,13 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/client_id.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
-
-struct ClientId {
-  // The namespace for the id (of course 'namespace' is a reserved word, so...)
-  std::string name_space;
-  // The id in the client's namespace.  Opaque to us.
-  std::string id;
-
-  ClientId();
-  ClientId(std::string name_space, std::string id);
-
-  bool operator==(const ClientId& client_id) const;
-
-  bool operator<(const ClientId& client_id) const;
-};
 
 // Metadata of the offline page.
 struct OfflinePageItem {

@@ -13,9 +13,9 @@ PrefetchItem::PrefetchItem(const PrefetchItem& other) = default;
 PrefetchItem::~PrefetchItem(){};
 
 bool PrefetchItem::operator==(const PrefetchItem& other) const {
-  return guid == other.guid && client_name_space == other.client_name_space &&
-         client_id == other.client_id && state == other.state &&
-         url == other.url && final_archived_url == other.final_archived_url &&
+  return guid == other.guid && client_id == other.client_id &&
+         state == other.state && url == other.url &&
+         final_archived_url == other.final_archived_url &&
          request_archive_attempt_count == other.request_archive_attempt_count &&
          operation_name == other.operation_name &&
          archive_body_name == other.archive_body_name &&

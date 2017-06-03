@@ -14,6 +14,7 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 using ntp_snippets::Category;
 using ntp_snippets::ContentSuggestion;
@@ -61,13 +62,14 @@ void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
   if (suggestions.empty())
     return;
 
-  std::vector<PrefetchDispatcher::PrefetchURL> prefetch_urls;
+  std::vector<PrefetchURL> prefetch_urls;
   for (const ContentSuggestion& suggestion : suggestions) {
     prefetch_urls.push_back(
         {CreateClientIDFromSuggestionId(suggestion.id()), suggestion.url()});
   }
 
-  prefetch_service_->GetDispatcher()->AddCandidatePrefetchURLs(prefetch_urls);
+  prefetch_service_->GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
+      prefetch_urls);
 }
 
 void SuggestedArticlesObserver::OnCategoryStatusChanged(
@@ -82,19 +84,19 @@ void SuggestedArticlesObserver::OnCategoryStatusChanged(
           ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED ||
       category_status_ ==
           ntp_snippets::CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED) {
-    prefetch_service_->GetDispatcher()->RemoveAllUnprocessedPrefetchURLs(
-        kSuggestedArticlesNamespace);
+    prefetch_service_->GetPrefetchDispatcher()
+        ->RemoveAllUnprocessedPrefetchURLs(kSuggestedArticlesNamespace);
   }
 }
 
 void SuggestedArticlesObserver::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  prefetch_service_->GetDispatcher()->RemovePrefetchURLsByClientId(
+  prefetch_service_->GetPrefetchDispatcher()->RemovePrefetchURLsByClientId(
       CreateClientIDFromSuggestionId(suggestion_id));
 }
 
 void SuggestedArticlesObserver::OnFullRefreshRequired() {
-  prefetch_service_->GetDispatcher()->RemoveAllUnprocessedPrefetchURLs(
+  prefetch_service_->GetPrefetchDispatcher()->RemoveAllUnprocessedPrefetchURLs(
       kSuggestedArticlesNamespace);
   OnNewSuggestions(ArticlesCategory());
 }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "url/gurl.h"
 
@@ -32,12 +33,9 @@ struct PrefetchItem {
   // identifiers for operations linked to this item.
   std::string guid;
 
-  // Externally provided namespace and id values so that this item can be
-  // uniquely identified by the client requesting it. It is the client's
-  // responsibility to make sure the id is unique within the context of its
-  // assigned namespace.
-  std::string client_name_space;
-  std::string client_id;
+  // Data composed of a namespace and an uid values to allow this item to be
+  // uniquely identified by the client that requested it.
+  ClientId client_id;
 
   // Current prefetching progress state.
   PrefetchItemState state = PrefetchItemState::NEW_REQUEST;

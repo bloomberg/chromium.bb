@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_
 
+#include <string>
 #include <vector>
-#include "base/macros.h"
+
 #include "base/time/time.h"
+#include "components/offline_pages/core/client_id.h"
+#include "url/gurl.h"
 
 namespace offline_pages {
 
@@ -104,6 +107,20 @@ enum class PrefetchItemErrorCode {
 using PrefetchRequestFinishedCallback =
     base::Callback<void(PrefetchRequestStatus status,
                         const std::vector<RenderPageInfo>& pages)>;
+
+// Holds information about a new URL to be prefetched.
+struct PrefetchURL {
+  PrefetchURL(const ClientId& client_id, const GURL& url)
+      : client_id(client_id), url(url) {}
+
+  // Client provided ID to allow the matching of URLs to the respective work
+  // item in the prefetching system. It can be anything useful to identify the
+  // page . It will not be used internally for de-duplication.
+  ClientId client_id;
+
+  // This URL will be prefetched by the service.
+  GURL url;
+};
 
 }  // namespace offline_pages
 

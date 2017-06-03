@@ -4,18 +4,29 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 
+#include "base/memory/ptr_util.h"
+#include "components/offline_pages/core/prefetch/add_unique_urls_task.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
 
-PrefetchDispatcherImpl::PrefetchDispatcherImpl() {}
+PrefetchDispatcherImpl::PrefetchDispatcherImpl() = default;
 
 PrefetchDispatcherImpl::~PrefetchDispatcherImpl() = default;
 
-void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
-    const std::vector<PrefetchURL>& url_suggestions) {
-  NOTIMPLEMENTED();
+void PrefetchDispatcherImpl::SetService(PrefetchService* service) {
+  CHECK(service);
+  service_ = service;
 }
+
+void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
+    const std::vector<PrefetchURL>& prefetch_urls) {
+  std::unique_ptr<Task> add_task = base::MakeUnique<AddUniqueUrlsTask>(
+      service_->GetPrefetchStore(), prefetch_urls);
+  task_queue_.AddTask(std::move(add_task));
+}
+
 void PrefetchDispatcherImpl::RemoveAllUnprocessedPrefetchURLs(
     const std::string& name_space) {
   NOTIMPLEMENTED();
