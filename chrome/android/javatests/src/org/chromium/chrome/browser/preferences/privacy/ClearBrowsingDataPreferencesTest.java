@@ -18,6 +18,7 @@ import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -503,10 +504,13 @@ public class ClearBrowsingDataPreferencesTest
 
     /**
      * Tests that the important sites dialog is shown and if we cancel nothing happens.
+     *
+     * http://crbug.com/727310
      */
     @CommandLineFlags.Add({"enable-features=ImportantSitesInCBD", "enable-site-engagement"})
     @MediumTest
     @Feature({"SiteEngagement"})
+    @DisabledTest(message = "crbug.com/727310")
     public void testImportantSitesDialogNoopOnCancel() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
