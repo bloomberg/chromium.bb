@@ -70,6 +70,28 @@ const int64_t kInterstitialDelayInMilliseconds = 3000;
 
 const char kHistogram[] = "interstitial.ssl_error_handler";
 
+// Records an UMA histogram for whether the Superfish SPKI was present in the
+// certificate chain.
+void RecordSuperfishUMA(const net::HashValueVector& public_key_hashes) {
+  // This is the SPKI hash of the well-known Superfish certificate at
+  // https://pastebin.com/WcXv8QcG.
+  const char kSuperfishSPKI[] =
+      "sha256/S7jzW6HhJvjd4bDEIGJe2G3OYae92tveqauleP8TFF4=";
+  net::HashValue superfish_spki_hash_value;
+  if (!superfish_spki_hash_value.FromString(kSuperfishSPKI)) {
+    NOTREACHED();
+  }
+  bool found_superfish = false;
+  for (const auto& hash : public_key_hashes) {
+    if (hash == superfish_spki_hash_value) {
+      found_superfish = true;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_error_handler.superfish",
+                        found_superfish);
+}
+
 // Adds a message to console after navigation commits and then, deletes itself.
 // Also deletes itself if the navigation is stopped.
 class CommonNameMismatchRedirectObserver
@@ -540,6 +562,8 @@ SSLErrorHandler::~SSLErrorHandler() {
 
 void SSLErrorHandler::StartHandlingError() {
   RecordUMA(HANDLE_ALL);
+
+  RecordSuperfishUMA(ssl_info_.public_key_hashes);
 
   if (ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_) ==
       ssl_errors::ErrorInfo::CERT_DATE_INVALID) {

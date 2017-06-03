@@ -26109,6 +26109,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl_error_handler.superfish" enum="Boolean">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    When encountering a certificate error, Chrome looks for the well-known
+    Superfish certificate in the certificate chain and records this histogram as
+    true if the Superfish certificate is present and false otherwise. The
+    Superfish certificate is an indication that the user is vulnerable to
+    man-in-the-middle attacks because of software installed on their computer.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl_error_type" enum="SSLErrorTypes">
   <owner>felt@chromium.org</owner>
   <summary>
