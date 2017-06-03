@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search_answer_web_contents_delegate.h"
+#include "chrome/browser/ui/app_list/search/answer_card_search_provider.h"
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -104,7 +104,7 @@ class SearchAnswerResult : public SearchResult {
 
 }  // namespace
 
-SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
+AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
     app_list::AppListModel* model)
     : profile_(profile),
@@ -133,16 +133,16 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
       web_contents_.get(), SK_ColorTRANSPARENT);
 }
 
-SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {
+AnswerCardSearchProvider::~AnswerCardSearchProvider() {
   RecordReceivedAnswerFinalResult();
 }
 
-views::View* SearchAnswerWebContentsDelegate::web_view() {
+views::View* AnswerCardSearchProvider::web_view() {
   return web_view_.get();
 }
 
-void SearchAnswerWebContentsDelegate::Start(bool is_voice_query,
-                                            const base::string16& query) {
+void AnswerCardSearchProvider::Start(bool is_voice_query,
+                                     const base::string16& query) {
   RecordReceivedAnswerFinalResult();
   // Reset the state.
   received_answer_ = false;
@@ -182,7 +182,7 @@ void SearchAnswerWebContentsDelegate::Start(bool is_voice_query,
   web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
 }
 
-void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
+void AnswerCardSearchProvider::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
   OnResultAvailable(received_answer_ && IsCardSizeOk() &&
@@ -194,7 +194,7 @@ void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
   }
 }
 
-content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
+content::WebContents* AnswerCardSearchProvider::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (!params.user_gesture)
@@ -222,13 +222,13 @@ content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
   return new_tab_params.target_contents;
 }
 
-bool SearchAnswerWebContentsDelegate::HandleContextMenu(
+bool AnswerCardSearchProvider::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Disable showing the menu.
   return true;
 }
 
-void SearchAnswerWebContentsDelegate::DidFinishNavigation(
+void AnswerCardSearchProvider::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetURL() != current_request_url_) {
     RecordRequestResult(
@@ -262,7 +262,7 @@ void SearchAnswerWebContentsDelegate::DidFinishNavigation(
                       base::TimeTicks::Now() - server_request_start_time_);
 }
 
-void SearchAnswerWebContentsDelegate::DidStopLoading() {
+void AnswerCardSearchProvider::DidStopLoading() {
   if (!received_answer_)
     return;
 
@@ -274,12 +274,12 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
   base::RecordAction(base::UserMetricsAction("SearchAnswer_StoppedLoading"));
 }
 
-void SearchAnswerWebContentsDelegate::DidGetUserInteraction(
+void AnswerCardSearchProvider::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
   base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
 }
 
-bool SearchAnswerWebContentsDelegate::IsCardSizeOk() const {
+bool AnswerCardSearchProvider::IsCardSizeOk() const {
   if (features::IsAnswerCardDarkRunEnabled())
     return true;
 
@@ -288,7 +288,7 @@ bool SearchAnswerWebContentsDelegate::IsCardSizeOk() const {
          size.height() <= features::AnswerCardMaxHeight();
 }
 
-void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
+void AnswerCardSearchProvider::RecordReceivedAnswerFinalResult() {
   // Recording whether a server response with an answer contains a card of a
   // fitting size, or a too large one. Cannot do this in DidStopLoading() or
   // UpdatePreferredSize() because this may be followed by a resizing with
@@ -302,7 +302,7 @@ void SearchAnswerWebContentsDelegate::RecordReceivedAnswerFinalResult() {
                            REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
 }
 
-void SearchAnswerWebContentsDelegate::OnResultAvailable(bool is_available) {
+void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
   SearchProvider::Results results;
   if (is_available) {
     results.reserve(1);
@@ -312,7 +312,7 @@ void SearchAnswerWebContentsDelegate::OnResultAvailable(bool is_available) {
   SwapResults(&results);
 }
 
-bool SearchAnswerWebContentsDelegate::ParseResponseHeaders(
+bool AnswerCardSearchProvider::ParseResponseHeaders(
     const net::HttpResponseHeaders* headers) {
   if (!headers || headers->response_code() != net::HTTP_OK)
     return false;
