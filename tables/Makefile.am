@@ -52,6 +52,7 @@ table_files = \
 	da-dk-g16-lit.ctb \
 	da-dk-g18.ctb \
 	da-dk-g26.ctb \
+	da-dk-g26-lit.ctb \
 	da-dk-g26l.ctb \
 	da-dk-g26-patches.cti \
 	da-dk-g28.ctb \
