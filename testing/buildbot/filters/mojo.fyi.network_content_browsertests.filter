@@ -3,7 +3,8 @@
 -ServiceWorker*
 
 # http://crbug.com/715677
--Blob*
+# Needs blob fetching for subresources
+-BlobStorageBrowserTest.BlobCombinations
 
 # http://crbug.com/715630
 -DownloadContentTest.*

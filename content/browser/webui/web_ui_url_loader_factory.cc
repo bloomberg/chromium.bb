@@ -286,7 +286,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
 }  // namespace
 
-mojom::URLLoaderFactoryPtr GetWebUIURLLoader(FrameTreeNode* node) {
+mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(FrameTreeNode* node) {
   int ftn_id = node->frame_tree_node_id();
   if (g_factories.Get()[ftn_id].get() == nullptr)
     g_factories.Get()[ftn_id] = base::MakeUnique<WebUIURLLoaderFactory>(node);

@@ -61,6 +61,9 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
     return cached_metadata_;
   }
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
+  mojo::ScopedDataPipeConsumerHandle response_body_release() {
+    return std::move(response_body_);
+  }
   const ResourceRequestCompletionStatus& completion_status() const {
     return completion_status_;
   }

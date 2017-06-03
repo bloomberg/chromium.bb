@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,6 +20,12 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/blob_storage/blob_url_loader_factory.h"
+#include "content/browser/loader/test_url_loader_client.h"
+#include "content/browser/url_loader_factory_getter.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/common/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -148,7 +155,10 @@ class BlobURLRequestJobTest : public testing::Test {
   };
 
   BlobURLRequestJobTest()
-      : blob_data_(new BlobDataBuilder("uuid")), expected_status_code_(0) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        blob_data_(new BlobDataBuilder("uuid")),
+        response_error_code_(net::OK),
+        expected_status_code_(0) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -180,7 +190,6 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void TearDown() override {
     blob_handle_.reset();
-    request_.reset();
     // Clean up for ASAN
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -250,34 +259,76 @@ class BlobURLRequestJobTest : public testing::Test {
     expected_status_code_ = 200;
     expected_response_ = expected_response;
     TestRequest("GET", net::HttpRequestHeaders());
-    EXPECT_EQ(expected_content_length,
-              request_->response_headers()->GetContentLength());
+    EXPECT_EQ(expected_content_length, response_headers_->GetContentLength());
   }
 
   void TestErrorRequest(int expected_status_code) {
     expected_status_code_ = expected_status_code;
     expected_response_ = "";
     TestRequest("GET", net::HttpRequestHeaders());
-    EXPECT_FALSE(request_->response_info().metadata);
+    EXPECT_TRUE(response_metadata_.empty());
   }
 
   void TestRequest(const std::string& method,
                    const net::HttpRequestHeaders& extra_headers) {
-    request_ = url_request_context_.CreateRequest(
-        GURL("blob:blah"), net::DEFAULT_PRIORITY, &url_request_delegate_,
-        TRAFFIC_ANNOTATION_FOR_TESTS);
-    request_->set_method(method);
-    if (!extra_headers.IsEmpty())
-      request_->SetExtraRequestHeaders(extra_headers);
-    request_->Start();
+    GURL url("blob:blah");
 
-    base::RunLoop().Run();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableNetworkService)) {
+      GetHandleFromBuilder();  // To add to StorageContext.
+      const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
+          .CreateUrlMapping(url, blob_data_->uuid());
+      ResourceRequest request;
+      request.url = url;
+      request.method = method;
+      if (!extra_headers.IsEmpty())
+        request.headers = extra_headers.ToString();
+
+      mojom::URLLoaderAssociatedPtr url_loader;
+      TestURLLoaderClient url_loader_client;
+      scoped_refptr<BlobURLLoaderFactory> factory = new BlobURLLoaderFactory(
+          base::Bind(&BlobURLRequestJobTest::GetStorageContext,
+                     base::Unretained(this)),
+          file_system_context_);
+      base::RunLoop().RunUntilIdle();
+      factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
+                                    mojom::kURLLoadOptionNone, request,
+                                    url_loader_client.CreateInterfacePtr());
+      url_loader_client.RunUntilComplete();
+
+      if (url_loader_client.response_body().is_valid()) {
+        EXPECT_TRUE(mojo::common::BlockingCopyToString(
+            url_loader_client.response_body_release(), &response_));
+      }
+      response_headers_ = url_loader_client.response_head().headers;
+      response_metadata_ = url_loader_client.cached_metadata();
+      response_error_code_ = url_loader_client.completion_status().error_code;
+    } else {
+      std::unique_ptr<net::URLRequest> request =
+          url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
+                                             &url_request_delegate_,
+                                             TRAFFIC_ANNOTATION_FOR_TESTS);
+      request->set_method(method);
+      if (!extra_headers.IsEmpty())
+        request->SetExtraRequestHeaders(extra_headers);
+      request->Start();
+
+      base::RunLoop().Run();
+      response_ = url_request_delegate_.data_received();
+      response_headers_ = request->response_headers();
+      if (request->response_info().metadata) {
+        response_metadata_ =
+            std::string(request->response_info().metadata->data(),
+                        request->response_info().metadata->size());
+      }
+
+      response_error_code_ = url_request_delegate_.request_status();
+    }
 
     // Verify response.
-    EXPECT_EQ(net::OK, url_request_delegate_.request_status());
-    EXPECT_EQ(expected_status_code_,
-              request_->response_headers()->response_code());
-    EXPECT_EQ(expected_response_, url_request_delegate_.data_received());
+    EXPECT_EQ(net::OK, response_error_code_);
+    EXPECT_EQ(expected_status_code_, response_headers_->response_code());
+    EXPECT_EQ(expected_response_, response_);
   }
 
   void BuildComplicatedData(std::string* expected_result) {
@@ -330,6 +381,10 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
  protected:
+  base::WeakPtr<storage::BlobStorageContext> GetStorageContext() {
+    return blob_context_.AsWeakPtr();
+  }
+
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file1_;
   base::FilePath temp_file2_;
@@ -344,7 +399,7 @@ class BlobURLRequestJobTest : public testing::Test {
   std::unique_ptr<disk_cache::Backend> disk_cache_backend_;
   disk_cache::ScopedEntryPtr disk_cache_entry_;
 
-  base::MessageLoopForIO message_loop_;
+  TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   storage::BlobStorageContext blob_context_;
@@ -354,7 +409,10 @@ class BlobURLRequestJobTest : public testing::Test {
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   net::URLRequestContext url_request_context_;
   net::TestDelegate url_request_delegate_;
-  std::unique_ptr<net::URLRequest> request_;
+  std::string response_;
+  int response_error_code_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  std::string response_metadata_;
 
   int expected_status_code_;
   std::string expected_response_;
@@ -490,12 +548,11 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
   expected_response_ = result.substr(5, 10 - 5 + 1);
   TestRequest("GET", extra_headers);
 
-  EXPECT_EQ(6, request_->response_headers()->GetContentLength());
-  EXPECT_FALSE(request_->response_info().metadata);
+  EXPECT_EQ(6, response_headers_->GetContentLength());
+  EXPECT_TRUE(response_metadata_.empty());
 
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
-                                                                  &length));
+  EXPECT_TRUE(response_headers_->GetContentRangeFor206(&first, &last, &length));
   EXPECT_EQ(5, first);
   EXPECT_EQ(10, last);
   EXPECT_EQ(GetTotalBlobLength(), length);
@@ -512,13 +569,12 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
   expected_response_ = result.substr(result.length() - 10);
   TestRequest("GET", extra_headers);
 
-  EXPECT_EQ(10, request_->response_headers()->GetContentLength());
-  EXPECT_FALSE(request_->response_info().metadata);
+  EXPECT_EQ(10, response_headers_->GetContentLength());
+  EXPECT_TRUE(response_metadata_.empty());
 
   int64_t total = GetTotalBlobLength();
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
-                                                                  &length));
+  EXPECT_TRUE(response_headers_->GetContentRangeFor206(&first, &last, &length));
   EXPECT_EQ(total - 10, first);
   EXPECT_EQ(total - 1, last);
   EXPECT_EQ(total, length);
@@ -535,12 +591,11 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest3) {
   expected_response_ = result.substr(0, 3);
   TestRequest("GET", extra_headers);
 
-  EXPECT_EQ(3, request_->response_headers()->GetContentLength());
-  EXPECT_FALSE(request_->response_info().metadata);
+  EXPECT_EQ(3, response_headers_->GetContentLength());
+  EXPECT_TRUE(response_metadata_.empty());
 
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
-                                                                  &length));
+  EXPECT_TRUE(response_headers_->GetContentRangeFor206(&first, &last, &length));
   EXPECT_EQ(0, first);
   EXPECT_EQ(2, last);
   EXPECT_EQ(GetTotalBlobLength(), length);
@@ -555,13 +610,13 @@ TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
   TestRequest("GET", net::HttpRequestHeaders());
 
   std::string content_type;
-  EXPECT_TRUE(request_->response_headers()->GetMimeType(&content_type));
+  EXPECT_TRUE(response_headers_->GetMimeType(&content_type));
   EXPECT_EQ(kTestContentType, content_type);
-  EXPECT_FALSE(request_->response_info().metadata);
+  EXPECT_TRUE(response_metadata_.empty());
   size_t iter = 0;
   std::string content_disposition;
-  EXPECT_TRUE(request_->response_headers()->EnumerateHeader(
-      &iter, "Content-Disposition", &content_disposition));
+  EXPECT_TRUE(response_headers_->EnumerateHeader(&iter, "Content-Disposition",
+                                                 &content_disposition));
   EXPECT_EQ(kTestContentDisposition, content_disposition);
 }
 
@@ -577,12 +632,9 @@ TEST_F(BlobURLRequestJobTest, TestSideData) {
   expected_response_ = kTestDiskCacheData2;
   TestRequest("GET", net::HttpRequestHeaders());
   EXPECT_EQ(static_cast<int>(arraysize(kTestDiskCacheData2) - 1),
-            request_->response_headers()->GetContentLength());
+            response_headers_->GetContentLength());
 
-  ASSERT_TRUE(request_->response_info().metadata);
-  std::string metadata(request_->response_info().metadata->data(),
-                       request_->response_info().metadata->size());
-  EXPECT_EQ(std::string(kTestDiskCacheSideData), metadata);
+  EXPECT_EQ(std::string(kTestDiskCacheSideData), response_metadata_);
 }
 
 TEST_F(BlobURLRequestJobTest, TestZeroSizeSideData) {
@@ -597,9 +649,9 @@ TEST_F(BlobURLRequestJobTest, TestZeroSizeSideData) {
   expected_response_ = kTestDiskCacheData2;
   TestRequest("GET", net::HttpRequestHeaders());
   EXPECT_EQ(static_cast<int>(arraysize(kTestDiskCacheData2) - 1),
-            request_->response_headers()->GetContentLength());
+            response_headers_->GetContentLength());
 
-  EXPECT_FALSE(request_->response_info().metadata);
+  EXPECT_TRUE(response_metadata_.empty());
 }
 
 TEST_F(BlobURLRequestJobTest, BrokenBlob) {
