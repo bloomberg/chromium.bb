@@ -851,13 +851,7 @@ bool GoogleUpdateSettings::GetUpdateDetail(ProductData* data) {
 bool GoogleUpdateSettings::SetExperimentLabels(
     bool system_install,
     const base::string16& experiment_labels) {
-  // There is nothing to do if this brand does not support integration with
-  // Google Update.
-  if (!install_static::kUseGoogleUpdateIntegration)
-    return false;
-
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
   // Use the browser distribution and install level to write to the correct
   // client state/app guid key.
   bool success = false;
@@ -885,11 +879,6 @@ bool GoogleUpdateSettings::SetExperimentLabels(
 bool GoogleUpdateSettings::ReadExperimentLabels(
     bool system_install,
     base::string16* experiment_labels) {
-  // There is nothing to do if this brand does not support integration with
-  // Google Update.
-  if (!install_static::kUseGoogleUpdateIntegration)
-    return false;
-
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 client_state_path(
