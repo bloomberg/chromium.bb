@@ -23,6 +23,7 @@ CONTENT_EXPORT extern const int kDefaultScreenCastWidth;
 CONTENT_EXPORT extern const int kDefaultScreenCastHeight;
 CONTENT_EXPORT extern const double kDefaultScreenCastAspectRatio;
 
+CONTENT_EXPORT extern const double kMinScreenCastFrameRate;
 CONTENT_EXPORT extern const double kMaxScreenCastFrameRate;
 CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 
