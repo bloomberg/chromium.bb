@@ -860,7 +860,7 @@ class LayerTreeHostCopyRequestTestCountTextures
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     // Always allocate only a single texture at a time through ResourceProvider.
-    settings->resource_settings.texture_id_allocation_chunk_size = 1;
+    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
   }
 
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(

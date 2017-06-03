@@ -156,7 +156,7 @@ InProcessContextFactory::InProcessContextFactory(
          format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      renderer_settings_.resource_settings
+      renderer_settings_
           .buffer_to_texture_target_map[std::make_pair(usage, format)] =
           GL_TEXTURE_2D;
     }
@@ -328,9 +328,9 @@ void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
   per_compositor_data_[compositor]->display->Resize(size);
 }
 
-const cc::ResourceSettings& InProcessContextFactory::GetResourceSettings()
+const cc::RendererSettings& InProcessContextFactory::GetRendererSettings()
     const {
-  return renderer_settings_.resource_settings;
+  return renderer_settings_;
 }
 
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
