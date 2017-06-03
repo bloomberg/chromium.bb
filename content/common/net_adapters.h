@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_NET_ADAPTERS_
-#define CONTENT_NETWORK_NET_ADAPTERS_
+#ifndef CONTENT_COMMON_NET_ADAPTERS_
+#define CONTENT_COMMON_NET_ADAPTERS_
 
 #include <stdint.h>
 
@@ -68,4 +68,4 @@ class NetToMojoIOBuffer : public net::WrappedIOBuffer {
 
 }  // namespace content
 
-#endif  // CONTENT_NETWORK_NET_ADAPTERS_
+#endif  // CONTENT_COMMON_NET_ADAPTERS_

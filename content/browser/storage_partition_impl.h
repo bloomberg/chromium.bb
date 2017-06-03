@@ -18,6 +18,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
@@ -41,6 +42,7 @@
 #endif
 
 namespace content {
+class BlobURLLoaderFactory;
 
 class CONTENT_EXPORT  StoragePartitionImpl
     : public StoragePartition,
@@ -116,6 +118,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
+  BlobURLLoaderFactory* GetBlobURLLoaderFactory();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
@@ -247,6 +250,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
   scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
+  scoped_refptr<BlobURLLoaderFactory> blob_url_loader_factory_;
 
   mojo::BindingSet<mojom::StoragePartitionService> bindings_;
   mojom::NetworkContextPtr network_context_;

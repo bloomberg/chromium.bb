@@ -3151,7 +3151,7 @@ void RenderFrameHostImpl::CommitNavigation(
     const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
     if (std::find(schemes.begin(), schemes.end(), common_params.url.scheme()) !=
         schemes.end()) {
-      commit_data.url_loader_factory = GetWebUIURLLoader(frame_tree_node_)
+      commit_data.url_loader_factory = CreateWebUIURLLoader(frame_tree_node_)
                                            .PassInterface()
                                            .PassHandle()
                                            .release();
