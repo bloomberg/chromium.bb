@@ -80,6 +80,11 @@ typedef void (^AccessoryViewReadyCompletion)(
 @interface FormInputAccessoryViewController
     : NSObject<CRWWebStateObserver, FormInputAccessoryViewDelegate>
 
+// The current web view proxy.
+// TODO(crbug.com/727716): This property should not be a part of the public
+// interface, it is used in tests as a backdoor.
+@property(nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
+
 // Initializes a new controller with the specified |providers| of input
 // accessory views.
 - (instancetype)initWithWebState:(web::WebState*)webState
