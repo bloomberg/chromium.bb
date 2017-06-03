@@ -1,5 +1,5 @@
 <?php
-    header("Link: </resources/dummy.css>;rel=preload", false);
+    header("Link: </resources/dummy.css>;rel=preload;as=style", false);
     header("Link: </resources/square.png>;rel=preload;as=image;media=(min-width: 1px)", false);
 ?>
 <!DOCTYPE html>

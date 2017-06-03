@@ -31,6 +31,7 @@ var loadTimestampWithLink = (function() {
     var l = document.createElement('link');
     l.setAttribute('rel', 'preload');
     l.setAttribute('href', "resources/timestamp.php");
+    l.setAttribute('as', 'fetch');
     l.onload = loadTimestampWithXHR;
     document.body.appendChild(l);
 });
