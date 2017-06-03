@@ -41,6 +41,15 @@ function logToConsole()
 
     console.log("Missing column name");
     console.table([{a:1, b:2, c:3}, {a:"foo"}], ["d"]);
+
+    console.log("Shallow array");
+    console.table([1, "foo", null]);
+
+    console.log("Shallow array with 'Value' column");
+    console.table([1, {Value: 2}]);
+
+    console.log("Deep and shallow array");
+    console.table([1, "foo", [2]]);
 }
 
 function onload()
