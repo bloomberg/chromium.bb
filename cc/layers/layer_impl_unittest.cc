@@ -623,7 +623,7 @@ TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
   gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
-  layer()->set_user_scrollable_vertical(false);
+  layer()->test_properties()->user_scrollable_vertical = false;
   layer()->layer_tree_impl()->property_trees()->needs_rebuild = true;
   layer()->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
   scroll_tree(layer())->UpdateScrollOffsetBaseForTesting(layer()->id(),

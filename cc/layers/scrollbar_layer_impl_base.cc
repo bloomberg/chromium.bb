@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -80,12 +81,18 @@ float ScrollbarLayerImplBase::vertical_adjust() const {
 }
 
 bool ScrollbarLayerImplBase::CanScrollOrientation() const {
-  // TODO(pdr): Refactor this to not depend on layers by using the associated
-  // scroll node's user_scrollable values.
-  LayerImpl* scroll_layer =
-      layer_tree_impl()->LayerByElementId(scroll_element_id_);
-  if (!scroll_layer)
-    return false;
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  const auto* scroll_node =
+      property_trees->scroll_tree.FindNodeFromElementId(scroll_element_id_);
+  DCHECK(scroll_node);
+
+  if (orientation() == ScrollbarOrientation::HORIZONTAL) {
+    if (!scroll_node->user_scrollable_horizontal)
+      return false;
+  } else {
+    if (!scroll_node->user_scrollable_vertical)
+      return false;
+  }
 
   // Ensure the clip_layer_length and scroll_layer_length values are up-to-date.
   // TODO(pdr): Instead of using the clip and scroll layer lengths which require
@@ -93,10 +100,9 @@ bool ScrollbarLayerImplBase::CanScrollOrientation() const {
   // as in LayerTreeHostImpl::TryScroll).
   layer_tree_impl()->UpdateScrollbarGeometries();
 
-  return scroll_layer->user_scrollable(orientation()) &&
-         // Ensure clip_layer_length is smaller than scroll_layer_length, not
-         // including small deltas due to floating point error.
-         !MathUtil::IsFloatNearlyTheSame(clip_layer_length(),
+  // Ensure clip_layer_length is smaller than scroll_layer_length, not including
+  // small deltas due to floating point error.
+  return !MathUtil::IsFloatNearlyTheSame(clip_layer_length(),
                                          scroll_layer_length()) &&
          clip_layer_length() < scroll_layer_length();
 }
