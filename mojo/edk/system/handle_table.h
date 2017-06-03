@@ -11,16 +11,21 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {
 
-class HandleTable {
+class HandleTable : public base::trace_event::MemoryDumpProvider {
  public:
   HandleTable();
-  ~HandleTable();
+  ~HandleTable() override;
+
+  // HandleTable is thread-hostile. All access should be gated by GetLock().
+  base::Lock& GetLock();
 
   MojoHandle AddDispatcher(scoped_refptr<Dispatcher> dispatcher);
 
@@ -50,6 +55,10 @@ class HandleTable {
   void GetActiveHandlesForTest(std::vector<MojoHandle> *handles);
 
  private:
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
   struct Entry {
    Entry();
    explicit Entry(scoped_refptr<Dispatcher> dispatcher);
@@ -63,6 +72,7 @@ class HandleTable {
   using HandleMap = base::hash_map<MojoHandle, Entry>;
 
   HandleMap handles_;
+  base::Lock lock_;
 
   uint32_t next_available_handle_ = 1;
 

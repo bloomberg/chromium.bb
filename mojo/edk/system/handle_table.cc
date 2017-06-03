@@ -8,12 +8,50 @@
 
 #include <limits>
 
+#include "base/trace_event/memory_dump_manager.h"
+
 namespace mojo {
 namespace edk {
 
-HandleTable::HandleTable() {}
+namespace {
 
-HandleTable::~HandleTable() {}
+const char* GetNameForDispatcherType(Dispatcher::Type type) {
+  switch (type) {
+    case Dispatcher::Type::UNKNOWN:
+      return "unknown";
+    case Dispatcher::Type::MESSAGE_PIPE:
+      return "message_pipe";
+    case Dispatcher::Type::DATA_PIPE_PRODUCER:
+      return "data_pipe_producer";
+    case Dispatcher::Type::DATA_PIPE_CONSUMER:
+      return "data_pipe_consumer";
+    case Dispatcher::Type::SHARED_BUFFER:
+      return "shared_buffer";
+    case Dispatcher::Type::WATCHER:
+      return "watcher";
+    case Dispatcher::Type::PLATFORM_HANDLE:
+      return "platform_handle";
+  }
+  return "unknown";
+}
+
+const char* kDumpProviderName = "MojoHandleTable";
+
+}  // namespace
+
+HandleTable::HandleTable() {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, kDumpProviderName, nullptr);
+}
+
+HandleTable::~HandleTable() {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, kDumpProviderName, nullptr);
+}
+
+base::Lock& HandleTable::GetLock() {
+  return lock_;
+}
 
 MojoHandle HandleTable::AddDispatcher(scoped_refptr<Dispatcher> dispatcher) {
   // Oops, we're out of handles.
@@ -120,6 +158,38 @@ void HandleTable::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
   handles->clear();
   for (const auto& entry : handles_)
     handles->push_back(entry.first);
+}
+
+// MemoryDumpProvider implementation.
+bool HandleTable::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                               base::trace_event::ProcessMemoryDump* pmd) {
+  // Create entries for all relevant dispatcher types to ensure they are present
+  // in the final dump.
+  std::map<Dispatcher::Type, int> handle_count;
+  handle_count[Dispatcher::Type::MESSAGE_PIPE];
+  handle_count[Dispatcher::Type::DATA_PIPE_PRODUCER];
+  handle_count[Dispatcher::Type::DATA_PIPE_CONSUMER];
+  handle_count[Dispatcher::Type::SHARED_BUFFER];
+  handle_count[Dispatcher::Type::WATCHER];
+  handle_count[Dispatcher::Type::PLATFORM_HANDLE];
+
+  // Count the number of each dispatcher type.
+  {
+    base::AutoLock lock(GetLock());
+    for (const auto& entry : handles_) {
+      ++handle_count[entry.second.dispatcher->GetType()];
+    }
+  }
+
+  base::trace_event::MemoryAllocatorDump* outer_dump =
+      pmd->CreateAllocatorDump("mojo");
+  for (const auto& entry : handle_count) {
+    outer_dump->AddScalar(GetNameForDispatcherType(entry.first),
+                          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                          entry.second);
+  }
+
+  return true;
 }
 
 HandleTable::Entry::Entry() {}

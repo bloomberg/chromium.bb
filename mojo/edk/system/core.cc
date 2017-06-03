@@ -153,7 +153,7 @@ NodeController* Core::GetNodeController() {
 }
 
 scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
-  base::AutoLock lock(handles_lock_);
+  base::AutoLock lock(handles_.GetLock());
   return handles_.GetDispatcher(handle);
 }
 
@@ -214,7 +214,7 @@ void Core::SetMachPortProvider(base::PortProvider* port_provider) {
 }
 
 MojoHandle Core::AddDispatcher(scoped_refptr<Dispatcher> dispatcher) {
-  base::AutoLock lock(handles_lock_);
+  base::AutoLock lock(handles_.GetLock());
   return handles_.AddDispatcher(dispatcher);
 }
 
@@ -223,7 +223,7 @@ bool Core::AddDispatchersFromTransit(
     MojoHandle* handles) {
   bool failed = false;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     if (!handles_.AddDispatchersFromTransit(dispatchers, handles))
       failed = true;
   }
@@ -249,7 +249,7 @@ MojoResult Core::CreatePlatformHandleWrapper(
 MojoResult Core::PassWrappedPlatformHandle(
     MojoHandle wrapper_handle,
     ScopedPlatformHandle* platform_handle) {
-  base::AutoLock lock(handles_lock_);
+  base::AutoLock lock(handles_.GetLock());
   scoped_refptr<Dispatcher> d;
   MojoResult result = handles_.GetAndRemoveDispatcher(wrapper_handle, &d);
   if (result != MOJO_RESULT_OK)
@@ -300,7 +300,7 @@ MojoResult Core::PassSharedMemoryHandle(
   scoped_refptr<Dispatcher> dispatcher;
   MojoResult result = MOJO_RESULT_OK;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     // Get the dispatcher and check it before removing it from the handle table
     // to ensure that the dispatcher is of the correct type. This ensures we
     // don't close and remove the wrong type of dispatcher.
@@ -366,7 +366,7 @@ MojoResult Core::Close(MojoHandle handle) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     MojoResult rv = handles_.GetAndRemoveDispatcher(handle, &dispatcher);
     if (rv != MOJO_RESULT_OK)
       return rv;
@@ -463,7 +463,7 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
 
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     MojoResult rv = handles_.BeginTransit(handles, num_handles, &dispatchers);
     if (rv != MOJO_RESULT_OK) {
       handles_.CancelTransit(dispatchers);
@@ -477,7 +477,7 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
       num_bytes, dispatchers.data(), num_handles, &message);
 
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     if (rv == MOJO_RESULT_OK) {
       handles_.CompleteTransitAndClose(dispatchers);
       *message_handle = reinterpret_cast<MojoMessageHandle>(message.release());
@@ -547,7 +547,7 @@ MojoResult Core::CreateMessagePipe(
     scoped_refptr<Dispatcher> unused;
     unused->Close();
 
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     handles_.GetAndRemoveDispatcher(*message_pipe_handle0, &unused);
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
@@ -657,7 +657,7 @@ MojoResult Core::FuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
 
   bool valid_handles = true;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     MojoResult result0 = handles_.GetAndRemoveDispatcher(handle0, &dispatcher0);
     MojoResult result1 = handles_.GetAndRemoveDispatcher(handle1, &dispatcher1);
     if (result0 != MOJO_RESULT_OK || result1 != MOJO_RESULT_OK ||
@@ -754,7 +754,7 @@ MojoResult Core::CreateDataPipe(
       *data_pipe_consumer_handle == MOJO_HANDLE_INVALID) {
     if (*data_pipe_producer_handle != MOJO_HANDLE_INVALID) {
       scoped_refptr<Dispatcher> unused;
-      base::AutoLock lock(handles_lock_);
+      base::AutoLock lock(handles_.GetLock());
       handles_.GetAndRemoveDispatcher(*data_pipe_producer_handle, &unused);
     }
     producer->Close();
@@ -993,7 +993,7 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
   scoped_refptr<Dispatcher> dispatcher;
   MojoResult result = MOJO_RESULT_OK;
   {
-    base::AutoLock lock(handles_lock_);
+    base::AutoLock lock(handles_.GetLock());
     result = handles_.GetAndRemoveDispatcher(mojo_handle, &dispatcher);
     if (result != MOJO_RESULT_OK)
       return result;
@@ -1024,7 +1024,7 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
 }
 
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
-  base::AutoLock lock(handles_lock_);
+  base::AutoLock lock(handles_.GetLock());
   handles_.GetActiveHandlesForTest(handles);
 }
 
