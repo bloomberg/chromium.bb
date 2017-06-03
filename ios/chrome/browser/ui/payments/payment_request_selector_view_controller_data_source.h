@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
+
 @class CollectionViewItem;
 
 // The possible states the view controller can be in.
@@ -34,11 +36,7 @@ typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {
 - (CollectionViewItem*)headerItem;
 
 // The selectable items to display in the collection.
-- (NSArray<CollectionViewItem*>*)selectableItems;
-
-// The selectable item at |index| in the collection. |index| should be smaller
-// than self.selectableItems.count.
-- (CollectionViewItem*)selectableItemAtIndex:(NSUInteger)index;
+- (NSArray<CollectionViewItem<PaymentsHasAccessoryType>*>*)selectableItems;
 
 // The "Add" button item, if any.
 - (CollectionViewItem*)addButtonItem;

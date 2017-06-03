@@ -11,6 +11,10 @@ source_set("payments") {
     "address_edit_coordinator.mm",
     "address_edit_mediator.h",
     "address_edit_mediator.mm",
+    "billing_address_selection_coordinator.h",
+    "billing_address_selection_coordinator.mm",
+    "billing_address_selection_mediator.h",
+    "billing_address_selection_mediator.mm",
     "country_selection_coordinator.h",
     "country_selection_coordinator.mm",
     "credit_card_edit_coordinator.h",
@@ -135,6 +139,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_edit_coordinator_unittest.mm",
+    "billing_address_selection_coordinator_unittest.mm",
+    "billing_address_selection_mediator_unittest.mm",
     "country_selection_coordinator_unittest.mm",
     "credit_card_edit_coordinator_unittest.mm",
     "payment_items_display_coordinator_unittest.mm",

@@ -4,9 +4,12 @@
 
 #include <vector>
 
-#import "ios/chrome/browser/ui/payments/shipping_address_selection_mediator.h"
+#import "ios/chrome/browser/ui/payments/billing_address_selection_mediator.h"
 
+#include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -22,34 +25,41 @@
 
 namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
-using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 }  // namespace
 
-@interface ShippingAddressSelectionMediator ()
+@interface BillingAddressSelectionMediator ()
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This is a weak
 // pointer and should outlive this class.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
+// The selected billing address, if any.
+@property(nonatomic, assign) autofill::AutofillProfile* selectedBillingProfile;
+
 // The selectable items to display in the collection.
 @property(nonatomic, strong) NSArray<AutofillProfileItem*>* items;
 
 @end
 
-@implementation ShippingAddressSelectionMediator
+@implementation BillingAddressSelectionMediator
 
-@synthesize headerText = _headerText;
 @synthesize state = _state;
 @synthesize selectedItemIndex = _selectedItemIndex;
 @synthesize paymentRequest = _paymentRequest;
+@synthesize selectedBillingProfile = _selectedBillingProfile;
 @synthesize items = _items;
 
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+                selectedBillingProfile:
+                    (autofill::AutofillProfile*)selectedBillingProfile {
   self = [super init];
   if (self) {
+    DCHECK(paymentRequest);
     _paymentRequest = paymentRequest;
+    _selectedBillingProfile = selectedBillingProfile;
     _selectedItemIndex = NSUIntegerMax;
     _items = [self createItems];
   }
@@ -59,14 +69,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
 
 - (CollectionViewItem*)headerItem {
-  if (!self.headerText.length)
-    return nil;
-
-  PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
-  headerItem.text = self.headerText;
-  if (self.state == PaymentRequestSelectorStateError)
-    headerItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
-  return headerItem;
+  return nil;
 }
 
 - (NSArray<CollectionViewItem*>*)selectableItems {
@@ -83,22 +86,24 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 #pragma mark - Helper methods
 
 - (NSArray<AutofillProfileItem*>*)createItems {
-  const std::vector<autofill::AutofillProfile*>& shippingProfiles =
-      _paymentRequest->shipping_profiles();
+  const std::vector<autofill::AutofillProfile*>& billingProfiles =
+      _paymentRequest->billing_profiles();
+
   NSMutableArray<AutofillProfileItem*>* items =
-      [NSMutableArray arrayWithCapacity:shippingProfiles.size()];
-  for (size_t index = 0; index < shippingProfiles.size(); ++index) {
-    autofill::AutofillProfile* shippingAddress = shippingProfiles[index];
-    DCHECK(shippingAddress);
+      [NSMutableArray arrayWithCapacity:billingProfiles.size()];
+  for (size_t index = 0; index < billingProfiles.size(); ++index) {
+    autofill::AutofillProfile* billingProfile = billingProfiles[index];
+    DCHECK(billingProfile);
     AutofillProfileItem* item = [[AutofillProfileItem alloc] init];
-    item.name = GetNameLabelFromAutofillProfile(*shippingAddress);
-    item.address = GetShippingAddressLabelFromAutofillProfile(*shippingAddress);
-    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*shippingAddress);
-    if (_paymentRequest->selected_shipping_profile() == shippingAddress)
+    item.name = GetNameLabelFromAutofillProfile(*billingProfile);
+    item.address = GetBillingAddressLabelFromAutofillProfile(*billingProfile);
+    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*billingProfile);
+    if (self.selectedBillingProfile == billingProfile)
       _selectedItemIndex = index;
 
     [items addObject:item];
   }
+
   return items;
 }
 

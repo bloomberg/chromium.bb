@@ -11,6 +11,7 @@ class PaymentRequest;
 @protocol PaymentRequestEditConsumer;
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 
@@ -21,6 +22,9 @@ class CreditCard;
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, weak) id<PaymentRequestEditConsumer> consumer;
+
+// The billing profile, if any.
+@property(nonatomic, assign) autofill::AutofillProfile* billingProfile;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request
