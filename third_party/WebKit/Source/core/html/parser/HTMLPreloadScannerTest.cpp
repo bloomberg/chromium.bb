@@ -797,7 +797,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
 
 TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
   TestCase test_cases[] = {
-      {"http://example.test", "<link rel=preload href=bla>", "bla",
+      {"http://example.test", "<link rel=preload as=fetch href=bla>", "bla",
        "http://example.test/", Resource::kRaw, 0},
       {"http://example.test", "<link rel=preload href=bla as=script>", "bla",
        "http://example.test/", Resource::kScript, 0},
@@ -838,6 +838,8 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
       {"http://example.test",
        "<link rel=preload href=bla as=image media=\"(max-width: 400px)\">",
        nullptr, "http://example.test/", Resource::kImage, 0},
+      {"http://example.test", "<link rel=preload href=bla>", nullptr,
+       "http://example.test/", Resource::kRaw, 0},
   };
 
   for (const auto& test_case : test_cases)

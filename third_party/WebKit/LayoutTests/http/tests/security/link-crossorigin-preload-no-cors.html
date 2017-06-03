@@ -12,13 +12,14 @@
     var anonymousDynamicError = false;
     var credentialsDynamicError = false;
 </script>
-<link crossorigin="anonymous" rel="preload" href="http://localhost:8000/security/resources/abe.png?1" onerror="anonymousMarkupError = true;">
-<link crossorigin="use-credentials" rel="preload" href="http://localhost:8000/security/resources/abe.png?2" onerror="credentialsMarkupError = true;">
+<link crossorigin="anonymous" rel="preload" as="fetch" href="http://localhost:8000/security/resources/abe.png?1" onerror="anonymousMarkupError = true;">
+<link crossorigin="use-credentials" rel="preload" as="fetch" href="http://localhost:8000/security/resources/abe.png?2" onerror="credentialsMarkupError = true;">
 <script>
     // Test that dynamically inserted <link> elements are handled the same way.
     var link = document.createElement("link");
     link.crossOrigin = "anonymous";
     link.rel = "preload";
+    link.as = "fetch";
     link.addEventListener("error", function() { anonymousDynamicError = true; });
     link.href = "http://localhost:8000/security/resources/abe.png?3";
     document.body.appendChild(link);
@@ -26,6 +27,7 @@
     link = document.createElement("link");
     link.crossOrigin = "use-credentials";
     link.rel = "preload";
+    link.as = "fetch";
     link.addEventListener("error", function() { credentialsDynamicError = true; });
     link.href = "http://localhost:8000/security/resources/abe.png?4";
     document.body.appendChild(link);

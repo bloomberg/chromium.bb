@@ -12,12 +12,13 @@
     var anonymousDynamicLoad = false;
     var credentialsDynamicLoad = false;
 </script>
-<link crossorigin="anonymous" rel="preload" href="http://localhost:8080/security/resources/abe-allow-star.php" onload="anonymousMarkupLoad = true;">
-<link crossorigin="anonymous" rel="preload" href="http://localhost:8080/security/resources/abe-allow-credentials.php" onload="credentialsMarkupLoad = true;">
+<link crossorigin="anonymous" rel="preload" as="fetch" href="http://localhost:8080/security/resources/abe-allow-star.php" onload="anonymousMarkupLoad = true;">
+<link crossorigin="anonymous" rel="preload" as="fetch" href="http://localhost:8080/security/resources/abe-allow-credentials.php" onload="credentialsMarkupLoad = true;">
 <script>
     // Test that dynamically inserted <link> elements are handled the same way.
     var link = document.createElement("link");
     link.rel = "preload";
+    link.as = "fetch";
     link.crossOrigin = "anonymous";
     link.addEventListener("load", function() { anonymousDynamicLoad = true; });
     link.href = "http://localhost:8080/security/resources/abe-allow-star.php?1";
@@ -25,6 +26,7 @@
 
     link = document.createElement("link");
     link.rel = "preload";
+    link.as = "fetch";
     link.crossOrigin = "anonymous";
     link.addEventListener("load", function() { credentialsDynamicLoad = true; });
     link.href = "http://localhost:8080/security/resources/abe-allow-credentials.php?1";

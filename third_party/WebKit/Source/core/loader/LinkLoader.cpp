@@ -226,7 +226,7 @@ WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
     return Resource::kTextTrack;
   } else if (as == "font") {
     return Resource::kFont;
-  } else if (as.IsEmpty()) {
+  } else if (as == "fetch") {
     return Resource::kRaw;
   }
   return WTF::nullopt;
@@ -302,7 +302,6 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
                                  const String& media,
                                  CrossOriginAttributeValue cross_origin,
                                  LinkCaller caller,
-                                 bool& error_occurred,
                                  ViewportDescription* viewport_description,
                                  ReferrerPolicy referrer_policy) {
   if (!document.Loader() || !rel_attribute.IsLinkPreload())
@@ -339,7 +338,6 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
         String("<link rel=preload> must have a valid `as` value")));
-    error_occurred = true;
     return nullptr;
   }
 
@@ -438,7 +436,6 @@ void LinkLoader::LoadLinksFromHeader(
     }
     if (can_load_resources != kDoNotLoadResources) {
       DCHECK(document);
-      bool error_occurred = false;
       ViewportDescription* viewport_description =
           (viewport_description_wrapper && viewport_description_wrapper->set)
               ? &(viewport_description_wrapper->description)
@@ -448,8 +445,8 @@ void LinkLoader::LoadLinksFromHeader(
           GetCrossOriginAttributeValue(header.CrossOrigin());
       PreloadIfNeeded(rel_attribute, url, *document, header.As(),
                       header.MimeType(), header.Media(), cross_origin,
-                      kLinkCalledFromHeader, error_occurred,
-                      viewport_description, kReferrerPolicyDefault);
+                      kLinkCalledFromHeader, viewport_description,
+                      kReferrerPolicyDefault);
       PrefetchIfNeeded(*document, url, rel_attribute, cross_origin,
                        kReferrerPolicyDefault);
     }
@@ -480,12 +477,9 @@ bool LinkLoader::LoadLink(
                      cross_origin, network_hints_interface,
                      kLinkCalledFromMarkup);
 
-  bool error_occurred = false;
   CreateLinkPreloadResourceClient(PreloadIfNeeded(
       rel_attribute, href, document, as, type, media, cross_origin,
-      kLinkCalledFromMarkup, error_occurred, nullptr, referrer_policy));
-  if (error_occurred)
-    link_loading_error_timer_.StartOneShot(0, BLINK_FROM_HERE);
+      kLinkCalledFromMarkup, nullptr, referrer_policy));
 
   if (href.IsEmpty() || !href.IsValid())
     Released();
