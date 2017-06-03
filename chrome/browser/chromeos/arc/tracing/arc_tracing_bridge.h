@@ -15,7 +15,7 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/tracing.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "content/browser/tracing/arc_tracing_agent.h"
+#include "content/public/browser/arc_tracing_agent.h"
 
 namespace arc {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TRACING_ARC_TRACING_AGENT_H_
-#define CONTENT_BROWSER_TRACING_ARC_TRACING_AGENT_H_
+#ifndef CONTENT_PUBLIC_BROWSER_ARC_TRACING_AGENT_H_
+#define CONTENT_PUBLIC_BROWSER_ARC_TRACING_AGENT_H_
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
@@ -57,4 +57,4 @@ class CONTENT_EXPORT ArcTracingAgent : public base::trace_event::TracingAgent {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TRACING_ARC_TRACING_AGENT_H_
+#endif  // CONTENT_PUBLIC_BROWSER_ARC_TRACING_AGENT_H_

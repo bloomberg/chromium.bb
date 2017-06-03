@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tracing/arc_tracing_agent.h"
+#include "content/public/browser/arc_tracing_agent.h"
 
 #include <memory>
 #include <string>
