@@ -90,6 +90,7 @@ source_set("unit_tests") {
     "//media/base:test_support",
     "//media/mojo/clients",
     "//media/mojo/common",
+    "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//media/mojo/interfaces",
     "//media/mojo/services:lib",
     "//services/service_manager/tests:interfaces",

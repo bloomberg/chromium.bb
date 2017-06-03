@@ -62,6 +62,7 @@ source_set("clients") {
 
   deps = [
     "//media/mojo/common",
+    "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//mojo/common",
     "//services/service_manager/public/cpp",
   ]

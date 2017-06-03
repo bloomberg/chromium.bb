@@ -8,11 +8,10 @@ source_set("common") {
     "media_type_converters.h",
     "mojo_decoder_buffer_converter.cc",
     "mojo_decoder_buffer_converter.h",
-    "mojo_shared_buffer_video_frame.cc",
-    "mojo_shared_buffer_video_frame.h",
   ]
 
   deps = [
+    ":mojo_shared_buffer_video_frame",
     "//base",
     "//gpu/ipc/common:struct_traits",
     "//media",
@@ -22,5 +21,21 @@ source_set("common") {
     "//mojo/public/cpp/system",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
+  ]
+}
+
+# This is a separate target so that //media/mojo/interfaces can depend on it
+# without creating a cycle.
+source_set("mojo_shared_buffer_video_frame") {
+  sources = [
+    "mojo_shared_buffer_video_frame.cc",
+    "mojo_shared_buffer_video_frame.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//mojo/public/cpp/system",
+    "//ui/gfx/geometry",
   ]
 }
