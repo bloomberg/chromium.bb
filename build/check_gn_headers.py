@@ -38,13 +38,13 @@ def GetHeadersFromNinja(out_dir, q):
 
   ans, err = set(), None
   try:
-    ans = ParseNinjaDepsOutput(NinjaSource())
+    ans = ParseNinjaDepsOutput(NinjaSource(), out_dir)
   except Exception as e:
     err = str(e)
   q.put((ans, err))
 
 
-def ParseNinjaDepsOutput(ninja_out):
+def ParseNinjaDepsOutput(ninja_out, out_dir):
   """Parse ninja output and get the header files"""
   all_headers = set()
 
@@ -62,6 +62,8 @@ def ParseNinjaDepsOutput(ninja_out):
           # build/ only contains build-specific files like build_config.h
           # and buildflag.h, and system header files, so they should be
           # skipped.
+          if f.startswith(out_dir) or f.startswith('out'):
+            continue
           if not f.startswith('build'):
             all_headers.add(f)
     else:
@@ -128,6 +130,12 @@ def GetDepsPrefixes(q):
   q.put((prefixes, err))
 
 
+def IsBuildClean(out_dir):
+  cmd = ['ninja', '-C', out_dir, '-n']
+  out = subprocess.check_output(cmd)
+  return 'no work to do.' in out
+
+
 def ParseWhiteList(whitelist):
   out = set()
   for line in whitelist.split('\n'):
@@ -150,6 +158,16 @@ def GetNonExistingFiles(lst):
 
 
 def main():
+
+  def DumpJson(data):
+    if args.json:
+      with open(args.json, 'w') as f:
+        json.dump(data, f)
+
+  def PrintError(msg):
+    DumpJson([])
+    parser.error(msg)
+
   parser = argparse.ArgumentParser(description='''
       NOTE: Use ninja to build all targets in OUT_DIR before running
       this script.''')
@@ -158,11 +176,26 @@ def main():
   parser.add_argument('--json',
                       help='JSON output filename for missing headers')
   parser.add_argument('--whitelist', help='file containing whitelist')
+  parser.add_argument('--skip-dirty-check', action='store_true',
+                      help='skip checking whether the build is dirty')
 
   args, _extras = parser.parse_known_args()
 
   if not os.path.isdir(args.out_dir):
     parser.error('OUT_DIR "%s" does not exist.' % args.out_dir)
+
+  if not args.skip_dirty_check and not IsBuildClean(args.out_dir):
+    dirty_msg = 'OUT_DIR looks dirty. You need to build all there.'
+    if args.json:
+      # Assume running on the bots. Silently skip this step.
+      # This is possible because "analyze" step can be wrong due to
+      # underspecified header files. See crbug.com/725877
+      print dirty_msg
+      DumpJson([])
+      return 0
+    else:
+      # Assume running interactively.
+      parser.error(dirty_msg)
 
   d_q = Queue()
   d_p = Process(target=GetHeadersFromNinja, args=(args.out_dir, d_q,))
@@ -190,29 +223,29 @@ def main():
   deps_p.join()
 
   if d_err:
-    parser.error(d_err)
+    PrintError(d_err)
   if gn_err:
-    parser.error(gn_err)
+    PrintError(gn_err)
   if deps_err:
-    parser.error(deps_err)
+    PrintError(deps_err)
   if len(GetNonExistingFiles(d)) > 0:
-    parser.error('''Found non-existing files in ninja deps. You should
-        build all in OUT_DIR.''')
+    print 'Non-existing files in ninja deps:', GetNonExistingFiles(d)
+    PrintError('Found non-existing files in ninja deps. You should ' +
+               'build all in OUT_DIR.')
   if len(d) == 0:
-    parser.error('OUT_DIR looks empty. You should build all there.')
+    PrintError('OUT_DIR looks empty. You should build all there.')
   if any((('/gen/' in i) for i in nonexisting)):
-    parser.error('OUT_DIR looks wrong. You should build all there.')
+    PrintError('OUT_DIR looks wrong. You should build all there.')
 
   if args.whitelist:
     whitelist = ParseWhiteList(open(args.whitelist).read())
     missing -= whitelist
+    nonexisting -= whitelist
 
   missing = sorted(missing)
   nonexisting = sorted(nonexisting)
 
-  if args.json:
-    with open(args.json, 'w') as f:
-      json.dump(missing, f)
+  DumpJson(sorted(missing + nonexisting))
 
   if len(missing) == 0 and len(nonexisting) == 0:
     return 0
