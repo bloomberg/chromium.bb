@@ -91,7 +91,7 @@ storage::BlobStorageContext* GetBlobStorageContext(
 
 // Attaches blob data handles to the ResourceRequestBodyImpl body passed in.
 // This is used for POST and PUT requests.
-void AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+bool AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
                                       ResourceContext* resource_context);
 
 }  // namespace content
