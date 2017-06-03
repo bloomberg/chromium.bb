@@ -7455,6 +7455,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chrome.UmaPageloadCounter" enum="BooleanHit">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records when a page load happens, based on the same logic as the PageLoad
+    user action.
+  </summary>
+</histogram>
+
 <histogram name="ChromeGeneratedCustomTab.IntentToFirstCommitNavigationTime"
     units="ms">
   <obsolete>
@@ -79954,6 +79962,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.MemoryHeapSampleMaximumCommitted" units="KB">
+  <owner>jochen@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>
+    The maximum size of committed memory used by V8 after each GC in KB.
+  </summary>
+</histogram>
+
 <histogram name="V8.MemoryHeapSampleTotalCommitted" units="KB">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
@@ -87234,6 +87250,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </suffix>
   <suffix name="NTPSnippetsSuggestions"/>
   <suffix name="NTPSnippetsThumbnails"/>
+  <suffix name="GAIA"/>
+  <suffix name="GCMDriver"/>
+  <suffix name="ImageFetcherUntagged"/>
+  <suffix name="SafeBrowsing"/>
+  <suffix name="UpdateClient"/>
+  <suffix name="WebResourceService"/>
   <affected-histogram name="DataUse.MessageSize"/>
 </histogram_suffixes>
 
@@ -91215,8 +91237,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="OtherActivityProcesses" separator=".">
   <suffix name="gpu-process"/>
+  <suffix name="ppapi"/>
   <suffix name="renderer"/>
   <suffix name="setup"/>
+  <suffix name="utility"/>
   <affected-histogram name="UMA.Histograms.Activity"/>
 </histogram_suffixes>
 
@@ -92336,6 +92360,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="PersistentMemoryErrors" separator="."
     ordering="prefix,2">
   <suffix name="BrowserMetrics" label="For browser process metrics."/>
+  <suffix name="CrashpadMetrics" label="For metrics from Crashpad."/>
   <suffix name="FieldTrialAllocator" label="For field-trial allocator."/>
   <suffix name="GpuMetrics" label="For GPU process metrics."/>
   <suffix name="PpapiBrokerMetrics"
