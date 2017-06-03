@@ -1308,6 +1308,7 @@ def GeneralTemplates(site_config, ge_build_config):
       hw_tests_override=[],
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
+      push_overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PRIVATE,
       trybot_list=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'

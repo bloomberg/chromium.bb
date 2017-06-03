@@ -848,6 +848,7 @@
             "master": true,
             "overlays": "both",
             "prebuilts": "private",
+            "push_overlays": "both",
             "slave_configs": [],
             "useflags": [
                 "chrome_internal"
