@@ -34,5 +34,5 @@ Breakpoint sidebar pane
 disable-breakpoints.html:8    var x = Math.sqrt(10);
 Breakpoints removed.
 Breakpoint sidebar pane 
-No Breakpoints
+No breakpoints
 

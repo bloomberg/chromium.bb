@@ -593,14 +593,14 @@ console-format.html:8 [-0]
 globals[27]
 -0
 console-format.html:7 {}
-    No Properties
+    No properties
 console-format.html:8 [{…}]
     0: {}
     length: 1
     __proto__: Array(0)
 globals[28]
 {}
-    No Properties
+    No properties
 console-format.html:7 ƒ Object() { [native code] }
 console-format.html:8 [ƒ]
     0: ƒ Object()
