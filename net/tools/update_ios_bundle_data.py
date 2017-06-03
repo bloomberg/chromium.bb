@@ -51,6 +51,7 @@ net_unittest_bundle_data_globs = [
     "data/url_request_unittest/*",
     "data/verify_certificate_chain_unittest/**/*.pem",
     "data/verify_certificate_chain_unittest/**/*.test",
+    "data/verify_certificate_chain_unittest/pkits_errors/*.txt",
     "data/verify_name_match_unittest/names/*.pem",
     "data/verify_signed_data_unittest/*.pem",
     "third_party/nist-pkits/certs/*.crt",
