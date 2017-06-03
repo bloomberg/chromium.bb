@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1042,6 +1043,21 @@ TEST_P(AesDecryptorTest, NoKeysChangeForSameKey) {
   // Create a new session. Add key, should indicate key added for this session.
   std::string session_id2 = CreateSession(key_id_);
   UpdateSessionAndExpect(session_id2, kKeyAsJWK, RESOLVED, true);
+}
+
+TEST_P(AesDecryptorTest, RandomSessionIDs) {
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  const size_t kNumIterations = 25;
+  std::set<std::string> seen_sessions;
+
+  for (size_t i = 0; i < kNumIterations; ++i) {
+    std::string session_id = CreateSession(key_id_);
+    EXPECT_TRUE(seen_sessions.find(session_id) == seen_sessions.end());
+    EXPECT_EQ(16u, session_id.length());
+    seen_sessions.insert(session_id);
+  }
+
+  EXPECT_EQ(kNumIterations, seen_sessions.size());
 }
 
 INSTANTIATE_TEST_CASE_P(AesDecryptor,
