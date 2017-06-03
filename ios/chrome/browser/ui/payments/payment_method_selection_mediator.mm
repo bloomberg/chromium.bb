@@ -67,11 +67,6 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   return self.items;
 }
 
-- (CollectionViewItem*)selectableItemAtIndex:(NSUInteger)index {
-  DCHECK(index < self.items.count);
-  return [self.items objectAtIndex:index];
-}
-
 - (CollectionViewItem*)addButtonItem {
   PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
   addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD);
