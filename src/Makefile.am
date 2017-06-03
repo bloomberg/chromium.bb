@@ -115,14 +115,13 @@ fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 	' - > $@.tmp && \
 	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
-fcobjshash.h: fcobjshash.gperf
-	$(AM_V_GEN) $(GPERF) -m 100 $< > $@.tmp && \
+fcobjshash.h: Makefile fcobjshash.gperf
+	$(AM_V_GEN) $(GPERF) -m 100 fcobjshash.gperf > $@.tmp && \
 	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 EXTRA_DIST += \
 	fcobjshash.gperf.h \
-	fcobjshash.gperf \
-	fcobjshash.h
+	fcobjshash.gperf
 
 libfontconfig_la_SOURCES = \
 	fcarch.h \
