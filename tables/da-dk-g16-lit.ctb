@@ -183,7 +183,7 @@ noback correct _$sp["I"]$sp "i"
 noback correct `["I"]$sp "i"
 noback correct _$sp["I"]~ "i"
 
-noback correct $sSp[%UpperLower]$u %UpperLower
+noback correct $sSpu[%UpperLower]$u %UpperLower
 noback correct `[%UpperLower]$u %UpperLower
 
 # Punctuations, math and numbers
