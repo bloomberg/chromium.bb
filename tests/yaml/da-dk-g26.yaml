@@ -413,10 +413,7 @@ tests:
   - ["!Fra", "⠠⠖⠨⠖"]
   - ["!fra", "⠖⠋⠗⠁"]
   - ["'Af", "⠈⠨⠴"]
-  - ["'af", "⠈⠴"]
-
-# capsnocont
-  - ["UNDER et", "⠸⠟ ⠬"]
+  - ["'af", "⠈⠁⠋"]
 
 # No single cell contractions before or after dashes
 
@@ -798,10 +795,7 @@ tests:
   - ["⠠⠖⠨⠖", "!Fra"]
   - ["⠖⠋⠗⠁", "!fra"]
   - ["⠈⠨⠴", "'Af"]
-  - ["⠈⠴", "°"]
-
-# capsnocont
-  - ["⠸⠟ ⠬", "UNDER et"]
+  - ["⠈⠁⠋", "\'af"]
 
 # No single cell contractions before or after dashes
 
