@@ -21,25 +21,29 @@ namespace offline_pages {
 class PrefetchServiceImpl : public PrefetchService {
  public:
   PrefetchServiceImpl(
+      std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
+      std::unique_ptr<PrefetchDispatcher> dispatcher,
       std::unique_ptr<PrefetchGCMHandler> gcm_handler,
-      std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector);
+      std::unique_ptr<PrefetchStore> store);
   ~PrefetchServiceImpl() override;
 
   // PrefetchService implementation:
+  OfflineMetricsCollector* GetOfflineMetricsCollector() override;
+  PrefetchDispatcher* GetPrefetchDispatcher() override;
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
+  PrefetchStore* GetPrefetchStore() override;
   void ObserveContentSuggestionsService(
       ntp_snippets::ContentSuggestionsService* service) override;
-  PrefetchDispatcher* GetDispatcher() override;
-  OfflineMetricsCollector* GetOfflineMetricsCollector() override;
-  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
 
   // KeyedService implementation:
   void Shutdown() override;
 
  private:
-  std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
-  std::unique_ptr<PrefetchGCMHandler> gcm_handler_;
-  std::unique_ptr<PrefetchDispatcher> dispatcher_;
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
+  std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
+  std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
+  std::unique_ptr<PrefetchStore> prefetch_store_;
+  std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);
 };

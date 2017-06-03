@@ -9,6 +9,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("prefetch") {
   sources = [
+    "add_unique_urls_task.cc",
+    "add_unique_urls_task.h",
     "generate_page_bundle_request.cc",
     "generate_page_bundle_request.h",
     "get_operation_request.cc",
@@ -20,6 +22,8 @@ static_library("prefetch") {
     "prefetch_gcm_app_handler.cc",
     "prefetch_gcm_app_handler.h",
     "prefetch_gcm_handler.h",
+    "prefetch_in_memory_store.cc",
+    "prefetch_in_memory_store.h",
     "prefetch_item.cc",
     "prefetch_item.h",
     "prefetch_proto_utils.cc",
@@ -29,6 +33,7 @@ static_library("prefetch") {
     "prefetch_service.h",
     "prefetch_service_impl.cc",
     "prefetch_service_impl.h",
+    "prefetch_store.h",
     "prefetch_types.cc",
     "prefetch_types.h",
     "suggested_articles_observer.cc",

@@ -9,28 +9,18 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
-
-class GURL;
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 // Serves as the entry point for external signals into the prefetching system.
 // It listens to these events, converts them to the appropriate internal tasks
 // and manage their execution and inter-dependencies.
 class PrefetchDispatcher {
  public:
-  struct PrefetchURL {
-    // Used to differentiate URLs from different sources.  |name_space| should
-    // be unique per source. |id| can be anything useful to identify the page,
-    // but will not be used for deduplication.
-    ClientId client_id;
-
-    // This URL will be prefetched by the system.
-    GURL url;
-  };
-
   // A |ScopedBackgroundTask| is created when we are running in a background
   // task.  Destroying this object should notify the system that we are done
   // processing the background task.
@@ -46,8 +36,13 @@ class PrefetchDispatcher {
 
   virtual ~PrefetchDispatcher() = default;
 
-  // Called when a consumer has candidate URLs for the system to prefetch.
-  // Duplicates are accepted by the PrefetchDispatcher but ignored.
+  // Initializes the dispatcher with its respective service instance. This must
+  // be done before any other methods are called.
+  virtual void SetService(PrefetchService* service) = 0;
+
+  // Called when a client has candidate URLs for the system to prefetch, along
+  // with the client's unique namespace. URLs that are currently in the system
+  // for this client are acceptable but ignored.
   virtual void AddCandidatePrefetchURLs(
       const std::vector<PrefetchURL>& prefetch_urls) = 0;
 

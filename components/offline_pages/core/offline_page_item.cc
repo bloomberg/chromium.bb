@@ -6,22 +6,6 @@
 
 namespace offline_pages {
 
-ClientId::ClientId() : name_space(""), id("") {}
-
-ClientId::ClientId(std::string name_space, std::string id)
-    : name_space(name_space), id(id) {}
-
-bool ClientId::operator==(const ClientId& client_id) const {
-  return name_space == client_id.name_space && id == client_id.id;
-}
-
-bool ClientId::operator<(const ClientId& client_id) const {
-  if (name_space == client_id.name_space)
-    return (id < client_id.id);
-
-  return name_space < client_id.name_space;
-}
-
 OfflinePageItem::OfflinePageItem()
     : file_size(0), access_count(0), flags(NO_FLAG) {}
 
