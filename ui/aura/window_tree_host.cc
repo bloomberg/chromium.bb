@@ -199,7 +199,9 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
-  ui::EventDispatchDetails dispatch_details = SendEventToSink(event);
+  // We should bypass event rewriters here as they've been tried before.
+  ui::EventDispatchDetails dispatch_details =
+      event_sink()->OnEventFromSource(event);
   if (!dispatch_details.dispatcher_destroyed)
     dispatcher_->set_skip_ime(false);
   return dispatch_details;
