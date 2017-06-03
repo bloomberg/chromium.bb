@@ -204,13 +204,10 @@ CreditCardEditorViewController::CreateHeaderView() {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   view->SetLayoutManager(layout);
 
-  // "Cards accepted" label is "disabled" grey.
-  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL));
-  label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
-  label->SetEnabled(false);
-  view->AddChildView(label.release());
+  // "Cards accepted" label is "hint" grey.
+  view->AddChildView(CreateHintLabel(l10n_util::GetStringUTF16(
+                                         IDS_PAYMENTS_ACCEPTED_CARDS_LABEL))
+                         .release());
 
   // 8dp padding is required between icons.
   constexpr int kPaddingBetweenCardIcons = 8;

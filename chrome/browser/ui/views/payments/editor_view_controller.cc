@@ -325,20 +325,16 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   // Validate all fields and disable the primary (Done) button if necessary.
   primary_button()->SetEnabled(ValidateInputFields());
 
-  // Adds the "* indicates a required field" label in "disabled" grey text.
-  std::unique_ptr<views::Label> required_field = base::MakeUnique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE));
-  required_field->SetDisabledColor(
-      required_field->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelDisabledColor));
-  required_field->SetEnabled(false);
-
   views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(2);
   required_field_columns->AddColumn(views::GridLayout::LEADING,
                                     views::GridLayout::CENTER, 1,
                                     views::GridLayout::USE_PREF, 0, 0);
   editor_layout->StartRow(0, 2);
-  editor_layout->AddView(required_field.release());
+  // Adds the "* indicates a required field" label in "hint" grey text.
+  editor_layout->AddView(
+      CreateHintLabel(
+          l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE))
+          .release());
 
   editor_view->SetLayoutManager(editor_layout.release());
 

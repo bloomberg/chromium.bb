@@ -57,7 +57,6 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetFontList(font_list);
     label->SetEnabledColor(kTextColor);
-    label->SetDisabledColor(kTextColor);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetSubpixelRenderingEnabled(false);
     AddChildView(label);

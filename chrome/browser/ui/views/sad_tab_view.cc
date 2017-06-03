@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,10 +37,10 @@ constexpr int kBulletWidth = 20;
 constexpr int kBulletPadding = 13;
 
 views::Label* CreateFormattedLabel(const base::string16& message) {
-  views::Label* label = new views::Label(message);
+  views::Label* label =
+      new views::Label(message, views::style::CONTEXT_LABEL, STYLE_SECONDARY);
 
   label->SetMultiLine(true);
-  label->SetEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetLineHeight(views::kPanelSubVerticalSpacing);
 

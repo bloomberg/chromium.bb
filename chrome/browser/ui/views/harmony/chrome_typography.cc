@@ -7,20 +7,20 @@
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 
-const gfx::FontList& LegacyTypographyProvider::GetFont(int text_context,
-                                                       int text_style) const {
+const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
+                                                       int style) const {
   constexpr int kHeadlineDelta = 8;
   constexpr int kDialogMessageDelta = 1;
 
   int size_delta;
   gfx::Font::Weight font_weight;
-  GetDefaultFont(text_context, text_style, &size_delta, &font_weight);
+  GetDefaultFont(context, style, &size_delta, &font_weight);
 
 #if defined(USE_ASH)
-  ash::ApplyAshFontStyles(text_context, text_style, &size_delta, &font_weight);
+  ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
 
-  switch (text_context) {
+  switch (context) {
     case CONTEXT_HEADLINE:
       size_delta = kHeadlineDelta;
       break;
@@ -36,7 +36,7 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int text_context,
       break;
   }
 
-  switch (text_style) {
+  switch (style) {
     case STYLE_EMPHASIZED:
       font_weight = gfx::Font::Weight::BOLD;
       break;
@@ -44,4 +44,14 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int text_context,
   constexpr gfx::Font::FontStyle kFontStyle = gfx::Font::NORMAL;
   return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
       size_delta, kFontStyle, font_weight);
+}
+
+SkColor LegacyTypographyProvider::GetColor(int context,
+                                           int style,
+                                           const ui::NativeTheme& theme) const {
+  // Use "disabled grey" for HINT and SECONDARY when Harmony is disabled.
+  if (style == STYLE_HINT || style == STYLE_SECONDARY)
+    style = views::style::STYLE_DISABLED;
+
+  return DefaultTypographyProvider::GetColor(context, style, theme);
 }

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/style/typography.h"
 
 using gfx::Font;
@@ -47,8 +48,14 @@ const gfx::FontList& DefaultTypographyProvider::GetFont(int context,
       size_delta, Font::NORMAL, font_weight);
 }
 
-SkColor DefaultTypographyProvider::GetColor(int context, int style) const {
-  return SK_ColorBLACK;
+SkColor DefaultTypographyProvider::GetColor(
+    int context,
+    int style,
+    const ui::NativeTheme& theme) const {
+  return theme.GetSystemColor(
+      (style == style::STYLE_DISABLED)
+          ? ui::NativeTheme::kColorId_LabelDisabledColor
+          : ui::NativeTheme::kColorId_LabelEnabledColor);
 }
 
 int DefaultTypographyProvider::GetLineHeight(int context, int style) const {

@@ -331,6 +331,15 @@ std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text) {
   return label;
 }
 
+std::unique_ptr<views::Label> CreateHintLabel(
+    const base::string16& text,
+    gfx::HorizontalAlignment alignment) {
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+      text, views::style::CONTEXT_LABEL, STYLE_HINT);
+  label->SetHorizontalAlignment(alignment);
+  return label;
+}
+
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
     const base::string16& formatted_amount,

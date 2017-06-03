@@ -191,7 +191,6 @@ class IdleAppNameNotificationDelegateView
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetFontList(font);
     label->SetEnabledColor(text_color);
-    label->SetDisabledColor(text_color);
     label->SetAutoColorReadabilityEnabled(false);
     AddChildView(label);
   }

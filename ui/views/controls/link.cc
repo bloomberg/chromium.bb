@@ -170,7 +170,7 @@ void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void Link::OnEnabledChanged() {
   RecalculateFont();
-  View::OnEnabledChanged();
+  View::OnEnabledChanged();  // Jump over Label.
 }
 
 void Link::OnFocus() {
@@ -199,15 +199,13 @@ void Link::SetText(const base::string16& text) {
 
 void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   Label::OnNativeThemeChanged(theme);
-  Label::SetEnabledColor(GetEnabledColor());
-  SetDisabledColor(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled));
+  Label::SetEnabledColor(GetColor());
 }
 
 void Link::SetEnabledColor(SkColor color) {
   requested_enabled_color_set_ = true;
   requested_enabled_color_ = color;
-  Label::SetEnabledColor(GetEnabledColor());
+  Label::SetEnabledColor(GetColor());
 }
 
 bool Link::IsSelectionSupported() const {
@@ -237,7 +235,7 @@ void Link::Init() {
 void Link::SetPressed(bool pressed) {
   if (pressed_ != pressed) {
     pressed_ = pressed;
-    Label::SetEnabledColor(GetEnabledColor());
+    Label::SetEnabledColor(GetColor());
     RecalculateFont();
     SchedulePaint();
   }
@@ -269,17 +267,18 @@ void Link::ConfigureFocus() {
   }
 }
 
-SkColor Link::GetEnabledColor() {
+SkColor Link::GetColor() {
+  const ui::NativeTheme* theme = GetNativeTheme();
+  DCHECK(theme);
+  if (!enabled())
+    return theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled);
+
   if (requested_enabled_color_set_)
     return requested_enabled_color_;
 
-  if (GetNativeTheme()) {
-    return GetNativeTheme()->GetSystemColor(
-        pressed_ ? ui::NativeTheme::kColorId_LinkPressed
-                 : ui::NativeTheme::kColorId_LinkEnabled);
-  }
-
-  return gfx::kPlaceholderColor;
+  return GetNativeTheme()->GetSystemColor(
+      pressed_ ? ui::NativeTheme::kColorId_LinkPressed
+               : ui::NativeTheme::kColorId_LinkEnabled);
 }
 
 }  // namespace views
