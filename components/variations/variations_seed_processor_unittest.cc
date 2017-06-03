@@ -863,6 +863,60 @@ TEST_F(VariationsSeedProcessorTest, NoDefaultExperiment) {
             base::FieldTrialList::FindFullName("Study1"));
 }
 
+TEST_F(VariationsSeedProcessorTest, ExistingFieldTrial_ExpiredByConfig) {
+  static struct base::Feature kFeature {
+    "FeatureName", base::FEATURE_ENABLED_BY_DEFAULT
+  };
+  base::FieldTrialList field_trial_list(nullptr);
+
+  // In this case, an existing forced trial exists with a different default
+  // group than the study config, which is expired. This tests that we don't
+  // crash in such a case.
+  auto* trial = base::FieldTrialList::FactoryGetFieldTrial(
+      "Study1", 100, "ExistingDefault", base::FieldTrialList::kNoExpirationYear,
+      1, 1, base::FieldTrial::SESSION_RANDOMIZED, nullptr);
+  trial->AppendGroup("A", 100);
+  trial->SetForced();
+
+  Study study;
+  study.set_name("Study1");
+  const base::Time year_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(365);
+  study.set_expiry_date(TimeToProtoTime(year_ago));
+  auto* exp1 = AddExperiment("A", 1, &study);
+  exp1->mutable_feature_association()->add_enable_feature(kFeature.name);
+  AddExperiment("Default", 1, &study);
+  study.set_default_experiment_name("Default");
+
+  EXPECT_TRUE(CreateTrialFromStudy(study));
+
+  // The expected effect is that processing the server config will expire
+  // the existing trial.
+  EXPECT_EQ("ExistingDefault", trial->group_name());
+}
+
+TEST_F(VariationsSeedProcessorTest, ExpiredStudy_NoDefaultGroup) {
+  static struct base::Feature kFeature {
+    "FeatureName", base::FEATURE_ENABLED_BY_DEFAULT
+  };
+  base::FieldTrialList field_trial_list(nullptr);
+
+  // Although it's not expected for the server to provide a study with an expiry
+  // date set, but not default experiment, this tests that we don't crash if
+  // that happens.
+  Study study;
+  study.set_name("Study1");
+  const base::Time year_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(365);
+  study.set_expiry_date(TimeToProtoTime(year_ago));
+  auto* exp1 = AddExperiment("A", 1, &study);
+  exp1->mutable_feature_association()->add_enable_feature(kFeature.name);
+
+  EXPECT_TRUE(CreateTrialFromStudy(study));
+  EXPECT_EQ("VariationsDefaultExperiment",
+            base::FieldTrialList::FindFullName("Study1"));
+}
+
 TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   const std::string kTrial1Name = "A";
   const std::string kTrial2Name = "B";

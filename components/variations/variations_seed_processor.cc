@@ -101,9 +101,11 @@ void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
                               base::FeatureList* feature_list) {
   const std::string& group_name = trial->GetGroupNameWithoutActivation();
   int experiment_index = processed_study.GetExperimentIndexByName(group_name);
-  // The field trial was defined from |study|, so the active experiment's name
-  // must be in the |study|.
-  DCHECK_NE(-1, experiment_index);
+  // If the chosen experiment was not found in the study, simply return.
+  // Although not normally expected, but could happen in exception cases, see
+  // tests: ExpiredStudy_NoDefaultGroup, ExistingFieldTrial_ExpiredByConfig
+  if (experiment_index == -1)
+    return;
 
   const Study& study = *processed_study.study();
   const Study_Experiment& experiment = study.experiment(experiment_index);
@@ -325,13 +327,13 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
 
     // UI Strings can only be overridden from ACTIVATION_AUTO experiments.
     int experiment_index = processed_study.GetExperimentIndexByName(group_name);
-
-    // The field trial was defined from |study|, so the active experiment's name
-    // must be in the |study|.
-    DCHECK_NE(-1, experiment_index);
-
-    ApplyUIStringOverrides(study.experiment(experiment_index),
-                           override_callback);
+    // If the chosen experiment was not found in the study, simply return.
+    // Although not normally expected, but could happen in exception cases, see
+    // tests: ExpiredStudy_NoDefaultGroup, ExistingFieldTrial_ExpiredByConfig
+    if (experiment_index != -1) {
+      ApplyUIStringOverrides(study.experiment(experiment_index),
+                             override_callback);
+    }
   }
 }
 
