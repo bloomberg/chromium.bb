@@ -31,6 +31,43 @@
 
 namespace media {
 
+namespace {
+
+// Vastly simplified ACM random class, based on media/base/test_random.h.
+// base/rand_util.h doesn't work in the sandbox. This class generates
+// predictable sequences of pseudorandom numbers. These are only used for
+// persistent session IDs, so unpredictable sequences are not necessary.
+uint32_t Rand(uint32_t seed) {
+  static const uint64_t A = 16807;        // bits 14, 8, 7, 5, 2, 1, 0
+  static const uint64_t M = 2147483647L;  // 2^32-1
+  return static_cast<uint32_t>((seed * A) % M);
+}
+
+// Create a random session ID. Returned value is a printable string to make
+// logging the session ID easier.
+std::string GenerateSessionId() {
+  // Create a random value. There is a slight chance that the same ID is
+  // generated in different processes, but session IDs are only ever saved
+  // by External Clear Key, which is test only.
+  static uint32_t seed = 0;
+  if (!seed) {
+    // If this is the first call, use the current time as the starting value.
+    seed = static_cast<uint32_t>(base::Time::Now().ToInternalValue());
+  }
+  seed = Rand(seed);
+
+  // Include an incrementing value to ensure that the session ID is unique
+  // in this process.
+  static uint32_t next_session_id_suffix = 0;
+  next_session_id_suffix++;
+
+  return base::HexEncode(&seed, sizeof(seed)) +
+         base::HexEncode(&next_session_id_suffix,
+                         sizeof(next_session_id_suffix));
+}
+
+}  // namespace
+
 // Keeps track of the session IDs and DecryptionKeys. The keys are ordered by
 // insertion time (last insertion is first). It takes ownership of the
 // DecryptionKeys.
@@ -110,8 +147,6 @@ void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
   DCHECK(position->second);
   key_list_.erase(position);
 }
-
-uint32_t AesDecryptor::next_session_id_ = 1;
 
 enum ClearBytesBufferSel {
   kSrcContainsClearBytes,
@@ -264,7 +299,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
-  std::string session_id(base::UintToString(next_session_id_++));
+  std::string session_id = GenerateSessionId();
   open_sessions_.insert(session_id);
 
   // For now, the AesDecryptor does not care about |session_type|.

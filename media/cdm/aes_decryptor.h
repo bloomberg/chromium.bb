@@ -155,10 +155,6 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   // Keeps track of current open sessions.
   std::set<std::string> open_sessions_;
 
-  // Make session ID unique per renderer by making it static. Session
-  // IDs seen by the app will be "1", "2", etc.
-  static uint32_t next_session_id_;
-
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
 
