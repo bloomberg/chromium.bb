@@ -6,6 +6,10 @@
 
 namespace blink {
 
+DOMMatrix* DOMMatrix::Create() {
+  return new DOMMatrix(TransformationMatrix());
+}
+
 DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
                              ExceptionState& exception_state) {
   return new DOMMatrix(TransformationMatrix());
@@ -139,6 +143,10 @@ DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
     DCHECK(exception_state.HadException());
     return nullptr;
   }
+  return multiplySelf(other_matrix);
+}
+
+DOMMatrix* DOMMatrix::multiplySelf(DOMMatrix* other_matrix) {
   if (!other_matrix->is2D())
     is2d_ = false;
 

@@ -65,6 +65,7 @@ CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method entries
 CONSOLE MESSAGE: line 147:     method forEach
 CONSOLE MESSAGE: line 147:     method keys
+CONSOLE MESSAGE: line 147:     method toMatrix
 CONSOLE MESSAGE: line 147:     method values
 CONSOLE MESSAGE: line 147: interface CSSTranslation : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter x

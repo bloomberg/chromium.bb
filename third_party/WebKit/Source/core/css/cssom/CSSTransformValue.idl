@@ -11,8 +11,8 @@
     // https://github.com/w3c/css-houdini-drafts/issues/358
     readonly attribute unsigned long length;
     [ImplementedAs=componentAtIndex] getter CSSTransformComponent (unsigned long index);
-
     iterable<CSSTransformComponent>;
 
     readonly attribute boolean is2D;
+    [RuntimeEnabled=GeometryInterfaces] DOMMatrix toMatrix();
 };
