@@ -35,7 +35,6 @@ static_assert(kDefaultScreenCastWidth <= kMaxScreenCastDimension,
 static_assert(kDefaultScreenCastHeight <= kMaxScreenCastDimension,
               "Invalid kDefaultScreenCastHeight");
 
-const double kMinScreenCastFrameRate = 1.0 / 60.0;
 const double kMaxScreenCastFrameRate = 120.0;
 const double kDefaultScreenCastFrameRate =
     MediaStreamVideoSource::kDefaultFrameRate;
@@ -384,7 +383,7 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
   VideoContentCaptureCandidates candidates;
   candidates.set_resolution_set(ScreenCastResolutionCapabilities());
   candidates.set_frame_rate_set(
-      DoubleRangeSet(kMinScreenCastFrameRate, kMaxScreenCastFrameRate));
+      DoubleRangeSet(0.0, kMaxScreenCastFrameRate));
   // candidates.device_id_set and candidates.noise_reduction_set are
   // automatically initialized with the universal set.
 
