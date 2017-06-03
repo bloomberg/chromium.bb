@@ -158,12 +158,13 @@ void CompileFromResponseCallback(
   if (args.Length() < 1 || !args[0]->IsObject() ||
       !V8Response::hasInstance(args[0], args.GetIsolate())) {
     V8SetReturnValue(
-        args, ScriptPromise::Reject(
-                  script_state, V8ThrowException::CreateTypeError(
-                                    script_state->GetIsolate(),
-                                    "Promise argument must be called with a "
-                                    "Promise<Response> object"))
-                  .V8Value());
+        args,
+        ScriptPromise::Reject(
+            script_state, V8ThrowException::CreateTypeError(
+                              script_state->GetIsolate(),
+                              "An argument must be provided, which must be a"
+                              "Response or Promise<Response> object"))
+            .V8Value());
     return;
   }
 
@@ -205,14 +206,7 @@ void CompileFromResponseCallback(
 }
 
 // See https://crbug.com/708238 for tracking avoiding the hand-generated code.
-bool WasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() < 1 || !args[0]->IsObject())
-    return false;
-
-  if (!args[0]->IsPromise() &&
-      !V8Response::hasInstance(args[0], args.GetIsolate()))
-    return false;
-
+void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Isolate* isolate = args.GetIsolate();
   ScriptState* script_state = ScriptState::ForReceiverObject(args);
 
@@ -229,14 +223,13 @@ bool WasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
                              .Then(compile_callback)
                              .V8Value());
 
-  return true;
 }
 
 }  // namespace
 
 void WasmResponseExtensions::Initialize(v8::Isolate* isolate) {
   if (RuntimeEnabledFeatures::webAssemblyStreamingEnabled()) {
-    isolate->SetWasmCompileCallback(WasmCompileOverload);
+    isolate->SetWasmCompileStreamingCallback(WasmCompileStreamingImpl);
   }
 }
 
