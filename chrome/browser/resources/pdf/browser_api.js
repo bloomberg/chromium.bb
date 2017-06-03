@@ -136,7 +136,7 @@ class BrowserApi {
 
   /**
    * Adds an event listener to be notified when the browser zoom changes.
-   * @param {function} listener The listener to be called with the new zoom
+   * @param {!Function} listener The listener to be called with the new zoom
    *     factor.
    */
   addZoomEventListener(listener) {
@@ -144,7 +144,9 @@ class BrowserApi {
           this.zoomBehavior_ == BrowserApi.ZoomBehavior.PROPAGATE_PARENT))
       return;
 
-    chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
+    chrome.tabs.onZoomChange.addListener(function(info) {
+      var zoomChangeInfo =
+          /** @type {{tabId: number, newZoomFactor: number}} */ (info);
       if (zoomChangeInfo.tabId != this.streamInfo_.tabId)
         return;
       listener(zoomChangeInfo.newZoomFactor);

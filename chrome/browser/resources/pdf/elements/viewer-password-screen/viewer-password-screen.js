@@ -25,18 +25,20 @@ Polymer({
   },
 
   deny: function() {
-    this.$.password.disabled = false;
+    var password = /** @type {!PaperInputElement} */ (this.$.password);
+    password.disabled = false;
     this.$.submit.disabled = false;
     this.invalid = true;
-    this.$.password.focus();
-    this.$.password.inputElement.select();
+    password.focus();
+    password.inputElement.select();
   },
 
   submit: function() {
-    if (this.$.password.value.length == 0)
+    var password = /** @type {!PaperInputElement} */ (this.$.password);
+    if (password.value.length == 0)
       return;
-    this.$.password.disabled = true;
+    password.disabled = true;
     this.$.submit.disabled = true;
-    this.fire('password-submitted', {password: this.$.password.value});
+    this.fire('password-submitted', {password: password.value});
   },
 });
