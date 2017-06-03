@@ -66,7 +66,7 @@ Polymer({
     showRelaunchAndPowerwash_: {
       type: Boolean,
       computed: 'computeShowRelaunchAndPowerwash_(' +
-          'currentUpdateStatusEvent_, targetChannel_)',
+          'currentUpdateStatusEvent_, targetChannel_, currentChannel_)',
     },
 
     /** @private */
