@@ -767,6 +767,7 @@ interface CSSTransformValue : CSSStyleValue
     method entries
     method forEach
     method keys
+    method toMatrix
     method values
 interface CSSTranslation : CSSTransformComponent
     attribute @@toStringTag

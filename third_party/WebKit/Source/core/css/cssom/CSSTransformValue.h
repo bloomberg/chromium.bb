@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class DOMMatrix;
+
 class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSTransformValue);
   DEFINE_WRAPPERTYPEINFO();
@@ -28,6 +30,8 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   static CSSTransformValue* FromCSSValue(const CSSValue&);
 
   bool is2D() const;
+
+  DOMMatrix* toMatrix() const;
 
   const CSSValue* ToCSSValue() const override;
 
