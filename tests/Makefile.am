@@ -140,6 +140,7 @@ yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g26.yaml	\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 		yaml/da-dk-g26-lit.yaml	\
+	yaml/da-dk-g26l.yaml	\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
 	yaml/da-dk-g28l.yaml			\
 	yaml/da-dk-g28.yaml			\
