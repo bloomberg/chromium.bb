@@ -8,6 +8,6 @@ Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 unformatted3.js:formatted:4    var c = 3;
 Breakpoint sidebar pane while paused in raw
-No Breakpoints
+No breakpoints
 Script execution resumed.
 
