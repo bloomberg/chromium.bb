@@ -218,13 +218,13 @@ int TabManagerDelegate::MemoryStat::ReadIntFromFile(const char* file_name,
                                                     const int default_val) {
   std::string file_string;
   if (!base::ReadFileToString(base::FilePath(file_name), &file_string)) {
-    LOG(WARNING) << "Unable to read file" << file_name;
+    LOG(ERROR) << "Unable to read file" << file_name;
     return default_val;
   }
   int val = default_val;
   if (!base::StringToInt(
           base::TrimWhitespaceASCII(file_string, base::TRIM_TRAILING), &val)) {
-    LOG(WARNING) << "Unable to parse string" << file_string;
+    LOG(ERROR) << "Unable to parse string" << file_string;
     return default_val;
   }
   return val;
@@ -239,31 +239,16 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
          1024;
 }
 
-// The logic of available memory calculation is copied from
-// _is_low_mem_situation() in kernel file include/linux/low-mem-notify.h.
-// Maybe we should let kernel report the number directly.
+// Target memory to free is the amount which brings available
+// memory back to the margin.
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
-  static const int kRamVsSwapWeight = 4;
-  static const char kMinFilelistConfig[] = "/proc/sys/vm/min_filelist_kbytes";
-  static const char kMinFreeKbytes[] = "/proc/sys/vm/min_free_kbytes";
-
-  base::SystemMemoryInfoKB system_mem;
-  base::GetSystemMemoryInfo(&system_mem);
-  const int file_mem_kb = system_mem.active_file + system_mem.inactive_file;
-  const int min_filelist_kb = ReadIntFromFile(kMinFilelistConfig, 0);
-  const int min_free_kb = ReadIntFromFile(kMinFreeKbytes, 0);
-  // Calculate current available memory in system.
-  // File-backed memory should be easy to reclaim, unless they're dirty.
-  // TODO(cylee): On ChromeOS, kernel reports low memory condition when
-  // available memory is low. The following formula duplicates the logic in
-  // kernel to calculate how much memory should be released. In the future,
-  // kernel should try to report the amount of memory to release directly to
-  // eliminate the duplication here.
-  const int available_mem_kb =
-      system_mem.free + file_mem_kb - system_mem.dirty - min_filelist_kb +
-      system_mem.swap_free / kRamVsSwapWeight - min_free_kb;
-
-  return LowMemoryMarginKB() - available_mem_kb;
+  static constexpr char kLowMemAvailableEntry[] =
+      "/sys/kernel/mm/chromeos-low_mem/available";
+  const int available_mem_mb = ReadIntFromFile(kLowMemAvailableEntry, 0);
+  // available_mem_mb is rounded down in the kernel computation, so even if
+  // it's just below the margin, the difference will be at least 1 MB.  This
+  // matters because we shouldn't return 0 when we're below the margin.
+  return LowMemoryMarginKB() - available_mem_mb * 1024;
 }
 
 int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
@@ -570,6 +555,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
   const std::vector<TabManagerDelegate::Candidate> candidates =
       GetSortedCandidates(tab_list, arc_processes);
 
+  // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
+  // I/O and if it is, move to I/O thread.
   int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
   const TimeTicks now = TimeTicks::Now();
 
