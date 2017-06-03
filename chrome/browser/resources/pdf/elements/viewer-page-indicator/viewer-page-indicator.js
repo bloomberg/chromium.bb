@@ -23,8 +23,10 @@ Polymer({
     }
   },
 
+  /** @type {number|undefined} */
   timerId: undefined,
 
+  /** @override */
   ready: function() {
     var callback = this.fadeIn.bind(this, 2000);
     window.addEventListener('scroll', function() {
@@ -36,6 +38,7 @@ Polymer({
     this.fadeIn(6000);
   },
 
+  /** @param {number} displayTime */
   fadeIn: function(displayTime) {
     var percent = window.scrollY /
         (document.body.scrollHeight -

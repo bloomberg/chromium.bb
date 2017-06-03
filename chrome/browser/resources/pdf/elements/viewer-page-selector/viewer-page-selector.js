@@ -12,7 +12,7 @@ Polymer({
     docLength: {
       type: Number,
       value: 1,
-      observer: 'docLengthChanged'
+      observer: 'docLengthChanged_'
     },
 
     /**
@@ -29,7 +29,7 @@ Polymer({
   },
 
   pageNoCommitted: function() {
-    var page = parseInt(this.$.input.value);
+    var page = parseInt(this.$.input.value, 10);
 
     if (!isNaN(page) && page <= this.docLength && page > 0)
       this.fire('change-page', {page: page - 1});
@@ -38,7 +38,8 @@ Polymer({
     this.$.input.blur();
   },
 
-  docLengthChanged: function() {
+  /** @private */
+  docLengthChanged_: function() {
     var numDigits = this.docLength.toString().length;
     this.$.pageselector.style.width = numDigits + 'ch';
     // Set both sides of the slash to the same width, so that the layout is
