@@ -11,6 +11,7 @@
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_view_controller.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,6 +55,7 @@
 - (void)stop {
   [self.browser->dispatcher() stopDispatchingToTarget:self];
   [super stop];
+  [self.parentCoordinator removeChildCoordinator:self];
 }
 
 #pragma mark - ContextMenuCommands
