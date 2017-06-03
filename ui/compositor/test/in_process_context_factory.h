@@ -19,7 +19,6 @@
 #include "ui/compositor/compositor.h"
 
 namespace cc {
-class ResourceSettings;
 class SurfaceManager;
 }
 
@@ -75,7 +74,7 @@ class InProcessContextFactory : public ContextFactory,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
-  const cc::ResourceSettings& GetResourceSettings() const override;
+  const cc::RendererSettings& GetRendererSettings() const override;
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
 

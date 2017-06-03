@@ -31,7 +31,6 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/resource_format.h"
-#include "cc/resources/resource_settings.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/resources/single_release_callback_impl.h"
@@ -81,12 +80,16 @@ class CC_EXPORT ResourceProvider
     RESOURCE_TYPE_BITMAP,
   };
 
-  ResourceProvider(ContextProvider* compositor_context_provider,
-                   SharedBitmapManager* shared_bitmap_manager,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   BlockingTaskRunner* blocking_main_thread_task_runner,
-                   bool delegated_sync_points_required,
-                   const ResourceSettings& resource_settings);
+  ResourceProvider(
+      ContextProvider* compositor_context_provider,
+      SharedBitmapManager* shared_bitmap_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      BlockingTaskRunner* blocking_main_thread_task_runner,
+      size_t id_allocation_chunk_size,
+      bool delegated_sync_points_required,
+      bool use_gpu_memory_buffer_resources,
+      bool enable_color_correct_rasterization,
+      const BufferToTextureTargetMap& buffer_to_texture_target_map);
   ~ResourceProvider() override;
 
   void Initialize();
@@ -762,8 +765,9 @@ class CC_EXPORT ResourceProvider
   // Holds const settings for the ResourceProvider. Never changed after init.
   struct Settings {
     Settings(ContextProvider* compositor_context_provider,
-             bool delegated_sync_points_needed,
-             const ResourceSettings& resource_settings);
+             bool delegated_sync_points_required,
+             bool use_gpu_memory_buffer_resources,
+             bool enable_color_correct_rasterization);
 
     int max_texture_size = 0;
     bool use_texture_storage_ext = false;
