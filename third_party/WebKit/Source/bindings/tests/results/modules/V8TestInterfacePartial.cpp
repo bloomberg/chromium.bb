@@ -433,10 +433,6 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate
   // Initialize the interface object's template.
   V8TestInterface::installV8TestInterfaceTemplate(isolate, world, interfaceTemplate);
 
-  if (!RuntimeEnabledFeatures::featureNameEnabled()) {
-    return;
-  }
-
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
