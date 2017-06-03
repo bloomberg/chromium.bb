@@ -17,10 +17,26 @@ var Manager = (function() {
     this.audioComponents_ = [];
     this.clientRenderer_ = clientRenderer;
 
-    this.hidePlayersButton = document.getElementById('hide-players-button');
-    // In tests we may not have this button.
-    if (this.hidePlayersButton)
-      this.hidePlayersButton.onclick = this.hidePlayers_.bind(this);
+    var copyAllPlayerButton = document.getElementById('copy-all-player-button');
+    var copyAllAudioButton = document.getElementById('copy-all-audio-button');
+    var hidePlayersButton = document.getElementById('hide-players-button');
+
+    // In tests we may not have these buttons.
+    if (copyAllPlayerButton) {
+      copyAllPlayerButton.onclick = function() {
+        this.clientRenderer_.showClipboard(
+          JSON.stringify(this.players_, null, 2));
+      }.bind(this);
+    }
+    if (copyAllAudioButton) {
+      copyAllAudioButton.onclick = function() {
+        this.clientRenderer_.showClipboard(
+          JSON.stringify(this.audioComponents_, null, 2));
+      }.bind(this);
+    }
+    if (hidePlayersButton) {
+      hidePlayersButton.onclick = this.hidePlayers_.bind(this);
+    }
   }
 
   Manager.prototype = {
