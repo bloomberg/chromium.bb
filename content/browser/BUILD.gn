@@ -1595,12 +1595,6 @@ source_set("browser") {
       "tracing/power_tracing_agent.h",
     ]
   }
-  if (is_chromeos) {
-    sources += [
-      "tracing/arc_tracing_agent.cc",
-      "tracing/arc_tracing_agent.h",
-    ]
-  }
 
   if (enable_webrtc) {
     sources += [

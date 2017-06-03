@@ -50,7 +50,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/browser/tracing/arc_tracing_agent.h"
+#include "content/public/browser/arc_tracing_agent.h"
 #endif
 
 #if defined(OS_WIN)
