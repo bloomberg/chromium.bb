@@ -57,6 +57,18 @@ function InstantiateBlankResponse() {
           AssertTypeError);
 }
 
+function CompileEmpty() {
+  return WebAssembly.compileStreaming()
+    .then(assert_unreached,
+          AssertTypeError);
+}
+
+function InstantiateEmpty() {
+  return WebAssembly.instantiateStreaming()
+    .then(assert_unreached,
+          AssertTypeError);
+}
+
 function CompileFromArrayBuffer() {
   return fetch(incrementer_url)
     .then(r => r.arrayBuffer())
