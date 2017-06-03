@@ -21,6 +21,7 @@ void CheckNonResolutionDefaults(const VideoCaptureSettings& result) {
   EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
+  EXPECT_EQ(0.0, result.min_frame_rate());
 }
 
 void CheckNonFrameRateDefaults(const VideoCaptureSettings& result) {
@@ -166,7 +167,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().frame_rate.SetMax(kMinScreenCastFrameRate - 0.1);
+  constraint_factory_.basic().frame_rate.SetMax(-0.1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
