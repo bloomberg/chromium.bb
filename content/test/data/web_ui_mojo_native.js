@@ -4,5 +4,7 @@
 'use strict';
 
 window.isNativeMojoAvailable = () => {
-  return 'Mojo' in self && 'MojoHandle' in self && 'MojoWatcher' in self;
+  return 'Mojo' in self && 'MojoHandle' in self && 'MojoWatcher' in self &&
+      'createMessagePipe' in Mojo && 'writeMessage' in MojoHandle.prototype &&
+      'cancel' in MojoWatcher.prototype;
 };

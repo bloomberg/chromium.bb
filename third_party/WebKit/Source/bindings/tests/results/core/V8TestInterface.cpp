@@ -3015,10 +3015,6 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface::wrapperTypeInfo.interface_name, V8TestInterfaceEmpty::domTemplate(isolate, world), V8TestInterface::internalFieldCount);
 
-  if (!RuntimeEnabledFeatures::featureNameEnabled()) {
-    return;
-  }
-
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();

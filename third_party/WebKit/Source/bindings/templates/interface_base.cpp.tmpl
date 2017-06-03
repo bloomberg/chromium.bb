@@ -430,7 +430,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endif %}
   {% endif %}{# is_partial #}
 
-  {% if runtime_enabled_feature_name %}
+  {% if runtime_enabled_feature_name and not context_enabled_feature_name %}
   if (!{{runtime_enabled_feature_name | runtime_enabled_function}}) {
     return;
   }
