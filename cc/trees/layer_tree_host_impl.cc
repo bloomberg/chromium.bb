@@ -1622,11 +1622,11 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
 
   active_tree_->GetViewportSelection(&metadata.selection);
 
-  if (OuterViewportScrollLayer()) {
+  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
     metadata.root_overflow_x_hidden =
-        !OuterViewportScrollLayer()->user_scrollable_horizontal();
+        !outer_viewport_scroll_node->user_scrollable_horizontal;
     metadata.root_overflow_y_hidden =
-        !OuterViewportScrollLayer()->user_scrollable_vertical();
+        !outer_viewport_scroll_node->user_scrollable_vertical;
   }
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
@@ -1638,13 +1638,14 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
     metadata.referenced_surfaces.push_back(surface_id);
   }
 
-  if (!InnerViewportScrollLayer())
+  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
+  if (!inner_viewport_scroll_node)
     return metadata;
 
   metadata.root_overflow_x_hidden |=
-      !InnerViewportScrollLayer()->user_scrollable_horizontal();
+      !inner_viewport_scroll_node->user_scrollable_horizontal;
   metadata.root_overflow_y_hidden |=
-      !InnerViewportScrollLayer()->user_scrollable_vertical();
+      !inner_viewport_scroll_node->user_scrollable_vertical;
 
   // TODO(miletus) : Change the metadata to hold ScrollOffset.
   metadata.root_scroll_offset =
@@ -2012,11 +2013,21 @@ LayerImpl* LayerTreeHostImpl::InnerViewportScrollLayer() const {
   return active_tree_->InnerViewportScrollLayer();
 }
 
+ScrollNode* LayerTreeHostImpl::InnerViewportScrollNode() const {
+  const auto* inner_viewport_scroll_layer = InnerViewportScrollLayer();
+  if (!inner_viewport_scroll_layer)
+    return nullptr;
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  return scroll_tree.Node(inner_viewport_scroll_layer->scroll_tree_index());
+}
+
 LayerImpl* LayerTreeHostImpl::OuterViewportScrollLayer() const {
   return active_tree_->OuterViewportScrollLayer();
 }
 
 ScrollNode* LayerTreeHostImpl::OuterViewportScrollNode() const {
+  // TODO(pdr): Refactor this to work like InnerViewportScrollNode and access
+  // OuterViewportScrollLayer instead of MainScrollLayer.
   if (!viewport()->MainScrollLayer())
     return nullptr;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
@@ -3374,10 +3385,10 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
                                    scroll_state->delta_y());
 
   // When inner viewport is unscrollable, disable overscrolls.
-  if (InnerViewportScrollLayer()) {
-    if (!InnerViewportScrollLayer()->user_scrollable_horizontal())
+  if (const auto* inner_viewport_scroll_node = InnerViewportScrollNode()) {
+    if (!inner_viewport_scroll_node->user_scrollable_horizontal)
       unused_root_delta.set_x(0);
-    if (!InnerViewportScrollLayer()->user_scrollable_vertical())
+    if (!inner_viewport_scroll_node->user_scrollable_vertical)
       unused_root_delta.set_y(0);
   }
 

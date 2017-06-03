@@ -56,6 +56,8 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerImplList children;
   LayerImpl* mask_layer;
   LayerImpl* parent;
+  bool user_scrollable_horizontal = true;
+  bool user_scrollable_vertical = true;
 };
 
 }  // namespace cc

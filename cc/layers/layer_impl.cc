@@ -55,8 +55,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      user_scrollable_horizontal_(true),
-      user_scrollable_vertical_(true),
       should_flatten_transform_from_property_tree_(false),
       layer_property_changed_(false),
       may_contain_video_(false),
@@ -290,19 +288,6 @@ bool LayerImpl::scrollable() const {
   return scroll_clip_layer_id_ != Layer::INVALID_ID;
 }
 
-void LayerImpl::set_user_scrollable_horizontal(bool scrollable) {
-  user_scrollable_horizontal_ = scrollable;
-}
-
-void LayerImpl::set_user_scrollable_vertical(bool scrollable) {
-  user_scrollable_vertical_ = scrollable;
-}
-
-bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
-  return (orientation == HORIZONTAL) ? user_scrollable_horizontal_
-                                     : user_scrollable_vertical_;
-}
-
 std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_);
@@ -321,8 +306,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
-  layer->user_scrollable_horizontal_ = user_scrollable_horizontal_;
-  layer->user_scrollable_vertical_ = user_scrollable_vertical_;
   layer->should_flatten_transform_from_property_tree_ =
       should_flatten_transform_from_property_tree_;
   layer->masks_to_bounds_ = masks_to_bounds_;

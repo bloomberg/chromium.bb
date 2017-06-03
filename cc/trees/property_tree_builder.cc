@@ -989,6 +989,22 @@ bool AddEffectNodeIfNeeded(
   return should_create_render_surface;
 }
 
+static inline bool UserScrollableHorizontal(Layer* layer) {
+  return layer->user_scrollable_horizontal();
+}
+
+static inline bool UserScrollableHorizontal(LayerImpl* layer) {
+  return layer->test_properties()->user_scrollable_horizontal;
+}
+
+static inline bool UserScrollableVertical(Layer* layer) {
+  return layer->user_scrollable_vertical();
+}
+
+static inline bool UserScrollableVertical(LayerImpl* layer) {
+  return layer->test_properties()->user_scrollable_vertical;
+}
+
 template <typename LayerType>
 void AddScrollNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
@@ -1048,8 +1064,8 @@ void AddScrollNodeIfNeeded(
     node.bounds = layer->bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
     node.should_flatten = layer->should_flatten_transform_from_property_tree();
-    node.user_scrollable_horizontal = layer->user_scrollable_horizontal();
-    node.user_scrollable_vertical = layer->user_scrollable_vertical();
+    node.user_scrollable_horizontal = UserScrollableHorizontal(layer);
+    node.user_scrollable_vertical = UserScrollableVertical(layer);
     node.element_id = layer->element_id();
     node.transform_id =
         data_for_children->transform_tree_parent->transform_tree_index();

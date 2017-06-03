@@ -7,6 +7,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 
 namespace cc {
 
@@ -36,11 +37,11 @@ ScrollElasticityHelperImpl::~ScrollElasticityHelperImpl() {
 }
 
 bool ScrollElasticityHelperImpl::IsUserScrollable() const {
-  LayerImpl* layer = layer_tree_host_impl_->OuterViewportScrollLayer();
-  if (!layer)
+  const auto* scroll_node = layer_tree_host_impl_->OuterViewportScrollNode();
+  if (!scroll_node)
     return false;
-  return layer->user_scrollable_horizontal() ||
-         layer->user_scrollable_vertical();
+  return scroll_node->user_scrollable_horizontal ||
+         scroll_node->user_scrollable_vertical;
 }
 
 gfx::Vector2dF ScrollElasticityHelperImpl::StretchAmount() const {

@@ -1171,8 +1171,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->SetScrollClipLayer(inputs_.scroll_clip_layer_id);
-  layer->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
-  layer->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
   layer->SetMutableProperties(inputs_.mutable_properties);
 
   // The property trees must be safe to access because they will be used below

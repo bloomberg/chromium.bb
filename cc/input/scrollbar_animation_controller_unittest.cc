@@ -1402,7 +1402,8 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, HideOnUserNonScrollableHorz) {
 
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
-  scroll_layer->set_user_scrollable_horizontal(false);
+  scroll_layer->test_properties()->user_scrollable_horizontal = false;
+  host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
 
@@ -1417,7 +1418,8 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, ShowOnUserNonScrollableVert) {
 
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
-  scroll_layer->set_user_scrollable_vertical(false);
+  scroll_layer->test_properties()->user_scrollable_vertical = false;
+  host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
 
@@ -1433,7 +1435,8 @@ TEST_F(VerticalScrollbarAnimationControllerAndroidTest,
 
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
-  scroll_layer->set_user_scrollable_vertical(false);
+  scroll_layer->test_properties()->user_scrollable_vertical = false;
+  host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
 
@@ -1449,7 +1452,8 @@ TEST_F(VerticalScrollbarAnimationControllerAndroidTest,
 
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
-  scroll_layer->set_user_scrollable_horizontal(false);
+  scroll_layer->test_properties()->user_scrollable_horizontal = false;
+  host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
 
