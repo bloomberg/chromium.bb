@@ -185,6 +185,10 @@ class PlatformNotificationServiceTest : public testing::Test {
 
 // Native, non persistent notifications don't have delegates any more
 #if !defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+// http://crbug.com/729247
+#define DisplayPageDisplayedEvent DISABLED_DisplayPageDisplayedEvent
+#endif
 TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {
   auto* delegate = CreateSimplePageNotification();
 
