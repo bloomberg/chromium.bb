@@ -541,7 +541,6 @@ void TouchCalibratorView::InitViewContents() {
   tap_label_->SetBounds(0, kThrobberCircleViewWidth, kTapLabelWidth,
                         kTapLabelHeight);
   tap_label_->SetEnabledColor(kTapHereLabelColor);
-  tap_label_->SetDisabledColor(kTapHereLabelColor);
   tap_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   tap_label_->SetAutoColorReadabilityEnabled(false);
   tap_label_->SetSubpixelRenderingEnabled(false);

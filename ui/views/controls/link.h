@@ -89,8 +89,7 @@ class VIEWS_EXPORT Link : public Label {
 
   void ConfigureFocus();
 
-  SkColor GetEnabledColor();
-  SkColor GetPressedColor();
+  SkColor GetColor();
 
   LinkListener* listener_;
 
@@ -103,10 +102,6 @@ class VIEWS_EXPORT Link : public Label {
   // The color when the link is neither pressed nor disabled.
   SkColor requested_enabled_color_;
   bool requested_enabled_color_set_;
-
-  // The color when the link is pressed.
-  SkColor requested_pressed_color_;
-  bool requested_pressed_color_set_;
 
   DISALLOW_COPY_AND_ASSIGN(Link);
 };

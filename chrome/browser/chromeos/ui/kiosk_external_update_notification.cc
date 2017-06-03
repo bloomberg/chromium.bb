@@ -75,7 +75,6 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     label_->SetFontList(rb->GetFontList(ui::ResourceBundle::BoldFont));
     label_->SetEnabledColor(kTextColor);
-    label_->SetDisabledColor(kTextColor);
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetMultiLine(true);
     AddChildView(label_);

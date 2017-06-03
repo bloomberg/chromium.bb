@@ -244,6 +244,9 @@ class BackgroundColorHoverButton : public views::LabelButton {
   }
 
   void UpdateColors() {
+    // TODO(tapted): This should use views::style::GetColor() to obtain grey
+    // text where it's needed. But note |subtitle_| is used to draw an email,
+    // which might not be grey in Harmony.
     bool is_selected = HasFocus();
 
     SetBackground(
@@ -260,8 +263,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
       title_->SetEnabledColor(text_color);
 
     if (subtitle_) {
-      DCHECK(!subtitle_->enabled());
-      subtitle_->SetDisabledColor(GetNativeTheme()->GetSystemColor(
+      subtitle_->SetEnabledColor(GetNativeTheme()->GetSystemColor(
           is_selected
               ? ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor
               : ui::NativeTheme::kColorId_LabelDisabledColor));
@@ -1169,7 +1171,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       current_profile_card->set_subtitle(email_label);
       email_label->SetAutoColorReadabilityEnabled(false);
       email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
-      email_label->SetEnabled(false);
       email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       grid_layout->StartRow(1, 0);
       // Skip first column for the profile icon.

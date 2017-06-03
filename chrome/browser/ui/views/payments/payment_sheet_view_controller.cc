@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
@@ -85,8 +86,9 @@ class PreviewEliderLabel : public views::Label {
   // and |n| is the "N more" item count.
   PreviewEliderLabel(const base::string16& preview_text,
                      const base::string16& format_string,
-                     int n)
-      : views::Label(base::string16()),
+                     int n,
+                     int text_style)
+      : views::Label(base::string16(), views::style::CONTEXT_LABEL, text_style),
         preview_text_(preview_text),
         format_string_(format_string),
         n_(n) {}
@@ -194,7 +196,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
 std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
     const base::string16& currency,
     const base::string16& amount,
-    bool disabled_color,
+    bool hint_color,
     bool bold) {
   std::unique_ptr<views::View> item_amount_line =
       base::MakeUnique<views::View>();
@@ -208,15 +210,15 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
                                  views::GridLayout::LEADING, 1,
                                  views::GridLayout::USE_PREF, 0, 0);
 
-  std::unique_ptr<views::Label> currency_label =
-      bold ? CreateBoldLabel(currency)
-           : base::MakeUnique<views::Label>(currency);
-  if (disabled_color) {
-    currency_label->SetDisabledColor(
-        currency_label->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_LabelDisabledColor));
-    currency_label->SetEnabled(false);
-  }
+  DCHECK(!bold || !hint_color);
+  std::unique_ptr<views::Label> currency_label;
+  if (bold)
+    currency_label = CreateBoldLabel(currency);
+  else if (hint_color)
+    currency_label = CreateHintLabel(currency);
+  else
+    currency_label = base::MakeUnique<views::Label>(currency);
+
   std::unique_ptr<views::Label> amount_label =
       bold ? CreateBoldLabel(amount) : base::MakeUnique<views::Label>(amount);
   amount_label->SetMultiLine(true);
@@ -288,15 +290,8 @@ class PaymentSheetRowBuilder {
       const base::string16& truncated_content,
       const base::string16& button_string,
       bool button_enabled) {
-    std::unique_ptr<views::Label> content_view =
-        base::MakeUnique<views::Label>(truncated_content);
-    content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    content_view->SetDisabledColor(
-        content_view->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_LabelDisabledColor));
-    content_view->SetEnabled(false);
-    return CreateWithButton(std::move(content_view), button_string,
-                            button_enabled);
+    return CreateWithButton(CreateHintLabel(truncated_content, gfx::ALIGN_LEFT),
+                            button_string, button_enabled);
   }
 
   // Creates a row with a button in place of the chevron with the string between
@@ -313,12 +308,9 @@ class PaymentSheetRowBuilder {
       const base::string16& button_string,
       bool button_enabled) {
     std::unique_ptr<PreviewEliderLabel> content_view =
-        base::MakeUnique<PreviewEliderLabel>(preview_text, format_string, n);
+        base::MakeUnique<PreviewEliderLabel>(preview_text, format_string, n,
+                                             STYLE_HINT);
     content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    content_view->SetDisabledColor(
-        content_view->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_LabelDisabledColor));
-    content_view->SetEnabled(false);
     return CreateWithButton(std::move(content_view), button_string,
                             button_enabled);
   }
@@ -557,20 +549,13 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   if (hidden_item_count > 0) {
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> label =
-        base::MakeUnique<views::Label>(l10n_util::GetPluralStringFUTF16(
+        CreateHintLabel(l10n_util::GetPluralStringFUTF16(
             IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
-    label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelDisabledColor));
-    label->SetEnabled(false);
     layout->AddView(label.release());
     if (is_mixed_currency) {
       std::unique_ptr<views::Label> multiple_currency_label =
-          base::MakeUnique<views::Label>(l10n_util::GetStringUTF16(
+          CreateHintLabel(l10n_util::GetStringUTF16(
               IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MULTIPLE_CURRENCY_INDICATOR));
-      multiple_currency_label->SetDisabledColor(
-          multiple_currency_label->GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_LabelDisabledColor));
-      multiple_currency_label->SetEnabled(false);
       layout->AddView(multiple_currency_label.release());
     }
   }

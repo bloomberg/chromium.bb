@@ -6,14 +6,16 @@
 
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/platform_font.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(USE_ASH)
 #include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
-const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
-                                                        int text_style) const {
+const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
+                                                        int style) const {
   // "Target" font size constants from the Harmony spec.
   constexpr int kHeadlineSize = 20;
   constexpr int kTitleSize = 15;
@@ -30,10 +32,10 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
 #if defined(USE_ASH)
-  ash::ApplyAshFontStyles(text_context, text_style, &size_delta, &font_weight);
+  ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
 
-  switch (text_context) {
+  switch (context) {
     case views::style::CONTEXT_BUTTON_MD:
       font_weight = WeightNotLighterThanNormal(kButtonFontWeight);
       break;
@@ -50,20 +52,63 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int text_context,
       break;
   }
 
-  // Ignore |text_style| since it only affects color in the Harmony spec.
+  // Ignore |style| since it only affects color in the Harmony spec.
 
   return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
       size_delta, gfx::Font::NORMAL, font_weight);
 }
 
-SkColor HarmonyTypographyProvider::GetColor(int text_context,
-                                            int text_style) const {
-  // TODO(tapted): Look up colors from the spec.
-  return SK_ColorBLACK;
+SkColor HarmonyTypographyProvider::GetColor(
+    int context,
+    int style,
+    const ui::NativeTheme& theme) const {
+  const SkColor foreground_color =
+      theme.GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+
+  // If the default foreground color from the native theme isn't black, the rest
+  // of the Harmony spec isn't going to work. TODO(tapted): Something more
+  // generic would be nice here, but that requires knowing the background color
+  // for the text. At the time of writing, very few UI surfaces need native-
+  // themed typography with a custom native theme. Typically just incognito
+  // browser windows, when the native theme is NativeThemeDarkAura.
+  if (foreground_color != SK_ColorBLACK) {
+    switch (style) {
+      case views::style::STYLE_DISABLED:
+      case STYLE_SECONDARY:
+      case STYLE_HINT:
+        return theme.GetSystemColor(
+            ui::NativeTheme::kColorId_LabelDisabledColor);
+      case views::style::STYLE_LINK:
+        return theme.GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+      case STYLE_RED:
+        return foreground_color == SK_ColorWHITE ? gfx::kGoogleRed300
+                                                 : gfx::kGoogleRed700;
+      case STYLE_GREEN:
+        return foreground_color == SK_ColorWHITE ? gfx::kGoogleGreen300
+                                                 : gfx::kGoogleGreen700;
+    }
+    return foreground_color;
+  }
+
+  switch (style) {
+    case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
+      return SK_ColorWHITE;
+    case views::style::STYLE_DISABLED:
+      return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+    case views::style::STYLE_LINK:
+      return gfx::kGoogleBlue700;
+    case STYLE_SECONDARY:
+    case STYLE_HINT:
+      return SkColorSetRGB(0x75, 0x75, 0x75);
+    case STYLE_RED:
+      return gfx::kGoogleRed700;
+    case STYLE_GREEN:
+      return gfx::kGoogleGreen700;
+  }
+  return SkColorSetRGB(0x21, 0x21, 0x21);  // Primary for everything else.
 }
 
-int HarmonyTypographyProvider::GetLineHeight(int text_context,
-                                             int text_style) const {
+int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
   // "Target" line height constants from the Harmony spec. A default OS
   // configuration should use these heights. However, if the user overrides OS
   // defaults, then GetLineHeight() should return the height that would add the
@@ -116,7 +161,7 @@ int HarmonyTypographyProvider::GetLineHeight(int text_context,
       GetFont(CONTEXT_BODY_TEXT_SMALL, kTemplateStyle).GetHeight() -
       kBodyTextSmallPlatformHeight + kBodyHeight;
 
-  switch (text_context) {
+  switch (context) {
     case views::style::CONTEXT_BUTTON:
     case views::style::CONTEXT_BUTTON_MD:
       return kButtonAbsoluteHeight;

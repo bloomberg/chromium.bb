@@ -5,6 +5,7 @@
 #include "ui/views/style/typography.h"
 
 #include "base/logging.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography_provider.h"
 
@@ -26,10 +27,13 @@ const gfx::FontList& GetFont(int text_context, int text_style) {
                                                                 text_style);
 }
 
-SkColor GetColor(int text_context, int text_style) {
+SkColor GetColor(int text_context,
+                 int text_style,
+                 const ui::NativeTheme* theme) {
   ValidateContextAndStyle(text_context, text_style);
-  return LayoutProvider::Get()->GetTypographyProvider().GetColor(text_context,
-                                                                 text_style);
+  DCHECK(theme);
+  return LayoutProvider::Get()->GetTypographyProvider().GetColor(
+      text_context, text_style, *theme);
 }
 
 int GetLineHeight(int text_context, int text_style) {

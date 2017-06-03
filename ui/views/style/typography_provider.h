@@ -14,6 +14,10 @@ namespace gfx {
 class FontList;
 }
 
+namespace ui {
+class NativeTheme;
+}
+
 namespace views {
 
 // Provides fonts to use in toolkit-views UI.
@@ -24,9 +28,11 @@ class VIEWS_EXPORT TypographyProvider {
   // Gets the FontList for the given |context| and |style|.
   virtual const gfx::FontList& GetFont(int context, int style) const = 0;
 
-  // Gets the color for the given |context| and |style|. This may consult
-  // ui::NativeTheme.
-  virtual SkColor GetColor(int context, int style) const = 0;
+  // Gets the color for the given |context| and |style|, optionally consulting
+  // |theme|.
+  virtual SkColor GetColor(int context,
+                           int style,
+                           const ui::NativeTheme& theme) const = 0;
 
   // Gets the line spacing, or 0 if it should be provided by gfx::FontList.
   virtual int GetLineHeight(int context, int style) const = 0;
@@ -54,7 +60,9 @@ class VIEWS_EXPORT DefaultTypographyProvider : public TypographyProvider {
 
   // TypographyProvider:
   const gfx::FontList& GetFont(int context, int style) const override;
-  SkColor GetColor(int context, int style) const override;
+  SkColor GetColor(int context,
+                   int style,
+                   const ui::NativeTheme& theme) const override;
   int GetLineHeight(int context, int style) const override;
 
   // Sets the |size_delta| and |font_weight| that the the default GetFont()

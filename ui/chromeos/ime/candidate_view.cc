@@ -53,6 +53,7 @@ views::Label* CreateShortcutLabel(
   // |wrapped_shortcut_label| is deleted.
   views::Label* shortcut_label = new views::Label;
 
+  // TODO(tapted): Get this FontList from views::style.
   if (orientation == ui::CandidateWindow::VERTICAL) {
     shortcut_label->SetFontList(shortcut_label->font_list().Derive(
         kFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
@@ -62,10 +63,6 @@ views::Label* CreateShortcutLabel(
   }
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
-  shortcut_label->SetEnabledColor(theme.GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor));
-  shortcut_label->SetDisabledColor(theme.GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
 
   // Setup paddings.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
@@ -224,7 +221,10 @@ void CandidateView::SetHighlighted(bool highlighted) {
 }
 
 void CandidateView::StateChanged(ButtonState old_state) {
-  shortcut_label_->SetEnabled(state() != STATE_DISABLED);
+  int text_style = state() == STATE_DISABLED ? views::style::STYLE_DISABLED
+                                             : views::style::STYLE_PRIMARY;
+  shortcut_label_->SetEnabledColor(views::style::GetColor(
+      views::style::CONTEXT_LABEL, text_style, GetNativeTheme()));
   if (state() == STATE_PRESSED)
     SetHighlighted(true);
 }

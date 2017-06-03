@@ -82,10 +82,9 @@ class VIEWS_EXPORT Label : public View,
   // Sets the color.  This will automatically force the color to be readable
   // over the current background color, if auto color readability is enabled.
   virtual void SetEnabledColor(SkColor color);
-  void SetDisabledColor(SkColor color);
+  void SetDisabledColorForLabelButton(SkColor color);
 
   SkColor enabled_color() const { return actual_enabled_color_; }
-  SkColor disabled_color() const { return actual_disabled_color_; }
 
   // Sets the background color. This won't be explicitly drawn, but the label
   // will force the text color to be readable over it.
@@ -325,6 +324,10 @@ class VIEWS_EXPORT Label : public View,
 
   // Builds |context_menu_contents_|.
   void BuildContextMenuContents();
+
+  // Where the label appears in the UI. Passed in from the constructor. This is
+  // a value from views::style::TextContext or an enum that extends it.
+  const int text_context_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> render_text_;

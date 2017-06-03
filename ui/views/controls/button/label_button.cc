@@ -99,7 +99,7 @@ void LabelButton::SetText(const base::string16& text) {
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   button_state_colors_[for_state] = color;
   if (for_state == STATE_DISABLED)
-    label_->SetDisabledColor(color);
+    label_->SetDisabledColorForLabelButton(color);
   else if (for_state == state())
     label_->SetEnabledColor(color);
   explicitly_set_colors_[for_state] = true;

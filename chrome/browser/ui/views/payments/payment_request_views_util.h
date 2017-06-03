@@ -12,6 +12,7 @@
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/text_constants.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -121,6 +122,11 @@ std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 // platforms that have no medium font, or where a user has configured their
 // default font with a heavier weight.
 std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text);
+
+// Creates a label with grey, "hint" text and the provided |alignment|.
+std::unique_ptr<views::Label> CreateHintLabel(
+    const base::string16& text,
+    gfx::HorizontalAlignment alignment = gfx::ALIGN_CENTER);
 
 // Creates a 2 line label containing |shipping_option|'s label and amount. If
 // |emphasize_label| is true, the label part will be in medium weight.

@@ -79,11 +79,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
     amount_text = CreateMediumLabel(amount);
   } else {
     label_text = base::MakeUnique<views::Label>(label);
-    currency_text = base::MakeUnique<views::Label>(currency);
-    currency_text->SetDisabledColor(
-        currency_text->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_LabelDisabledColor));
-    currency_text->SetEnabled(false);
+    currency_text = CreateHintLabel(currency);
     amount_text = base::MakeUnique<views::Label>(amount);
   }
   amount_text->set_id(static_cast<int>(amount_label_id));
