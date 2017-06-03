@@ -1079,6 +1079,19 @@ const char kIpcDumpDirectory[] = "ipc-dump-directory";
 const char kIpcFuzzerTestcase[] = "ipc-fuzzer-testcase";
 #endif
 
+#if defined(OS_MACOSX)
+// Enable the V2 sandbox during the helper executable initialization.
+const char kEnableV2Sandbox[] = "v2-sandbox";
+
+// The command line paramter indicating that the v2 sandbox is enabled. This
+// must be different than the "v2-sandbox" flag to avoid endless re-executing.
+// The flag tells the sandbox initialization code inside Chrome that the sandbox
+// should already be enabled.
+// TODO(kerrnel): Remove this once the V2 sandbox migration is complete, as
+// processes will be assumed to run under the V2 sandbox.
+const char kV2SandboxedEnabled[] = "v2-sandbox-enabled";
+#endif  // defined(OS_MACOSX)
+
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches

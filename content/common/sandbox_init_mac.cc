@@ -10,6 +10,7 @@
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "sandbox/mac/seatbelt.h"
 
 namespace content {
 
@@ -36,6 +37,8 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoSandbox))
     return false;
+  if (command_line.HasSwitch(switches::kV2SandboxedEnabled))
+    CHECK(sandbox::Seatbelt::IsSandboxed());
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);

@@ -32,6 +32,12 @@ typedef int (*ChromeMainPtr)(int, char**);
 #if defined(HELPER_EXECUTABLE)
 // The command line parameter to engage the v2 sandbox.
 constexpr char v2_sandbox_arg[] = "--v2-sandbox";
+// The command line paramter indicating that the v2 sandbox is enabled. This
+// must be different than the "v2-sandbox" flag to avoid endless re-executing.
+// The flag tells the sandbox initialization code inside Chrome that the sandbox
+// should already be enabled.
+// TODO(kerrnel): Remove this once the V2 sandbox migration is complete.
+constexpr char v2_sandbox_enabled_arg[] = "--v2-sandbox-enabled";
 // The command line parameter for the file descriptor used to receive the
 // sandbox policy.
 constexpr char fd_mapping_arg[] = "--fd_mapping=";
@@ -71,6 +77,10 @@ __attribute__((noreturn)) void SandboxExec(const char* exec_path,
       new_argv.push_back(argv[i]);
     }
   }
+  // Tell Chrome that the sandbox should already be enabled.
+  // Note that execv() is documented to treat the argv as constants, so the
+  // const_cast is safe.
+  new_argv.push_back(const_cast<char*>(v2_sandbox_enabled_arg));
   new_argv.push_back(nullptr);
 
   // The helper executable re-executes itself under the sandbox.
