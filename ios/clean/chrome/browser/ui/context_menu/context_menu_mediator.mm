@@ -57,57 +57,44 @@
 #pragma mark -
 
 + (ContextMenuItem*)scriptItem {
-  std::vector<SEL> commands(2U);
-  commands[0] = @selector(executeContextMenuScript:);
-  commands[1] = @selector(hideContextMenu:);
-  return [ContextMenuItem itemWithTitle:@"Execute Script" commands:commands];
+  return [ContextMenuItem itemWithTitle:@"Execute Script"
+                                command:@selector(executeContextMenuScript:)
+                        commandOpensTab:NO];
 }
 
 + (NSArray<ContextMenuItem*>*)linkItems {
-  // Opening the link in a new Tab will stop this context menu's coordinator, so
-  // there's no need to hide it.
-  std::vector<SEL> newTabCommands(1U);
-  newTabCommands[0] = @selector(openContextMenuLinkInNewTab:);
-  // TODO: Add |-openContextMenuLinkInNewIncognitoTab:| as the first command for
-  // "Open In New Incognito Tab" once the incognito tab grid is implemented.
-  std::vector<SEL> newIncognitoTabCommands(1U);
-  newIncognitoTabCommands[0] = @selector(hideContextMenu:);
-  // TODO: Add |-copyContextMenuLink:| as the first command for "Copy Link" once
-  // copying to pasteboard is implemented.
-  std::vector<SEL> copyLinkCommands(1U);
-  newIncognitoTabCommands[0] = @selector(hideContextMenu:);
+  // TODO: Supply commands and update |commandOpensTab| accordingly once
+  // incognito and link copying are implemented.
   return @[
-    [ContextMenuItem itemWithTitle:@"Open In New Tab" commands:newTabCommands],
+    [ContextMenuItem itemWithTitle:@"Open In New Tab"
+                           command:@selector(openContextMenuLinkInNewTab:)
+                   commandOpensTab:YES],
     [ContextMenuItem itemWithTitle:@"Open In New Incognito Tab"
-                          commands:newIncognitoTabCommands],
-    [ContextMenuItem itemWithTitle:@"Copy Link" commands:copyLinkCommands],
+                           command:nil
+                   commandOpensTab:NO],
+    [ContextMenuItem itemWithTitle:@"Copy Link" command:nil commandOpensTab:NO],
   ];
 }
 
 + (NSArray<ContextMenuItem*>*)imageItems {
-  // TODO: Add |-saveContextMenuImage:| as the first command for "Save Image"
-  // once camera roll access has been implemented.
-  std::vector<SEL> saveImageCommands(1U);
-  saveImageCommands[0] = @selector(hideContextMenu:);
-  std::vector<SEL> openImageCommands(2U);
-  openImageCommands[0] = @selector(openContextMenuImage:);
-  openImageCommands[1] = @selector(hideContextMenu:);
-  // Opening the image in a new Tab will stop this context menu's coordinator,
-  // so there's no need to hide it.
-  std::vector<SEL> openImageInNewTabCommands(1U);
-  openImageInNewTabCommands[0] = @selector(openContextMenuImageInNewTab:);
+  // TODO: Supply commands and update |commandOpensTab| accordingly once image
+  // saving is implemented.
   return @[
-    [ContextMenuItem itemWithTitle:@"Save Image" commands:saveImageCommands],
-    [ContextMenuItem itemWithTitle:@"Open Image" commands:openImageCommands],
+    [ContextMenuItem itemWithTitle:@"Save Image"
+                           command:nil
+                   commandOpensTab:NO],
+    [ContextMenuItem itemWithTitle:@"Open Image"
+                           command:@selector(openContextMenuImage:)
+                   commandOpensTab:NO],
     [ContextMenuItem itemWithTitle:@"Open Image In New Tab"
-                          commands:openImageInNewTabCommands],
+                           command:@selector(openContextMenuImageInNewTab:)
+                   commandOpensTab:YES],
   ];
 }
 
 + (ContextMenuItem*)cancelItem {
-  std::vector<SEL> cancelCommands(1U);
-  cancelCommands[0] = @selector(hideContextMenu:);
-  return [ContextMenuItem itemWithTitle:@"Cancel" commands:cancelCommands];
+  return
+      [ContextMenuItem itemWithTitle:@"Cancel" command:nil commandOpensTab:NO];
 }
 
 @end

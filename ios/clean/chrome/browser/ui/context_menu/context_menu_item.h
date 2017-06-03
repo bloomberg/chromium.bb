@@ -11,17 +11,23 @@
 // Object encapsulating configuration information for an item in a context menu.
 @interface ContextMenuItem : NSObject
 
+// ContextMenuItems should be created through the factory method.
+- (instancetype)init NS_UNAVAILABLE;
+
 // Create a new item with |title| and |commands|.
 + (instancetype)itemWithTitle:(NSString*)title
-                     commands:(const std::vector<SEL>&)commands;
+                      command:(SEL)command
+              commandOpensTab:(BOOL)commandOpensTab;
 
 // The title associated with the item. This is usually the text the user will
 // see.
 @property(nonatomic, readonly, copy) NSString* title;
 
-// The ContextMenuCommands to be dispatched with menu's ContextMenuContext.
-// They will be dispatched in the order in which they appear in the vector.
-@property(nonatomic, readonly, assign) const std::vector<SEL>& commands;
+// The ContextMenuCommand to be dispatched with menu's ContextMenuContext.
+@property(nonatomic, readonly, assign) SEL command;
+
+// Returns whether dispatching |command| will open a new tab.
+@property(nonatomic, readonly, assign) BOOL commandOpensTab;
 
 @end
 
