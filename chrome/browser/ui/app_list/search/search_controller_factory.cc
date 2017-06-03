@@ -13,13 +13,13 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/answer_card_search_provider.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
-#include "chrome/browser/ui/app_list/search_answer_web_contents_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -89,7 +89,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (features::IsAnswerCardEnabled()) {
     controller->AddProvider(
         answer_card_group_id,
-        base::MakeUnique<SearchAnswerWebContentsDelegate>(profile, model));
+        base::MakeUnique<AnswerCardSearchProvider>(profile, model));
   }
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =

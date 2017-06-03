@@ -32,14 +32,13 @@ class WebView;
 namespace app_list {
 
 // Search provider for the answer card.
-class SearchAnswerWebContentsDelegate : public SearchProvider,
-                                        public content::WebContentsDelegate,
-                                        public content::WebContentsObserver {
+class AnswerCardSearchProvider : public SearchProvider,
+                                 public content::WebContentsDelegate,
+                                 public content::WebContentsObserver {
  public:
-  SearchAnswerWebContentsDelegate(Profile* profile,
-                                  app_list::AppListModel* model);
+  AnswerCardSearchProvider(Profile* profile, app_list::AppListModel* model);
 
-  ~SearchAnswerWebContentsDelegate() override;
+  ~AnswerCardSearchProvider() override;
 
   // Returns a pointer to the web view for the web contents managed by this
   // class. The object is owned by this class and has property
@@ -107,7 +106,7 @@ class SearchAnswerWebContentsDelegate : public SearchProvider,
   // Url to open when the user clicks at the result.
   std::string result_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebContentsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AnswerCardSearchProvider);
 };
 
 }  // namespace app_list
