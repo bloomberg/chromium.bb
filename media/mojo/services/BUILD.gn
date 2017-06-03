@@ -86,6 +86,7 @@ source_set("lib") {
     "//media:cdm_manager",
     "//media:shared_memory_support",
     "//media/mojo/common",
+    "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//mojo/common",
     "//services/service_manager/public/interfaces",
   ]
