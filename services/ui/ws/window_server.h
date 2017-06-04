@@ -73,6 +73,12 @@ class WindowServer : public ServerWindowDelegate,
     return display_creation_config_;
   }
 
+  // Pass the FrameSinkManager to WindowServer. This is needed because
+  // FrameSinkManagerClientBinding (the FrameSinkManager implementation being
+  // used) requires WindowServer's GpuHost to create.
+  void SetFrameSinkManager(
+      std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager);
+
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
@@ -397,9 +403,7 @@ class WindowServer : public ServerWindowDelegate,
   cc::SurfaceId root_surface_id_;
 
   // Provides interfaces to create and manage FrameSinks.
-  mojo::Binding<cc::mojom::FrameSinkManagerClient>
-      frame_sink_manager_client_binding_;
-  cc::mojom::FrameSinkManagerPtr frame_sink_manager_;
+  std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager_;
 
   DisplayCreationConfig display_creation_config_;
 

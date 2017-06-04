@@ -31,6 +31,7 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/frame_sink_manager_client_binding.h"
 #include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
@@ -200,6 +201,10 @@ void Service::OnStart() {
   input_device_server_.RegisterAsObserver();
 
   window_server_.reset(new ws::WindowServer(this));
+  std::unique_ptr<ws::FrameSinkManagerClientBinding> frame_sink_manager =
+      base::MakeUnique<ws::FrameSinkManagerClientBinding>(
+          window_server_.get(), window_server_->gpu_host());
+  window_server_->SetFrameSinkManager(std::move(frame_sink_manager));
 
   ime_server_.Init(context()->connector(), test_config_);
 
