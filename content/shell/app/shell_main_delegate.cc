@@ -218,8 +218,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // other platforms).
     if (!command_line.HasSwitch(switches::kForceColorProfile)) {
 #if defined(OS_MACOSX)
-      command_line.AppendSwitchASCII(switches::kForceColorProfile,
-                                     "generic-rgb");
+      if (command_line.HasSwitch(switches::kEnableColorCorrectRendering)) {
+        command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+      } else {
+        command_line.AppendSwitchASCII(switches::kForceColorProfile,
+                                       "generic-rgb");
+      }
 #else
       command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
 #endif
