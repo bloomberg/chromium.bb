@@ -461,13 +461,13 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   // be focused if the user does a mouseup over it, however, because the
   // mouseup will set a selection inside it, which will call
   // FrameSelection::setFocusedNodeIfNeeded.
-  if (element && frame_->Selection()
-                     .ComputeVisibleSelectionInDOMTreeDeprecated()
-                     .IsRange()) {
-    const EphemeralRange& range =
-        frame_->Selection()
-            .ComputeVisibleSelectionInDOMTreeDeprecated()
-            .ToNormalizedEphemeralRange();
+  // TODO(editing-dev): The use of VisibleSelection should be audited. See
+  // crbug.com/657237 for details.
+  if (element &&
+      frame_->Selection().ComputeVisibleSelectionInDOMTree().IsRange()) {
+    const EphemeralRange& range = frame_->Selection()
+                                      .ComputeVisibleSelectionInDOMTree()
+                                      .ToNormalizedEphemeralRange();
     if (IsNodeFullyContained(range, *element) &&
         element->IsDescendantOf(frame_->GetDocument()->FocusedElement()))
       return WebInputEventResult::kNotHandled;
