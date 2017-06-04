@@ -20,7 +20,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
+// https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-state
 enum class ModuleInstantiationState {
   kUninstantiated,
   kErrored,
@@ -56,19 +56,17 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ScriptModule Record() const;
   const KURL& BaseURL() const { return base_url_; }
 
-  ModuleInstantiationState InstantiationState() const {
-    return instantiation_state_;
-  }
+  ModuleInstantiationState State() const { return state_; }
 
   // Implements Step 7.1 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  void SetInstantiationErrorAndClearRecord(ScriptValue error);
+  void SetErrorAndClearRecord(ScriptValue error);
   // Implements Step 7.2 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationSuccess();
 
-  v8::Local<v8::Value> CreateInstantiationError(v8::Isolate* isolate) const {
-    return instantiation_error_.NewLocal(isolate);
+  v8::Local<v8::Value> CreateError(v8::Isolate* isolate) const {
+    return error_.NewLocal(isolate);
   }
 
   ParserDisposition ParserState() const { return parser_state_; }
@@ -110,11 +108,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   friend class ModulatorImpl;
   friend class ModuleTreeLinkerTestModulator;
-  // Access this func only via ModulatorImpl::GetInstantiationError(),
+  // Access this func only via ModulatorImpl::GetError(),
   // or via Modulator mocks for unit tests.
-  v8::Local<v8::Value> CreateInstantiationErrorInternal(
-      v8::Isolate* isolate) const {
-    return instantiation_error_.NewLocal(isolate);
+  v8::Local<v8::Value> CreateErrorInternal(v8::Isolate* isolate) const {
+    return error_.NewLocal(isolate);
   }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
@@ -127,18 +124,17 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   const KURL base_url_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
-  ModuleInstantiationState instantiation_state_ =
-      ModuleInstantiationState::kUninstantiated;
+  ModuleInstantiationState state_ = ModuleInstantiationState::kUninstantiated;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-error
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
   //
-  // |instantiation_error_| is TraceWrappers()ed and kept alive via the path of
+  // |error_| is TraceWrappers()ed and kept alive via the path of
   // v8::Context -> PerContextData -> Modulator/ModulatorImpl
-  // -> ModuleMap -> ModuleMap::Entry -> ModuleScript -> instantiation_error_.
+  // -> ModuleMap -> ModuleMap::Entry -> ModuleScript -> error_.
   // All the classes/references on the path above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   // but other references to those classes can be normal Member<>.
-  TraceWrapperV8Reference<v8::Value> instantiation_error_;
+  TraceWrapperV8Reference<v8::Value> error_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce
   const String nonce_;

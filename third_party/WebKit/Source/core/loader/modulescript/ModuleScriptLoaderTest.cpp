@@ -132,7 +132,7 @@ TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kUninstantiated);
 }
 
