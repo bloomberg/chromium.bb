@@ -46,11 +46,10 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
 
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
 
-  ScriptValue GetInstantiationError(const ModuleScript* module_script) {
+  ScriptValue GetError(const ModuleScript* module_script) {
     ScriptState::Scope scope(script_state_.Get());
-    return ScriptValue(
-        script_state_.Get(),
-        module_script->CreateInstantiationError(script_state_->GetIsolate()));
+    return ScriptValue(script_state_.Get(),
+                       module_script->CreateError(script_state_->GetIsolate()));
   }
 
   RefPtr<ScriptState> script_state_;
@@ -101,7 +100,7 @@ ModuleScript* CreateTargetModuleScript(
     EXPECT_EQ(ModuleInstantiationState::kErrored, state);
     v8::Local<v8::Value> error =
         V8ThrowException::CreateError(scope.GetIsolate(), "hoge");
-    module_script->SetInstantiationErrorAndClearRecord(
+    module_script->SetErrorAndClearRecord(
         ScriptValue(scope.GetScriptState(), error));
   }
   return module_script;

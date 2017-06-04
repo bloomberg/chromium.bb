@@ -113,7 +113,7 @@ ScriptValue DummyModulator::InstantiateModule(ScriptModule) {
   return ScriptValue();
 }
 
-ScriptValue DummyModulator::GetInstantiationError(const ModuleScript*) {
+ScriptValue DummyModulator::GetError(const ModuleScript*) {
   NOTREACHED();
   return ScriptValue();
 }

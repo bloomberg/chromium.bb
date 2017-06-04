@@ -149,12 +149,10 @@ ScriptValue ModulatorImpl::InstantiateModule(ScriptModule script_module) {
   return script_module.Instantiate(script_state_.Get());
 }
 
-ScriptValue ModulatorImpl::GetInstantiationError(
-    const ModuleScript* module_script) {
+ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
   ScriptState::Scope scope(script_state_.Get());
-  return ScriptValue(script_state_.Get(),
-                     module_script->CreateInstantiationErrorInternal(
-                         script_state_->GetIsolate()));
+  return ScriptValue(script_state_.Get(), module_script->CreateErrorInternal(
+                                              script_state_->GetIsolate()));
 }
 
 Vector<String> ModulatorImpl::ModuleRequestsFromScriptModule(
@@ -188,13 +186,11 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
 
   // 3. "If s's instantiation state is "errored", then report the exception
   //     given by s's instantiation error for s and abort these steps."
-  ModuleInstantiationState instantiationState =
-      module_script->InstantiationState();
+  ModuleInstantiationState instantiationState = module_script->State();
   if (instantiationState == ModuleInstantiationState::kErrored) {
     v8::Isolate* isolate = script_state_->GetIsolate();
     ScriptModule::ReportException(
-        script_state_.Get(),
-        module_script->CreateInstantiationErrorInternal(isolate),
+        script_state_.Get(), module_script->CreateErrorInternal(isolate),
         module_script->BaseURL().GetString(), module_script->StartPosition());
     return;
   }

@@ -66,9 +66,8 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
 
   // Step 5. If resolved module script's instantiation state is "errored", then
   // throw resolved module script's instantiation error.
-  if (module_script->InstantiationState() ==
-      ModuleInstantiationState::kErrored) {
-    ScriptValue error = modulator_->GetInstantiationError(module_script);
+  if (module_script->State() == ModuleInstantiationState::kErrored) {
+    ScriptValue error = modulator_->GetError(module_script);
     exception_state.RethrowV8Exception(error.V8Value());
     return ScriptModule();
   }

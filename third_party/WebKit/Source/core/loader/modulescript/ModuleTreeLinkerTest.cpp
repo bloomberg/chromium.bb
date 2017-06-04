@@ -91,12 +91,12 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     if (state == ModuleInstantiationState::kErrored) {
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
-      module_script->SetInstantiationErrorAndClearRecord(
+      module_script->SetErrorAndClearRecord(
           ScriptValue(script_state_.Get(), error));
     }
 
     EXPECT_EQ(url, pending_request_url_);
-    EXPECT_EQ(state, module_script->InstantiationState());
+    EXPECT_EQ(state, module_script->State());
     EXPECT_TRUE(pending_client_);
     pending_client_->NotifyModuleLoadFinished(module_script);
     pending_client_.Clear();
@@ -189,12 +189,10 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return ScriptValue();
   }
 
-  ScriptValue GetInstantiationError(
-      const ModuleScript* module_script) override {
+  ScriptValue GetError(const ModuleScript* module_script) override {
     ScriptState::Scope scope(script_state_.Get());
-    return ScriptValue(script_state_.Get(),
-                       module_script->CreateInstantiationErrorInternal(
-                           script_state_->GetIsolate()));
+    return ScriptValue(script_state_.Get(), module_script->CreateErrorInternal(
+                                                script_state_->GetIsolate()));
   }
 
   Vector<String> ModuleRequestsFromScriptModule(
@@ -266,7 +264,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
       url, {}, ModuleInstantiationState::kUninstantiated);
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kInstantiated);
 }
 
@@ -295,7 +293,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kErrored);
 }
 
@@ -321,7 +319,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreePreviousInstantiationFailure) {
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
   EXPECT_EQ(ModuleInstantiationState::kErrored,
-            client->GetModuleScript()->InstantiationState());
+            client->GetModuleScript()->State());
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
@@ -354,7 +352,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   EXPECT_TRUE(client->WasNotifyFinished());
 
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kInstantiated);
 }
 
@@ -405,7 +403,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kInstantiated);
 }
 
@@ -501,7 +499,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kInstantiated);
 }
 
@@ -529,7 +527,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+  EXPECT_EQ(client->GetModuleScript()->State(),
             ModuleInstantiationState::kInstantiated);
 }
 
