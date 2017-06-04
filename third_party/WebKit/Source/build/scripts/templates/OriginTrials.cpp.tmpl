@@ -12,7 +12,7 @@ namespace blink {
 {% if feature.origin_trial_feature_name %}
 
 bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext) {
-  if (RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled())
+  if (RuntimeEnabledFeatures::{{feature.name}}Enabled())
     return true;
 {% if feature.origin_trial_os %}
 #if

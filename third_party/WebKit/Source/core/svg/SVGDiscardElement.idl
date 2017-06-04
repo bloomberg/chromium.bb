@@ -30,6 +30,6 @@
 
 // https://svgwg.org/specs/animations/#InterfaceSVGDiscardElement
 
-[RuntimeEnabled=smil]
+[RuntimeEnabled=SMIL]
 interface SVGDiscardElement : SVGElement {
 };

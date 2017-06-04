@@ -21,24 +21,28 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   class PLATFORM_EXPORT Backup {
    public:
     explicit Backup();
-    void restore();
+    void Restore();
 
    private:
     {% for feature in standard_features %}
-    bool m_{{feature.first_lowered_name}};
+    bool {{feature.first_lowered_name}}_;
     {% endfor %}
   };
 
   {% for feature_set in feature_sets %}
-  static void set{{feature_set|capitalize}}FeaturesEnabled(bool);
+  static void Set{{feature_set|capitalize}}FeaturesEnabled(bool);
   {% endfor %}
 
-  static void setFeatureEnabledFromString(const std::string& name, bool isEnabled);
+  static void SetFeatureEnabledFromString(const std::string& name, bool isEnabled);
 
   {% for feature in features %}
   {% if feature.custom %}
-  static bool {{feature.first_lowered_name}}Enabled();
+  static bool {{feature.name}}Enabled();
   {% else %}
+  static void Set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
+  static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
+  // TODO(wangxianzhu): Remove the lowercase-initial version after converting
+  // all .h/.cpp files to use the uppdercase-initial version.
   static void set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
   static bool {{feature.first_lowered_name}}Enabled() { return {{feature.enabled_condition}}; }
 

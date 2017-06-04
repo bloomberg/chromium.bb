@@ -59,11 +59,11 @@ interface SVGSVGElement : SVGGraphicsElement {
 
     // SVG Animations
     // https://svgwg.org/specs/animations/#InterfaceSVGSVGElement
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void pauseAnimations();
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void unpauseAnimations();
-    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] boolean animationsPaused();
-    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] float getCurrentTime();
-    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] void setCurrentTime(float seconds);
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=SMIL] void pauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=SMIL] void unpauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=SMIL] boolean animationsPaused();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=SMIL] float getCurrentTime();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=SMIL] void setCurrentTime(float seconds);
 };
 
 SVGSVGElement implements SVGFitToViewBox;

@@ -43,7 +43,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // FIXME: documentURI should not be nullable.
     [ImplementedAs=urlForBinding] readonly attribute DOMString? documentURI;
     [MeasureAs=DocumentOrigin] readonly attribute DOMString origin;
-    [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
+    [RuntimeEnabled=Suborigins] readonly attribute DOMString suborigin;
     readonly attribute DOMString compatMode;
 
     readonly attribute DOMString characterSet;

@@ -9,33 +9,32 @@
 namespace blink {
 
 RuntimeEnabledFeatures::Backup::Backup()
-    :
-    {% for feature in standard_features %}
-    {%+ if not loop.first %}, {% endif -%}m_{{feature.first_lowered_name}}(RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled())
-    {% endfor %}
-{
-}
+  : {% for feature in standard_features -%}
+    {{feature.first_lowered_name}}_(RuntimeEnabledFeatures::{{feature.name}}Enabled())
+    {%- if not loop.last %},
+    {%+ endif -%}
+    {% endfor %} {}
 
-void RuntimeEnabledFeatures::Backup::restore() {
+void RuntimeEnabledFeatures::Backup::Restore() {
   {% for feature in standard_features %}
-  RuntimeEnabledFeatures::set{{feature.name}}Enabled(m_{{feature.first_lowered_name}});
+  RuntimeEnabledFeatures::Set{{feature.name}}Enabled({{feature.first_lowered_name}}_);
   {% endfor %}
 }
 
 {% for feature_set in feature_sets %}
-void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool enable) {
+void RuntimeEnabledFeatures::Set{{feature_set|capitalize}}FeaturesEnabled(bool enable) {
   {% for feature in features if feature.status == feature_set %}
-  set{{feature.name}}Enabled(enable);
+  Set{{feature.name}}Enabled(enable);
   {% endfor %}
 }
 
 {% endfor %}
 
-void RuntimeEnabledFeatures::setFeatureEnabledFromString(
-    const std::string& name, bool isEnabled) {
+void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
+    const std::string& name, bool enable) {
   {% for feature in standard_features %}
   if (name == "{{feature.name}}") {
-    set{{feature.name}}Enabled(isEnabled);
+    Set{{feature.name}}Enabled(enable);
     return;
   }
   {% endfor %}
