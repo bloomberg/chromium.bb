@@ -1,6 +1,6 @@
 # Liblouis: Danish table for 6 dots grade 2 forward translation (literary)
 #
-#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#  Copyright (C) 2014-2017, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
@@ -17,9 +17,20 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
+# This table is for 6 dots grade 2 literary Braille, embossable, not meant for back-translation.
 #
-# Version: Bue Vester-Andersen, 151120
+# Version: Bue Vester-Andersen, 170604
 
+### Table Metadata
+
+#+locale: da
+#+type: literary
+#+contraction: full
+#+grade: 2
+#+dots: 6
+#+direction: forward
+
+# Display opcodes
 include da-dk-octobraille.dis
 
 ### Character definitions

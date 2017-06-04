@@ -28,7 +28,7 @@
 # The characters used for back-translation are marked with (back) making them more searchable.
 # Where cp1252 and unicode overlap, the unicode version of a character is used for back-translation.
 #
-# Version: Bue Vester-Andersen 151130
+# Version: Bue Vester-Andersen 170604
 
 # CP1252 (\x0080-\x009f)
 noback sign \x0080 45-15 #EURO SIGN (0x80)

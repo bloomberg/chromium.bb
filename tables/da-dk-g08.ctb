@@ -1,6 +1,6 @@
-# Liblouis: Danish table for 8 dots computer Braille
+# Liblouis: Danish table for 8 dots computer Braille (G0)
 #
-#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#  Copyright (C) 2014-2017, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
@@ -23,8 +23,18 @@
 # This  is the Danish table for 8 dots computer Braille.
 # Use this table for translation and back-translation of Danish 8 dots computer Braille (Octo-Braille).
 #
-# Version: Bue Vester-Andersen, 160713
+# Version: Bue Vester-Andersen, 170604
 
+### Table Metadata
+
+#+locale: da
+#+type: computer
+#+contraction: no
+#+grade: 0
+#+dots: 8
+#+direction: both
+
+### Character definitions
 
 # Display upcodes
 include da-dk-octobraille.dis

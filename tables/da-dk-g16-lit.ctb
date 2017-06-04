@@ -1,6 +1,6 @@
 # Liblouis: Danish table for 6 dots grade 1 forward translation (literary)
 #
-#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#  Copyright (C) 2014-2017, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
@@ -22,10 +22,20 @@
 #
 # This  is the Danish  6 dots grade 1 table for forward translation (literary / not back-translateable).
 # 
-# The output from this table is mainly ment for printing and not suited for back-translation.
+# The output from this table is mainly ment for embossing and not suited for back-translation.
 #
-# Version: Bue Vester-Andersen, 151120
+# Version: Bue Vester-Andersen, 170604
 
+### Table Metadata
+
+#+locale: da
+#+type: literary
+#+contraction: no
+#+grade: 1
+#+dots: 6
+#+direction: forward
+
+# Display opcodes
 include da-dk-octobraille.dis
 
 ### Character definitions

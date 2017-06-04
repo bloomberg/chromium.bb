@@ -1,6 +1,6 @@
-# liblouis: Danish, table for 8 dots grade 2
+# liblouis: Danish, table for 8 dots grade 1.5, partial contraction (forward and backward translation)
 #
-#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#  Copyright (C) 2014-2017, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
@@ -21,12 +21,22 @@
 #------------
 #
 #
-# This  is the Danish table for 8 dots grade 2 limited contractions (lille forkortelse).
+# This  is the Danish table for 8 dots grade 2l/1.5 limited contractions (lille forkortelse).
 # Use this table for translation and back-translation of Danish 8 dots grade 2 limited.
 #
 # Version: Bue Vester-Andersen, 160713
 
+### Table Metadata
 
+#+locale: da
+#+type: literary
+# #+contraction: partial
+# #+grade: 1.5
+#+dots: 8
+#+direction: both
+
+
+# Display opcodes
 include da-dk-octobraille.dis
 
 ### Character definitions ###
