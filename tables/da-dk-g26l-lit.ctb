@@ -194,25 +194,24 @@ noback correct %quotes "\""
 class apostrophes `\x201a\x0082\x2039\x008b\x2018\x0091\x2019\x0092\x203a\x009b\x00b4
 noback correct %apostrophes "'"
 
-### Correct - backward translation
+# Convert most single caps to lowercase
 
-# characters that may get mangled by the insertion of extra letsigns
-nofor correct "\x2818" "~"
-#nofor correct "\x282f" "&"
-#nofor correct "\x2814" "*"
+#Special abbreviations with imbedded small letters.
+# Must be handled by case in this version of liblouis
+noback correct "KAbB" "KABB"
+noback correct "CUDiM" "CUDIM"
 
-# Try to distinguish between times (\x00d7) and bullit (\x2022),
-# which share the same Braille representation.
-nofor correct `["\x00d7"] "\x2022" 
-# nofor correct $d["\s\x00d7\s"]$d * #apparently doesn't work now
-nofor correct ["\x00d7"]!$d "\x2022" 
-nofor correct !$d["\x00d7"] "\x2022" 
+swapcc UpperLower ABCDEFGHIJKLMNOPQRSTUVWXYZ\x0160\x0152\x017d\x0178\x00c0\x00c1\x00c2\x00c3\x00c4\x00c5\x00c6\x00c7\x00c8\x00c9\x00ca\x00cb\x00cc\x00cd\x00ce\x00cf\x00d0\x00d1\x00d2\x00d3\x00d4\x00d5\x00d6\x00d8\x00d9\x00da\x00db\x00dc\x00dd\x00de\x008a\x008c abcdefghijklmnopqrstuvwxyz\x0161\x0153\x017e\x00ff\x00e0\x00e1\x00e2\x00e3\x00e4\x00e5\x00e6\x00e7\x00e8\x00e9\x00ea\x00eb\x00ec\x00ed\x00ee\x00ef\x00f0\x00f1\x00f2\x00f3\x00f4\x00f5\x00f6\x00f8\x00f9\x00fa\x00fb\x00fc\x00fd\x00fe\x009a\x009c
 
-nofor correct "\x28a0" ? # Extraneous endcaps signs
-#nofor correct "\x2820" ?
-nofor correct "~\\456/" "|"
+# I is a special case
+noback correct _$sp["I"]$sp "i"
+noback correct `["I"]$sp "i"
+noback correct _$sp["I"]~ "i"
 
-### Pass 1 - Forward and backward
+noback correct $sSpu[%UpperLower]$u %UpperLower
+noback correct `[%UpperLower]$u %UpperLower
+
+### Pass 1
 
 # Punctuations, math and numbers
 midnum , 2
@@ -483,6 +482,16 @@ midword -ved- 36-1236-36
 
 ### Context rules - forward translation
 
+# Substitutions for joinnum rules with common math signs
+noback context $dy$s["-"$s]$dy @36
+noback context $dy$s["+"$s]$dy @235
+noback context $dy$s["\x00d7"$s]$dy @3
+noback context $dy$s["\x00f7"$s]$dy @256
+noback context $dy$s["="$s]$dy @2356
+
+# Space on each side of = when between letters or punctuation.
+noback context $lp["="]$lp @0-2356-0
+
 # Exclamation at beginning of string
 noback context `["!"] @6-235
 
@@ -514,18 +523,6 @@ noback context $dy$Spm["te"] @6-2345-15
 noback context $dy[]$u @6
 noback context $dy$Spm.[]$u @6
 
-### context - backward translation
-
-# Ensure the correct number of dashes
-nofor context @36[@36-36] "--"
-nofor context [@36-36]@36 "--"
-nofor context $w[@36-36]$w "--"
-nofor context $sw[@36-36]$sw "-"
-nofor context `[@36-36]$sw "-"
-nofor context $sw[@36-36]~ "-"
-nofor context `@36-36~ "-"
-
-
 ### Pass 2 - forward translation
 
 # Correct chars defined as 8 dots because they include letsign
@@ -546,65 +543,7 @@ noback pass2 _$D[@6-46] *
 noback pass2 @6-46-6 @46-6 # Ensure correct order and no double letsign
 noback pass2 @6-46 @46-6 # Ensure correct order
 
- ### Pass 2 - backward
-
-# Insert letsign between number (with extra punctuation) and capsletter sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$Spm[]@46 @68-6
-nofor pass2 @3456$l.$Spm[]@46 @68-6
-
-# Insert letsign between number (with extra punctuation) and capsword sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$Spm[]@456 @6
-nofor pass2 @3456$l.$Spm[]@456 @6
-nofor pass2 @3456$l.[]@456 @6
-
-# Place endcaps in connection to all the following Braille patterns:
-nofor pass2 $l[@45-3] @45-3-68
-nofor pass2 $l[@468] @468-68
-nofor pass2 $l[@6] @68-6 # Must come before letsign
-nofor pass2 $l[@36] @36-68
-nofor pass2 $l[@34] @34-68
-nofor pass2 $l[@2356] @2356-68
-nofor pass2 $l[@45-36] @45-36-68
-nofor pass2 $l[@4-356] @4-356-68
-nofor pass2 $l[@245-356] @245-356-68
-nofor pass2 $l[@4] @4-68
-nofor pass2 $l[@235] @235-68
-nofor pass2 $l[@45-1] @45-1-68
-nofor pass2 $l[@236] @236-68
-nofor pass2 $l[@356-356] @356-356-68
-nofor pass2 $l[@356] @356-68
-nofor pass2 $l[@3] @3-68
-nofor pass2 $l[@2] @2-68
-nofor pass2 $l[@26] @26-68
-nofor pass2 $l[@25] @25-68
-nofor pass2 $l[@12346] @12346-68
-
-nofor pass2 $l[]@46 @68-6
-#nofor pass2 $a[]@456 @6
-
 ### Pass 3 - forward translation
 
 # Ensure there is only one letsign
  noback pass3 @6-6 @6
-
-
-### Pass 3 - backward translation
-
-# Save letters that have been defined with letsign as part of their definitions
-nofor pass3 @6-12345 @6-123457
-nofor pass3 @6-2456 @6-24567
-nofor pass3 @6-1346 @6-13467
-nofor pass3 @6-1356 @6-13567
-nofor pass3 @6-1256 @6-12567
-
-# save ~ and |  before inserting extra letsigns and endcapsword in pass 2.
-nofor pass3 @45-6 @467 # Create alternative representation of "~"
-nofor pass3 @45-456 @4568

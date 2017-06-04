@@ -14,6 +14,7 @@ EXTRA_DIST =					\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g26-lit.yaml	\
 	da-dk-g26l.yaml	\
+	da-dk-g26l-lit.yaml	\
 	da-dk-g28-dictionary_harness.yaml	\
 	da-dk-g28l.yaml				\
 	da-dk-g28.yaml				\
