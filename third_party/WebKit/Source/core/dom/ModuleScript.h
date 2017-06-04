@@ -58,9 +58,9 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   ModuleInstantiationState State() const { return state_; }
 
-  // Implements Step 7.1 of:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+  // https://html.spec.whatwg.org/multipage/webappapis.html#error-a-module-script
   void SetErrorAndClearRecord(ScriptValue error);
+
   // Implements Step 7.2 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationSuccess();
