@@ -8,6 +8,8 @@ blink_modules_sources("audio_output_devices") {
   sources = [
     "AudioOutputDeviceClient.cpp",
     "AudioOutputDeviceClient.h",
+    "AudioOutputDeviceClientImpl.cpp",
+    "AudioOutputDeviceClientImpl.h",
     "HTMLMediaElementAudioOutputDevice.cpp",
     "HTMLMediaElementAudioOutputDevice.h",
     "SetSinkIdCallbacks.cpp",
