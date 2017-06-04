@@ -39,7 +39,7 @@
     readonly attribute EventTarget? source;
     // TODO(foolip): |ports| should be FrozenArray<MessagePort>?
     readonly attribute MessagePort[]? ports;
-    [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
+    [RuntimeEnabled=Suborigins] readonly attribute DOMString suborigin;
 
     // TODO(foolip): None of the initMessageEvent() arguments should be
     // optional, and |sourceArg| and |portsArg| are of the wrong type.

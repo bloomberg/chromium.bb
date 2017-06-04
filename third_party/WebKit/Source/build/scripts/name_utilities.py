@@ -38,6 +38,7 @@ ACRONYMS = [
     'FTP',
     'HTML',
     'JS',
+    'SMIL',
     'SVG',
     'URL',
     'WOFF',

@@ -52,7 +52,7 @@ bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
     enabledProperties = new std::bitset<numCSSProperties>();
     enabledProperties->set(); // All bits sets to 1.
     {% for property in properties_including_aliases if property.runtime_flag %}
-    if (!RuntimeEnabledFeatures::{{property.runtime_flag|lower_first}}Enabled())
+    if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled())
       enabledProperties->reset({{property.property_id}} - {{first_enum_value}});
     {% endfor %}
     {% for property in properties_including_aliases if property.is_internal %}
@@ -66,7 +66,7 @@ bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
   if (unresolvedProperty == CSSPropertyVariable)
     return true;
   DCHECK_EQ(unresolvedProperty, CSSPropertyApplyAtRule);
-  return RuntimeEnabledFeatures::cssApplyAtRulesEnabled();
+  return RuntimeEnabledFeatures::CSSApplyAtRulesEnabled();
 }
 
 void CSSPropertyMetadata::FilterEnabledCSSPropertiesIntoVector(

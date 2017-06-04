@@ -239,7 +239,7 @@ void Internals::ResetToConsistentState(Page* page) {
 
   if (!g_s_features_backup)
     g_s_features_backup = new RuntimeEnabledFeatures::Backup;
-  g_s_features_backup->restore();
+  g_s_features_backup->Restore();
   page->SetIsCursorVisible(true);
   page->SetPageScaleFactor(1);
   page->DeprecatedLocalMainFrame()

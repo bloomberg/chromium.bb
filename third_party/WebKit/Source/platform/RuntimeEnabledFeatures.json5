@@ -6,21 +6,26 @@
 
   parameters: {
     // Each feature can be assigned a "status":
-    // status=stable -> Enable this in all Blink configurations.  We are committed to these APIs indefinitely.
-    // status=experimental -> In-progress features, Web Developers might play with, but are not on by default in stable.
-    // status=test -> Enabled in ContentShell for testing, otherwise off.
+    // * status=stable: Enable this in all Blink configurations. We are
+    //   committed to these APIs indefinitely.
+    // * status=experimental: In-progress features, Web Developers might play
+    //   with, but are not on by default in stable.
+    // * status=test: Enabled in ContentShell for testing, otherwise off.
     // Features without a status are not enabled anywhere by default.
+    //
+    // "stable" features listed here should be rare, as anything which we've
+    // shipped stable can have its runtime flag removed soon after.
     status: {
       valid_values: ["stable", "experimental", "test"],
     },
 
     // "implied_by" or "depends_on" specifies relationship to other features:
-    // implied_by: ["feature1","feature2",...] -> The feature is automatically enabled if any implied_by features is enabled;
-    // depends_on: ["feature1","feature2",...] -> The feature is enabled only if all depends_on features are enabled.
+    // * implied_by: ["feature1","feature2",...]
+    //   The feature is automatically enabled if any implied_by features is
+    //   enabled;
+    // * depends_on: ["feature1","feature2",...]
+    //   The feature is enabled only if all depends_on features are enabled.
     // Only one of "implied_by" and "depends_on" can be specified.
-    //
-    // "stable" features listed here should be rare, as anything which we've shipped stable
-    // can have its runtime flag removed soon after.
     implied_by: {
       default: [],
       valid_type: "list",
@@ -30,12 +35,13 @@
       valid_type: "list",
     },
 
-    // origin_trial_feature_name: "FEATURE_NAME" is used to integrate the feature with
-    // the Origin Trials framework. The framework allows the feature to be enabled
-    // at runtime on a per-page basis through a signed token for the corresponding
-    // feature name. Declaring the origin_trial_feature_name will cause a static
-    // method to be generated in OriginTrials.h/cpp. This static method allows the
-    // feature implementation to check if it is enabled for the current context.
+    // origin_trial_feature_name: "FEATURE_NAME" is used to integrate the
+    // feature with the Origin Trials framework. The framework allows the
+    // feature to be enabled at runtime on a per-page basis through a signed
+    // token for the corresponding feature name. Declaring the
+    // origin_trial_feature_name will cause a static method to be generated in
+    // OriginTrials.h/cpp. This static method allows the feature implementation
+    // to check if it is enabled for the current context.
     origin_trial_feature_name: {
     },
     origin_trial_os: {
@@ -43,8 +49,8 @@
       valid_type: "list",
     },
 
-    // settable_from_internals specifies whether a feature can be set from internals.runtimeFlags, with the default
-    // being false.
+    // settable_from_internals specifies whether a feature can be set from
+    // internals.runtimeFlags, with the default being false.
     settable_from_internals: {
       valid_type: "bool",
     },
@@ -726,10 +732,10 @@
       name: "OriginTrials",
       status: "stable",
     },
-    // Define a sample API for testing integration with the Origin Trials Framework.
-    // The sample API is used in both unit and layout tests for the Origin Trials
-    // Framework. Do not change this flag to stable, as it exists solely to generate
-    // code used by the sample API implementation.
+    // Define a sample API for testing integration with the Origin Trials
+    // Framework. The sample API is used in both unit and layout tests for the
+    // Origin Trials Framework. Do not change this flag to stable, as it exists
+    // solely to generate code used by the sample API implementation.
     {
       name: "OriginTrialsSampleAPI",
       origin_trial_feature_name: "Frobulate",
@@ -948,15 +954,15 @@
       name: "SlimmingPaintV2",
     },
     {
-      name: "smil",
+      name: "SMIL",
       status: "stable",
     },
     {
       name: "SmoothScrollJSIntervention",
       status: "experimental",
     },
-    // Used as argument in attribute of stable-release functions/interfaces where
-    // a runtime-enabled feature name is required for correct IDL syntax.
+    // Used as argument in attribute of stable-release functions/interfaces
+    // where a runtime-enabled feature name is required for correct IDL syntax.
     // This is a global flag; do not change its status.
     {
       name: "StableBlinkFeatures",

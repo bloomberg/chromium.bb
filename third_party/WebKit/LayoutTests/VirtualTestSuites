@@ -206,7 +206,7 @@
   {
     "prefix": "without-smil",
     "base": "svg/animations/exposed",
-    "args": ["--disable-blink-features=smil"]
+    "args": ["--disable-blink-features=SMIL"]
   },
   {
     "prefix": "linux-subpixel",

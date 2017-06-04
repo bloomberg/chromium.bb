@@ -26,13 +26,13 @@ class InternalRuntimeFlags :
   // using RuntimeEnabledFeatures::Backup.
   {% for feature in standard_features if feature.settable_from_internals %}
   void set{{feature.name}}Enabled(bool isEnabled) {
-    RuntimeEnabledFeatures::set{{feature.name}}Enabled(isEnabled);
+    RuntimeEnabledFeatures::Set{{feature.name}}Enabled(isEnabled);
   }
   {% endfor %}
 
   {% for feature in standard_features %}
   bool {{feature.first_lowered_name}}Enabled() {
-    return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled();
+    return RuntimeEnabledFeatures::{{feature.name}}Enabled();
   }
   {% endfor %}
 
