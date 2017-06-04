@@ -128,7 +128,7 @@ void HTMLIFrameElement::ParseAttribute(
     sandbox_->DidUpdateAttributeValue(params.old_value, value);
     String invalid_tokens;
     SetSandboxFlags(value.IsNull() ? kSandboxNone
-                                   : ParseSandboxPolicy(sandbox_->Tokens(),
+                                   : ParseSandboxPolicy(sandbox_->TokenSet(),
                                                         invalid_tokens));
     if (!invalid_tokens.IsNull()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(

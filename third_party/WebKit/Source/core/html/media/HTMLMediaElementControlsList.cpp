@@ -34,15 +34,15 @@ bool HTMLMediaElementControlsList::ValidateTokenValue(
 }
 
 bool HTMLMediaElementControlsList::ShouldHideDownload() const {
-  return Tokens().Contains(kNoDownload);
+  return contains(kNoDownload);
 }
 
 bool HTMLMediaElementControlsList::ShouldHideFullscreen() const {
-  return Tokens().Contains(kNoFullscreen);
+  return contains(kNoFullscreen);
 }
 
 bool HTMLMediaElementControlsList::ShouldHideRemotePlayback() const {
-  return Tokens().Contains(kNoRemotePlayback);
+  return contains(kNoRemotePlayback);
 }
 
 }  // namespace blink

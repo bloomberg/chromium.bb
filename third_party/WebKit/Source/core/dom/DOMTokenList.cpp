@@ -93,7 +93,7 @@ bool DOMTokenList::ValidateTokenValue(const AtomicString&,
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-contains
 bool DOMTokenList::contains(const AtomicString& token) const {
-  return tokens_.Contains(token);
+  return token_set_.Contains(token);
 }
 
 void DOMTokenList::Add(const AtomicString& token) {
@@ -194,22 +194,22 @@ void DOMTokenList::replace(const AtomicString& token,
   bool found_old_token = false;
   bool found_new_token = false;
   bool did_update = false;
-  for (size_t i = 0; i < tokens_.size(); ++i) {
-    const AtomicString& existing_token = tokens_[i];
+  for (size_t i = 0; i < token_set_.size(); ++i) {
+    const AtomicString& existing_token = token_set_[i];
     if (found_old_token) {
       if (existing_token == new_token) {
-        tokens_.Remove(i);
+        token_set_.Remove(i);
         break;
       }
     } else if (found_new_token) {
       if (existing_token == token) {
-        tokens_.Remove(i);
+        token_set_.Remove(i);
         did_update = true;
         break;
       }
     } else if (existing_token == token) {
       found_old_token = true;
-      tokens_.ReplaceAt(i, new_token);
+      token_set_.ReplaceAt(i, new_token);
       did_update = true;
     } else if (existing_token == new_token) {
       found_new_token = true;
@@ -222,7 +222,7 @@ void DOMTokenList::replace(const AtomicString& token,
   if (!did_update)
     return;
 
-  UpdateWithTokenSet(tokens_);
+  UpdateWithTokenSet(token_set_);
 }
 
 bool DOMTokenList::supports(const AtomicString& token,
@@ -234,25 +234,26 @@ bool DOMTokenList::supports(const AtomicString& token,
 void DOMTokenList::AddTokens(const Vector<String>& tokens) {
   // 2. For each token in tokens, append token to context object’s token set.
   for (const auto& token : tokens)
-    tokens_.Add(AtomicString(token));
+    token_set_.Add(AtomicString(token));
   // 3. Run the update steps.
-  UpdateWithTokenSet(tokens_);
+  UpdateWithTokenSet(token_set_);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-remove
 void DOMTokenList::RemoveTokens(const Vector<String>& tokens) {
   // 2. For each token in tokens, remove token from context object’s token set.
   for (const auto& token : tokens)
-    tokens_.Remove(AtomicString(token));
+    token_set_.Remove(AtomicString(token));
   // 3. Run the update steps.
-  UpdateWithTokenSet(tokens_);
+  UpdateWithTokenSet(token_set_);
 }
 
 // https://dom.spec.whatwg.org/#concept-ordered-set-serializer
 // The ordered set serializer takes a set and returns the concatenation of the
 // strings in set, separated from each other by U+0020, if set is non-empty, and
 // the empty string otherwise.
-AtomicString DOMTokenList::SerializeSet(const SpaceSplitString& token_set) {
+AtomicString DOMTokenList::SerializeTokenSet(
+    const SpaceSplitString& token_set) {
   size_t size = token_set.size();
   if (size == 0)
     return g_empty_atom;
@@ -270,7 +271,7 @@ AtomicString DOMTokenList::SerializeSet(const SpaceSplitString& token_set) {
 // https://dom.spec.whatwg.org/#concept-dtl-update
 void DOMTokenList::UpdateWithTokenSet(const SpaceSplitString& token_set) {
   AutoReset<bool> updating(&is_in_update_step_, true);
-  setValue(SerializeSet(token_set));
+  setValue(SerializeTokenSet(token_set));
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
@@ -283,13 +284,13 @@ void DOMTokenList::DidUpdateAttributeValue(const AtomicString& old_value,
   if (is_in_update_step_)
     return;
   if (old_value != new_value)
-    tokens_.Set(new_value);
+    token_set_.Set(new_value);
 }
 
 const AtomicString DOMTokenList::item(unsigned index) const {
   if (index >= length())
     return AtomicString();
-  return tokens_[index];
+  return token_set_[index];
 }
 
 }  // namespace blink
