@@ -174,6 +174,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/switches.h"
 #include "ui/latency/latency_info.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -2523,6 +2524,13 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
 
 void RenderViewImpl::SetDeviceColorProfileForTesting(
     const gfx::ICCProfile& icc_profile) {
+  // TODO(ccameron): Remove this call when color correct rendering is the
+  // default.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableColorCorrectRendering)) {
+    return;
+  }
+
   if (webview())
     webview()->SetDeviceColorProfile(icc_profile);
 
