@@ -55,6 +55,8 @@ static_library("lib") {
     "focus_controller_observer.h",
     "frame_generator.cc",
     "frame_generator.h",
+    "frame_sink_manager_client_binding.cc",
+    "frame_sink_manager_client_binding.h",
     "gpu_client.cc",
     "gpu_client.h",
     "gpu_host.cc",
