@@ -50,9 +50,12 @@ static LayoutBoxItem ScrollerLayoutBoxItem(const ScrollableArea* scroller) {
   return LayoutBoxItem(ScrollerLayoutBox(scroller));
 }
 
+// TODO(skobes): Storing a "corner" doesn't make much sense anymore since we
+// adjust only on the block flow axis.  This could probably be refactored to
+// simply measure the movement of the block-start edge.
 static Corner CornerToAnchor(const ScrollableArea* scroller) {
   const ComputedStyle* style = ScrollerLayoutBox(scroller)->Style();
-  if (style->IsFlippedBlocksWritingMode() || !style->IsLeftToRightDirection())
+  if (style->IsFlippedBlocksWritingMode())
     return Corner::kTopRight;
   return Corner::kTopLeft;
 }
