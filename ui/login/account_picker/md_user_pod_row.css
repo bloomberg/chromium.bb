@@ -32,12 +32,7 @@ pin-keyboard {
 }
 
 .account-picker.flying-pods .pod {
-  transition: all 300ms;
-}
-
-.pod.pin-enabled {
-  height: 417px;
-  top: -87px !important;
+  transition: all 180ms;
 }
 
 .pod .pin-container {
@@ -101,7 +96,7 @@ html[dir=rtl] .user-image-pane {
 }
 
 .user-image.switch-image-animation {
-  animation: switch-image 300ms;
+  animation: switch-image 180ms;
 }
 
 .pod .user-image {
@@ -1079,6 +1074,10 @@ html[dir=rtl] .expanded-pane-contents {
 .large-pod {
   height: 346px;
   width: 306px;
+}
+
+.pod.pin-enabled .large-pod {
+  height: 618px;
 }
 
 .small-pod {
