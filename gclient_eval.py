@@ -40,7 +40,13 @@ _GCLIENT_SCHEMA = schema.Schema({
         schema.Optional(basestring): schema.Or(
             basestring,
             {
+                # Repo and revision to check out under the path
+                # (same as if no dict was used).
                 'url': basestring,
+
+                # Optional condition string. The dep will only be processed
+                # if the condition evaluates to True.
+                schema.Optional('condition'): basestring,
             },
         ),
     },

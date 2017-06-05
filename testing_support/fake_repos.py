@@ -325,8 +325,16 @@ vars = {
   'DummyVariable': 'repo',
 }
 deps = {
-  'src/repo2': '%(git_base)srepo_2',
+  'src/repo2': {
+    'url': '%(git_base)srepo_2',
+    'condition': 'True',
+  },
   'src/repo2/repo3': '/' + Var('DummyVariable') + '_3@%(hash3)s',
+  # Test that deps where condition evaluates to False are skipped.
+  'src/repo5': {
+    'url': '/repo_5',
+    'condition': 'False',
+  },
 }
 deps_os = {
   'mac': {
@@ -449,6 +457,11 @@ pre_deps_hooks = [
 deps = {
   'src/repo2': {
     'url': '%(git_base)srepo_2@%(hash)s',
+    'condition': 'True',
+  },
+  'src/repo4': {
+    'url': '/repo_4',
+    'condition': 'False',
   },
 }
 deps_os ={

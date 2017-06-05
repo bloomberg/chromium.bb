@@ -202,7 +202,7 @@ class GclientTest(trial_dir.TestCase):
     # auto-fixed.
     d = gclient.Dependency(
         None, 'name', 'proto://host/path/@revision', None, None, None,
-        None, '', True, False)
+        None, '', True, False, None, True)
     self.assertEquals('proto://host/path@revision', d.url)
 
   def testStr(self):
@@ -212,16 +212,18 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-          obj, 'foo', 'url', None, None, None, None, 'DEPS', True, False),
+          obj, 'foo', 'url', None, None, None, None, 'DEPS', True, False,
+          None, True),
         gclient.Dependency(
-          obj, 'bar', 'url', None, None, None, None, 'DEPS', True, False),
+          obj, 'bar', 'url', None, None, None, None, 'DEPS', True, False,
+          None, True),
       ],
       [])
     obj.dependencies[0].add_dependencies_and_close(
       [
         gclient.Dependency(
           obj.dependencies[0], 'foo/dir1', 'url', None, None, None,
-          None, 'DEPS', True, False),
+          None, 'DEPS', True, False, None, True),
       ],
       [])
     # Make sure __str__() works fine.
@@ -604,7 +606,7 @@ class GclientTest(trial_dir.TestCase):
     """Verifies expected behavior of LateOverride."""
     url = "git@github.com:dart-lang/spark.git"
     d = gclient.Dependency(None, 'name', 'url',
-                           None, None, None, None, '', True, False)
+                           None, None, None, None, '', True, False, None, True)
     late_url = d.LateOverride(url)
     self.assertEquals(url, late_url)
 

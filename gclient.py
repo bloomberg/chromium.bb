@@ -176,13 +176,18 @@ class DependencySettings(GClientKeywords):
   """Immutable configuration settings."""
   def __init__(
       self, parent, url, managed, custom_deps, custom_vars,
-      custom_hooks, deps_file, should_process, relative):
+      custom_hooks, deps_file, should_process, relative,
+      condition, condition_value):
     GClientKeywords.__init__(self)
 
     # These are not mutable:
     self._parent = parent
     self._deps_file = deps_file
     self._url = url
+    # The condition as string (or None). Useful to keep e.g. for flatten.
+    self._condition = condition
+    # Boolean value of the condition. If there's no condition, just True.
+    self._condition_value = condition_value
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
     # 'managed' and 'should_process' is that the user specifies 'managed' via
@@ -260,6 +265,14 @@ class DependencySettings(GClientKeywords):
     return self._url
 
   @property
+  def condition(self):
+    return self._condition
+
+  @property
+  def condition_value(self):
+    return self._condition_value
+
+  @property
   def target_os(self):
     if self.local_target_os is not None:
       return tuple(set(self.local_target_os).union(self.parent.target_os))
@@ -279,11 +292,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __init__(self, parent, name, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
-               relative):
+               relative, condition, condition_value):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, url, managed, custom_deps, custom_vars,
-        custom_hooks, deps_file, should_process, relative)
+        custom_hooks, deps_file, should_process, relative,
+        condition, condition_value)
 
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
@@ -654,15 +668,24 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           deps_file = ent['deps_file']
       if dep_value is None:
         continue
+      condition = None
+      condition_value = True
       if isinstance(dep_value, basestring):
         url = dep_value
       else:
         # This should be guaranteed by schema checking in gclient_eval.
         assert isinstance(dep_value, dict)
         url = dep_value['url']
+        condition = dep_value.get('condition')
+      if condition:
+        # TODO(phajdan.jr): should we also take custom vars into account?
+        condition_value = gclient_eval.EvaluateCondition(
+            condition, local_scope.get('vars', {}))
+        should_process = should_process and condition_value
       deps_to_add.append(Dependency(
           self, name, url, None, None, self.custom_vars, None,
-          deps_file, should_process, use_relative_paths))
+          deps_file, should_process, use_relative_paths, condition,
+          condition_value))
     deps_to_add.sort(key=lambda x: x.name)
 
     # override named sets of hooks by the custom hooks
@@ -1114,7 +1137,7 @@ solutions = [
     # are processed.
     self._recursion_limit = 2
     Dependency.__init__(self, None, None, None, True, None, None, None,
-                        'unused', True, None)
+                        'unused', True, None, None, True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -1203,7 +1226,9 @@ it or fix the checkout.
             s.get('custom_hooks', []),
             s.get('deps_file', 'DEPS'),
             True,
-            None))
+            None,
+            None,
+            True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
@@ -1734,9 +1759,14 @@ def _DepsToLines(deps):
   """Converts |deps| dict to list of lines for output."""
   s = ['deps = {']
   for name, dep in sorted(deps.iteritems()):
+    condition_part = (['    "condition": "%s",' % dep.condition]
+                      if dep.condition else [])
     s.extend([
         '  # %s' % dep.hierarchy(include_url=False),
-        '  "%s": "%s",' % (name, dep.url),
+        '  "%s": {' % (name,),
+        '    "url": "%s",' % (dep.url,),
+    ] + condition_part + [
+        '  },',
         '',
     ])
   s.extend(['}', ''])
