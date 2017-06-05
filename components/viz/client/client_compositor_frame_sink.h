@@ -16,6 +16,8 @@
 
 namespace viz {
 
+class LocalSurfaceIdProvider;
+
 class ClientCompositorFrameSink
     : public cc::CompositorFrameSink,
       public cc::mojom::MojoCompositorFrameSinkClient,
@@ -30,6 +32,7 @@ class ClientCompositorFrameSink
           synthetic_begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
   ClientCompositorFrameSink(
@@ -38,6 +41,7 @@ class ClientCompositorFrameSink
           synthetic_begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request,
+      std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
       bool enable_surface_synchronization);
 
   ~ClientCompositorFrameSink() override;
@@ -50,9 +54,6 @@ class ClientCompositorFrameSink
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
  private:
-  virtual bool ShouldAllocateNewLocalSurfaceId(
-      const cc::CompositorFrame& frame);
-
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const cc::ReturnedResourceArray& resources) override;
@@ -62,11 +63,8 @@ class ClientCompositorFrameSink
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
-  gfx::Size surface_size_;
-  float device_scale_factor_ = 0.f;
-
   cc::LocalSurfaceId local_surface_id_;
-  cc::LocalSurfaceIdAllocator id_allocator_;
+  std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;

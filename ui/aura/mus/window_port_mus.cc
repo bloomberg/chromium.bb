@@ -5,6 +5,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/viz/client/local_surface_id_provider.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -109,7 +110,9 @@ WindowPortMus::RequestCompositorFrameSink(
       std::move(context_provider), nullptr /* worker_context_provider */,
       gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
       nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
-      std::move(client_request), enable_surface_synchronization);
+      std::move(client_request),
+      base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>(),
+      enable_surface_synchronization);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
   return std::move(compositor_frame_sink);
