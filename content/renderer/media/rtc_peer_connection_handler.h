@@ -231,8 +231,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const FirstSessionDescription& local,
       const FirstSessionDescription& remote);
 
-  // Virtual to allow mocks to override.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
                                               const char* trace_event_name);
