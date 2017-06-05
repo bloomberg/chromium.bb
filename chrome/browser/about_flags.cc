@@ -46,8 +46,6 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/favicon/core/features.h"
-#include "components/feature_engagement_tracker/public/feature_constants.h"
-#include "components/feature_engagement_tracker/public/feature_list.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -109,6 +107,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_constants.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 #else  // OS_ANDROID
 #include "ui/message_center/message_center_switches.h"
 #endif  // OS_ANDROID
@@ -1794,12 +1794,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeHomeSwipeLogicDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kChromeHomeSwipeLogicChoices)},
 #endif  // OS_ANDROID
+#if defined(OS_ANDROID)
     {"iph-demo-mode-choice", flag_descriptions::kIphDemoModeChoiceName,
-     flag_descriptions::kIphDemoModeChoiceDescription, kOsAll,
+     flag_descriptions::kIphDemoModeChoiceDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          feature_engagement_tracker::kIPHDemoMode,
          feature_engagement_tracker::kIPHDemoModeChoiceVariations,
          feature_engagement_tracker::kIPHDemoMode.name)},
+#endif  // OS_ANDROID
     {"num-raster-threads", flag_descriptions::kNumRasterThreadsName,
      flag_descriptions::kNumRasterThreadsDescription, kOsAll,
      MULTI_VALUE_TYPE(kNumRasterThreadsChoices)},
