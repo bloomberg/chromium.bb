@@ -25,4 +25,4 @@
 
 ; https://crbug.com/515280
 (if (param-true? elcap-or-later)
-  (allow file-read* (regex #"^/System/Library/Extensions($|/)")))
+  (allow file-read* (subpath "/System/Library/Extensions")))

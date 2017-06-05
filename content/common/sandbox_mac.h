@@ -43,26 +43,6 @@ class CONTENT_EXPORT Sandbox {
   // Returns true if the sandbox has been enabled for the current process.
   static bool SandboxIsCurrentlyActive();
 
-  // Escape |src_utf8| for use in a plain string variable in a sandbox
-  // configuraton file.  On return |dst| is set to the quoted output.
-  // Returns: true on success, false otherwise.
-  static bool QuotePlainString(const std::string& src_utf8, std::string* dst);
-
-  // Escape |str_utf8| for use in a regex literal in a sandbox
-  // configuraton file.  On return |dst| is set to the utf-8 encoded quoted
-  // output.
-  //
-  // The implementation of this function is based on empirical testing of the
-  // OS X sandbox on 10.5.8 & 10.6.2 which is undocumented and subject to
-  // change.
-  //
-  // Note: If str_utf8 contains any characters < 32 || >125 then the function
-  // fails and false is returned.
-  //
-  // Returns: true on success, false otherwise.
-  static bool QuoteStringForRegex(const std::string& str_utf8,
-                                  std::string* dst);
-
  private:
   // Convert provided path into a "canonical" path matching what the Sandbox
   // expects i.e. one without symlinks.
