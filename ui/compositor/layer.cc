@@ -169,6 +169,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetBackgroundZoom(zoom_, zoom_inset_);
 
   // Filters.
+  clone->SetLayerTemperature(GetTargetTemperature());
   clone->SetLayerSaturation(layer_saturation_);
   clone->SetLayerBrightness(GetTargetBrightness());
   clone->SetLayerGrayscale(GetTargetGrayscale());
@@ -380,6 +381,14 @@ float Layer::GetCombinedOpacity() const {
 
 void Layer::SetLayerTemperature(float value) {
   GetAnimator()->SetTemperature(value);
+}
+
+float Layer::GetTargetTemperature() const {
+  if (animator_ &&
+      animator_->IsAnimatingProperty(LayerAnimationElement::TEMPERATURE)) {
+    return animator_->GetTargetTemperature();
+  }
+  return layer_temperature();
 }
 
 void Layer::SetBackgroundBlur(int blur_radius) {
