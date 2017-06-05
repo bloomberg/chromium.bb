@@ -46,6 +46,21 @@ The easiest way to check the status of recent imports is to look at:
 
 Automatic imports are intended to run at least once every 24 hours.
 
+### Failures caused by automatic imports.
+
+If there are new test failures that start after an auto-import,
+there are several possible causes, including:
+
+ 1. New baselines for flaky tests were added (http://crbug.com/701234).
+ 2. Modified tests should have new results for non-Release builds but they weren't added (http://crbug.com/725160).
+ 3. New baselines were added for tests with non-deterministic test results (http://crbug.com/705125).
+
+Because these tests are imported from the Web Platform tests, it is better
+to have them in the repository (and marked failing) than not, so prefer to
+[add test expectations](layout_test_expectations.md) rather than reverting.
+However, if a huge number of tests are failing, please revert the CL so we
+can fix it manually.
+
 ### Automatic export process
 
 If a commit to Chromium master changes any files in the
