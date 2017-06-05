@@ -203,8 +203,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   std::unique_ptr<CookieCryptor> cookie_crypto_delegate_;
 };
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestInvalidMetaTableRecovery) {
+TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   InitializeStore(false, false);
   AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   DestroyStore();
@@ -245,8 +244,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestInvalidMetaTableRecovery) {
 }
 
 // Test if data is stored as expected in the SQLite database.
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestPersistance) {
+TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   InitializeStore(false, false);
   AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   // Replace the store effectively destroying the current one and forcing it
@@ -271,9 +269,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestPersistance) {
   ASSERT_EQ(0U, cookies.size());
 }
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest,
-       DISABLED_TestSessionCookiesDeletedOnStartup) {
+TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // Initialize the cookie store with 3 persistent cookies, 5 transient
   // cookies.
   InitializeStore(false, false);
@@ -347,8 +343,7 @@ TEST_F(SQLitePersistentCookieStoreTest,
 
 // Test that priority load of cookies for a specfic domain key could be
 // completed before the entire store is loaded
-// TODO(mattcary): disabled for flakily timing out: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestLoadCookiesForKey) {
+TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   InitializeStore(false, false);
   base::Time t = base::Time::Now();
   AddCookie("A", "B", "foo.bar", "/", t);
@@ -426,8 +421,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestLoadCookiesForKey) {
 }
 
 // Test that we can force the database to be written by calling Flush().
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestFlush) {
+TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   InitializeStore(false, false);
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
@@ -453,8 +447,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestFlush) {
 }
 
 // Test loading old session cookies from the disk.
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestLoadOldSessionCookies) {
+TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
@@ -481,9 +474,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestLoadOldSessionCookies) {
 }
 
 // Test loading old session cookies from the disk.
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest,
-       DISABLED_TestDontLoadOldSessionCookies) {
+TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
@@ -511,8 +502,7 @@ TEST_F(SQLitePersistentCookieStoreTest,
   ASSERT_EQ(0U, cookies.size());
 }
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_PersistIsPersistent) {
+TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   InitializeStore(false, true);
   static const char kSessionName[] = "session";
   static const char kPersistentName[] = "persistent";
@@ -553,8 +543,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_PersistIsPersistent) {
   cookies.clear();
 }
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_PriorityIsPersistent) {
+TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
   static const char kDomain[] = "sessioncookie.com";
   static const char kLowName[] = "low";
   static const char kMediumName[] = "medium";
@@ -615,8 +604,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_PriorityIsPersistent) {
   cookies.clear();
 }
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_SameSiteIsPersistent) {
+TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   const char kDomain[] = "sessioncookie.com";
   const char kNoneName[] = "none";
   const char kLaxName[] = "lax";
@@ -674,8 +662,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_SameSiteIsPersistent) {
   cookies.clear();
 }
 
-// TODO(mattcary): disabled for flakily timing out: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateToEncryption) {
+TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   CanonicalCookieVector cookies;
 
   // Create unencrypted cookie store and write something to it.
@@ -745,8 +732,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateToEncryption) {
   EXPECT_EQ(contents.find("something456ABC"), std::string::npos);
 }
 
-// TODO(mattcary): disabled for flakily timing out: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateFromEncryption) {
+TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   CanonicalCookieVector cookies;
 
   // Create unencrypted cookie store and write something to it.
@@ -805,8 +791,7 @@ void WasCalledWithNoCookies(
 }
 }
 
-// TODO(mattcary): disabled for possibly causing iOS timeouts: crbug.com/727566.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_EmptyLoadAfterClose) {
+TEST_F(SQLitePersistentCookieStoreTest, EmptyLoadAfterClose) {
   // Create unencrypted cookie store and write something to it.
   InitializeStore(false, false);
   AddCookie("name", "value123XYZ", "foo.bar", "/", base::Time::Now());
