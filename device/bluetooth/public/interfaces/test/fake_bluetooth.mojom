@@ -30,6 +30,10 @@ interface FakeBluetooth {
   SimulateCentral(CentralState state) => (FakeCentral fake_central);
 };
 
+// HCI Error Codes from BT 4.2 Vol 2 Part D 1.3 List Of Error Codes.
+const uint16 kHCISuccess = 0x0000;
+const uint16 kHCIConnectionTimeout = 0x0008;
+
 // FakeCentral allows clients to simulate events that a device in the
 // Central/Observer role would receive as well as monitor the operations
 // performed by the device in the Central/Observer role.
@@ -48,7 +52,20 @@ interface FakeCentral {
   // connected to the system or weren't connected through the UA e.g. a user
   // connected a peripheral through the system's settings. This method is
   // intended to simulate peripherals that those methods would return.
+  // Even though these devices are already connected to the OS, clients
+  // need to call the respective connect functions to signal they intend to keep
+  // the connection alive.
   SimulatePreconnectedPeripheral(string address,
                                  string name,
                                  array<UUID> known_service_uuids) => ();
+
+  // Sets the next GATT Connection request response for peripheral with
+  // |address| to |code|. |code| could be an HCI Error Code from
+  // BT 4.2 Vol 2 Part D 1.3 List Of Error Codes or a number outside that range
+  // returned by specific platforms e.g. Android returns 0x101 to signal a GATT
+  // failure
+  // https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html#GATT_FAILURE
+  // Calls callback with false if there was any error when simulating the next
+  // response.
+  SetNextGATTConnectionResponse(string address, uint16 code) => (bool success);
 };
