@@ -27,14 +27,17 @@ def _ParseVariables(variables_arg, error_func):
     if '=' not in v:
       error_func('--variables argument must contain "=": ' + v)
     name, _, value = v.partition('=')
-    if value == 'True':
-      # The python implementation of Mustache doesn't consider True to be a
-      # truthy value. Wrap it up as a list to enable us to specify a boolean to
-      # expand a template section.
-      variables[name] = ['True']
-    else:
-      variables[name] = value
+    variables[name] = value
   return variables
+
+
+'''
+Rewrite conditional sections to be 'Verted Sections' as defined in handlerbars.
+This allows variables to be used in the AndroidManifest to conditionally define
+include segments.
+'''
+def _RewriteConditionals(template_text):
+  return template_text.replace('{{#', '{{?')
 
 
 def main():
@@ -50,7 +53,7 @@ def main():
 
   variables = _ParseVariables(options.variables, parser.error)
   with open(options.template, 'r') as f:
-    template = motemplate.Motemplate(f.read())
+    template = motemplate.Motemplate(_RewriteConditionals(f.read()))
     render = template.render(variables)
     with codecs.open(options.output, 'w', 'utf-8') as output_file:
       output_file.write(render.text)

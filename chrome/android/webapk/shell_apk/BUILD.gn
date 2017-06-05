@@ -46,6 +46,8 @@ declare_args() {
 }
 
 shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
+unbound_shell_apk_manifest =
+    "$target_gen_dir/unbound_shell_apk_manifest/AndroidManifest.xml"
 shell_apk_manifest_javatests =
     "$target_gen_dir/shell_apk_manifest_javatests/AndroidManifest.xml"
 
@@ -57,6 +59,34 @@ manifest_processor_template("shell_apk_manifest") {
     "shell_apk_version=$template_shell_apk_version",
     "manifest_package=org.chromium.webapk",
     "runtime_host=$webapk_runtime_host",
+    "start_url=$webapk_start_url",
+    "name=$webapk_name",
+    "short_name=$webapk_short_name",
+    "scope_url=$webapk_scope_url",
+    "display_mode=$webapk_display_mode",
+    "orientation=$webapk_orientation",
+    "theme_color=$webapk_theme_color",
+    "background_color=$webapk_background_color",
+    "icon_urls_and_icon_murmur2_hashes=$webapk_icon_urls_and_icon_murmur2_hashes",
+    "scope_url_scheme=$webapk_scope_url_scheme",
+    "scope_url_host=$webapk_scope_url_host",
+    "scope_url_path=$webapk_scope_url_path",
+    "web_manifest_url=$webapk_web_manifest_url",
+    "version_code=$webapk_version_code",
+    "version_name=$webapk_version_name",
+  ]
+}
+
+manifest_processor_template("unbound_shell_apk_manifest") {
+  input = "AndroidManifest.xml"
+  output = unbound_shell_apk_manifest
+
+  variables = [
+    "shell_apk_version=$template_shell_apk_version",
+    "manifest_package=org.chromium.arbitrarypackage",
+
+    # Intentionally omitted: "runtime_host=org.chromium.chrome",
+    "include_label=true",
     "start_url=$webapk_start_url",
     "name=$webapk_name",
     "short_name=$webapk_short_name",
@@ -213,6 +243,12 @@ webapk_tmpl("webapk") {
   android_manifest = shell_apk_manifest
   android_manifest_dep = ":shell_apk_manifest"
   apk_name = "WebApk"
+}
+
+webapk_tmpl("unbound_webapk") {
+  android_manifest = unbound_shell_apk_manifest
+  android_manifest_dep = ":unbound_shell_apk_manifest"
+  apk_name = "UnboundWebApk"
 }
 
 # WebAPK for instrumentation tests.
