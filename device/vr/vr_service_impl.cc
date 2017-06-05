@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "device/vr/vr_device.h"
@@ -16,7 +17,9 @@ namespace device {
 
 VRServiceImpl::VRServiceImpl()
     : listening_for_activate_(false),
+      in_set_client_(false),
       connected_devices_(0),
+      handled_devices_(0),
       weak_ptr_factory_(this) {}
 
 VRServiceImpl::~VRServiceImpl() {
@@ -36,13 +39,28 @@ void VRServiceImpl::Create(const service_manager::BindSourceInfo& source_info,
 void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
                               SetClientCallback callback) {
   DCHECK(!client_.get());
+
+  // Set a scoped variable to true so we can verify we are in the same stack.
+  base::AutoReset<bool> set_client(&in_set_client_, true);
+
   client_ = std::move(service_client);
   // Once a client has been connected AddService will force any VRDisplays to
   // send ConnectDevice to it so that it's populated with the currently active
   // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
-  VRDeviceManager::GetInstance()->AddService(this);
-  std::move(callback).Run(connected_devices_);
+
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  device_manager->AddService(this);
+  unsigned expected_devices = device_manager->GetNumberOfConnectedDevices();
+  // TODO(amp): Remove this count based synchronization.
+  // If libraries are not loaded, new devices will immediatly be handled but not
+  // connect, return only those devices which have already connected.
+  // If libraries were loaded then all devices may not be handled yet so return
+  // the number we expect to eventually connect.
+  if (expected_devices == handled_devices_) {
+    expected_devices = connected_devices_;
+  }
+  std::move(callback).Run(expected_devices);
 }
 
 void VRServiceImpl::ConnectDevice(VRDevice* device) {
@@ -75,12 +93,15 @@ void VRServiceImpl::OnVRDisplayInfoCreated(
   if (!display_info) {
     // If we get passed a null display info it means the device does not exist.
     // This can happen for example if VR services are not installed. We will not
-    // instantiate a display in this case and don't count it as connected.
-    return;
+    // instantiate a display in this case and don't count it as connected, but
+    // we do mark that we have handled it and verify we haven't changed stacks.
+    DCHECK(in_set_client_);
+  } else {
+    displays_[device] = base::MakeUnique<VRDisplayImpl>(
+        device, this, client_.get(), std::move(display_info));
+    connected_devices_++;
   }
-  displays_[device] = base::MakeUnique<VRDisplayImpl>(
-      device, this, client_.get(), std::move(display_info));
-  connected_devices_++;
+  handled_devices_++;
 }
 
 VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(VRDevice* device) {
