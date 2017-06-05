@@ -134,7 +134,9 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
     std::unique_ptr<views::View> extra_content_view,
     std::unique_ptr<views::View> trailing_button,
     bool clickable,
-    bool extra_trailing_inset) {
+    bool extra_trailing_inset,
+    views::GridLayout::Alignment vertical_alignment =
+        views::GridLayout::LEADING) {
   const int trailing_inset = extra_trailing_inset
                                  ? kPaymentRequestRowHorizontalInsets +
                                        kPaymentRequestRowExtraRightInset
@@ -150,14 +152,14 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the section name.
   constexpr int kNameColumnWidth = 112;
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+  columns->AddColumn(views::GridLayout::LEADING, vertical_alignment, 0,
                      views::GridLayout::FIXED, kNameColumnWidth, 0);
 
   constexpr int kPaddingAfterName = 32;
   columns->AddPaddingColumn(0, kPaddingAfterName);
 
   // A column for the content.
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
+  columns->AddColumn(views::GridLayout::FILL, vertical_alignment, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   // A column for the extra content.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
@@ -331,10 +333,10 @@ class PaymentSheetRowBuilder {
     button->set_id(id_);
     button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     button->SetEnabled(button_enabled);
-    return CreatePaymentSheetRow(listener_, section_name_,
-                                 std::move(content_view), nullptr,
-                                 std::move(button), /*clickable=*/false,
-                                 /*extra_trailing_inset=*/false);
+    return CreatePaymentSheetRow(
+        listener_, section_name_, std::move(content_view), nullptr,
+        std::move(button), /*clickable=*/false,
+        /*extra_trailing_inset=*/false, views::GridLayout::CENTER);
   }
 
   views::ButtonListener* listener_;
@@ -544,23 +546,13 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   // request's details, followed by a label indicating "N more items..." if
   // there are more than 2 items in the details. The total label and amount
   // always follow.
-  constexpr int kMaxNumberOfItemsShown = 2;
-  int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
-  if (hidden_item_count > 0) {
-    layout->StartRow(0, 0);
-    std::unique_ptr<views::Label> label =
-        CreateHintLabel(l10n_util::GetPluralStringFUTF16(
-            IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
-    layout->AddView(label.release());
-    if (is_mixed_currency) {
-      std::unique_ptr<views::Label> multiple_currency_label =
-          CreateHintLabel(l10n_util::GetStringUTF16(
-              IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MULTIPLE_CURRENCY_INDICATOR));
-      layout->AddView(multiple_currency_label.release());
-    }
-  }
-
-  for (size_t i = 0; i < items.size() && i < kMaxNumberOfItemsShown; ++i) {
+  constexpr size_t kMaxNumberOfItemsShown = 2;
+  // Don't show a line reading "1 more" because the item itself can be shown in
+  // the same space.
+  size_t displayed_items = items.size() <= kMaxNumberOfItemsShown + 1
+                               ? items.size()
+                               : kMaxNumberOfItemsShown;
+  for (size_t i = 0; i < items.size() && i < displayed_items; ++i) {
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> summary =
         base::MakeUnique<views::Label>(base::UTF8ToUTF16(items[i]->label));
@@ -575,6 +567,21 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
                 : base::string16(),
             spec()->GetFormattedCurrencyAmount(items[i]->amount), true, false)
             .release());
+  }
+
+  size_t hidden_item_count = items.size() - displayed_items;
+  if (hidden_item_count > 0) {
+    layout->StartRow(0, 0);
+    std::unique_ptr<views::Label> label =
+        CreateHintLabel(l10n_util::GetPluralStringFUTF16(
+            IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
+    layout->AddView(label.release());
+    if (is_mixed_currency) {
+      std::unique_ptr<views::Label> multiple_currency_label =
+          CreateHintLabel(l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MULTIPLE_CURRENCY_INDICATOR));
+      layout->AddView(multiple_currency_label.release());
+    }
   }
 
   layout->StartRow(0, 0);

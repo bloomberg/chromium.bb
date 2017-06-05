@@ -225,8 +225,8 @@
   </message>
   <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS" desc="The label in the Order Summary section of the Payment Sheet that indicates how many display items are hidden. [ICU Syntax]">
     {MORE_ITEMS, plural,
-      =1 {<ph name="ITEM_COUNT">#<ex>1</ex></ph> item}
-      other {<ph name="ITEM_COUNT">#<ex>2</ex></ph> items}}
+      =1 {<ph name="ITEM_COUNT">#<ex>1</ex></ph> more item}
+      other {<ph name="ITEM_COUNT">#<ex>2</ex></ph> more items}}
   </message>
   <message name="IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME" desc="The name of the Shipping Address section in the Payment Sheet of the Payment Request dialog.">
     Shipping address
@@ -314,21 +314,25 @@
   <if expr="not is_android">
     <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW" desc="This is a snippet of a payment method a user has saved to Chrome, plus an indication of the number of additional payment methods the user has saved. Its function is to show the user has payment methods that can be used to complete a payment, and thus doesn't have to type the entire payment method. [ICU Syntax]">
     {PAYMENT_METHOD, plural,
+       =0 {<ph name="PAYMENT_METHOD_PREVIEW">{1}<ex>VISA ....1234</ex></ph>}
        =1 {<ph name="PAYMENT_METHOD_PREVIEW">{1}<ex>VISA ....1234</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS">{2}<ex>1</ex></ph> more}
        other {<ph name="PAYMENT_METHOD_PREVIEW">{1}<ex>VISA ....1234</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS">{2}<ex>2</ex></ph> more}}
     </message>
     <message name="IDS_PAYMENT_REQUEST_SHIPPING_ADDRESSES_PREVIEW" desc="This is a snippet of a shipping address a user has saved to Chrome, plus an indication of the number of additional shipping addresses the user has saved. Its function is to show the user has shipping addresses that can be used to complete a purchase, and thus doesn't have to type the entire address. [ICU Syntax]" formatter_data="android_java">
     {SHIPPING_ADDRESS, plural,
+      =0 {<ph name="SHIPPING_ADDRESS_PREVIEW">{1}<ex>Jerry, 1253 Mcgill college</ex></ph>}
       =1 {<ph name="SHIPPING_ADDRESS_PREVIEW">{1}<ex>Jerry, 1253 Mcgill college</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES">{2}<ex>1</ex></ph> more}
       other {<ph name="SHIPPING_ADDRESS_PREVIEW">{1}<ex>Jerry, 1253 Mcgill college</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES">{2}<ex>2</ex></ph> more}}
     </message>
     <message name="IDS_PAYMENT_REQUEST_SHIPPING_OPTIONS_PREVIEW" desc="This is a snippet of a shipping option a merchant supports, plus an indication of the number of additional shipping options the merchant supports. Its function is to show the user can choose different shipping options to complete a purchase. [ICU Syntax]">
     {SHIPPING_OPTIONS, plural,
+       =0 {<ph name="SHIPPING_OPTION_PREVIEW">{1}<ex>standard shipping</ex></ph>}
        =1 {<ph name="SHIPPING_OPTION_PREVIEW">{1}<ex>standard shipping</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS">{2}<ex>1</ex></ph> more}
        other {<ph name="SHIPPING_OPTION_PREVIEW">{1}<ex>standard shipping</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS">{2}<ex>2</ex></ph> more}}
     </message>
     <message name="IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW" desc="This is a snippet of a contact a user has saved to Chrome, plus an indication of the number of additional contacts the user has saved. Its function is to show the user has contacts that can be used to complete a purchase, and thus doesn't have to type the entire contact info. [ICU Syntax]">
      {CONTACT, plural,
+       =0 {<ph name="CONTACT_PREVIEW">{1}<ex>Jerry, 438-123-1922</ex></ph>}
        =1 {<ph name="CONTACT_PREVIEW">{1}<ex>Jerry, 438-123-1922</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS">{2}<ex>1</ex></ph> more}
        other {<ph name="CONTACT_PREVIEW">{1}<ex>Jerry, 438-123-1922</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS">{2}<ex>2</ex></ph> more}}
     </message>
